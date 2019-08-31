@@ -206,6 +206,7 @@ class ASH_EXPORT LoginAuthUserView
   bool can_use_pin_ = false;
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
+  NonAccessibleView* password_view_container_ = nullptr;
   LoginPinView* pin_view_ = nullptr;
   views::LabelButton* online_sign_in_message_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;

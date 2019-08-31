@@ -640,24 +640,32 @@ Polymer({
       return;
     }
 
-    this.networkingPrivate.startConnect(networkState.guid, () => {
-      if (chrome.runtime.lastError) {
-        const message = chrome.runtime.lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
+    this.networkConfig_.startConnect(networkState.guid).then(response => {
+      switch (response.result) {
+        case mojom.StartConnectResult.kSuccess:
           return;
-        }
-        console.error(
-            'networkingPrivate.startConnect error: ' + message +
-            ' For: ' + networkState.guid);
-
-        // There is no configuration flow for Mobile Networks.
-        if (!isMobile) {
-          this.showConfig_(
-              true /* configAndConnect */, oncType, networkState.guid,
-              displayName);
-        }
+        case mojom.StartConnectResult.kInvalidGuid:
+        case mojom.StartConnectResult.kInvalidState:
+        case mojom.StartConnectResult.kCanceled:
+          // TODO(stevenjb/khorimoto): Consider handling these cases.
+          return;
+        case mojom.StartConnectResult.kNotConfigured:
+          if (!isMobile) {
+            this.showConfig_(
+                true /* configAndConnect */, oncType, networkState.guid,
+                displayName);
+          }
+          return;
+        case mojom.StartConnectResult.kBlocked:
+          // This shouldn't happen, the UI should prevent this, fall through and
+          // show the error.
+        case mojom.StartConnectResult.kUnknown:
+          console.error(
+              'startConnect failed for: ' + networkState.guid +
+              ' Error: ' + response.message);
+          return;
       }
+      assertNotReached();
     });
   },
 });

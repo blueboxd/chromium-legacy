@@ -28,6 +28,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "pending_network_configuration_tracker_impl_unittest.cc",
+    "test_specifics_generator.h",
     "wifi_configuration_bridge_unittest.cc",
   ]
   deps = [

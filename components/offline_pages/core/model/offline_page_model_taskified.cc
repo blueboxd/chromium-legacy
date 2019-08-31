@@ -230,12 +230,23 @@ void OfflinePageModelTaskified::SavePage(
   create_archive_params.use_page_problem_detectors =
       save_page_params.use_page_problem_detectors;
 
+  // Set on-the-fly hashing if enabled.
+  create_archive_params.use_on_the_fly_hash_computation =
+      IsOnTheFlyMhtmlHashComputationEnabled();
+
+  // Save directly to public location if on-the-fly enabled.
+  //
+  // TODO(crbug.com/999247): We would like to skip renaming the file if
+  // streaming the file directly to it's end location. Knowing the file path or
+  // name before calling the archiver would make this possible.
+  base::FilePath save_file_dir =
+      GetArchiveDirectory(save_page_params.client_id.name_space);
+
   // Note: the archiver instance must be kept alive until the final callback
   // coming from it takes place.
   OfflinePageArchiver* raw_archiver = archiver.get();
   raw_archiver->CreateArchive(
-      GetInternalArchiveDirectory(save_page_params.client_id.name_space),
-      create_archive_params, web_contents,
+      save_file_dir, create_archive_params, web_contents,
       base::BindOnce(&OfflinePageModelTaskified::OnCreateArchiveDone,
                      weak_ptr_factory_.GetWeakPtr(), save_page_params,
                      offline_id, OfflineTimeNow(), std::move(archiver),
@@ -349,10 +360,12 @@ void OfflinePageModelTaskified::GetVisualsAvailability(
       store_.get(), offline_id, std::move(callback)));
 }
 
-const base::FilePath& OfflinePageModelTaskified::GetInternalArchiveDirectory(
+const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
     const std::string& name_space) const {
   if (GetPolicy(name_space).lifetime_type == LifetimeType::TEMPORARY)
     return archive_manager_->GetTemporaryArchivesDir();
+  if (IsOnTheFlyMhtmlHashComputationEnabled())
+    return archive_manager_->GetPublicArchivesDir();
   return archive_manager_->GetPrivateArchivesDir();
 }
 

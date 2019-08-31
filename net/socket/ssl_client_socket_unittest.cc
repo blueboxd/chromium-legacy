@@ -5440,8 +5440,15 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS10) {
             SSLConnectionStatusToVersion(info.connection_status));
 }
 
+// Failed on Android builder. See https://crbug.com/999647
+#if defined(OS_ANDROID)
+#define MAYBE_TLS13DowngradeEnforcedKnownKnown \
+  DISABLED_TLS13DowngradeEnforcedKnownKnown
+#else
+#define MAYBE_TLS13DowngradeEnforcedKnownKnown TLS13DowngradeEnforcedKnownKnown
+#endif
 // Test downgrade enforcement enforces known roots when configured to.
-TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownKnown) {
+TEST_F(SSLClientSocketTest, MAYBE_TLS13DowngradeEnforcedKnownKnown) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
       features::kEnforceTLS13Downgrade, {{"known_roots_only", "true"}});

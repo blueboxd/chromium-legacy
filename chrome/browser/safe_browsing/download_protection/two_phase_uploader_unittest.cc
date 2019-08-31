@@ -21,8 +21,9 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/network_context.h"
 #include "services/network/network_service.h"
-#include "services/network/test/test_network_service_client.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,17 +76,17 @@ class TwoPhaseUploaderTest : public testing::Test {
     content::GetNetworkService();
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
 
-    // A NetworkServiceClient is needed for uploads to work.
-    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
-    network_service_client_ =
-        std::make_unique<network::TestNetworkServiceClient>(
-            mojo::MakeRequest(&network_service_client_ptr));
-    network::NetworkService::GetNetworkServiceForTesting()->SetClient(
-        std::move(network_service_client_ptr),
-        network::mojom::NetworkServiceParams::New());
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>(
             network::NetworkService::GetNetworkServiceForTesting());
+
+    // A NetworkContextClient is needed for uploads to work.
+    network::mojom::NetworkContextClientPtr network_context_client_ptr;
+    network_context_client_ =
+        std::make_unique<network::TestNetworkContextClient>(
+            mojo::MakeRequest(&network_context_client_ptr));
+    shared_url_loader_factory_->network_context()->SetClient(
+        std::move(network_context_client_ptr));
   }
 
  protected:
@@ -93,7 +94,7 @@ class TwoPhaseUploaderTest : public testing::Test {
   const scoped_refptr<base::SequencedTaskRunner> task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                        base::TaskPriority::BEST_EFFORT});
-  std::unique_ptr<network::TestNetworkServiceClient> network_service_client_;
+  std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
 };
 

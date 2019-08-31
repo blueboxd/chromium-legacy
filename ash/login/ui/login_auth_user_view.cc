@@ -10,6 +10,7 @@
 
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/resources/grit/login_resources.h"
+#include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_display_style.h"
@@ -50,6 +51,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
@@ -72,6 +74,8 @@ const int kDistanceFromPinKeyboardToBigUserViewBottomDp = 50;
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
 
+constexpr SkColor kChallengeResponseArrowBackgroundColor =
+    SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kChallengeResponseErrorColor =
     SkColorSetRGB(0xEE, 0x67, 0x5C);
 
@@ -98,9 +102,11 @@ constexpr int kFingerprintFailedAnimationNumFrames = 45;
 
 constexpr base::TimeDelta kChallengeResponseResetAfterFailureDelay =
     base::TimeDelta::FromSeconds(5);
+constexpr int kChallengeResponseArrowSizeDp = 40;
+constexpr int kSpacingBetweenChallengeResponseArrowAndIconDp = 64;
 constexpr int kSpacingBetweenChallengeResponseIconAndLabelDp = 15;
 constexpr int kChallengeResponseIconSizeDp = 32;
-constexpr int kDistanceBetweenPasswordFieldAndChallengeResponseViewDp = 50;
+constexpr int kDistanceBetweenPasswordFieldAndChallengeResponseViewDp = 0;
 
 constexpr int kDisabledAuthMessageVerticalBorderDp = 16;
 constexpr int kDisabledAuthMessageHorizontalBorderDp = 16;
@@ -458,37 +464,46 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     layer()->SetFillsBoundsOpaquely(false);
 
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-        kSpacingBetweenChallengeResponseIconAndLabelDp));
+        views::BoxLayout::Orientation::kVertical));
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
 
-    image_button_ = AddChildView(std::make_unique<views::ImageButton>(
-        /*listener=*/this));
-    image_button_->SetImage(views::Button::STATE_NORMAL,
-                            GetIconForImageButton());
+    // TODO(crbug.com/983103): Add an accessible name.
+    arrow_button_ = AddChildView(std::make_unique<ArrowButtonView>(
+        /*listener=*/this, kChallengeResponseArrowSizeDp));
+    arrow_button_->SetBackgroundColor(kChallengeResponseArrowBackgroundColor);
+    arrow_button_->SetFocusPainter(nullptr);
 
-    label_button_ = AddChildView(std::make_unique<views::LabelButton>(
-        /*listener=*/this, /*text=*/base::string16()));
-    for (auto button_state :
-         {views::Button::STATE_NORMAL, views::Button::STATE_HOVERED,
-          views::Button::STATE_PRESSED, views::Button::STATE_DISABLED}) {
-      label_button_->SetTextColor(button_state, SK_ColorWHITE);
-    }
-    label_button_->SetText(GetTextForLabelButton());
+    auto* arrow_to_icon_spacer =
+        AddChildView(std::make_unique<NonAccessibleView>());
+    arrow_to_icon_spacer->SetPreferredSize(
+        gfx::Size(0, kSpacingBetweenChallengeResponseArrowAndIconDp));
+
+    icon_ = AddChildView(std::make_unique<views::ImageView>());
+    icon_->SetImage(GetImageForIcon());
+
+    auto* icon_to_label_spacer =
+        AddChildView(std::make_unique<NonAccessibleView>());
+    icon_to_label_spacer->SetPreferredSize(
+        gfx::Size(0, kSpacingBetweenChallengeResponseIconAndLabelDp));
+
+    label_ = AddChildView(std::make_unique<views::Label>(
+        GetTextForLabel(), views::style::CONTEXT_LABEL,
+        views::style::STYLE_PRIMARY));
+    label_->SetEnabledColor(SK_ColorWHITE);
+    label_->SetSubpixelRenderingEnabled(false);
+    label_->SetFontList(views::Label::GetDefaultFontList().Derive(
+        /*size_delta=*/1, gfx::Font::FontStyle::ITALIC,
+        gfx::Font::Weight::NORMAL));
   }
 
   ~ChallengeResponseView() override = default;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == image_button_ || sender == label_button_) {
-      if (state_ == State::kInitial)
-        on_start_tap_.Run();
-      else if (state_ == State::kFailure)
-        SetState(State::kInitial);
-      else
-        NOTREACHED();
+    if (sender == arrow_button_) {
+      DCHECK_NE(state_, State::kAuthenticating);
+      on_start_tap_.Run();
     } else {
       NOTREACHED();
     }
@@ -507,18 +522,15 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
                               base::Unretained(this), State::kInitial));
     }
 
-    image_button_->SetImage(views::Button::STATE_NORMAL,
-                            GetIconForImageButton());
-    image_button_->SetEnabled(state_ != State::kAuthenticating);
-
-    label_button_->SetText(GetTextForLabelButton());
-    label_button_->SetEnabled(state_ != State::kAuthenticating);
+    arrow_button_->SetEnabled(state_ != State::kAuthenticating);
+    icon_->SetImage(GetImageForIcon());
+    label_->SetText(GetTextForLabel());
 
     Layout();
   }
 
  private:
-  gfx::ImageSkia GetIconForImageButton() const {
+  gfx::ImageSkia GetImageForIcon() const {
     switch (state_) {
       case State::kInitial:
       case State::kAuthenticating:
@@ -532,7 +544,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     }
   }
 
-  base::string16 GetTextForLabelButton() const {
+  base::string16 GetTextForLabel() const {
     switch (state_) {
       case State::kInitial:
       case State::kAuthenticating:
@@ -546,8 +558,9 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
 
   base::RepeatingClosure on_start_tap_;
   State state_ = State::kInitial;
-  views::ImageButton* image_button_ = nullptr;
-  views::LabelButton* label_button_ = nullptr;
+  ArrowButtonView* arrow_button_ = nullptr;
+  views::ImageView* icon_ = nullptr;
+  views::Label* label_ = nullptr;
   base::OneShotTimer reset_state_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChallengeResponseView);
@@ -777,14 +790,22 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
 
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
+  // Wrap the password view with a container having the fill layout, so that
+  // it's possible to hide the password view while continuing to consume the
+  // same amount of space, which prevents the user view from shrinking. In the
+  // cases when other controls need to be rendered in this space, the whole
+  // container gets hidden.
+  auto password_view_container = std::make_unique<NonAccessibleView>();
+  password_view_container->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  password_view_container->AddChildView(std::move(password_view));
+  password_view_container_ = password_view_container.get();
+
   // Build layout.
-  // Wrap the password view with a fill layout so that it always consumes space,
-  // ie, when the password view is hidden the wrapped view will still consume
-  // the same amount of space. This prevents the user view from shrinking.
   auto wrapped_password_view = std::make_unique<NonAccessibleView>();
   wrapped_password_view->SetLayoutManager(
-      std::make_unique<views::FillLayout>());
-  wrapped_password_view->AddChildView(std::move(password_view));
+      std::make_unique<views::FlexLayout>());
+  wrapped_password_view->AddChildView(std::move(password_view_container));
   auto wrapped_online_sign_in_message_view =
       login_views_utils::WrapViewForPreferredSize(
           std::move(online_sign_in_message));
@@ -921,6 +942,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
+  password_view_container_->SetVisible(has_password || !has_challenge_response);
 
   if (!had_password && has_password)
     password_view_->RequestFocus();

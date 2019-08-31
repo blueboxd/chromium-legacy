@@ -3221,7 +3221,7 @@ class LoadStateWaiter : public WebContentsDelegate {
 
 // TODO(csharrison,mmenke):  Beef up testing of LoadState a little. In
 // particular, check upload progress and check the LoadState param.
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
   base::string16 a_host = url_formatter::IDNToUnicode("a.com");
   base::string16 b_host = url_formatter::IDNToUnicode("b.com");
   base::string16 paused_host = url_formatter::IDNToUnicode("paused.com");

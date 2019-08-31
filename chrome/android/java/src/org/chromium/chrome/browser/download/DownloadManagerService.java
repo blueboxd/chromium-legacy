@@ -29,6 +29,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
@@ -1096,8 +1097,9 @@ public class DownloadManagerService
             }
             incrementDownloadRetryCount(item.getId(), false);
         }
-        nativeResumeDownload(getNativeDownloadManagerService(), item.getId(),
-                item.getDownloadInfo().isOffTheRecord(), hasUserGesture);
+        DownloadManagerServiceJni.get().resumeDownload(getNativeDownloadManagerService(),
+                DownloadManagerService.this, item.getId(), item.getDownloadInfo().isOffTheRecord(),
+                hasUserGesture);
     }
 
     /**
@@ -1107,8 +1109,9 @@ public class DownloadManagerService
      * @param hasUserGesture Whether the request was originated due to user gesture.
      */
     public void retryDownload(ContentId id, DownloadItem item, boolean hasUserGesture) {
-        nativeRetryDownload(getNativeDownloadManagerService(), item.getId(),
-                item.getDownloadInfo().isOffTheRecord(), hasUserGesture);
+        DownloadManagerServiceJni.get().retryDownload(getNativeDownloadManagerService(),
+                DownloadManagerService.this, item.getId(), item.getDownloadInfo().isOffTheRecord(),
+                hasUserGesture);
     }
 
     /**
@@ -1118,7 +1121,8 @@ public class DownloadManagerService
      */
     @Override
     public void cancelDownload(ContentId id, boolean isOffTheRecord) {
-        nativeCancelDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord);
+        DownloadManagerServiceJni.get().cancelDownload(getNativeDownloadManagerService(),
+                DownloadManagerService.this, id.id, isOffTheRecord);
         DownloadProgress progress = mDownloadProgressMap.get(id.id);
         if (progress != null) {
             DownloadInfo info =
@@ -1140,7 +1144,8 @@ public class DownloadManagerService
      */
     @Override
     public void pauseDownload(ContentId id, boolean isOffTheRecord) {
-        nativePauseDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord);
+        DownloadManagerServiceJni.get().pauseDownload(getNativeDownloadManagerService(),
+                DownloadManagerService.this, id.id, isOffTheRecord);
         DownloadProgress progress = mDownloadProgressMap.get(id.id);
         // Calling pause will stop listening to the download item. Update its progress now.
         // If download is already completed, canceled or failed, there is no need to update the
@@ -1170,7 +1175,8 @@ public class DownloadManagerService
     public void removeDownload(
             final String downloadGuid, boolean isOffTheRecord, boolean externallyRemoved) {
         mHandler.post(() -> {
-            nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+            DownloadManagerServiceJni.get().removeDownload(getNativeDownloadManagerService(),
+                    DownloadManagerService.this, downloadGuid, isOffTheRecord);
             removeDownloadProgress(downloadGuid);
         });
 
@@ -1201,7 +1207,7 @@ public class DownloadManagerService
     public static boolean isSupportedMimeType(String mimeType) {
         // In NoTouch mode we don't support opening downloaded files in-browser.
         if (FeatureUtilities.isNoTouchModeEnabled()) return false;
-        return nativeIsSupportedMimeType(mimeType);
+        return DownloadManagerServiceJni.get().isSupportedMimeType(mimeType);
     }
 
     /**
@@ -1213,7 +1219,8 @@ public class DownloadManagerService
             boolean startupCompleted =
                     BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                             .isFullBrowserStarted();
-            mNativeDownloadManagerService = nativeInit(startupCompleted);
+            mNativeDownloadManagerService = DownloadManagerServiceJni.get().init(
+                    DownloadManagerService.this, startupCompleted);
             if (!startupCompleted) {
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .addStartupCompletedObserver(this);
@@ -1226,7 +1233,8 @@ public class DownloadManagerService
     public void onSuccess() {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isFullBrowserStarted()) {
-            nativeOnFullBrowserStarted(mNativeDownloadManagerService);
+            DownloadManagerServiceJni.get().onFullBrowserStarted(
+                    mNativeDownloadManagerService, DownloadManagerService.this);
         }
     }
 
@@ -1623,7 +1631,8 @@ public class DownloadManagerService
      */
     @Override
     public void getAllDownloads(boolean isOffTheRecord) {
-        nativeGetAllDownloads(getNativeDownloadManagerService(), isOffTheRecord);
+        DownloadManagerServiceJni.get().getAllDownloads(
+                getNativeDownloadManagerService(), DownloadManagerService.this, isOffTheRecord);
     }
 
     /**
@@ -1643,8 +1652,8 @@ public class DownloadManagerService
     @Override
     public void renameDownload(ContentId id, String name,
             Callback<Integer /*RenameResult*/> callback, boolean isOffTheRecord) {
-        nativeRenameDownload(
-                getNativeDownloadManagerService(), id.id, name, callback, isOffTheRecord);
+        DownloadManagerServiceJni.get().renameDownload(getNativeDownloadManagerService(),
+                DownloadManagerService.this, id.id, name, callback, isOffTheRecord);
     }
 
     /**
@@ -1678,7 +1687,8 @@ public class DownloadManagerService
      */
     @Override
     public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
-        nativeCheckForExternallyRemovedDownloads(getNativeDownloadManagerService(), isOffTheRecord);
+        DownloadManagerServiceJni.get().checkForExternallyRemovedDownloads(
+                getNativeDownloadManagerService(), DownloadManagerService.this, isOffTheRecord);
     }
 
     @CalledByNative
@@ -1823,7 +1833,8 @@ public class DownloadManagerService
      * @param source The source where the user opened this download.
      */
     public void openDownload(ContentId id, boolean isOffTheRecord, @DownloadOpenSource int source) {
-        nativeOpenDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord, source);
+        DownloadManagerServiceJni.get().openDownload(getNativeDownloadManagerService(),
+                DownloadManagerService.this, id.id, isOffTheRecord, source);
     }
 
     /**
@@ -1994,7 +2005,7 @@ public class DownloadManagerService
 
     int getAutoResumptionLimit() {
         if (mAutoResumptionLimit < 0) {
-            mAutoResumptionLimit = nativeGetAutoResumptionLimit();
+            mAutoResumptionLimit = DownloadManagerServiceJni.get().getAutoResumptionLimit();
         }
         return mAutoResumptionLimit;
     }
@@ -2011,7 +2022,8 @@ public class DownloadManagerService
             mFirstBackgroundDownloadId = downloadGuid;
             DownloadNotificationUmaHelper.recordFirstBackgroundDownloadHistogram(
                     UmaBackgroundDownload.STARTED, 0);
-            nativeRecordFirstBackgroundInterruptReason(getNativeDownloadManagerService(),
+            DownloadManagerServiceJni.get().recordFirstBackgroundInterruptReason(
+                    getNativeDownloadManagerService(), DownloadManagerService.this,
                     mFirstBackgroundDownloadId, true /* downloadStarted */);
         }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
@@ -2037,7 +2049,8 @@ public class DownloadManagerService
                     event, mFirstBackgroundDownloadInterruptionCount);
             if (event == UmaBackgroundDownload.INTERRUPTED) {
                 mFirstBackgroundDownloadInterruptionCount++;
-                nativeRecordFirstBackgroundInterruptReason(getNativeDownloadManagerService(),
+                DownloadManagerServiceJni.get().recordFirstBackgroundInterruptReason(
+                        getNativeDownloadManagerService(), DownloadManagerService.this,
                         mFirstBackgroundDownloadId, false /* downloadStarted */);
             }
         }
@@ -2050,8 +2063,9 @@ public class DownloadManagerService
      * @param targetPath Target file path.
      */
     void createInterruptedDownloadForTest(String url, String guid, String targetPath) {
-        nativeCreateInterruptedDownloadForTest(
-                getNativeDownloadManagerService(), url, guid, targetPath);
+        DownloadManagerServiceJni.get().createInterruptedDownloadForTest(
+                getNativeDownloadManagerService(), DownloadManagerService.this, url, guid,
+                targetPath);
     }
 
     void disableAddCompletedDownloadToDownloadManager() {
@@ -2067,7 +2081,8 @@ public class DownloadManagerService
     public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {
         if (TextUtils.isEmpty(downloadGuid)) return;
 
-        nativeUpdateLastAccessTime(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+        DownloadManagerServiceJni.get().updateLastAccessTime(getNativeDownloadManagerService(),
+                DownloadManagerService.this, downloadGuid, isOffTheRecord);
     }
 
     @Override
@@ -2085,33 +2100,36 @@ public class DownloadManagerService
     @Override
     public void purgeActiveNetworkList(long[] activeNetIds) {}
 
-    private static native boolean nativeIsSupportedMimeType(String mimeType);
-    private static native int nativeGetAutoResumptionLimit();
-
-    private native long nativeInit(boolean isFullBrowserStarted);
-    private native void nativeOpenDownload(long nativeDownloadManagerService, String downloadGuid,
-            boolean isOffTheRecord, int source);
-    private native void nativeResumeDownload(long nativeDownloadManagerService, String downloadGuid,
-            boolean isOffTheRecord, boolean hasUserGesture);
-    private native void nativeRetryDownload(long nativeDownloadManagerService, String downloadGuid,
-            boolean isOffTheRecord, boolean hasUserGesture);
-    private native void nativeCancelDownload(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
-    private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid,
-            boolean isOffTheRecord);
-    private native void nativeRemoveDownload(long nativeDownloadManagerService, String downloadGuid,
-            boolean isOffTheRecord);
-    private native void nativeRenameDownload(long nativeDownloadManagerService, String downloadGuid,
-            String targetName, Callback</*RenameResult*/ Integer> callback, boolean isOffTheRecord);
-    private native void nativeGetAllDownloads(
-            long nativeDownloadManagerService, boolean isOffTheRecord);
-    private native void nativeCheckForExternallyRemovedDownloads(
-            long nativeDownloadManagerService, boolean isOffTheRecord);
-    private native void nativeUpdateLastAccessTime(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
-    private native void nativeOnFullBrowserStarted(long nativeDownloadManagerService);
-    private native void nativeCreateInterruptedDownloadForTest(
-            long nativeDownloadManagerService, String url, String guid, String targetPath);
-    private native void nativeRecordFirstBackgroundInterruptReason(
-            long nativeDownloadManagerService, String guid, boolean downloadStarted);
+    @NativeMethods
+    interface Natives {
+        boolean isSupportedMimeType(String mimeType);
+        int getAutoResumptionLimit();
+        long init(DownloadManagerService caller, boolean isFullBrowserStarted);
+        void openDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord, int source);
+        void resumeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord, boolean hasUserGesture);
+        void retryDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord, boolean hasUserGesture);
+        void cancelDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord);
+        void pauseDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord);
+        void removeDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord);
+        void renameDownload(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, String targetName, Callback</*RenameResult*/ Integer> callback,
+                boolean isOffTheRecord);
+        void getAllDownloads(long nativeDownloadManagerService, DownloadManagerService caller,
+                boolean isOffTheRecord);
+        void checkForExternallyRemovedDownloads(long nativeDownloadManagerService,
+                DownloadManagerService caller, boolean isOffTheRecord);
+        void updateLastAccessTime(long nativeDownloadManagerService, DownloadManagerService caller,
+                String downloadGuid, boolean isOffTheRecord);
+        void onFullBrowserStarted(long nativeDownloadManagerService, DownloadManagerService caller);
+        void createInterruptedDownloadForTest(long nativeDownloadManagerService,
+                DownloadManagerService caller, String url, String guid, String targetPath);
+        void recordFirstBackgroundInterruptReason(long nativeDownloadManagerService,
+                DownloadManagerService caller, String guid, boolean downloadStarted);
+    }
 }

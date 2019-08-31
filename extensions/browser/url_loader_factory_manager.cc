@@ -252,43 +252,20 @@ std::vector<std::string> CreateExtensionAllowlist() {
     return allowlist;
   }
 
-  // Make sure kHardcodedPartOfAllowlist will fit, but also leave some room
-  // for field trial params.
-  allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist) + 10);
-
   // Append extensions from the hardcoded allowlist.
+  allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist));
   for (const char* hash : kHardcodedPartOfCorbAllowlist) {
     DCHECK(IsValidHashedExtensionId(hash));  // It also validates the length.
     allowlist.push_back(std::string(hash, kHashedExtensionIdLength));
   }
-
-  // Append extensions from the field trial param.
-  std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
-      extensions_features::kBypassCorbOnlyForExtensionsAllowlist,
-      extensions_features::kBypassCorbAllowlistParamName);
-  field_trial_arg = base::ToUpperASCII(field_trial_arg);
-  std::vector<std::string> field_trial_allowlist = base::SplitString(
-      field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  base::EraseIf(field_trial_allowlist, [](const std::string& hash) {
-    // Filter out invalid data from |field_trial_allowlist|.
-    if (IsValidHashedExtensionId(hash))
-      return false;  // Don't remove.
-
-    LOG(ERROR) << "Invalid extension hash: " << hash;
-    return true;  // Remove.
-  });
-  std::move(field_trial_allowlist.begin(), field_trial_allowlist.end(),
-            std::back_inserter(allowlist));
 
   return allowlist;
 }
 
 // Returns a set of HashedExtensionId of extensions that depend on relaxed CORB
 // behavior in their content scripts.
-const base::flat_set<std::string>& GetExtensionsAllowlist() {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kBypassCorbOnlyForExtensionsAllowlist));
-  static const base::NoDestructor<base::flat_set<std::string>> s_allowlist([] {
+base::flat_set<std::string>& GetExtensionsAllowlist() {
+  static base::NoDestructor<base::flat_set<std::string>> s_allowlist([] {
     base::flat_set<std::string> result(CreateExtensionAllowlist());
     result.shrink_to_fit();
     return result;
@@ -305,10 +282,6 @@ bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
   // Content scripts in the current version of extensions might depend on
   // relaxed CORB.
   if (extension.manifest_version() <= 2) {
-    if (!base::FeatureList::IsEnabled(
-            extensions_features::kBypassCorbOnlyForExtensionsAllowlist))
-      return true;
-
     const std::string& hash = extension.hashed_id().value();
     DCHECK(IsValidHashedExtensionId(hash));
     return base::Contains(GetExtensionsAllowlist(), hash);
@@ -587,6 +560,18 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     return network::mojom::URLLoaderFactoryPtrInfo();
   return CreateURLLoaderFactory(process, network_context, header_client,
                                 *extension);
+}
+
+// static
+void URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(
+    const Extension& extension) {
+  GetExtensionsAllowlist().insert(extension.hashed_id().value());
+}
+
+// static
+void URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
+    const Extension& extension) {
+  GetExtensionsAllowlist().erase(extension.hashed_id().value());
 }
 
 }  // namespace extensions

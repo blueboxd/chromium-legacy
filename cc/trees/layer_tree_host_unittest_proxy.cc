@@ -82,6 +82,11 @@ class LayerTreeHostProxyTestSetNeedsAnimate : public LayerTreeHostProxyTest {
   LayerTreeHostProxyTestSetNeedsAnimate& operator=(
       const LayerTreeHostProxyTestSetNeedsAnimate&) = delete;
 
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // TODO(crbug.com/985009): Fix test with surface sync enabled.
+    settings->enable_surface_synchronization = false;
+  }
+
   void BeginTest() override {
     EXPECT_EQ(ProxyMain::NO_PIPELINE_STAGE,
               GetProxyMain()->max_requested_pipeline_stage());
@@ -155,6 +160,11 @@ class LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating
   LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating& operator=(
       const LayerTreeHostProxyTestSetNeedsUpdateLayersWhileAnimating&) = delete;
 
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // TODO(crbug.com/985009): Fix test with surface sync enabled.
+    settings->enable_surface_synchronization = false;
+  }
+
   void BeginTest() override { proxy()->SetNeedsAnimate(); }
 
   void WillBeginMainFrame() override {
@@ -198,6 +208,11 @@ class LayerTreeHostProxyTestSetNeedsCommitWhileAnimating
 
   LayerTreeHostProxyTestSetNeedsCommitWhileAnimating& operator=(
       const LayerTreeHostProxyTestSetNeedsCommitWhileAnimating&) = delete;
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // TODO(crbug.com/985009): Fix test with surface sync enabled.
+    settings->enable_surface_synchronization = false;
+  }
 
   void BeginTest() override { proxy()->SetNeedsAnimate(); }
 

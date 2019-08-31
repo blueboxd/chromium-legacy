@@ -86,17 +86,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   EXPECT_EQ(kTestPairedDeviceAddress2, second_address_value.GetString());
 }
 
-// Checks that DoesBlockRequestOnFailure does not crash if authenticator is
-// nullptr and reason is not kTimeout. Regression test for crbug.com/990136.
-TEST_F(ChromeAuthenticatorRequestDelegateTest,
-       DoesBlockRequestOnFailure__NullAuthenticator) {
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
-  EXPECT_TRUE(delegate.DoesBlockRequestOnFailure(
-      /*authenticator=*/nullptr,
-      ChromeAuthenticatorRequestDelegate::InterestingFailureReason::
-          kUserConsentDenied));
-}
-
 #if defined(OS_MACOSX)
 API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(
@@ -203,30 +192,5 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
                                    cb.callback());
   cb.WaitForCallback();
   EXPECT_EQ(cb.value(), true);
-}
-
-// Ensures that DoesBlockOnRequestFailure() returns false if |authenticator|
-// is the Windows native WebAuthn API because Chrome's request dialog UI
-// should not show an error sheet after the user cancels out of the native
-// Windows UI.
-TEST_F(ChromeAuthenticatorRequestDelegateTest, DoesBlockRequestOnFailure) {
-  ::device::ScopedFakeWinWebAuthnApi win_webauthn_api;
-  ::device::WinWebAuthnApiAuthenticator win_authenticator(
-      /*current_window=*/nullptr);
-  ::device::FidoDeviceAuthenticator device_authenticator(/*device=*/nullptr);
-
-  for (const bool use_win_api : {false, true}) {
-    SCOPED_TRACE(::testing::Message() << "use_win_api=" << use_win_api);
-
-    ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
-    EXPECT_EQ(delegate.DoesBlockRequestOnFailure(
-                  use_win_api ? static_cast<::device::FidoAuthenticator*>(
-                                    &win_authenticator)
-                              : static_cast<::device::FidoAuthenticator*>(
-                                    &device_authenticator),
-                  ChromeAuthenticatorRequestDelegate::InterestingFailureReason::
-                      kUserConsentDenied),
-              !use_win_api);
-  }
 }
 #endif  // defined(OS_WIN)

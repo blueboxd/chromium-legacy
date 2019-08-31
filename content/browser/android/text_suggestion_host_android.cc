@@ -63,7 +63,7 @@ TextSuggestionHostAndroid::~TextSuggestionHostAndroid() {
 void TextSuggestionHostAndroid::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {
-  text_suggestion_backend_ = nullptr;
+  text_suggestion_backend_.reset();
   if (old_rwhva)
     old_rwhva->set_text_suggestion_host(nullptr);
   if (new_rwhva)
@@ -75,8 +75,8 @@ void TextSuggestionHostAndroid::ApplySpellCheckSuggestion(
     JNIEnv* env,
     const JavaParamRef<jobject>&,
     const base::android::JavaParamRef<jstring>& replacement) {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
+  const mojo::Remote<blink::mojom::TextSuggestionBackend>&
+      text_suggestion_backend = GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
   text_suggestion_backend->ApplySpellCheckSuggestion(
@@ -88,8 +88,8 @@ void TextSuggestionHostAndroid::ApplyTextSuggestion(
     const JavaParamRef<jobject>&,
     int marker_tag,
     int suggestion_index) {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
+  const mojo::Remote<blink::mojom::TextSuggestionBackend>&
+      text_suggestion_backend = GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
   text_suggestion_backend->ApplyTextSuggestion(marker_tag, suggestion_index);
@@ -98,8 +98,8 @@ void TextSuggestionHostAndroid::ApplyTextSuggestion(
 void TextSuggestionHostAndroid::DeleteActiveSuggestionRange(
     JNIEnv*,
     const JavaParamRef<jobject>&) {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
+  const mojo::Remote<blink::mojom::TextSuggestionBackend>&
+      text_suggestion_backend = GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
   text_suggestion_backend->DeleteActiveSuggestionRange();
@@ -109,8 +109,8 @@ void TextSuggestionHostAndroid::OnNewWordAddedToDictionary(
     JNIEnv* env,
     const JavaParamRef<jobject>&,
     const base::android::JavaParamRef<jstring>& word) {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
+  const mojo::Remote<blink::mojom::TextSuggestionBackend>&
+      text_suggestion_backend = GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
   text_suggestion_backend->OnNewWordAddedToDictionary(
@@ -120,8 +120,8 @@ void TextSuggestionHostAndroid::OnNewWordAddedToDictionary(
 void TextSuggestionHostAndroid::OnSuggestionMenuClosed(
     JNIEnv*,
     const JavaParamRef<jobject>&) {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
+  const mojo::Remote<blink::mojom::TextSuggestionBackend>&
+      text_suggestion_backend = GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
   text_suggestion_backend->OnSuggestionMenuClosed();
@@ -254,20 +254,20 @@ RenderFrameHost* TextSuggestionHostAndroid::GetFocusedFrame() {
   return nullptr;
 }
 
-const blink::mojom::TextSuggestionBackendPtr&
+const mojo::Remote<blink::mojom::TextSuggestionBackend>&
 TextSuggestionHostAndroid::GetTextSuggestionBackend() {
   if (!text_suggestion_backend_) {
     if (RenderFrameHost* rfh = GetFocusedFrame()) {
       rfh->GetRemoteInterfaces()->GetInterface(
-          mojo::MakeRequest(&text_suggestion_backend_));
+          text_suggestion_backend_.BindNewPipeAndPassReceiver());
     }
   }
   return text_suggestion_backend_;
 }
 
 void TextSuggestionHostAndroid::OnSuggestionMenuTimeout() {
-  const blink::mojom::TextSuggestionBackendPtr& text_suggestion_backend =
-      GetTextSuggestionBackend();
+  const mojo::Remote<blink::mojom::TextSuggestionBackend>&
+      text_suggestion_backend = GetTextSuggestionBackend();
   if (!text_suggestion_backend)
     return;
   text_suggestion_backend->SuggestionMenuTimeoutCallback(

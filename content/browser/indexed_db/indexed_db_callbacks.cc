@@ -40,7 +40,6 @@
 
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBKey;
-using blink::mojom::IDBCallbacksAssociatedPtrInfo;
 using std::swap;
 using storage::ShareableFileReference;
 
@@ -214,7 +213,7 @@ bool IndexedDBCallbacks::CreateAllBlobs(
 IndexedDBCallbacks::IndexedDBCallbacks(
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
     const url::Origin& origin,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks> pending_callbacks,
     scoped_refptr<base::SequencedTaskRunner> idb_runner)
     : data_loss_(blink::mojom::IDBDataLoss::None),
       dispatcher_host_(std::move(dispatcher_host)),
@@ -222,12 +221,12 @@ IndexedDBCallbacks::IndexedDBCallbacks(
       idb_runner_(std::move(idb_runner)) {
   DCHECK(idb_runner_->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (callbacks_info.is_valid()) {
-    callbacks_.Bind(std::move(callbacks_info));
+  if (pending_callbacks.is_valid()) {
+    callbacks_.Bind(std::move(pending_callbacks));
     // |callbacks_| is owned by |this|, so if |this| is destroyed, then
     // |callbacks_| will also be destroyed.  While |callbacks_| is otherwise
     // alive, |this| will always be valid.
-    callbacks_.set_connection_error_handler(base::BindOnce(
+    callbacks_.set_disconnect_handler(base::BindOnce(
         &IndexedDBCallbacks::OnConnectionError, base::Unretained(this)));
   }
 }

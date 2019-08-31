@@ -4,17 +4,17 @@
 
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
 #include "ui/gfx/animation/tween.h"
 
-TabAnimationState TabAnimationState::ForIdealTabState(TabOpenness open,
-                                                      TabPinnedness pinned,
-                                                      TabActiveness active,
+TabAnimationState TabAnimationState::ForIdealTabState(TabOpen open,
+                                                      TabPinned pinned,
+                                                      TabActive active,
                                                       int tab_index_offset) {
-  return TabAnimationState(open == TabOpenness::kOpen ? 1 : 0,
-                           pinned == TabPinnedness::kPinned ? 1 : 0,
-                           active == TabActiveness::kActive ? 1 : 0,
-                           tab_index_offset);
+  return TabAnimationState(
+      open == TabOpen::kOpen ? 1 : 0, pinned == TabPinned::kPinned ? 1 : 0,
+      active == TabActive::kActive ? 1 : 0, tab_index_offset);
 }
 
 TabAnimationState TabAnimationState::Interpolate(float value,
@@ -30,21 +30,19 @@ TabAnimationState TabAnimationState::Interpolate(float value,
                                     target.normalized_leading_edge_x_));
 }
 
-TabAnimationState TabAnimationState::WithOpenness(TabOpenness open) const {
-  return TabAnimationState(open == TabOpenness::kOpen ? 1 : 0, pinnedness_,
+TabAnimationState TabAnimationState::WithOpen(TabOpen open) const {
+  return TabAnimationState(open == TabOpen::kOpen ? 1 : 0, pinnedness_,
                            activeness_, normalized_leading_edge_x_);
 }
 
-TabAnimationState TabAnimationState::WithPinnedness(
-    TabPinnedness pinned) const {
-  return TabAnimationState(openness_, pinned == TabPinnedness::kPinned ? 1 : 0,
+TabAnimationState TabAnimationState::WithPinned(TabPinned pinned) const {
+  return TabAnimationState(openness_, pinned == TabPinned::kPinned ? 1 : 0,
                            activeness_, normalized_leading_edge_x_);
 }
 
-TabAnimationState TabAnimationState::WithActiveness(
-    TabActiveness active) const {
+TabAnimationState TabAnimationState::WithActive(TabActive active) const {
   return TabAnimationState(openness_, pinnedness_,
-                           active == TabActiveness::kActive ? 1 : 0,
+                           active == TabActive::kActive ? 1 : 0,
                            normalized_leading_edge_x_);
 }
 

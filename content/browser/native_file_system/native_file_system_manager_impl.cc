@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
@@ -438,6 +439,9 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     ChooseEntriesCallback callback,
     std::vector<base::FilePath> entries,
     SensitiveDirectoryResult result) {
+  base::UmaHistogramEnumeration(
+      "NativeFileSystemAPI.SensitiveDirectoryAccessResult", result);
+
   if (result == SensitiveDirectoryResult::kAbort) {
     std::move(callback).Run(
         native_file_system_error::FromStatus(
@@ -496,6 +500,9 @@ void NativeFileSystemManagerImpl::DidChooseDirectory(
     const base::FilePath& path,
     ChooseEntriesCallback callback,
     NativeFileSystemPermissionContext::PermissionStatus permission) {
+  base::UmaHistogramEnumeration(
+      "NativeFileSystemAPI.ConfirmReadDirectoryResult", permission);
+
   std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
   if (permission != PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(

@@ -10,8 +10,10 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -43,6 +45,7 @@ class TabSelectionEditorMediator
     private final ResetHandler mResetHandler;
     private final PropertyModel mModel;
     private final SelectionDelegate<Integer> mSelectionDelegate;
+    private final TabModelSelectorTabModelObserver mTabModelObserver;
 
     private final View.OnClickListener mNavigationClickListener = new View.OnClickListener() {
         @Override
@@ -90,6 +93,17 @@ class TabSelectionEditorMediator
                 TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER, mNavigationClickListener);
         mModel.set(TabSelectionEditorProperties.TOOLBAR_GROUP_BUTTON_LISTENER,
                 mGroupButtonOnClickListener);
+
+        mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
+            @Override
+            public void didAddTab(Tab tab, int type) {
+                // When tab is added due to multi-window close or moving between multiple windows,
+                // force hiding the selection editor.
+                if (type == TabLaunchType.FROM_RESTORE || type == TabLaunchType.FROM_REPARENTING) {
+                    hide();
+                }
+            }
+        };
     }
 
     /**
@@ -130,5 +144,12 @@ class TabSelectionEditorMediator
         hide();
         RecordUserAction.record("TabMultiSelect.Cancelled");
         return true;
+    }
+
+    /**
+     * Destroy any members that needs clean up.
+     */
+    public void destroy() {
+        mTabModelObserver.destroy();
     }
 }

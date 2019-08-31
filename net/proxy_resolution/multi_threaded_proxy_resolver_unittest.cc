@@ -737,7 +737,7 @@ TEST_F(MultiThreadedProxyResolverTest, CancelCreate) {
     std::unique_ptr<ProxyResolver> resolver;
     EXPECT_EQ(ERR_IO_PENDING, resolver_factory.CreateProxyResolver(
                                   PacFileData::FromUTF8("pac script bytes"),
-                                  &resolver, base::Bind(&Fail), &request));
+                                  &resolver, base::BindOnce(&Fail), &request));
     EXPECT_TRUE(request);
     request.reset();
   }
@@ -782,7 +782,7 @@ TEST_F(MultiThreadedProxyResolverTest, DestroyFactoryWithRequestsInProgress) {
         kNumThreads, std::make_unique<BlockableProxyResolverFactory>());
     EXPECT_EQ(ERR_IO_PENDING, resolver_factory.CreateProxyResolver(
                                   PacFileData::FromUTF8("pac script bytes"),
-                                  &resolver, base::Bind(&Fail), &request));
+                                  &resolver, base::BindOnce(&Fail), &request));
     EXPECT_TRUE(request);
   }
   // The factory destructor will block until the worker thread stops, but it may

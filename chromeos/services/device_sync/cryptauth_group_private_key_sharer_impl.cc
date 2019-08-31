@@ -320,7 +320,7 @@ void CryptAuthGroupPrivateKeySharerImpl::OnShareGroupPrivateKeyFailure(
 }
 
 void CryptAuthGroupPrivateKeySharerImpl::FinishAttempt(
-    const CryptAuthDeviceSyncResult::ResultCode& result_code) {
+    CryptAuthDeviceSyncResult::ResultCode result_code) {
   encryptor_.reset();
   cryptauth_client_.reset();
 

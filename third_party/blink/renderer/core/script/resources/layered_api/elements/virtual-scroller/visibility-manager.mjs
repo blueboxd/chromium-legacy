@@ -137,6 +137,7 @@ export class VisibilityManager {
   #intersectionObserver;
 
   #revealed = new Set();
+  #observed = new Set();
 
   constructor(container) {
     this.#elements = container.children;
@@ -185,24 +186,55 @@ export class VisibilityManager {
         const newBounds = this.#findElementBounds(desiredLow, desiredHigh);
         const newRevealed = newBounds.elementSet();
 
-        // TODO(fergal): We need to observe 1 element off the end of the
-        // list, to cope with e.g. the scrolling region suddenly growing.
+        // This should include all of the elements to be revealed and
+        // also 1 element above and below those (if such elements
+        // exist).
+        const newObserved = new Set();
+        if (newRevealed.size !== 0) {
+          newObserved.add(...newRevealed);
+          const p = newBounds.low.previousElementSibling;
+          if (p) {
+            newObserved.add(p);
+          }
+          const n = newBounds.high.nextElementSibling;
+          if (n) {
+            newObserved.add(n);
+          }
+        }
 
-        // Lock and unlock the minimal set of elements to get us to the
-        // new state.
-        const toHide = sets.difference(this.#revealed, newRevealed);
-        toHide.forEach(e => this.#hide(e));
-        const toReveal = sets.difference(newRevealed, this.#revealed);
-        toReveal.forEach(e => this.#reveal(e));
-
-        // Now we have revealed what we hope will fill the screen. It
+        // Having revealed what we hope will fill the screen. It
         // could be incorrect. Rather than measuring now and correcting it
         // which would involve an unknown number of forced layouts, we
         // come back next frame and try to make it better. We know we can
         // stop when we didn't hide or reveal any elements.
-        if (toHide.size > 0 || toReveal.size > 0) {
+        if (this.#syncRevealed(newRevealed) +
+            this.#syncObserved(newObserved) > 0) {
           this.scheduleSync();
         }
+      }
+
+  /**
+   * Calls hide and reveal on child elements to take us to the new state.
+   *
+   * Returns the number of elements impacted.
+   */
+  #syncRevealed =
+      newRevealed => {
+        return sets.applyToDiffs(
+            this.#revealed, newRevealed, e => this.#hide(e),
+            e => this.#reveal(e));
+      }
+
+  /**
+   * Calls observe and unobserve on child elements to take us to the new state.
+   *
+   * Returns the number of elements impacted.
+   */
+  #syncObserved =
+      newObserved => {
+        return sets.applyToDiffs(
+            this.#observed, newObserved, e => this.#unobserve(e),
+            e => this.#observe(e));
       }
 
   /**
@@ -254,24 +286,32 @@ export class VisibilityManager {
       }
 
   /**
-   * Reveals |element| so that it can be rendered. This includes
-   * unlocking and adding to various observers.
+   * Unlocks |element| so that it can be rendered.
    *
    * @param {!Element} element The element to reveal.
    */
   #reveal =
       element => {
         this.#revealed.add(element);
-        this.#intersectionObserver.observe(element);
         this.#unlock(element);
+      }
+
+  /**
+   * Observes |element| so that it coming on-/off-screen causes a sync.
+   *
+   * @param {!Element} element The element to observe.
+   */
+  #observe =
+      element => {
+        this.#intersectionObserver.observe(element);
+        this.#observed.add(element);
       }
 
   #logLockingError =
       (operation, reason, element) => {
         // TODO: Figure out the LAPIs error/warning logging story.
         console.error(  // eslint-disable-line no-console
-            'Rejected: ', operation, element,
-            reason);
+            'Rejected: ', operation, element, reason);
       }
 
   /**
@@ -290,15 +330,13 @@ export class VisibilityManager {
       }
 
   /**
-   * Hides |element| so that it cannot be rendered. This includes
-   * locking and removing from various observers.
+   * Locks |element| so that it cannot be rendered.
    *
-   * @param {!Element} element The element to hide.
+   * @param {!Element} element The element to lock.
    */
   #hide =
       element => {
         this.#revealed.delete(element);
-        this.#intersectionObserver.unobserve(element);
         element.displayLock
             .acquire({
               timeout: Infinity,
@@ -312,6 +350,18 @@ export class VisibilityManager {
                 this.#logLockingError('Acquire', reason, element);
               }
             });
+      }
+
+  /**
+   * Unobserves |element| so that it coming on-/off-screen does not
+   * cause a sync.
+   *
+   * @param {!Element} element The element to unobserve.
+   */
+  #unobserve =
+      element => {
+        this.#intersectionObserver.unobserve(element);
+        this.#observed.delete(element);
       }
 
   /**
@@ -349,7 +399,7 @@ export class VisibilityManager {
           this.#unlock(element);
         }
         this.#revealed.delete(element);
-        this.#intersectionObserver.unobserve(element);
+        this.#unobserve(element);
         this.#sizeManager.remove(element);
       }
 

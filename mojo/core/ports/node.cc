@@ -962,7 +962,8 @@ int Node::OnUserMessageReadAck(std::unique_ptr<UserMessageReadAckEvent> event) {
   if (ack_request_event)
     delegate_->ForwardEvent(peer_node_name, std::move(ack_request_event));
 
-  delegate_->PortStatusChanged(port_ref);
+  if (port_ref.is_valid())
+    delegate_->PortStatusChanged(port_ref);
 
   return OK;
 }

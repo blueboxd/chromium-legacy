@@ -39,6 +39,10 @@ namespace chromeos {
 
 enum class ConnectCallbackMode { ON_STARTED, ON_COMPLETED };
 
+class NetworkStateHandler;
+class NetworkConfigurationHandler;
+class ManagedNetworkConfigurationHandler;
+
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
  public:
   // Constants for |error_name| from |error_callback| for Connect.
@@ -172,6 +176,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
                     NetworkConfigurationHandler* network_configuration_handler,
                     ManagedNetworkConfigurationHandler*
                         managed_network_configuration_handler) = 0;
+
+  // Construct and initialize an instance for testing.
+  static std::unique_ptr<NetworkConnectionHandler> InitializeForTesting(
+      NetworkStateHandler* network_state_handler,
+      NetworkConfigurationHandler* network_configuration_handler,
+      ManagedNetworkConfigurationHandler*
+          managed_network_configuration_handler);
 
  protected:
   NetworkConnectionHandler();

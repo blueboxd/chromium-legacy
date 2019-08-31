@@ -532,7 +532,7 @@ TEST_F(TreeSynchronizerTest, SyncMaskLayer) {
   // First child gets a mask layer.
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask_layer = PictureLayer::Create(&client);
-  layer_tree_root->children()[0]->SetMaskLayer(mask_layer.get());
+  layer_tree_root->children()[0]->SetMaskLayer(mask_layer);
 
   host_->SetRootLayer(layer_tree_root);
   host_->BuildPropertyTreesForTesting();

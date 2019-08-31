@@ -34,8 +34,10 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
+import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 /**
  * A custom RecyclerView implementation for the tab grid, to handle show/hide logic in class.
@@ -429,11 +431,13 @@ class TabListRecyclerView extends RecyclerView {
      */
     @Nullable
     Rect getRectOfCurrentThumbnail(int selectedTabIndex, int selectedTabId) {
-        TabGridViewHolder holder =
-                (TabGridViewHolder) findViewHolderForAdapterPosition(selectedTabIndex);
+        SimpleRecyclerViewAdapter.ViewHolder holder =
+                (SimpleRecyclerViewAdapter.ViewHolder) findViewHolderForAdapterPosition(
+                        selectedTabIndex);
         if (holder == null) return null;
-        assert holder.getTabId() == selectedTabId;
-        return getRectOfComponent(holder.thumbnail);
+        assert holder.model.get(TabProperties.TAB_ID) == selectedTabId;
+        ViewLookupCachingFrameLayout root = (ViewLookupCachingFrameLayout) holder.itemView;
+        return getRectOfComponent(root.fastFindViewById(R.id.tab_thumbnail));
     }
 
     /**
@@ -443,8 +447,7 @@ class TabListRecyclerView extends RecyclerView {
      */
     @Nullable
     Rect getRectOfCurrentTabGridCard(int currentTabIndex) {
-        TabGridViewHolder holder =
-                (TabGridViewHolder) findViewHolderForAdapterPosition(currentTabIndex);
+        ViewHolder holder = findViewHolderForAdapterPosition(currentTabIndex);
         if (holder == null) return null;
         return getRectOfComponent(holder.itemView);
     }

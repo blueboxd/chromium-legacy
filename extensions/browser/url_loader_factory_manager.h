@@ -69,6 +69,10 @@ class URLLoaderFactoryManager {
           header_client,
       const url::Origin& initiator_origin);
 
+  static void AddExtensionToAllowlistForTesting(const Extension& extension);
+  static void RemoveExtensionFromAllowlistForTesting(
+      const Extension& extension);
+
  private:
   // If |extension|'s manifest declares that it may inject JavaScript content
   // script into the |navigating_frame| / |navigation_target|, then

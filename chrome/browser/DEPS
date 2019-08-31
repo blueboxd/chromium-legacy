@@ -132,6 +132,7 @@ include_rules = [
   "+components/mirroring/browser",
   "+components/mirroring/mojom",
   "+components/mirroring/service",
+  "+components/module_installer/android",
   "+components/nacl/broker",
   "+components/nacl/browser",
   "+components/nacl/common",

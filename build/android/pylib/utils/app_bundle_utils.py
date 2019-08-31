@@ -72,6 +72,10 @@ def GenerateBundleApks(bundle_path,
       or "system_compressed".
   """
   device_spec = None
+  if minimal_sdk_version:
+    assert minimal or system_image_locales, (
+        'minimal_sdk_version is only used when minimal or system_image_locales '
+        'is specified')
   if minimal:
     # Measure with one language split installed. Use Hindi because it is
     # popular. resource_size.py looks for splits/base-hi.apk.

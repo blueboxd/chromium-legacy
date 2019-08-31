@@ -1206,7 +1206,7 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
   CertVerifyResult result;
   std::unique_ptr<CertVerifier::Request> request;
   int error =
-      verifier.Verify(params, &result, base::BindRepeating(&NotCalledCallback),
+      verifier.Verify(params, &result, base::BindOnce(&NotCalledCallback),
                       &request, NetLogWithSource());
   ASSERT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request);
@@ -1264,7 +1264,7 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   CertVerifyResult result;
   std::unique_ptr<CertVerifier::Request> request;
   int error =
-      verifier->Verify(params, &result, base::BindRepeating(&NotCalledCallback),
+      verifier->Verify(params, &result, base::BindOnce(&NotCalledCallback),
                        &request, NetLogWithSource());
   ASSERT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request);

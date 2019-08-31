@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
@@ -58,14 +59,14 @@ class TabStripLayoutHelper {
   void InsertTabAtNoAnimation(int model_index,
                               Tab* tab,
                               base::OnceClosure tab_removed_callback,
-                              TabAnimationState::TabPinnedness pinned);
+                              TabPinned pinned);
 
   // Inserts a new tab at |index|, with animation. |tab_removed_callback| will
   // be invoked if the tab is removed at the end of a remove animation.
   void InsertTabAt(int model_index,
                    Tab* tab,
                    base::OnceClosure tab_removed_callback,
-                   TabAnimationState::TabPinnedness pinned);
+                   TabPinned pinned);
 
   // Marks the tab at |model_index| as closed without animating it. Use when
   // the tab has been removed from the model but the old animation style owns
@@ -96,9 +97,8 @@ class TabStripLayoutHelper {
                int prev_index,
                int new_index);
 
-  // Sets the tab at |index|'s pinnedness to |pinnedness|.
-  void SetTabPinnedness(int model_index,
-                        TabAnimationState::TabPinnedness pinnedness);
+  // Sets the tab at |index|'s pinned state to |pinned|.
+  void SetTabPinned(int model_index, TabPinned pinned);
 
   // Inserts a new group header for |group|. |header_removed_callback| will be
   // invoked if the group is removed at the end of a remove animation.

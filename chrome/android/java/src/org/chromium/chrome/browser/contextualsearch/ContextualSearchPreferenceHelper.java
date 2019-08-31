@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -30,7 +31,8 @@ class ContextualSearchPreferenceHelper {
 
     /** Constructs the singleton Unified Consent Helper instance. */
     private ContextualSearchPreferenceHelper() {
-        mNativePointer = nativeInit();
+        mNativePointer = ContextualSearchPreferenceHelperJni.get().init(
+                ContextualSearchPreferenceHelper.this);
         onPreferenceChangedInternal();
         new PrefChangeRegistrar().addObserver(
                 Pref.CONTEXTUAL_SEARCH_ENABLED, new PrefChangeRegistrar.PrefObserver() {
@@ -43,11 +45,13 @@ class ContextualSearchPreferenceHelper {
 
     /**
      * This method should be called to clean up storage when an instance of this class is
-     * no longer in use.  The nativeDestroy will call the destructor on the native instance.
+     * no longer in use.  The ContextualSearchPreferenceHelperJni.get().destroy will call the
+     * destructor on the native instance.
      */
     void destroy() {
         assert mNativePointer != 0;
-        nativeDestroy(mNativePointer);
+        ContextualSearchPreferenceHelperJni.get().destroy(
+                mNativePointer, ContextualSearchPreferenceHelper.this);
         mNativePointer = 0;
     }
 
@@ -70,7 +74,9 @@ class ContextualSearchPreferenceHelper {
 
     /** Updates our preference metadata storage based on what our native member knows. */
     void onPreferenceChangedInternal() {
-        updatePreviousPreferenceStorage(nativeGetPreferenceMetadata(mNativePointer));
+        updatePreviousPreferenceStorage(
+                ContextualSearchPreferenceHelperJni.get().getPreferenceMetadata(
+                        mNativePointer, ContextualSearchPreferenceHelper.this));
     }
 
     /**
@@ -126,7 +132,12 @@ class ContextualSearchPreferenceHelper {
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PRE_UNIFIED_CONSENT_PREF, metadata);
     }
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeContextualSearchPreferenceHelper);
-    private native int nativeGetPreferenceMetadata(long nativeContextualSearchPreferenceHelper);
+    @NativeMethods
+    interface Natives {
+        long init(ContextualSearchPreferenceHelper caller);
+        void destroy(long nativeContextualSearchPreferenceHelper,
+                ContextualSearchPreferenceHelper caller);
+        int getPreferenceMetadata(long nativeContextualSearchPreferenceHelper,
+                ContextualSearchPreferenceHelper caller);
+    }
 }

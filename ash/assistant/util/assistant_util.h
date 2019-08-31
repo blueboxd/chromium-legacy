@@ -35,6 +35,12 @@ bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice);
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point);
 
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool IsGoogleDevice();
+
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+void OverrideIsGoogleDeviceForTesting();
+
 }  // namespace util
 }  // namespace assistant
 }  // namespace ash

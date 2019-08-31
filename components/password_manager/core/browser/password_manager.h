@@ -23,7 +23,6 @@
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 
 class PrefRegistrySimple;
@@ -42,7 +41,10 @@ namespace password_manager {
 class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
-class PasswordFormManager;
+class PasswordFormManagerForUI;
+class PasswordFormManagerInterface;
+class PasswordFormMetricsRecorder;
+class PasswordManagerMetricsRecorder;
 class NewPasswordFormManager;
 
 // Per-tab password manager. Handles creation and management of UI elements,
@@ -155,17 +157,6 @@ class PasswordManager : public FormSubmissionObserver {
   PasswordManagerClient* client() { return client_; }
 
 #if defined(UNIT_TEST)
-  // TODO(crbug.com/639786): Replace using this by quering the factory for
-  // mocked PasswordFormManagers.
-  const std::vector<std::unique_ptr<PasswordFormManager>>&
-  pending_login_managers() const {
-    return pending_login_managers_;
-  }
-
-  const PasswordFormManager* provisional_save_manager() const {
-    return provisional_save_manager_.get();
-  }
-
   const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers()
       const {
     return form_managers_;
@@ -232,12 +223,6 @@ class PasswordManager : public FormSubmissionObserver {
       PasswordManagerTest,
       ShouldBlockPasswordForSameOriginButDifferentSchemeTest);
 
-  // Clones |matched_manager| and keeps it as |provisional_save_manager_|.
-  // |form| is saved provisionally to |provisional_save_manager_|.
-  void ProvisionallySaveManager(const autofill::PasswordForm& form,
-                                PasswordFormManager* matched_manager,
-                                BrowserSavePasswordProgressLogger* logger);
-
   // Returns true if there is a form manager for a submitted form and this form
   // manager contains the submitted credentials suitable for automatic save
   // prompt, not for manual fallback only.
@@ -296,11 +281,6 @@ class PasswordManager : public FormSubmissionObserver {
                                                 PasswordManagerDriver* driver,
                                                 bool is_manual_fallback);
 
-  // Returns the best match in |pending_login_managers_| for |form|. May return
-  // nullptr if no match exists.
-  PasswordFormManager* GetMatchingPendingManager(
-      const autofill::PasswordForm& form);
-
   // Returns the form manager that corresponds to the submitted form. It might
   // be nullptr if there is no submitted form.
   // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
@@ -339,30 +319,6 @@ class PasswordManager : public FormSubmissionObserver {
   // Log a frame (main frame, iframe) of a submitted password form.
   void ReportSubmittedFormFrameMetric(const PasswordManagerDriver* driver,
                                       const autofill::PasswordForm& form);
-
-  // Note about how a PasswordFormManager can transition from
-  // pending_login_managers_ to provisional_save_manager_ and the infobar.
-  //
-  // 1. form "seen"
-  //       |                                             new
-  //       |                                               ___ Infobar
-  // pending_login -- form submit --> provisional_save ___/
-  //             ^                            |           \___ (update DB)
-  //             |                           fail
-  //             |-----------<------<---------|          !new
-  //
-  // When a form is "seen" on a page, a PasswordFormManager is created
-  // and stored in this collection until user navigates away from page.
-
-  std::vector<std::unique_ptr<PasswordFormManager>> pending_login_managers_;
-
-  // When the user submits a password/credential, this contains the
-  // PasswordFormManager for the form in question until we deem the login
-  // attempt to have succeeded (as in valid credentials). If it fails, we
-  // send the PasswordFormManager back to the pending_login_managers_ set.
-  // Scoped in case PasswordManager gets deleted (e.g tab closes) between the
-  // time a user submits a login form and gets to the next page.
-  std::unique_ptr<PasswordFormManager> provisional_save_manager_;
 
   // NewPasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.

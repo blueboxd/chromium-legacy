@@ -101,6 +101,7 @@ void ScrollManager::ClearGestureScrollState() {
   last_gesture_scroll_over_embedded_content_view_ = false;
   scroll_gesture_handling_node_ = nullptr;
   previous_gesture_scrolled_node_ = nullptr;
+  last_scroll_delta_for_scroll_gesture_ = FloatSize();
   delta_consumed_for_scroll_sequence_ = false;
   did_scroll_x_for_scroll_gesture_ = false;
   did_scroll_y_for_scroll_gesture_ = false;
@@ -630,6 +631,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   delta_consumed_for_scroll_sequence_ =
       scroll_state->DeltaConsumedForScrollSequence();
 
+  last_scroll_delta_for_scroll_gesture_ = delta;
+
   bool did_scroll_x = scroll_state->deltaX() != delta.Width();
   bool did_scroll_y = scroll_state->deltaY() != delta.Height();
 
@@ -706,7 +709,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     ScrollState* scroll_state =
         ScrollState::Create(std::move(scroll_state_data));
     CustomizedScroll(*scroll_state);
-    snap_at_gesture_scroll_end = SnapAtGestureScrollEnd();
+
+    snap_at_gesture_scroll_end = SnapAtGestureScrollEnd(gesture_event);
     NotifyScrollPhaseEndForCustomizedScroll();
 
     if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled() &&
@@ -737,7 +741,11 @@ LayoutBox* ScrollManager::LayoutBoxForSnapping() const {
   return previous_gesture_scrolled_node_->GetLayoutBox();
 }
 
-bool ScrollManager::SnapAtGestureScrollEnd() {
+ScrollOffset GetScrollDirection(FloatSize delta) {
+  return delta.ShrunkTo(FloatSize(1, 1)).ExpandedTo(FloatSize(-1, -1));
+}
+
+bool ScrollManager::SnapAtGestureScrollEnd(const WebGestureEvent& end_event) {
   if (!previous_gesture_scrolled_node_ ||
       (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
     return false;
@@ -746,6 +754,30 @@ bool ScrollManager::SnapAtGestureScrollEnd() {
   LayoutBox* layout_box = LayoutBoxForSnapping();
   if (!snap_coordinator || !layout_box)
     return false;
+
+  bool is_mouse_wheel =
+      end_event.SourceDevice() == WebGestureDevice::kTouchpad &&
+      end_event.data.scroll_end.delta_units !=
+          ScrollGranularity::kScrollByPrecisePixel;
+
+  // Treat mouse wheel scrolls as direction only scroll with its last scroll
+  // delta amout. This means each wheel tick will prefer the next snap position
+  // in the given direction. This leads to a much better UX for wheels.
+  //
+  // Precise wheel and trackpads continue to be treated similar as end position
+  // scrolling.
+  if (is_mouse_wheel && !last_scroll_delta_for_scroll_gesture_.IsZero()) {
+    // TODO(majidvp): Currently DirectionStrategy uses current offset + delta as
+    // the intended offset and chooses snap offset closest to that intended
+    // offset. In this case, this is not correct because we are already at the
+    // intended position. DirectionStategy should be updated to use current
+    // offset as intended position. This requires changing how we snap in
+    // |ScrollManager::LogicalScroll()|. For now use a unit scroll offset to
+    // limit the miscalculation to 1px.
+    ScrollOffset scroll_direction =
+        GetScrollDirection(last_scroll_delta_for_scroll_gesture_);
+    return snap_coordinator->SnapForDirection(*layout_box, scroll_direction);
+  }
 
   return snap_coordinator->SnapAtCurrentPosition(
       *layout_box, did_scroll_x_for_scroll_gesture_,

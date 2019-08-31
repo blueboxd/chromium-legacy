@@ -151,7 +151,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
-    child_->SetMaskLayer(mask.get());
+    child_->SetMaskLayer(mask);
 
     scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 12));
@@ -222,7 +222,7 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
     scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);
     mask->SetBounds(gfx::Size(30, 40));
     mask->SetIsDrawable(true);
-    child_->SetMaskLayer(mask.get());
+    child_->SetMaskLayer(mask);
 
     scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 11));

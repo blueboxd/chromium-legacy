@@ -1172,13 +1172,6 @@ if (enable_java_templates) {
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
         ]
-        if (defined(invoker.proguard_config_exclusions)) {
-          _rebased_proguard_config_exclusions =
-              rebase_path(invoker.proguard_config_exclusions, root_build_dir)
-          args += [
-            "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
-          ]
-        }
         if (defined(invoker.proguard_args)) {
           args += invoker.proguard_args
         }

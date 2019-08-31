@@ -151,7 +151,7 @@ class LayerTreeHostBlendingPixelTest
                                   PaintImage::GetNextContentId())
                        .TakePaintImage(),
                    SkMatrix::I(), false);
-    layer->SetMaskLayer(mask.get());
+    layer->SetMaskLayer(mask);
   }
 
   void SetupColorMatrix(scoped_refptr<Layer> layer) {

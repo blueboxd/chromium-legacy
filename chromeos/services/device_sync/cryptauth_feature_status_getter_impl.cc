@@ -276,7 +276,7 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesTimeout() {
 }
 
 void CryptAuthFeatureStatusGetterImpl::FinishAttempt(
-    const CryptAuthDeviceSyncResult::ResultCode& result_code) {
+    CryptAuthDeviceSyncResult::ResultCode result_code) {
   cryptauth_client_.reset();
   timer_->Stop();
 

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_external_popup_menu.h"
 #include "third_party/blink/public/web/web_popup_menu_info.h"
@@ -103,12 +102,12 @@ class ExternalPopupMenuTest : public testing::Test {
     WebView()->SetUseExternalPopupMenus(true);
   }
   void TearDown() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void RegisterMockedURLLoad(const std::string& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |helper_|.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath("popup"),
         WebString::FromUTF8(file_name), WebString::FromUTF8("text/html"));

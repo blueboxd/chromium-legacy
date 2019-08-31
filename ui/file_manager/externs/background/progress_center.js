@@ -22,13 +22,13 @@ class ProgressCenter {
 
   /**
    * Adds a panel UI to the notification center.
-   * @param {ProgressCenterPanel} panel Panel UI.
+   * @param {ProgressCenterPanelInterface} panel Panel UI.
    */
   addPanel(panel) {}
 
   /**
    * Removes a panel UI from the notification center.
-   * @param {ProgressCenterPanel} panel Panel UI.
+   * @param {ProgressCenterPanelInterface} panel Panel UI.
    */
   removePanel(panel) {}
 

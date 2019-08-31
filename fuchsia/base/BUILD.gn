@@ -69,6 +69,8 @@ source_set("test_support") {
     "frame_test_util.cc",
     "frame_test_util.h",
     "result_receiver.h",
+    "test_devtools_list_fetcher.cc",
+    "test_devtools_list_fetcher.h",
     "test_navigation_listener.cc",
     "test_navigation_listener.h",
   ]
@@ -76,6 +78,8 @@ source_set("test_support") {
     ":base",
     ":modular",
     "//base",
+    "//net",
+    "//net:test_support",
     "//third_party/fuchsia-sdk/sdk:modular",
     "//third_party/fuchsia-sdk/sdk:web",
     "//url",

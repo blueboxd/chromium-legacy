@@ -127,9 +127,11 @@ sign() {
 
   echo Signing "${name}"
   if [[ -n "${keychain}" ]]; then
-    codesign -vv -s "${id}" --keychain "${keychain}" "${name}"
+    codesign -vv --sign "${id}" --options runtime \
+        --keychain "${keychain}" "${name}"
   else
-    codesign -vv -s "${id}" "${name}"
+    codesign -vv --sign "${id}" --options runtime \
+        "${name}"
   fi
   codesign -v "${name}"
 }

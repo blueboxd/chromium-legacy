@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -302,7 +303,8 @@ public class DownloadManagerBridge {
 
             @Override
             protected void onPostExecute(Pair<Long, Boolean> result) {
-                nativeOnAddCompletedDownloadDone(callbackId, result.first, result.second);
+                DownloadManagerBridgeJni.get().onAddCompletedDownloadDone(
+                        callbackId, result.first, result.second);
             }
         };
         try {
@@ -310,7 +312,8 @@ public class DownloadManagerBridge {
         } catch (RejectedExecutionException e) {
             // Reaching thread limit, update will be reschduled for the next run.
             Log.e(TAG, "Thread limit reached, reschedule notification update later.");
-            nativeOnAddCompletedDownloadDone(callbackId, DownloadItem.INVALID_DOWNLOAD_ID, false);
+            DownloadManagerBridgeJni.get().onAddCompletedDownloadDone(
+                    callbackId, DownloadItem.INVALID_DOWNLOAD_ID, false);
         }
     }
 
@@ -454,6 +457,8 @@ public class DownloadManagerBridge {
         }
     }
 
-    private static native void nativeOnAddCompletedDownloadDone(
-            long callbackId, long downloadId, boolean canResolve);
+    @NativeMethods
+    interface Natives {
+        void onAddCompletedDownloadDone(long callbackId, long downloadId, boolean canResolve);
+    }
 }

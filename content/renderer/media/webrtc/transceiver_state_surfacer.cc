@@ -4,7 +4,7 @@
 
 #include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 
-#include "content/renderer/media/webrtc/webrtc_util.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
 
@@ -116,10 +116,10 @@ void TransceiverStateSurfacer::Initialize(
     transceiver_states_.push_back(RtpTransceiverState(
         main_task_runner_, signaling_task_runner_, webrtc_transceiver.get(),
         std::move(sender_state), std::move(receiver_state),
-        ToBaseOptional(webrtc_transceiver->mid()),
+        blink::ToBaseOptional(webrtc_transceiver->mid()),
         webrtc_transceiver->stopped(), webrtc_transceiver->direction(),
-        ToBaseOptional(webrtc_transceiver->current_direction()),
-        ToBaseOptional(webrtc_transceiver->fired_direction())));
+        blink::ToBaseOptional(webrtc_transceiver->current_direction()),
+        blink::ToBaseOptional(webrtc_transceiver->fired_direction())));
   }
   is_initialized_ = true;
 }

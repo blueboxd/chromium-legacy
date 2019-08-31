@@ -21,6 +21,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -28,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/session_manager/session_manager_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -178,6 +180,36 @@ class AccessibleInputField : public views::Textfield {
 
   DISALLOW_COPY_AND_ASSIGN(AccessibleInputField);
 };
+
+void RecordAction(ParentAccessView::UMAAction action) {
+  UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeAction,
+                            action);
+}
+
+void RecordUsage(ParentAccessRequestReason reason) {
+  switch (reason) {
+    case ParentAccessRequestReason::kUnlockTimeLimits: {
+      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
+                                ParentAccessView::UMAUsage::kTimeLimits);
+      return;
+    }
+    case ParentAccessRequestReason::kChangeTime: {
+      bool is_login = Shell::Get()->session_controller()->GetSessionState() ==
+                      session_manager::SessionState::LOGIN_PRIMARY;
+      UMA_HISTOGRAM_ENUMERATION(
+          ParentAccessView::kUMAParentAccessCodeUsage,
+          is_login ? ParentAccessView::UMAUsage::kTimeChangeLoginScreen
+                   : ParentAccessView::UMAUsage::kTimeChangeInSession);
+      return;
+    }
+    case ParentAccessRequestReason::kChangeTimezone: {
+      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
+                                ParentAccessView::UMAUsage::kTimezoneChange);
+      return;
+    }
+  }
+  NOTREACHED() << "Unknown ParentAccessRequestReason";
+}
 
 }  // namespace
 
@@ -456,6 +488,12 @@ ParentAccessView::Callbacks::Callbacks(const Callbacks& other) = default;
 
 ParentAccessView::Callbacks::~Callbacks() = default;
 
+// static
+constexpr char ParentAccessView::kUMAParentAccessCodeAction[];
+
+// static
+constexpr char ParentAccessView::kUMAParentAccessCodeUsage[];
+
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
                                    ParentAccessRequestReason reason,
@@ -627,6 +665,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   pin_keyboard_view_->SetVisible(IsTabletMode());
 
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+
+  RecordUsage(request_reason_);
 }
 
 ParentAccessView::~ParentAccessView() = default;
@@ -681,8 +721,10 @@ base::string16 ParentAccessView::GetAccessibleWindowTitle() const {
 void ParentAccessView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
+    RecordAction(ParentAccessView::UMAAction::kCanceledByUser);
     callbacks_.on_finished.Run(false);
   } else if (sender == help_button_) {
+    RecordAction(ParentAccessView::UMAAction::kGetHelp);
     Shell::Get()->login_screen_controller()->ShowParentAccessHelpApp();
   } else if (sender == submit_button_) {
     SubmitCode();
@@ -721,11 +763,13 @@ void ParentAccessView::SubmitCode() {
 
   if (result) {
     VLOG(1) << "Parent access code successfully validated";
+    RecordAction(ParentAccessView::UMAAction::kValidationSuccess);
     callbacks_.on_finished.Run(true);
     return;
   }
 
   VLOG(1) << "Invalid parent access code entered";
+  RecordAction(ParentAccessView::UMAAction::kValidationError);
   UpdateState(State::kError);
 }
 

@@ -39,6 +39,14 @@ GURL GetGoogleURL() {
 
 using BrowserNavigatorTestChromeOS = BrowserNavigatorTest;
 
+// This test verifies that the OS Settings page isn't opened in the incognito
+// window.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
+                       Disposition_OSSettings_UseNonIncognitoWindow) {
+  RunUseNonIncognitoWindowTest(GURL(chrome::kChromeUIOSSettingsURL),
+                               ui::PageTransition::PAGE_TRANSITION_TYPED);
+}
+
 // Verifies that the OS settings page opens in a standalone surface when
 // accessed via link or url.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {

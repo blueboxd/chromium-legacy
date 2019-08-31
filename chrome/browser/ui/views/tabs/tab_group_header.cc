@@ -27,6 +27,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
 TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
@@ -39,12 +40,12 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  title_chip_ = AddChildView(std::make_unique<views::View>());
+  title_chip_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  // Color and border are set in VisualsChanged().
 
-  title_ = AddChildView(std::make_unique<views::Label>());
-  title_->SetBorder(views::CreateEmptyBorder(
-      provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
-  // Color is set in VisualsChanged().
+  title_ = title_chip_->AddChildView(std::make_unique<views::Label>());
+  title_->SetCollapseWhenHidden(true);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetElideBehavior(gfx::FADE_TAIL);
@@ -78,15 +79,28 @@ int TabGroupHeader::CalculateWidth() const {
   // when the header is in the first slot and thus wouldn't overlap anything to
   // the left.
   const int overlap_margin = TabStyle::GetTabOverlap() * 2;
-  return title_->GetPreferredSize().width() + title_chip_outside_margin +
+  return title_chip_->GetPreferredSize().width() + title_chip_outside_margin +
          overlap_margin;
 }
 
 void TabGroupHeader::VisualsChanged() {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const TabGroupVisualData* data = controller_->GetVisualDataForGroup(group_);
-  title_->SetBackground(views::CreateRoundedRectBackground(
-      data->color(), provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
-  title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(data->color()));
-  title_->SetText(data->title());
+  if (data->title().empty()) {
+    title_->SetVisible(false);
+    constexpr gfx::Rect kEmptyTitleChipSize(12, 12);
+    title_chip_->SetBorder(
+        views::CreateEmptyBorder(kEmptyTitleChipSize.InsetsFrom(gfx::Rect())));
+  } else {
+    title_->SetVisible(true);
+    title_->SetEnabledColor(
+        color_utils::GetColorWithMaxContrast(data->color()));
+    title_->SetText(data->title());
+    title_chip_->SetBorder(views::CreateEmptyBorder(
+        provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
+  }
+  title_chip_->SetBackground(views::CreateRoundedRectBackground(
+      data->color(),
+      provider->GetCornerRadiusMetric(views::EMPHASIS_MAXIMUM,
+                                      title_chip_->GetPreferredSize())));
 }

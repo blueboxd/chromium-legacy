@@ -236,9 +236,6 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   void UnmarkAsComplete() { framebuffer_complete_state_count_id_ = 0; }
 
-  bool GetFlipY() const { return flip_y_; }
-  void SetFlipY(bool flip_y) { flip_y_ = flip_y; }
-
  private:
   friend class FramebufferManager;
   friend class base::RefCounted<Framebuffer>;
@@ -317,8 +314,6 @@ class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   GLsizei last_color_attachment_id_;
 
   GLenum read_buffer_;
-
-  bool flip_y_;
 
   DISALLOW_COPY_AND_ASSIGN(Framebuffer);
 };

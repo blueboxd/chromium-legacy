@@ -116,11 +116,13 @@ class ContextualSearchPolicy {
      * @return Whether a Tap gesture is currently supported as a trigger for the feature.
      */
     boolean isTapSupported() {
+        if (isTapDisabledDueToLongpress()) return false;
+
         return (!isUserUndecided()
                        || ContextualSearchFieldTrial.getSwitch(
                                ContextualSearchSwitch
                                        .IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED))
-                ? !isTapDisabledDueToLongpress()
+                ? true
                 : (getPromoTapsRemaining() != 0);
     }
 
@@ -150,7 +152,9 @@ class ContextualSearchPolicy {
             return false;
         }
 
-        if (isPrivacyAggressiveResolveEnabled()) return true;
+        if (isPrivacyAggressiveResolveEnabled()
+                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS)
+            return true;
 
         return (isPromoAvailable()
                        || (mContextualSearchPreferenceHelper != null

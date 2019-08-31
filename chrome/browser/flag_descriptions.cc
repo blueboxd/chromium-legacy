@@ -1350,6 +1350,11 @@ const char kOmniboxMaterialDesignWeatherIconsDescription[] =
     "Use material design weather icons in the omnibox when displaying weather "
     "answers.";
 
+const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
+const char kOmniboxOnFocusSuggestionsDescription[] =
+    "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
+    "before the user has typed any input";
+
 const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
 const char kOmniboxRichEntitySuggestionsDescription[] =

@@ -218,26 +218,6 @@ TEST_F(SharedWorkerHostTest, Normal) {
   EXPECT_FALSE(host);
 }
 
-TEST_F(SharedWorkerHostTest, DestructBeforeStarting) {
-  base::WeakPtr<SharedWorkerHost> host = CreateHost();
-
-  // Add a client.
-  MockSharedWorkerClient client;
-  mojo::PendingRemote<blink::mojom::SharedWorkerClient> remote_client;
-  client.Bind(remote_client.InitWithNewPipeAndPassReceiver());
-  MessagePortChannel local_port =
-      AddClient(host.get(), std::move(remote_client));
-  base::RunLoop().RunUntilIdle();
-
-  // Destroy the host before starting.
-  service_.DestroyHost(host.get());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(host);
-
-  // The client should be told startup failed.
-  EXPECT_TRUE(client.CheckReceivedOnScriptLoadFailed());
-}
-
 TEST_F(SharedWorkerHostTest, TerminateBeforeStarting) {
   base::WeakPtr<SharedWorkerHost> host = CreateHost();
 
@@ -249,15 +229,13 @@ TEST_F(SharedWorkerHostTest, TerminateBeforeStarting) {
       AddClient(host.get(), std::move(remote_client));
   base::RunLoop().RunUntilIdle();
 
-  // Request to terminate the worker before starting.
-  host->TerminateWorker();
+  // Terminate the host before starting.
+  service_.DestroyHost(host.get());
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(host);
 
   // The client should be told startup failed.
   EXPECT_TRUE(client.CheckReceivedOnScriptLoadFailed());
-
-  // The host should be destroyed.
-  EXPECT_FALSE(host);
 }
 
 TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
@@ -288,7 +266,7 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
     MockSharedWorker worker(std::move(worker_receiver));
 
     // Terminate after starting.
-    host->TerminateWorker();
+    service_.DestroyHost(host.get());
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(worker.CheckReceivedTerminate());
@@ -301,7 +279,7 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
 
   // The client should not have been told startup failed.
   EXPECT_FALSE(client.CheckReceivedOnScriptLoadFailed());
-  // The host should be destroyed.
+  // The host should no longer exist.
   EXPECT_FALSE(host);
 }
 
@@ -346,7 +324,7 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
   }
   base::RunLoop().RunUntilIdle();
 
-  // The host should have self-destructed.
+  // The host should no longer exist.
   EXPECT_FALSE(host);
 }
 

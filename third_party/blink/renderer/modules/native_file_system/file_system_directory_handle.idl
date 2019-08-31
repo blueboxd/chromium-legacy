@@ -15,6 +15,6 @@
 
     [CallWith=ScriptState] Promise<void> removeEntry(USVString name, optional FileSystemRemoveOptions options);
 
-    [CallWith=ScriptState]
+    [CallWith=ScriptState, Measure]
     static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);
 };

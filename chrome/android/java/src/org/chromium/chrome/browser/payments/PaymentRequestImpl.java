@@ -477,7 +477,7 @@ public class PaymentRequestImpl
      */
     @Override
     public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
-            PaymentDetails details, PaymentOptions options) {
+            PaymentDetails details, PaymentOptions options, boolean googlePayBridgeEligible) {
         if (mClient != null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.ATTEMPTED_INITIALIZATION_TWICE);

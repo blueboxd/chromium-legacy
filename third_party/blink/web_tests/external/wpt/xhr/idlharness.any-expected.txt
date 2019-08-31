@@ -1,0 +1,86 @@
+This is a testharness.js-based test.
+Found 80 tests; 79 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
+ define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
+                        ^ Trailing comma in arguments list"
+PASS XMLHttpRequestEventTarget interface: existence and properties of interface object
+PASS XMLHttpRequestEventTarget interface object length
+PASS XMLHttpRequestEventTarget interface object name
+PASS XMLHttpRequestEventTarget interface: existence and properties of interface prototype object
+PASS XMLHttpRequestEventTarget interface: existence and properties of interface prototype object's "constructor" property
+PASS XMLHttpRequestEventTarget interface: existence and properties of interface prototype object's @@unscopables property
+PASS XMLHttpRequestEventTarget interface: attribute onloadstart
+PASS XMLHttpRequestEventTarget interface: attribute onprogress
+PASS XMLHttpRequestEventTarget interface: attribute onabort
+PASS XMLHttpRequestEventTarget interface: attribute onerror
+PASS XMLHttpRequestEventTarget interface: attribute onload
+PASS XMLHttpRequestEventTarget interface: attribute ontimeout
+PASS XMLHttpRequestEventTarget interface: attribute onloadend
+PASS XMLHttpRequestUpload interface: existence and properties of interface object
+PASS XMLHttpRequestUpload interface object length
+PASS XMLHttpRequestUpload interface object name
+PASS XMLHttpRequestUpload interface: existence and properties of interface prototype object
+PASS XMLHttpRequestUpload interface: existence and properties of interface prototype object's "constructor" property
+PASS XMLHttpRequestUpload interface: existence and properties of interface prototype object's @@unscopables property
+PASS XMLHttpRequest interface: existence and properties of interface object
+PASS XMLHttpRequest interface object length
+PASS XMLHttpRequest interface object name
+PASS XMLHttpRequest interface: existence and properties of interface prototype object
+PASS XMLHttpRequest interface: existence and properties of interface prototype object's "constructor" property
+PASS XMLHttpRequest interface: existence and properties of interface prototype object's @@unscopables property
+PASS XMLHttpRequest interface: attribute onreadystatechange
+PASS XMLHttpRequest interface: constant UNSENT on interface object
+PASS XMLHttpRequest interface: constant UNSENT on interface prototype object
+PASS XMLHttpRequest interface: constant OPENED on interface object
+PASS XMLHttpRequest interface: constant OPENED on interface prototype object
+PASS XMLHttpRequest interface: constant HEADERS_RECEIVED on interface object
+PASS XMLHttpRequest interface: constant HEADERS_RECEIVED on interface prototype object
+PASS XMLHttpRequest interface: constant LOADING on interface object
+PASS XMLHttpRequest interface: constant LOADING on interface prototype object
+PASS XMLHttpRequest interface: constant DONE on interface object
+PASS XMLHttpRequest interface: constant DONE on interface prototype object
+PASS XMLHttpRequest interface: attribute readyState
+PASS XMLHttpRequest interface: operation open(ByteString, USVString)
+PASS XMLHttpRequest interface: operation open(ByteString, USVString, boolean, USVString, USVString)
+PASS XMLHttpRequest interface: operation setRequestHeader(ByteString, ByteString)
+PASS XMLHttpRequest interface: attribute timeout
+PASS XMLHttpRequest interface: attribute withCredentials
+PASS XMLHttpRequest interface: attribute upload
+PASS XMLHttpRequest interface: operation send([object Object],[object Object])
+PASS XMLHttpRequest interface: operation abort()
+PASS XMLHttpRequest interface: attribute responseURL
+PASS XMLHttpRequest interface: attribute status
+PASS XMLHttpRequest interface: attribute statusText
+PASS XMLHttpRequest interface: operation getResponseHeader(ByteString)
+PASS XMLHttpRequest interface: operation getAllResponseHeaders()
+PASS XMLHttpRequest interface: operation overrideMimeType(DOMString)
+PASS XMLHttpRequest interface: attribute responseType
+PASS XMLHttpRequest interface: attribute response
+PASS XMLHttpRequest interface: attribute responseText
+PASS XMLHttpRequest interface: attribute responseXML
+PASS FormData interface: existence and properties of interface object
+PASS FormData interface object length
+PASS FormData interface object name
+PASS FormData interface: existence and properties of interface prototype object
+PASS FormData interface: existence and properties of interface prototype object's "constructor" property
+PASS FormData interface: existence and properties of interface prototype object's @@unscopables property
+PASS FormData interface: operation append(USVString, USVString)
+PASS FormData interface: operation append(USVString, Blob, USVString)
+PASS FormData interface: operation delete(USVString)
+PASS FormData interface: operation get(USVString)
+PASS FormData interface: operation getAll(USVString)
+PASS FormData interface: operation has(USVString)
+PASS FormData interface: operation set(USVString, USVString)
+PASS FormData interface: operation set(USVString, Blob, USVString)
+PASS FormData interface: iterable<USVString, FormDataEntryValue>
+PASS ProgressEvent interface: existence and properties of interface object
+PASS ProgressEvent interface object length
+PASS ProgressEvent interface object name
+PASS ProgressEvent interface: existence and properties of interface prototype object
+PASS ProgressEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS ProgressEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS ProgressEvent interface: attribute lengthComputable
+PASS ProgressEvent interface: attribute loaded
+PASS ProgressEvent interface: attribute total
+Harness: the test ran to completion.
+

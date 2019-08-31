@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_REGEX_CONSTANTS_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_REGEX_CONSTANTS_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_REGEX_CONSTANTS_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_REGEX_CONSTANTS_H_
 
 namespace autofill {
 
@@ -61,6 +61,8 @@ extern const char kTravelOriginRe[];
 extern const char kTravelDestinationRe[];
 extern const char kFlightRe[];
 extern const char kPriceRe[];
+extern const char kCreditCardCVCPattern[];
+extern const char kCreditCard4DigitExpYearPattern[];
 
 // Used to match field data that might be a UPI Virtual Payment Address.
 // See:
@@ -85,4 +87,4 @@ extern const char kUrlSearchActionRe[];
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_REGEX_CONSTANTS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_REGEX_CONSTANTS_H_

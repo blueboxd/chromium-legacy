@@ -9,6 +9,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -26,6 +27,32 @@
 
 namespace {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PermissionRequestOutcome {
+  kBlockedByContentSetting = 0,
+  kInvalidFrame = 1,
+  kNoUserActivation = 2,
+  kThirdPartyContext = 3,
+  kUserGranted = 4,
+  kUserDenied = 5,
+  kUserDismissed = 6,
+  kMaxValue = kUserDismissed
+};
+
+void RecordPermissionRequestOutcome(bool is_directory,
+                                    PermissionRequestOutcome outcome) {
+  base::UmaHistogramEnumeration(
+      "NativeFileSystemAPI.WritePermissionRequestOutcome", outcome);
+  if (is_directory) {
+    base::UmaHistogramEnumeration(
+        "NativeFileSystemAPI.WritePermissionRequestOutcome.Directory", outcome);
+  } else {
+    base::UmaHistogramEnumeration(
+        "NativeFileSystemAPI.WritePermissionRequestOutcome.File", outcome);
+  }
+}
+
 void ShowWritePermissionPromptOnUIThread(
     int process_id,
     int frame_id,
@@ -38,12 +65,16 @@ void ShowWritePermissionPromptOnUIThread(
       content::RenderFrameHost::FromID(process_id, frame_id);
   if (!rfh || !rfh->IsCurrent()) {
     // Requested from a no longer valid render frame host.
+    RecordPermissionRequestOutcome(is_directory,
+                                   PermissionRequestOutcome::kInvalidFrame);
     std::move(callback).Run(PermissionAction::DISMISSED);
     return;
   }
 
   if (!rfh->HasTransientUserActivation()) {
     // No permission prompts without user activation.
+    RecordPermissionRequestOutcome(is_directory,
+                                   PermissionRequestOutcome::kNoUserActivation);
     std::move(callback).Run(PermissionAction::DISMISSED);
     return;
   }
@@ -52,6 +83,8 @@ void ShowWritePermissionPromptOnUIThread(
       content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
+    RecordPermissionRequestOutcome(is_directory,
+                                   PermissionRequestOutcome::kInvalidFrame);
     std::move(callback).Run(PermissionAction::DISMISSED);
     return;
   }
@@ -60,6 +93,8 @@ void ShowWritePermissionPromptOnUIThread(
       url::Origin::Create(web_contents->GetLastCommittedURL());
   if (embedding_origin != origin) {
     // Third party iframes are not allowed to request more permissions.
+    RecordPermissionRequestOutcome(
+        is_directory, PermissionRequestOutcome::kThirdPartyContext);
     std::move(callback).Run(PermissionAction::DISMISSED);
     return;
   }
@@ -71,8 +106,18 @@ void ShowWritePermissionPromptOnUIThread(
     return;
   }
 
-  request_manager->AddRequest({origin, path, is_directory},
-                              std::move(callback));
+  request_manager->AddRequest(
+      {origin, path, is_directory},
+      base::BindOnce(
+          [](bool is_directory,
+             base::OnceCallback<void(PermissionAction result)> callback,
+             PermissionAction result) {
+            if (result == PermissionAction::DISMISSED)
+              RecordPermissionRequestOutcome(
+                  is_directory, PermissionRequestOutcome::kUserDismissed);
+            std::move(callback).Run(result);
+          },
+          is_directory, std::move(callback)));
 }
 
 void ShowDirectoryAccessConfirmationPromptOnUIThread(
@@ -335,6 +380,8 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
   // Check if |write_guard_content_setting_type_| is blocked by the user and
   // update the status if it is.
   if (!CanRequestPermission()) {
+    RecordPermissionRequestOutcome(
+        is_directory_, PermissionRequestOutcome::kBlockedByContentSetting);
     SetStatus(PermissionStatus::DENIED);
     std::move(callback).Run();
     return;
@@ -381,13 +428,19 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result) {
     case PermissionAction::GRANTED:
+      RecordPermissionRequestOutcome(is_directory_,
+                                     PermissionRequestOutcome::kUserGranted);
       SetStatus(PermissionStatus::GRANTED);
       break;
     case PermissionAction::DENIED:
+      RecordPermissionRequestOutcome(is_directory_,
+                                     PermissionRequestOutcome::kUserDenied);
       SetStatus(PermissionStatus::DENIED);
       break;
     case PermissionAction::DISMISSED:
     case PermissionAction::IGNORED:
+      // No histogram recorded here, the caller would have already recorded this
+      // outcome.
       break;
     case PermissionAction::REVOKED:
     case PermissionAction::NUM:

@@ -2168,7 +2168,7 @@ crbug.com/579788 virtual/cascade/external/wpt/css/css-cascade/revert-val-001.htm
 
 # Flaky tests:
 crbug.com/987224 virtual/cascade/external/wpt/css/css-typed-om/interfaces.html [ Pass Timeout ]
-crbug.com/987224 virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
+crbug.com/987224 [ IOS ] virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
 
 # ====== Cascade failures until here ======
 
@@ -3251,6 +3251,9 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
+crbug.com/626703 [ Linux ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Failure Crash ]
 crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
@@ -3393,7 +3396,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/orig
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/attr-referrer/cross-origin/http-https/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-https/xhr-request/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/registered-property-cssom.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/range/sw.https.window.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-http/a-tag/no-redirect/cross-origin.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/script-tag/swap-origin-redirect/generic.http.html [ Timeout ]
@@ -6453,8 +6455,6 @@ crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentia
 crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
 crbug.com/989665 [ Win Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
 
-crbug.com/990900 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/idlharness.any.worker.html [ Pass Timeout ]
-
 # Sheriff 2019-08-01
 crbug.com/989860 [ Mac10.13 ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 crbug.com/989860 [ Linux ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
@@ -6470,10 +6470,6 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 # Expected failure for experimental Scheduling API when running without the
 # BlinkSchedulerDisableAntiStarvationForPriorities feature.
 crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
-
-# Sheriff 2019-08-09
-crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
-crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]
 
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
@@ -6544,3 +6540,15 @@ crbug.com/999473 external/wpt/streams/writable-streams/properties.any.sharedwork
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.serviceworker.html [ Pass Failure ]
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pass Failure ]
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]
+
+# Sheriff 2019-08-30
+crbug.com/999535 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.serviceworker.html [ Pass Failure ]
+crbug.com/999535 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Pass Failure ]
+crbug.com/999535 virtual/blink-cors/external/wpt/fetch/api/idlharness.any.worker.html [ Pass Failure ]
+crbug.com/999535 external/wpt/BackgroundSync/idlharness.https.any.worker.html [ Pass Failure ]
+crbug.com/999535 external/wpt/fetch/api/idlharness.any.serviceworker.html [ Pass Failure ]
+crbug.com/999535 external/wpt/BackgroundSync/idlharness.https.any.html [ Pass Failure ]
+crbug.com/999535 external/wpt/css/cssom/idlharness.html [ Pass Failure ]
+crbug.com/999535 external/wpt/css/css-typed-om/idlharness.html [ Pass Failure ]
+crbug.com/999535 external/wpt/css/filter-effects/idlharness.any.worker.html [ Pass Failure ]
+crbug.com/999535 external/wpt/mediasession/idlharness.window.html [ Pass Failure ]

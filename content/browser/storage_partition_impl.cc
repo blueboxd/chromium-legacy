@@ -42,6 +42,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -1665,6 +1666,15 @@ void StoragePartitionImpl::OnSSLCertificateError(
       std::move(web_contents_getter), net_error, ssl_info, fatal);
 }
 
+void StoragePartitionImpl::OnFileUploadRequested(
+    uint32_t process_id,
+    bool async,
+    const std::vector<base::FilePath>& file_paths,
+    OnFileUploadRequestedCallback callback) {
+  NetworkContextOnFileUploadRequested(process_id, async, file_paths,
+                                      std::move(callback));
+}
+
 void StoragePartitionImpl::OnCanSendReportingReports(
     const std::vector<url::Origin>& origins,
     OnCanSendReportingReportsCallback callback) {
@@ -2236,6 +2246,12 @@ void StoragePartitionImpl::OverrideBackgroundSyncContextForTesting(
   DCHECK(!GetBackgroundSyncContext() ||
          !GetBackgroundSyncContext()->background_sync_manager());
   background_sync_context_ = background_sync_context;
+}
+
+void StoragePartitionImpl::OverrideSharedWorkerServiceForTesting(
+    std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service) {
+  DCHECK(initialized_);
+  shared_worker_service_ = std::move(shared_worker_service);
 }
 
 void StoragePartitionImpl::GetQuotaSettings(

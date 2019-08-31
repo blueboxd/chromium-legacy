@@ -34,6 +34,7 @@ cast_source_set("audio") {
     "//chromecast/media/audio/mixer_service:connection",
     "//chromecast/media/audio/mixer_service:proto",
     "//chromecast/media/base",
+    "//chromecast/media/base:monotonic_clock",
     "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",
     "//chromecast/public/media",
@@ -98,7 +99,6 @@ buildflag_header("audio_buildflags") {
   header = "audio_buildflags.h"
 
   flags = [
-    "MEDIA_CLOCK_MONOTONIC_RAW=$media_clock_monotonic_raw",
     "MINIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$minimum_output_buffer_size_in_frames",
     "MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$maximum_output_buffer_size_in_frames",
     "DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES=$default_output_buffer_size_in_frames",

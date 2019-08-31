@@ -13,7 +13,9 @@
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/net_buildflags.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -41,6 +43,13 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     if (!network_context_ || network_context_.encountered_error()) {
       content::GetNetworkService()->CreateNetworkContext(
           MakeRequest(&network_context_), CreateNetworkContextParams());
+
+      network::mojom::NetworkContextClientPtr client_ptr;
+      auto client_request = mojo::MakeRequest(&client_ptr);
+      mojo::MakeStrongBinding(
+          std::make_unique<content::NetworkContextClientBase>(),
+          std::move(client_request));
+      network_context_->SetClient(std::move(client_ptr));
     }
     return network_context_.get();
   }

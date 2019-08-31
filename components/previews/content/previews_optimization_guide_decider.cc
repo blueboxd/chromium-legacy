@@ -106,12 +106,10 @@ bool PreviewsOptimizationGuideDecider::IsReady() const {
 bool PreviewsOptimizationGuideDecider::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
-    PreviewsType type,
-    net::EffectiveConnectionType* out_ect_threshold) {
+    PreviewsType type) {
   // See if we need to bypass the lite page redirect blacklist.
   if (type == PreviewsType::LITE_PAGE_REDIRECT &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      params::LitePageRedirectPreviewIgnoresOptimizationGuideFilter()) {
     return true;
   }
 
@@ -120,7 +118,9 @@ bool PreviewsOptimizationGuideDecider::CanApplyPreview(
   if (!optimization_type.has_value())
     return false;
 
-  // See if we can apply the optimization.
+  // See if we can apply the optimization. Note that
+  // |optimization_guide_decider_| also ensures that the current browser
+  // conditions match a painful page load as a prerequisite for returning true.
   optimization_guide::OptimizationMetadata optimization_metadata;
   optimization_guide::OptimizationGuideDecision decision =
       optimization_guide_decider_->CanApplyOptimization(
@@ -134,12 +134,6 @@ bool PreviewsOptimizationGuideDecider::CanApplyPreview(
     return false;
 
   // If we can apply it, populate information from metadata.
-  if (out_ect_threshold &&
-      optimization_metadata.previews_metadata.has_max_ect_trigger()) {
-    *out_ect_threshold =
-        optimization_guide::ConvertProtoEffectiveConnectionType(
-            optimization_metadata.previews_metadata.max_ect_trigger());
-  }
   if (previews_data &&
       optimization_metadata.previews_metadata.has_inflation_percent()) {
     previews_data->set_data_savings_inflation_percent(

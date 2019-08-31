@@ -187,7 +187,7 @@ ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT = 'progressAnimationEnd';
 
 /**
  * Progress center panel.
- *
+ * @implements {ProgressCenterPanelInterface}
  */
 class ProgressCenterPanel {
   /**

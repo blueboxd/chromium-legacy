@@ -13,6 +13,8 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
+#include "ash/login/ui/parent_access_widget.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -20,8 +22,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
+#include "components/session_manager/session_manager_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
@@ -101,6 +105,40 @@ class ParentAccessViewTest : public LoginTestBase {
     SetWidget(CreateWidgetWithContent(view_));
   }
 
+  // Shows parent access widget with the specified |reason|.
+  void ShowWidget(ParentAccessRequestReason reason) {
+    ParentAccessWidget::Show(
+        account_id_,
+        base::BindRepeating(&ParentAccessViewTest::OnFinished,
+                            base::Unretained(this)),
+        reason);
+    ParentAccessWidget* widget = ParentAccessWidget::Get();
+    ASSERT_TRUE(widget);
+  }
+
+  // Dismisses existing parent access widget with back button click. Should be
+  // only called when the widget is shown.
+  void DismissWidget() {
+    ParentAccessWidget* widget = ParentAccessWidget::Get();
+    ASSERT_TRUE(widget);
+
+    ParentAccessView* view =
+        ParentAccessWidget::TestApi(widget).parent_access_view();
+    ParentAccessView::TestApi test_api(view);
+    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), 0, 0);
+    view->ButtonPressed(test_api.back_button(), event);
+  }
+
+  // Verifies expectation that UMA |action| was logged.
+  // Cannot be used when more than one action is reported.
+  void ExpectUMAActionReported(ParentAccessView::UMAAction action) {
+    histogram_tester_.ExpectBucketCount(
+        ParentAccessView::kUMAParentAccessCodeAction, action, 1);
+    histogram_tester_.ExpectTotalCount(
+        ParentAccessView::kUMAParentAccessCodeAction, 1);
+  }
+
   const AccountId account_id_;
   std::unique_ptr<MockLoginScreenClient> login_client_;
 
@@ -112,6 +150,8 @@ class ParentAccessViewTest : public LoginTestBase {
 
   // Time that will be used on the code validation.
   base::Time validation_time_;
+
+  base::HistogramTester histogram_tester_;
 
   ParentAccessView* view_ = nullptr;  // Owned by test widget view hierarchy.
 
@@ -151,6 +191,7 @@ TEST_F(ParentAccessViewTest, BackButton) {
 
   EXPECT_EQ(1, back_action_);
   EXPECT_EQ(0, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kCanceledByUser);
 }
 
 // Tests that submit button submits code from code input.
@@ -176,6 +217,7 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess);
 }
 
 // Tests that help button opens help app.
@@ -188,6 +230,8 @@ TEST_F(ParentAccessViewTest, HelpButton) {
 
   EXPECT_CALL(*client, ShowParentAccessHelpApp()).Times(1);
   SimulateButtonPress(test_api.help_button());
+
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kGetHelp);
 }
 
 // Tests that access code can be entered with numpad.
@@ -210,6 +254,7 @@ TEST_F(ParentAccessViewTest, Numpad) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess);
 }
 
 // Tests that access code can be submitted with press of 'enter' key.
@@ -234,6 +279,7 @@ TEST_F(ParentAccessViewTest, SubmitWithEnter) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess);
 }
 
 // Tests that 'enter' key does not submit incomplete code.
@@ -273,6 +319,7 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess);
 }
 
 // Tests that backspace button works.
@@ -322,6 +369,7 @@ TEST_F(ParentAccessViewTest, Backspace) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess);
 }
 
 // Tests input with virtual pin keyboard.
@@ -347,6 +395,7 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess);
 }
 
 // Tests that pin keyboard visibility changes upon tablet mode changes.
@@ -387,6 +436,7 @@ TEST_F(ParentAccessViewTest, ErrorState) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ParentAccessView::State::kError, test_api.state());
   EXPECT_EQ(0, successful_validation_);
+  ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationError);
 
   // After access code is completed, focus moves to submit button.
   // Move focus back to access code input.
@@ -406,6 +456,12 @@ TEST_F(ParentAccessViewTest, ErrorState) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessView::kUMAParentAccessCodeAction,
+      ParentAccessView::UMAAction::kValidationError, 1);
+  histogram_tester_.ExpectTotalCount(
+      ParentAccessView::kUMAParentAccessCodeAction, 2);
 }
 
 // Tests children views traversal with tab key.
@@ -475,6 +531,49 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
+}
+
+// Tests that correct usage metric is reported.
+TEST_F(ParentAccessViewTest, UMAUsageMetric) {
+  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+  DismissWidget();
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessView::kUMAParentAccessCodeUsage,
+      ParentAccessView::UMAUsage::kTimeLimits, 1);
+
+  ShowWidget(ParentAccessRequestReason::kChangeTimezone);
+  DismissWidget();
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessView::kUMAParentAccessCodeUsage,
+      ParentAccessView::UMAUsage::kTimezoneChange, 1);
+
+  // The below usage depends on the session state.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  ShowWidget(ParentAccessRequestReason::kChangeTime);
+  DismissWidget();
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessView::kUMAParentAccessCodeUsage,
+      ParentAccessView::UMAUsage::kTimeChangeInSession, 1);
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  ShowWidget(ParentAccessRequestReason::kChangeTime);
+  DismissWidget();
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessView::kUMAParentAccessCodeUsage,
+      ParentAccessView::UMAUsage::kTimeChangeLoginScreen, 1);
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  ShowWidget(ParentAccessRequestReason::kChangeTime);
+  DismissWidget();
+  histogram_tester_.ExpectBucketCount(
+      ParentAccessView::kUMAParentAccessCodeUsage,
+      ParentAccessView::UMAUsage::kTimeChangeInSession, 2);
+
+  histogram_tester_.ExpectTotalCount(
+      ParentAccessView::kUMAParentAccessCodeUsage, 5);
 }
 
 }  // namespace ash

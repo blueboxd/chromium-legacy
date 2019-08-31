@@ -297,6 +297,7 @@ void AppListClientImpl::ActiveUserChanged(
     const user_manager::User* active_user) {
   if (!active_user->is_profile_created())
     return;
+
   UpdateProfile();
 }
 
@@ -304,8 +305,9 @@ void AppListClientImpl::UpdateProfile() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   app_list::AppListSyncableService* syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
-  DCHECK(syncable_service);
-  SetProfile(profile);
+  // AppListSyncableService is null in tests.
+  if (syncable_service)
+    SetProfile(profile);
 }
 
 void AppListClientImpl::SetProfile(Profile* new_profile) {

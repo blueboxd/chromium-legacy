@@ -9,8 +9,12 @@ namespace sync_wifi {
 PendingNetworkConfigurationUpdate::PendingNetworkConfigurationUpdate(
     const std::string& ssid,
     const std::string& change_guid,
-    const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics)
-    : ssid_(ssid), change_guid_(change_guid), specifics_(specifics) {}
+    const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics,
+    int completed_attempts)
+    : ssid_(ssid),
+      change_guid_(change_guid),
+      specifics_(specifics),
+      completed_attempts_(completed_attempts) {}
 
 PendingNetworkConfigurationUpdate::PendingNetworkConfigurationUpdate(
     const PendingNetworkConfigurationUpdate& update) = default;

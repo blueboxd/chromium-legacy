@@ -102,6 +102,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
     return folder_background_view_;
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
+  PageSwitcher* page_switcher() { return page_switcher_; }
 
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();

@@ -437,6 +437,10 @@ jumbo_source_set("unit_tests") {
     "xr/xr_view_test.cc",
   ]
 
+  if (is_android) {
+    sources += [ "payments/skip_to_gpay_utils_test.cc" ]
+  }
+
   if (is_android && notouch_build) {
     sources += [
       "media_controls/touchless/media_controls_touchless_impl_test.cc",

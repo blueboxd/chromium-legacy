@@ -9,69 +9,71 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.widget.FrameLayout;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 /**
  * {@link org.chromium.ui.modelutil.SimpleRecyclerViewMcp.ViewBinder} for tab strip.
- * This class supports both full and partial updates to the {@link TabStripViewHolder}.
  */
 class TabStripViewBinder {
     /**
      * Partially or fully update the given ViewHolder based on the given model over propertyKey.
-     * @param holder The {@link ViewHolder} to use.
-     * @param item The model to use.
+     * @param model The model to use.
+     * @param group The view group to bind to.
      * @param propertyKey If present, to be used as the key to partially update. If null, a full
      *                    bind is done.
      */
-    public static void onBindViewHolder(
-            TabStripViewHolder holder, PropertyModel item, @Nullable PropertyKey propertyKey) {
+    public static void bind(
+            PropertyModel model, ViewGroup group, @Nullable PropertyKey propertyKey) {
+        assert group instanceof ViewLookupCachingFrameLayout;
+        ViewLookupCachingFrameLayout view = (ViewLookupCachingFrameLayout) group;
         if (propertyKey == null) {
-            onBindViewHolder(holder, item);
+            onBindViewHolder(view, model);
             return;
         }
         if (TabProperties.IS_SELECTED == propertyKey) {
-            ((FrameLayout) holder.itemView)
-                    .setForeground(item.get(TabProperties.IS_SELECTED)
-                                    ? ResourcesCompat.getDrawable(holder.itemView.getResources(),
-                                            R.drawable.tabstrip_selected,
-                                            holder.itemView.getContext().getTheme())
-                                    : null);
-            String title = item.get(TabProperties.TITLE);
-            if (item.get(TabProperties.IS_SELECTED)) {
-                holder.button.setOnClickListener(view -> {
-                    item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
+            ImageButton button = (ImageButton) view.fastFindViewById(R.id.tab_strip_item_button);
+            view.setForeground(model.get(TabProperties.IS_SELECTED)
+                            ? ResourcesCompat.getDrawable(view.getResources(),
+                                    R.drawable.tabstrip_selected, view.getContext().getTheme())
+                            : null);
+            String title = model.get(TabProperties.TITLE);
+            if (model.get(TabProperties.IS_SELECTED)) {
+                button.setOnClickListener(v -> {
+                    model.get(TabProperties.TAB_CLOSED_LISTENER)
+                            .run(model.get(TabProperties.TAB_ID));
                 });
-                holder.button.setContentDescription(holder.itemView.getContext().getString(
+                button.setContentDescription(view.getContext().getString(
                         R.string.accessibility_tabstrip_btn_close_tab, title));
             } else {
-                holder.button.setOnClickListener(view -> {
-                    item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
+                button.setOnClickListener(v -> {
+                    model.get(TabProperties.TAB_SELECTED_LISTENER)
+                            .run(model.get(TabProperties.TAB_ID));
                 });
-                holder.button.setContentDescription(holder.itemView.getContext().getString(
-                        R.string.accessibility_tabstrip_tab, title));
+                button.setContentDescription(
+                        view.getContext().getString(R.string.accessibility_tabstrip_tab, title));
             }
         } else if (TabProperties.FAVICON == propertyKey) {
-            Drawable faviconDrawable = item.get(TabProperties.FAVICON);
-            holder.button.setBackgroundResource(R.drawable.tabstrip_favicon_background);
-            ViewCompat.setBackgroundTintList(holder.button,
-                    AppCompatResources.getColorStateList(holder.button.getContext(),
-                            item.get(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID)));
+            Drawable faviconDrawable = model.get(TabProperties.FAVICON);
+            ImageButton button = (ImageButton) view.fastFindViewById(R.id.tab_strip_item_button);
+            button.setBackgroundResource(R.drawable.tabstrip_favicon_background);
+            ViewCompat.setBackgroundTintList(button,
+                    AppCompatResources.getColorStateList(view.getContext(),
+                            model.get(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID)));
             if (faviconDrawable != null) {
-                holder.button.setImageDrawable(faviconDrawable);
+                button.setImageDrawable(faviconDrawable);
             }
-        } else if (TabProperties.TAB_ID == propertyKey) {
-            holder.setTabId(item.get(TabProperties.TAB_ID));
         }
     }
 
-    private static void onBindViewHolder(TabStripViewHolder holder, PropertyModel item) {
+    private static void onBindViewHolder(ViewGroup view, PropertyModel item) {
         for (PropertyKey propertyKey : TabProperties.ALL_KEYS_TAB_STRIP) {
-            onBindViewHolder(holder, item, propertyKey);
+            bind(item, view, propertyKey);
         }
     }
 }

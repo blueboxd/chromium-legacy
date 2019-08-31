@@ -358,6 +358,7 @@ Polymer({
           anchorAlignmentX: AnchorAlignment.BEFORE_END,
         },
         opt_config)));
+    this.$.dialog.focus();
   },
 
   /**

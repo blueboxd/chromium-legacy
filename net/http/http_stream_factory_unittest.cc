@@ -2438,9 +2438,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  int packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -2563,9 +2567,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  int packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -2814,9 +2822,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  int packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -2833,9 +2845,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   // Prepare mock QUIC data for a second session establishment.
   client_packet_maker().Reset();
   MockQuicData mock_quic_data2(version());
-  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data2.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),

@@ -110,6 +110,24 @@ class AnimationDocumentTimelineTest : public PageTestBase {
   double MinimumDelay() { return DocumentTimeline::kMinimumDelay; }
 };
 
+class AnimationDocumentTimelineRealTimeTest : public PageTestBase {
+ protected:
+  void SetUp() override {
+    PageTestBase::SetUp(IntSize());
+    document = &GetDocument();
+    timeline = document->Timeline();
+  }
+
+  void TearDown() override {
+    document.Release();
+    timeline.Release();
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
+
+  Persistent<Document> document;
+  Persistent<DocumentTimeline> timeline;
+};
+
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
   auto* effect =
       MakeGarbageCollected<StringKeyframeEffectModel>(StringKeyframeVector());
@@ -372,6 +390,22 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
       nullptr, CreateEmptyEffectModel(), timing);
   // Test passes if this does not crash.
   timeline->Play(keyframe_effect);
+}
+
+// Ensure that origin time is correctly calculated even when the animation
+// clock has not yet been initialized.
+TEST_F(AnimationDocumentTimelineRealTimeTest,
+       PlaybackRateChangeUninitalizedAnimationClock) {
+  GetAnimationClock().ResetTimeForTesting();
+  EXPECT_TRUE(GetAnimationClock().CurrentTime().is_null());
+  EXPECT_FALSE(
+      document->Loader()->GetTiming().ReferenceMonotonicTime().is_null());
+
+  base::TimeDelta origin_time = base::TimeDelta::FromSeconds(1000);
+  timeline = DocumentTimeline::Create(document.Get(), origin_time);
+  timeline->SetPlaybackRate(0.5);
+  EXPECT_EQ(origin_time * 2,
+            timeline->ZeroTime() - document->Timeline().ZeroTime());
 }
 
 }  // namespace blink

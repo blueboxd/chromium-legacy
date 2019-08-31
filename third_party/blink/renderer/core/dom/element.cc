@@ -2400,13 +2400,19 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
   if (HasRareData()) {
     ElementRareData* rare_data = GetElementRareData();
-    if (rare_data->IntersectionObserverData() &&
-        rare_data->IntersectionObserverData()->HasObservations()) {
-      GetDocument().EnsureIntersectionObserverController().AddTrackedTarget(
-          *this,
-          rare_data->IntersectionObserverData()->NeedsOcclusionTracking());
-      if (LocalFrameView* frame_view = GetDocument().View())
-        frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
+    if (ElementIntersectionObserverData* observer_data =
+            rare_data->IntersectionObserverData()) {
+      if (observer_data->IsTargetOfImplicitRootObserver() ||
+          observer_data->IsRoot()) {
+        GetDocument().EnsureIntersectionObserverController().AddTrackedElement(
+            *this, observer_data->NeedsOcclusionTracking());
+      }
+      if (observer_data->IsTarget() || observer_data->IsRoot()) {
+        if (LocalFrameView* frame_view = GetDocument().View()) {
+          frame_view->SetIntersectionObservationState(
+              LocalFrameView::kRequired);
+        }
+      }
     }
   }
 
@@ -2496,10 +2502,10 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       element_animations->CssAnimations().Cancel();
 
     if (data->IntersectionObserverData()) {
-      data->IntersectionObserverData()->ComputeObservations(
+      data->IntersectionObserverData()->ComputeIntersectionsForTarget(
           IntersectionObservation::kExplicitRootObserversNeedUpdate |
           IntersectionObservation::kImplicitRootObserversNeedUpdate);
-      GetDocument().EnsureIntersectionObserverController().RemoveTrackedTarget(
+      GetDocument().EnsureIntersectionObserverController().RemoveTrackedElement(
           *this);
     }
     DCHECK(!data->HasPseudoElements());
@@ -4309,9 +4315,9 @@ ElementIntersectionObserverData& Element::EnsureIntersectionObserverData() {
   return EnsureElementRareData().EnsureIntersectionObserverData();
 }
 
-bool Element::ComputeIntersectionObservations(unsigned flags) {
+bool Element::ComputeIntersectionsForLifecycleUpdate(unsigned flags) {
   if (ElementIntersectionObserverData* data = IntersectionObserverData())
-    return data->ComputeObservations(flags);
+    return data->ComputeIntersectionsForLifecycleUpdate(flags);
   return false;
 }
 

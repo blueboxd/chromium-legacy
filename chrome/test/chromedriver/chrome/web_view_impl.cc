@@ -532,7 +532,8 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
     params.SetString("pointerType", GetAsString(it->pointer_type));
-    Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
+    Status status = client_->SendCommandAndIgnoreResponse(
+        "Input.dispatchMouseEvent", params);
     if (status.IsError())
       return status;
   }
@@ -556,7 +557,8 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
     point_list->Append(std::move(point));
   }
   params.Set("touchPoints", std::move(point_list));
-  return client_->SendCommand("Input.dispatchTouchEvent", params);
+  return client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
+                                               params);
 }
 
 Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events) {
@@ -604,7 +606,8 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
       else
         params.SetInteger("location", it->location);
     }
-    Status status = client_->SendCommand("Input.dispatchKeyEvent", params);
+    Status status =
+        client_->SendCommandAndIgnoreResponse("Input.dispatchKeyEvent", params);
     if (status.IsError())
       return status;
   }

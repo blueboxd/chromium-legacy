@@ -134,6 +134,10 @@ class CONTENT_EXPORT FrameTreeNode {
 
   FrameTreeNode* original_opener() const { return original_opener_; }
 
+  // Gets the total number of descendants to this FrameTreeNode in addition to
+  // this node.
+  size_t GetFrameTreeSize() const;
+
   // Assigns a new opener for this node and, if |opener| is non-null, registers
   // an observer that will clear this node's opener if |opener| is ever
   // destroyed.

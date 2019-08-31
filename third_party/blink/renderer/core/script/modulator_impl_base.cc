@@ -237,22 +237,52 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
   }
 }
 
-void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map) {
+ScriptValue ModulatorImplBase::CreateTypeError(const String& message) const {
+  ScriptState::Scope scope(script_state_);
+  ScriptValue error(script_state_, V8ThrowException::CreateTypeError(
+                                       script_state_->GetIsolate(), message));
+  return error;
+}
+
+ScriptValue ModulatorImplBase::CreateSyntaxError(const String& message) const {
+  ScriptState::Scope scope(script_state_);
+  ScriptValue error(script_state_, V8ThrowException::CreateSyntaxError(
+                                       script_state_->GetIsolate(), message));
+  return error;
+}
+
+// <specdef href="https://wicg.github.io/import-maps/#register-an-import-map">
+void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map,
+                                          ScriptValue error_to_rethrow) {
+  DCHECK(import_map);
+  DCHECK(BuiltInModuleInfraEnabled());
+
+  // <spec step="7">If import map parse result’s error to rethrow is not null,
+  // then:</spec>
+  if (!error_to_rethrow.IsEmpty()) {
+    // <spec step="7.1">Report the exception given import map parse result’s
+    // error to rethrow. ...</spec>
+    if (!IsScriptingDisabled()) {
+      ScriptState::Scope scope(script_state_);
+      ModuleRecord::ReportException(script_state_, error_to_rethrow.V8Value());
+    }
+
+    // <spec step="7.2">Return.</spec>
+    return;
+  }
+
+  // <spec step="8">Update element’s node document's import map with import map
+  // parse result’s import map.</spec>
+  //
+  // TODO(crbug.com/927119): Implement merging. Currently only one import map is
+  // allowed.
   if (import_map_) {
-    // Only one import map is allowed.
-    // TODO(crbug.com/927119): Implement merging.
     GetExecutionContext()->AddConsoleMessage(
         mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
         "Multiple import maps are not yet supported. https://crbug.com/927119");
     return;
   }
 
-  if (!BuiltInModuleInfraEnabled()) {
-    GetExecutionContext()->AddConsoleMessage(
-        mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
-        "Import maps are disabled when Layered API Infra is disabled.");
-    return;
-  }
   import_map_ = import_map;
 }
 
@@ -405,8 +435,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     v8::Local<v8::Module> record = module_script->V8Module();
     CHECK(!record.IsEmpty());
 
-    // <spec step="7.2">Set evaluationStatus to ModuleRecord::Evaluate().
-    // ...</spec>
+    // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
     error = ModuleRecord::Evaluate(script_state_, record,
                                    module_script->SourceURL());
 

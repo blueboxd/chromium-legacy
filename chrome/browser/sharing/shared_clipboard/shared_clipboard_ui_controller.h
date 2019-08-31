@@ -37,6 +37,9 @@ class SharedClipboardUiController
   int GetRequiredDeviceCapabilities() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
+  base::string16 GetContentType() const override;
+  base::string16 GetErrorDialogTitle() const override;
+  base::string16 GetErrorDialogText() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 

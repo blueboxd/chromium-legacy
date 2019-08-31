@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/guid.h"
@@ -31,17 +32,25 @@ class SchedulerUtilsTest : public testing::Test {
     ToLocalHour(0, clock_.Now(), 0, &beginning_of_today_);
   }
 
-  void CreateFakeImpressions(std::vector<base::Time> times,
-                             base::circular_deque<Impression>& impressions) {
-    impressions.clear();
+  void CreateFakeImpressions(ClientState* client_state,
+                             const std::vector<base::Time>& times) {
+    DCHECK(client_state);
+    client_state->impressions.clear();
+    auto type = client_state->type;
     for (const auto& time : times) {
-      impressions.emplace_back(SchedulerClientType::kTest1,
-                               base::GenerateGUID(), time);
+      client_state->impressions.emplace_back(type, base::GenerateGUID(), time);
     }
-    std::sort(impressions.begin(), impressions.end(),
-              [](const Impression& lhs, const Impression& rhs) {
-                return lhs.create_time < rhs.create_time;
-              });
+  }
+
+  std::unique_ptr<ClientState> CreateFakeClientStateWithImpression(
+      SchedulerClientType type,
+      const SchedulerConfig& config,
+      const std::vector<base::Time>& times) {
+    auto client_state = std::make_unique<ClientState>();
+    client_state->type = type;
+    client_state->current_max_daily_show = config.initial_daily_shown_per_type;
+    CreateFakeImpressions(client_state.get(), times);
+    return client_state;
   }
 
  protected:
@@ -85,6 +94,56 @@ TEST_F(SchedulerUtilsTest, ToLocalHour) {
   EXPECT_EQ(expected, another_day);
 }
 
+TEST_F(SchedulerUtilsTest, NotificationsShownTodayMultipleClients) {
+  InitFakeClock();
+  base::Time now = clock()->Now();
+  // Create fake clients.
+  std::map<SchedulerClientType, const ClientState*> client_states;
+  //            begin_of_today         now                  end_of_today
+  // client1  * |                   *  *                    | *
+  // client2  * *   *                  |  *                 | *
+  // client3  * |                      |                    | *
+
+  std::vector<base::Time> create_times = {
+      now - base::TimeDelta::FromSeconds(2) /*today*/,
+      now - base::TimeDelta::FromSeconds(1) /*today*/,
+      beginning_of_today() - base::TimeDelta::FromSeconds(1) /*yesterday*/,
+      beginning_of_today() + base::TimeDelta::FromDays(1) /*tomorrow*/};
+  auto new_client1 = CreateFakeClientStateWithImpression(
+      SchedulerClientType::kTest1, config(), create_times);
+
+  create_times = {
+      now /*today*/,
+      beginning_of_today() + base::TimeDelta::FromDays(1) /*tomorrow*/,
+      beginning_of_today() - base::TimeDelta::FromSeconds(1) /*yesterday*/,
+      beginning_of_today() + base::TimeDelta::FromSeconds(1) /*today*/,
+      beginning_of_today() /*today*/};
+  auto new_client2 = CreateFakeClientStateWithImpression(
+      SchedulerClientType::kTest2, config(), create_times);
+
+  create_times = {
+      beginning_of_today() - base::TimeDelta::FromSeconds(2), /*yesterday*/
+      beginning_of_today() + base::TimeDelta::FromDays(1)     /*tomorrow*/
+  };
+  auto new_client3 = CreateFakeClientStateWithImpression(
+      SchedulerClientType::kTest3, config(), create_times);
+
+  client_states[SchedulerClientType::kTest1] = new_client1.get();
+  client_states[SchedulerClientType::kTest2] = new_client2.get();
+  client_states[SchedulerClientType::kTest3] = new_client3.get();
+
+  std::map<SchedulerClientType, int> shown_per_type;
+  int shown_total = 0;
+  SchedulerClientType last_shown_type = SchedulerClientType::kUnknown;
+  NotificationsShownToday(client_states, &shown_per_type, &shown_total,
+                          &last_shown_type, clock());
+  EXPECT_EQ(shown_total, 5);
+  EXPECT_EQ(last_shown_type, SchedulerClientType::kTest2);
+  EXPECT_EQ(shown_per_type.at(SchedulerClientType::kTest1), 2);
+  EXPECT_EQ(shown_per_type.at(SchedulerClientType::kTest2), 3);
+  EXPECT_EQ(shown_per_type.at(SchedulerClientType::kTest3), 0);
+}
+
 TEST_F(SchedulerUtilsTest, NotificationsShownToday) {
   // Create fake client.
   auto new_client = CreateNewClientState(SchedulerClientType::kTest1, config());
@@ -102,16 +161,16 @@ TEST_F(SchedulerUtilsTest, NotificationsShownToday) {
       beginning_of_today() + base::TimeDelta::FromSeconds(1) /*today*/,
       beginning_of_today() /*today*/};
 
-  CreateFakeImpressions(create_times, new_client->impressions);
+  CreateFakeImpressions(new_client.get(), create_times);
   count = NotificationsShownToday(new_client.get(), clock());
   EXPECT_EQ(count, 3);
 
   // Test case 3:
   create_times = {
       beginning_of_today() - base::TimeDelta::FromSeconds(2), /*yesterday*/
-      beginning_of_today() - base::TimeDelta::FromDays(2),    /*tomorrow*/
+      beginning_of_today() + base::TimeDelta::FromDays(1),    /*tomorrow*/
   };
-  CreateFakeImpressions(create_times, new_client->impressions);
+  CreateFakeImpressions(new_client.get(), create_times);
   count = NotificationsShownToday(new_client.get(), clock());
   EXPECT_EQ(count, 0);
 
@@ -120,7 +179,7 @@ TEST_F(SchedulerUtilsTest, NotificationsShownToday) {
       now /*today*/, now - base::TimeDelta::FromSeconds(1) /*today*/,
       beginning_of_today() - base::TimeDelta::FromSeconds(1) /*yesterday*/,
       beginning_of_today() + base::TimeDelta::FromDays(1) /*tomorrow*/};
-  CreateFakeImpressions(create_times, new_client->impressions);
+  CreateFakeImpressions(new_client.get(), create_times);
   count = NotificationsShownToday(new_client.get(), clock());
   EXPECT_EQ(count, 2);
 }

@@ -389,22 +389,23 @@ class MainThreadSchedulerImplTest
 
     loading_control_task_runner_ =
         main_frame_scheduler_->FrameTaskQueueControllerForTest()
-            ->LoadingControlTaskQueue()
+            ->GetTaskQueue(
+             main_frame_scheduler_->LoadingControlTaskQueueTraits())
             ->task_runner();
     timer_task_runner_ = timer_task_queue()->task_runner();
   }
 
   TaskQueue* loading_task_queue() {
+    auto queue_traits = FrameSchedulerImpl::LoadingTaskQueueTraits();
     return main_frame_scheduler_->FrameTaskQueueControllerForTest()
-        ->LoadingTaskQueue()
-        .get();
+        ->GetTaskQueue(queue_traits).get();
   }
 
   TaskQueue* timer_task_queue() {
     auto* frame_task_queue_controller =
         main_frame_scheduler_->FrameTaskQueueControllerForTest();
     return frame_task_queue_controller
-        ->NonLoadingTaskQueue(
+        ->GetTaskQueue(
             main_frame_scheduler_->ThrottleableTaskQueueTraits())
         .get();
   }
@@ -827,7 +828,7 @@ class MainThreadSchedulerImplTest
     auto* frame_task_queue_controller =
         scheduler->FrameTaskQueueControllerForTest();
     auto queue_traits = FrameSchedulerImpl::ThrottleableTaskQueueTraits();
-    return frame_task_queue_controller->NonLoadingTaskQueue(queue_traits);
+    return frame_task_queue_controller->GetTaskQueue(queue_traits);
   }
 
   QueueingTimeEstimator* queueing_time_estimator() {

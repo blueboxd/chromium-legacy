@@ -132,6 +132,9 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
   for (auto& tracker : frame_trackers_)
     tracker.second->ReportFramePresented(frame_token, feedback);
 
+  for (auto& tracker : removal_trackers_)
+    tracker->ReportFramePresented(frame_token, feedback);
+
   // Destroy the trackers that are ready to be terminated.
   base::EraseIf(
       removal_trackers_,

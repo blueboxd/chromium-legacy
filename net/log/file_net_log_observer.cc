@@ -386,9 +386,9 @@ void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
   net_log()->RemoveObserver(this);
 
   base::OnceClosure bound_flush_then_stop =
-      base::Bind(&FileNetLogObserver::FileWriter::FlushThenStop,
-                 base::Unretained(file_writer_.get()), write_queue_,
-                 base::Passed(&polled_data));
+      base::BindOnce(&FileNetLogObserver::FileWriter::FlushThenStop,
+                     base::Unretained(file_writer_.get()), write_queue_,
+                     std::move(polled_data));
 
   // Note that PostTaskAndReply() requires a non-null closure.
   if (!optional_callback.is_null()) {

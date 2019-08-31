@@ -321,7 +321,7 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
 
         // Prevent drawing so we can't make a copy of the impl_destroyed layer.
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       case 2:
         // Flush the message loops and make sure the callbacks run.
@@ -768,7 +768,8 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     if (layer_tree_host()->SourceFrameNumber() == 1) {
       // Allow drawing.
       layer_tree_host()->SetViewportRectAndScale(
-          gfx::Rect(root_->bounds()), 1.f, viz::LocalSurfaceIdAllocation());
+          gfx::Rect(root_->bounds()), 1.f,
+          GetCurrentLocalSurfaceIdAllocation());
 
       AddCopyRequest(copy_layer_.get());
     }
@@ -1154,8 +1155,9 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
                                base::Unretained(this)));
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
+        // Stop drawing.
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       }
       case 2:
@@ -1168,7 +1170,7 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
         // Allow us to draw now.
         layer_tree_host()->SetViewportRectAndScale(
             gfx::Rect(layer_tree_host()->root_layer()->bounds()), 1.f,
-            viz::LocalSurfaceIdAllocation());
+            GetCurrentLocalSurfaceIdAllocation());
         break;
       case 4:
         EXPECT_EQ(1, callback_count_);
@@ -1243,7 +1245,7 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
         copy_layer_->RequestCopyOfOutput(std::move(request));
 
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       }
       case 2:

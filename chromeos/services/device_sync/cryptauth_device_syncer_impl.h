@@ -119,7 +119,8 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
       std::unique_ptr<CryptAuthKey> new_group_key,
       const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&
           encrypted_group_private_key,
-      const CryptAuthDeviceSyncResult& device_sync_result);
+      const base::Optional<cryptauthv2::ClientDirective>& new_client_directive,
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
   void SetGroupKey(const CryptAuthKey& new_group_key);
 
@@ -127,7 +128,7 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   void OnGetFeatureStatusesFinished(
       const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
           id_to_feature_status_map,
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code);
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
   // Builds a new device registry map with all device information except
   // decrypted BetterTogetherDeviceMetadata for remote devices.
@@ -154,12 +155,12 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
 
   void ShareGroupPrivateKey();
   void OnShareGroupPrivateKeyFinished(
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code);
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
   // Replaces the current device registry if devices were able to be extracted
   // from the DeviceSync attempt. Finishes the DeviceSync attempt, sending back
   // the relevant CryptAuthDeviceSyncResult.
-  void FinishAttempt(const CryptAuthDeviceSyncResult::ResultCode& result_code);
+  void FinishAttempt(CryptAuthDeviceSyncResult::ResultCode result_code);
 
   bool did_non_fatal_error_occur_ = false;
 

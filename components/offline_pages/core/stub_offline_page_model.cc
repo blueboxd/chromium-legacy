@@ -55,7 +55,7 @@ void StubOfflinePageModel::GetVisualsAvailability(
 void StubOfflinePageModel::PublishInternalArchive(
     const OfflinePageItem& offline_page,
     PublishPageCallback publish_done_callback) {}
-const base::FilePath& StubOfflinePageModel::GetInternalArchiveDirectory(
+const base::FilePath& StubOfflinePageModel::GetArchiveDirectory(
     const std::string& name_space) const {
   return archive_directory_;
 }

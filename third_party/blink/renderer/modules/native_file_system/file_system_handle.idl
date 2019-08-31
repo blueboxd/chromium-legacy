@@ -17,8 +17,8 @@
 
     readonly attribute USVString name;
 
-    [CallWith = ScriptState] Promise<PermissionState> queryPermission(
+    [CallWith=ScriptState] Promise<PermissionState> queryPermission(
         optional FileSystemHandlePermissionDescriptor descriptor);
-    [CallWith = ScriptState] Promise<PermissionState> requestPermission(
+    [CallWith=ScriptState] Promise<PermissionState> requestPermission(
         optional FileSystemHandlePermissionDescriptor descriptor);
 };

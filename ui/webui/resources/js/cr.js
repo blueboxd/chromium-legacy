@@ -464,7 +464,13 @@ var cr = cr || function(global) {
 
     /** Whether this is on iOS. */
     get isIOS() {
-      return /iPad|iPhone|iPod/.test(navigator.platform);
+      // iPads are returning "MacIntel" for iOS 13 (devices & simulators).
+      // Chrome on macOS also returns "MacIntel" for navigator.platform,
+      // but navigator.userAgent includes /Safari/.
+      // TODO(crbug.com/998999): Fix navigator.userAgent such that it reliably
+      // returns an agent string containing "CriOS".
+      return /iPad|iPhone|iPod|MacIntel/.test(navigator.platform) &&
+          !(/Safari/.test(navigator.userAgent));
     }
   };
 }(this);

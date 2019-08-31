@@ -81,7 +81,6 @@ struct NET_EXPORT ServerNetworkStats {
 };
 
 typedef std::vector<AlternativeService> AlternativeServiceVector;
-typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 
 // Store at most 200 MRU RecentlyBrokenAlternativeServices in memory and disk.
 // This ideally would be with the other constants in HttpServerProperties, but

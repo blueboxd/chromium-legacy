@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_DEV_UI_LOADER_HTML" file="resources/dev_ui_loader/dev_ui_loader.html" compress="gzip" type="BINDATA" />
+  <include name="IDR_DEV_UI_LOADER_CSS" file="resources/dev_ui_loader/dev_ui_loader.css" compress="gzip" type="BINDATA" />
+  <include name="IDR_DEV_UI_LOADER_JS" file="resources/dev_ui_loader/dev_ui_loader.js" compress="gzip" type="BINDATA" />
+</grit-part>

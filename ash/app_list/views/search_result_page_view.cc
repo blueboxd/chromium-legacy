@@ -51,6 +51,12 @@ constexpr int kSeparatorThickness = 1;
 // The height of the search box in this page.
 constexpr int kSearchBoxHeight = 56;
 
+// The spacing between search box bottom and separator line.
+// Add 1 pixel spacing so that the search bbox bottom will not paint over
+// the separator line drawn by SearchResultPageBackground in some scale factors
+// due to the round up.
+constexpr int kSearchBoxBottomSpacing = 1;
+
 constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
 // The shadow elevation value for the shadow of the expanded search box.
@@ -103,7 +109,7 @@ class SearchResultPageBackground : public views::Background {
     if (bounds.height() <= kSearchBoxHeight)
       return;
     // Draw a separator between SearchBoxView and SearchResultPageView.
-    bounds.set_y(kSearchBoxHeight);
+    bounds.set_y(kSearchBoxHeight + kSearchBoxBottomSpacing);
     bounds.set_height(kSeparatorThickness);
     canvas->FillRect(bounds, kSeparatorColor);
   }
@@ -166,8 +172,9 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
       AppListConfig::instance().card_background_color()));
   views::ScrollView* const scroller = new views::ScrollView;
   // Leaves a placeholder area for the search box and the separator below it.
-  scroller->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kSearchBoxHeight + kSeparatorThickness, 0, 0, 0)));
+  scroller->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      kSearchBoxHeight + kSearchBoxBottomSpacing + kSeparatorThickness, 0, 0,
+      0)));
   scroller->SetDrawOverflowIndicator(false);
   scroller->SetContents(base::WrapUnique(contents_view_));
   // Setting clip height is necessary to make ScrollView take into account its

@@ -142,7 +142,7 @@ class CORE_EXPORT ScrollManager
   WebGestureEvent SynthesizeGestureScrollBegin(
       const WebGestureEvent& update_event);
 
-  bool SnapAtGestureScrollEnd();
+  bool SnapAtGestureScrollEnd(const WebGestureEvent& end_event);
 
   void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
   void NotifyScrollPhaseEndForCustomizedScroll();
@@ -166,6 +166,8 @@ class CORE_EXPORT ScrollManager
   // sequence, or if the most recent element to scroll used scroll
   // customization.
   Member<Node> previous_gesture_scrolled_node_;
+
+  FloatSize last_scroll_delta_for_scroll_gesture_;
 
   // True iff some of the delta has been consumed for the current
   // scroll sequence in this frame, or any child frames. Only used

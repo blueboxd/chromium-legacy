@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
@@ -16,22 +15,23 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 
 static SimNetwork* g_network = nullptr;
 
 SimNetwork::SimNetwork() : current_request_(nullptr) {
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(this);
+  url_test_helpers::SetLoaderDelegate(this);
   DCHECK(!g_network);
   g_network = this;
 }
 
 SimNetwork::~SimNetwork() {
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
-  Platform::Current()
-      ->GetURLLoaderMockFactory()
-      ->UnregisterAllURLsAndClearMemoryCache();
+  url_test_helpers::SetLoaderDelegate(nullptr);
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |SimTest::web_frame_client_| and/or |SimTest::web_view_helper_|.
+  url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   g_network = nullptr;
 }
 
@@ -41,7 +41,9 @@ SimNetwork& SimNetwork::Current() {
 }
 
 void SimNetwork::ServePendingRequests() {
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |SimTest::web_frame_client_| and/or |SimTest::web_view_helper_|.
+  url_test_helpers::ServeAsynchronousRequests();
 }
 
 void SimNetwork::DidReceiveResponse(WebURLLoaderClient* client,
@@ -106,13 +108,17 @@ void SimNetwork::AddRequest(SimRequestBase& request) {
   for (const auto& http_header : request.response_http_headers_)
     response.AddHttpHeaderField(http_header.key, http_header.value);
 
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(request.url_,
-                                                              response, "");
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |SimTest::web_frame_client_| and/or |SimTest::web_view_helper_|.
+  url_test_helpers::RegisterMockedURLLoadWithCustomResponse(request.url_, "",
+                                                            response);
 }
 
 void SimNetwork::RemoveRequest(SimRequestBase& request) {
   requests_.erase(request.url_);
-  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(request.url_);
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |SimTest::web_frame_client_| and/or |SimTest::web_view_helper_|.
+  url_test_helpers::RegisterMockedURLUnregister(request.url_);
 }
 
 bool SimNetwork::FillNavigationParamsResponse(WebNavigationParams* params) {

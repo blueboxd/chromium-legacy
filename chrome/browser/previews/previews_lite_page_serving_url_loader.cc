@@ -392,13 +392,18 @@ void PreviewsLitePageServingURLLoader::OnStartLoadingResponseBody(
 
 void PreviewsLitePageServingURLLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  base::UmaHistogramSparse("Previews.ServerLitePage.ServerNetError",
-                           -status.error_code);
-
   if (forwarding_client_) {
+    base::UmaHistogramSparse(
+        "Previews.ServerLitePage.ServerNetError.AfterCommit",
+        -status.error_code);
+
     forwarding_client_->OnComplete(status);
     return;
   }
+
+  base::UmaHistogramSparse(
+      "Previews.ServerLitePage.ServerNetError.BeforeCommit",
+      -status.error_code);
 
   UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                             PreviewsLitePageNavigationThrottle::ServerResponse::

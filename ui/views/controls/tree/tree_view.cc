@@ -482,9 +482,12 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     // deleted value.
     selected_node_ = nullptr;
     const auto& children = model_->GetChildren(parent);
-    TreeModelNode* to_select =
-        children.empty() ? parent
-                         : children[std::min(start, children.size() - 1)];
+    TreeModelNode* to_select = nullptr;
+    if (!children.empty()) {
+      to_select = children[std::min(start, children.size() - 1)];
+    } else if (parent != root_.model_node() || root_shown_) {
+      to_select = parent;
+    }
     SetSelectedNode(to_select);
   }
   if (IsExpanded(parent))

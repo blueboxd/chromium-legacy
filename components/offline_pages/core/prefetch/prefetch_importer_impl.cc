@@ -76,8 +76,7 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
   // The target file name will be auto generated based on GUID to prevent any
   // name collision.
   base::FilePath archives_dir =
-      offline_page_model_->GetInternalArchiveDirectory(
-          archive.client_id.name_space);
+      offline_page_model_->GetArchiveDirectory(archive.client_id.name_space);
   base::FilePath dest_path = archives_dir.AppendASCII(base::GenerateGUID())
                                  .AddExtension(FILE_PATH_LITERAL("mhtml"));
 

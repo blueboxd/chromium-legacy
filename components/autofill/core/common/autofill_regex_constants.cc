@@ -501,6 +501,12 @@ const char kUPIVirtualPaymentAddressRe[] =
 const char kInternationalBankAccountNumberRe[] =
     "^[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}$";
 
+// Matches all 3 and 4 digit numbers.
+const char kCreditCardCVCPattern[] = "^\\d{3,4}$";
+
+// Matches numbers in the range [2010-2099].
+const char kCreditCard4DigitExpYearPattern[] = "^[2][0][1-9][0-9]$";
+
 /////////////////////////////////////////////////////////////////////////////
 // form_structure.cc
 /////////////////////////////////////////////////////////////////////////////

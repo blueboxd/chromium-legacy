@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
-PASS idl_test setup
-PASS Partial interface Navigator: original interface defined
-PASS Partial interface Navigator: valid exposure set
+FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
+ define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
+                        ^ Trailing comma in arguments list"
+FAIL Partial interface Navigator: original interface defined assert_true: Original interface should be defined expected true got false
 PASS Gamepad interface: existence and properties of interface object
 PASS Gamepad interface object length
 PASS Gamepad interface object name
@@ -31,10 +32,5 @@ PASS GamepadEvent interface: existence and properties of interface prototype obj
 PASS GamepadEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS GamepadEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS GamepadEvent interface: attribute gamepad
-PASS GamepadEvent must be primary interface of new GamepadEvent("gamepad")
-PASS Stringification of new GamepadEvent("gamepad")
-PASS GamepadEvent interface: new GamepadEvent("gamepad") must inherit property "gamepad" with the proper type
-PASS Navigator interface: operation getGamepads()
-PASS Navigator interface: navigator must inherit property "getGamepads()" with the proper type
 Harness: the test ran to completion.
 

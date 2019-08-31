@@ -226,6 +226,14 @@ bool LitePageRedirectPreviewShouldPresolve() {
       true);
 }
 
+bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+             features::kLitePageServerPreviews,
+             "ignore_optimization_guide_filtering", false) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+}
+
 bool LitePageRedirectOnlyTriggerOnSuccessfulProbe() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "only_trigger_after_probe_success",

@@ -6,6 +6,7 @@
 
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
@@ -240,6 +241,9 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
     content::WebContents* web_contents,
     const url::Origin& origin,
     Usage usage) {
+  base::RecordAction(
+      base::UserMetricsAction("NativeFileSystemAPI.OpenedBubble"));
+
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
@@ -423,6 +427,9 @@ NativeFileSystemUsageBubbleView::CreateExtraView() {
 
 void NativeFileSystemUsageBubbleView::ButtonPressed(views::Button* sender,
                                                     const ui::Event& event) {
+  base::RecordAction(
+      base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
+
   if (!web_contents())
     return;
 

@@ -19,17 +19,6 @@ struct MediaEngagementScoreDetails {
 
   // Whether the score is considered to be high.
   bool is_high;
-
-  // Data used for experiments.
-  int32 audible_playbacks;
-  int32 significant_playbacks;
-
-  // How many time the score changed `is_high` status.
-  int32 high_score_changes;
-
-  // Details of the components which make up |media_playbacks|.
-  int32 audio_context_playbacks;
-  int32 media_element_playbacks;
 };
 
 struct MediaEngagementConfig {

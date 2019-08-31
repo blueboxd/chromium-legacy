@@ -41,6 +41,8 @@ class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
   // SharedURLLoaderFactoryInfo implementation
   std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
 
+  NetworkContext* network_context() { return network_context_.get(); }
+
  private:
   friend class base::RefCounted<TestSharedURLLoaderFactory>;
   ~TestSharedURLLoaderFactory() override;

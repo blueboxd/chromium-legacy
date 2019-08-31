@@ -11,6 +11,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -140,15 +141,16 @@ public class AppBannerManager extends EmptyTabObserver {
                 String imageUrl = data.imageUrl();
                 if (TextUtils.isEmpty(imageUrl)) return;
 
-                nativeOnAppDetailsRetrieved(
-                        mNativePointer, data, data.title(), data.packageName(), data.imageUrl());
+                AppBannerManagerJni.get().onAppDetailsRetrieved(mNativePointer,
+                        AppBannerManager.this, data, data.title(), data.packageName(),
+                        data.imageUrl());
             }
         };
     }
 
     /** Returns the language option to use for the add to homescreen dialog and menu item. */
     public static int getHomescreenLanguageOption() {
-        int languageOption = nativeGetHomescreenLanguageOption();
+        int languageOption = AppBannerManagerJni.get().getHomescreenLanguageOption();
         if (languageOption == LanguageOption.INSTALL) {
             return R.string.menu_add_to_homescreen_install;
         }
@@ -158,7 +160,7 @@ public class AppBannerManager extends EmptyTabObserver {
     /** Returns the language option to use for app banners. */
     // TODO(https://crbug.com/959086): Remove this as it's no longer used.
     public static int getAppBannerLanguageOption() {
-        int languageOption = nativeGetHomescreenLanguageOption();
+        int languageOption = AppBannerManagerJni.get().getHomescreenLanguageOption();
         if (languageOption == LanguageOption.ADD) {
             return R.string.app_banner_add;
         } else if (languageOption == LanguageOption.INSTALL) {
@@ -169,7 +171,8 @@ public class AppBannerManager extends EmptyTabObserver {
 
     @VisibleForTesting
     public AddToHomescreenDialog getAddToHomescreenDialogForTesting() {
-        return nativeGetAddToHomescreenDialogForTesting(mNativePointer);
+        return AppBannerManagerJni.get().getAddToHomescreenDialogForTesting(
+                mNativePointer, AppBannerManager.this);
     }
 
     /** Overrides whether the system supports add to home screen. Used in testing. */
@@ -181,44 +184,45 @@ public class AppBannerManager extends EmptyTabObserver {
     /** Returns whether the native AppBannerManager is working. */
     @VisibleForTesting
     public boolean isRunningForTesting() {
-        return nativeIsRunningForTesting(mNativePointer);
+        return AppBannerManagerJni.get().isRunningForTesting(mNativePointer, AppBannerManager.this);
     }
 
     /** Sets constants (in days) the banner should be blocked for after dismissing and ignoring. */
     @VisibleForTesting
     static void setDaysAfterDismissAndIgnoreForTesting(int dismissDays, int ignoreDays) {
-        nativeSetDaysAfterDismissAndIgnoreToTrigger(dismissDays, ignoreDays);
+        AppBannerManagerJni.get().setDaysAfterDismissAndIgnoreToTrigger(dismissDays, ignoreDays);
     }
 
     /** Sets a constant (in days) that gets added to the time when the current time is requested. */
     @VisibleForTesting
     static void setTimeDeltaForTesting(int days) {
-        nativeSetTimeDeltaForTesting(days);
+        AppBannerManagerJni.get().setTimeDeltaForTesting(days);
     }
 
     /** Sets the total required engagement to trigger the banner. */
     @VisibleForTesting
     static void setTotalEngagementForTesting(double engagement) {
-        nativeSetTotalEngagementToTrigger(engagement);
+        AppBannerManagerJni.get().setTotalEngagementToTrigger(engagement);
     }
 
     /** Returns the AppBannerManager object. This is owned by the C++ banner manager. */
     public static AppBannerManager forTab(Tab tab) {
-        return nativeGetJavaBannerManagerForWebContents(tab.getWebContents());
+        return AppBannerManagerJni.get().getJavaBannerManagerForWebContents(tab.getWebContents());
     }
 
-    private static native int nativeGetHomescreenLanguageOption();
-    private static native AppBannerManager nativeGetJavaBannerManagerForWebContents(
-            WebContents webContents);
-    private native boolean nativeOnAppDetailsRetrieved(long nativeAppBannerManagerAndroid,
-            AppData data, String title, String packageName, String imageUrl);
+    @NativeMethods
+    interface Natives {
+        int getHomescreenLanguageOption();
+        AppBannerManager getJavaBannerManagerForWebContents(WebContents webContents);
+        boolean onAppDetailsRetrieved(long nativeAppBannerManagerAndroid, AppBannerManager caller,
+                AppData data, String title, String packageName, String imageUrl);
+        // Testing methods.
+        AddToHomescreenDialog getAddToHomescreenDialogForTesting(
+                long nativeAppBannerManagerAndroid, AppBannerManager caller);
 
-    // Testing methods.
-    private native AddToHomescreenDialog nativeGetAddToHomescreenDialogForTesting(
-            long nativeAppBannerManagerAndroid);
-    private native boolean nativeIsRunningForTesting(long nativeAppBannerManagerAndroid);
-    private static native void nativeSetDaysAfterDismissAndIgnoreToTrigger(
-            int dismissDays, int ignoreDays);
-    private static native void nativeSetTimeDeltaForTesting(int days);
-    private static native void nativeSetTotalEngagementToTrigger(double engagement);
+        boolean isRunningForTesting(long nativeAppBannerManagerAndroid, AppBannerManager caller);
+        void setDaysAfterDismissAndIgnoreToTrigger(int dismissDays, int ignoreDays);
+        void setTimeDeltaForTesting(int days);
+        void setTotalEngagementToTrigger(double engagement);
+    }
 }

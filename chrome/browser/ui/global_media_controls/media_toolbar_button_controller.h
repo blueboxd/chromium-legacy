@@ -35,7 +35,8 @@ class MediaToolbarButtonController
     : public media_session::mojom::AudioFocusObserver,
       public media_message_center::MediaNotificationController {
  public:
-  MediaToolbarButtonController(service_manager::Connector* connector,
+  MediaToolbarButtonController(const base::UnguessableToken& source_id,
+                               service_manager::Connector* connector,
                                MediaToolbarButtonControllerDelegate* delegate);
   ~MediaToolbarButtonController() override;
 

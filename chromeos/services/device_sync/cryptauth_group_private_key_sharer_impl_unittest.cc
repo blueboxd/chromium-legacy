@@ -236,7 +236,7 @@ class DeviceSyncCryptAuthGroupPrivateKeySharerImplTest
   }
 
   void VerifyShareGroupPrivateKeyResult(
-      const CryptAuthDeviceSyncResult::ResultCode& expected_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode expected_result_code) {
     ASSERT_TRUE(device_sync_result_code_);
     EXPECT_EQ(expected_result_code, device_sync_result_code_);
   }
@@ -262,7 +262,7 @@ class DeviceSyncCryptAuthGroupPrivateKeySharerImplTest
   }
 
   void OnShareGroupPrivateKeyComplete(
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
     device_sync_result_code_ = device_sync_result_code;
   }
 

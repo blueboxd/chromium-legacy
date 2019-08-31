@@ -14,6 +14,7 @@ struct TabSizeInfo;
 
 namespace views {
 class Label;
+class View;
 }
 
 // View for tab group headers in the tab strip, which are markers of group
@@ -39,6 +40,7 @@ class TabGroupHeader : public TabSlotView {
   TabController* const controller_;
   const TabGroupId group_;
 
+  views::View* title_chip_;
   views::Label* title_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupHeader);

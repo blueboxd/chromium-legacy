@@ -61,7 +61,7 @@ declare_args() {
   enable_mpeg_h_audio_demuxing = proprietary_codecs && is_chromecast
 
   enable_mse_mpeg2ts_stream_parser =
-      proprietary_codecs && (is_chromecast || use_fuzzing_engine)
+      proprietary_codecs && (is_chromecast || is_fuchsia || use_fuzzing_engine)
 
   # Enable parsing for the 'cbcs' encryption scheme added by MPEG Common
   # Encryption 3rd Edition (ISO/IEC 23001-7), published 02/15/2016.

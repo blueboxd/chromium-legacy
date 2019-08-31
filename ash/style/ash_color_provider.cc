@@ -232,6 +232,10 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       light_color = gfx::kGoogleRed600;
       dark_color = gfx::kGoogleRed300;
       break;
+    case ContentLayerType::kProminentIconButton:
+      light_color = gfx::kGoogleBlue600;
+      dark_color = gfx::kGoogleBlue300;
+      break;
   }
   return color_mode == AshColorMode::kLight ? light_color : dark_color;
 }

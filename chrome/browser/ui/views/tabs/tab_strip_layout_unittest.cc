@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,13 +70,11 @@ std::vector<gfx::Rect> CalculateTabBounds(TestCase test_case) {
   for (int tab_index = 0; tab_index < test_case.num_tabs; tab_index++) {
     TabAnimationState ideal_animation_state =
         TabAnimationState::ForIdealTabState(
-            TabAnimationState::TabOpenness::kOpen,
-            tab_index < test_case.num_pinned_tabs
-                ? TabAnimationState::TabPinnedness::kPinned
-                : TabAnimationState::TabPinnedness::kUnpinned,
-            tab_index == test_case.active_index
-                ? TabAnimationState::TabActiveness::kActive
-                : TabAnimationState::TabActiveness::kInactive,
+            TabOpen::kOpen,
+            tab_index < test_case.num_pinned_tabs ? TabPinned::kPinned
+                                                  : TabPinned::kUnpinned,
+            tab_index == test_case.active_index ? TabActive::kActive
+                                                : TabActive::kInactive,
             0);
     tab_states.push_back(TabWidthConstraints(ideal_animation_state,
                                              layout_constants, size_info));

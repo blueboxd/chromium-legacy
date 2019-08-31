@@ -142,9 +142,11 @@ public class ContactDetails implements Comparable<ContactDetails> {
             results.primaryEmail = "";
         } else {
             results.primaryEmail = mEmails.get(0);
-            if (mEmails.size() > 1) {
+            int totalAddresses = mEmails.size();
+            if (totalAddresses > 1) {
+                int hiddenAddresses = totalAddresses - 1;
                 results.overflowEmailCount = resources.getQuantityString(
-                        R.plurals.contacts_picker_more_details, (mEmails.size() - 1));
+                        R.plurals.contacts_picker_more_details, hiddenAddresses, hiddenAddresses);
             }
         }
 
@@ -153,9 +155,11 @@ public class ContactDetails implements Comparable<ContactDetails> {
             results.primaryTelephoneNumber = "";
         } else {
             results.primaryTelephoneNumber = mPhoneNumbers.get(0);
-            if (mPhoneNumbers.size() > 1) {
+            int totalNumbers = mPhoneNumbers.size();
+            if (totalNumbers > 1) {
+                int hiddenNumbers = totalNumbers - 1;
                 results.overflowTelephoneNumberCount = resources.getQuantityString(
-                        R.plurals.contacts_picker_more_details, (mPhoneNumbers.size() - 1));
+                        R.plurals.contacts_picker_more_details, hiddenNumbers, hiddenNumbers);
             }
         }
 

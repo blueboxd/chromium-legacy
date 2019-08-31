@@ -41,7 +41,7 @@ using FakeTaskCallback =
     base::OnceCallback<void(CtapDeviceResponseCode status_code,
                             base::Optional<std::vector<uint8_t>>)>;
 using FakeHandlerCallbackReceiver =
-    test::StatusAndValuesCallbackReceiver<FidoReturnCode,
+    test::StatusAndValuesCallbackReceiver<bool,
                                           base::Optional<std::vector<uint8_t>>,
                                           const FidoAuthenticator*>;
 
@@ -54,7 +54,8 @@ enum class FakeTaskResponse : uint8_t {
 
 // FidoRequestHandler that automatically starts discovery but does nothing on
 // DispatchRequest().
-class EmptyRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
+class EmptyRequestHandler
+    : public FidoRequestHandler<bool, std::vector<uint8_t>> {
  public:
   EmptyRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
                       test::FakeFidoDiscoveryFactory* fake_discovery_factory)
@@ -228,7 +229,8 @@ class FakeFidoTask : public FidoTask {
   base::WeakPtrFactory<FakeFidoTask> weak_factory_{this};
 };
 
-class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
+class FakeFidoRequestHandler
+    : public FidoRequestHandler<bool, std::vector<uint8_t>> {
  public:
   FakeFidoRequestHandler(service_manager::Connector* connector,
                          test::FakeFidoDiscoveryFactory* fake_discovery_factory,
@@ -272,19 +274,19 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
         static_cast<FidoDeviceAuthenticator*>(authenticator);
     device_authenticator->SetTaskForTesting(nullptr);
 
-    const base::Optional<FidoReturnCode> maybe_result =
-        ConvertDeviceResponseCodeToFidoReturnCode(status);
-    if (!maybe_result) {
-      FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
-                      << " from " << authenticator->GetDisplayName();
-      active_authenticators().erase(authenticator->GetId());
+    if (status == CtapDeviceResponseCode::kCtap2ErrOther) {
+      // Simulates an error that is sent without the user touching the
+      // authenticator (FakeTaskResponse::kProcessingError). Don't resolve
+      // the request for this response.
       return;
     }
 
     if (!is_complete()) {
       CancelActiveAuthenticators(authenticator->GetId());
     }
-    OnAuthenticatorResponse(authenticator, *maybe_result, std::move(response));
+    OnAuthenticatorResponse(authenticator,
+                            status == CtapDeviceResponseCode::kSuccess,
+                            std::move(response));
   }
 
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_{this};
@@ -383,7 +385,7 @@ TEST_F(FidoRequestHandlerTest, TestSingleDeviceSuccess) {
 
   discovery()->AddDevice(std::move(device));
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_TRUE(callback().status());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
@@ -446,7 +448,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
 
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_TRUE(callback().status());
 }
 
 // Test a scenario where 2 devices respond successfully with small time
@@ -486,7 +488,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_TRUE(callback().status());
 }
 
 // Test a scenario where 3 devices respond with a processing error, an UP(user
@@ -545,8 +547,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
-            callback().status());
+  EXPECT_FALSE(callback().status());
 }
 
 // If a device with transport type kInternal returns a
@@ -585,7 +586,7 @@ TEST_F(FidoRequestHandlerTest,
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+  EXPECT_FALSE(callback().status());
 }
 
 // Like |TestRequestWithOperationDeniedErrorInternalTransport|, but with a
@@ -611,7 +612,7 @@ TEST_F(FidoRequestHandlerTest,
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+  EXPECT_FALSE(callback().status());
 }
 
 // Requests should be dispatched to the platform authenticator.
@@ -644,7 +645,7 @@ TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
 
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_TRUE(callback().status());
 }
 
 TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {

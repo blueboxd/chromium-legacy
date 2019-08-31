@@ -482,6 +482,24 @@ public class OfflinePageUtilsTest {
         savePage(SavePageResult.SUCCESS, mTestPage, clientId);
     }
 
+    /**
+     * This test checks that an offline page saved with on-the-fly hash computation enabled will
+     * be trusted when loaded.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"enable-features=OnTheFlyMhtmlHashComputation"})
+    public void testOnTheFlyProducesTrustedPage() throws Exception {
+        // Load the test offline page.
+        loadOfflinePage(SUGGESTED_ARTICLES_ID);
+
+        // Verify that we are currently showing a trusted page.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(OfflinePageUtils.isShowingTrustedOfflinePage(
+                    mActivityTestRule.getActivity().getActivityTab()));
+        });
+    }
+
     // Utility to load an offline page into the current tab.
     private void loadOfflinePage(ClientId clientId) throws Exception {
         // Start by loading a normal page, and saving an offline copy.

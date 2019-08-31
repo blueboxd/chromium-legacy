@@ -76,7 +76,7 @@ function setUp() {
 
   testHistory = new importer.TestImportHistory();
   duplicateFinder = new importer.DriveDuplicateFinder();
-  getDisposition = importer.DispositionChecker.createChecker(testHistory);
+  getDisposition = importer.DispositionCheckerImpl.createChecker(testHistory);
 }
 
 // Verifies the correct result when a duplicate exists.

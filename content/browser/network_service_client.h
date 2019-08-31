@@ -42,10 +42,6 @@ class CONTENT_EXPORT NetworkServiceClient
   ~NetworkServiceClient() override;
 
   // network::mojom::NetworkServiceClient implementation:
-  void OnFileUploadRequested(uint32_t process_id,
-                             bool async,
-                             const std::vector<base::FilePath>& file_paths,
-                             OnFileUploadRequestedCallback callback) override;
   void OnLoadingStateUpdate(std::vector<network::mojom::LoadInfoPtr> infos,
                             OnLoadingStateUpdateCallback callback) override;
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,

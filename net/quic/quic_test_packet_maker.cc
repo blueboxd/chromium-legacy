@@ -506,7 +506,8 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
     uint64_t smallest_received,
     uint64_t least_unacked,
     quic::QuicErrorCode quic_error,
-    const std::string& quic_error_details) {
+    const std::string& quic_error_details,
+    uint64_t frame_type) {
   InitializeHeader(num, include_version);
 
   quic::QuicAckFrame ack(MakeAckFrame(largest_received));
@@ -528,6 +529,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
+    close.transport_close_frame_type = frame_type;
   }
 
   frames.push_back(quic::QuicFrame(&close));

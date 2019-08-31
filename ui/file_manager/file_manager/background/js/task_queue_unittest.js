@@ -9,7 +9,7 @@ let queue;
 const updates = {};
 
 function setUp() {
-  queue = new importer.TaskQueue();
+  queue = new importer.TaskQueueImpl();
 
   // Set up a callback to log updates from running tasks.
   for (const updateType in importer.TaskQueue.UpdateType) {
@@ -26,58 +26,58 @@ function setUp() {
 
 /**
  * A Task subclass for testing.
- * @constructor
- * @extends {importer.TaskQueue.BaseTask}
- *
- * @param {string} taskId
  */
-const TestTask = function(taskId) {
-  importer.TaskQueue.BaseTask.call(this, taskId);
-
-  /** @type {boolean} */
-  this.wasRun = false;
-
+class TestTask extends importer.TaskQueue.BaseTaskImpl {
   /**
-   * @private {Function}
+   * @param {string} taskId
    */
-  this.runResolver_ = null;
+  constructor(taskId) {
+    super(taskId);
 
-  this.runPromise_ = new Promise(resolve => {
-    this.runResolver_ = resolve;
-  });
-};
-TestTask.prototype.__proto__ = importer.TaskQueue.BaseTask.prototype;
+    /** @type {boolean} */
+    this.wasRun = false;
 
-/** @override */
-TestTask.prototype.run = function() {
-  this.wasRun = true;
-  this.runResolver_(this);
-};
+    /**
+     * @private {Function}
+     */
+    this.runResolver_ = null;
 
-/** Sends a quick error notification. */
-TestTask.prototype.notifyError = function() {
-  this.notify(importer.TaskQueue.UpdateType.ERROR);
-};
+    this.runPromise_ = new Promise(resolve => {
+      this.runResolver_ = resolve;
+    });
+  }
 
-/** Sends a quick completion notification. */
-TestTask.prototype.notifyComplete = function() {
-  this.notify(importer.TaskQueue.UpdateType.COMPLETE);
-};
+  /** @override */
+  run() {
+    this.wasRun = true;
+    this.runResolver_(this);
+  }
 
-/** Sends a quick cancelled notification. */
-TestTask.prototype.notifyCanceled = function() {
-  this.notify(importer.TaskQueue.UpdateType.CANCELED);
-};
+  /** Sends a quick error notification. */
+  notifyError() {
+    this.notify(importer.TaskQueue.UpdateType.ERROR);
+  }
 
-/** Sends a quick progress notification. */
-TestTask.prototype.notifyProgress = function() {
-  this.notify(importer.TaskQueue.UpdateType.PROGRESS);
-};
+  /** Sends a quick completion notification. */
+  notifyComplete() {
+    this.notify(importer.TaskQueue.UpdateType.COMPLETE);
+  }
 
-/** @return {!Promise} A promise that settles once #run is called. */
-TestTask.prototype.whenRun = function() {
-  return this.runPromise_;
-};
+  /** Sends a quick cancelled notification. */
+  notifyCanceled() {
+    this.notify(importer.TaskQueue.UpdateType.CANCELED);
+  }
+
+  /** Sends a quick progress notification. */
+  notifyProgress() {
+    this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+  }
+
+  /** @return {!Promise} A promise that settles once #run is called. */
+  whenRun() {
+    return this.runPromise_;
+  }
+}
 
 // Verifies that a queued task gets run.
 function testRunsTask(callback) {

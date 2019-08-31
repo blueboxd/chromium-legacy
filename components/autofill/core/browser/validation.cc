@@ -91,7 +91,7 @@ bool HasCorrectLength(const base::string16& number) {
   return true;
 }
 
-// TODO (crbug.com/927767): Add unit tests for this function.
+// TODO(crbug.com/927767): Add unit tests for this function.
 bool PassesLuhnCheck(const base::string16& number) {
   // Use the Luhn formula [3] to validate the number.
   // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
@@ -351,4 +351,12 @@ bool IsInternationalBankAccountNumber(const base::string16& value) {
                         base::ASCIIToUTF16(kInternationalBankAccountNumberRe));
 }
 
+bool IsPlausibleCreditCardCVCNumber(const base::string16& value) {
+  return MatchesPattern(value, base::ASCIIToUTF16(kCreditCardCVCPattern));
+}
+
+bool IsPlausible4DigitExpirationYear(const base::string16& value) {
+  return MatchesPattern(value,
+                        base::ASCIIToUTF16(kCreditCard4DigitExpYearPattern));
+}
 }  // namespace autofill

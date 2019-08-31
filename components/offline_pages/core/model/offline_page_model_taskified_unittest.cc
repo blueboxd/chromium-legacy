@@ -1240,10 +1240,10 @@ TEST_F(OfflinePageModelTaskifiedTest, ExtraActionTriggeredWhenSaveSuccess) {
 
 TEST_F(OfflinePageModelTaskifiedTest, GetArchiveDirectory) {
   base::FilePath temporary_dir =
-      model()->GetInternalArchiveDirectory(kDefaultNamespace);
+      model()->GetArchiveDirectory(kDefaultNamespace);
   EXPECT_EQ(temporary_dir_path(), temporary_dir);
   base::FilePath persistent_dir =
-      model()->GetInternalArchiveDirectory(kDownloadNamespace);
+      model()->GetArchiveDirectory(kDownloadNamespace);
   EXPECT_EQ(private_archive_dir_path(), persistent_dir);
 }
 

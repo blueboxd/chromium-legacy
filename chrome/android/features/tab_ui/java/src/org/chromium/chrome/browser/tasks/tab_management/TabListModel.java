@@ -10,9 +10,8 @@ import android.util.Pair;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyListModel;
-import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ import java.util.List;
  * A {@link PropertyListModel} implementation to keep information about a list of
  * {@link org.chromium.chrome.browser.tab.Tab}s.
  */
-class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
+class TabListModel extends ModelList {
     /**
      * Convert the given tab ID to an index to match during partial updates.
      * @param tabId The tab ID to search for.
@@ -28,7 +27,7 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
      */
     public int indexFromId(int tabId) {
         for (int i = 0; i < size(); i++) {
-            if (get(i).get(TAB_ID) == tabId) return i;
+            if (get(i).model.get(TAB_ID) == tabId) return i;
         }
         return TabModel.INVALID_TAB_INDEX;
     }
@@ -40,7 +39,7 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
      * @param index         The index of the item in {@link TabListModel} that needs to be updated.
      */
     void updateTabListModelIdForGroup(Tab selectedTab, int index) {
-        get(index).set(TabProperties.TAB_ID, selectedTab.getId());
+        get(index).model.set(TabProperties.TAB_ID, selectedTab.getId());
     }
 
     /**
@@ -78,14 +77,14 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
      *         state. If not, restore it to original state.
      */
     void updateSelectedTabForMergeToGroup(int index, boolean isSelected) {
-        int status = isSelected ? ClosableTabGridViewHolder.AnimationStatus.SELECTED_CARD_ZOOM_IN
-                                : ClosableTabGridViewHolder.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
+        int status = isSelected ? ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN
+                                : ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
         if (index < 0 || index >= size()
-                || get(index).get(TabProperties.CARD_ANIMATION_STATUS) == status)
+                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status)
             return;
 
-        get(index).set(TabProperties.CARD_ANIMATION_STATUS, status);
-        get(index).set(TabProperties.ALPHA, isSelected ? 0.8f : 1f);
+        get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
+        get(index).model.set(TabProperties.ALPHA, isSelected ? 0.8f : 1f);
     }
 
     /**
@@ -97,11 +96,11 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
      *         If not, restore it to original state.
      */
     void updateHoveredTabForMergeToGroup(int index, boolean isHovered) {
-        int status = isHovered ? ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_IN
-                               : ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
+        int status = isHovered ? ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_IN
+                               : ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
         if (index < 0 || index >= size()
-                || get(index).get(TabProperties.CARD_ANIMATION_STATUS) == status)
+                || get(index).model.get(TabProperties.CARD_ANIMATION_STATUS) == status)
             return;
-        get(index).set(TabProperties.CARD_ANIMATION_STATUS, status);
+        get(index).model.set(TabProperties.CARD_ANIMATION_STATUS, status);
     }
 }

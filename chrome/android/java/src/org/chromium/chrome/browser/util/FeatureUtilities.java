@@ -83,6 +83,7 @@ public class FeatureUtilities {
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
+    private static Boolean sIsStartSurfaceEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
     private static Boolean sIsTabToGtsAnimationEnabled;
     private static Boolean sFeedEnabled;
@@ -190,6 +191,7 @@ public class FeatureUtilities {
         cacheImmersiveUiModeEnabled();
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheReachedCodeProfilerTrialGroup();
+        cacheStartSurfaceEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -560,6 +562,25 @@ public class FeatureUtilities {
      */
     public static boolean isDownloadProgressInfoBarEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR);
+    }
+
+    private static void cacheStartSurfaceEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.START_SURFACE_ENABLED_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.START_SURFACE_ANDROID));
+    }
+
+    /**
+     * @return Whether the Start Surface is enabled.
+     */
+    public static boolean isStartSurfaceEnabled() {
+        if (sIsStartSurfaceEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsStartSurfaceEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.START_SURFACE_ENABLED_KEY, false);
+        }
+        return sIsStartSurfaceEnabled;
     }
 
     private static void cacheGridTabSwitcherEnabled() {

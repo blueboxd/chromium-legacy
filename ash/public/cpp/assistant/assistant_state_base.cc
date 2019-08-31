@@ -86,6 +86,7 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
                           base::Unretained(this)));
 
   UpdateConsentStatus();
+  UpdateContextEnabled();
   UpdateHotwordAlwaysOn();
   UpdateLaunchWithMicOpen();
   UpdateNotificationEnabled();

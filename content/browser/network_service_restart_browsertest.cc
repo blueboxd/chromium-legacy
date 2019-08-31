@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/browser/worker_host/test_shared_worker_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -37,6 +38,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_test_support.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
@@ -911,6 +913,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
+  InjectTestSharedWorkerService(partition);
+
   const GURL page_url =
       embedded_test_server()->GetURL("/workers/fetch_from_shared_worker.html");
   const GURL fetch_url = embedded_test_server()->GetURL("/echo");
@@ -924,10 +928,12 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
   EXPECT_EQ("Echo", EvalJs(shell(), script));
 
   // There should be one worker host. We will later wait for it to terminate.
-  SharedWorkerServiceImpl* service = partition->GetSharedWorkerService();
+  TestSharedWorkerServiceImpl* service =
+      static_cast<TestSharedWorkerServiceImpl*>(
+          partition->GetSharedWorkerService());
   EXPECT_EQ(1u, service->worker_hosts_.size());
   base::RunLoop loop;
-  service->SetWorkerTerminationCallbackForTesting(loop.QuitClosure());
+  service->SetWorkerTerminationCallback(loop.QuitClosure());
 
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();

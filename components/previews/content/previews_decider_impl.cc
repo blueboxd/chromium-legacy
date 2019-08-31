@@ -316,20 +316,29 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     }
     passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
-    if (effective_connection_type_ >
-        previews::params::GetECTThresholdForPreview(type)) {
-      return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
+    // If the optimization type does not require optimization hints, determine
+    // the ECT network triggering condition here.
+    if (!ShouldCheckOptimizationHints(type)) {
+      if (effective_connection_type_ >
+          previews::params::GetECTThresholdForPreview(type)) {
+        return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
+      }
+      passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
     }
-    passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
+
+    if (effective_connection_type_ > params::GetSessionMaxECTThreshold()) {
+      return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
+    }
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
   }
 
   if (is_reload) {
     return PreviewsEligibilityReason::RELOAD_DISALLOWED;
   }
-
   passed_reasons->push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
 
-  // Check server whitelist/blacklist, if provided.
+  // Check optimization hints, if provided.
   if (ShouldCheckOptimizationHints(type)) {
     if (optimization_guide::features::IsOptimizationHintsEnabled()) {
       // Optimization hints are configured, so determine if those hints
@@ -339,7 +348,7 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     } else if (type == PreviewsType::RESOURCE_LOADING_HINTS ||
                type == PreviewsType::NOSCRIPT ||
                type == PreviewsType::DEFER_ALL_SCRIPT) {
-      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
+      return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
     }
   }
 
@@ -432,6 +441,12 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      // Make sure to also check the ECT threshold for the Preview if we are
+      // bypassing the optimization guide.
+      if (effective_connection_type_ >
+          params::GetECTThresholdForPreview(type)) {
+        return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
+      }
       return PreviewsEligibilityReason::ALLOWED;
     }
 
@@ -441,8 +456,7 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
         PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
     if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
-                                              type,
-                                              /*out_ect_threshold=*/nullptr)) {
+                                              type)) {
       return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
     }
     passed_reasons->push_back(
@@ -478,16 +492,16 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
       PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
   // Check if request URL is whitelisted by the optimization guide.
-  net::EffectiveConnectionType ect_threshold =
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
-                                            type, &ect_threshold)) {
+                                            type)) {
     return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
 
-  // The url is whitelisted, now check the ECT threshold for it.
+  // The url is whitelisted, now check some additional cases of the effective
+  // network condition.
+
   // Note: the network quality estimator may sometimes return effective
   // connection type as offline when the Android APIs incorrectly return device
   // connectivity as null. See https://crbug.com/838969. So, we do not trigger
@@ -510,11 +524,6 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     return PreviewsEligibilityReason::DEVICE_OFFLINE;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
-
-  if (ect > ect_threshold) {
-    return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
-  }
-  passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
 
   if (ect > params::GetSessionMaxECTThreshold()) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;

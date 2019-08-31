@@ -53,7 +53,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
  private:
   void AdvanceCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
                        mojom::blink::IDBCursorResultPtr result);
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);

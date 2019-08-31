@@ -186,10 +186,10 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
       render_frame_host, render_frame_host->GetLastCommittedURL(),
       heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
 
-  ADS_HISTOGRAM("HeavyAds.InterventionType", UMA_HISTOGRAM_ENUMERATION,
+  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 FrameData::FrameVisibility::kAnyVisibility,
                 frame_data->heavy_ad_status());
-  ADS_HISTOGRAM("HeavyAds.InterventionType", UMA_HISTOGRAM_ENUMERATION,
+  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 frame_data->visibility(), frame_data->heavy_ad_status());
 
   // Report intervention to the blocklist.
@@ -820,7 +820,7 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.user_activation_status());
-    ADS_HISTOGRAM("HeavyAds.ComputedType", UMA_HISTOGRAM_ENUMERATION,
+    ADS_HISTOGRAM("HeavyAds.ComputedType2", UMA_HISTOGRAM_ENUMERATION,
                   visibility, ad_frame_data.heavy_ad_status());
   }
 }

@@ -173,6 +173,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          context.transport_security_state,
                          params.quic_params.supported_versions,
                          params.enable_spdy_ping_based_connection_checking,
+                         params.enable_http2,
+                         params.enable_quic,
                          params.quic_params.support_ietf_format_quic_altsvc,
                          params.spdy_session_max_recv_window_size,
                          params.spdy_session_max_queued_capped_frames,
@@ -344,22 +346,6 @@ void HttpNetworkSession::CloseIdleConnections() {
   normal_socket_pool_manager_->CloseIdleSockets();
   websocket_socket_pool_manager_->CloseIdleSockets();
   spdy_session_pool_.CloseCurrentIdleSessions();
-}
-
-bool HttpNetworkSession::IsProtocolEnabled(NextProto protocol) const {
-  switch (protocol) {
-    case kProtoUnknown:
-      NOTREACHED();
-      return false;
-    case kProtoHTTP11:
-      return true;
-    case kProtoHTTP2:
-      return params_.enable_http2;
-    case kProtoQUIC:
-      return IsQuicEnabled();
-  }
-  NOTREACHED();
-  return false;
 }
 
 void HttpNetworkSession::SetServerPushDelegate(

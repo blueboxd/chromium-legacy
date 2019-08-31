@@ -119,7 +119,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   void Abort(int64_t transaction_id) override;
 
  private:
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
 
   mojo::AssociatedRemote<mojom::blink::IDBDatabase> database_;

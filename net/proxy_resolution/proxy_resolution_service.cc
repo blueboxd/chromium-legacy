@@ -571,9 +571,10 @@ class ProxyResolutionService::InitProxyResolver {
   int DoDecidePacFile() {
     next_state_ = STATE_DECIDE_PAC_FILE_COMPLETE;
 
-    return decider_->Start(
-        config_, wait_delay_, proxy_resolver_factory_->expects_pac_bytes(),
-        base::Bind(&InitProxyResolver::OnIOCompletion, base::Unretained(this)));
+    return decider_->Start(config_, wait_delay_,
+                           proxy_resolver_factory_->expects_pac_bytes(),
+                           base::BindOnce(&InitProxyResolver::OnIOCompletion,
+                                          base::Unretained(this)));
   }
 
   int DoDecidePacFileComplete(int result) {
@@ -593,7 +594,8 @@ class ProxyResolutionService::InitProxyResolver {
     next_state_ = STATE_CREATE_RESOLVER_COMPLETE;
     return proxy_resolver_factory_->CreateProxyResolver(
         script_data_.data, proxy_resolver_,
-        base::Bind(&InitProxyResolver::OnIOCompletion, base::Unretained(this)),
+        base::BindOnce(&InitProxyResolver::OnIOCompletion,
+                       base::Unretained(this)),
         &create_resolver_request_);
   }
 
@@ -740,8 +742,8 @@ class ProxyResolutionService::PacFileDeciderPoller {
     decider_->set_quick_check_enabled(quick_check_enabled_);
     int result = decider_->Start(
         config_, TimeDelta(), proxy_resolver_expects_pac_bytes_,
-        base::Bind(&PacFileDeciderPoller::OnPacFileDeciderCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&PacFileDeciderPoller::OnPacFileDeciderCompleted,
+                       base::Unretained(this)));
 
     if (result != ERR_IO_PENDING)
       OnPacFileDeciderCompleted(result);
@@ -945,8 +947,8 @@ int ProxyResolutionService::RequestImpl::Start() {
 
   return resolver()->GetProxyForURL(
       url_, results_,
-      base::Bind(&ProxyResolutionService::RequestImpl::QueryComplete,
-                 base::Unretained(this)),
+      base::BindOnce(&ProxyResolutionService::RequestImpl::QueryComplete,
+                     base::Unretained(this)),
       &resolve_job_, net_log_);
 }
 
@@ -1664,8 +1666,8 @@ void ProxyResolutionService::InitializeUsingLastFetchedConfig() {
       &resolver_, resolver_factory_.get(), pac_file_fetcher_.get(),
       dhcp_pac_file_fetcher_.get(), net_log_, fetched_config_.value(),
       wait_delay,
-      base::Bind(&ProxyResolutionService::OnInitProxyResolverComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&ProxyResolutionService::OnInitProxyResolverComplete,
+                     base::Unretained(this)));
 
   if (rv != ERR_IO_PENDING)
     OnInitProxyResolverComplete(rv);
@@ -1686,8 +1688,8 @@ void ProxyResolutionService::InitializeUsingDecidedConfig(
   int rv = init_proxy_resolver_->StartSkipDecider(
       &resolver_, resolver_factory_.get(), effective_config, decider_result,
       script_data,
-      base::Bind(&ProxyResolutionService::OnInitProxyResolverComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&ProxyResolutionService::OnInitProxyResolverComplete,
+                     base::Unretained(this)));
 
   if (rv != ERR_IO_PENDING)
     OnInitProxyResolverComplete(rv);

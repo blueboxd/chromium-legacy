@@ -65,7 +65,7 @@
     </style>
     <dialog id="dialog" tabindex="0" on-close="onNativeDialogClose_" role="menu"
         aria-label$="[[ariaLabel]]">
-      <div class="item-wrapper" tabindex="-1">
+      <div class="item-wrapper" role="none">
         <slot id="contentNode"></slot>
       </div>
     </dialog>

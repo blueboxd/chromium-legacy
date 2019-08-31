@@ -466,6 +466,7 @@ void BubbleFrameView::SetArrow(BubbleBorder::Arrow arrow) {
 
 void BubbleFrameView::SetBackgroundColor(SkColor color) {
   bubble_border_->set_background_color(color);
+  SchedulePaint();
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(

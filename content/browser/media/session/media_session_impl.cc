@@ -180,6 +180,12 @@ MediaSession* MediaSession::Get(WebContents* web_contents) {
 }
 
 // static
+const base::UnguessableToken& MediaSession::GetSourceId(
+    BrowserContext* browser_context) {
+  return MediaSessionData::GetOrCreate(browser_context)->source_id();
+}
+
+// static
 MediaSessionImpl* MediaSessionImpl::Get(WebContents* web_contents) {
   MediaSessionImpl* session = FromWebContents(web_contents);
   if (!session) {

@@ -19,6 +19,7 @@ class DictionaryValue;
 namespace chromeos {
 
 class ManagedNetworkConfigurationHandler;
+class NetworkConnectionHandler;
 class NetworkDeviceHandler;
 class NetworkStateHandler;
 
@@ -36,7 +37,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   CrosNetworkConfig(
       NetworkStateHandler* network_state_handler,
       NetworkDeviceHandler* network_device_handler,
-      ManagedNetworkConfigurationHandler* network_configuration_handler);
+      ManagedNetworkConfigurationHandler* network_configuration_handler,
+      NetworkConnectionHandler* network_connection_handler);
   ~CrosNetworkConfig() override;
 
   void BindRequest(mojom::CrosNetworkConfigRequest request);
@@ -65,6 +67,10 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       SelectCellularMobileNetworkCallback callback) override;
   void RequestNetworkScan(mojom::NetworkType type) override;
   void GetGlobalPolicy(GetGlobalPolicyCallback callback) override;
+  void StartConnect(const std::string& guid,
+                    StartConnectCallback callback) override;
+  void StartDisconnect(const std::string& guid,
+                       StartDisconnectCallback callback) override;
 
  private:
   void GetManagedPropertiesSuccess(int callback_id,
@@ -91,6 +97,16 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
 
+  void StartConnectSuccess(int callback_id);
+  void StartConnectFailure(int callback_id,
+                           const std::string& error_name,
+                           std::unique_ptr<base::DictionaryValue> error_data);
+  void StartDisconnectSuccess(int callback_id);
+  void StartDisconnectFailure(
+      int callback_id,
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
+
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void DeviceListChanged() override;
@@ -100,10 +116,13 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void DevicePropertiesUpdated(const DeviceState* device) override;
   void OnShuttingDown() override;
 
+  const std::string& GetServicePathFromGuid(const std::string& guid);
+
   NetworkStateHandler* network_state_handler_;    // Unowned
   NetworkDeviceHandler* network_device_handler_;  // Unowned
   ManagedNetworkConfigurationHandler*
-      network_configuration_handler_;  // Unowned
+      network_configuration_handler_;                     // Unowned
+  NetworkConnectionHandler* network_connection_handler_;  // Unowned
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;
   int callback_id_ = 1;
@@ -114,6 +133,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       set_cellular_sim_state_callbacks_;
   base::flat_map<int, SelectCellularMobileNetworkCallback>
       select_cellular_mobile_network_callbacks_;
+  base::flat_map<int, StartConnectCallback> start_connect_callbacks_;
+  base::flat_map<int, StartDisconnectCallback> start_disconnect_callbacks_;
   base::WeakPtrFactory<CrosNetworkConfig> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfig);

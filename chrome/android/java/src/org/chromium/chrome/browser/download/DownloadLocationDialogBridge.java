@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -118,7 +119,9 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
                 assert(!TextUtils.isEmpty(dir.location));
                 PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
                         dir.location);
-                nativeOnComplete(mNativeDownloadLocationDialogBridge, mSuggestedPath);
+                DownloadLocationDialogBridgeJni.get().onComplete(
+                        mNativeDownloadLocationDialogBridge, DownloadLocationDialogBridge.this,
+                        mSuggestedPath);
             }
             return;
         }
@@ -199,7 +202,8 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
                     DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
 
             File file = new File(directoryOption.location, fileName);
-            nativeOnComplete(mNativeDownloadLocationDialogBridge, file.getAbsolutePath());
+            DownloadLocationDialogBridgeJni.get().onComplete(mNativeDownloadLocationDialogBridge,
+                    DownloadLocationDialogBridge.this, file.getAbsolutePath());
         }
 
         // Update preference to show prompt based on whether checkbox is checked only when the user
@@ -215,11 +219,16 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
 
     private void cancel() {
         if (mNativeDownloadLocationDialogBridge != 0) {
-            nativeOnCanceled(mNativeDownloadLocationDialogBridge);
+            DownloadLocationDialogBridgeJni.get().onCanceled(
+                    mNativeDownloadLocationDialogBridge, DownloadLocationDialogBridge.this);
         }
     }
 
-    public native void nativeOnComplete(
-            long nativeDownloadLocationDialogBridge, String returnedPath);
-    public native void nativeOnCanceled(long nativeDownloadLocationDialogBridge);
+    @NativeMethods
+    interface Natives {
+        void onComplete(long nativeDownloadLocationDialogBridge,
+                DownloadLocationDialogBridge caller, String returnedPath);
+        void onCanceled(
+                long nativeDownloadLocationDialogBridge, DownloadLocationDialogBridge caller);
+    }
 }

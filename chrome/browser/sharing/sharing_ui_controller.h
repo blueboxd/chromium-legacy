@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
@@ -70,11 +71,16 @@ class SharingUiController {
 
   void UpdateDevices();
 
-  // Returns the message to be shown as title in error dialog.
-  base::string16 GetErrorDialogTitle() const;
+  // Function used by GetErrorDialogTitle() and GetErrorDialogText().
+  virtual base::string16 GetContentType() const = 0;
 
-  // Returns the message to be shown in the body of error dialog.
-  base::string16 GetErrorDialogText() const;
+  // Returns the message to be shown as title in error dialog based on
+  // |send_result_|.
+  virtual base::string16 GetErrorDialogTitle() const;
+
+  // Returns the message to be shown in the body of error dialog based on
+  // |send_result_|.
+  virtual base::string16 GetErrorDialogText() const;
 
   // Returns the currently open SharingDialog or nullptr if there is no
   // dialog open.
@@ -113,6 +119,8 @@ class SharingUiController {
   // Shows a new SharingDialog and closes the old one.
   void ShowNewDialog();
 
+  base::string16 GetTargetDeviceName() const;
+
   // Called after a message got sent to a device. Shows a new error dialog if
   // |success| is false and updates the omnibox icon.
   void OnMessageSentToDevice(int dialog_id, SharingSendMessageResult result);
@@ -125,6 +133,7 @@ class SharingUiController {
 
   bool is_loading_ = false;
   SharingSendMessageResult send_result_ = SharingSendMessageResult::kSuccessful;
+  std::string target_device_name_;
 
   // Currently used apps and devices since the last call to UpdateAndShowDialog.
   std::vector<App> apps_;

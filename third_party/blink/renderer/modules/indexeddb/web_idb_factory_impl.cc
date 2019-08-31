@@ -62,14 +62,14 @@ void WebIDBFactoryImpl::DeleteDatabase(
                            force_close);
 }
 
-mojom::blink::IDBCallbacksAssociatedPtrInfo
+mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
 WebIDBFactoryImpl::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacks> callbacks) {
-  mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
-                                    task_runner_);
-  return ptr_info;
+    std::unique_ptr<WebIDBCallbacks> callbacks_impl) {
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::move(callbacks_impl),
+      pending_callbacks.InitWithNewEndpointAndPassReceiver(), task_runner_);
+  return pending_callbacks;
 }
 
 mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>

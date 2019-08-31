@@ -493,12 +493,12 @@ class URLLoader::FileOpenerForUpload {
   FileOpenerForUpload(std::vector<base::FilePath> paths,
                       URLLoader* url_loader,
                       uint32_t process_id,
-                      mojom::NetworkServiceClient* network_service_client,
+                      mojom::NetworkContextClient* const network_context_client,
                       SetUpUploadCallback set_up_upload_callback)
       : paths_(std::move(paths)),
         url_loader_(url_loader),
         process_id_(process_id),
-        network_service_client_(network_service_client),
+        network_context_client_(network_context_client),
         set_up_upload_callback_(std::move(set_up_upload_callback)) {
     StartOpeningNextBatch();
   }
@@ -558,7 +558,7 @@ class URLLoader::FileOpenerForUpload {
         paths_.begin() + opened_files_.size(),
         paths_.begin() + opened_files_.size() + num_files_to_request);
 
-    network_service_client_->OnFileUploadRequested(
+    network_context_client_->OnFileUploadRequested(
         process_id_, /*async=*/true, batch_paths,
         base::BindOnce(&FileOpenerForUpload::OnFilesForUploadOpened,
                        weak_ptr_factory_.GetWeakPtr(), num_files_to_request));
@@ -577,7 +577,7 @@ class URLLoader::FileOpenerForUpload {
   const std::vector<base::FilePath> paths_;
   URLLoader* const url_loader_;
   const uint32_t process_id_;
-  mojom::NetworkServiceClient* const network_service_client_;
+  mojom::NetworkContextClient* const network_context_client_;
   SetUpUploadCallback set_up_upload_callback_;
   // The files opened so far.
   std::vector<base::File> opened_files_;
@@ -597,7 +597,9 @@ void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
     SetUpUpload(request, net::OK, std::vector<base::File>());
     return;
   }
-  if (!network_service_client_) {
+  if (!network_context_client_) {
+    DLOG(ERROR) << "URLLoader couldn't upload a file because no "
+                   "NetworkContextClient is set.";
     // Defer calling NotifyCompleted to make sure the URLLoader finishes
     // initializing before getting deleted.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -609,7 +611,7 @@ void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
   url_request_->LogBlockedBy("Opening Files");
   file_opener_for_upload_ = std::make_unique<FileOpenerForUpload>(
       std::move(paths), this, factory_params_->process_id,
-      network_service_client_,
+      network_context_client_,
       base::BindOnce(&URLLoader::SetUpUpload, base::Unretained(this), request));
 }
 

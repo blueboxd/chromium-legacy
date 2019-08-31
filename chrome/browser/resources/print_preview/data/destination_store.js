@@ -1180,6 +1180,9 @@ cr.define('print_preview', function() {
                 assert(settingsInfo.printer)));
       }
       if (dest) {
+        if (settingsInfo.printer && settingsInfo.printer.policies) {
+          dest.policies = settingsInfo.printer.policies;
+        }
         if ((origin === print_preview.DestinationOrigin.LOCAL ||
              origin === print_preview.DestinationOrigin.CROS) &&
             dest.capabilities) {

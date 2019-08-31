@@ -49,6 +49,9 @@ int DesktopProcessMain();
 int FileChooserMain();
 int RdpDesktopSessionMain();
 #endif  // defined(OS_WIN)
+#if defined(OS_LINUX)
+int XSessionChooserMain();
+#endif  // defined(OS_LINUX)
 
 namespace {
 
@@ -143,6 +146,10 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
 #endif  // defined(OS_WIN)
+#if defined(OS_LINUX)
+  } else if (process_type == kProcessTypeXSessionChooser) {
+    main_routine = &XSessionChooserMain;
+#endif  // defined(OS_LINUX)
   }
 
   return main_routine;

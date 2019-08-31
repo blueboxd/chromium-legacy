@@ -236,4 +236,26 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [ChromeEarlGrey waitForWebStateContainingText:kChromeVersionWebText];
 }
 
+- (void)testChromeFlags {
+  LoadWebUIUrl(kChromeUIFlagsHost);
+
+  // Not using kChromeUIFlagsHost because it has a final "/" that is not
+  // displayed in Omnibox.
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
+      assertWithMatcher:grey_notNil()];
+
+  // Validates that some of the expected text on the page exists.
+  [ChromeEarlGrey waitForWebStateContainingText:"Experiments"];
+  [ChromeEarlGrey waitForWebStateContainingText:"Available"];
+
+  // Validates that the experimental flags container is visible.
+  NSError* error = nil;
+  id result = chrome_test_util::ExecuteJavaScript(
+      @"document.getElementById('body-container').style.visibility", &error);
+  GREYAssert(!error, @"JavaScript execution error");
+  NSString* resultString = base::mac::ObjCCastStrict<NSString>(result);
+  GREYAssertEqualObjects(@"visible", resultString,
+                         @"body-container is not visible");
+}
+
 @end

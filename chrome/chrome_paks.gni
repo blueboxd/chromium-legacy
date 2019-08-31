@@ -209,7 +209,7 @@ template("chrome_extra_paks") {
 # * resources.pak
 # * locale .pak files
 #
-# Paramters:
+# Parameters:
 #   output_dir [required]: Directory to output .pak files. Locale .pak files
 #       will always be place in $output_dir/locales
 #   additional_extra_paks: List of extra .pak sources for resources.pak.

@@ -16,6 +16,7 @@
 #include "components/cbor/values.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/public_key_credential_user_entity.h"
 
 class AuthenticatorDialogTest : public DialogBrowserTest {
@@ -38,7 +39,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         AuthenticatorTransport::kNearFieldCommunication,
         AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
-    transport_availability.qr_generator_key.emplace(std::array<uint8_t, 32>());
+    model->set_cable_transport_info(/*cable_extension_provided=*/true,
+                                    device::CableDiscoveryData::NewQRKey());
     model->StartFlow(std::move(transport_availability), base::nullopt, nullptr);
 
     // The dialog should immediately close as soon as it is displayed.

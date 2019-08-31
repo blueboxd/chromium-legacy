@@ -487,7 +487,7 @@
     },
     {
       name: "CustomUserTiming",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Database",
@@ -1527,6 +1527,7 @@
     },
     {
       name: "SmsReceiver",
+      origin_trial_feature_name: "SmsReceiver",
       status: {"Android": "experimental", "default": "test"},
     },
     // Used as argument in attribute of stable-release functions/interfaces

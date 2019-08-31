@@ -12,6 +12,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -170,7 +171,7 @@ public class OverlayPanelContent {
     public OverlayPanelContent(OverlayContentDelegate contentDelegate,
             OverlayContentProgressObserver progressObserver, ChromeActivity activity,
             boolean isIncognito, float barHeight) {
-        mNativeOverlayPanelContentPtr = nativeInit();
+        mNativeOverlayPanelContentPtr = OverlayPanelContentJni.get().init(OverlayPanelContent.this);
         mContentDelegate = contentDelegate;
         mProgressObserver = progressObserver;
         mActivity = activity;
@@ -319,7 +320,8 @@ public class OverlayPanelContent {
         ContentUtils.setUserAgentOverride(mWebContents);
 
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
-        nativeSetWebContents(mNativeOverlayPanelContentPtr, mWebContents, mWebContentsDelegate);
+        OverlayPanelContentJni.get().setWebContents(mNativeOverlayPanelContentPtr,
+                OverlayPanelContent.this, mWebContents, mWebContentsDelegate);
 
         mWebContentsObserver =
                 new WebContentsObserver(mWebContents) {
@@ -355,8 +357,8 @@ public class OverlayPanelContent {
 
         mContainerView = cv;
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
-        nativeSetInterceptNavigationDelegate(
-                mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, mWebContents);
+        OverlayPanelContentJni.get().setInterceptNavigationDelegate(mNativeOverlayPanelContentPtr,
+                OverlayPanelContent.this, mInterceptNavigationDelegate, mWebContents);
 
         mContentDelegate.onContentViewCreated();
         resizePanelContentView();
@@ -369,7 +371,8 @@ public class OverlayPanelContent {
     private void destroyWebContents() {
         if (mWebContents != null) {
             // Native destroy will call up to destroy the Java WebContents.
-            nativeDestroyWebContents(mNativeOverlayPanelContentPtr);
+            OverlayPanelContentJni.get().destroyWebContents(
+                    mNativeOverlayPanelContentPtr, OverlayPanelContent.this);
             mWebContents = null;
             if (mWebContentsObserver != null) {
                 mWebContentsObserver.destroy();
@@ -398,7 +401,8 @@ public class OverlayPanelContent {
      *                          Otherwise the web contents never accounts for them.
      */
     public void updateBrowserControlsState(boolean areControlsHidden) {
-        nativeUpdateBrowserControlsState(mNativeOverlayPanelContentPtr, areControlsHidden);
+        OverlayPanelContentJni.get().updateBrowserControlsState(
+                mNativeOverlayPanelContentPtr, OverlayPanelContent.this, areControlsHidden);
     }
 
     /**
@@ -496,8 +500,8 @@ public class OverlayPanelContent {
         WebContents webContents = getWebContents();
         if (webContents == null) return;
         int viewHeight = mContentViewHeight - (mSubtractBarHeight ? mBarHeightPx : 0);
-        nativeOnPhysicalBackingSizeChanged(
-                mNativeOverlayPanelContentPtr, webContents, mContentViewWidth, viewHeight);
+        OverlayPanelContentJni.get().onPhysicalBackingSizeChanged(mNativeOverlayPanelContentPtr,
+                OverlayPanelContent.this, webContents, mContentViewWidth, viewHeight);
         mWebContents.setSize(mContentViewWidth, viewHeight);
     }
 
@@ -507,7 +511,8 @@ public class OverlayPanelContent {
      * @param urlTimeMs The time the URL was navigated to.
      */
     public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {
-        nativeRemoveLastHistoryEntry(mNativeOverlayPanelContentPtr, historyUrl, urlTimeMs);
+        OverlayPanelContentJni.get().removeLastHistoryEntry(
+                mNativeOverlayPanelContentPtr, OverlayPanelContent.this, historyUrl, urlTimeMs);
     }
 
     /**
@@ -518,24 +523,30 @@ public class OverlayPanelContent {
         if (mWebContents != null) destroyWebContents();
 
         // Tests will not create the native pointer, so we need to check if it's not zero
-        // otherwise calling nativeDestroy with zero will make Chrome crash.
+        // otherwise calling OverlayPanelContentJni.get().destroy with zero will make Chrome crash.
         if (mNativeOverlayPanelContentPtr != 0L) {
-            nativeDestroy(mNativeOverlayPanelContentPtr);
+            OverlayPanelContentJni.get().destroy(
+                    mNativeOverlayPanelContentPtr, OverlayPanelContent.this);
         }
     }
 
-    // Native calls.
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeOverlayPanelContent);
-    private native void nativeRemoveLastHistoryEntry(
-            long nativeOverlayPanelContent, String historyUrl, long urlTimeMs);
-    private native void nativeOnPhysicalBackingSizeChanged(
-            long nativeOverlayPanelContent, WebContents webContents, int width, int height);
-    private native void nativeSetWebContents(long nativeOverlayPanelContent,
-            WebContents webContents, WebContentsDelegateAndroid delegate);
-    private native void nativeDestroyWebContents(long nativeOverlayPanelContent);
-    private native void nativeSetInterceptNavigationDelegate(long nativeOverlayPanelContent,
-            InterceptNavigationDelegate delegate, WebContents webContents);
-    private native void nativeUpdateBrowserControlsState(
-            long nativeOverlayPanelContent, boolean areControlsHidden);
+    @NativeMethods
+    interface Natives {
+        // Native calls.
+        long init(OverlayPanelContent caller);
+
+        void destroy(long nativeOverlayPanelContent, OverlayPanelContent caller);
+        void removeLastHistoryEntry(long nativeOverlayPanelContent, OverlayPanelContent caller,
+                String historyUrl, long urlTimeMs);
+        void onPhysicalBackingSizeChanged(long nativeOverlayPanelContent,
+                OverlayPanelContent caller, WebContents webContents, int width, int height);
+        void setWebContents(long nativeOverlayPanelContent, OverlayPanelContent caller,
+                WebContents webContents, WebContentsDelegateAndroid delegate);
+        void destroyWebContents(long nativeOverlayPanelContent, OverlayPanelContent caller);
+        void setInterceptNavigationDelegate(long nativeOverlayPanelContent,
+                OverlayPanelContent caller, InterceptNavigationDelegate delegate,
+                WebContents webContents);
+        void updateBrowserControlsState(long nativeOverlayPanelContent, OverlayPanelContent caller,
+                boolean areControlsHidden);
+    }
 }

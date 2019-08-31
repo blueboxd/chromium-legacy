@@ -15,6 +15,8 @@ import org.chromium.base.VisibleForTesting;
  */
 interface BackgroundTaskSchedulerDelegate {
     @VisibleForTesting
+    String BACKGROUND_TASK_ID_KEY = "_background_task_id";
+    @VisibleForTesting
     String BACKGROUND_TASK_EXTRAS_KEY = "_background_task_extras";
     @VisibleForTesting
     String BACKGROUND_TASK_SCHEDULE_TIME_KEY = "_background_task_schedule_time";

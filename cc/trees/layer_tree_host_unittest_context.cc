@@ -936,7 +936,7 @@ class LayerTreeHostContextTestDontUseLostResources
         PictureLayer::Create(&client_);
     layer_with_mask->SetBounds(gfx::Size(10, 10));
     layer_with_mask->SetIsDrawable(true);
-    layer_with_mask->SetMaskLayer(mask.get());
+    layer_with_mask->SetMaskLayer(mask);
     root->AddChild(layer_with_mask);
 
     scoped_refptr<VideoLayer> video_color =

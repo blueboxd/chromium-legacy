@@ -230,7 +230,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
   EXPECT_FALSE(decider.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
-      PreviewsType::DEPRECATED_LOFI, /*out_ect_threshold=*/nullptr));
+      PreviewsType::DEPRECATED_LOFI));
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,
@@ -243,7 +243,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
   EXPECT_FALSE(decider.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
-      PreviewsType::LITE_PAGE_REDIRECT, /*out_ect_threshold=*/nullptr));
+      PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,
@@ -259,7 +259,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
 
   EXPECT_TRUE(decider.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
-      PreviewsType::LITE_PAGE_REDIRECT, /*out_ect_threshold=*/nullptr));
+      PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,
@@ -277,11 +277,9 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
   PreviewsUserData data(/*page_id=*/1);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(resource_loading_hints_url());
-  net::EffectiveConnectionType ect;
-  EXPECT_TRUE(decider.CanApplyPreview(
-      &data, &navigation_handle, PreviewsType::RESOURCE_LOADING_HINTS, &ect));
+  EXPECT_TRUE(decider.CanApplyPreview(&data, &navigation_handle,
+                                      PreviewsType::RESOURCE_LOADING_HINTS));
   EXPECT_EQ(123, data.data_savings_inflation_percent());
-  EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G, ect);
 
   // Make sure resource loading hints are validated and cached.
   EXPECT_TRUE(decider.GetResourceLoadingHints(resource_loading_hints_url(),
@@ -300,8 +298,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
   navigation_handle.set_url(hint_not_loaded_url());
 
   EXPECT_FALSE(decider.CanApplyPreview(
-      /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT,
-      /*out_ect_threshold=*/nullptr));
+      /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
 }
 
 TEST_F(PreviewsOptimizationGuideDeciderTest,

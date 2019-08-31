@@ -21,16 +21,20 @@
 
 // Test launcher drag performance in clamshell mode.
 // TODO(oshima): Add test for tablet mode.
-class LauncherDragTest : public UIPerformanceTest {
+class LauncherDragTest : public UIPerformanceTest,
+                         public ::testing::WithParamInterface<bool> {
  public:
   LauncherDragTest() = default;
   ~LauncherDragTest() override = default;
 
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
+    tablet_mode_ = GetParam();
     UIPerformanceTest::SetUpOnMainThread();
 
     test::PopulateDummyAppListItems(100);
+    if (tablet_mode_)
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true);
     // Ash may not be ready to receive events right away.
     int warmup_seconds = base::SysInfo::IsRunningOnChromeOS() ? 5 : 1;
     base::RunLoop run_loop;
@@ -42,7 +46,8 @@ class LauncherDragTest : public UIPerformanceTest {
   // UIPerformanceTest:
   std::vector<std::string> GetUMAHistogramNames() const override {
     return {
-        "Apps.StateTransition.Drag.PresentationTime.ClamshellMode",
+        base::StringPrintf("Apps.StateTransition.Drag.PresentationTime.%s",
+                           tablet_mode_ ? "TabletMode" : "ClamshellMode"),
     };
   }
 
@@ -53,11 +58,13 @@ class LauncherDragTest : public UIPerformanceTest {
   }
 
  private:
+  bool tablet_mode_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherDragTest);
 };
 
 // Drag to open the launcher from shelf.
-IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
+IN_PROC_BROWSER_TEST_P(LauncherDragTest, Open) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ash::ShellTestApi shell_test_api;
@@ -79,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
 }
 
 // Drag to close the launcher.
-IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
+IN_PROC_BROWSER_TEST_P(LauncherDragTest, Close) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ash::ShellTestApi shell_test_api;
@@ -104,3 +111,7 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
 
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LauncherDragTest,
+                         /*tablet_mode=*/::testing::Bool());

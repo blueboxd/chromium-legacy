@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
+#include "crypto/random.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
@@ -132,6 +133,13 @@ bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
 }
 
 // static
+QRGeneratorKey CableDiscoveryData::NewQRKey() {
+  QRGeneratorKey key;
+  crypto::RandBytes(key.data(), key.size());
+  return key;
+}
+
+// static
 int64_t CableDiscoveryData::CurrentTimeTick() {
   // The ticks are currently 256ms.
   return base::TimeTicks::Now().since_origin().InMilliseconds() >> 8;
@@ -172,10 +180,12 @@ void CableDiscoveryData::DeriveQRKeyMaterial(
 // FidoCableDiscovery ---------------------------------------------------------
 
 FidoCableDiscovery::FidoCableDiscovery(
-    std::vector<CableDiscoveryData> discovery_data)
+    std::vector<CableDiscoveryData> discovery_data,
+    base::Optional<QRGeneratorKey> qr_generator_key)
     : FidoBleDiscoveryBase(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy),
-      discovery_data_(std::move(discovery_data)) {
+      discovery_data_(std::move(discovery_data)),
+      qr_generator_key_(std::move(qr_generator_key)) {
 // Windows currently does not support multiple EIDs, thus we ignore any extra
 // discovery data.
 // TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
@@ -299,6 +309,14 @@ void FidoCableDiscovery::OnStartDiscoverySessionWithFilter(
 
 void FidoCableDiscovery::StartAdvertisement() {
   DCHECK(adapter());
+  if (discovery_data_.empty() && qr_generator_key_.has_value()) {
+    // If no caBLE extension was provided then there are no BLE advertisements
+    // and discovery starts immediately on the assumption that the user will
+    // scan a QR-code with their phone.
+    NotifyDiscoveryStarted(true);
+    return;
+  }
+
   FIDO_LOG(DEBUG) << "Starting to advertise clientEID.";
   for (const auto& data : discovery_data_) {
     adapter()->RegisterAdvertisement(
@@ -503,6 +521,29 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
 
   if (discovery_data_iterator != discovery_data_.end()) {
     return *discovery_data_iterator;
+  }
+
+  if (qr_generator_key_) {
+    // Attempt to match |authenticator_eid| as the result of scanning a QR code.
+    const int64_t current_tick = CableDiscoveryData::CurrentTimeTick();
+    // kNumPreviousTicks is the number of previous ticks that will be accepted
+    // as valid. Ticks are currently 256ms so the value of eight translates to a
+    // couple of seconds.
+    constexpr int kNumPreviousTicks = 8;
+
+    for (int i = 0; i < kNumPreviousTicks; i++) {
+      uint8_t qr_secret[device::kCableQRSecretSize];
+      CableEidArray expected_authenticator_eid;
+      CableSessionPreKeyArray session_pre_key;
+      CableDiscoveryData::DeriveQRKeyMaterial(
+          qr_secret, expected_authenticator_eid, session_pre_key,
+          *qr_generator_key_, current_tick - i);
+      if (expected_authenticator_eid == authenticator_eid) {
+        CableEidArray zero_eid{};
+        return CableDiscoveryData(/*version=*/2, zero_eid, authenticator_eid,
+                                  session_pre_key);
+      }
+    }
   }
 
   return base::nullopt;

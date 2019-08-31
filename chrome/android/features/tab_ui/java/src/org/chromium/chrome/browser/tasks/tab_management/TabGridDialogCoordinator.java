@@ -50,8 +50,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(), null, null,
-                containerView, null, false, mComponentName);
+                gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(),
+                TabProperties.UiType.CLOSABLE, null, containerView, null, false, mComponentName);
 
         mParentLayout = new TabGridDialogParent(context, containerView);
 
@@ -68,6 +68,9 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
         mMediator.destroy();
         mToolbarCoordinator.destroy();
         mParentLayout.destroy();
+        if (mToolbarCoordinator != null) {
+            mToolbarCoordinator.destroy();
+        }
     }
 
     boolean isVisible() {

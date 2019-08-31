@@ -31,11 +31,20 @@ typedef MultiProcessTest StackTraceTest;
 typedef testing::Test StackTraceTest;
 #endif
 
+// TODO(https://crbug.com/999737): Rewrite this test for better clarity and
+// correctness.
 // Note: On Linux, this test currently only fully works on Debug builds.
 // See comments in the #ifdef soup if you intend to change this.
 #if defined(OS_WIN)
+
 // Always fails on Windows: crbug.com/32070
 #define MAYBE_OutputToStream DISABLED_OutputToStream
+
+#elif defined(OS_FUCHSIA) && defined(OFFICIAL_BUILD)
+
+// Backtraces aren't supported by Fuchsia release-optimized builds.
+#define MAYBE_OutputToStream DISABLED_OutputToStream
+
 #else
 #define MAYBE_OutputToStream OutputToStream
 #endif

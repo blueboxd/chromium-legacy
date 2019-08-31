@@ -256,6 +256,38 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Tests that when the page is reloaded using the tools menu, the suggestions
+// are updated.
+- (void)testReloadPage {
+  // Add 2 suggestions.
+  std::vector<ContentSuggestion> suggestions;
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
+  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+
+  // Change the suggestions to have one the second one.
+  std::vector<ContentSuggestion> suggestionsOnly;
+  suggestionsOnly.emplace_back(
+      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
+  self.provider->FireSuggestionsChanged(self.category,
+                                        std::move(suggestionsOnly));
+
+  // Check that the first suggestion is still displayed.
+  [CellWithMatcher(grey_accessibilityID(@"http://chromium.org/1"))
+      assertWithMatcher:grey_notNil()];
+
+  // Reload the page using the tools menu.
+  [ChromeEarlGreyUI reload];
+
+  // Check that the first suggestion is no longer displayed.
+  [CellWithMatcher(grey_accessibilityID(@"http://chromium.org/1"))
+      assertWithMatcher:grey_nil()];
+  [CellWithMatcher(grey_accessibilityID(@"http://chromium.org/2"))
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests that when tapping a suggestion, it is opened. When going back, the
 // disposition of the collection takes into account the previous scroll, even
 // when more is tapped.

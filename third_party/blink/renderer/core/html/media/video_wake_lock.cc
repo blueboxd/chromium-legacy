@@ -22,6 +22,7 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
       video_element_(video) {
   VideoElement().addEventListener(event_type_names::kPlaying, this, true);
   VideoElement().addEventListener(event_type_names::kPause, this, true);
+  VideoElement().addEventListener(event_type_names::kEmptied, this, true);
   VideoElement().addEventListener(event_type_names::kEnterpictureinpicture,
                                   this, true);
   VideoElement().addEventListener(event_type_names::kLeavepictureinpicture,
@@ -54,7 +55,11 @@ void VideoWakeLock::Trace(Visitor* visitor) {
 void VideoWakeLock::Invoke(ExecutionContext*, Event* event) {
   if (event->type() == event_type_names::kPlaying) {
     playing_ = true;
-  } else if (event->type() == event_type_names::kPause) {
+  } else if (event->type() == event_type_names::kPause ||
+             event->type() == event_type_names::kEmptied) {
+    // In 4.8.12.5 steps 6.6.1, the media element is paused when a new load
+    // happens without actually firing a pause event. Because of this, we need
+    // to listen to the emptied event.
     playing_ = false;
   } else {
     DCHECK(event->type() == event_type_names::kEnterpictureinpicture ||

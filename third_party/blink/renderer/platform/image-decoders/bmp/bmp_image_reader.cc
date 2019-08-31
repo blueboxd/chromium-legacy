@@ -30,6 +30,9 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.h"
 
+#include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
+
 namespace {
 
 // See comments on lookup_table_addresses_ in the header.
@@ -78,6 +81,15 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent,
   memset(&info_header_, 0, sizeof(info_header_));
 }
 
+BMPImageReader::~BMPImageReader() = default;
+
+void BMPImageReader::SetData(SegmentReader* data) {
+  data_ = data;
+  fast_reader_.SetData(data);
+  if (alternate_decoder_)
+    alternate_decoder_->SetData(data_.get(), parent_->IsAllDataReceived());
+}
+
 bool BMPImageReader::DecodeBMP(bool only_size) {
   // Defensively clear the FastSharedBufferReader's cache, as another caller
   // may have called SharedBuffer::MergeSegmentsIntoBuffer().
@@ -97,7 +109,10 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   // space is as well.  Unfortunately, since the profile appears after
   // everything else, this may delay processing until all data is received.
   // Luckily, few BMPs have an embedded color profile.
-  if (info_header_.profile_data && !ProcessEmbeddedColorProfile())
+  const bool use_alternate_decoder =
+      (info_header_.compression == JPEG) || (info_header_.compression == PNG);
+  if (!use_alternate_decoder && info_header_.profile_data &&
+      !ProcessEmbeddedColorProfile())
     return false;
 
   // Set our size if we haven't already.  In ICO files, IsDecodedSizeAvailable()
@@ -110,6 +125,9 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
 
   if (only_size)
     return true;
+
+  if (use_alternate_decoder)
+    return DecodeAlternateFormat();
 
   // Read and process the bitmasks, if needed.
   if (need_to_process_bitmasks_ && !ProcessBitmasks())
@@ -463,8 +481,9 @@ bool BMPImageReader::IsInfoHeaderValid() const {
 
     case JPEG:
     case PNG:
-      // Only valid for Windows V3+.
-      if (is_os21x_ || is_os22x_ || info_header_.bit_count)
+      // Only valid for Windows V3+.  We don't support embedding these inside
+      // ICO files.
+      if (is_os21x_ || is_os22x_ || info_header_.bit_count || !img_data_offset_)
         return false;
       break;
 
@@ -491,22 +510,49 @@ bool BMPImageReader::IsInfoHeaderValid() const {
   // decoding.  Few other people decode these either, they're unlikely to be
   // in much use.
   // TODO(pkasting): Consider supporting these someday.
-  //   * Bitmaps larger than 2^16 pixels in either dimension (Windows
-  //     probably doesn't draw these well anyway, and the decoded data would
-  //     take a lot of memory).
+  //   * Bitmaps larger than 2^16 pixels in either dimension.
   if ((info_header_.width >= (1 << 16)) || (info_header_.height >= (1 << 16)))
-    return false;
-  //   * Windows V3+ JPEG-in-BMP and PNG-in-BMP bitmaps (supposedly not found
-  //     in the wild, only used to send data to printers?).
-  if ((info_header_.compression == JPEG) || (info_header_.compression == PNG))
     return false;
   //   * OS/2 2.x Huffman-encoded monochrome bitmaps (see
   //      http://www.fileformat.info/mirror/egff/ch09_05.htm , re: "G31D"
-  //      algorithm).
+  //      algorithm; this seems to be used in TIFF files as well).
   if (info_header_.compression == HUFFMAN1D)
     return false;
 
   return true;
+}
+
+bool BMPImageReader::DecodeAlternateFormat() {
+  // Create decoder if necessary.
+  if (!alternate_decoder_) {
+    if (info_header_.compression == JPEG) {
+      alternate_decoder_ = std::make_unique<JPEGImageDecoder>(
+          parent_->GetAlphaOption(), parent_->GetColorBehavior(),
+          parent_->GetMaxDecodedBytes(), img_data_offset_);
+    } else {
+      alternate_decoder_ = std::make_unique<PNGImageDecoder>(
+          parent_->GetAlphaOption(), ImageDecoder::kDefaultBitDepth,
+          parent_->GetColorBehavior(), parent_->GetMaxDecodedBytes(),
+          img_data_offset_);
+    }
+    alternate_decoder_->SetData(data_.get(), parent_->IsAllDataReceived());
+  }
+
+  // Decode the image.
+  if (alternate_decoder_->IsSizeAvailable()) {
+    if (alternate_decoder_->Size() != parent_->Size())
+      return parent_->SetFailed();
+
+    alternate_decoder_->SetMemoryAllocator(buffer_->GetAllocator());
+    const auto* frame = alternate_decoder_->DecodeFrameBufferAtIndex(0);
+    alternate_decoder_->SetMemoryAllocator(nullptr);
+
+    if (frame)
+      *buffer_ = *frame;
+  }
+  return alternate_decoder_->Failed()
+             ? parent_->SetFailed()
+             : (buffer_->GetStatus() == ImageFrame::kFrameComplete);
 }
 
 bool BMPImageReader::ProcessEmbeddedColorProfile() {

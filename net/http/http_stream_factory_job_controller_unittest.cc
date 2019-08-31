@@ -1046,7 +1046,12 @@ TEST_F(HttpStreamFactoryJobControllerTest,
        AltJobSucceedsMainJobBlockedControllerDestroyed) {
   quic_data_ = std::make_unique<MockQuicData>(
       HttpNetworkSession::Params().quic_params.supported_versions.front());
-  quic_data_->AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
+  if (VersionUsesQpack(HttpNetworkSession::Params()
+                           .quic_params.supported_versions.front()
+                           .transport_version)) {
+    quic_data_->AddWrite(SYNCHRONOUS,
+                         client_maker_.MakeInitialSettingsPacket(1));
+  }
   quic_data_->AddRead(ASYNC, OK);
 
   HttpRequestInfo request_info;
@@ -2321,9 +2326,13 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 }
 
 TEST_F(HttpStreamFactoryJobControllerTest, PreconnectToHostWithValidAltSvc) {
-  quic_data_ = std::make_unique<MockQuicData>(
-      HttpNetworkSession::Params().quic_params.supported_versions.front());
-  quic_data_->AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
+  auto version =
+      HttpNetworkSession::Params().quic_params.supported_versions.front();
+  quic_data_ = std::make_unique<MockQuicData>(version);
+  if (VersionUsesQpack(version.transport_version)) {
+    quic_data_->AddWrite(SYNCHRONOUS,
+                         client_maker_.MakeInitialSettingsPacket(1));
+  }
   quic_data_->AddRead(ASYNC, OK);
 
   HttpRequestInfo request_info;
@@ -3005,11 +3014,14 @@ TEST_P(HttpStreamFactoryJobControllerMisdirectedRequestRetry,
   const bool enable_ip_based_pooling = ::testing::get<0>(GetParam());
   const bool enable_alternative_services = ::testing::get<1>(GetParam());
   if (enable_alternative_services) {
-    quic_data_ = std::make_unique<MockQuicData>(
-        HttpNetworkSession::Params().quic_params.supported_versions.front());
+    auto version =
+        HttpNetworkSession::Params().quic_params.supported_versions.front();
+    quic_data_ = std::make_unique<MockQuicData>(version);
     quic_data_->AddConnect(SYNCHRONOUS, OK);
-    quic_data_->AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeInitialSettingsPacket(1));
+    if (VersionUsesQpack(version.transport_version)) {
+      quic_data_->AddWrite(SYNCHRONOUS,
+                           client_maker_.MakeInitialSettingsPacket(1));
+    }
     quic_data_->AddRead(ASYNC, OK);
   }
   tcp_data_ = std::make_unique<SequencedSocketData>();

@@ -19,7 +19,8 @@ CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
       std::make_unique<chromeos::network_config::CrosNetworkConfig>(
           network_state_helper_.network_state_handler(),
           network_device_handler_.get(),
-          /*network_configuration_handler=*/nullptr);
+          /*network_configuration_handler=*/nullptr,
+          /*network_connection_handler=*/nullptr);
   OverrideInProcessInstanceForTesting(cros_network_config_impl_.get());
 }
 

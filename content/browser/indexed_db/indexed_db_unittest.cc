@@ -202,7 +202,10 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
  public:
   ForceCloseDBCallbacks(scoped_refptr<IndexedDBContextImpl> idb_context,
                         const Origin& origin)
-      : IndexedDBCallbacks(nullptr, origin, nullptr, idb_context->TaskRunner()),
+      : IndexedDBCallbacks(nullptr,
+                           origin,
+                           mojo::NullAssociatedRemote(),
+                           idb_context->TaskRunner()),
         idb_context_(idb_context),
         origin_(origin) {}
 

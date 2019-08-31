@@ -34,6 +34,7 @@ for one platform.
     It allows you to perform arbitrary actions on a set of web pages and
     report metrics about it.
 *   **[Fuzzer Tests]** is used to uncover potential security & stability problems in Chromium.
+*   **[Tast]** is a test framework for system integration tests on Chrome OS.
 
 
 The following table shows which types of test works on which platforms.
@@ -44,10 +45,11 @@ The following table shows which types of test works on which platforms.
 | Junit(Java)                 |         |         |         | &#8730; |         |         |
 | Browser Tests(C++)          | &#8730; | &#8730; | &#8730; | &#8730; |         |         |
 | Web Tests(HTML, JS)         | &#8730; | &#8730; | &#8730; |         |         |         |
-| Telemetry(Python)           | &#8730; | &#8730; | &#8730; | &#8730; |         | &#63;   |
+| Telemetry(Python)           | &#8730; | &#8730; | &#8730; | &#8730; |         | &#8730; |
 | Instrumentation Tests(Java) |         |         |         | &#8730; |         |         |
 | EarlGrey                    |         |         |         |         | &#8730; |         |
 | Fuzzer Tests(C++)           | &#8730; | &#8730; | &#8730; | &#8730; |         | &#8730; |
+| Tast(Golang)                |         |         |         |         |         | &#8730; |
 
 *** note
 **Browser Tests Note**
@@ -66,19 +68,6 @@ tracks the effort to enable them on Android.
 
 Web Tests were enabled on Android K before, but it is disabled on Android platform now,
 see [this thread](https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/338WKwWPbPI/discussion) for more context.
-***
-
-*** note
-**Telemetry**
-
-Telemetry works on CrOS, but it is not officially supported yet.
-***
-
-*** note
-**CrOS Note**
-
-There is an on going effort to enable existing Chromium tests on CrOS VM hosted on Linux,
-right now only unit tests are enabled on CrOS VM.
 ***
 
 ## General Principles
@@ -154,6 +143,7 @@ Go to [code coverage dashboard](https://analysis.chromium.org/p/chromium/coverag
 
 ## How to debug tests
 *  [Android Debugging Instructions]
+*  [Chrome OS Debugging Tips]
 *  [Debugging Web Tests]
 
 ## How to deal with flaky tests
@@ -173,6 +163,7 @@ then fix it later. [How do I disable a flaky test] is the instruction about how 
 [EarlGrey]: https://github.com/google/EarlGrey
 [Telemetry]: https://chromium.googlesource.com/catapult/+/HEAD/telemetry/README.md
 [Fuzzer Tests]: https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/README.md
+[Tast]: https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/README.md
 [Web Tests]: ./web_tests.md
 [crbug/611756]: https://bugs.chromium.org/p/chromium/issues/detail?id=611756
 [Flaky portal]: https://analysis.chromium.org/p/chromium/flake-portal
@@ -180,6 +171,7 @@ then fix it later. [How do I disable a flaky test] is the instruction about how 
 [Telemetry: Run benchmarks locally]: https://chromium.googlesource.com/catapult/+/HEAD/telemetry/docs/run_benchmarks_locally.md
 [Run fuzz target locally]: https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/getting_started.md#build-and-run-fuzz-target-locally
 [Android Debugging Instructions]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/android_debugging_instructions.md
+[Chrome OS Debugging Tips]: ./chromeos_debugging_tips.md
 [Debugging Web Tests]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/web_tests.md#Debugging-Web-Tests
 [code coverage dashboard]: https://analysis.chromium.org/p/chromium/coverage
 [How do I disable a flaky test]: https://www.chromium.org/developers/tree-sheriffs/sheriff-details-chromium#TOC-How-do-I-disable-a-flaky-test-

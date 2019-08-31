@@ -191,7 +191,7 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
       PublishPageCallback publish_done_callback) = 0;
 
   // Get the archive directory based on client policy of the namespace.
-  virtual const base::FilePath& GetInternalArchiveDirectory(
+  virtual const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const = 0;
 
   // Returns whether given archive file is in the internal directory.

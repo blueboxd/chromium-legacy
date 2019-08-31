@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/page_state_serialization.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -49,13 +48,6 @@ class TestSSLStatusData : public SSLStatus::UserData {
   bool user_data_flag_ = false;
   DISALLOW_COPY_AND_ASSIGN(TestSSLStatusData);
 };
-
-PageState CreateTestPageState() {
-  ExplodedPageState exploded_state;
-  std::string encoded_data;
-  EncodePageState(exploded_state, &encoded_data);
-  return PageState::CreateFromEncodedData(encoded_data);
-}
 
 }  // namespace
 
@@ -239,6 +231,12 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   entry2_->SetTitle(ASCIIToUTF16("title2"));
   EXPECT_EQ(ASCIIToUTF16("title2"), entry2_->GetTitle());
 
+  // State
+  EXPECT_FALSE(entry1_->GetPageState().IsValid());
+  EXPECT_FALSE(entry2_->GetPageState().IsValid());
+  entry2_->SetPageState(PageState::CreateFromEncodedData("state"));
+  EXPECT_EQ("state", entry2_->GetPageState().ToEncodedData());
+
   // Transition type
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       entry1_->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
@@ -294,21 +292,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   // Initiator origin.
   EXPECT_FALSE(
       entry1_->root_node()->frame_entry->initiator_origin().has_value());
-  ASSERT_TRUE(
+  EXPECT_TRUE(
       entry2_->root_node()->frame_entry->initiator_origin().has_value());
   EXPECT_EQ(url::Origin::Create(GURL("https://initiator.example.com")),
             entry2_->root_node()->frame_entry->initiator_origin().value());
-
-  // State.
-  //
-  // Note that calling SetPageState may also set some other FNE members
-  // (referrer, initiator, etc.).  This is why it is important to test
-  // SetPageState/GetPageState last.
-  PageState test_page_state = CreateTestPageState();
-  entry2_->SetPageState(test_page_state);
-  // TODO(lukasza): https://crbug.com/976055: Once |initiator_origin| is
-  // persisted across session restore, the test here should verify that
-  // SetPageState round-trips via GetPageState.
 }
 
 // Test basic Clone behavior.

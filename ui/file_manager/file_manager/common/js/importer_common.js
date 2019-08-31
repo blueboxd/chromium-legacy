@@ -2,8 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Shared cloud importer namespace
+// Namespace
 var importer = importer || {};
+
+importer.TaskQueue = importer.TaskQueue || {};
+
+/**
+ * @enum {string}
+ */
+importer.TaskQueue.UpdateType = {
+  PROGRESS: 'PROGRESS',
+  COMPLETE: 'COMPLETE',
+  ERROR: 'ERROR',
+  CANCELED: 'CANCELED'
+};
 
 /** @enum {string} */
 importer.ScanEvent = {

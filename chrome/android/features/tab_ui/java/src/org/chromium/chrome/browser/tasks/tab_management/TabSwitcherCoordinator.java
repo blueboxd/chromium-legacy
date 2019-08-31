@@ -110,10 +110,11 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
         };
 
-        mTabListCoordinator = new TabListCoordinator(mode, context, tabModelSelector,
-                mMultiThumbnailCardProvider, titleProvider, true,
-                mMediator::getCreateGroupButtonOnClickListener, mMediator, null, null, null,
-                container, dynamicResourceLoader, true, COMPONENT_NAME);
+        mTabListCoordinator =
+                new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
+                        titleProvider, true, mMediator::getCreateGroupButtonOnClickListener,
+                        mMediator, null, TabProperties.UiType.CLOSABLE, null, container,
+                        dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
@@ -231,6 +232,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int tabId) {
         int index = mTabListCoordinator.indexOfTab(tabId);
+        assert mTabListCoordinator.getContainerView().findViewHolderForAdapterPosition(index)
+                != null;
         View itemView = mTabListCoordinator.getContainerView()
                                 .findViewHolderForAdapterPosition(index)
                                 .itemView;
@@ -260,6 +263,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
             mTabGridIphItemCoordinator.destroy();
         }
         mMultiThumbnailCardProvider.destroy();
+        mTabSelectionEditorCoordinator.destroy();
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
     }

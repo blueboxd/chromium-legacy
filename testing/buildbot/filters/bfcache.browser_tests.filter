@@ -35,8 +35,7 @@
 # Test goes back and forth in between a "preview" page and a "normal" page.
 # When going back to the first page, it expected to be loaded as a "normal" page,
 # but it isn't reloaded at all with the BackForwardCache.
--URLLoaderImplementation/PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/0
--URLLoaderImplementation/PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/1
+-PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/*
 
 # An extension is non-idle because its option page is opened. When it is
 # navigated to about:blank, it should become idle again. This doesn't happen

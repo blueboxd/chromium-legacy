@@ -1,29 +1,8 @@
 <html>
   <head>
-    <style>
-      /**
-       * The style used to draw done-button.
-       * Use z-index to make sure the button is in front of the survey content.
-       * TODO(weili): we need to make it RTL friendly if we need to support RTL.
-       */
-      .done-button {
-        bottom: 17px;
-        color: rgb(33, 150, 243);
-        display: block;
-        font: 400 16px Roboto,RobotoDraft,Helvetica,sans-serif;
-        position: fixed;
-        right: 25px;
-        text-transform: uppercase;
-        z-index: 10;
-      }
-
-      #id-done-button[hidden] {
-        display: none;
-      }
-    </style>
     <script>
       /**
-       * Handles the callback when the survey is submitted or when the survey
+       * Close the window when the survey is submitted or when the survey
        * has already been submitted in the past.
        * @param {boolean} isFirstRun Will be true when the user just earned
        *    access to the content and false if the user had already had access
@@ -34,11 +13,7 @@
           return;
         }
 
-        /* Display the done button at the end of the survey. */
-        document.getElementById('id-done-button').hidden = false;
-
-        /* Auto dismiss after two seconds. */
-        setTimeout(function(){ window.close(); }, 2000);
+        window.close();
       };
 
       /**
@@ -50,20 +25,9 @@
         for (const element of elements)
           element.style.display = 'none';
       }
-
-      document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('id-link-done-button').onclick = function() {
-          window.close();
-        }
-      })
     </script>
     <script src="$SCRIPT_SRC"></script>
   </head>
   <body>
-    <a id="id-link-done-button" href="#" role="button">
-      <div id="id-done-button" class="done-button" hidden>
-        $DONE_BUTTON_LABEL
-      </div>
-    </a>
   </body>
 </html>

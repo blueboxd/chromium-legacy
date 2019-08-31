@@ -10,10 +10,13 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/account_id/account_id.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -26,7 +29,8 @@ class Desk;
 
 // Defines a controller for creating, destroying and managing virtual desks and
 // their windows.
-class ASH_EXPORT DesksController : public wm::ActivationChangeObserver {
+class ASH_EXPORT DesksController : public wm::ActivationChangeObserver,
+                                   public SessionObserver {
  public:
   class Observer {
    public:
@@ -131,6 +135,9 @@ class ASH_EXPORT DesksController : public wm::ActivationChangeObserver {
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+
  private:
   class DeskAnimationBase;
   class DeskActivationAnimation;
@@ -169,6 +176,12 @@ class ASH_EXPORT DesksController : public wm::ActivationChangeObserver {
   std::vector<std::unique_ptr<Desk>> desks_;
 
   Desk* active_desk_ = nullptr;
+
+  // The account ID of the current active user.
+  AccountId current_account_id_;
+
+  // Stores the per-user last active desk index.
+  base::flat_map<AccountId, int> user_to_active_desk_index_;
 
   // True when desks addition, removal, or activation change are in progress.
   // This can be checked when overview mode is active to avoid exiting overview

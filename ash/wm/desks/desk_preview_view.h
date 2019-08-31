@@ -79,6 +79,8 @@ class DeskPreviewView : public views::View {
   void Layout() override;
 
  private:
+  class ShadowRenderer;
+
   DeskMiniView* const mini_view_;
 
   // A view to paint a background color behind the |wallpaper_preview_| to
@@ -106,6 +108,9 @@ class DeskPreviewView : public views::View {
   // the desk container to be visible.
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedForceVisible>
       force_occlusion_tracker_visible_;
+
+  ui::Layer shadow_layer_;
+  std::unique_ptr<ShadowRenderer> shadow_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DeskPreviewView);
 };

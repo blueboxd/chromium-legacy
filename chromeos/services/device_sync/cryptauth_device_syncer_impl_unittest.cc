@@ -221,7 +221,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
       const base::Optional<CryptAuthKey>& new_group_key,
       const base::Optional<std::string>& encrypted_group_private_key,
       const base::Optional<cryptauthv2::ClientDirective> new_client_directive,
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
     CryptAuthMetadataSyncer::IdToDeviceMetadataPacketMap
         id_to_device_metadata_packet_map;
     for (const cryptauthv2::DeviceMetadataPacket& packet : metadata_packets) {
@@ -239,10 +239,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
                       : nullptr;
     metadata_syncer()->FinishAttempt(
         id_to_device_metadata_packet_map, std::move(new_group_key_ptr),
-        private_key,
-        CryptAuthDeviceSyncResult(device_sync_result_code,
-                                  false /* did_device_registry_change */,
-                                  new_client_directive));
+        private_key, new_client_directive, device_sync_result_code);
   }
 
   void VerifyFeatureStatusGetterInput(
@@ -262,7 +259,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
 
   void FinishFeatureStatusGetterAttempt(
       const base::flat_set<std::string>& device_ids,
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
     CryptAuthFeatureStatusGetter::IdToFeatureStatusMap id_to_feature_status_map;
     for (const std::string& id : device_ids) {
       id_to_feature_status_map.insert_or_assign(
@@ -355,7 +352,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
   }
 
   void FinishShareGroupPrivateKeyAttempt(
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
     group_private_key_sharer()->FinishAttempt(device_sync_result_code);
   }
 

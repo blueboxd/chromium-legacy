@@ -84,7 +84,7 @@ class CryptAuthGroupPrivateKeySharerImpl
       const cryptauthv2::ShareGroupPrivateKeyResponse& response);
   void OnShareGroupPrivateKeyFailure(NetworkRequestError error);
 
-  void FinishAttempt(const CryptAuthDeviceSyncResult::ResultCode& result_code);
+  void FinishAttempt(CryptAuthDeviceSyncResult::ResultCode result_code);
 
   // Used for batch encrypting the group private key with each encrypting key.
   std::unique_ptr<CryptAuthEciesEncryptor> encryptor_;

@@ -67,12 +67,18 @@
 # once. The navigations are now committing synchronously, which is too fast.
 -NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithoutUserGesture
 
+# Page with no-cache, no-store, must-revalidate shouldn't be cached.
+-NavigationControllerBrowserTest.UncacheablePost
+
 # Test expects the RenderFrameHost to be deleted after a navigation. It is now
 # stored into the BackForwardCache instead. It isn't deleted.
 -RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation
+-ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest.ServiceWorkerMainScriptRequest/*
+-SharedWorkerMainScriptRequestNetworkIsolationKeyBrowserTest.SharedWorkerMainScriptRequest/*
 -SitePerProcessBrowserTest.PendingDeletionCheckCompletedOnSubtree
 -SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
 -WebContentsBindingSetBrowserTest.CloseOnFrameDeletion
+-WorkerImportScriptsAndFetchRequestNetworkIsolationKeyBrowserTest.ImportScriptsAndFetchRequest/*
 
 # This test waits for a network request after a back navigation. It won't be
 # made, because the document is restored from the BackForwardCache.
@@ -123,4 +129,3 @@
 # https://crbug.com/992891
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/1
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/0
-

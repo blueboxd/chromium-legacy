@@ -3925,8 +3925,7 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     // Notify javascript IntersectionObservers
     if (IntersectionObserverController* controller =
             GetFrame().GetDocument()->GetIntersectionObserverController()) {
-      needs_occlusion_tracking |=
-          controller->ComputeTrackedIntersectionObservations(flags);
+      needs_occlusion_tracking |= controller->ComputeIntersections(flags);
     }
     intersection_observation_state_ = kNotNeeded;
   }
@@ -3954,7 +3953,7 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
 void LocalFrameView::DeliverSynchronousIntersectionObservations() {
   if (IntersectionObserverController* controller =
           GetFrame().GetDocument()->GetIntersectionObserverController()) {
-    controller->DeliverIntersectionObservations(
+    controller->DeliverNotifications(
         IntersectionObserver::kDeliverDuringPostLifecycleSteps);
   }
   ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {

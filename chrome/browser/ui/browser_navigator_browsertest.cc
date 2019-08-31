@@ -169,7 +169,9 @@ void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-void BrowserNavigatorTest::RunUseNonIncognitoWindowTest(const GURL& url) {
+void BrowserNavigatorTest::RunUseNonIncognitoWindowTest(
+    const GURL& url,
+    const ui::PageTransition& page_transition) {
   Browser* incognito_browser = CreateIncognitoBrowser();
 
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
@@ -181,6 +183,7 @@ void BrowserNavigatorTest::RunUseNonIncognitoWindowTest(const GURL& url) {
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = url;
   params.window_action = NavigateParams::SHOW_WINDOW;
+  params.transition = page_transition;
   Navigate(&params);
 
   // This page should be opened in browser() window.
@@ -1315,7 +1318,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_Settings_UseNonIncognitoWindow) {
-  RunUseNonIncognitoWindowTest(GetSettingsURL());
+  RunUseNonIncognitoWindowTest(
+      GetSettingsURL(), ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 // This test verifies that the view-source settings page isn't opened in the
@@ -1337,7 +1341,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   std::string view_source(content::kViewSourceScheme);
   view_source.append(":");
   view_source.append(chrome::kChromeUISettingsURL);
-  RunUseNonIncognitoWindowTest(GURL(view_source));
+  RunUseNonIncognitoWindowTest(
+      GURL(view_source), ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 // This test verifies that the settings page isn't opened in the incognito
@@ -1373,7 +1378,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // window.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_Bookmarks_UseNonIncognitoWindow) {
-  RunUseNonIncognitoWindowTest(GURL(chrome::kChromeUIBookmarksURL));
+  RunUseNonIncognitoWindowTest(
+      GURL(chrome::kChromeUIBookmarksURL),
+      ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
 // Bookmark manager is expected to always open in normal mode regardless

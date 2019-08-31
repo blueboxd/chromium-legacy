@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -72,8 +73,8 @@ public class SavePasswordsPreferences
     private static final String PREF_KEY_SAVED_PASSWORDS_NO_TEXT = "saved_passwords_no_text";
 
     private static final int ORDER_SWITCH = 0;
-    private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 1;
-    private static final int ORDER_AUTO_LEAK_DETECTION_SWITCH = 2;
+    private static final int ORDER_AUTO_LEAK_DETECTION_SWITCH = 1;
+    private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 2;
     private static final int ORDER_MANAGE_ACCOUNT_LINK = 3;
     private static final int ORDER_SAVED_PASSWORDS = 4;
     private static final int ORDER_EXCEPTIONS = 5;
@@ -209,8 +210,13 @@ public class SavePasswordsPreferences
         getPreferenceScreen().removeAll();
         if (mSearchQuery == null) {
             createSavePasswordsSwitch();
+
+            ChromeSigninController signInController = ChromeSigninController.get();
+            if (signInController != null && signInController.isSignedIn()) {
+                createAutoLeakDetectionSwitch();
+            }
+
             createAutoSignInCheckbox();
-            createAutoLeakDetectionSwitch();
         }
         PasswordManagerHandlerProvider.getInstance()
                 .getPasswordManagerHandler()
@@ -440,9 +446,9 @@ public class SavePasswordsPreferences
 
         mAutoLeakDetectionSwitch = new ChromeSwitchPreference(getStyledContext(), null);
         mAutoLeakDetectionSwitch.setKey(PREF_LEAK_DETECTION_SWITCH);
-        // TODO(crbug.com/986317): Add description and update title.
         mAutoLeakDetectionSwitch.setTitle(R.string.passwords_leak_detection_switch_title);
         mAutoLeakDetectionSwitch.setOrder(ORDER_AUTO_LEAK_DETECTION_SWITCH);
+        mAutoLeakDetectionSwitch.setSummary(R.string.passwords_leak_detection_switch_description);
         mAutoLeakDetectionSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
             PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled((boolean) newValue);
             return true;

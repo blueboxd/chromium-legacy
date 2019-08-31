@@ -13,6 +13,7 @@
 
 namespace content {
 
+class BrowserContext;
 class WebContents;
 
 // MediaSession manages the media session and audio focus for a given
@@ -22,11 +23,15 @@ class WebContents;
 // and allows clients to resume/suspend/stop the managed players.
 class MediaSession : public media_session::mojom::MediaSession {
  public:
+  ~MediaSession() override = default;
+
   // Returns the MediaSession associated to this WebContents. Creates one if
   // none is currently available.
   CONTENT_EXPORT static MediaSession* Get(WebContents* contents);
 
-  ~MediaSession() override = default;
+  // Returns the source identity for the given BrowserContext.
+  CONTENT_EXPORT static const base::UnguessableToken& GetSourceId(
+      BrowserContext* browser_context);
 
   // Tell the media session a user action has performed.
   virtual void DidReceiveAction(

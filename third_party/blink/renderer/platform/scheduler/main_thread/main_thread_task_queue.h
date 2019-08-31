@@ -126,8 +126,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       kHigh = 1,
       kBestEffort = 2,
       kRegular = 3,
+      kLoading = 4,
+      kLoadingControl = 5,
 
-      kCount = 4
+      kCount = 6
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required
@@ -136,7 +138,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // We need to update it whenever there is a change in
     // PrioritisationType::kCount.
     // TODO(sreejakshetty) make the number of bits calculation automated.
-    static constexpr int kPrioritisationTypeWidthBits = 2;
+    static constexpr int kPrioritisationTypeWidthBits = 3;
     static_assert(static_cast<int>(PrioritisationType::kCount) <=
                     (1 << kPrioritisationTypeWidthBits),
                     "Wrong Instanstiation for kPrioritisationTypeWidthBits");
@@ -350,6 +352,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }
 
   QueueTraits GetQueueTraits() const { return queue_traits_; }
+
+  QueueTraits::PrioritisationType GetPrioritisationType() const {
+      return queue_traits_.prioritisation_type;}
 
   void OnTaskReady(const void* frame_scheduler,
                    const base::sequence_manager::Task& task,

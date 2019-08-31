@@ -112,7 +112,7 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
-  green->SetMaskLayer(mask.get());
+  green->SetMaskLayer(mask);
 
   pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
@@ -381,7 +381,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
       gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
-  green->SetMaskLayer(mask.get());
+  green->SetMaskLayer(mask);
   background->AddChild(green);
 
   pixel_comparator_ =
@@ -412,7 +412,7 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
-  green->SetMaskLayer(mask.get());
+  green->SetMaskLayer(mask);
 
   pixel_comparator_ =
       std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
@@ -437,7 +437,7 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
   mask->set_fixed_tile_size(gfx::Size(173, 135));
-  green->SetMaskLayer(mask.get());
+  green->SetMaskLayer(mask);
 
   pixel_comparator_ =
       std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
@@ -571,7 +571,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
-  blur->SetMaskLayer(mask.get());
+  blur->SetMaskLayer(mask);
   CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
   base::FilePath image_name =
@@ -626,7 +626,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest, MaskOfLayerWithBlend) {
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
-  picture_horizontal->SetMaskLayer(mask.get());
+  picture_horizontal->SetMaskLayer(mask);
 
   float percentage_pixels_large_error = 0.04f;  // 0.04%, ~6px / (128*128)
   float percentage_pixels_small_error = 0.0f;
@@ -1049,7 +1049,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   mask->SetBounds(mask_bounds);
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
-  picture_horizontal->SetMaskLayer(mask.get());
+  picture_horizontal->SetMaskLayer(mask);
 
   base::FilePath result_path(
       FILE_PATH_LITERAL("mask_of_backdrop_filter_and_blend_.png"));

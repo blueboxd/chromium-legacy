@@ -8,11 +8,9 @@
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace cc {
-namespace {
-
-class FrameSequenceTrackerTest;
 
 class FrameSequenceTrackerTest : public testing::Test {
  public:
@@ -75,6 +73,30 @@ class FrameSequenceTrackerTest : public testing::Test {
     return ++frame_token;
   }
 
+  void TestNotifyFramePresented() {
+    collection_.StartSequence(FrameSequenceTrackerType::kCompositorAnimation);
+    collection_.StartSequence(FrameSequenceTrackerType::kMainThreadAnimation);
+    EXPECT_EQ(collection_.frame_trackers_.size(), 3u);
+
+    collection_.StopSequence(kCompositorAnimation);
+    EXPECT_EQ(collection_.frame_trackers_.size(), 2u);
+    EXPECT_TRUE(collection_.frame_trackers_.contains(
+        FrameSequenceTrackerType::kMainThreadAnimation));
+    EXPECT_TRUE(collection_.frame_trackers_.contains(
+        FrameSequenceTrackerType::kTouchScroll));
+    ASSERT_EQ(collection_.removal_trackers_.size(), 1u);
+    EXPECT_EQ(collection_.removal_trackers_[0]->type_,
+              FrameSequenceTrackerType::kCompositorAnimation);
+
+    gfx::PresentationFeedback feedback;
+    collection_.NotifyFramePresented(1u, feedback);
+    // NotifyFramePresented should call ReportFramePresented on all the
+    // |removal_trackers_|, which changes their termination_status_ to
+    // kReadyForTermination. So at this point, the |removal_trackers_| should be
+    // empty.
+    EXPECT_TRUE(collection_.removal_trackers_.empty());
+  }
+
  protected:
   std::unique_ptr<CompositorFrameReportingController>
       compositor_frame_reporting_controller_;
@@ -113,5 +135,8 @@ TEST_F(FrameSequenceTrackerTest, SourceIdChangeDuringSequence) {
                                 viz::BeginFrameAck(args_2, true), args_1);
 }
 
-}  // namespace
+TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {
+  TestNotifyFramePresented();
+}
+
 }  // namespace cc

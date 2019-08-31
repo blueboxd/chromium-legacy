@@ -291,7 +291,7 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
  public:
   explicit FakeFidoCableDiscovery(
       std::vector<CableDiscoveryData> discovery_data)
-      : FidoCableDiscovery(std::move(discovery_data)) {}
+      : FidoCableDiscovery(std::move(discovery_data), BogusQRGeneratorKey()) {}
   ~FakeFidoCableDiscovery() override = default;
 
  private:
@@ -305,6 +305,12 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
     DCHECK(ok);
     return std::make_unique<FakeHandshakeHandler>(
         device, nonce, discovery_data->session_pre_key);
+  }
+
+  static std::array<uint8_t, 32> BogusQRGeneratorKey() {
+    std::array<uint8_t, 32> ret;
+    memset(ret.data(), 0, ret.size());
+    return ret;
   }
 };
 

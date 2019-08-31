@@ -589,7 +589,7 @@ if (is_android) {
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
     ]
     srcjar_deps = [
-      "//components/module_installer/android:module_installer_apk_build_config",
+      "//components/module_installer/android:module_installer_build_config",
     ]
   }
 
@@ -3588,7 +3588,7 @@ test("unit_tests") {
     }
 
     srcjar_deps = [
-      "//components/module_installer/android:module_installer_apk_build_config",
+      "//components/module_installer/android:module_installer_build_config",
     ]
   } else {
     # !is_android

@@ -1,11 +1,11 @@
 This is a testharness.js-based test.
 PASS idlharness
-PASS idl_test setup
-PASS Partial interface Navigator: original interface defined
-PASS Partial interface Navigator: valid exposure set
-PASS Partial interface WorkerNavigator: original interface defined
-PASS Partial interface WorkerNavigator: valid exposure set
-PASS Partial interface Screen: original interface defined
+FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
+ define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
+                        ^ Trailing comma in arguments list"
+FAIL Partial interface Navigator: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface WorkerNavigator: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface Screen: original interface defined assert_true: Original interface should be defined expected true got false
 PASS MediaCapabilities interface: existence and properties of interface object
 PASS MediaCapabilities interface object length
 PASS MediaCapabilities interface object name
@@ -14,24 +14,6 @@ PASS MediaCapabilities interface: existence and properties of interface prototyp
 PASS MediaCapabilities interface: existence and properties of interface prototype object's @@unscopables property
 PASS MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration)
 PASS MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration)
-PASS MediaCapabilities must be primary interface of navigator.mediaCapabilities
-PASS Stringification of navigator.mediaCapabilities
-PASS MediaCapabilities interface: navigator.mediaCapabilities must inherit property "decodingInfo(MediaDecodingConfiguration)" with the proper type
-PASS MediaCapabilities interface: calling decodingInfo(MediaDecodingConfiguration) on navigator.mediaCapabilities with too few arguments must throw TypeError
-PASS MediaCapabilities interface: navigator.mediaCapabilities must inherit property "encodingInfo(MediaEncodingConfiguration)" with the proper type
-PASS MediaCapabilities interface: calling encodingInfo(MediaEncodingConfiguration) on navigator.mediaCapabilities with too few arguments must throw TypeError
 PASS ScreenLuminance interface: existence and properties of interface object
-FAIL ScreenLuminance must be primary interface of screen.luminance assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-FAIL Stringification of screen.luminance assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-FAIL ScreenLuminance interface: screen.luminance must not have property "min" assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-FAIL ScreenLuminance interface: screen.luminance must not have property "max" assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-FAIL ScreenLuminance interface: screen.luminance must not have property "maxAverage" assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-PASS Navigator interface: existence and properties of interface object
-PASS WorkerNavigator interface: attribute mediaCapabilities
-PASS WorkerNavigator interface: navigator must inherit property "mediaCapabilities" with the proper type
-PASS Screen interface: existence and properties of interface object
-FAIL Screen interface: screen must not have property "colorGamut" assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-FAIL Screen interface: screen must not have property "luminance" assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
-FAIL Screen interface: screen must not have property "onchange" assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: screen is not defined"
 Harness: the test ran to completion.
 

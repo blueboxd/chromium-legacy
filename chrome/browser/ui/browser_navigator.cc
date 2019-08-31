@@ -768,6 +768,9 @@ bool IsHostAllowedInIncognito(const GURL& url) {
   return host != chrome::kChromeUIAppLauncherPageHost &&
          host != chrome::kChromeUIAppManagementHost &&
          host != chrome::kChromeUISettingsHost &&
+#if defined(OS_CHROMEOS)
+         host != chrome::kChromeUIOSSettingsHost &&
+#endif
          host != chrome::kChromeUIHelpHost &&
          host != chrome::kChromeUIHistoryHost &&
          host != chrome::kChromeUIExtensionsHost &&

@@ -30,11 +30,9 @@ class PreviewsOptimizationGuideDecider : public PreviewsOptimizationGuide {
 
   // PreviewsOptimizationGuide implementation:
   bool IsReady() const override;
-  bool CanApplyPreview(
-      PreviewsUserData* previews_data,
-      content::NavigationHandle* navigation_handle,
-      PreviewsType type,
-      net::EffectiveConnectionType* out_ect_threshold) override;
+  bool CanApplyPreview(PreviewsUserData* previews_data,
+                       content::NavigationHandle* navigation_handle,
+                       PreviewsType type) override;
   bool MaybeLoadOptimizationHints(content::NavigationHandle* navigation_handle,
                                   base::OnceClosure callback) override;
   bool GetResourceLoadingHints(

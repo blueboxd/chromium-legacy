@@ -45,7 +45,7 @@ class FakeCryptAuthGroupPrivateKeySharer
   }
 
   void FinishAttempt(
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code);
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
  private:
   // CryptAuthGroupPrivateKeySharer:

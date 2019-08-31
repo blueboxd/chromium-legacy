@@ -863,6 +863,8 @@ SpdySession::SpdySession(
     const quic::ParsedQuicVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
+    bool is_http2_enabled,
+    bool is_quic_enabled,
     bool support_ietf_format_quic_altsvc,
     bool is_trusted_proxy,
     size_t session_max_recv_window_size,
@@ -925,6 +927,8 @@ SpdySession::SpdySession(
       enable_sending_initial_data_(enable_sending_initial_data),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
+      is_http2_enabled_(is_http2_enabled),
+      is_quic_enabled_(is_quic_enabled),
       support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       is_trusted_proxy_(is_trusted_proxy),
       enable_push_(IsPushEnabled(initial_settings)),
@@ -3383,45 +3387,11 @@ void SpdySession::OnAltSvc(
     scheme_host_port = url::SchemeHostPort(gurl);
   }
 
-  AlternativeServiceInfoVector alternative_service_info_vector;
-  alternative_service_info_vector.reserve(altsvc_vector.size());
-  const base::Time now(base::Time::Now());
-  DCHECK(!quic_supported_versions_.empty());
-  for (const spdy::SpdyAltSvcWireFormat::AlternativeService& altsvc :
-       altsvc_vector) {
-    const NextProto protocol = NextProtoFromString(altsvc.protocol_id);
-    if (protocol == kProtoUnknown)
-      continue;
-
-    // Check if QUIC version is supported. Filter supported QUIC versions.
-    quic::ParsedQuicVersionVector advertised_versions;
-    if (protocol == kProtoQUIC && !altsvc.version.empty()) {
-      advertised_versions = FilterSupportedAltSvcVersions(
-          altsvc, quic_supported_versions_, support_ietf_format_quic_altsvc_);
-      if (advertised_versions.empty())
-        continue;
-    }
-
-    const AlternativeService alternative_service(protocol, altsvc.host,
-                                                 altsvc.port);
-    const base::Time expiration =
-        now + base::TimeDelta::FromSeconds(altsvc.max_age);
-    AlternativeServiceInfo alternative_service_info;
-    if (protocol == kProtoQUIC) {
-      alternative_service_info =
-          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
-              alternative_service, expiration, advertised_versions);
-    } else {
-      alternative_service_info =
-          AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
-              alternative_service, expiration);
-    }
-    alternative_service_info_vector.push_back(alternative_service_info);
-  }
-
   http_server_properties_->SetAlternativeServices(
       scheme_host_port, spdy_session_key_.network_isolation_key(),
-      alternative_service_info_vector);
+      ProcessAlternativeServices(altsvc_vector, is_http2_enabled_,
+                                 is_quic_enabled_, quic_supported_versions_,
+                                 support_ietf_format_quic_altsvc_));
 }
 
 bool SpdySession::OnUnknownFrame(spdy::SpdyStreamId stream_id,

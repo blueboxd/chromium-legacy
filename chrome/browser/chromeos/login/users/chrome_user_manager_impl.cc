@@ -371,7 +371,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllSources());
 
   // Since we're in ctor postpone any actions till this is fully created.
@@ -650,7 +650,7 @@ void ChromeUserManagerImpl::Observe(
       UpdateUserTimeZoneRefresher(profile);
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
+    case chrome::NOTIFICATION_PROFILE_ADDED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       user_manager::User* user =
           ProfileHelper::Get()->GetUserByProfile(profile);
@@ -663,14 +663,7 @@ void ChromeUserManagerImpl::Observe(
 
       // If there is pending user switch, do it now.
       if (GetPendingUserSwitchID().is_valid()) {
-        // Call SwitchActiveUser async because otherwise it may cause
-        // ProfileManager::GetProfile before the profile gets registered
-        // in ProfileManager. It happens in case of sync profile load when
-        // NOTIFICATION_PROFILE_CREATED is called synchronously.
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(&ChromeUserManagerImpl::SwitchActiveUser,
-                                      weak_factory_.GetWeakPtr(),
-                                      GetPendingUserSwitchID()));
+        SwitchActiveUser(GetPendingUserSwitchID());
         SetPendingUserSwitchId(EmptyAccountId());
       }
       break;

@@ -429,8 +429,9 @@ cr.define('destination_store_test', function() {
             const localDestinationInfo = {deviceName: id1, printerName: name1};
             if (cr.isChromeOS) {
               localDestinationInfo.policies = {
-                allowedColorModes: 0x1,
-                defaultColorMode: 0x1
+                allowedColorModes:
+                    print_preview.ColorModeRestriction.MONOCHROME,
+                defaultColorMode: print_preview.ColorModeRestriction.MONOCHROME,
               };
             }
             nativeLayer.setLocalDestinationCapabilities({
@@ -455,10 +456,9 @@ cr.define('destination_store_test', function() {
             assertEquals(destination, destinationStore.selectedDestination);
             // Capabilities are updated.
             assertTrue(!!destination.capabilities);
-            // TODO (https://crbug.com/998103): Ensure that the destination
-            // policies are actually set.
             if (cr.isChromeOS) {
-              assertEquals(null, destination.policies);
+              // Policies are updated.
+              assertTrue(!!destination.policies);
             }
           });
     });

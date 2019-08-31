@@ -2395,6 +2395,8 @@ enum WebFeature {
   kFetchRedirectError = 3012,
   kFetchRedirectManual = 3013,
   kFetchCacheReload = 3014,
+  kV8Window_ChooseFileSystemEntries_Method = 3015,
+  kV8FileSystemDirectoryHandle_GetSystemDirectory_Method = 3016,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -17,13 +17,15 @@ void FakeCryptAuthMetadataSyncer::FinishAttempt(
     std::unique_ptr<CryptAuthKey> new_group_key,
     const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&
         encrypted_group_private_key,
-    const CryptAuthDeviceSyncResult& device_sync_result) {
+    const base::Optional<cryptauthv2::ClientDirective>& new_client_directive,
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(request_context_);
   DCHECK(local_device_metadata_);
   DCHECK(initial_group_key_);
 
   OnAttemptFinished(id_to_device_metadata_packet_map, std::move(new_group_key),
-                    encrypted_group_private_key, device_sync_result);
+                    encrypted_group_private_key, new_client_directive,
+                    device_sync_result_code);
 }
 
 void FakeCryptAuthMetadataSyncer::OnAttemptStarted(

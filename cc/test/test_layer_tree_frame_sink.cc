@@ -116,8 +116,7 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     frame_sink_manager_->RegisterBeginFrameSource(display_begin_frame_source_,
                                                   frame_sink_id_);
   }
-  display_->Initialize(this, frame_sink_manager_->surface_manager(),
-                       true /* enable_shared_images */);
+  display_->Initialize(this, frame_sink_manager_->surface_manager());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
   display_->SetColorSpace(output_color_space_);

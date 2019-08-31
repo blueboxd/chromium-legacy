@@ -282,6 +282,10 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   worker_host->OnFeatureUsed(feature2);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client.CheckReceivedOnFeatureUsed(feature2));
+
+  // Tear down the worker host.
+  worker_host->OnContextClosed();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
@@ -422,6 +426,10 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client0.CheckReceivedOnFeatureUsed(feature3));
   EXPECT_TRUE(client1.CheckReceivedOnFeatureUsed(feature3));
+
+  // Tear down the worker host.
+  worker_host->OnContextClosed();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
@@ -1039,6 +1047,10 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
 
   EXPECT_TRUE(worker1.CheckReceivedConnect(nullptr, nullptr));
   EXPECT_TRUE(client2.CheckReceivedOnCreated());
+
+  // Tear down the worker host.
+  worker_host1->OnContextClosed();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
@@ -1136,6 +1148,10 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
 
   EXPECT_TRUE(worker1.CheckReceivedConnect(nullptr, nullptr));
   EXPECT_TRUE(client2.CheckReceivedOnCreated());
+
+  // Tear down the worker host.
+  worker_host1->OnContextClosed();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {

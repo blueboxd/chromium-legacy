@@ -121,7 +121,7 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
   void OnSyncMetadataFailure(NetworkRequestError error);
   void FilterMetadataAndFinishAttempt();
 
-  void FinishAttempt(const CryptAuthDeviceSyncResult::ResultCode& result_code);
+  void FinishAttempt(CryptAuthDeviceSyncResult::ResultCode result_code);
 
   size_t num_sync_metadata_calls_ = 0;
   cryptauthv2::RequestContext request_context_;

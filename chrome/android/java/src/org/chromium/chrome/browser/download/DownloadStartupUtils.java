@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.download;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Handles initialization for the downloads system, i.e. creating in-progress download manager or
@@ -15,8 +16,11 @@ public class DownloadStartupUtils {
      * @param isFullBrowserStarted Whether full browser process has been started.
      */
     public static void ensureDownloadSystemInitialized(boolean isFullBrowserStarted) {
-        nativeEnsureDownloadSystemInitialized(isFullBrowserStarted);
+        DownloadStartupUtilsJni.get().ensureDownloadSystemInitialized(isFullBrowserStarted);
     }
 
-    private static native void nativeEnsureDownloadSystemInitialized(boolean isFullBrowserStarted);
+    @NativeMethods
+    interface Natives {
+        void ensureDownloadSystemInitialized(boolean isFullBrowserStarted);
+    }
 }

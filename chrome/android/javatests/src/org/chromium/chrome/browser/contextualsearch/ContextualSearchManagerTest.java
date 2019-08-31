@@ -720,22 +720,6 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Asserts that the tap triggered promo counter is enabled and at the specified count.
-     */
-    private void assertTapPromoCounterEnabledAt(int expectedCount) {
-        Assert.assertTrue(mPolicy.getPromoTapCounter().isEnabled());
-        Assert.assertEquals(expectedCount, mPolicy.getPromoTapCounter().getCount());
-    }
-
-    /**
-     * Asserts that the tap triggered promo counter is disabled and at the specified count.
-     */
-    private void assertTapPromoCounterDisabledAt(int expectedCount) {
-        Assert.assertFalse(mPolicy.getPromoTapCounter().isEnabled());
-        Assert.assertEquals(expectedCount, mPolicy.getPromoTapCounter().getCount());
-    }
-
-    /**
      * Waits for the Search Panel (the Search Bar) to peek up from the bottom, and asserts that it
      * did peek.
      * @throws InterruptedException
@@ -3267,5 +3251,57 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "Search.ContextualSearch.OutcomesDuration", 0));
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Longpress-resolve Feature tests.
+    // --------------------------------------------------------------------------------------------
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Features.EnableFeatures("ContextualSearchLongpressResolve")
+    public void testTapIsIgnoredWithLongpressResolveEnabled()
+            throws InterruptedException, TimeoutException {
+        clickNode("states");
+        Assert.assertNull(getSelectedText());
+        assertPanelClosedOrUndefined();
+        assertLoadedNoUrl();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @CommandLineFlags.Add({"enable-features=ContextualSearchLongpressResolve<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/FakeGroup",
+            "force-fieldtrial-params=FakeStudyName.FakeGroup:longpress_resolve_variation/"
+                    + ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRESERVE_TAP})
+    public void
+    testTapNotIgnoredWithLongpressResolveEnabledAndVariationPreserveTap()
+            throws InterruptedException, TimeoutException {
+        clickWordNode("states");
+        Assert.assertEquals("States", getSelectedText());
+        waitForPanelToPeek();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @CommandLineFlags.Add({"enable-features=ContextualSearchLongpressResolve<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/FakeGroup",
+            "force-fieldtrial-params=FakeStudyName.FakeGroup:longpress_resolve_variation/"
+                    + ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRIVACY_AGGRESSIVE})
+    public void
+    testLongpressResolvesWithLongpressResolveEnabledAndVariationPrivacyAggressive()
+            throws InterruptedException, TimeoutException {
+        mPolicy.overrideDecidedStateForTesting(false);
+        mFakeServer.setShouldUseHttps(true);
+        longPressNode("states");
+        assertLoadedNoUrl();
+        assertSearchTermRequested();
+
+        fakeResponse(false, 200, "states", "United States Intelligence", "alternate-term", false);
+        waitForPanelToPeek();
+        assertLoadedLowPriorityUrl();
+        assertContainsParameters("states", "alternate-term");
     }
 }

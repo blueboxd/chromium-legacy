@@ -97,7 +97,7 @@ function setUp() {
   importHistory = new importer.TestImportHistory();
   driveSyncHandler = new MockDriveSyncHandler();
   importer.setupTestLogger();
-  mediaImporter = new importer.MediaImportHandler(
+  mediaImporter = new importer.MediaImportHandlerImpl(
       progressCenter, importHistory, dispositionChecker, driveSyncHandler);
 
   // Setup the copy destination.
@@ -176,7 +176,7 @@ function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
     }
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
-  mediaImporter = new importer.MediaImportHandler(
+  mediaImporter = new importer.MediaImportHandlerImpl(
       progressCenter, importHistory, dispositionChecker, driveSyncHandler);
   const scanResult = new TestScanResult(media);
   const importTask = mediaImporter.importFromScanResult(
@@ -602,23 +602,72 @@ function setupFileSystem(fileNames) {
 
 /**
  * Replaces fileOperationUtil.copyTo with a mock for testing.
- * @constructor
  */
-function MockCopyTo() {
-  /** @type {!Array<!MockCopyTo.CopyInfo>} */
-  this.copiedFiles = [];
+class MockCopyTo {
+  constructor() {
+    /** @type {!Array<!MockCopyTo.CopyInfo>} */
+    this.copiedFiles = [];
 
-  // Replace fileOperationUtil.copyTo with our mock test function.
-  fileOperationUtil.copyTo =
-      /** @type {function(*)} */ (this.copyTo_.bind(this));
+    // Replace fileOperationUtil.copyTo with our mock test function.
+    fileOperationUtil.copyTo =
+        /** @type {function(*)} */ (this.copyTo_.bind(this));
 
-  /** @private {boolean} */
-  this.simulateError_ = false;
+    /** @private {boolean} */
+    this.simulateError_ = false;
 
-  this.entryChangedCallback_ = null;
-  this.progressCallback_ = null;
-  this.successCallback_ = null;
-  this.errorCallback_ = null;
+    this.entryChangedCallback_ = null;
+    this.progressCallback_ = null;
+    this.successCallback_ = null;
+    this.errorCallback_ = null;
+  }
+
+  /**
+   * Makes the mock copier simulate an error the next time copyTo_ is called.
+   */
+  simulateOneError() {
+    this.simulateError_ = true;
+  }
+
+  /**
+   * A mock to replace fileOperationUtil.copyTo.  See the original for details.
+   * @param {!Entry} source
+   * @param {!DirectoryEntry} parent
+   * @param {string} newName
+   * @param {function(string, Entry)} entryChangedCallback
+   * @param {function(string, number)} progressCallback
+   * @param {function(Entry)} successCallback
+   * @param {function(Error)} errorCallback
+   */
+  copyTo_(
+      source, parent, newName, entryChangedCallback, progressCallback,
+      successCallback, errorCallback) {
+    this.entryChangedCallback_ = entryChangedCallback;
+    this.progressCallback_ = progressCallback;
+    this.successCallback_ = successCallback;
+    this.errorCallback_ = errorCallback;
+
+    if (this.simulateError_) {
+      this.simulateError_ = false;
+      const error = new Error('test error');
+      this.errorCallback_(error);
+      return;
+    }
+
+    // Log the copy details.
+    this.copiedFiles.push(/** @type {!MockCopyTo.CopyInfo} */ ({
+      source: source,
+      destination: parent,
+      newName: newName,
+    }));
+
+    // Copy the file.
+    const copyErrorCallback = /** @type {!function(FileError):*} */
+        (this.errorCallback_.bind(this));
+    source.copyTo(parent, newName, newEntry => {
+      this.entryChangedCallback_(source.toURL(), parent);
+      this.successCallback_(newEntry);
+    }, copyErrorCallback);
+  }
 }
 
 /**
@@ -629,51 +678,3 @@ function MockCopyTo() {
  * }}
  */
 MockCopyTo.CopyInfo;
-
-/**
- * Makes the mock copier simulate an error the next time copyTo_ is called.
- */
-MockCopyTo.prototype.simulateOneError = function() {
-  this.simulateError_ = true;
-};
-
-/**
- * A mock to replace fileOperationUtil.copyTo.  See the original for details.
- * @param {!Entry} source
- * @param {!DirectoryEntry} parent
- * @param {string} newName
- * @param {function(string, Entry)} entryChangedCallback
- * @param {function(string, number)} progressCallback
- * @param {function(Entry)} successCallback
- * @param {function(Error)} errorCallback
- */
-MockCopyTo.prototype.copyTo_ = function(
-    source, parent, newName, entryChangedCallback, progressCallback,
-    successCallback, errorCallback) {
-  this.entryChangedCallback_ = entryChangedCallback;
-  this.progressCallback_ = progressCallback;
-  this.successCallback_ = successCallback;
-  this.errorCallback_ = errorCallback;
-
-  if (this.simulateError_) {
-    this.simulateError_ = false;
-    const error = new Error('test error');
-    this.errorCallback_(error);
-    return;
-  }
-
-  // Log the copy details.
-  this.copiedFiles.push(/** @type {!MockCopyTo.CopyInfo} */ ({
-    source: source,
-    destination: parent,
-    newName: newName,
-  }));
-
-  // Copy the file.
-  const copyErrorCallback = /** @type {!function(FileError):*} */
-      (this.errorCallback_.bind(this));
-  source.copyTo(parent, newName, newEntry => {
-    this.entryChangedCallback_(source.toURL(), parent);
-    this.successCallback_(newEntry);
-  }, copyErrorCallback);
-};

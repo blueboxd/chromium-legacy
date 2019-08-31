@@ -212,9 +212,16 @@ Polymer({
 
   /** @private */
   onAppearanceTap_: function() {
-    settings.navigateTo(
-        settings.routes.APPEARANCE,
-        /* dynamicParams */ null, /* removeSearch */ true);
+    if (loadTimeData.getBoolean('isOSSettings')) {
+      // Open browser appearance section in a new browser tab.
+      window.open('chrome://settings/appearance');
+    } else {
+      // Open browser appearance in this settings window.
+      // TODO(crbug.com/986596): Remove this when SplitSettings is the default.
+      settings.navigateTo(
+          settings.routes.APPEARANCE,
+          /* dynamicParams */ null, /* removeSearch */ true);
+    }
   },
 
   /** @private */

@@ -217,6 +217,21 @@ IntersectionGeometry::IntersectionGeometry(const Element* root_element,
   ComputeGeometry(root_geometry, root, target, thresholds);
 }
 
+IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
+                                           const Element& explicit_root,
+                                           const Element& target_element,
+                                           const Vector<float>& thresholds,
+                                           unsigned flags)
+    : flags_(flags & kConstructorFlagsMask),
+      intersection_ratio_(0),
+      threshold_index_(0) {
+  LayoutObject* target = GetTargetLayoutObject(target_element);
+  LayoutObject* root = explicit_root.GetLayoutObject();
+  if (!IsContainingBlockChainDescendant(target, root))
+    return;
+  ComputeGeometry(root_geometry, root, target, thresholds);
+}
+
 IntersectionGeometry::~IntersectionGeometry() = default;
 
 void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,

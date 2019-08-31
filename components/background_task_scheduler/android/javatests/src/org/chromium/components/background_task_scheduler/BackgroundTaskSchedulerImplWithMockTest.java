@@ -4,10 +4,10 @@
 
 package org.chromium.components.background_task_scheduler;
 
-import android.content.Context;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,23 +21,17 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class BackgroundTaskSchedulerImplWithMockTest {
-    private static class TestBackgroundTask implements BackgroundTask {
-        @Override
-        public boolean onStartTask(
-                Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-            return false;
-        }
-
-        @Override
-        public boolean onStopTask(Context context, TaskParameters taskParameters) {
-            return false;
-        }
-
-        @Override
-        public void reschedule(Context context) {}
-    }
-
     private static final int TEST_MINUTES = 10;
+
+    private MockBackgroundTaskSchedulerDelegate mDelegate;
+    private BackgroundTaskScheduler mTaskScheduler;
+
+    @Before
+    public void setUp() {
+        mDelegate = new MockBackgroundTaskSchedulerDelegate();
+        mTaskScheduler = new BackgroundTaskSchedulerImpl(
+                mDelegate, new BackgroundTaskSchedulerAlarmManager());
+    }
 
     @Test
     @SmallTest
@@ -48,14 +42,11 @@ public class BackgroundTaskSchedulerImplWithMockTest {
                         .build();
         TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
-        MockBackgroundTaskSchedulerDelegate delegate = new MockBackgroundTaskSchedulerDelegate();
-        BackgroundTaskScheduler taskScheduler = new BackgroundTaskSchedulerImpl(delegate);
-
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertTrue(taskScheduler.schedule(null, oneOffTask)); });
+                () -> { Assert.assertTrue(mTaskScheduler.schedule(null, oneOffTask)); });
 
-        Assert.assertEquals(oneOffTask, delegate.getScheduledTaskInfo());
-        Assert.assertEquals(0, delegate.getCanceledTaskId());
+        Assert.assertEquals(oneOffTask, mDelegate.getScheduledTaskInfo());
+        Assert.assertEquals(0, mDelegate.getCanceledTaskId());
     }
 
     @Test
@@ -67,25 +58,28 @@ public class BackgroundTaskSchedulerImplWithMockTest {
                         .build();
         TaskInfo periodicTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
-        MockBackgroundTaskSchedulerDelegate delegate = new MockBackgroundTaskSchedulerDelegate();
-        BackgroundTaskScheduler taskScheduler = new BackgroundTaskSchedulerImpl(delegate);
-
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertTrue(taskScheduler.schedule(null, periodicTask)); });
+                () -> { Assert.assertTrue(mTaskScheduler.schedule(null, periodicTask)); });
 
-        Assert.assertEquals(periodicTask, delegate.getScheduledTaskInfo());
-        Assert.assertEquals(0, delegate.getCanceledTaskId());
+        Assert.assertEquals(periodicTask, mDelegate.getScheduledTaskInfo());
+        Assert.assertEquals(0, mDelegate.getCanceledTaskId());
     }
 
     @Test
     @SmallTest
     public void testTaskCanceling() {
-        MockBackgroundTaskSchedulerDelegate delegate = new MockBackgroundTaskSchedulerDelegate();
-        BackgroundTaskScheduler taskScheduler = new BackgroundTaskSchedulerImpl(delegate);
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.OneOffInfo.create()
+                        .setWindowEndTimeMs(TimeUnit.MINUTES.toMillis(TEST_MINUTES))
+                        .build();
+        TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> { taskScheduler.cancel(null, TaskIds.TEST); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(mTaskScheduler.schedule(null, oneOffTask));
+            mTaskScheduler.cancel(null, TaskIds.TEST);
+        });
 
-        Assert.assertEquals(null, delegate.getScheduledTaskInfo());
-        Assert.assertEquals(TaskIds.TEST, delegate.getCanceledTaskId());
+        Assert.assertEquals(null, mDelegate.getScheduledTaskInfo());
+        Assert.assertEquals(TaskIds.TEST, mDelegate.getCanceledTaskId());
     }
 }

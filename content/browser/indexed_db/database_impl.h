@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -91,19 +92,22 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
              int64_t object_store_id,
              int64_t index_id,
              const blink::IndexedDBKeyRange& key_range,
-             blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
-  void DeleteRange(
-      int64_t transaction_id,
-      int64_t object_store_id,
-      const blink::IndexedDBKeyRange& key_range,
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+             mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                 pending_callbacks) override;
+  void DeleteRange(int64_t transaction_id,
+                   int64_t object_store_id,
+                   const blink::IndexedDBKeyRange& key_range,
+                   mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                       pending_callbacks) override;
   void GetKeyGeneratorCurrentNumber(
       int64_t transaction_id,
       int64_t object_store_id,
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+      mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+          pending_callbacks) override;
   void Clear(int64_t transaction_id,
              int64_t object_store_id,
-             blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+             mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                 pending_callbacks) override;
   void CreateIndex(int64_t transaction_id,
                    int64_t object_store_id,
                    int64_t index_id,

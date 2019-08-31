@@ -60,7 +60,7 @@ class CryptAuthFeatureStatusGetterImpl : public CryptAuthFeatureStatusGetter {
   void OnBatchGetFeatureStatusesFailure(NetworkRequestError error);
   void OnBatchGetFeatureStatusesTimeout();
 
-  void FinishAttempt(const CryptAuthDeviceSyncResult::ResultCode& result_code);
+  void FinishAttempt(CryptAuthDeviceSyncResult::ResultCode result_code);
 
   IdToFeatureStatusMap id_to_feature_status_map_;
 

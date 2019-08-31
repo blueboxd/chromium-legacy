@@ -34,7 +34,6 @@ const int kDefaultHatsDialogHeight = 440;
 
 // Placeholder strings in html file to be replaced when the file is loaded.
 constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
-constexpr char kDoneButtonLabelReplacementToken[] = "$DONE_BUTTON_LABEL";
 
 // Base URL to fetch the Google consumer survey script.
 constexpr char kBaseFormatUrl[] =
@@ -59,11 +58,6 @@ std::string LoadLocalHtmlAsString(const std::string& site_id,
   html_data.replace(pos, strlen(kScriptSrcReplacementToken),
                     base::StringPrintf(kBaseFormatUrl, site_id.c_str(),
                                        site_context.c_str()));
-
-  pos = html_data.find(kDoneButtonLabelReplacementToken);
-  DCHECK(pos != std::string::npos);
-  html_data.replace(pos, strlen(kDoneButtonLabelReplacementToken),
-                    l10n_util::GetStringUTF8(IDS_DONE));
 
   return html_data;
 }

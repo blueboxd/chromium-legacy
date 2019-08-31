@@ -60,14 +60,13 @@ struct NativeValueTraits<std::unique_ptr<IDBKey>> {
   // Note that an Array key may contain Invalid members, as the "multi-entry"
   // index case allows these, and will filter them out later. Use IsValid() to
   // recursively check.
-  static std::unique_ptr<IDBKey> NativeValue(v8::Isolate*,
-                                             v8::Local<v8::Value>,
-                                             ExceptionState&);
+  MODULES_EXPORT static std::unique_ptr<IDBKey>
+  NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 
   // Implementation for ScriptValue::To<std::unique_ptr<IDBKey>>().
   //
   // Used by Indexed DB when generating the primary key for a record that is
-  // being stored in an object store that uses in-line keys, or an index key.
+  // being stored in an object store that uses in-line keys.
   // https://w3c.github.io/IndexedDB/#extract-key-from-value
   //
   // Evaluates the given key path against the script value to produce an
@@ -84,6 +83,34 @@ struct NativeValueTraits<std::unique_ptr<IDBKey>> {
       v8::Local<v8::Value>,
       ExceptionState&,
       const IDBKeyPath&);
+
+  // Implementation for ScriptValue::To<std::unique_ptr<IDBKey>>().
+  //
+  // Used by Indexed DB when generating the index key for a record that is being
+  // stored.
+  // https://w3c.github.io/IndexedDB/#extract-key-from-value
+  //
+  // Evaluates the given key path against the script value to produce an IDBKey.
+  // Returns either:
+  // * A nullptr, if key path evaluation fails.
+  // * An Invalid key, if the evaluation yielded a non-key.
+  // * An IDBKey, otherwise.
+  //
+  // Note that an Array key may contain Invalid members, as the
+  // "multi-entry" index case allows these, and will filter them out later. Use
+  // IsValid() to recursively check.
+  //
+  // If evaluating an index's key path which is an array, and the sub-key path
+  // matches the object store's key path, and that evaluation fails, then a
+  // None key member will be present in the Array key result. This should only
+  // occur when the store has a key generator, which would fill in the primary
+  // key lazily.
+  MODULES_EXPORT static std::unique_ptr<IDBKey> NativeValue(
+      v8::Isolate*,
+      v8::Local<v8::Value>,
+      ExceptionState&,
+      const IDBKeyPath& store_key_path,
+      const IDBKeyPath& index_key_path);
 };
 
 template <>

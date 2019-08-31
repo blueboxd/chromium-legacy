@@ -405,4 +405,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, no SPDY SETTINGS will be sent after handshake is confirmed.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, true)
+
+// The maximum amount of CRYPTO frame data that can be buffered.
+QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)

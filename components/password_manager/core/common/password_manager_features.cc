@@ -53,21 +53,6 @@ const base::Feature kLeakDetection = {"PasswordLeakDetection",
 const base::Feature kManualPasswordGenerationAndroid{
     "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables new password form parsing mechanism for filling passwords, details in
-// https://goo.gl/QodPH1
-const base::Feature kNewPasswordFormParsing = {
-    "new-password-form-parsing", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables new password form parsing mechanism for saving passwords, details in
-// https://goo.gl/QodPH1
-const base::Feature kNewPasswordFormParsingForSaving = {
-    "new-password-form-parsing-for-saving", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables new password form parsing mechanism for saving passwords and disables
-// the old parser, details in https://goo.gl/QodPH1
-const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {
     "PasswordEditingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

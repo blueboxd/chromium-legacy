@@ -412,9 +412,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:
+      return LoadingTaskQueueTraits();
     case TaskType::kNetworkingControl:
-      // Loading task queues are handled separately.
-      return base::nullopt;
+      return LoadingControlTaskQueueTraits();
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -480,8 +480,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
-    // The TaskType of Inspector tasks need to be unpausable and should not use virtual time
-    // because they need to run on a paused page or when virtual time is paused.
+    // The TaskType of Inspector tasks need to be unpausable and should not use
+    // virtual time because they need to run on a paused page or when virtual
+    // time is paused.
     case TaskType::kInternalInspector:
     // Navigation IPCs do not run using virtual time to avoid hanging.
     case TaskType::kInternalNavigationAssociated:
@@ -525,27 +526,17 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
 
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
     TaskType type) {
-  switch (type) {
-    case TaskType::kInternalLoading:
-    case TaskType::kNetworking:
-    case TaskType::kNetworkingWithURLLoaderAnnotation:
-      return frame_task_queue_controller_->LoadingTaskQueue();
-    case TaskType::kNetworkingControl:
-      return frame_task_queue_controller_->LoadingControlTaskQueue();
-    default:
-      // Non-loading task queue.
-      DCHECK_LT(static_cast<size_t>(type),
-                main_thread_scheduler_->scheduling_settings()
-                    .frame_task_types_to_queue_traits.size());
-      base::Optional<QueueTraits> queue_traits =
-          main_thread_scheduler_->scheduling_settings()
-              .frame_task_types_to_queue_traits[static_cast<size_t>(type)];
-      // We don't have a QueueTraits mapping for |task_type| if it is not a
-      // frame-level task type.
-      DCHECK(queue_traits);
-      return frame_task_queue_controller_->NonLoadingTaskQueue(
-          queue_traits.value());
-  }
+  DCHECK_LT(static_cast<size_t>(type),
+            main_thread_scheduler_->scheduling_settings()
+                .frame_task_types_to_queue_traits.size());
+  base::Optional<QueueTraits> queue_traits =
+      main_thread_scheduler_->scheduling_settings()
+          .frame_task_types_to_queue_traits[static_cast<size_t>(type)];
+  // We don't have a QueueTraits mapping for |task_type| if it is not a
+  // frame-level task type.
+  DCHECK(queue_traits);
+  return frame_task_queue_controller_->GetTaskQueue(
+      queue_traits.value());
 }
 
 std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
@@ -567,8 +558,8 @@ FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
     return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(task_queue);
   }
 
-  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
-      frame_task_queue_controller_->LoadingTaskQueue());
+  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(GetTaskQueue
+      (TaskType::kNetworkingWithURLLoaderAnnotation));
 }
 
 void FrameSchedulerImpl::DidChangeResourceLoadingPriority(
@@ -1034,21 +1025,20 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     }
   }
 
-  if (task_queue->queue_class() == MainThreadTaskQueue::QueueClass::kLoading) {
-    if (task_queue->queue_type() ==
-        MainThreadTaskQueue::QueueType::kFrameLoadingControl) {
-      return main_thread_scheduler_
-                     ->should_prioritize_loading_with_compositing()
-                 ? TaskQueue::QueuePriority::kVeryHighPriority
-                 : TaskQueue::QueuePriority::kHighPriority;
-    }
-
-    if (main_thread_scheduler_->should_prioritize_loading_with_compositing())
-      return main_thread_scheduler_->compositor_priority();
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoadingControl) {
+    return main_thread_scheduler_
+                   ->should_prioritize_loading_with_compositing()
+               ? TaskQueue::QueuePriority::kVeryHighPriority
+               : TaskQueue::QueuePriority::kHighPriority;
   }
 
-  DCHECK_NE(task_queue->queue_type(),
-            MainThreadTaskQueue::QueueType::kFrameLoadingControl);
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoading &&
+      main_thread_scheduler_->should_prioritize_loading_with_compositing()) {
+    return main_thread_scheduler_->compositor_priority();
+  }
+
   return TaskQueue::QueuePriority::kNormalPriority;
 }
 
@@ -1209,6 +1199,26 @@ FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
 
 void FrameSchedulerImpl::SetPausedForCooperativeScheduling(Paused paused) {
   // TODO(keishi): Stop all task queues
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::LoadingTaskQueueTraits() {
+  return QueueTraits()
+      .SetCanBePaused(true)
+      .SetCanBeFrozen(true)
+      .SetCanBeDeferred(true)
+      .SetPrioritisationType(
+          QueueTraits::PrioritisationType::kLoading);
+}
+
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::LoadingControlTaskQueueTraits() {
+  return QueueTraits()
+      .SetCanBePaused(true)
+      .SetCanBeFrozen(true)
+      .SetCanBeDeferred(true)
+      .SetPrioritisationType(
+          QueueTraits::PrioritisationType::kLoadingControl);
 }
 
 }  // namespace scheduler

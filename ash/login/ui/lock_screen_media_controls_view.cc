@@ -26,11 +26,13 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace ash {
 
@@ -55,8 +57,8 @@ constexpr int kDesiredArtworkSize = 80;
 constexpr gfx::Size kArtworkSize = gfx::Size(80, 80);
 constexpr int kArtworkRowSeparator = 10;
 constexpr gfx::Size kArtworkRowPreferredSize = gfx::Size(300, 10);
-constexpr gfx::Size kMediaButtonSize = gfx::Size(38, 38);
-constexpr int kMediaButtonRowSeparator = 24;
+constexpr gfx::Size kMediaButtonSize = gfx::Size(46, 46);
+constexpr int kMediaButtonRowSeparator = 14;
 constexpr gfx::Insets kButtonRowInsets = gfx::Insets(10, 0, 0, 0);
 constexpr int kPlayPauseIconSize = 28;
 constexpr int kChangeTrackIconSize = 14;
@@ -64,6 +66,7 @@ constexpr int kSeekingIconsSize = 26;
 constexpr gfx::Size kMediaControlsButtonRowSize =
     gfx::Size(300, kMediaButtonSize.height());
 constexpr int kArtworkCornerRadius = 4;
+constexpr int kMediaActionButtonCornerRadius = kMediaButtonSize.width() / 2;
 
 constexpr int kDragVelocityThreshold = 6;
 constexpr int kDistanceDismissalThreshold = 20;
@@ -122,6 +125,47 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
   NOTREACHED();
   return gfx::kNoneIcon;
 }
+
+// MediaActionButton is an image button with a custom ink drop mask.
+class MediaActionButton : public views::ImageButton {
+ public:
+  MediaActionButton(views::ButtonListener* listener,
+                    int icon_size,
+                    MediaSessionAction action,
+                    const base::string16& accessible_name)
+      : views::ImageButton(listener), icon_size_(icon_size) {
+    SetInkDropMode(views::Button::InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
+    SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+    SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+    SetBorder(
+        views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
+            views::INSETS_VECTOR_IMAGE_BUTTON)));
+    SetPreferredSize(kMediaButtonSize);
+    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    SetAction(action, accessible_name);
+  }
+
+  ~MediaActionButton() override = default;
+
+  void SetAction(MediaSessionAction action,
+                 const base::string16& accessible_name) {
+    set_tag(static_cast<int>(action));
+    SetTooltipText(accessible_name);
+    views::SetImageFromVectorIcon(this, GetVectorIconForMediaAction(action),
+                                  icon_size_, kMediaButtonColor);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::RoundRectInkDropMask>(
+        size(), gfx::Insets(), kMediaActionButtonCornerRadius);
+  }
+
+ private:
+  int const icon_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaActionButton);
+};
 
 }  // namespace
 
@@ -241,47 +285,34 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   button_row->SetPreferredSize(kMediaControlsButtonRowSize);
   button_row_ = contents_view_->AddChildView(std::move(button_row));
 
-  CreateMediaButton(
-      kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
+  button_row_->AddChildView(std::make_unique<MediaActionButton>(
+      this, kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
       l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK));
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK)));
 
-  CreateMediaButton(
-      kSeekingIconsSize, MediaSessionAction::kSeekBackward,
+  button_row_->AddChildView(std::make_unique<MediaActionButton>(
+      this, kSeekingIconsSize, MediaSessionAction::kSeekBackward,
       l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD));
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD)));
 
   // |play_pause_button_| toggles playback. If the current media is playing, the
   // tag will be |MediaSessionAction::kPause|. If the current media is paused,
   // the tag will be |MediaSessionAction::kPlay|.
-  auto play_pause_button = views::CreateVectorToggleImageButton(this);
-  play_pause_button->set_tag(static_cast<int>(MediaSessionAction::kPause));
-  play_pause_button->SetPreferredSize(kMediaButtonSize);
-  play_pause_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  play_pause_button->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE));
-  play_pause_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PLAY));
-  play_pause_button_ = button_row_->AddChildView(std::move(play_pause_button));
+  play_pause_button_ =
+      button_row_->AddChildView(std::make_unique<MediaActionButton>(
+          this, kPlayPauseIconSize, MediaSessionAction::kPause,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE)));
 
-  // |play_pause_button_| icons.
-  views::SetImageFromVectorIcon(
-      play_pause_button_,
-      GetVectorIconForMediaAction(MediaSessionAction::kPause),
-      kPlayPauseIconSize, kMediaButtonColor);
-  views::SetToggledImageFromVectorIcon(
-      play_pause_button_,
-      GetVectorIconForMediaAction(MediaSessionAction::kPlay),
-      kPlayPauseIconSize, kMediaButtonColor);
-
-  CreateMediaButton(
-      kSeekingIconsSize, MediaSessionAction::kSeekForward,
+  button_row_->AddChildView(std::make_unique<MediaActionButton>(
+      this, kSeekingIconsSize, MediaSessionAction::kSeekForward,
       l10n_util::GetStringUTF16(
-          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD));
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD)));
 
-  CreateMediaButton(kChangeTrackIconSize, MediaSessionAction::kNextTrack,
-                    l10n_util::GetStringUTF16(
-                        IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK));
+  button_row_->AddChildView(std::make_unique<MediaActionButton>(
+      this, kChangeTrackIconSize, MediaSessionAction::kNextTrack,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK)));
 
   // Set child view data to default values initially, until the media controller
   // observers are triggered by a change in media session state.
@@ -583,23 +614,6 @@ void LockScreenMediaControlsView::FlushForTesting() {
   media_controller_remote_.FlushForTesting();
 }
 
-void LockScreenMediaControlsView::CreateMediaButton(
-    int size,
-    MediaSessionAction action,
-    const base::string16& accessible_name) {
-  auto button = views::CreateVectorImageButton(this);
-  button->set_tag(static_cast<int>(action));
-  button->SetPreferredSize(kMediaButtonSize);
-  button->SetAccessibleName(accessible_name);
-  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-
-  views::SetImageFromVectorIcon(button.get(),
-                                GetVectorIconForMediaAction(action), size,
-                                kMediaButtonColor);
-
-  button_row_->AddChildView(std::move(button));
-}
-
 void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
   std::set<MediaSessionAction> ignored_actions = {
       media_message_center::GetPlayPauseIgnoredAction(
@@ -625,11 +639,17 @@ void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
 }
 
 void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
-  MediaSessionAction action =
-      playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
-
-  play_pause_button_->SetToggled(!playing);
-  play_pause_button_->set_tag(static_cast<int>(action));
+  if (playing) {
+    play_pause_button_->SetAction(
+        MediaSessionAction::kPause,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE));
+  } else {
+    play_pause_button_->SetAction(
+        MediaSessionAction::kPlay,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PLAY));
+  }
 
   UpdateActionButtonsVisibility();
 }

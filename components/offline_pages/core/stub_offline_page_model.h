@@ -53,7 +53,7 @@ class StubOfflinePageModel : public OfflinePageModel {
   void PublishInternalArchive(
       const OfflinePageItem& offline_page,
       PublishPageCallback publish_done_callback) override;
-  const base::FilePath& GetInternalArchiveDirectory(
+  const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
   OfflineEventLogger* GetLogger() override;

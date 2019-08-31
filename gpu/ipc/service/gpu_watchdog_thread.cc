@@ -146,6 +146,7 @@ void GpuWatchdogThreadImplV1::Init() {
 
 void GpuWatchdogThreadImplV1::CleanUp() {
   weak_factory_.InvalidateWeakPtrs();
+  armed_ = false;
 }
 
 GpuWatchdogThreadImplV1::GpuWatchdogTaskObserver::GpuWatchdogTaskObserver(

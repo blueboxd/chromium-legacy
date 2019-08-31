@@ -275,10 +275,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "provisionally_saved_forms_[form_frame]";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_FORM_METHOD:
       return "PasswordManager::ProvisionallySaveForm";
-    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD:
-      return "PasswordManager::ProvisionallySavePassword";
-    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM:
-      return "ProvisionallySavePassword form";
     case SavePasswordProgressLogger::STRING_IS_SAVING_ENABLED:
       return "IsSavingAndFillingEnabled";
     case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
@@ -356,8 +352,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordStore is not available";
     case SavePasswordProgressLogger::STRING_CREATE_LOGIN_MANAGERS_METHOD:
       return "PasswordManager::CreatePendingLoginManagers";
-    case SavePasswordProgressLogger::STRING_OLD_NUMBER_LOGIN_MANAGERS:
-      return "Number of pending login managers (before)";
     case SavePasswordProgressLogger::STRING_NEW_NUMBER_LOGIN_MANAGERS:
       return "Number of pending login managers (after)";
     case SavePasswordProgressLogger::
@@ -377,8 +371,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Signature of form";
     case SavePasswordProgressLogger::STRING_FORM_FETCHER_STATE:
       return "FormFetcherImpl::state_";
-    case SavePasswordProgressLogger::STRING_ADDING_SIGNATURE:
-      return "Adding manager for form";
     case SavePasswordProgressLogger::STRING_UNOWNED_INPUTS_VISIBLE:
       return "Some control elements not associated to a form element are "
              "visible";

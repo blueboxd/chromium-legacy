@@ -31,7 +31,8 @@ class FidoCableHandshakeHandler;
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     : public FidoBleDiscoveryBase {
  public:
-  FidoCableDiscovery(std::vector<CableDiscoveryData> discovery_data);
+  FidoCableDiscovery(std::vector<CableDiscoveryData> discovery_data,
+                     base::Optional<QRGeneratorKey> qr_generator_key);
   ~FidoCableDiscovery() override;
 
  protected:
@@ -101,6 +102,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // ignored. However, devices may rotate their BLE address at will so this is
   // not completely effective.
   std::set<std::string> active_devices_;
+  base::Optional<QRGeneratorKey> qr_generator_key_;
   size_t advertisement_success_counter_ = 0;
   size_t advertisement_failure_counter_ = 0;
   std::map<CableEidArray, scoped_refptr<BluetoothAdvertisement>>

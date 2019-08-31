@@ -910,7 +910,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   ElementIntersectionObserverData* IntersectionObserverData() const;
   ElementIntersectionObserverData& EnsureIntersectionObserverData();
-  bool ComputeIntersectionObservations(unsigned flags);
+  bool ComputeIntersectionsForLifecycleUpdate(unsigned flags);
   // Returns true if the Element is being observed by an IntersectionObserver
   // for which trackVisibility() is true.
   bool NeedsOcclusionTracking() const;

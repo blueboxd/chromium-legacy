@@ -10,7 +10,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -104,9 +103,7 @@ class VisualViewportTest : public testing::Test,
   }
 
   ~VisualViewportTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void NavigateTo(const std::string& url) {
@@ -132,6 +129,8 @@ class VisualViewportTest : public testing::Test,
   void ForceFullCompositingUpdate() { UpdateAllLifecyclePhases(); }
 
   void RegisterMockedHttpURLLoad(const std::string& fileName) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |helper_|.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), blink::test::CoreTestDataPath(),
         WebString::FromUTF8(fileName));
@@ -139,6 +138,8 @@ class VisualViewportTest : public testing::Test,
 
   void RegisterMockedHttpURLLoad(const std::string& url,
                                  const std::string& fileName) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |helper_|.
     url_test_helpers::RegisterMockedURLLoad(
         ToKURL(url),
         blink::test::CoreTestDataPath(WebString::FromUTF8(fileName)));

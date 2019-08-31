@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/fuchsia/service_directory.h"
+#include "base/fuchsia/startup_context.h"
+#include "base/optional.h"
 #include "fuchsia/base/agent_manager.h"
 #include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
@@ -22,13 +24,23 @@ class CastRunner;
 class CastComponent : public WebComponent,
                       public fuchsia::web::NavigationEventListener {
  public:
-  CastComponent(CastRunner* runner,
-                chromium::cast::ApplicationConfig application_config,
-                std::unique_ptr<ApiBindingsClient> bindings_manager,
-                std::unique_ptr<base::fuchsia::StartupContext> startup_context,
-                fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-                    controller_request,
-                std::unique_ptr<cr_fuchsia::AgentManager> agent_manager);
+  struct CastComponentParams {
+    CastComponentParams();
+    CastComponentParams(CastComponentParams&&);
+    ~CastComponentParams();
+
+    chromium::cast::ApplicationConfigManagerPtr app_config_manager;
+    std::unique_ptr<base::fuchsia::StartupContext> startup_context;
+    std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
+    std::unique_ptr<ApiBindingsClient> api_bindings_client;
+    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+        controller_request;
+    chromium::cast::ApplicationConfig app_config;
+    fuchsia::web::AdditionalHeadersProviderPtr headers_provider;
+    base::Optional<std::vector<fuchsia::net::http::Header>> headers;
+  };
+
+  CastComponent(CastRunner* runner, CastComponentParams params);
   ~CastComponent() override;
 
  private:

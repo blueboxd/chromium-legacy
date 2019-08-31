@@ -14,12 +14,11 @@ buildflag_header("buildflags") {
 }
 
 android_library("java") {
-  java_files =
-      [ "java/src/org/chromium/chrome/browser/dev_ui/DevUiModuleProvider.java" ]
-
   deps = [
     "//base:base_java",
+    "//chrome/android/features/dev_ui/public:java",
   ]
+  java_files = [ "java/src/org/chromium/chrome/features/dev_ui/DevUiImpl.java" ]
 }
 
 android_assets("pak_assets") {

@@ -388,9 +388,11 @@ std::string VariationsFieldTrialCreator::GetShortHardwareClass() {
     board.resize(index);
 
   return base::ToUpperASCII(board);
+#elif defined(OS_ANDROID)
+  return base::SysInfo::HardwareModelName();
 #else
   return std::string();
-#endif  // OS_CHROMEOS
+#endif
 }
 
 bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,

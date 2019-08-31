@@ -44,6 +44,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -268,8 +269,10 @@ TEST_F(TextureLayerTest, ShutdownWithResource) {
           viz::SingleReleaseCallback::Create(test_data_.sw_release_callback_));
     }
 
-    host->SetViewportRectAndScale(gfx::Rect(10, 10), 1.f,
-                                  viz::LocalSurfaceIdAllocation());
+    viz::ParentLocalSurfaceIdAllocator allocator;
+    allocator.GenerateId();
+    host->SetViewportRectAndScale(
+        gfx::Rect(10, 10), 1.f, allocator.GetCurrentLocalSurfaceIdAllocation());
     host->SetVisible(true);
     host->SetRootLayer(layer);
 

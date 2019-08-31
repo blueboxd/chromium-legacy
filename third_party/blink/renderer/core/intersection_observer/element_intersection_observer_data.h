@@ -22,9 +22,19 @@ class ElementIntersectionObserverData final
 
   IntersectionObservation* GetObservationFor(IntersectionObserver&);
   void AddObservation(IntersectionObservation&);
+  void AddObserver(IntersectionObserver&);
   void RemoveObservation(IntersectionObserver&);
-  bool HasObservations() const { return !intersection_observations_.IsEmpty(); }
-  bool ComputeObservations(unsigned flags);
+  bool IsTarget() const { return !intersection_observations_.IsEmpty(); }
+  bool IsTargetOfImplicitRootObserver() const;
+  bool IsRoot() const { return !intersection_observers_.IsEmpty(); }
+  // Run the IntersectionObserver algorithm for all observations for which this
+  // element is target.
+  bool ComputeIntersectionsForTarget(unsigned flags);
+  // Run the IntersectionObserver algorithm for all implicit-root observations
+  // for which this element is target; and all explicit-root observers for which
+  // this element is root. Returns true if any observer needs occlusion
+  // tracking.
+  bool ComputeIntersectionsForLifecycleUpdate(unsigned flags);
   bool NeedsOcclusionTracking() const;
 
   void Trace(blink::Visitor*);
@@ -36,6 +46,10 @@ class ElementIntersectionObserverData final
   // IntersectionObservations for which the Node owning this data is target.
   HeapHashMap<Member<IntersectionObserver>, Member<IntersectionObservation>>
       intersection_observations_;
+  // IntersectionObservers for which the Node owning this data is root.
+  // Weak because once an observer is unreachable from javascript and has no
+  // active observations, it should be allowed to die.
+  HeapHashSet<WeakMember<IntersectionObserver>> intersection_observers_;
 };
 
 }  // namespace blink

@@ -68,50 +68,13 @@ void HttpStreamFactory::ProcessAlternativeServices(
     return;
   }
 
-  // Convert spdy::SpdyAltSvcWireFormat::AlternativeService entries
-  // to net::AlternativeServiceInfo.
-  AlternativeServiceInfoVector alternative_service_info_vector;
-  for (const spdy::SpdyAltSvcWireFormat::AlternativeService&
-           alternative_service_entry : alternative_service_vector) {
-    NextProto protocol =
-        NextProtoFromString(alternative_service_entry.protocol_id);
-    if (!IsAlternateProtocolValid(protocol) ||
-        !session->IsProtocolEnabled(protocol) ||
-        !IsPortValid(alternative_service_entry.port)) {
-      continue;
-    }
-    // Check if QUIC version is supported. Filter supported QUIC versions.
-    quic::ParsedQuicVersionVector advertised_versions;
-    if (protocol == kProtoQUIC && !alternative_service_entry.version.empty()) {
-      advertised_versions = FilterSupportedAltSvcVersions(
-          alternative_service_entry,
-          session->params().quic_params.supported_versions,
-          session->params().quic_params.support_ietf_format_quic_altsvc);
-      if (advertised_versions.empty())
-        continue;
-    }
-    AlternativeService alternative_service(protocol,
-                                           alternative_service_entry.host,
-                                           alternative_service_entry.port);
-    base::Time expiration =
-        base::Time::Now() +
-        base::TimeDelta::FromSeconds(alternative_service_entry.max_age);
-    AlternativeServiceInfo alternative_service_info;
-    if (protocol == kProtoQUIC) {
-      alternative_service_info =
-          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
-              alternative_service, expiration, advertised_versions);
-    } else {
-      alternative_service_info =
-          AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
-              alternative_service, expiration);
-    }
-    alternative_service_info_vector.push_back(alternative_service_info);
-  }
-
   session->http_server_properties()->SetAlternativeServices(
       RewriteHost(http_server), network_isolation_key,
-      alternative_service_info_vector);
+      net::ProcessAlternativeServices(
+          alternative_service_vector, session->params().enable_http2,
+          session->params().enable_quic,
+          session->params().quic_params.supported_versions,
+          session->params().quic_params.support_ietf_format_quic_altsvc));
 }
 
 url::SchemeHostPort HttpStreamFactory::RewriteHost(

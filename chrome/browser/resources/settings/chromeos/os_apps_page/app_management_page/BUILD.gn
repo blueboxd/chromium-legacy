@@ -20,7 +20,6 @@ js_type_check("closure_compile") {
     ":main_view",
     ":permission_item",
     ":permission_toggle",
-    ":permission_view_header",
     ":pin_to_shelf_item",
     ":pwa_permission_view",
     ":reducers",
@@ -29,6 +28,7 @@ js_type_check("closure_compile") {
     ":store_client",
     ":toggle_row",
     ":types",
+    ":uninstall_button",
     ":util",
   ]
 }
@@ -83,7 +83,6 @@ js_library("arc_permission_view") {
     ":constants",
     ":fake_page_handler",
     ":permission_item",
-    ":permission_view_header",
     ":pin_to_shelf_item",
     ":store_client",
   ]
@@ -143,13 +142,6 @@ js_library("permission_item") {
 js_library("permission_toggle") {
   deps = [
     ":util",
-  ]
-}
-
-js_library("permission_view_header") {
-  deps = [
-    ":browser_proxy",
-    ":store_client",
   ]
 }
 
@@ -216,6 +208,14 @@ js_library("toggle_row") {
 js_library("types") {
   deps = [
     "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
+  ]
+}
+
+js_library("uninstall_button") {
+  deps = [
+    ":store_client",
+    ":util",
+    "//ui/webui/resources/js:cr",
   ]
 }
 

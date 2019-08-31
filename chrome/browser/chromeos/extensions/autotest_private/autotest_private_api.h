@@ -719,6 +719,17 @@ class AutotestPrivateSetArcAppWindowStateFunction : public ExtensionFunction {
   std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
 };
 
+class AutotestPrivateSetArcAppWindowFocusFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetArcAppWindowFocusFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcAppWindowFocus",
+                             AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS)
+
+ private:
+  ~AutotestPrivateSetArcAppWindowFocusFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateGetArcAppWindowStateFunction : public ExtensionFunction {
  public:
   AutotestPrivateGetArcAppWindowStateFunction();

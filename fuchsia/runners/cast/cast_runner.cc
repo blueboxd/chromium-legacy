@@ -10,10 +10,7 @@
 #include <utility>
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
-#include "fuchsia/base/agent_manager.h"
-#include "fuchsia/runners/cast/cast_component.h"
 #include "url/gurl.h"
 
 CastRunner::CastRunner(sys::OutgoingDirectory* outgoing_directory,
@@ -21,17 +18,6 @@ CastRunner::CastRunner(sys::OutgoingDirectory* outgoing_directory,
     : WebContentRunner(outgoing_directory, std::move(context)) {}
 
 CastRunner::~CastRunner() = default;
-
-struct CastRunner::PendingComponent {
-  chromium::cast::ApplicationConfigManagerPtr app_config_manager;
-  std::unique_ptr<base::fuchsia::StartupContext> startup_context;
-  std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
-  std::unique_ptr<ApiBindingsClient> bindings_manager;
-  fidl::InterfaceRequest<fuchsia::sys::ComponentController> controller_request;
-  chromium::cast::ApplicationConfig app_config;
-  fuchsia::web::AdditionalHeadersProviderPtr headers_provider;
-  base::Optional<std::vector<fuchsia::net::http::Header>> headers;
-};
 
 void CastRunner::StartComponent(
     fuchsia::sys::Package package,
@@ -54,7 +40,8 @@ void CastRunner::StartComponent(
   // The application configuration asynchronously via the per-component
   // ApplicationConfigManager, the pointer to that service must be kept live
   // until the request completes, or CastRunner is deleted.
-  auto pending_component = std::make_unique<PendingComponent>();
+  auto pending_component =
+      std::make_unique<CastComponent::CastComponentParams>();
   pending_component->startup_context =
       std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info));
   pending_component->agent_manager = std::make_unique<cr_fuchsia::AgentManager>(
@@ -75,7 +62,7 @@ void CastRunner::StartComponent(
   fidl::InterfaceHandle<chromium::cast::ApiBindings> api_bindings_client;
   pending_component->agent_manager->ConnectToAgentService(
       kAgentComponentUrl, api_bindings_client.NewRequest());
-  pending_component->bindings_manager = std::make_unique<ApiBindingsClient>(
+  pending_component->api_bindings_client = std::make_unique<ApiBindingsClient>(
       std::move(api_bindings_client),
       base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
                      base::Unretained(pending_component.get())));
@@ -116,12 +103,8 @@ const char CastRunner::kAgentComponentUrl[] =
     "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
 
 void CastRunner::GetConfigCallback(
-    PendingComponent* pending_component,
+    CastComponent::CastComponentParams* pending_component,
     chromium::cast::ApplicationConfig app_config) {
-  // Ideally the PendingComponent would be move()d out of |pending_components_|
-  // here, but that requires extract(), which isn't available until C++17.
-  // Instead find |pending_component| and move() the individual fields out
-  // before erase()ing it.
   auto it = pending_components_.find(pending_component);
   DCHECK(it != pending_components_.end());
 
@@ -137,25 +120,23 @@ void CastRunner::GetConfigCallback(
   MaybeStartComponent(pending_component);
 }
 
-void CastRunner::MaybeStartComponent(PendingComponent* pending_component) {
+void CastRunner::MaybeStartComponent(
+    CastComponent::CastComponentParams* pending_component) {
   if (pending_component->app_config.IsEmpty())
     return;
-  if (!pending_component->bindings_manager->HasBindings())
+  if (!pending_component->api_bindings_client->HasBindings())
     return;
   if (!pending_component->headers.has_value())
     return;
 
   // Create a component based on the returned configuration, and pass it the
-  // fields stashed in PendingComponent.
-  GURL cast_app_url(pending_component->app_config.web_url());
-  auto component = std::make_unique<CastComponent>(
-      this, std::move(pending_component->app_config),
-      std::move(pending_component->bindings_manager),
-      std::move(pending_component->startup_context),
-      std::move(pending_component->controller_request),
-      std::move(pending_component->agent_manager));
+  // |pending_component|.
   std::vector<fuchsia::net::http::Header> additional_headers =
       pending_component->headers.value();
+
+  GURL cast_app_url(pending_component->app_config.web_url());
+  auto component =
+      std::make_unique<CastComponent>(this, std::move(*pending_component));
   pending_components_.erase(pending_component);
 
   component->LoadUrl(std::move(cast_app_url), std::move(additional_headers));

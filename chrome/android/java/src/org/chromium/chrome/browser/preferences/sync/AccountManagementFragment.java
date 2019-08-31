@@ -133,6 +133,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         super.onActivityCreated(savedInstanceState);
 
         setDivider(null);
+
+        // Disable animations of preference changes (crbug.com/986401).
+        getListView().setItemAnimator(null);
     }
 
     @Override

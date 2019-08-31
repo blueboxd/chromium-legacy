@@ -6,6 +6,7 @@ package org.chromium.components.background_task_scheduler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -28,6 +29,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -80,6 +82,20 @@ public class BackgroundTaskSchedulerPrefsTest {
         assertEquals("There should be 2 tasks in shared prefs.", 2,
                 BackgroundTaskSchedulerPrefs.getScheduledTaskIds().size());
 
+        ScheduledTaskProto.ScheduledTask scheduledTask1 =
+                BackgroundTaskSchedulerPrefs.getScheduledTask(TaskIds.TEST);
+        assertEquals(ScheduledTaskProto.ScheduledTask.Type.ONE_OFF, scheduledTask1.getType());
+        ScheduledTaskProto.ScheduledTask scheduledTask2 =
+                BackgroundTaskSchedulerPrefs.getScheduledTask(
+                        TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID);
+        assertEquals(ScheduledTaskProto.ScheduledTask.Type.ONE_OFF, scheduledTask2.getType());
+
+        Map<Integer, ScheduledTaskProto.ScheduledTask> scheduledTasks =
+                BackgroundTaskSchedulerPrefs.getScheduledTasks();
+        assertEquals("These should be 2 shared prefs.", 2, scheduledTasks.size());
+        assertEquals(scheduledTask1, scheduledTasks.get(TaskIds.TEST));
+        assertEquals(scheduledTask2, scheduledTasks.get(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
+
         TaskInfo.TimingInfo timingInfo =
                 TaskInfo.OneOffInfo.create().setWindowEndTimeMs(TimeUnit.DAYS.toMillis(1)).build();
         TaskInfo task3 = TaskInfo.createTask(TaskIds.OMAHA_JOB_ID, timingInfo).build();
@@ -116,6 +132,19 @@ public class BackgroundTaskSchedulerPrefsTest {
         assertEquals("mTask1 class name in scheduled tasks.", TestBackgroundTask.class,
                 BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTask1.getTaskId())
                         .getClass());
+
+        ScheduledTaskProto.ScheduledTask scheduledTask1 =
+                BackgroundTaskSchedulerPrefs.getScheduledTask(TaskIds.TEST);
+        assertNull(scheduledTask1);
+        ScheduledTaskProto.ScheduledTask scheduledTask2 =
+                BackgroundTaskSchedulerPrefs.getScheduledTask(
+                        TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID);
+        assertEquals(ScheduledTaskProto.ScheduledTask.Type.ONE_OFF, scheduledTask2.getType());
+
+        Map<Integer, ScheduledTaskProto.ScheduledTask> scheduledTasks =
+                BackgroundTaskSchedulerPrefs.getScheduledTasks();
+        assertEquals("We are expecting a single entry.", 1, scheduledTasks.size());
+        assertEquals(scheduledTask2, scheduledTasks.get(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID));
     }
 
     @Test

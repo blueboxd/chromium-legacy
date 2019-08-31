@@ -1339,6 +1339,14 @@ TEST_P(PasswordProtectionServiceTest, TestRequestCancelNotOnTimeout) {
   EXPECT_EQ(0U, GetNumberOfNavigationThrottles());
 }
 
+TEST_P(PasswordProtectionServiceTest, TestWebContentsDestroyed) {
+  content::WebContents* web_contents = GetWebContents();
+  InitializeAndStartPasswordOnFocusRequest(
+      true /* match whitelist */, 10000 /* timeout in ms */, web_contents);
+  delete web_contents;
+  task_environment_.FastForwardUntilNoTasksRemain();
+}
+
 INSTANTIATE_TEST_SUITE_P(Regular,
                          PasswordProtectionServiceTest,
                          ::testing::Values(false));

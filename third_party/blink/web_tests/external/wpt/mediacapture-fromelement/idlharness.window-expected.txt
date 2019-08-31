@@ -1,23 +1,8 @@
 This is a testharness.js-based test.
-PASS idl_test setup
-PASS Partial interface HTMLMediaElement: original interface defined
-PASS Partial interface HTMLCanvasElement: original interface defined
-PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface object
-PASS CanvasCaptureMediaStreamTrack interface object length
-PASS CanvasCaptureMediaStreamTrack interface object name
-PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object
-PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property
-PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface prototype object's @@unscopables property
-PASS CanvasCaptureMediaStreamTrack interface: attribute canvas
-PASS CanvasCaptureMediaStreamTrack interface: operation requestFrame()
-PASS CanvasCaptureMediaStreamTrack must be primary interface of track
-PASS Stringification of track
-PASS CanvasCaptureMediaStreamTrack interface: track must inherit property "canvas" with the proper type
-PASS CanvasCaptureMediaStreamTrack interface: track must inherit property "requestFrame()" with the proper type
-PASS HTMLMediaElement interface: operation captureStream()
-FAIL HTMLMediaElement interface: media must inherit property "captureStream()" with the proper type assert_inherits: property "captureStream" not found in prototype chain
-PASS HTMLCanvasElement interface: operation captureStream(double)
-PASS HTMLCanvasElement interface: canvas must inherit property "captureStream(double)" with the proper type
-PASS HTMLCanvasElement interface: calling captureStream(double) on canvas with too few arguments must throw TypeError
+FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
+ define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
+                        ^ Trailing comma in arguments list"
+FAIL Partial interface HTMLMediaElement: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface HTMLCanvasElement: original interface defined assert_true: Original interface should be defined expected true got false
 Harness: the test ran to completion.
 

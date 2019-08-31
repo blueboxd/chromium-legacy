@@ -8,7 +8,7 @@
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=WindowNativeFileSystem
 ] partial interface Window {
-    [CallWith=ScriptState]
+    [CallWith=ScriptState, Measure]
     Promise<(FileSystemHandle or sequence<FileSystemHandle>)>
         chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options);
 };

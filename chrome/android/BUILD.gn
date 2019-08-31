@@ -10,6 +10,7 @@ import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 import("//chrome/android/features/tab_ui/buildflags.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/features/vr/public_vr_java_sources.gni")
@@ -530,6 +531,10 @@ java_group("chrome_all_java") {
   if (disable_tab_ui_dfm) {
     deps += [ "//chrome/android/features/tab_ui:java" ]
   }
+
+  if (dfmify_dev_ui) {
+    deps += [ "//chrome/android/modules/dev_ui/provider:java" ]
+  }
 }
 
 # This is a list of all base module jni headers. New features should add their
@@ -733,9 +738,8 @@ junit_binary("chrome_junit_tests") {
     "//url/mojom:url_mojom_gurl_java",
   ]
 
-  srcjar_deps = [
-    "//components/module_installer/android:module_installer_apk_build_config",
-  ]
+  srcjar_deps =
+      [ "//components/module_installer/android:module_installer_build_config" ]
 
   package_name = chrome_public_manifest_package
 }
@@ -1110,20 +1114,20 @@ android_resources("chrome_public_apk_resources") {
 }
 
 version_resource_dir = "$target_gen_dir/templates/chrome_version_xml/res"
-verson_resource_file = "$version_resource_dir/values/strings.xml"
+version_resource_file = "$version_resource_dir/values/strings.xml"
 process_version("version_xml") {
   process_only = true
   template_file = "java/version_strings.xml.template"
   sources = [
     "//chrome/VERSION",
   ]
-  output = verson_resource_file
+  output = version_resource_file
 }
 
 android_resources("product_version_resources") {
   resource_dirs = []
   generated_resource_dirs = [ version_resource_dir ]
-  generated_resource_files = [ verson_resource_file ]
+  generated_resource_files = [ version_resource_file ]
   custom_package = "org.chromium.base"
   deps = [
     ":version_xml",

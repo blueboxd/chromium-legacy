@@ -36,7 +36,8 @@ enum class DesksSwitchSource {
   kMiniViewButton = 3,
   kWindowActivated = 4,
   kDeskSwitchTouchpad = 5,
-  kMaxValue = kDeskSwitchTouchpad,
+  kUserSwitch = 6,
+  kMaxValue = kUserSwitch,
 };
 
 }  // namespace ash

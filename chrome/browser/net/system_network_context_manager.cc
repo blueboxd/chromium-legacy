@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_exempt_headers.h"
+#include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -56,6 +57,7 @@
 #include "content/public/common/user_agent.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -598,6 +600,12 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   network_service->CreateNetworkContext(
       MakeRequest(&network_service_network_context_),
       CreateNetworkContextParams());
+
+  network::mojom::NetworkContextClientPtr client_ptr;
+  auto client_request = mojo::MakeRequest(&client_ptr);
+  mojo::MakeStrongBinding(std::make_unique<content::NetworkContextClientBase>(),
+                          std::move(client_request));
+  network_service_network_context_->SetClient(std::move(client_ptr));
 
   // Configure the stub resolver. This must be done after the system
   // NetworkContext is created, but before anything has the chance to use it.

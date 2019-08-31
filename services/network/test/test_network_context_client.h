@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace network {
 
@@ -15,8 +15,16 @@ namespace network {
 // unittests, so they can just override the parts they need.
 class TestNetworkContextClient : public network::mojom::NetworkContextClient {
  public:
-  TestNetworkContextClient() = default;
-  ~TestNetworkContextClient() override = default;
+  TestNetworkContextClient();
+  explicit TestNetworkContextClient(mojom::NetworkContextClientRequest request);
+  ~TestNetworkContextClient() override;
+
+  void set_upload_files_invalid(bool upload_files_invalid) {
+    upload_files_invalid_ = upload_files_invalid;
+  }
+  void set_ignore_last_upload_file(bool ignore_last_upload_file) {
+    ignore_last_upload_file_ = ignore_last_upload_file;
+  }
 
   void OnAuthRequired(
       const base::Optional<base::UnguessableToken>& window_id,
@@ -26,7 +34,7 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       const GURL& url,
       bool first_auth_attempt,
       const net::AuthChallengeInfo& auth_info,
-      mojom::URLResponseHeadPtr head,
+      network::mojom::URLResponseHeadPtr head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {}
   void OnCertificateRequested(
       const base::Optional<base::UnguessableToken>& window_id,
@@ -42,6 +50,10 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
                              const net::SSLInfo& ssl_info,
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override {}
+  void OnFileUploadRequested(uint32_t process_id,
+                             bool async,
+                             const std::vector<base::FilePath>& file_paths,
+                             OnFileUploadRequestedCallback callback) override;
   void OnCanSendReportingReports(
       const std::vector<url::Origin>& origins,
       OnCanSendReportingReportsCallback callback) override {}
@@ -79,6 +91,11 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
 #if defined(OS_CHROMEOS)
   void OnTrustAnchorUsed() override {}
 #endif
+
+ private:
+  mojo::Binding<mojom::NetworkContextClient> binding_;
+  bool upload_files_invalid_ = false;
+  bool ignore_last_upload_file_ = false;
 };
 
 }  // namespace network

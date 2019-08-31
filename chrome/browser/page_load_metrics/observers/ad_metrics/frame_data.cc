@@ -302,9 +302,15 @@ void FrameData::UpdateFrameVisibility() {
 }
 
 FrameData::HeavyAdStatus FrameData::ComputeHeavyAdStatus() const {
+  // Check if the frame meets the peak CPU usage threshold.
+  if (peak_windowed_cpu_percent_ >=
+      heavy_ad_thresholds::kMaxPeakWindowedPercent) {
+    return HeavyAdStatus::kPeakCpu;
+  }
+
   // Check if the frame meets the absolute CPU time threshold.
   if (GetTotalCpuUsage().InMilliseconds() >= heavy_ad_thresholds::kMaxCpuTime)
-    return HeavyAdStatus::kCpu;
+    return HeavyAdStatus::kTotalCpu;
 
   // Check if the frame meets the network threshold.
   if (network_bytes_ >= heavy_ad_thresholds::kMaxNetworkBytes)

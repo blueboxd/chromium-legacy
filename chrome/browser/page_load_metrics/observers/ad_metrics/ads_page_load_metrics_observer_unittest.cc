@@ -315,6 +315,20 @@ class AdsPageLoadMetricsObserverTest
     tester_->SimulateCpuTimingUpdate(cpu_timing, render_frame_host);
   }
 
+  // Sends |total_time| in CPU timing updates spread across a variable amount of
+  // 30 second windows to not hit the peak window usage cap for the heavy ad
+  // intervention.
+  void UseCpuTimeUnderThreshold(RenderFrameHost* render_frame_host,
+                                base::TimeDelta total_time) {
+    const base::TimeDelta peak_threshold = base::TimeDelta::FromMilliseconds(
+        heavy_ad_thresholds::kMaxPeakWindowedPercent * 30000 / 100 - 1);
+    for (; total_time > peak_threshold; total_time -= peak_threshold) {
+      OnCpuTimingUpdate(render_frame_host, peak_threshold);
+      AdvancePageDuration(base::TimeDelta::FromSeconds(31));
+    }
+    OnCpuTimingUpdate(render_frame_host, total_time);
+  }
+
   void OnHidden() { web_contents()->WasHidden(); }
 
   void OnShown() { web_contents()->WasShown(); }
@@ -1471,40 +1485,52 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureOff_UMARecorded) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+  OverrideVisibilityTrackerWithMockClock();
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame_none =
       CreateAndNavigateSubFrame(kAdUrl, main_frame);
   RenderFrameHost* ad_frame_net = CreateAndNavigateSubFrame(kAdUrl, main_frame);
   RenderFrameHost* ad_frame_cpu = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* ad_frame_total_cpu =
+      CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Load some bytes in each frame so they are considered ad iframes.
   ResourceDataUpdate(ad_frame_none, ResourceCached::NOT_CACHED, 1);
   ResourceDataUpdate(ad_frame_net, ResourceCached::NOT_CACHED, 1);
   ResourceDataUpdate(ad_frame_cpu, ResourceCached::NOT_CACHED, 1);
+  ResourceDataUpdate(ad_frame_total_cpu, ResourceCached::NOT_CACHED, 1);
 
-  // Make two of the ad frames hit thresholds for heavy ads.
+  // Make three of the ad frames hit thresholds for heavy ads.
   ResourceDataUpdate(ad_frame_net, ResourceCached::NOT_CACHED,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024));
-  OnCpuTimingUpdate(ad_frame_cpu, base::TimeDelta::FromMilliseconds(
-                                      heavy_ad_thresholds::kMaxCpuTime));
+  OnCpuTimingUpdate(
+      ad_frame_cpu,
+      base::TimeDelta::FromMilliseconds(
+          heavy_ad_thresholds::kMaxPeakWindowedPercent * 30000 / 100));
+  UseCpuTimeUnderThreshold(
+      ad_frame_total_cpu,
+      base::TimeDelta::FromMilliseconds(heavy_ad_thresholds::kMaxCpuTime));
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.ComputedType"), 3);
+      SuffixedHistogram("HeavyAds.ComputedType2"), 4);
   histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedType"),
+      SuffixedHistogram("HeavyAds.ComputedType2"),
       FrameData::HeavyAdStatus::kNone, 1);
   histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedType"),
+      SuffixedHistogram("HeavyAds.ComputedType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
   histogram_tester().ExpectBucketCount(
-      SuffixedHistogram("HeavyAds.ComputedType"),
-      FrameData::HeavyAdStatus::kCpu, 1);
+      SuffixedHistogram("HeavyAds.ComputedType2"),
+      FrameData::HeavyAdStatus::kPeakCpu, 1);
+  histogram_tester().ExpectBucketCount(
+      SuffixedHistogram("HeavyAds.ComputedType2"),
+      FrameData::HeavyAdStatus::kTotalCpu, 1);
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
@@ -1519,17 +1545,17 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
   ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) - 1);
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 
   // Load enough bytes to trigger the intervention.
   ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 2);
 
   histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.InterventionType"),
+      SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
 }
 
-TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdCpuUsage_InterventionFired) {
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdTotalCpuUsage_InterventionFired) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
   OverrideVisibilityTrackerWithMockClock();
@@ -1540,18 +1566,48 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdCpuUsage_InterventionFired) {
   // Add some data to the ad frame so it get reported.
   ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 1);
 
-  // Use just under the threshold amount of CPU.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(
-                                  heavy_ad_thresholds::kMaxCpuTime - 1));
+  // Use just under the threshold amount of CPU.Needs to spread across enough
+  // windows to not trigger peak threshold.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(30));
+  UseCpuTimeUnderThreshold(ad_frame, base::TimeDelta::FromMilliseconds(
+                                         heavy_ad_thresholds::kMaxCpuTime - 1));
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 0);
-
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+  AdvancePageDuration(base::TimeDelta::FromSeconds(30));
   // Use enough CPU to trigger the intervention.
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1));
 
   histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.InterventionType"),
-      FrameData::HeavyAdStatus::kCpu, 1);
+      SuffixedHistogram("HeavyAds.InterventionType2"),
+      FrameData::HeavyAdStatus::kTotalCpu, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdPeakCpuUsage_InterventionFired) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+  OverrideVisibilityTrackerWithMockClock();
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it get reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 1);
+
+  // Use just under the peak threshold amount of CPU.
+  OnCpuTimingUpdate(
+      ad_frame,
+      base::TimeDelta::FromMilliseconds(
+          heavy_ad_thresholds::kMaxPeakWindowedPercent * 30000 / 100 - 1));
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+
+  // Use enough CPU to trigger the intervention.
+  AdvancePageDuration(base::TimeDelta::FromSeconds(10));
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1));
+
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType2"),
+      FrameData::HeavyAdStatus::kPeakCpu, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
@@ -1566,7 +1622,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -1585,13 +1641,13 @@ TEST_F(AdsPageLoadMetricsObserverTest,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
   histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.ComputedType"),
+      SuffixedHistogram("HeavyAds.ComputedType2"),
       FrameData::HeavyAdStatus::kNone, 1);
 }
 
@@ -1612,7 +1668,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklistFull_NotFired) {
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -1634,7 +1690,7 @@ TEST_F(AdsPageLoadMetricsObserverTest,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType"), 1);
+      SuffixedHistogram("HeavyAds.InterventionType2"), 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
@@ -1655,7 +1711,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
 
   // Verify the intervention triggered.
   histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.InterventionType"),
+      SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Verify the blocklist blocks the next intervention.
@@ -1667,6 +1723,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
 
   // Verify the intervention did not occur again.
   histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.InterventionType"),
+      SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
 }

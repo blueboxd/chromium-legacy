@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -22,6 +23,10 @@
 
 namespace device {
 class FidoAuthenticator;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -54,9 +59,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
 
-  // Called when the request fails for the given |reason|.  |authenticator|
-  // points to the FidoAuthenticator used in the request that resulted in the
-  // error. It may be nullptr if |reason| is kTimeout.
+  // Called when the request fails for the given |reason|.
   //
   // Embedders may return true if they want AuthenticatorImpl to hold off from
   // resolving the WebAuthn request with an error, e.g. because they want the
@@ -64,9 +67,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // eventually invoke the FidoRequestHandlerBase::CancelCallback in order to
   // resolve the request. Returning false causes AuthenticatorImpl to resolve
   // the request with the error right away.
-  virtual bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason);
+  virtual bool DoesBlockRequestOnFailure(InterestingFailureReason reason);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
   // actions, namely: cancel the request, start the request over, initiate BLE
@@ -110,6 +111,33 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // credential may be discovered by someone with physical access to the
   // authenticator and thus has privacy implications.
   void SetMightCreateResidentCredential(bool v) override;
+
+  // ShouldPermitCableExtension returns true if the given |origin| may set a
+  // caBLE extension. This extension contains website-chosen BLE pairing
+  // information that will be broadcast by the device and so should not be
+  // accepted if the embedder UI does not indicate that this is happening.
+  virtual bool ShouldPermitCableExtension(const url::Origin& origin);
+
+  // SetCableTransportInfo configures the embedder for handling Cloud-assisted
+  // Bluetooth Low Energy transports (i.e. using a phone as an authenticator).
+  // The |cable_extension_provided| argument is true if the site provided
+  // explicit caBLE discovery information. This is a hint that the UI may wish
+  // to advance to directly to guiding the user to check their phone as the site
+  // is strongly indicating that it will work.
+  //
+  // |qr_generator_key| is a random AES-256 key that can be used to
+  // encrypt a coarse timestamp with |CableDiscoveryData::DeriveQRKeyMaterial|.
+  // The UI may display a QR code with the resulting secret which, if
+  // decoded and transmitted over BLE by an authenticator, will be accepted for
+  // caBLE pairing.
+  //
+  // This function returns true if the embedder will provide UI support for
+  // caBLE. If it returns false, all caBLE will be disabled because BLE
+  // broadcasting should not occur without user notification and accepting QR
+  // handshakes is irrelevant if the UI is not displaying the QR codes.
+  virtual bool SetCableTransportInfo(
+      bool cable_extension_provided,
+      base::Optional<device::QRGeneratorKey> qr_generator_key);
 
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified

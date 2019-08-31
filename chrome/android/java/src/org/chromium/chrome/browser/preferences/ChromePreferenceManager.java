@@ -318,6 +318,12 @@ public class ChromePreferenceManager {
             "interest_feed_content_suggestions";
 
     /**
+     * Whether or not the start surface is enabled.
+     * Default value is false.
+     */
+    public static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
+
+    /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
      */

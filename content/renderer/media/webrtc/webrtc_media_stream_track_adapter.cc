@@ -164,9 +164,9 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
   // the webrtc::AudioSourceInterface, and also do not need references to the
   // audio level calculator or audio processor passed to the sink.
   webrtc::AudioSourceInterface* source_interface = nullptr;
-  local_track_audio_sink_.reset(
-      new WebRtcAudioSink(web_track_.Id().Utf8(), source_interface,
-                          factory_->GetWebRtcSignalingThread(), main_thread_));
+  local_track_audio_sink_.reset(new blink::WebRtcAudioSink(
+      web_track_.Id().Utf8(), source_interface,
+      factory_->GetWebRtcSignalingThread(), main_thread_));
 
   if (auto* media_stream_source = blink::ProcessedLocalAudioSource::From(
           blink::MediaStreamAudioSource::From(web_track_.Source()))) {

@@ -174,8 +174,12 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                   const ReferrerScriptInfo&,
                                   ScriptPromiseResolver*) = 0;
 
+  virtual ScriptValue CreateTypeError(const String& message) const = 0;
+  virtual ScriptValue CreateSyntaxError(const String& message) const = 0;
+
   // Import maps. https://github.com/WICG/import-maps
-  virtual void RegisterImportMap(const ImportMap*) = 0;
+  virtual void RegisterImportMap(const ImportMap*,
+                                 ScriptValue error_to_rethrow) = 0;
   virtual bool IsAcquiringImportMaps() const = 0;
   virtual void ClearIsAcquiringImportMaps() = 0;
   virtual const ImportMap* GetImportMapForTest() const = 0;

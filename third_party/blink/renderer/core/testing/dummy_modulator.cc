@@ -125,7 +125,17 @@ void DummyModulator::ResolveDynamically(const String&,
   NOTREACHED();
 }
 
-void DummyModulator::RegisterImportMap(const ImportMap*) {
+ScriptValue DummyModulator::CreateTypeError(const String& message) const {
+  NOTREACHED();
+  return ScriptValue();
+}
+ScriptValue DummyModulator::CreateSyntaxError(const String& message) const {
+  NOTREACHED();
+  return ScriptValue();
+}
+
+void DummyModulator::RegisterImportMap(const ImportMap*,
+                                       ScriptValue error_to_rethrow) {
   NOTREACHED();
 }
 

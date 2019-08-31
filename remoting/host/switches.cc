@@ -21,6 +21,9 @@ const char kProcessTypeHost[] = "host";
 const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
 const char kProcessTypeEvaluateCapability[] = "evaluate_capability";
 const char kProcessTypeFileChooser[] = "file_chooser";
+#if defined(OS_LINUX)
+const char kProcessTypeXSessionChooser[] = "xsession_chooser";
+#endif  // defined(OS_LINUX)
 
 const char kEvaluateCapabilitySwitchName[] = "evaluate-type";
 

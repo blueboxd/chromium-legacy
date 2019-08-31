@@ -1119,10 +1119,9 @@ void ProfileManager::OnProfileCreated(Profile* profile,
 
   // Perform initialization.
   if (success) {
-    DoFinalInit(profile, go_off_the_record);
+    DoFinalInit(info, go_off_the_record);
     if (go_off_the_record)
       profile = profile->GetOffTheRecordProfile();
-    info->created = true;
   } else {
     profile = NULL;
     profiles_info_.erase(iter);
@@ -1145,12 +1144,32 @@ void ProfileManager::OnProfileCreated(Profile* profile,
                          Profile::CREATE_STATUS_LOCAL_FAIL);
 }
 
-void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
+Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
+  TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
+
+  return Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS)
+      .release();
+}
+
+std::unique_ptr<Profile> ProfileManager::CreateProfileAsyncHelper(
+    const base::FilePath& path,
+    Delegate* delegate) {
+  return Profile::CreateProfile(path, delegate,
+                                Profile::CREATE_MODE_ASYNCHRONOUS);
+}
+
+void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
+                                 bool go_off_the_record) {
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInit");
 
+  Profile* profile = profile_info->profile.get();
   DoFinalInitForServices(profile, go_off_the_record);
   AddProfileToStorage(profile);
   DoFinalInitLogging(profile);
+
+  // Set the |created| flag now so that PROFILE_ADDED handlers can use
+  // GetProfileByPath().
+  profile_info->created = true;
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_ADDED,
@@ -1166,6 +1185,9 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
+  if (!do_final_services_init_)
+    return;
+
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInitForServices");
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1264,6 +1286,9 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
+  if (!do_final_services_init_)
+    return;
+
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInitLogging");
   // Count number of extensions in this profile.
   int enabled_app_count = -1;
@@ -1278,20 +1303,6 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
       base::TimeDelta::FromSeconds(112));
-}
-
-Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
-  TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
-
-  return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
-      .release();
-}
-
-std::unique_ptr<Profile> ProfileManager::CreateProfileAsyncHelper(
-    const base::FilePath& path,
-    Delegate* delegate) {
-  return Profile::CreateProfile(path, delegate,
-                                Profile::CREATE_MODE_ASYNCHRONOUS);
 }
 
 ProfileManager::ProfileInfo::ProfileInfo(std::unique_ptr<Profile> profile,
@@ -1343,20 +1354,19 @@ bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfile");
 
   DCHECK(profile);
-  Profile* profile_ptr = profile.get();
 
   // Make sure that we're not loading a profile with the same ID as a profile
   // that's already loaded.
-  if (GetProfileByPathInternal(profile_ptr->GetPath())) {
+  if (GetProfileByPathInternal(profile->GetPath())) {
     NOTREACHED() << "Attempted to add profile with the same path ("
-                 << profile_ptr->GetPath().value()
+                 << profile->GetPath().value()
                  << ") as an already-loaded profile.";
     return false;
   }
 
-  RegisterProfile(std::move(profile), true);
-  InitProfileUserPrefs(profile_ptr);
-  DoFinalInit(profile_ptr, ShouldGoOffTheRecord(profile_ptr));
+  ProfileInfo* profile_info = RegisterProfile(std::move(profile), true);
+  InitProfileUserPrefs(profile_info->profile.get());
+  DoFinalInit(profile_info, ShouldGoOffTheRecord(profile_info->profile.get()));
   return true;
 }
 
@@ -1854,4 +1864,5 @@ void ProfileManager::ScheduleForcedEphemeralProfileForDeletion(
 
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(
     const base::FilePath& user_data_dir) : ProfileManager(user_data_dir) {
+  set_do_final_services_init(false);
 }

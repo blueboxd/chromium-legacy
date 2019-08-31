@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
@@ -132,19 +133,22 @@ class BackendDatabaseWithMockedClose
              int64_t object_store_id,
              int64_t index_id,
              mojom::blink::IDBKeyRangePtr key_range,
-             mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
-  void DeleteRange(
-      int64_t transaction_id,
-      int64_t object_store_id,
-      mojom::blink::IDBKeyRangePtr key_range,
-      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+             mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
+                 pending_callbacks) override {}
+  void DeleteRange(int64_t transaction_id,
+                   int64_t object_store_id,
+                   mojom::blink::IDBKeyRangePtr key_range,
+                   mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
+                       pending_callbacks) override {}
   void GetKeyGeneratorCurrentNumber(
       int64_t transaction_id,
       int64_t object_store_id,
-      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
+          pending_callbacks) override {}
   void Clear(int64_t transaction_id,
              int64_t object_store_id,
-             mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+             mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
+                 pending_callbacks) override {}
   void CreateIndex(int64_t transaction_id,
                    int64_t object_store_id,
                    int64_t index_id,

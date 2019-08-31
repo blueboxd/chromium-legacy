@@ -3,7 +3,8 @@
  * found in the LICENSE file. */
 
 #pinKeyboardContainer {
-  padding-top: 60px;
+  margin-top: 36px;
+  position: relative;
 }
 
 #pinKeyboard {
@@ -34,4 +35,20 @@
 #learnMore {
   color: var(--google-blue-500);
   text-decoration: none;
+}
+
+#errorContainer {
+  color: var(--google-red-600);
+  font-size: 10px;
+  font-weight: 500;
+  position: absolute;
+  text-align: center;
+  top: 40px;
+  width: 100%;
+}
+
+#errorIcon {
+  --iron-icon-width: 20px;
+  --iron-icon-height: 20px;
+  margin-inline-end: 3px;
 }

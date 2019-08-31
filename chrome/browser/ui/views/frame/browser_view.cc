@@ -1544,7 +1544,7 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
     int download_count,
-    Browser::DownloadClosePreventionType dialog_type,
+    Browser::DownloadCloseType dialog_type,
     bool app_modal,
     const base::Callback<void(bool)>& callback) {
   // The dialog eats mouse events which results in the close button

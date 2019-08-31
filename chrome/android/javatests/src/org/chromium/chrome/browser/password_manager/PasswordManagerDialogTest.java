@@ -119,24 +119,30 @@ public class PasswordManagerDialogTest {
                 mActivityTestRule.getActivity().getWindowAndroid().getDisplay().getDipScale();
 
         // Dimensions resembling landscape orientation.
-        int testHeightDip = 300; // Height of the android content view.
-        int testWidthDip = 500; // Width of the android content view.
-        mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDip * dipScale),
-                (int) (testHeightDip * dipScale), 0, 0, 0, 0);
+        final int testHeightDipLandscape = 300; // Height of the android content view.
+        final int testWidthDipLandscape = 500; // Width of the android content view.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDipLandscape * dipScale),
+                    (int) (testHeightDipLandscape * dipScale), 0, 0, 0, 0);
+        });
         assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(false));
 
         // Dimensions resembling portrait orientation.
-        testHeightDip = 500;
-        testWidthDip = 320;
-        mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDip * dipScale),
-                (int) (testHeightDip * dipScale), 0, 0, 0, 0);
+        final int testHeightDipPortrait = 500;
+        final int testWidthDipPortrait = 320;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDipPortrait * dipScale),
+                    (int) (testHeightDipPortrait * dipScale), 0, 0, 0, 0);
+        });
         assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(true));
 
         // Dimensions resembling multi-window mode.
-        testHeightDip = 250;
-        testWidthDip = 320;
-        mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDip * dipScale),
-                (int) (testHeightDip * dipScale), 0, 0, 0, 0);
+        final int testHeightDipMultiWindow = 250;
+        final int testWidthDipMultiWindow = 320;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDipMultiWindow * dipScale),
+                    (int) (testHeightDipMultiWindow * dipScale), 0, 0, 0, 0);
+        });
         assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(false));
     }
 }

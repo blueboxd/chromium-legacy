@@ -143,6 +143,26 @@ enum FilterType {
   kAll,
 };
 
+enum StartConnectResult {
+  // The request was successfully sent.
+  kSuccess,
+  // The provided GUID is not associated with an existing network configuration.
+  kInvalidGuid,
+  // The network is not in a connectable state (e.g. already connected or
+  // connecting, or a required service is unavailable).
+  kInvalidState,
+  // The connect request was cancelled before being sent, e.g. due to another
+  // connect request.
+  kCanceled,
+  // The network is in an error state because invalid credentials were provided
+  // or a certificate is unavailable.
+  kNotConfigured,
+  // Connecting to the network is blocked, e.g. by policy.
+  kBlocked,
+  // Unknown or other error.
+  kUnknown,
+};
+
 struct CaptivePortalProvider {
   // Id used to identify the captive portal provider (i.e. an extension id).
   string id;
@@ -740,6 +760,19 @@ interface CrosNetworkConfig {
   // Returns the global policy properties. These properties are not expected to
   // change during a session.
   GetGlobalPolicy() => (GlobalPolicy result);
+
+  // Starts a connection to the network matching |guid|. The response returns
+  // |result| when the connect request is sent or is determined unable to be
+  // sent, not when the operation completes. Use CrosNetworkConfigObserver to
+  // observe the connection state after a successful request. If the result is
+  // not kSuccess, |message| will contain a descriptive string for debugging.
+  StartConnect(string guid) => (StartConnectResult result, string message);
+
+  // Starts a disconnect from the network matching |guid|. The response returns
+  // true when the disconnect request is sent if the network exists and is
+  // connected, or false if not. Use CrosNetworkConfigObserver to observe the
+  // connection state after a successful request.
+  StartDisconnect(string guid) => (bool success);
 };
 
 interface CrosNetworkConfigObserver {

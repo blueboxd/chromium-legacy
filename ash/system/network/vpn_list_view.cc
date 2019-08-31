@@ -14,6 +14,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -22,7 +23,6 @@
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/tray/view_click_listener.h"
@@ -122,9 +122,10 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
     label->SetText(base::ASCIIToUTF16(name));
     tri_view->AddView(TriView::Container::CENTER, label);
 
-    const SkColor image_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ProminentButtonColor);
-    gfx::ImageSkia icon =
+    const SkColor image_color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kProminentIconButton,
+        AshColorProvider::AshColorMode::kDark);
+    const gfx::ImageSkia icon =
         gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon, image_color);
     SystemMenuButton* add_vpn_button =
         new SystemMenuButton(this, icon, icon, button_accessible_name_id);

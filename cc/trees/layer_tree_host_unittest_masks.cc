@@ -40,7 +40,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -134,7 +134,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -239,7 +239,7 @@ class LayerTreeTestMaskLayerForSurfaceWithDifferentScale
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -356,7 +356,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);
@@ -423,8 +423,10 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         gfx::Size double_root_size(200, 200);
+        GenerateNewLocalSurfaceId();
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(double_root_size), 2.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(double_root_size), 2.f,
+            GetCurrentLocalSurfaceIdAllocation());
         break;
     }
   }
@@ -458,7 +460,7 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     scoped_refptr<FakePictureLayer> mask_layer =
         FakePictureLayer::CreateWithRecordingSource(
             &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
+    content_layer->SetMaskLayer(mask_layer);
 
     gfx::Size root_size(100, 100);
     root->SetBounds(root_size);

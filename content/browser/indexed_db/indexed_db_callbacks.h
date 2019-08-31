@@ -19,6 +19,8 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -85,7 +87,8 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                      const url::Origin& origin,
-                     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+                     mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                         pending_callbacks,
                      scoped_refptr<base::SequencedTaskRunner> idb_runner);
 
   virtual void OnError(const IndexedDBDatabaseError& error);
@@ -144,7 +147,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;
   url::Origin origin_;
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
-  blink::mojom::IDBCallbacksAssociatedPtr callbacks_;
+  mojo::AssociatedRemote<blink::mojom::IDBCallbacks> callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

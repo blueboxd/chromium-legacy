@@ -33,9 +33,12 @@ class PendingNetworkConfigurationTrackerImpl
       override;
   void MarkComplete(const std::string& change_guid,
                     const std::string& ssid) override;
-  bool IsChangeTracked(const std::string& change_guid,
-                       const std::string& ssid) override;
+  void IncrementCompletedAttempts(const std::string& change_guid,
+                                  const std::string& ssid) override;
   std::vector<PendingNetworkConfigurationUpdate> GetPendingUpdates() override;
+  base::Optional<PendingNetworkConfigurationUpdate> GetPendingUpdate(
+      const std::string& change_guid,
+      const std::string& ssid) override;
 
  private:
   PrefService* pref_service_;

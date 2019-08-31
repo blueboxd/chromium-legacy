@@ -95,12 +95,6 @@ void RecursivelyGenerateFrameEntries(
   }
 }
 
-base::Optional<base::string16> UrlToOptionalString16(const GURL& url) {
-  if (!url.is_valid())
-    return base::nullopt;
-  return base::UTF8ToUTF16(url.spec());
-}
-
 void RecursivelyGenerateFrameState(
     NavigationEntryImpl::TreeNode* node,
     ExplodedFrameState* state,
@@ -117,35 +111,6 @@ void RecursivelyGenerateFrameState(
 
   // Copy the FrameNavigationEntry's frame state into the destination state.
   *state = frame_state;
-
-  // Some data is stored *both* in 1) PageState/ExplodedFrameState and 2)
-  // FrameNavigationEntry.  We want to treat FrameNavigationEntry as the
-  // authoritative source of the data, so we clobber the ExplodedFrameState with
-  // the data taken from FrameNavigationEntry.
-  //
-  // The following ExplodedFrameState fields do not have an equivalent
-  // FrameNavigationEntry field:
-  // - target
-  // - state_object
-  // - document_state
-  // - scroll_restoration_type
-  // - did_save_scroll_or_scale_state
-  // - visual_viewport_scroll_offset
-  // - scroll_offset
-  // - page_scale_factor
-  // - http_body (FrameNavigationEntry::GetPostData extracts the body from
-  //   the ExplodedFrameState)
-  // - scroll_anchor_selector
-  // - scroll_anchor_offset
-  // - scroll_anchor_simhash
-  state->url_string = UrlToOptionalString16(node->frame_entry->url());
-  state->referrer = UrlToOptionalString16(node->frame_entry->referrer().url);
-  state->referrer_policy = node->frame_entry->referrer().policy;
-  state->item_sequence_number = node->frame_entry->item_sequence_number();
-  state->document_sequence_number =
-      node->frame_entry->document_sequence_number();
-  // TODO(lukasza): https://crbug.com/976055: Persist |initiator_origin| in
-  // the ExplodedFrameState.
 
   // Copy the frame's files into the PageState's |referenced_files|.
   referenced_files->reserve(referenced_files->size() +
@@ -421,10 +386,12 @@ void NavigationEntryImpl::SetPageState(const PageState& state) {
   if (!frame_tree_->children.empty())
     frame_tree_->children.clear();
 
-  // If the PageState can't be parsed, just store it on the main frame's
-  // FrameNavigationEntry without recursively creating subframe entries.
+  // If the PageState can't be parsed or has no children, just store it on the
+  // main frame's FrameNavigationEntry without recursively creating subframe
+  // entries.
   ExplodedPageState exploded_state;
-  if (!DecodePageState(state.ToEncodedData(), &exploded_state)) {
+  if (!DecodePageState(state.ToEncodedData(), &exploded_state) ||
+      exploded_state.top.children.size() == 0U) {
     frame_tree_->frame_entry->SetPageState(state);
     return;
   }
@@ -434,8 +401,14 @@ void NavigationEntryImpl::SetPageState(const PageState& state) {
 }
 
 PageState NavigationEntryImpl::GetPageState() {
-  // Each FrameNavigationEntry has a frame-specific PageState.  We combine these
-  // into an ExplodedPageState tree and generate a full PageState from it.
+  // Just return the main frame's state if there are no subframe
+  // FrameNavigationEntries.
+  if (frame_tree_->children.size() == 0U)
+    return frame_tree_->frame_entry->page_state();
+
+  // When we're using subframe entries, each FrameNavigationEntry has a
+  // frame-specific PageState.  We combine these into an ExplodedPageState tree
+  // and generate a full PageState from it.
   ExplodedPageState exploded_state;
   RecursivelyGenerateFrameState(frame_tree_.get(), &exploded_state.top,
                                 &exploded_state.referenced_files);

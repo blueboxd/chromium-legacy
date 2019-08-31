@@ -17,6 +17,7 @@ import android.support.annotation.ColorInt;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -139,7 +140,7 @@ public class FaviconHelper {
      * Allocate and initialize the C++ side of this class.
      */
     public FaviconHelper() {
-        mNativeFaviconHelper = nativeInit();
+        mNativeFaviconHelper = FaviconHelperJni.get().init();
     }
 
     /**
@@ -147,7 +148,7 @@ public class FaviconHelper {
      */
     public void destroy() {
         assert mNativeFaviconHelper != 0;
-        nativeDestroy(mNativeFaviconHelper);
+        FaviconHelperJni.get().destroy(mNativeFaviconHelper);
         mNativeFaviconHelper = 0;
     }
 
@@ -165,8 +166,8 @@ public class FaviconHelper {
             Profile profile, String pageUrl, int desiredSizeInPixel,
             FaviconImageCallback faviconImageCallback) {
         assert mNativeFaviconHelper != 0;
-        return nativeGetLocalFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl,
-                desiredSizeInPixel, faviconImageCallback);
+        return FaviconHelperJni.get().getLocalFaviconImageForURL(
+                mNativeFaviconHelper, profile, pageUrl, desiredSizeInPixel, faviconImageCallback);
     }
 
     /**
@@ -181,7 +182,7 @@ public class FaviconHelper {
     public boolean getForeignFaviconImageForURL(Profile profile, String pageUrl,
             int desiredSizeInPixel, FaviconImageCallback faviconImageCallback) {
         assert mNativeFaviconHelper != 0;
-        return nativeGetForeignFaviconImageForURL(
+        return FaviconHelperJni.get().getForeignFaviconImageForURL(
                 mNativeFaviconHelper, profile, pageUrl, desiredSizeInPixel, faviconImageCallback);
     }
 
@@ -199,8 +200,8 @@ public class FaviconHelper {
      */
     public void ensureIconIsAvailable(Profile profile, WebContents webContents, String pageUrl,
             String iconUrl, boolean isLargeIcon, IconAvailabilityCallback callback) {
-        nativeEnsureIconIsAvailable(mNativeFaviconHelper, profile, webContents, pageUrl, iconUrl,
-                isLargeIcon, callback);
+        FaviconHelperJni.get().ensureIconIsAvailable(mNativeFaviconHelper, profile, webContents,
+                pageUrl, iconUrl, isLargeIcon, callback);
     }
 
     /**
@@ -210,20 +211,20 @@ public class FaviconHelper {
      * @param iconUrl The URL of the icon to touch.
      */
     public void touchOnDemandFavicon(Profile profile, String iconUrl) {
-        nativeTouchOnDemandFavicon(mNativeFaviconHelper, profile, iconUrl);
+        FaviconHelperJni.get().touchOnDemandFavicon(mNativeFaviconHelper, profile, iconUrl);
     }
 
-    private static native long nativeInit();
-    private static native void nativeDestroy(long nativeFaviconHelper);
-    private static native boolean nativeGetLocalFaviconImageForURL(long nativeFaviconHelper,
-            Profile profile, String pageUrl, int desiredSizeInDip,
-            FaviconImageCallback faviconImageCallback);
-    private static native boolean nativeGetForeignFaviconImageForURL(long nativeFaviconHelper,
-            Profile profile, String pageUrl, int desiredSizeInDip,
-            FaviconImageCallback faviconImageCallback);
-    private static native void nativeEnsureIconIsAvailable(long nativeFaviconHelper,
-            Profile profile, WebContents webContents, String pageUrl, String iconUrl,
-            boolean isLargeIcon, IconAvailabilityCallback callback);
-    private static native void nativeTouchOnDemandFavicon(
-            long nativeFaviconHelper, Profile profile, String iconUrl);
+    @NativeMethods
+    interface Natives {
+        long init();
+        void destroy(long nativeFaviconHelper);
+        boolean getLocalFaviconImageForURL(long nativeFaviconHelper, Profile profile,
+                String pageUrl, int desiredSizeInDip, FaviconImageCallback faviconImageCallback);
+        boolean getForeignFaviconImageForURL(long nativeFaviconHelper, Profile profile,
+                String pageUrl, int desiredSizeInDip, FaviconImageCallback faviconImageCallback);
+        void ensureIconIsAvailable(long nativeFaviconHelper, Profile profile,
+                WebContents webContents, String pageUrl, String iconUrl, boolean isLargeIcon,
+                IconAvailabilityCallback callback);
+        void touchOnDemandFavicon(long nativeFaviconHelper, Profile profile, String iconUrl);
+    }
 }

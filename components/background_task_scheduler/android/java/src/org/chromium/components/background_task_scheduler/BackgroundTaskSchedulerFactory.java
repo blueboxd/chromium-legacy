@@ -32,7 +32,8 @@ public final class BackgroundTaskSchedulerFactory {
         ThreadUtils.assertOnUiThread();
         if (sBackgroundTaskScheduler == null) {
             sBackgroundTaskScheduler = new BackgroundTaskSchedulerImpl(
-                    getSchedulerDelegateForSdk(Build.VERSION.SDK_INT));
+                    getSchedulerDelegateForSdk(Build.VERSION.SDK_INT),
+                    new BackgroundTaskSchedulerAlarmManager());
         }
         return sBackgroundTaskScheduler;
     }

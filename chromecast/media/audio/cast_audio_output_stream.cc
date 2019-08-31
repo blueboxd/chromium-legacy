@@ -14,17 +14,17 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/synchronization/lock.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/common/mojom/constants.mojom.h"
-#include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_service_connection.h"
+#include "chromecast/media/base/monotonic_clock.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/decoder_config.h"
@@ -63,16 +63,6 @@ constexpr base::TimeDelta kRenderBufferSize = base::TimeDelta::FromSeconds(4);
 namespace chromecast {
 namespace media {
 namespace {
-
-int64_t MonotonicClockNow() {
-  timespec now = {0, 0};
-#if BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
-  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-#else
-  clock_gettime(CLOCK_MONOTONIC, &now);
-#endif  // BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
-  return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
-}
 
 AudioContentType GetContentType(const std::string& device_id) {
   if (::media::AudioDeviceDescription::IsCommunicationsDevice(device_id)) {

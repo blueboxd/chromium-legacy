@@ -56,6 +56,39 @@ class MediaPowerDelegate : public base::PowerObserver {
   DISALLOW_COPY_AND_ASSIGN(MediaPowerDelegate);
 };
 
+class AudioFocusManager::SourceObserverHolder {
+ public:
+  SourceObserverHolder(AudioFocusManager* owner,
+                       const base::UnguessableToken& source_id,
+                       mojo::PendingRemote<mojom::AudioFocusObserver> observer)
+      : identity_(source_id), observer_(std::move(observer)) {
+    // Set a connection error handler so that we will remove observers that have
+    // had an error / been closed.
+    observer_.set_connection_error_handler(base::BindOnce(
+        &AudioFocusManager::CleanupSourceObservers, base::Unretained(owner)));
+  }
+
+  ~SourceObserverHolder() = default;
+
+  bool is_valid() const { return !observer_.encountered_error(); }
+
+  const base::UnguessableToken& identity() const { return identity_; }
+
+  void OnFocusGained(mojom::AudioFocusRequestStatePtr session) {
+    observer_->OnFocusGained(std::move(session));
+  }
+
+  void OnFocusLost(mojom::AudioFocusRequestStatePtr session) {
+    observer_->OnFocusLost(std::move(session));
+  }
+
+ private:
+  const base::UnguessableToken identity_;
+  mojom::AudioFocusObserverPtr observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(SourceObserverHolder);
+};
+
 void AudioFocusManager::RequestAudioFocus(
     mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
     mojo::PendingRemote<mojom::MediaSession> media_session,
@@ -158,6 +191,11 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   for (const auto& observer : observers_)
     observer->OnFocusLost(session_state.Clone());
 
+  for (auto& holder : source_observers_) {
+    if (holder->identity() == row->identity())
+      holder->OnFocusLost(session_state.Clone());
+  }
+
   if (!was_top_most_session || audio_focus_stack_.empty())
     return;
 
@@ -166,6 +204,11 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
 
   for (const auto& observer : observers_)
     observer->OnFocusGained(new_session->ToAudioFocusRequestState());
+
+  for (auto& holder : source_observers_) {
+    if (holder->identity() == new_session->identity())
+      holder->OnFocusGained(new_session->ToAudioFocusRequestState());
+  }
 }
 
 void AudioFocusManager::AddObserver(
@@ -196,6 +239,27 @@ void AudioFocusManager::SetEnforcementMode(mojom::EnforcementMode mode) {
     return;
 
   EnforceAudioFocus();
+}
+
+void AudioFocusManager::AddSourceObserver(
+    const base::UnguessableToken& source_id,
+    mojo::PendingRemote<mojom::AudioFocusObserver> observer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  source_observers_.push_back(std::make_unique<SourceObserverHolder>(
+      this, source_id, std::move(observer)));
+}
+
+void AudioFocusManager::GetSourceFocusRequests(
+    const base::UnguessableToken& source_id,
+    GetFocusRequestsCallback callback) {
+  std::vector<mojom::AudioFocusRequestStatePtr> requests;
+
+  for (const auto& row : audio_focus_stack_) {
+    if (row->identity() == source_id)
+      requests.push_back(row->ToAudioFocusRequestState());
+  }
+
+  std::move(callback).Run(std::move(requests));
 }
 
 void AudioFocusManager::CreateActiveMediaController(
@@ -245,6 +309,7 @@ void AudioFocusManager::BindToControllerManagerInterface(
 void AudioFocusManager::RequestAudioFocusInternal(
     std::unique_ptr<AudioFocusRequest> row,
     mojom::AudioFocusType type) {
+  const auto& identity = row->identity();
   row->set_audio_focus_type(type);
   audio_focus_stack_.push_back(std::move(row));
 
@@ -256,6 +321,11 @@ void AudioFocusManager::RequestAudioFocusInternal(
       audio_focus_stack_.back()->ToAudioFocusRequestState();
   for (const auto& observer : observers_)
     observer->OnFocusGained(session_state.Clone());
+
+  for (auto& holder : source_observers_) {
+    if (holder->identity() == identity)
+      holder->OnFocusGained(session_state.Clone());
+  }
 }
 
 void AudioFocusManager::EnforceAudioFocus() {
@@ -413,6 +483,11 @@ void AudioFocusManager::EnforceSingleSession(AudioFocusRequest* session,
   } else {
     session->ReleaseTransientHold();
   }
+}
+
+void AudioFocusManager::CleanupSourceObservers() {
+  base::EraseIf(source_observers_,
+                [](const auto& holder) { return !holder->is_valid(); });
 }
 
 }  // namespace media_session

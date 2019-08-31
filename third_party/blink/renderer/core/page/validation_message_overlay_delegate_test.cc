@@ -123,9 +123,7 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   // Now update the main Page's clock. This should trickle down and update the
   // inner Page's clock too.
   AnimationClock& external_clock = GetPage().Animator().Clock();
-  base::TimeTicks current_time =
-      base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(external_clock.CurrentTime());
+  base::TimeTicks current_time = external_clock.CurrentTime();
 
   base::TimeTicks new_time = current_time + base::TimeDelta::FromSeconds(1);
   PageWidgetDelegate::Animate(GetPage(), new_time);

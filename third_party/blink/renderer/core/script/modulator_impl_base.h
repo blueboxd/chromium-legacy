@@ -80,7 +80,10 @@ class ModulatorImplBase : public Modulator {
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
   const ImportMap* GetImportMapForTest() const final { return import_map_; }
-  void RegisterImportMap(const ImportMap*) final;
+
+  ScriptValue CreateTypeError(const String& message) const override;
+  ScriptValue CreateSyntaxError(const String& message) const override;
+  void RegisterImportMap(const ImportMap*, ScriptValue error_to_rethrow) final;
   bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
   void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }
   ModuleImportMeta HostGetImportMetaProperties(

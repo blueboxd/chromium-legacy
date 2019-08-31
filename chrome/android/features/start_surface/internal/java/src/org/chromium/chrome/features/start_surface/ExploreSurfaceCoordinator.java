@@ -6,6 +6,8 @@ package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.NestedScrollView;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
@@ -17,6 +19,7 @@ import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -45,7 +48,12 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         mActivity = activity;
 
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(containerPropertyModel,
-                new ExploreSurfaceViewBinder.ViewHolder(parentView, headerContainerView),
+                new ExploreSurfaceViewBinder.ViewHolder(parentView,
+                        headerContainerView == null
+                                ? null
+                                : (NestedScrollView) LayoutInflater.from(activity).inflate(
+                                        R.layout.ss_explore_scroll_container, parentView, false),
+                        headerContainerView),
                 ExploreSurfaceViewBinder::bind);
         mFeedSurfaceCreator = new FeedSurfaceCreator() {
             @Override

@@ -374,8 +374,9 @@ bool RenderViewHostImpl::CreateRenderView(
       GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
   params->inside_portal = delegate_->IsPortal();
 
-  params->visual_properties = GetWidget()->GetVisualProperties();
-  GetWidget()->SetInitialVisualProperties(params->visual_properties);
+  bool needs_ack = false;
+  GetWidget()->GetVisualProperties(&params->visual_properties, &needs_ack);
+  GetWidget()->SetInitialVisualProperties(params->visual_properties, needs_ack);
 
   // The RenderView is owned by this process. This call must be accompanied by a
   // DestroyView [see destructor] or else there will be a leak in the renderer

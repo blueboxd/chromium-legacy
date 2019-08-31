@@ -14,6 +14,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
+#include "fuchsia/runners/cast/cast_component.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 
 // sys::Runner which instantiates Cast activities specified via cast/casts URIs.
@@ -34,19 +35,20 @@ class CastRunner : public WebContentRunner {
   static const char kAgentComponentUrl[];
 
  private:
-  struct PendingComponent;
-
-  void GetConfigCallback(PendingComponent* pending_component,
+  void GetConfigCallback(CastComponent::CastComponentParams* pending_component,
                          chromium::cast::ApplicationConfig app_config);
-  void GetBindingsCallback(PendingComponent* pending_component,
-                           std::vector<chromium::cast::ApiBinding> bindings);
+  void GetBindingsCallback(
+      CastComponent::CastComponentParams* pending_component,
+      std::vector<chromium::cast::ApiBinding> bindings);
 
   // Starts a component once all configuration data is available.
-  void MaybeStartComponent(PendingComponent* pending_component);
+  void MaybeStartComponent(
+      CastComponent::CastComponentParams* pending_component);
 
   // Holds StartComponent() requests while the ApplicationConfig is being
   // fetched from the ApplicationConfigManager.
-  base::flat_set<std::unique_ptr<PendingComponent>, base::UniquePtrComparator>
+  base::flat_set<std::unique_ptr<CastComponent::CastComponentParams>,
+                 base::UniquePtrComparator>
       pending_components_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRunner);

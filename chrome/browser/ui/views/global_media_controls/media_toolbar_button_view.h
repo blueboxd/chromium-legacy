@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
@@ -22,7 +26,8 @@ class MediaToolbarButtonView : public ToolbarButton,
                                public MediaToolbarButtonControllerDelegate,
                                public views::ButtonListener {
  public:
-  explicit MediaToolbarButtonView(service_manager::Connector* connector);
+  explicit MediaToolbarButtonView(const base::UnguessableToken& source_id,
+                                  service_manager::Connector* connector);
   ~MediaToolbarButtonView() override;
 
   // MediaToolbarButtonControllerDelegate implementation.

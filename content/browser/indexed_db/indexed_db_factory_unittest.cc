@@ -681,7 +681,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
   LookingForQuotaErrorMockCallbacks()
       : IndexedDBCallbacks(nullptr,
                            url::Origin(),
-                           nullptr,
+                           mojo::NullAssociatedRemote(),
                            base::SequencedTaskRunnerHandle::Get()),
         error_called_(false) {}
   void OnError(const IndexedDBDatabaseError& error) override {

@@ -39,12 +39,12 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_menu_item_info.h"
 #include "third_party/blink/public/web/web_popup_menu_info.h"
-#include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -61,11 +61,9 @@
 namespace blink {
 
 ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
-                                     HTMLSelectElement& owner_element,
-                                     WebView& web_view)
+                                     HTMLSelectElement& owner_element)
     : owner_element_(owner_element),
       local_frame_(frame),
-      web_view_(web_view),
       dispatch_event_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &ExternalPopupMenu::DispatchEvent),
@@ -133,9 +131,9 @@ void ExternalPopupMenu::Show() {
 }
 
 void ExternalPopupMenu::DispatchEvent(TimerBase*) {
-  DCHECK(web_view_.MainFrameWidget());
-  web_view_.MainFrameWidget()->HandleInputEvent(
-      blink::WebCoalescedInputEvent(*synthetic_event_));
+  WebLocalFrameImpl::FromFrame(local_frame_)
+      ->FrameWidgetImpl()
+      ->HandleInputEvent(blink::WebCoalescedInputEvent(*synthetic_event_));
   synthetic_event_.reset();
 }
 
@@ -187,6 +185,7 @@ void ExternalPopupMenu::Update() {
 void ExternalPopupMenu::DisconnectClient() {
   Hide();
   owner_element_ = nullptr;
+  dispatch_event_timer_.Stop();
 }
 
 void ExternalPopupMenu::DidChangeSelection(int index) {}

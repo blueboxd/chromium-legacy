@@ -358,8 +358,7 @@ class TabStrip : public views::AccessiblePaneView,
   std::map<TabGroupId, TabGroupHeader*> GetGroupHeaders();
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
-  void StartInsertTabAnimation(int model_index,
-                               TabAnimationState::TabPinnedness pinnedness);
+  void StartInsertTabAnimation(int model_index, TabPinned pinned);
 
   // Animates the removal of the tab at |model_index|. Defers to the old
   // animation style when appropriate.

@@ -29,6 +29,15 @@ namespace device {
 class FidoAuthenticator;
 class FidoDiscoveryFactory;
 
+enum class CredentialManagementStatus {
+  kSuccess,
+  kAuthenticatorResponseInvalid,
+  kSoftPINBlock,
+  kHardPINBlock,
+  kAuthenticatorMissingCredentialManagement,
+  kNoPINSet,
+};
+
 // CredentialManagementHandler implements the authenticatorCredentialManagement
 // protocol.
 //
@@ -39,7 +48,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
  public:
   using DeleteCredentialCallback =
       base::OnceCallback<void(CtapDeviceResponseCode)>;
-  using FinishedCallback = base::OnceCallback<void(FidoReturnCode)>;
+  using FinishedCallback = base::OnceCallback<void(CredentialManagementStatus)>;
   using GetCredentialsCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
       base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>,

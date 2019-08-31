@@ -50,7 +50,7 @@ class TestOfflinePageModel : public StubOfflinePageModel {
         page.offline_id);
   }
 
-  const base::FilePath& GetInternalArchiveDirectory(
+  const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const override {
     return archive_dir_.GetPath();
   }

@@ -8,6 +8,7 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -69,6 +70,11 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void SetSource(const base::UnguessableToken& identity,
                  const std::string& name) override;
   void SetEnforcementMode(mojom::EnforcementMode mode) override;
+  void AddSourceObserver(
+      const base::UnguessableToken& source_id,
+      mojo::PendingRemote<mojom::AudioFocusObserver> observer) override;
+  void GetSourceFocusRequests(const base::UnguessableToken& source_id,
+                              GetFocusRequestsCallback callback) override;
 
   // mojom::AudioFocusManagerDebug.
   void GetDebugInfoForRequest(const RequestId& request_id,
@@ -97,6 +103,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   friend class AudioFocusRequest;
   friend class MediaControllerTest;
   friend class test::MockMediaSession;
+
+  class SourceObserverHolder;
 
   // BindingContext stores associated metadata for mojo binding.
   struct BindingContext {
@@ -141,6 +149,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void EnforceSingleSession(AudioFocusRequest* session,
                             const EnforcementState& state);
 
+  // Removes unbound or faulty source observers.
+  void CleanupSourceObservers();
+
   // This |MediaController| acts as a proxy for controlling the active
   // |MediaSession| over mojo.
   MediaController active_media_controller_;
@@ -158,6 +169,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.
   mojo::RemoteSet<mojom::AudioFocusObserver> observers_;
+
+  // Manages individual source observers.
+  std::vector<std::unique_ptr<SourceObserverHolder>> source_observers_;
 
   // A stack of Mojo interface pointers and their requested audio focus type.
   // A MediaSession must abandon audio focus before its destruction.

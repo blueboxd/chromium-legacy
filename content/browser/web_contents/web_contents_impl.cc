@@ -4806,6 +4806,11 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
   GURL validated_url(url);
   source->GetProcess()->FilterURL(false, &validated_url);
 
+  if (!source->GetParent()) {
+    size_t frame_count = source->frame_tree_node()->GetFrameTreeSize();
+    UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", frame_count);
+  }
+
   for (auto& observer : observers_)
     observer.DidFinishLoad(source, validated_url);
 }

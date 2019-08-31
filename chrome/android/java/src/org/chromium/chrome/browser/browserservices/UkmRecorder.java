@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 
@@ -25,9 +26,12 @@ public abstract class UkmRecorder {
     static class Bridge extends UkmRecorder {
         @Override
         public void recordTwaOpened(Tab tab) {
-            nativeRecordOpen(tab.getWebContents());
+            UkmRecorderJni.get().recordOpen(tab.getWebContents());
         }
     }
 
-    private static native void nativeRecordOpen(WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        void recordOpen(WebContents webContents);
+    }
 }

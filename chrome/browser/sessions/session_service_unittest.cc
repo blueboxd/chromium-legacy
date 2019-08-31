@@ -35,7 +35,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_command.h"
@@ -911,30 +910,26 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
 
+  // Create a page state representing a HTTP body without posted passwords.
+  content::PageState page_state =
+      content::PageState::CreateForTesting(GURL(), false, "data", NULL);
+
   // Create a TabNavigation containing page_state and representing a POST
   // request.
-  std::string post_data = "data";
-  std::unique_ptr<content::NavigationEntry> entry1 =
-      content::NavigationEntry::Create();
-  entry1->SetURL(GURL("http://google.com"));
-  entry1->SetTitle(base::UTF8ToUTF16("title1"));
-  entry1->SetHasPostData(true);
-  entry1->SetPostData(network::ResourceRequestBody::CreateFromBytes(
-      post_data.data(), post_data.size()));
   SerializedNavigationEntry nav1 =
-      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          0 /* == index*/, entry1.get());
+      ContentTestHelper::CreateNavigation("http://google.com", "title");
+  SerializedNavigationEntryTestHelper::SetEncodedPageState(
+      page_state.ToEncodedData(), &nav1);
+  SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
+  nav1.set_index(0);
 
   // Create a TabNavigation containing page_state and representing a normal
   // request.
-  std::unique_ptr<content::NavigationEntry> entry2 =
-      content::NavigationEntry::Create();
-  entry2->SetURL(GURL("http://google.com/nopost"));
-  entry2->SetTitle(base::UTF8ToUTF16("title2"));
-  entry2->SetHasPostData(false);
   SerializedNavigationEntry nav2 =
-      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          1 /* == index*/, entry2.get());
+      ContentTestHelper::CreateNavigation("http://google.com/nopost", "title");
+  SerializedNavigationEntryTestHelper::SetEncodedPageState(
+      page_state.ToEncodedData(), &nav2);
+  nav2.set_index(1);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);

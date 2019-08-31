@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
+#include "chromeos/components/sync_wifi/test_specifics_generator.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -38,24 +39,6 @@ using testing::UnorderedElementsAre;
 
 const char kSsidMeow[] = "meow";
 const char kSsidWoof[] = "woof";
-
-WifiConfigurationSpecificsData CreateSpecifics(const std::string& ssid) {
-  WifiConfigurationSpecificsData specifics;
-  specifics.set_ssid(ssid);
-  specifics.set_security_type(
-      WifiConfigurationSpecificsData::SECURITY_TYPE_PSK);
-  specifics.set_passphrase("password");
-  specifics.set_automatically_connect(
-      WifiConfigurationSpecificsData::AUTOMATICALLY_CONNECT_ENABLED);
-  specifics.set_is_preferred(
-      WifiConfigurationSpecificsData::IS_PREFERRED_ENABLED);
-  specifics.set_metered(WifiConfigurationSpecificsData::METERED_OPTION_AUTO);
-  sync_pb::WifiConfigurationSpecificsData_ProxyConfiguration proxy_config;
-  proxy_config.set_proxy_option(WifiConfigurationSpecificsData::
-                                    ProxyConfiguration::PROXY_OPTION_DISABLED);
-  specifics.mutable_proxy_configuration()->CopyFrom(proxy_config);
-  return specifics;
-}
 
 std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
     const sync_pb::WifiConfigurationSpecificsData& data) {

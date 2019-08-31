@@ -34,6 +34,9 @@ extern const char kProcessTypeHost[];
 extern const char kProcessTypeRdpDesktopSession[];
 extern const char kProcessTypeEvaluateCapability[];
 extern const char kProcessTypeFileChooser[];
+#if defined(OS_LINUX)
+extern const char kProcessTypeXSessionChooser[];
+#endif  // defined(OS_LINUX)
 
 extern const char kEvaluateCapabilitySwitchName[];
 

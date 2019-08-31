@@ -19,9 +19,9 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -142,10 +142,10 @@ class RTCRtpTransceiverTest : public ::testing::Test {
                          webrtc_transceiver->receiver().get(),
                          std::move(receiver_track_ref),
                          std::move(receiver_stream_ids)),
-        ToBaseOptional(webrtc_transceiver->mid()),
+        blink::ToBaseOptional(webrtc_transceiver->mid()),
         webrtc_transceiver->stopped(), webrtc_transceiver->direction(),
-        ToBaseOptional(webrtc_transceiver->current_direction()),
-        ToBaseOptional(webrtc_transceiver->fired_direction()));
+        blink::ToBaseOptional(webrtc_transceiver->current_direction()),
+        blink::ToBaseOptional(webrtc_transceiver->fired_direction()));
   }
 
  protected:
@@ -225,14 +225,14 @@ TEST_F(RTCRtpTransceiverTest, InitializeTransceiverState) {
   }
   EXPECT_EQ(receiver_state->stream_ids(), receiver_stream_ids);
   // Inspect transceiver states.
-  EXPECT_TRUE(
-      OptionalEquals(transceiver_state.mid(), webrtc_transceiver->mid()));
+  EXPECT_TRUE(blink::OptionalEquals(transceiver_state.mid(),
+                                    webrtc_transceiver->mid()));
   EXPECT_EQ(transceiver_state.stopped(), webrtc_transceiver->stopped());
   EXPECT_TRUE(transceiver_state.direction() == webrtc_transceiver->direction());
-  EXPECT_TRUE(OptionalEquals(transceiver_state.current_direction(),
-                             webrtc_transceiver->current_direction()));
-  EXPECT_TRUE(OptionalEquals(transceiver_state.fired_direction(),
-                             webrtc_transceiver->fired_direction()));
+  EXPECT_TRUE(blink::OptionalEquals(transceiver_state.current_direction(),
+                                    webrtc_transceiver->current_direction()));
+  EXPECT_TRUE(blink::OptionalEquals(transceiver_state.fired_direction(),
+                                    webrtc_transceiver->fired_direction()));
 }
 
 TEST_F(RTCRtpTransceiverTest, CreateTranceiver) {

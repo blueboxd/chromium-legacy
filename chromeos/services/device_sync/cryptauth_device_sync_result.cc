@@ -10,7 +10,7 @@ namespace device_sync {
 
 // static
 CryptAuthDeviceSyncResult::ResultType CryptAuthDeviceSyncResult::GetResultType(
-    const ResultCode& result_code) {
+    ResultCode result_code) {
   switch (result_code) {
     case CryptAuthDeviceSyncResult::ResultCode::kSuccess:
       return CryptAuthDeviceSyncResult::ResultType::kSuccess;

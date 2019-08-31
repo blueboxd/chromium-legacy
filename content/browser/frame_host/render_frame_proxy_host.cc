@@ -460,12 +460,18 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
 
       // Transfer user activation state in the frame tree in the browser and
       // the non-source and non-target renderer processes when
-      // |transfer_user_activation| is true.
+      // |transfer_user_activation| is true. We are making an expriment with
+      // dynamic delegation of "autoplay" capability using this post message
+      // approach to transfer user activation.
       // TODO(lanwei): we should transfer user activation state only when
       // |source_rfh| and |target_rfh| are in the same frame tree.
-      if (base::FeatureList::IsEnabled(
+      bool should_transfer_user_activation =
+          base::FeatureList::IsEnabled(
               features::kUserActivationPostMessageTransfer) &&
-          message.transfer_user_activation &&
+          message.transfer_user_activation;
+      should_transfer_user_activation =
+          should_transfer_user_activation || message.allow_autoplay;
+      if (should_transfer_user_activation &&
           source_rfh->frame_tree_node()->HasTransientUserActivation()) {
         target_rfh->frame_tree_node()->TransferUserActivationFrom(source_rfh);
       }

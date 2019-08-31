@@ -224,7 +224,6 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
         if (BaseChromiumAndroidJUnitRunner.shouldListTests(
                     InstrumentationRegistry.getArguments())) {
             for (Description child : getDescription().getChildren()) {
-                notifier.fireTestStarted(child);
                 notifier.fireTestFinished(child);
             }
             return;

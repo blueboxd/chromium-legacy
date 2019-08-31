@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -73,8 +74,8 @@ const char kShippingMode[] = "shipping";
 const int kCommonNamePrefixRemovalFieldThreshold = 3;
 const int kMinCommonNamePrefixLength = 16;
 
-// Returns true if the scheme given by |url| is one for which autfill is allowed
-// to activate. By default this only returns true for HTTP and HTTPS.
+// Returns true if the scheme given by |url| is one for which autofill is
+// allowed to activate. By default this only returns true for HTTP and HTTPS.
 bool HasAllowedScheme(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS() ||
          base::FeatureList::IsEnabled(

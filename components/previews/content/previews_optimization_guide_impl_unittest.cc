@@ -45,6 +45,7 @@
 #include "content/public/test/mock_navigation_handle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -172,7 +173,8 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuideImpl {
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       optimization_guide::TopHostProvider* optimization_guide_top_host_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::TestNetworkQualityTracker* network_quality_tracker)
       : PreviewsOptimizationGuideImpl(optimization_guide_service,
                                       ui_task_runner,
                                       background_task_runner,
@@ -180,7 +182,8 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuideImpl {
                                       pref_service,
                                       database_provider,
                                       optimization_guide_top_host_provider,
-                                      url_loader_factory) {}
+                                      url_loader_factory,
+                                      network_quality_tracker) {}
 
   bool fetched_hints_stored() { return fetched_hints_stored_; }
 
@@ -243,6 +246,10 @@ class PreviewsOptimizationGuideImplTest
     return static_cast<TestHintsFetcher*>(guide_->GetHintsFetcherForTesting());
   }
 
+  network::TestNetworkQualityTracker* network_quality_tracker() {
+    return network_quality_tracker_.get();
+  }
+
   void ProcessHints(const optimization_guide::proto::Configuration& config,
                     const std::string& version) {
     base::HistogramTester histogram_tester;
@@ -293,12 +300,16 @@ class PreviewsOptimizationGuideImplTest
         data_reduction_proxy::prefs::kDataSaverEnabled, false);
     optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
 
+    network_quality_tracker_ =
+        std::make_unique<network::TestNetworkQualityTracker>();
+
     guide_ = std::make_unique<TestPreviewsOptimizationGuide>(
         optimization_guide_service_.get(),
         task_environment_.GetMainThreadTaskRunner(),
         task_environment_.GetMainThreadTaskRunner(), temp_dir(),
         pref_service_.get(), db_provider_.get(),
-        optimization_guide_top_host_provider_.get(), url_loader_factory_);
+        optimization_guide_top_host_provider_.get(), url_loader_factory_,
+        network_quality_tracker_.get());
 
     guide_->SetTimeClockForTesting(task_environment_.GetMockClock());
 
@@ -381,7 +392,7 @@ class PreviewsOptimizationGuideImplTest
       PreviewsUserData* previews_data,
       const GURL& url,
       PreviewsType type,
-      net::EffectiveConnectionType* out_ect_threshold);
+      net::EffectiveConnectionType ect);
 
   void RunUntilFetchedHintsStored() {
     while (!guide_->fetched_hints_stored()) {
@@ -415,6 +426,7 @@ class PreviewsOptimizationGuideImplTest
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
   std::unique_ptr<MockTopHostProvider> optimization_guide_top_host_provider_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<network::TestNetworkQualityTracker> network_quality_tracker_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -576,7 +588,7 @@ bool PreviewsOptimizationGuideImplTest::
         PreviewsUserData* previews_data,
         const GURL& url,
         PreviewsType type,
-        net::EffectiveConnectionType* out_ect_threshold) {
+        net::EffectiveConnectionType ect) {
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(url);
 
@@ -595,8 +607,8 @@ bool PreviewsOptimizationGuideImplTest::
     }
   }
 
-  return guide()->CanApplyPreview(previews_data, &navigation_handle, type,
-                                  out_ect_threshold);
+  network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(ect);
+  return guide()->CanApplyPreview(previews_data, &navigation_handle, type);
 }
 
 void PreviewsOptimizationGuideImplTest::OnLoadOptimizationHints() {
@@ -605,10 +617,9 @@ void PreviewsOptimizationGuideImplTest::OnLoadOptimizationHints() {
 
 TEST_F(PreviewsOptimizationGuideImplTest, CanApplyPreviewWithoutHints) {
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -630,8 +641,7 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
   page_hint2->set_page_pattern("noscript_3g");
   page_hint2->set_max_ect_trigger(
-      optimization_guide::proto::EffectiveConnectionType::
-          EFFECTIVE_CONNECTION_TYPE_3G);
+      optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_3G);
   optimization_guide::proto::Optimization* optimization2 =
       page_hint2->add_whitelisted_optimizations();
   optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
@@ -648,31 +658,28 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   // Verify page matches and ECT thresholds.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://somedomain.org/noscript_default_2g"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://somedomain.org/noscript_3g"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, ect_threshold);
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_3G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://somedomain.org/no_pattern_match"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 
   // Verify * matches any page.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://anypage.com/noscript_for_all"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://anypage.com/"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://anypage.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -701,13 +708,11 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   // Verify page matches and ECT thresholds.
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   EXPECT_TRUE(guide()->GetHintsForTesting());
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://somedomain.org/noscript_default_2g"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -736,13 +741,11 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   // Verify page matches and ECT thresholds.
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   EXPECT_TRUE(guide()->GetHintsForTesting());
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://somedomain.org/defer_default_2g"),
-      PreviewsType::DEFER_ALL_SCRIPT, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      PreviewsType::DEFER_ALL_SCRIPT, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -776,13 +779,11 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   // Verify page matches and ECT thresholds.
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   EXPECT_TRUE(guide()->GetHintsForTesting());
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://otherdomain.org/noscript_default_2g"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 
   EXPECT_FALSE(CallMaybeLoadOptimizationHints(
       GURL("https://www.somedomain.org/news/football")));
@@ -887,18 +888,19 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Twitter and Facebook should be whitelisted but not Google.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://google.com"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 // Test when both NoScript and resource loading hints are enabled.
@@ -951,20 +953,21 @@ TEST_F(
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Twitter and Facebook should be whitelisted but not Google.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com/example.html"),
-      PreviewsType::NOSCRIPT, &ect_threshold));
+      PreviewsType::NOSCRIPT, net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.twitter.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://google.com"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1015,19 +1018,16 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://3g.com"), PreviewsType::RESOURCE_LOADING_HINTS,
-      &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, ect_threshold);
+      net::EFFECTIVE_CONNECTION_TYPE_3G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://4g.com/example"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G, ect_threshold);
+      PreviewsType::RESOURCE_LOADING_HINTS, net::EFFECTIVE_CONNECTION_TYPE_4G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://default2g.com"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 // This is a helper function for testing the experiment flags on the config for
@@ -1081,33 +1081,29 @@ void PreviewsOptimizationGuideImplTest::DoExperimentFlagTest(
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Check to ensure the optimization under test (facebook noscript) is either
   // enabled or disabled, depending on what the caller told us to expect.
   EXPECT_EQ(expect_enabled, MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
                                 &user_data, GURL("https://m.facebook.com"),
-                                PreviewsType::NOSCRIPT, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+                                PreviewsType::NOSCRIPT,
+                                net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 
   // RESOURCE_LOADING_HINTS for facebook should always be enabled.
-  ect_threshold = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   EXPECT_EQ(!expect_enabled,
             MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
                 &user_data, GURL("https://m.facebook.com"),
-                PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+                PreviewsType::RESOURCE_LOADING_HINTS,
+                net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   // Twitter's NOSCRIPT should always be enabled; RESOURCE_LOADING_HINTS is not
   // configured and should be disabled.
-  ect_threshold = net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.twitter.com/example"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   // Google (which is not configured at all) should always have both NOSCRIPT
   // and RESOURCE_LOADING_HINTS disabled.
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1183,10 +1179,9 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1205,10 +1200,9 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithExistingSentinel) {
@@ -1237,10 +1231,9 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithExistingSentinel) {
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(base::PathExists(sentinel_path));
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ProcessHintsResult",
@@ -1253,8 +1246,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithExistingSentinel) {
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+      net::EFFECTIVE_CONNECTION_TYPE_2G));
   EXPECT_FALSE(base::PathExists(sentinel_path));
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ProcessHintsResult",
@@ -1290,10 +1282,9 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithInvalidSentinelFile) {
   ProcessHints(config, "2.0.0");
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(base::PathExists(sentinel_path));
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ProcessHintsResult",
@@ -1306,7 +1297,7 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithInvalidSentinelFile) {
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(base::PathExists(sentinel_path));
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ProcessHintsResult",
@@ -1343,17 +1334,16 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   // Process the new hints config and verify that they are available.
   ProcessHints(config1, "2.0.0");
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(
@@ -1366,10 +1356,10 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(optimization_guide::ProcessHintsComponentResult::
@@ -1405,17 +1395,16 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   // Process the new hints config and verify that they are available.
   ProcessHints(config1, "2.0.0");
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(
@@ -1428,10 +1417,10 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(optimization_guide::ProcessHintsComponentResult::
@@ -1466,17 +1455,16 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessMultipleNewConfigs) {
   optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   // Process the new hints config and verify that they are available.
   ProcessHints(config1, "2.0.0");
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(
@@ -1489,10 +1477,10 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessMultipleNewConfigs) {
 
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
-      &ect_threshold));
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ProcessHintsResult",
       static_cast<int>(
@@ -1551,19 +1539,21 @@ TEST_F(PreviewsOptimizationGuideImplTest, MaybeLoadOptimizationHints) {
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1581,19 +1571,21 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1616,19 +1608,21 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1651,19 +1645,21 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
@@ -1687,19 +1683,21 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/football/seahawksrebuildingyear"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 // Test that optimization hints with multiple page patterns is processed
@@ -1713,7 +1711,6 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   const size_t page_patterns_per_key = 25;
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
 
   InitializeMultipleResourceLoadingHints(key_count, page_patterns_per_key);
 
@@ -1733,33 +1730,42 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain0.org/news0/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain0.org/news24/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain0.org/news25/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain49.org/news0/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain49.org/news24/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain49.org/news25/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain50.org/news0/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain50.org/news24/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain50.org/news25/football"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 
   RunUntilIdle();
 }
@@ -1779,11 +1785,11 @@ TEST_F(PreviewsOptimizationGuideImplTest,
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest, PreviewsUserDataPopulatedCorrectly) {
@@ -1800,16 +1806,17 @@ TEST_F(PreviewsOptimizationGuideImplTest, PreviewsUserDataPopulatedCorrectly) {
   RunUntilIdle();
 
   PreviewsUserData user_data(kDefaultPageId);
-  net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data, GURL("https://www.somedomain.org/unhinted"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_EQ(base::nullopt, user_data.serialized_hint_version_string());
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIfCanApplyPreview(
       &user_data,
       GURL("https://www.somedomain.org/news/weather/raininginseattle"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
+      PreviewsType::RESOURCE_LOADING_HINTS,
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G));
   EXPECT_EQ("someversion", user_data.serialized_hint_version_string());
 }
 
@@ -1817,49 +1824,48 @@ TEST_F(PreviewsOptimizationGuideImplTest,
        CanApplyPreviewWithLitePageServerPreviewsEnabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+  network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   PreviewsUserData user_data(kDefaultPageId);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://m.blacklisteddomain.com/path"));
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(guide()->CanApplyPreview(&user_data, &navigation_handle,
-                                        PreviewsType::LITE_PAGE_REDIRECT,
-                                        &ect_threshold));
+                                        PreviewsType::LITE_PAGE_REDIRECT));
 
   InitializeWithLitePageRedirectBlacklist();
 
   EXPECT_FALSE(guide()->CanApplyPreview(&user_data, &navigation_handle,
-                                        PreviewsType::LITE_PAGE_REDIRECT,
-                                        &ect_threshold));
+                                        PreviewsType::LITE_PAGE_REDIRECT));
 
   content::MockNavigationHandle blacklisted_subdomain_navigation_handle;
   blacklisted_subdomain_navigation_handle.set_url(
       GURL("https://blacklistedsubdomain.maindomain.co.in"));
   EXPECT_FALSE(guide()->CanApplyPreview(
       &user_data, &blacklisted_subdomain_navigation_handle,
-      PreviewsType::LITE_PAGE_REDIRECT, &ect_threshold));
+      PreviewsType::LITE_PAGE_REDIRECT));
 
   content::MockNavigationHandle main_domain_navigation_handle;
   main_domain_navigation_handle.set_url(GURL("https://maindomain.co.in"));
-  EXPECT_TRUE(guide()->CanApplyPreview(
-      &user_data, &main_domain_navigation_handle,
-      PreviewsType::LITE_PAGE_REDIRECT, &ect_threshold));
+  EXPECT_TRUE(guide()->CanApplyPreview(&user_data,
+                                       &main_domain_navigation_handle,
+                                       PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest,
        CanApplyPreviewWithLitePageServerPreviewsDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndDisableFeature(features::kLitePageServerPreviews);
+  network_quality_tracker()->ReportEffectiveConnectionTypeForTesting(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   InitializeWithLitePageRedirectBlacklist();
 
   PreviewsUserData user_data(kDefaultPageId);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://m.blacklisteddomain.com/path"));
-  net::EffectiveConnectionType ect_threshold;
   EXPECT_FALSE(guide()->CanApplyPreview(&user_data, &navigation_handle,
-                                        PreviewsType::LITE_PAGE_REDIRECT,
-                                        &ect_threshold));
+                                        PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 TEST_F(PreviewsOptimizationGuideImplTest, RemoveObserverCalledAtDestruction) {

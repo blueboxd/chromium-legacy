@@ -20,15 +20,15 @@ class NavigationObserver {
  public:
   virtual ~NavigationObserver() {}
 
-  virtual void NavigationStarted(const Navigation& navigation) {}
+  virtual void NavigationStarted(Navigation* navigation) {}
 
-  virtual void NavigationRedirected(const Navigation& navigation) {}
+  virtual void NavigationRedirected(Navigation* navigation) {}
 
-  virtual void NavigationCommitted(const Navigation& navigation) {}
+  virtual void NavigationCommitted(Navigation* navigation) {}
 
-  virtual void NavigationCompleted(const Navigation& navigation) {}
+  virtual void NavigationCompleted(Navigation* navigation) {}
 
-  virtual void NavigationFailed(const Navigation& navigation) {}
+  virtual void NavigationFailed(Navigation* navigation) {}
 };
 
 }  // namespace weblayer

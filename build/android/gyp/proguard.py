@@ -66,9 +66,6 @@ def _ParseOptions():
       required=True,
       help='GN-list of configuration files.')
   parser.add_argument(
-      '--proguard-config-exclusions',
-      help='GN-list of paths to filter out of --proguard-configs')
-  parser.add_argument(
       '--apply-mapping', help='Path to ProGuard mapping to apply.')
   parser.add_argument(
       '--mapping-output',
@@ -122,8 +119,6 @@ def _ParseOptions():
 
   options.classpath = build_utils.ParseGnList(options.classpath)
   options.proguard_configs = build_utils.ParseGnList(options.proguard_configs)
-  options.proguard_config_exclusions = (build_utils.ParseGnList(
-      options.proguard_config_exclusions))
   options.input_paths = build_utils.ParseGnList(options.input_paths)
   options.extra_mapping_output_paths = build_utils.ParseGnList(
       options.extra_mapping_output_paths)
@@ -357,18 +352,12 @@ def main():
 
   _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
 
-  # Apply config exclusion filter.
-  config_paths = [
-      p for p in options.proguard_configs
-      if p not in options.proguard_config_exclusions
-  ]
-
   # ProGuard configs that are derived from flags.
   dynamic_config_data = _CreateDynamicConfig(options)
 
   # ProGuard configs that are derived from flags.
   merged_configs = _CombineConfigs(
-      config_paths, dynamic_config_data, exclude_generated=True)
+      options.proguard_configs, dynamic_config_data, exclude_generated=True)
   print_stdout = '-whyareyoukeeping' in merged_configs or options.verbose
 
   # Writing the config output before we know ProGuard is going to succeed isn't
@@ -386,11 +375,11 @@ def main():
                              options.verify_expected_configs)
 
   if options.r8_path:
-    _OptimizeWithR8(options, config_paths, libraries, dynamic_config_data,
-                    print_stdout)
+    _OptimizeWithR8(options, options.proguard_configs, libraries,
+                    dynamic_config_data, print_stdout)
   else:
-    _OptimizeWithProguard(options, config_paths, libraries, dynamic_config_data,
-                          print_stdout)
+    _OptimizeWithProguard(options, options.proguard_configs, libraries,
+                          dynamic_config_data, print_stdout)
 
   # After ProGuard / R8 has run:
   for output in options.extra_mapping_output_paths:

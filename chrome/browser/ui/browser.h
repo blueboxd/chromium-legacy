@@ -151,17 +151,21 @@ class Browser : public TabStripModelObserver,
 
   // The context for a download blocked notification from
   // OkToCloseWithInProgressDownloads.
-  enum DownloadClosePreventionType {
+  enum class DownloadCloseType {
     // Browser close is not blocked by download state.
-    DOWNLOAD_CLOSE_OK,
+    kOk,
 
     // The browser is shutting down and there are active downloads
     // that would be cancelled.
-    DOWNLOAD_CLOSE_BROWSER_SHUTDOWN,
+    kBrowserShutdown,
 
     // There are active downloads associated with this incognito profile
     // that would be canceled.
-    DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
+    kLastWindowInIncognitoProfile,
+
+    // There are active downloads associated with this guest session
+    // that would be canceled.
+    kLastWindowInGuestSession,
   };
 
   // Represents the result of the user being warned before closing the browser.
@@ -443,7 +447,7 @@ class Browser : public TabStripModelObserver,
   // If executing downloads would be cancelled by this window close,
   // then |*num_downloads_blocking| is updated with how many downloads
   // would be canceled if the close continued.
-  DownloadClosePreventionType OkToCloseWithInProgressDownloads(
+  DownloadCloseType OkToCloseWithInProgressDownloads(
       int* num_downloads_blocking) const;
 
   // External state change handling ////////////////////////////////////////////
@@ -620,6 +624,7 @@ class Browser : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest,
                            IsReservedCommandOrKeyIsApp);
+  FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastGuest);
   FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastIncognito);
   FRIEND_TEST_ALL_PREFIXES(BrowserCloseTest, LastRegular);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest, AppFullScreen);

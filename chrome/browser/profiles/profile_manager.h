@@ -246,11 +246,6 @@ class ProfileManager : public content::NotificationObserver,
                         bool is_new_profile) override;
 
  protected:
-  // Does final initial actions.
-  virtual void DoFinalInit(Profile* profile, bool go_off_the_record);
-  virtual void DoFinalInitForServices(Profile* profile, bool go_off_the_record);
-  virtual void DoFinalInitLogging(Profile* profile);
-
   // Creates a new profile by calling into the profile's profile creation
   // method. Virtual so that unittests can return a TestingProfile instead
   // of the Profile's result. Returns null if creation fails.
@@ -262,6 +257,10 @@ class ProfileManager : public content::NotificationObserver,
   virtual std::unique_ptr<Profile> CreateProfileAsyncHelper(
       const base::FilePath& path,
       Delegate* delegate);
+
+  void set_do_final_services_init(bool do_final_services_init) {
+    do_final_services_init_ = do_final_services_init;
+  }
 
  private:
   friend class TestingProfileManager;
@@ -285,6 +284,11 @@ class ProfileManager : public content::NotificationObserver,
    private:
     DISALLOW_COPY_AND_ASSIGN(ProfileInfo);
   };
+
+  // Does final initial actions.
+  void DoFinalInit(ProfileInfo* profile_info, bool go_off_the_record);
+  void DoFinalInitForServices(Profile* profile, bool go_off_the_record);
+  void DoFinalInitLogging(Profile* profile);
 
   // Returns the profile of the active user and / or the off the record profile
   // if needed. This adds the profile to the ProfileManager if it doesn't
@@ -438,6 +442,9 @@ class ProfileManager : public content::NotificationObserver,
   std::vector<Profile*> active_profiles_;
   bool closing_all_browsers_ = false;
 
+  // Controls whether to initialize some services. Only disabled for testing.
+  bool do_final_services_init_ = true;
+
   // TODO(chrome/browser/profiles/OWNERS): Usage of this in profile_manager.cc
   // should likely be turned into DCHECK_CURRENTLY_ON(BrowserThread::UI) for
   // consistency with surrounding code in the same file but that wasn't trivial
@@ -454,9 +461,8 @@ class ProfileManagerWithoutInit : public ProfileManager {
  public:
   explicit ProfileManagerWithoutInit(const base::FilePath& user_data_dir);
 
- protected:
-  void DoFinalInitForServices(Profile*, bool) override {}
-  void DoFinalInitLogging(Profile*) override {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProfileManagerWithoutInit);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_MANAGER_H_

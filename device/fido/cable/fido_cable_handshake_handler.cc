@@ -20,6 +20,7 @@
 #include "crypto/hkdf.h"
 #include "crypto/hmac.h"
 #include "crypto/random.h"
+#include "crypto/sha2.h"
 #include "device/fido/cable/fido_cable_device.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -43,14 +44,6 @@ constexpr size_t kCableAuthenticatorHandshakeMessageSize = 66;
 constexpr size_t kClientHelloMessageSize = 58;
 
 constexpr size_t kCableHandshakeMacMessageSize = 16;
-
-// Derives key of size 32 bytes using HDKF algorithm.
-// See https://tools.ietf.org/html/rfc5869 for details.
-std::string GenerateKey(base::StringPiece secret,
-                        base::StringPiece salt,
-                        base::StringPiece info) {
-  return crypto::HkdfSha256(secret, salt, info, 32);
-}
 
 base::Optional<std::array<uint8_t, kClientHelloMessageSize>>
 ConstructHandshakeMessage(base::StringPiece handshake_key,
@@ -94,10 +87,11 @@ FidoCableV1HandshakeHandler::FidoCableV1HandshakeHandler(
     : cable_device_(cable_device),
       nonce_(fido_parsing_utils::Materialize(nonce)),
       session_pre_key_(fido_parsing_utils::Materialize(session_pre_key)),
-      handshake_key_(GenerateKey(
+      handshake_key_(crypto::HkdfSha256(
           fido_parsing_utils::ConvertToStringPiece(session_pre_key_),
           fido_parsing_utils::ConvertToStringPiece(nonce_),
-          kCableHandshakeKeyInfo)) {
+          kCableHandshakeKeyInfo,
+          /*derived_key_size=*/32)) {
   crypto::RandBytes(client_session_random_.data(),
                     client_session_random_.size());
 }
@@ -162,26 +156,24 @@ bool FidoCableV1HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
   }
 
   cable_device_->SetEncryptionData(
-      GetEncryptionKeyAfterSuccessfulHandshake(base::make_span<16>(
-          authenticator_random_nonce->second.GetBytestring())),
+      base::make_span<32>(
+          GetEncryptionKeyAfterSuccessfulHandshake(base::make_span<16>(
+              authenticator_random_nonce->second.GetBytestring()))),
       nonce_);
 
   return true;
 }
 
-std::string
+std::vector<uint8_t>
 FidoCableV1HandshakeHandler::GetEncryptionKeyAfterSuccessfulHandshake(
     base::span<const uint8_t, 16> authenticator_random_nonce) const {
   std::vector<uint8_t> nonce_message;
   fido_parsing_utils::Append(&nonce_message, nonce_);
   fido_parsing_utils::Append(&nonce_message, client_session_random_);
   fido_parsing_utils::Append(&nonce_message, authenticator_random_nonce);
-  return GenerateKey(
-      fido_parsing_utils::ConvertToStringPiece(session_pre_key_),
-      fido_parsing_utils::ConvertToStringPiece(
-          fido_parsing_utils::CreateSHA256Hash(
-              fido_parsing_utils::ConvertToStringPiece(nonce_message))),
-      kCableDeviceEncryptionKeyInfo);
+  return crypto::HkdfSha256(session_pre_key_, crypto::SHA256Hash(nonce_message),
+                            kCableDeviceEncryptionKeyInfo,
+                            /*derived_key_length=*/32);
 }
 
 FidoCableV2HandshakeHandler::FidoCableV2HandshakeHandler(
@@ -319,9 +311,7 @@ bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
       HKDF2(chaining_key_, base::span<const uint8_t>());
 
   uint8_t zero_nonce[8] = {0};
-  cable_device_->SetEncryptionData(
-      std::string(reinterpret_cast<const char*>(key1.data()), key1.size()),
-      zero_nonce);
+  cable_device_->SetEncryptionData(key1, zero_nonce);
 
   return true;
 }

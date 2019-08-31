@@ -2280,6 +2280,40 @@ AutotestPrivateGetArcAppWindowStateFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetArcAppWindowFocusFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetArcAppWindowFocusFunction::
+    AutotestPrivateSetArcAppWindowFocusFunction() = default;
+AutotestPrivateSetArcAppWindowFocusFunction::
+    ~AutotestPrivateSetArcAppWindowFocusFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetArcAppWindowFocusFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetArcAppWindowFocus::Params> params(
+      api::autotest_private::SetArcAppWindowFocus::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetArcAppWindowFocusFunction "
+           << params->package_name;
+  aura::Window* arc_window = GetArcAppWindow(params->package_name);
+  if (!arc_window) {
+    return RespondNow(Error(base::StrCat(
+        {"No ARC app window is found for ", params->package_name})));
+  }
+  if (!arc_window->CanFocus()) {
+    return RespondNow(Error(base::StrCat(
+        {"ARC app window can't focus for ", params->package_name})));
+  }
+  // No matter whether it is focused already, set it focused.
+  arc_window->Focus();
+  if (!arc_window->HasFocus()) {
+    return RespondNow(Error(base::StrCat(
+        {"Failed to set focus for ARC App window ", params->package_name})));
+  }
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSwapWindowsInSplitViewFunction
 ///////////////////////////////////////////////////////////////////////////////
 

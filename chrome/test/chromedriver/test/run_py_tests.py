@@ -780,6 +780,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         '});'
         'return div;')
     actions = ({"actions": [{
+      "actions": [{"duration": 32, "type": "pause"}],
+      "id": "0",
+      "type": "none"
+      }, {
       "type":"pointer",
       "actions":[{"type": "pointerMove", "x": 10, "y": 10}],
       "parameters": {"pointerType": "mouse"},
@@ -839,6 +843,12 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
     # Move to center of target element and drag it to a new location.
     actions = ({'actions': [{
+      "actions": [{"duration": 32, "type": "pause"},
+                  {"duration": 32, "type": "pause"},
+                  {"duration": 32, "type": "pause"}],
+      "id": "0",
+      "type": "none"
+      }, {
       'type': 'pointer',
       'actions': [
           {'type': 'pointerMove', 'x': 100, 'y': 100},
@@ -854,6 +864,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
     # Without releasing mouse button, should continue the drag.
     actions = ({'actions': [{
+      "actions": [{"duration": 32, "type": "pause"}],
+      "id": "0",
+      "type": "none"
+      }, {
       'type': 'pointer',
       'actions': [
           {'type': 'pointerMove', 'x': 30, 'y': 40, 'origin': 'pointer'}
@@ -867,6 +881,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
     # Releasing mouse button stops the drag.
     actions = ({'actions': [{
+      "actions": [{"duration": 32, "type": "pause"},
+                  {"duration": 32, "type": "pause"}],
+      "id": "0",
+      "type": "none"
+      }, {
       'type': 'pointer',
       'actions': [
           {'type': 'pointerUp', 'button': 0},

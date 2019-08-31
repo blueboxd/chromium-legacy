@@ -48,7 +48,6 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
@@ -246,9 +245,7 @@ class WebViewTest : public testing::Test {
 
   void TearDown() override {
     EventTiming::SetTickClockForTesting(nullptr);
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
  protected:
@@ -262,6 +259,8 @@ class WebViewTest : public testing::Test {
   }
 
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |web_view_helper_|.
     return url_test_helpers::RegisterMockedURLLoadFromBase(
                WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
                WebString::FromUTF8(file_name))
@@ -514,8 +513,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   {
     // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
     // the appropriate pointers!
-    web_view->MainFrameWidget()->SetAnimationHost(
-        web_widget_client.animation_host());
+    web_view->SetAnimationHost(web_widget_client.animation_host());
     blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
     web_view->DidAttachLocalMainFrame();
   }

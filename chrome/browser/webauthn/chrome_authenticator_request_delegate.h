@@ -61,9 +61,7 @@ class ChromeAuthenticatorRequestDelegate
   AuthenticatorRequestDialogModel* WeakDialogModelForTesting() const;
 
   // content::AuthenticatorRequestClientDelegate:
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override;
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
       base::Closure start_over_callback,
@@ -78,6 +76,10 @@ class ChromeAuthenticatorRequestDelegate
       const device::FidoAuthenticator* authenticator,
       base::OnceCallback<void(bool)> callback) override;
   bool SupportsResidentKeys() override;
+  bool ShouldPermitCableExtension(const url::Origin& origin) override;
+  bool SetCableTransportInfo(
+      bool cable_extension_provided,
+      base::Optional<device::QRGeneratorKey> qr_generator_key) override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>

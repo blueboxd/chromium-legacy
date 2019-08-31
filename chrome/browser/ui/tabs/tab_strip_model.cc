@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -37,6 +39,7 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -46,6 +49,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/text_elider.h"
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -807,6 +812,25 @@ const TabGroupVisualData* TabStripModel::GetVisualDataForGroup(
     TabGroupId group) const {
   DCHECK(base::Contains(group_data_, group));
   return &group_data_.at(group).visual_data();
+}
+
+base::string16 TabStripModel::GetUserVisibleGroupTitle(TabGroupId group) const {
+  base::string16 title = GetVisualDataForGroup(group)->title();
+  if (title.empty()) {
+    // Generate a descriptive placeholder title for the group.
+    std::vector<int> tabs_in_group = ListTabsInGroup(group);
+    TabUIHelper* const tab_ui_helper =
+        TabUIHelper::FromWebContents(GetWebContentsAt(tabs_in_group.front()));
+    constexpr size_t kContextMenuTabTitleMaxLength = 30;
+    base::string16 format_string = l10n_util::GetPluralStringFUTF16(
+        IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE, tabs_in_group.size() - 1);
+    base::string16 short_title;
+    gfx::ElideString(tab_ui_helper->GetTitle(), kContextMenuTabTitleMaxLength,
+                     &short_title);
+    title =
+        base::ReplaceStringPlaceholders(format_string, {short_title}, nullptr);
+  }
+  return title;
 }
 
 void TabStripModel::SetVisualDataForGroup(TabGroupId group,

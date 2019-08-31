@@ -22,3 +22,29 @@ export function difference(a, b) {
   }
   return result;
 }
+
+/**
+ * Callback applying to an item in a set.
+ *
+ * @callback applyToDiff
+ * @param {any} item
+ */
+
+/**
+ * Calculates the difference between |oldSet| and |newSet| and applies
+ * |deletedFunc| or |addedFunc| to the elements that were deleted or added.
+ *
+ * Returns the number of elements operated on.
+ *
+ * @param {!Set} oldSet A set of elements.
+ * @param {!Set} newSet A set of elements.
+ * @param {applyToDiff} deletedFun A function to be applied to deleted elements.
+ * @param {applyToDiff} addedFun A function to be applied to added elements.
+ */
+export function applyToDiffs(oldSet, newSet, deletedFunc, addedFunc) {
+  const deleted = difference(oldSet, newSet);
+  const added = difference(newSet, oldSet);
+  deleted.forEach(deletedFunc);
+  added.forEach(addedFunc);
+  return deleted.size + added.size;
+}

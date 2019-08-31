@@ -230,10 +230,7 @@ IntersectionObserver::IntersectionObserver(
       root_(root),
       thresholds_(thresholds),
       delay_(delay),
-      top_margin_(Length::Fixed(0)),
-      right_margin_(Length::Fixed(0)),
-      bottom_margin_(Length::Fixed(0)),
-      left_margin_(Length::Fixed(0)),
+      root_margin_(4, Length::Fixed(0)),
       root_is_implicit_(root ? 0 : 1),
       track_visibility_(track_visibility ? 1 : 0),
       track_fraction_of_root_(semantics == kFractionOfRoot),
@@ -243,27 +240,33 @@ IntersectionObserver::IntersectionObserver(
     case 0:
       break;
     case 1:
-      top_margin_ = right_margin_ = bottom_margin_ = left_margin_ =
+      root_margin_[0] = root_margin_[1] = root_margin_[2] = root_margin_[3] =
           root_margin[0];
       break;
     case 2:
-      top_margin_ = bottom_margin_ = root_margin[0];
-      right_margin_ = left_margin_ = root_margin[1];
+      root_margin_[0] = root_margin_[2] = root_margin[0];
+      root_margin_[1] = root_margin_[3] = root_margin[1];
       break;
     case 3:
-      top_margin_ = root_margin[0];
-      right_margin_ = left_margin_ = root_margin[1];
-      bottom_margin_ = root_margin[2];
+      root_margin_[0] = root_margin[0];
+      root_margin_[1] = root_margin_[3] = root_margin[1];
+      root_margin_[2] = root_margin[2];
       break;
     case 4:
-      top_margin_ = root_margin[0];
-      right_margin_ = root_margin[1];
-      bottom_margin_ = root_margin[2];
-      left_margin_ = root_margin[3];
+      root_margin_[0] = root_margin[0];
+      root_margin_[1] = root_margin[1];
+      root_margin_[2] = root_margin[2];
+      root_margin_[3] = root_margin[3];
       break;
     default:
       NOTREACHED();
       break;
+  }
+  if (root) {
+    root->EnsureIntersectionObserverData().AddObserver(*this);
+    root->GetDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedElement(*root, track_visibility);
   }
 }
 
@@ -299,9 +302,11 @@ void IntersectionObserver::observe(Element* target,
   target->EnsureIntersectionObserverData().AddObservation(*observation);
   observations_.insert(observation);
   if (target->isConnected()) {
-    target->GetDocument()
-        .EnsureIntersectionObserverController()
-        .AddTrackedTarget(*target, track_visibility_);
+    if (RootIsImplicit()) {
+      target->GetDocument()
+          .EnsureIntersectionObserverController()
+          .AddTrackedElement(*target, track_visibility_);
+    }
     if (LocalFrameView* frame_view = target_frame->View()) {
       // The IntersectionObsever spec requires that at least one observation
       // be recorded after observe() is called, even if the frame is throttled.
@@ -311,7 +316,7 @@ void IntersectionObserver::observe(Element* target,
   } else {
     // The IntersectionObsever spec requires that at least one observation
     // be recorded after observe() is called, even if the target is detached.
-    observation->Compute(
+    observation->ComputeIntersection(
         IntersectionObservation::kImplicitRootObserversNeedUpdate |
         IntersectionObservation::kExplicitRootObserversNeedUpdate);
   }
@@ -356,13 +361,13 @@ static void AppendLength(StringBuilder& string_builder, const Length& length) {
 
 String IntersectionObserver::rootMargin() const {
   StringBuilder string_builder;
-  AppendLength(string_builder, top_margin_);
+  AppendLength(string_builder, root_margin_[0]);
   string_builder.Append(' ');
-  AppendLength(string_builder, right_margin_);
+  AppendLength(string_builder, root_margin_[1]);
   string_builder.Append(' ');
-  AppendLength(string_builder, bottom_margin_);
+  AppendLength(string_builder, root_margin_[2]);
   string_builder.Append(' ');
-  AppendLength(string_builder, left_margin_);
+  AppendLength(string_builder, root_margin_[3]);
   return string_builder.ToString();
 }
 
@@ -376,6 +381,21 @@ DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
       return DOMWindowPerformance::performance(*dom_window)->now();
   }
   return -1;
+}
+
+bool IntersectionObserver::ComputeIntersections(unsigned flags) {
+  DCHECK(!RootIsImplicit());
+  if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
+    return false;
+  IntersectionGeometry::RootGeometry root_geometry(root()->GetLayoutObject(),
+                                                   root_margin_);
+  HeapVector<Member<IntersectionObservation>> observations_to_process;
+  // TODO(szager): Is this copy necessary?
+  CopyToVector(observations_, observations_to_process);
+  for (auto& observation : observations_to_process) {
+    observation->ComputeIntersection(root_geometry, flags);
+  }
+  return trackVisibility();
 }
 
 void IntersectionObserver::SetNeedsDelivery() {

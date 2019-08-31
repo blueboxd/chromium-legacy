@@ -17,8 +17,8 @@
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
-#include "fuchsia/engine/test_devtools_list_fetcher.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -254,7 +254,8 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
       nav_controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
   navigation_listener.RunUntilUrlEquals(url);
 
-  base::Value devtools_list = GetDevToolsListFromPort(remote_debugging_port);
+  base::Value devtools_list =
+      cr_fuchsia::GetDevToolsListFromPort(remote_debugging_port);
   ASSERT_TRUE(devtools_list.is_list());
   EXPECT_EQ(devtools_list.GetList().size(), 1u);
 

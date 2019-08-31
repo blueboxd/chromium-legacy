@@ -45,8 +45,6 @@
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
-using blink::mojom::IDBCallbacks;
-using blink::mojom::IDBCallbacksAssociatedPtrInfo;
 using blink::mojom::IDBFactory;
 using blink::mojom::IDBFactoryPtr;
 using blink::mojom::IDBValue;

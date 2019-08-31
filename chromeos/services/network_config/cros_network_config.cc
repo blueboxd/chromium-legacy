@@ -7,6 +7,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -1306,15 +1307,18 @@ CrosNetworkConfig::CrosNetworkConfig()
     : CrosNetworkConfig(
           NetworkHandler::Get()->network_state_handler(),
           NetworkHandler::Get()->network_device_handler(),
-          NetworkHandler::Get()->managed_network_configuration_handler()) {}
+          NetworkHandler::Get()->managed_network_configuration_handler(),
+          NetworkHandler::Get()->network_connection_handler()) {}
 
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,
     NetworkDeviceHandler* network_device_handler,
-    ManagedNetworkConfigurationHandler* network_configuration_handler)
+    ManagedNetworkConfigurationHandler* network_configuration_handler,
+    NetworkConnectionHandler* network_connection_handler)
     : network_state_handler_(network_state_handler),
       network_device_handler_(network_device_handler),
-      network_configuration_handler_(network_configuration_handler) {
+      network_configuration_handler_(network_configuration_handler),
+      network_connection_handler_(network_connection_handler) {
   CHECK(network_state_handler);
 }
 
@@ -1449,10 +1453,7 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
     const std::string& service_path,
     const base::DictionaryValue& properties) {
   auto iter = get_managed_properties_callbacks_.find(callback_id);
-  if (iter == get_managed_properties_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
-    return;
-  }
+  DCHECK(iter != get_managed_properties_callbacks_.end());
   const NetworkState* network_state =
       network_state_handler_->GetNetworkState(service_path);
   if (!network_state) {
@@ -1471,10 +1472,7 @@ void CrosNetworkConfig::GetManagedPropertiesFailure(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   auto iter = get_managed_properties_callbacks_.find(callback_id);
-  if (iter == get_managed_properties_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
-    return;
-  }
+  DCHECK(iter != get_managed_properties_callbacks_.end());
   NET_LOG(ERROR) << "Failed to get network properties: " << guid
                  << " Error: " << error_name;
   std::move(iter->second).Run(nullptr);
@@ -1604,10 +1602,7 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
 
 void CrosNetworkConfig::SetPropertiesSuccess(int callback_id) {
   auto iter = set_properties_callbacks_.find(callback_id);
-  if (iter == set_properties_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
-    return;
-  }
+  DCHECK(iter != set_properties_callbacks_.end());
   std::move(iter->second).Run(/*success=*/true);
   set_properties_callbacks_.erase(iter);
 }
@@ -1618,10 +1613,7 @@ void CrosNetworkConfig::SetPropertiesFailure(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   auto iter = set_properties_callbacks_.find(callback_id);
-  if (iter == set_properties_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
-    return;
-  }
+  DCHECK(iter != set_properties_callbacks_.end());
   NET_LOG(ERROR) << "Failed to set network properties: " << guid
                  << " Error: " << error_name;
   std::move(iter->second).Run(/*success=*/false);
@@ -1724,10 +1716,7 @@ void CrosNetworkConfig::SetCellularSimState(
 
 void CrosNetworkConfig::SetCellularSimStateSuccess(int callback_id) {
   auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
-  if (iter == set_cellular_sim_state_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
-    return;
-  }
+  DCHECK(iter != set_cellular_sim_state_callbacks_.end());
   std::move(iter->second).Run(true);
   set_cellular_sim_state_callbacks_.erase(iter);
 }
@@ -1737,10 +1726,7 @@ void CrosNetworkConfig::SetCellularSimStateFailure(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
-  if (iter == set_cellular_sim_state_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
-    return;
-  }
+  DCHECK(iter != set_cellular_sim_state_callbacks_.end());
   std::move(iter->second).Run(false);
   set_cellular_sim_state_callbacks_.erase(iter);
 }
@@ -1774,10 +1760,7 @@ void CrosNetworkConfig::SelectCellularMobileNetwork(
 
 void CrosNetworkConfig::SelectCellularMobileNetworkSuccess(int callback_id) {
   auto iter = select_cellular_mobile_network_callbacks_.find(callback_id);
-  if (iter == select_cellular_mobile_network_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
-    return;
-  }
+  DCHECK(iter != select_cellular_mobile_network_callbacks_.end());
   std::move(iter->second).Run(true);
   select_cellular_mobile_network_callbacks_.erase(iter);
 }
@@ -1787,10 +1770,7 @@ void CrosNetworkConfig::SelectCellularMobileNetworkFailure(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   auto iter = select_cellular_mobile_network_callbacks_.find(callback_id);
-  if (iter == select_cellular_mobile_network_callbacks_.end()) {
-    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
-    return;
-  }
+  DCHECK(iter != select_cellular_mobile_network_callbacks_.end());
   std::move(iter->second).Run(false);
   select_cellular_mobile_network_callbacks_.erase(iter);
 }
@@ -1821,6 +1801,105 @@ void CrosNetworkConfig::GetGlobalPolicy(GetGlobalPolicyCallback callback) {
       result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
   }
   std::move(callback).Run(std::move(result));
+}
+
+void CrosNetworkConfig::StartConnect(const std::string& guid,
+                                     StartConnectCallback callback) {
+  std::string service_path = GetServicePathFromGuid(guid);
+  if (service_path.empty()) {
+    std::move(callback).Run(mojom::StartConnectResult::kInvalidGuid,
+                            NetworkConnectionHandler::kErrorNotFound);
+    return;
+  }
+
+  int callback_id = callback_id_++;
+  start_connect_callbacks_[callback_id] = std::move(callback);
+
+  network_connection_handler_->ConnectToNetwork(
+      service_path,
+      base::Bind(&CrosNetworkConfig::StartConnectSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::StartConnectFailure,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      true /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
+}
+
+void CrosNetworkConfig::StartConnectSuccess(int callback_id) {
+  auto iter = start_connect_callbacks_.find(callback_id);
+  DCHECK(iter != start_connect_callbacks_.end());
+  std::move(iter->second)
+      .Run(mojom::StartConnectResult::kSuccess, std::string());
+  start_connect_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::StartConnectFailure(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = start_connect_callbacks_.find(callback_id);
+  DCHECK(iter != start_connect_callbacks_.end());
+  mojom::StartConnectResult result;
+  if (error_name == NetworkConnectionHandler::kErrorNotFound) {
+    result = mojom::StartConnectResult::kInvalidGuid;
+  } else if (error_name == NetworkConnectionHandler::kErrorConnected ||
+             error_name == NetworkConnectionHandler::kErrorConnecting) {
+    result = mojom::StartConnectResult::kInvalidState;
+  } else if (error_name == NetworkConnectionHandler::kErrorConnectCanceled) {
+    result = mojom::StartConnectResult::kCanceled;
+  } else if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
+             error_name == NetworkConnectionHandler::kErrorBadPassphrase ||
+             error_name ==
+                 NetworkConnectionHandler::kErrorCertificateRequired ||
+             error_name ==
+                 NetworkConnectionHandler::kErrorConfigurationRequired ||
+             error_name ==
+                 NetworkConnectionHandler::kErrorAuthenticationRequired ||
+             error_name == NetworkConnectionHandler::kErrorCertLoadTimeout ||
+             error_name == NetworkConnectionHandler::kErrorConfigureFailed) {
+    result = mojom::StartConnectResult::kNotConfigured;
+  } else if (error_name == NetworkConnectionHandler::kErrorBlockedByPolicy) {
+    result = mojom::StartConnectResult::kBlocked;
+  } else {
+    result = mojom::StartConnectResult::kUnknown;
+  }
+  std::move(iter->second).Run(result, error_name);
+  start_connect_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::StartDisconnect(const std::string& guid,
+                                        StartDisconnectCallback callback) {
+  std::string service_path = GetServicePathFromGuid(guid);
+  if (service_path.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  int callback_id = callback_id_++;
+  start_disconnect_callbacks_[callback_id] = std::move(callback);
+
+  network_connection_handler_->DisconnectNetwork(
+      service_path,
+      base::Bind(&CrosNetworkConfig::StartDisconnectSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::StartDisconnectFailure,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::StartDisconnectSuccess(int callback_id) {
+  auto iter = start_disconnect_callbacks_.find(callback_id);
+  DCHECK(iter != start_disconnect_callbacks_.end());
+  std::move(iter->second).Run(true);
+  start_disconnect_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::StartDisconnectFailure(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = start_disconnect_callbacks_.find(callback_id);
+  DCHECK(iter != start_disconnect_callbacks_.end());
+  std::move(iter->second).Run(false);
+  start_disconnect_callbacks_.erase(iter);
 }
 
 // NetworkStateHandlerObserver
@@ -1875,6 +1954,13 @@ void CrosNetworkConfig::OnShuttingDown() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   network_state_handler_ = nullptr;
+}
+
+const std::string& CrosNetworkConfig::GetServicePathFromGuid(
+    const std::string& guid) {
+  const chromeos::NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  return network ? network->path() : base::EmptyString();
 }
 
 }  // namespace network_config

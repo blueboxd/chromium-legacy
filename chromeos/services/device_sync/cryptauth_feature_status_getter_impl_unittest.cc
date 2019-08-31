@@ -185,7 +185,7 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
 
   void VerifyGetFeatureStatuesResult(
       const base::flat_set<std::string>& expected_device_ids,
-      const CryptAuthDeviceSyncResult::ResultCode& expected_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode expected_result_code) {
     ASSERT_TRUE(device_sync_result_code_);
     EXPECT_EQ(expected_device_ids.size(), id_to_feature_status_map_.size());
     EXPECT_EQ(expected_result_code, device_sync_result_code_);
@@ -216,7 +216,7 @@ class DeviceSyncCryptAuthFeatureStatusGetterImplTest
   void OnGetFeatureStatusesComplete(
       const CryptAuthFeatureStatusGetter::IdToFeatureStatusMap&
           id_to_feature_status_map,
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
     id_to_feature_status_map_ = id_to_feature_status_map;
     device_sync_result_code_ = device_sync_result_code;
   }

@@ -1544,11 +1544,11 @@ void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
   Client()->DidChangeActiveSchedulerTrackedFeatures(features_mask);
 }
 
-const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
-    const {
+const mojo::Remote<mojom::blink::ReportingServiceProxy>&
+LocalFrame::GetReportingService() const {
   if (!reporting_service_) {
     Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        mojo::MakeRequest(&reporting_service_));
+        reporting_service_.BindNewPipeAndPassReceiver());
   }
   return reporting_service_;
 }

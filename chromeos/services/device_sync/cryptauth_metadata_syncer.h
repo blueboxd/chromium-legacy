@@ -11,8 +11,10 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
 
 namespace cryptauthv2 {
 class BetterTogetherDeviceMetadata;
@@ -21,8 +23,6 @@ class BetterTogetherDeviceMetadata;
 namespace chromeos {
 
 namespace device_sync {
-
-class CryptAuthDeviceSyncResult;
 
 // Handles the SyncMetadata portion of the CryptAuth v2 DeviceSync protocol,
 // which consists of one or two SyncMetadata request/response interactions with
@@ -63,6 +63,7 @@ class CryptAuthDeviceSyncResult;
 //   created.
 // - (Optional) A group private key, encrypted with this device's
 //   CryptAuthKeyBunde::kDeviceSyncBetterTogether public key.
+// - (Optional) A new ClientDirective sent from the CryptAuth server.
 //
 // A CryptAuthMetadataSyncer object is designed to be used for only one
 // SyncMetadata() call. For a new DeviceSync attempt, a new object should be
@@ -75,7 +76,8 @@ class CryptAuthMetadataSyncer {
       const IdToDeviceMetadataPacketMap&,
       std::unique_ptr<CryptAuthKey>,
       const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&,
-      const CryptAuthDeviceSyncResult&)>;
+      const base::Optional<cryptauthv2::ClientDirective>&,
+      CryptAuthDeviceSyncResult::ResultCode)>;
 
   virtual ~CryptAuthMetadataSyncer();
 
@@ -99,7 +101,8 @@ class CryptAuthMetadataSyncer {
       std::unique_ptr<CryptAuthKey> new_group_key,
       const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&
           encrypted_group_private_key,
-      const CryptAuthDeviceSyncResult& device_sync_result);
+      const base::Optional<cryptauthv2::ClientDirective>& new_client_directive,
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
  private:
   SyncMetadataAttemptFinishedCallback callback_;

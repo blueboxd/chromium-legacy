@@ -262,8 +262,6 @@ class NET_EXPORT HttpNetworkSession {
   // Returns the original Context used to construct this session.
   const Context& context() const { return context_; }
 
-  bool IsProtocolEnabled(NextProto protocol) const;
-
   void SetServerPushDelegate(std::unique_ptr<ServerPushDelegate> push_delegate);
 
   // Populates |*alpn_protos| with protocols to be used with ALPN.

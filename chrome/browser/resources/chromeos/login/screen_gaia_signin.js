@@ -1475,7 +1475,6 @@ Polymer({
     // previous dialog depending on this flag.
     this.pinDialogParameters_ = parameters;
 
-    this.$.pinDialog.reset();
     this.pinDialogResultReported_ = false;
   },
 

@@ -411,7 +411,8 @@ void SecurityKeysCredentialHandler::OnHaveCredentials(
   DCHECK(!callback_id_.empty());
 
   if (status != device::CtapDeviceResponseCode::kSuccess) {
-    OnFinished(device::FidoReturnCode::kAuthenticatorResponseInvalid);
+    OnFinished(
+        device::CredentialManagementStatus::kAuthenticatorResponseInvalid);
     return;
   }
   DCHECK(responses);
@@ -484,33 +485,31 @@ void SecurityKeysCredentialHandler::OnCredentialsDeleted(
               : IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_FAILED)));
 }
 
-void SecurityKeysCredentialHandler::OnFinished(device::FidoReturnCode status) {
+void SecurityKeysCredentialHandler::OnFinished(
+    device::CredentialManagementStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int error;
 
   switch (status) {
-    case device::FidoReturnCode::kSoftPINBlock:
+    case device::CredentialManagementStatus::kSoftPINBlock:
       error = IDS_SETTINGS_SECURITY_KEYS_PIN_SOFT_LOCK;
       break;
-    case device::FidoReturnCode::kHardPINBlock:
+    case device::CredentialManagementStatus::kHardPINBlock:
       error = IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK;
       break;
-    case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
+    case device::CredentialManagementStatus::
+        kAuthenticatorMissingCredentialManagement:
       error = IDS_SETTINGS_SECURITY_KEYS_NO_CREDENTIAL_MANAGEMENT;
       break;
-    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+    case device::CredentialManagementStatus::kNoPINSet:
       error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_PIN;
       break;
-    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
+    case device::CredentialManagementStatus::kAuthenticatorResponseInvalid:
       error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
       break;
-    case device::FidoReturnCode::kSuccess:
+    case device::CredentialManagementStatus::kSuccess:
       error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED;
-      break;
-    default:
-      NOTREACHED();
-      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
       break;
   }
 
@@ -594,33 +593,30 @@ void SecurityKeysBioEnrollmentHandler::OnReady() {
                             base::Value());
 }
 
-void SecurityKeysBioEnrollmentHandler::OnError(device::FidoReturnCode code) {
+void SecurityKeysBioEnrollmentHandler::OnError(
+    device::BioEnrollmentStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   state_ = State::kNone;
 
   int error;
-  switch (code) {
-    case device::FidoReturnCode::kSoftPINBlock:
+  switch (status) {
+    case device::BioEnrollmentStatus::kSoftPINBlock:
       error = IDS_SETTINGS_SECURITY_KEYS_PIN_SOFT_LOCK;
       break;
-    case device::FidoReturnCode::kHardPINBlock:
+    case device::BioEnrollmentStatus::kHardPINBlock:
       error = IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK;
       break;
-    case device::FidoReturnCode::kAuthenticatorMissingBioEnrollment:
+    case device::BioEnrollmentStatus::kAuthenticatorMissingBioEnrollment:
       error = IDS_SETTINGS_SECURITY_KEYS_NO_BIOMETRIC_ENROLLMENT;
       break;
-    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+    case device::BioEnrollmentStatus::kNoPINSet:
       error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_PIN;
       break;
-    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
+    case device::BioEnrollmentStatus::kAuthenticatorResponseInvalid:
       error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
       break;
-    case device::FidoReturnCode::kSuccess:
+    case device::BioEnrollmentStatus::kSuccess:
       error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED;
-      break;
-    default:
-      NOTREACHED();
-      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
       break;
   }
 

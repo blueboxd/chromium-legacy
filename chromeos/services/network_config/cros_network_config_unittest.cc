@@ -15,6 +15,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -54,9 +55,15 @@ class CrosNetworkConfigTest : public testing::Test {
             helper_.network_state_handler(), network_profile_handler_.get(),
             network_device_handler_.get(),
             network_configuration_handler_.get());
+    network_connection_handler_ =
+        NetworkConnectionHandler::InitializeForTesting(
+            helper_.network_state_handler(),
+            network_configuration_handler_.get(),
+            managed_network_configuration_handler_.get());
     cros_network_config_ = std::make_unique<CrosNetworkConfig>(
         helper_.network_state_handler(), network_device_handler_.get(),
-        managed_network_configuration_handler_.get());
+        managed_network_configuration_handler_.get(),
+        network_connection_handler_.get());
     SetupPolicy();
     SetupNetworks();
   }
@@ -285,6 +292,38 @@ class CrosNetworkConfigTest : public testing::Test {
     return result;
   }
 
+  mojom::StartConnectResult StartConnect(const std::string& guid) {
+    mojom::StartConnectResult result;
+    base::RunLoop run_loop;
+    cros_network_config()->StartConnect(
+        guid,
+        base::BindOnce(
+            [](mojom::StartConnectResult* resultp,
+               base::OnceClosure quit_closure, mojom::StartConnectResult result,
+               const std::string& message) {
+              *resultp = result;
+              std::move(quit_closure).Run();
+            },
+            &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
+  bool StartDisconnect(const std::string& guid) {
+    bool success = false;
+    base::RunLoop run_loop;
+    cros_network_config()->StartDisconnect(
+        guid,
+        base::BindOnce(
+            [](bool* successp, base::OnceClosure quit_closure, bool success) {
+              *successp = success;
+              std::move(quit_closure).Run();
+            },
+            &success, run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
   NetworkStateTestHelper& helper() { return helper_; }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
   CrosNetworkConfig* cros_network_config() {
@@ -303,6 +342,7 @@ class CrosNetworkConfigTest : public testing::Test {
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   std::unique_ptr<ManagedNetworkConfigurationHandler>
       managed_network_configuration_handler_;
+  std::unique_ptr<NetworkConnectionHandler> network_connection_handler_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;
   std::string wifi1_path_;
@@ -789,6 +829,46 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   ASSERT_EQ(2u, policy->blocked_hex_ssids.size());
   EXPECT_EQ("blocked_ssid1", policy->blocked_hex_ssids[0]);
   EXPECT_EQ("blocked_ssid2", policy->blocked_hex_ssids[1]);
+}
+
+TEST_F(CrosNetworkConfigTest, StartConnect) {
+  // wifi1 is already connected, StartConnect should fail.
+  mojom::StartConnectResult result = StartConnect("wifi1_guid");
+  EXPECT_EQ(mojom::StartConnectResult::kInvalidState, result);
+
+  // wifi2 is not connected, StartConnect should succeed and connection_state
+  // should change to connecting.
+  mojom::NetworkStatePropertiesPtr network = GetNetworkState("wifi2_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            network->connection_state);
+  result = StartConnect("wifi2_guid");
+  EXPECT_EQ(mojom::StartConnectResult::kSuccess, result);
+  network = GetNetworkState("wifi2_guid");
+  EXPECT_EQ(mojom::ConnectionStateType::kConnecting, network->connection_state);
+  // Wait for disconnect to complete.
+  base::RunLoop().RunUntilIdle();
+  network = GetNetworkState("wifi2_guid");
+  EXPECT_EQ(mojom::ConnectionStateType::kOnline, network->connection_state);
+}
+
+TEST_F(CrosNetworkConfigTest, StartDisconnect) {
+  // wifi1 is connected, StartDisconnect should succeed and connection_state
+  // should change to disconnected.
+  mojom::NetworkStatePropertiesPtr network = GetNetworkState("wifi1_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::ConnectionStateType::kConnected, network->connection_state);
+  bool success = StartDisconnect("wifi1_guid");
+  EXPECT_TRUE(success);
+  // Wait for disconnect to complete.
+  base::RunLoop().RunUntilIdle();
+  network = GetNetworkState("wifi1_guid");
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            network->connection_state);
+
+  // wifi1 is now disconnected, StartDisconnect should fail.
+  success = StartDisconnect("wifi1_guid");
+  EXPECT_FALSE(success);
 }
 
 TEST_F(CrosNetworkConfigTest, NetworkListChanged) {

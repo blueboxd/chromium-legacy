@@ -14,7 +14,7 @@ FakeCryptAuthFeatureStatusGetter::~FakeCryptAuthFeatureStatusGetter() = default;
 
 void FakeCryptAuthFeatureStatusGetter::FinishAttempt(
     const IdToFeatureStatusMap& id_to_feature_status_map,
-    const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(request_context_);
   DCHECK(device_ids_);
 

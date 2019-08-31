@@ -9,6 +9,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/test/test_assistant_service.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -243,6 +244,8 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
 
   // PaletteTrayTest:
   void SetUp() override {
+    assistant::util::OverrideIsGoogleDeviceForTesting();
+
     PaletteTrayTest::SetUp();
 
     // Instantiate EventGenerator now so that its constructor does not overwrite

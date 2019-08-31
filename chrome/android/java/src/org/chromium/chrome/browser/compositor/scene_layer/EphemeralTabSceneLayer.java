@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabBarControl;
@@ -34,7 +35,7 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     private final int mFaviconSizePx;
 
     /** Interface to get notified that favicon is available. */
-    private interface FaviconCallback {
+    interface FaviconCallback {
         /**
          * Called when a favicon becomes available. Used to start the animation fading
          * out the default icon and fading in the favicon.
@@ -66,8 +67,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
         // Don't try to update the layer if not initialized or showing.
         if (resourceManager == null || !panel.isShowing()) return;
         if (!mIsInitialized) {
-            nativeCreateEphemeralTabLayer(
-                    mNativePtr, resourceManager, () -> panel.startFaviconAnimation(true));
+            EphemeralTabSceneLayerJni.get().createEphemeralTabLayer(mNativePtr,
+                    EphemeralTabSceneLayer.this, resourceManager,
+                    () -> panel.startFaviconAnimation(true));
             int openInTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
                                           && panel.canPromoteToNewTab())
                     ? R.drawable.open_in_new_tab
@@ -81,9 +83,10 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
             int panelShadowResourceId = panel.getPanelShadowVisible()
                     ? R.drawable.contextual_search_bar_background
                     : INVALID_RESOURCE_ID;
-            nativeSetResourceIds(mNativePtr, title.getViewId(), panelShadowResourceId,
-                    roundedBarTopId, R.drawable.modern_toolbar_shadow, R.drawable.infobar_chrome,
-                    dragHandlebarId, openInTabIconId, R.drawable.btn_close);
+            EphemeralTabSceneLayerJni.get().setResourceIds(mNativePtr, EphemeralTabSceneLayer.this,
+                    title.getViewId(), panelShadowResourceId, roundedBarTopId,
+                    R.drawable.modern_toolbar_shadow, R.drawable.infobar_chrome, dragHandlebarId,
+                    openInTabIconId, R.drawable.btn_close);
             mIsInitialized = true;
         }
 
@@ -103,23 +106,25 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
         int separatorLineColor = panel.getSeparatorLineColor();
 
         WebContents panelWebContents = panel.getWebContents();
-        nativeUpdate(mNativePtr, titleViewId, captionViewId, captionAnimationPercentage,
-                bar.getTextLayerMinHeight(), bar.getTitleCaptionSpacing(), captionVisible,
-                R.drawable.progress_bar_background, R.drawable.progress_bar_foreground, mDpToPx,
-                panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
-                panel.getOffsetX() * mDpToPx, panel.getOffsetY() * mDpToPx,
-                panel.getWidth() * mDpToPx, panel.getHeight() * mDpToPx,
-                panel.getBarBackgroundColor(), panel.getBarMarginSide() * mDpToPx,
-                panel.getBarMarginTop() * mDpToPx, panel.getBarHeight() * mDpToPx,
-                panel.isBarBorderVisible(), panel.getBarBorderHeight() * mDpToPx,
-                panel.getBarShadowVisible(), panel.getIconColor(), panel.getDragHandlebarColor(),
-                panel.getFaviconOpacity(), isProgressBarVisible, progressBarHeight * mDpToPx,
-                progressBarOpacity, progressBarCompletion, separatorLineColor);
+        EphemeralTabSceneLayerJni.get().update(mNativePtr, EphemeralTabSceneLayer.this, titleViewId,
+                captionViewId, captionAnimationPercentage, bar.getTextLayerMinHeight(),
+                bar.getTitleCaptionSpacing(), captionVisible, R.drawable.progress_bar_background,
+                R.drawable.progress_bar_foreground, mDpToPx, panel.getBasePageBrightness(),
+                panel.getBasePageY() * mDpToPx, panelWebContents, panel.getOffsetX() * mDpToPx,
+                panel.getOffsetY() * mDpToPx, panel.getWidth() * mDpToPx,
+                panel.getHeight() * mDpToPx, panel.getBarBackgroundColor(),
+                panel.getBarMarginSide() * mDpToPx, panel.getBarMarginTop() * mDpToPx,
+                panel.getBarHeight() * mDpToPx, panel.isBarBorderVisible(),
+                panel.getBarBorderHeight() * mDpToPx, panel.getBarShadowVisible(),
+                panel.getIconColor(), panel.getDragHandlebarColor(), panel.getFaviconOpacity(),
+                isProgressBarVisible, progressBarHeight * mDpToPx, progressBarOpacity,
+                progressBarCompletion, separatorLineColor);
     }
 
     @Override
     public void setContentTree(SceneLayer contentTree) {
-        nativeSetContentTree(mNativePtr, contentTree);
+        EphemeralTabSceneLayerJni.get().setContentTree(
+                mNativePtr, EphemeralTabSceneLayer.this, contentTree);
     }
 
     /**
@@ -127,12 +132,13 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
      */
     public void hideTree() {
         if (!mIsInitialized) return;
-        nativeHideTree(mNativePtr);
+        EphemeralTabSceneLayerJni.get().hideTree(mNativePtr, EphemeralTabSceneLayer.this);
     }
 
     @Override
     protected void initializeNative() {
-        if (mNativePtr == 0) mNativePtr = nativeInit();
+        if (mNativePtr == 0)
+            mNativePtr = EphemeralTabSceneLayerJni.get().init(EphemeralTabSceneLayer.this);
         assert mNativePtr != 0;
     }
 
@@ -146,24 +152,29 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
         mNativePtr = 0;
     }
 
-    private native long nativeInit();
-    private native void nativeCreateEphemeralTabLayer(long nativeEphemeralTabSceneLayer,
-            ResourceManager resourceManager, FaviconCallback callback);
-    private native void nativeSetContentTree(
-            long nativeEphemeralTabSceneLayer, SceneLayer contentTree);
-    private native void nativeHideTree(long nativeEphemeralTabSceneLayer);
-    private native void nativeSetResourceIds(long nativeEphemeralTabSceneLayer,
-            int barTextResourceId, int barBackgroundResourceId, int roundedBarTopResourceId,
-            int barShadowResourceId, int panelIconResourceId, int dragHandlebarResourceId,
-            int openTabIconResourceId, int closeIconResourceId);
-    private native void nativeUpdate(long nativeEphemeralTabSceneLayer, int titleViewId,
-            int captionViewId, float captionAnimationPercentage, float textLayerMinHeight,
-            float titleCaptionSpacing, boolean captionVisible, int progressBarBackgroundResourceId,
-            int progressBarResourceId, float dpToPx, float basePageBrightness,
-            float basePageYOffset, WebContents webContents, float panelX, float panelY,
-            float panelWidth, float panelHeight, int barBackgroundColor, float barMarginSide,
-            float barMarginTop, float barHeight, boolean barBorderVisible, float barBorderHeight,
-            boolean barShadowVisible, int iconColor, int dragHandlebarColor, float faviconOpacity,
-            boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
-            int progressBarCompletion, int separatorLineColor);
+    @NativeMethods
+    interface Natives {
+        long init(EphemeralTabSceneLayer caller);
+        void createEphemeralTabLayer(long nativeEphemeralTabSceneLayer,
+                EphemeralTabSceneLayer caller, ResourceManager resourceManager,
+                FaviconCallback callback);
+        void setContentTree(long nativeEphemeralTabSceneLayer, EphemeralTabSceneLayer caller,
+                SceneLayer contentTree);
+        void hideTree(long nativeEphemeralTabSceneLayer, EphemeralTabSceneLayer caller);
+        void setResourceIds(long nativeEphemeralTabSceneLayer, EphemeralTabSceneLayer caller,
+                int barTextResourceId, int barBackgroundResourceId, int roundedBarTopResourceId,
+                int barShadowResourceId, int panelIconResourceId, int dragHandlebarResourceId,
+                int openTabIconResourceId, int closeIconResourceId);
+        void update(long nativeEphemeralTabSceneLayer, EphemeralTabSceneLayer caller,
+                int titleViewId, int captionViewId, float captionAnimationPercentage,
+                float textLayerMinHeight, float titleCaptionSpacing, boolean captionVisible,
+                int progressBarBackgroundResourceId, int progressBarResourceId, float dpToPx,
+                float basePageBrightness, float basePageYOffset, WebContents webContents,
+                float panelX, float panelY, float panelWidth, float panelHeight,
+                int barBackgroundColor, float barMarginSide, float barMarginTop, float barHeight,
+                boolean barBorderVisible, float barBorderHeight, boolean barShadowVisible,
+                int iconColor, int dragHandlebarColor, float faviconOpacity,
+                boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
+                int progressBarCompletion, int separatorLineColor);
+    }
 }

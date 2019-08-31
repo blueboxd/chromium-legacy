@@ -117,9 +117,34 @@ class TestOptimizationGuideService
 };
 
 // A mock class implementation of TopHostProvider.
-class MockTopHostProvider : public optimization_guide::TopHostProvider {
+class FakeTopHostProvider : public optimization_guide::TopHostProvider {
  public:
-  MOCK_METHOD1(GetTopHosts, std::vector<std::string>(size_t max_sites));
+  explicit FakeTopHostProvider(std::vector<std::string> top_hosts)
+      : top_hosts_(top_hosts) {}
+
+  std::vector<std::string> GetTopHosts(size_t max_sites) override {
+    num_top_hosts_called_++;
+
+    if (top_hosts_.size() <= max_sites) {
+      return top_hosts_;
+    }
+
+    std::vector<std::string> top_hosts;
+    top_hosts.reserve(max_sites);
+    for (const auto& top_host : top_hosts_) {
+      if (top_hosts.size() >= max_sites)
+        return top_hosts;
+
+      top_hosts.push_back(top_host);
+    }
+    return top_hosts;
+  }
+
+  int get_num_top_hosts_called() const { return num_top_hosts_called_; }
+
+ private:
+  std::vector<std::string> top_hosts_;
+  int num_top_hosts_called_ = 0;
 };
 
 enum class HintsFetcherEndState {
@@ -910,9 +935,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
   feature_list.InitWithFeatures(
       {optimization_guide::features::kOptimizationHintsFetching}, {});
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_)).Times(0);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
 
   CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
   hints_manager()->SetHintsFetcherForTesting(
@@ -921,6 +945,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
 }
 
@@ -930,12 +955,16 @@ TEST_F(OptimizationGuideHintsManagerTest,
   feature_list.InitWithFeatures(
       {}, {optimization_guide::features::kOptimizationHintsFetching});
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_)).Times(0);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
 
   CreateServiceAndHintsManager(top_host_provider.get());
   InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(0, top_host_provider->get_num_top_hosts_called());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -944,12 +973,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
   feature_list.InitWithFeatures(
       {optimization_guide::features::kOptimizationHintsFetching}, {});
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_))
-      .Times(1)
-      .WillRepeatedly(testing::Return(hosts));
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
 
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
@@ -958,6 +984,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
@@ -966,9 +993,8 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherEnabledNoHostsToFetch) {
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_)).Times(1);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(std::vector<std::string>({}));
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
@@ -976,6 +1002,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherEnabledNoHostsToFetch) {
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
 }
 
@@ -985,14 +1012,9 @@ TEST_F(OptimizationGuideHintsManagerTest,
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  // This should be called exactly once, confirming that hints are not fetched
-  // again after |kTestFetchRetryDelaySecs|.
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_))
-      .Times(1)
-      .WillRepeatedly(testing::Return(hosts));
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
@@ -1000,12 +1022,15 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
 
   // Check that hints should not be fetched again after the delay for a failed
   // hints fetch attempt.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_)).Times(0);
+  // This should be called exactly once, confirming that hints are not fetched
+  // again after |kTestFetchRetryDelaySecs|.
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
@@ -1013,14 +1038,9 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  // Should be called twice: once for the failed fetch and then again for the
-  // successful fetch.
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_))
-      .Times(2)
-      .WillRepeatedly(testing::Return(hosts));
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
 
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
@@ -1029,6 +1049,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
 
   // Force timer to expire and schedule a hints fetch - first time.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(1, top_host_provider->get_num_top_hosts_called());
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
 
   // Force speculative timer to expire after fetch fails first time, update
@@ -1036,6 +1057,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_EQ(2, top_host_provider->get_num_top_hosts_called());
   EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
@@ -1044,11 +1066,9 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerFetchSucceeds) {
   feature_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
 
-  std::unique_ptr<MockTopHostProvider> top_host_provider =
-      std::make_unique<MockTopHostProvider>();
-  std::vector<std::string> hosts = {"example1.com", "example2.com"};
-  EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_))
-      .WillRepeatedly(testing::Return(hosts));
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
 
   // Force hints fetch scheduling.
   CreateServiceAndHintsManager(top_host_provider.get());

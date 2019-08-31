@@ -115,6 +115,8 @@ void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
 
 void ContentPasswordManagerDriver::AutofillDataReceived(
     const autofill::FormsPredictionsMap& predictions) {
+  // TODO(https://crbug.com/949519): Remove this method, MOJO calls and
+  // processing server predictions in the renderer.
   GetPasswordAutofillAgent()->AutofillUsernameAndPasswordDataReceived(
       predictions);
 }

@@ -19,7 +19,7 @@
 void DownloadInProgressDialogView::Show(
     gfx::NativeWindow parent,
     int download_count,
-    Browser::DownloadClosePreventionType dialog_type,
+    Browser::DownloadCloseType dialog_type,
     bool app_modal,
     const base::Callback<void(bool)>& callback) {
   DownloadInProgressDialogView* window = new DownloadInProgressDialogView(
@@ -29,7 +29,7 @@ void DownloadInProgressDialogView::Show(
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(
     int download_count,
-    Browser::DownloadClosePreventionType dialog_type,
+    Browser::DownloadCloseType dialog_type,
     bool app_modal,
     const base::Callback<void(bool)>& callback)
     : download_count_(download_count),
@@ -39,15 +39,26 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 
-  // This dialog should have been created within the same thread invocation
-  // as the original test, so it's never ok to close.
-  DCHECK_NE(Browser::DOWNLOAD_CLOSE_OK, dialog_type);
-  base::string16 message_text = l10n_util::GetStringUTF16(
-      dialog_type == Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN
-          ? IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE
-          : IDS_ABANDON_DOWNLOAD_DIALOG_INCOGNITO_MESSAGE);
+  int message_id = 0;
+  switch (dialog_type) {
+    case Browser::DownloadCloseType::kLastWindowInIncognitoProfile:
+      message_id = IDS_ABANDON_DOWNLOAD_DIALOG_INCOGNITO_MESSAGE;
+      break;
+    case Browser::DownloadCloseType::kLastWindowInGuestSession:
+      message_id = IDS_ABANDON_DOWNLOAD_DIALOG_GUEST_MESSAGE;
+      break;
+    case Browser::DownloadCloseType::kBrowserShutdown:
+      message_id = IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE;
+      break;
+    case Browser::DownloadCloseType::kOk:
+      // This dialog should have been created within the same thread invocation
+      // as the original test, so it's never ok to close.
+      NOTREACHED();
+      break;
+  }
   auto message_label = std::make_unique<views::Label>(
-      message_text, CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+      l10n_util::GetStringUTF16(message_id), CONTEXT_BODY_TEXT_LARGE,
+      views::style::STYLE_SECONDARY);
   message_label->SetMultiLine(true);
   message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(message_label.release());

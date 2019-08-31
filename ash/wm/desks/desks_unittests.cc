@@ -1964,13 +1964,13 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
 };
 
 TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
-  // Create two desks with two windows on each, one window that belongs to the
-  // first user, and the other belongs to the second.
   auto* controller = DesksController::Get();
   NewDesk();
-  ASSERT_EQ(2u, controller->desks().size());
+  NewDesk();
+  ASSERT_EQ(3u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
+  Desk* desk_3 = controller->desks()[2].get();
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   multi_user_window_manager()->SetWindowOwner(win0.get(), GetUser1AccountId());
   EXPECT_TRUE(win0->IsVisible());
@@ -1986,10 +1986,14 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_FALSE(win1->IsVisible());
 
+  // Since this is the first time this user logs in, desk_1 will be activated
+  // for this user.
+  EXPECT_TRUE(desk_1->is_active());
+
   auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
   multi_user_window_manager()->SetWindowOwner(win2.get(), GetUser2AccountId());
   EXPECT_TRUE(win2->IsVisible());
-  ActivateDesk(desk_1);
+  ActivateDesk(desk_3);
   auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
   multi_user_window_manager()->SetWindowOwner(win3.get(), GetUser2AccountId());
   EXPECT_FALSE(win0->IsVisible());
@@ -1997,22 +2001,27 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   EXPECT_FALSE(win2->IsVisible());
   EXPECT_TRUE(win3->IsVisible());
 
-  // Similarly when switching back to user_1.
+  // When switching back to user_1, the active desk should be restored to
+  // desk_2.
   SwitchActiveUser(GetUser1AccountId());
-  EXPECT_TRUE(win0->IsVisible());
-  EXPECT_FALSE(win1->IsVisible());
-  EXPECT_FALSE(win2->IsVisible());
-  EXPECT_FALSE(win3->IsVisible());
-  ActivateDesk(desk_2);
+  EXPECT_TRUE(desk_2->is_active());
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_TRUE(win1->IsVisible());
   EXPECT_FALSE(win2->IsVisible());
   EXPECT_FALSE(win3->IsVisible());
+
+  // When switching to user_2, the active desk should be restored to desk_3.
+  SwitchActiveUser(GetUser2AccountId());
+  EXPECT_TRUE(desk_3->is_active());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_FALSE(win1->IsVisible());
+  EXPECT_FALSE(win2->IsVisible());
+  EXPECT_TRUE(win3->IsVisible());
 }
 
 TEST_F(DesksMultiUserTest, RemoveDesks) {
-  // Create two desks with several windows with different app types that belong
-  // to different users.
+  // Create two desks with several windows with different app types that
+  // belong to different users.
   auto* controller = DesksController::Get();
   NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
@@ -2037,6 +2046,7 @@ TEST_F(DesksMultiUserTest, RemoveDesks) {
   // Switch to user_2 and expect no windows from user_1 is visible regardless of
   // the desk.
   SwitchActiveUser(GetUser2AccountId());
+  EXPECT_TRUE(desk_1->is_active());
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_FALSE(win1->IsVisible());
   EXPECT_FALSE(win2->IsVisible());
@@ -2045,7 +2055,7 @@ TEST_F(DesksMultiUserTest, RemoveDesks) {
   auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
   multi_user_window_manager()->SetWindowOwner(win4.get(), GetUser2AccountId());
   EXPECT_TRUE(win4->IsVisible());
-  ActivateDesk(desk_1);
+  ActivateDesk(desk_2);
   auto win5 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
   multi_user_window_manager()->SetWindowOwner(win5.get(), GetUser2AccountId());
   EXPECT_FALSE(win0->IsVisible());
@@ -2057,6 +2067,7 @@ TEST_F(DesksMultiUserTest, RemoveDesks) {
 
   // Delete desk_2, and expect all app windows move to desk_1.
   RemoveDesk(desk_2);
+  EXPECT_TRUE(desk_1->is_active());
   auto* desk_1_container =
       desk_1->GetDeskContainerForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(desk_1_container, win0->parent());
@@ -2076,10 +2087,32 @@ TEST_F(DesksMultiUserTest, RemoveDesks) {
 
   // Switch to user_1 and expect the correct windows' visibility.
   SwitchActiveUser(GetUser1AccountId());
+  EXPECT_TRUE(desk_1->is_active());
   EXPECT_TRUE(win0->IsVisible());
   EXPECT_TRUE(win1->IsVisible());
   EXPECT_TRUE(win2->IsVisible());
   EXPECT_FALSE(win3->IsVisible());
+
+  // Create two more desks, switch to user_2, and activate the third desk.
+  NewDesk();
+  NewDesk();
+  ASSERT_EQ(3u, controller->desks().size());
+  desk_2 = controller->desks()[1].get();
+  Desk* desk_3 = controller->desks()[2].get();
+  SwitchActiveUser(GetUser2AccountId());
+  ActivateDesk(desk_3);
+  auto win6 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
+  multi_user_window_manager()->SetWindowOwner(win5.get(), GetUser2AccountId());
+
+  // Switch back to user_1, and remove the first desk. When switching back to
+  // user_2 after that, we should see that what used to be the third desk is now
+  // active.
+  SwitchActiveUser(GetUser1AccountId());
+  EXPECT_TRUE(desk_1->is_active());
+  RemoveDesk(desk_1);
+  SwitchActiveUser(GetUser2AccountId());
+  EXPECT_TRUE(desk_3->is_active());
+  EXPECT_TRUE(win6->IsVisible());
 }
 
 }  // namespace

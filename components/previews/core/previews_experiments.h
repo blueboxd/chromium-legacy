@@ -136,6 +136,10 @@ bool LitePageRedirectPreviewShouldPreconnect();
 // Whether we should preresolve the lite page redirect server or the origin.
 bool LitePageRedirectPreviewShouldPresolve();
 
+// Whether the Optimization Guide logic should be ignored for lite page redirect
+// previews.
+bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter();
+
 // Whether to only trigger a lite page preview if there has been a successful
 // probe to the server. This is returns true, lite page redirect previews should
 // only been attempted when a probe to the previews server has completed

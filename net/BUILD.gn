@@ -5203,6 +5203,7 @@ test("net_unittests") {
     "ftp/ftp_directory_listing_parser_windows_unittest.cc",
     "ftp/ftp_network_transaction_unittest.cc",
     "ftp/ftp_util_unittest.cc",
+    "http/alternative_service_unittest.cc",
     "http/bidirectional_stream_unittest.cc",
     "http/broken_alternative_services_unittest.cc",
     "http/http_auth_cache_unittest.cc",

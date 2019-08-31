@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -398,6 +399,7 @@ public class ClearBrowsingDataPreferencesTest {
     @Test
     @MediumTest
     @Feature({"SiteEngagement"})
+    @DisableIf.Build(sdk_is_greater_than = 25, message = "crbug.com/999361")
     public void testImportantSitesDialogNoFiltering() throws Exception {
         // Sign in.
         SigninTestUtil.addAndSignInTestAccount();

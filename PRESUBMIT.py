@@ -1023,7 +1023,7 @@ _BANNED_CPP_FUNCTIONS = (
         r'.*_ios\.(cc|h)$',
         r'^net[\\/].*\.(cc|h)$',
         r'.*[\\/]tools[\\/].*\.(cc|h)$',
-        r'^fuchsia/engine/test_devtools_list_fetcher\.cc$',
+        r'^fuchsia/base/test_devtools_list_fetcher\.cc$',
       ),
     ),
     (

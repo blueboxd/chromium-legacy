@@ -61,7 +61,10 @@ class DummyModulator : public Modulator {
                           const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
-  void RegisterImportMap(const ImportMap*) override;
+  ScriptValue CreateTypeError(const String& message) const override;
+  ScriptValue CreateSyntaxError(const String& message) const override;
+  void RegisterImportMap(const ImportMap*,
+                         ScriptValue error_to_rethrow) override;
   bool IsAcquiringImportMaps() const override;
   void ClearIsAcquiringImportMaps() override;
   ModuleImportMeta HostGetImportMetaProperties(

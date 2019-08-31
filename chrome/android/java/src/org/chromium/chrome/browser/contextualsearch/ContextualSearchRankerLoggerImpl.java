@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.content_public.browser.WebContents;
 
@@ -61,7 +62,9 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
     public ContextualSearchRankerLoggerImpl(
             ContextualSearchInteractionPersister interactionPersister) {
         mInteractionPersister = interactionPersister;
-        if (isEnabled()) mNativePointer = nativeInit();
+        if (isEnabled())
+            mNativePointer = ContextualSearchRankerLoggerImplJni.get().init(
+                    ContextualSearchRankerLoggerImpl.this);
     }
 
     /**
@@ -162,14 +165,16 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
 
     /**
      * This method should be called to clean up storage when an instance of this class is
-     * no longer in use.  The nativeDestroy will call the destructor on the native instance.
+     * no longer in use.  The ContextualSearchRankerLoggerImplJni.get().destroy will call the
+     * destructor on the native instance.
      */
     void destroy() {
         // TODO(donnd): looks like this is never being called.  Fix.
         if (isEnabled()) {
             assert mNativePointer != 0;
             writeLogAndReset();
-            nativeDestroy(mNativePointer);
+            ContextualSearchRankerLoggerImplJni.get().destroy(
+                    mNativePointer, ContextualSearchRankerLoggerImpl.this);
             mNativePointer = 0;
         }
         mIsLoggingReadyForPage = false;
@@ -180,12 +185,14 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
         mIsLoggingReadyForPage = true;
         mBasePageWebContents = basePageWebContents;
         mHasInferenceOccurred = false;
-        nativeSetupLoggingAndRanker(mNativePointer, basePageWebContents);
+        ContextualSearchRankerLoggerImplJni.get().setupLoggingAndRanker(
+                mNativePointer, ContextualSearchRankerLoggerImpl.this, basePageWebContents);
     }
 
     @Override
     public boolean isQueryEnabled() {
-        return nativeIsQueryEnabled(mNativePointer);
+        return ContextualSearchRankerLoggerImplJni.get().isQueryEnabled(
+                mNativePointer, ContextualSearchRankerLoggerImpl.this);
     }
 
     @Override
@@ -218,7 +225,8 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
             }
             mFeaturesLoggedForTesting = mFeaturesToLog;
             mFeaturesToLog = new HashMap<Integer, Object>();
-            mAssistRankerPrediction = nativeRunInference(mNativePointer);
+            mAssistRankerPrediction = ContextualSearchRankerLoggerImplJni.get().runInference(
+                    mNativePointer, ContextualSearchRankerLoggerImpl.this);
             ContextualSearchUma.logRecordedFeaturesToRanker();
         }
         return mAssistRankerPrediction;
@@ -258,7 +266,8 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
                     mEventIdToPersist = 0;
                 }
             }
-            nativeWriteLogAndReset(mNativePointer);
+            ContextualSearchRankerLoggerImplJni.get().writeLogAndReset(
+                    mNativePointer, ContextualSearchRankerLoggerImpl.this);
         }
         reset();
     }
@@ -319,7 +328,8 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
         String featureName =
                 outcomeName(feature) == null ? featureName(feature) : outcomeName(feature);
         assert featureName != null : "No Name for feature " + feature;
-        nativeLogInt32(mNativePointer, featureName, value);
+        ContextualSearchRankerLoggerImplJni.get().logInt32(
+                mNativePointer, ContextualSearchRankerLoggerImpl.this, featureName, value);
     }
 
     /**
@@ -347,14 +357,24 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
     // ============================================================================================
     // Native methods.
     // ============================================================================================
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeContextualSearchRankerLoggerImpl);
-    private native void nativeLogInt32(
-            long nativeContextualSearchRankerLoggerImpl, String featureString, int value);
-    private native void nativeSetupLoggingAndRanker(
-            long nativeContextualSearchRankerLoggerImpl, WebContents basePageWebContents);
-    // Returns an AssistRankerPrediction integer value.
-    private native int nativeRunInference(long nativeContextualSearchRankerLoggerImpl);
-    private native void nativeWriteLogAndReset(long nativeContextualSearchRankerLoggerImpl);
-    private native boolean nativeIsQueryEnabled(long nativeContextualSearchRankerLoggerImpl);
+
+    @NativeMethods
+    interface Natives {
+        long init(ContextualSearchRankerLoggerImpl caller);
+
+        void destroy(long nativeContextualSearchRankerLoggerImpl,
+                ContextualSearchRankerLoggerImpl caller);
+        void logInt32(long nativeContextualSearchRankerLoggerImpl,
+                ContextualSearchRankerLoggerImpl caller, String featureString, int value);
+        void setupLoggingAndRanker(long nativeContextualSearchRankerLoggerImpl,
+                ContextualSearchRankerLoggerImpl caller, WebContents basePageWebContents);
+        // Returns an AssistRankerPrediction integer value.
+        int runInference(long nativeContextualSearchRankerLoggerImpl,
+                ContextualSearchRankerLoggerImpl caller);
+
+        void writeLogAndReset(long nativeContextualSearchRankerLoggerImpl,
+                ContextualSearchRankerLoggerImpl caller);
+        boolean isQueryEnabled(long nativeContextualSearchRankerLoggerImpl,
+                ContextualSearchRankerLoggerImpl caller);
+    }
 }

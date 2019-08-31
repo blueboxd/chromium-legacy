@@ -346,6 +346,9 @@ BlinkTestController::BlinkTestController()
   // protocol) until we enter the protocol mode (see TestInfo::protocol_mode).
   printer_->set_capture_text_only(true);
 
+  InjectTestSharedWorkerService(BrowserContext::GetStoragePartition(
+      ShellContentBrowserClient::Get()->browser_context(), nullptr));
+
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
   GpuDataManager::GetInstance()->AddObserver(this);
@@ -1032,7 +1035,7 @@ void BlinkTestController::OnTestFinished() {
 
   // TODO(nhiroki): Add a comment about the reason why we terminate all shared
   // workers here.
-  TerminateAllSharedWorkersForTesting(
+  TerminateAllSharedWorkers(
       BrowserContext::GetStoragePartition(
           ShellContentBrowserClient::Get()->browser_context(), nullptr),
       barrier_closure);

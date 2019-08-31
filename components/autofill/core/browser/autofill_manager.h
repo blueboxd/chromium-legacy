@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -473,6 +474,7 @@ class AutofillManager : public AutofillHandler,
   static void DeterminePossibleFieldTypesForUpload(
       const std::vector<AutofillProfile>& profiles,
       const std::vector<CreditCard>& credit_cards,
+      const base::string16& last_unlocked_credit_card_cvc,
       const std::string& app_locale,
       FormStructure* submitted_form);
 
@@ -591,6 +593,7 @@ class AutofillManager : public AutofillHandler,
   FormData credit_card_form_;
   FormFieldData credit_card_field_;
   CreditCard credit_card_;
+  base::string16 last_unlocked_credit_card_cvc_;
 
   // Ablation experiment turns off autofill, but logging still has to be kept
   // for metrics analysis.
@@ -641,6 +644,19 @@ class AutofillManager : public AutofillHandler,
                            DeterminePossibleFieldTypesForUploadStressTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DisambiguateUploadTypes);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, CrowdsourceUPIVPA);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, CrowdsourceCVCFieldByValue);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           CrowdsourceCVCFieldAfterExpDateByHeuristics);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           CrowdsourceCVCFieldDisableHeurisitcs);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           CrowdsourceNoCVCDueToInvalidCandidateValue);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           CrowdsourceNoCVCFieldDueToMissingCreditCardNumber);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           CrowdsourceCVCFieldAfterInvalidExpDateByHeuristics);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           CrowdsourceCVCFieldBeforeExpDateByHeuristics);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

@@ -71,7 +71,7 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
   bool sampling_;
   base::test::TaskEnvironment task_environment_;
   test::TestCallbackReceiver<> ready_callback_;
-  test::ValueCallbackReceiver<FidoReturnCode> error_callback_;
+  test::ValueCallbackReceiver<BioEnrollmentStatus> error_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
 
 #if defined(OS_WIN)
@@ -91,8 +91,7 @@ TEST_F(BioEnrollmentHandlerTest, NoPINSupport) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
 
-  EXPECT_EQ(error_callback_.value(),
-            FidoReturnCode::kAuthenticatorMissingUserVerification);
+  EXPECT_EQ(error_callback_.value(), BioEnrollmentStatus::kNoPINSet);
 }
 
 // Tests getting authenticator modality without pin auth.
@@ -159,7 +158,7 @@ TEST_F(BioEnrollmentHandlerTest, SoftPINBlock) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
 
-  EXPECT_EQ(error_callback_.value(), FidoReturnCode::kSoftPINBlock);
+  EXPECT_EQ(error_callback_.value(), BioEnrollmentStatus::kSoftPINBlock);
 }
 
 // Tests bio enrollment commands against an authenticator lacking support.
@@ -172,7 +171,7 @@ TEST_F(BioEnrollmentHandlerTest, NoBioEnrollmentSupport) {
   auto handler = MakeHandler();
   error_callback_.WaitForCallback();
   EXPECT_EQ(error_callback_.value(),
-            FidoReturnCode::kAuthenticatorMissingBioEnrollment);
+            BioEnrollmentStatus::kAuthenticatorMissingBioEnrollment);
 }
 
 // Tests fingerprint enrollment lifecycle.

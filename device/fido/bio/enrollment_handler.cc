@@ -108,7 +108,7 @@ void BioEnrollmentHandler::AuthenticatorRemoved(
   }
 
   authenticator_ = nullptr;
-  std::move(error_callback_).Run(FidoReturnCode::kSuccess);
+  std::move(error_callback_).Run(BioEnrollmentStatus::kSuccess);
 }
 
 void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
@@ -122,15 +122,14 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
            AuthenticatorSupportedOptions::BioEnrollmentAvailability::
                kNotSupported)) {
     std::move(error_callback_)
-        .Run(FidoReturnCode::kAuthenticatorMissingBioEnrollment);
+        .Run(BioEnrollmentStatus::kAuthenticatorMissingBioEnrollment);
     return;
   }
 
   if (authenticator->Options()->client_pin_availability !=
       AuthenticatorSupportedOptions::ClientPinAvailability::
           kSupportedAndPinSet) {
-    std::move(error_callback_)
-        .Run(FidoReturnCode::kAuthenticatorMissingUserVerification);
+    std::move(error_callback_).Run(BioEnrollmentStatus::kNoPINSet);
     return;
   }
 
@@ -147,12 +146,12 @@ void BioEnrollmentHandler::OnRetriesResponse(
     FIDO_LOG(DEBUG) << "OnRetriesResponse failed with response code "
                     << static_cast<int>(code);
     std::move(error_callback_)
-        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+        .Run(BioEnrollmentStatus::kAuthenticatorResponseInvalid);
     return;
   }
 
   if (response->retries == 0) {
-    std::move(error_callback_).Run(FidoReturnCode::kHardPINBlock);
+    std::move(error_callback_).Run(BioEnrollmentStatus::kHardPINBlock);
     return;
   }
 
@@ -176,7 +175,7 @@ void BioEnrollmentHandler::OnHaveEphemeralKey(
     FIDO_LOG(DEBUG) << "OnHaveEphemeralKey failed with response code "
                     << static_cast<int>(code);
     std::move(error_callback_)
-        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+        .Run(BioEnrollmentStatus::kAuthenticatorResponseInvalid);
     return;
   }
 
@@ -196,14 +195,14 @@ void BioEnrollmentHandler::OnHavePINToken(
                          weak_factory_.GetWeakPtr()));
       return;
     case CtapDeviceResponseCode::kCtap2ErrPinAuthBlocked:
-      std::move(error_callback_).Run(FidoReturnCode::kSoftPINBlock);
+      std::move(error_callback_).Run(BioEnrollmentStatus::kSoftPINBlock);
       return;
     case CtapDeviceResponseCode::kCtap2ErrPinBlocked:
-      std::move(error_callback_).Run(FidoReturnCode::kHardPINBlock);
+      std::move(error_callback_).Run(BioEnrollmentStatus::kHardPINBlock);
       return;
     default:
       std::move(error_callback_)
-          .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+          .Run(BioEnrollmentStatus::kAuthenticatorResponseInvalid);
       return;
     case CtapDeviceResponseCode::kSuccess:
       // fall through on success

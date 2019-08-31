@@ -13,6 +13,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
 import java.io.File;
@@ -33,12 +34,14 @@ public class SystemInfoFeedbackSource extends AsyncFeedbackSourceAdapter<StatFs>
     @Override
     public Map<String, String> getFeedback() {
         Map<String, String> feedback = CollectionUtil.newHashMap(
-                Pair.create("CPU Architecture", nativeGetCpuArchitecture()),
                 Pair.create(
-                        "Available Memory (MB)", Integer.toString(nativeGetAvailableMemoryMB())),
-                Pair.create("Total Memory (MB)", Integer.toString(nativeGetTotalMemoryMB())),
-                Pair.create("GPU Vendor", nativeGetGpuVendor()),
-                Pair.create("GPU Model", nativeGetGpuModel()),
+                        "CPU Architecture", SystemInfoFeedbackSourceJni.get().getCpuArchitecture()),
+                Pair.create("Available Memory (MB)",
+                        Integer.toString(SystemInfoFeedbackSourceJni.get().getAvailableMemoryMB())),
+                Pair.create("Total Memory (MB)",
+                        Integer.toString(SystemInfoFeedbackSourceJni.get().getTotalMemoryMB())),
+                Pair.create("GPU Vendor", SystemInfoFeedbackSourceJni.get().getGpuVendor()),
+                Pair.create("GPU Model", SystemInfoFeedbackSourceJni.get().getGpuModel()),
                 Pair.create("UI Locale", LocaleUtils.getDefaultLocaleString()));
 
         StatFs statFs = getResult();
@@ -56,9 +59,12 @@ public class SystemInfoFeedbackSource extends AsyncFeedbackSourceAdapter<StatFs>
         return feedback;
     }
 
-    private static native String nativeGetCpuArchitecture();
-    private static native String nativeGetGpuVendor();
-    private static native String nativeGetGpuModel();
-    private static native int nativeGetAvailableMemoryMB();
-    private static native int nativeGetTotalMemoryMB();
+    @NativeMethods
+    interface Natives {
+        String getCpuArchitecture();
+        String getGpuVendor();
+        String getGpuModel();
+        int getAvailableMemoryMB();
+        int getTotalMemoryMB();
+    }
 }

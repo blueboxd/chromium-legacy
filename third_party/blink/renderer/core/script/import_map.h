@@ -18,6 +18,7 @@ class ConsoleLogger;
 class JSONObject;
 class Modulator;
 class ParsedSpecifier;
+class ScriptValue;
 
 // Import maps.
 // https://wicg.github.io/import-maps/
@@ -25,10 +26,11 @@ class ParsedSpecifier;
 class CORE_EXPORT ImportMap final
     : public GarbageCollectedFinalized<ImportMap> {
  public:
-  static ImportMap* Create(const Modulator& modulator_for_built_in_modules,
-                           const String& text,
-                           const KURL& base_url,
-                           ConsoleLogger& logger);
+  static ImportMap* Parse(const Modulator&,
+                          const String& text,
+                          const KURL& base_url,
+                          ConsoleLogger& logger,
+                          ScriptValue* error_to_rethrow);
 
   ImportMap(const Modulator&, const HashMap<String, Vector<KURL>>& imports);
 

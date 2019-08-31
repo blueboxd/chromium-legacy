@@ -142,7 +142,8 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
-      const std::string& quic_error_details);
+      const std::string& quic_error_details,
+      uint64_t frame_type);
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectionClosePacket(
       uint64_t num,
       bool include_version,

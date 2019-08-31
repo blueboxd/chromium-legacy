@@ -197,7 +197,7 @@ class MockCallbacks : public IndexedDBCallbacks {
   MockCallbacks()
       : IndexedDBCallbacks(nullptr,
                            url::Origin(),
-                           nullptr,
+                           mojo::NullAssociatedRemote(),
                            base::ThreadTaskRunnerHandle::Get()) {}
 
   void OnBlocked(int64_t existing_version) override { blocked_called_ = true; }

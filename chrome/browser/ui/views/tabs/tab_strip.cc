@@ -1003,17 +1003,15 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
 
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
-  TabAnimationState::TabPinnedness pinnedness =
-      pinned ? TabAnimationState::TabPinnedness::kPinned
-             : TabAnimationState::TabPinnedness::kUnpinned;
   if (tab_count() > 1 && GetWidget() && GetWidget()->IsVisible()) {
-    StartInsertTabAnimation(model_index, pinnedness);
+    StartInsertTabAnimation(model_index,
+                            pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
   } else {
     layout_helper_->InsertTabAtNoAnimation(
         model_index, tab,
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this), base::Unretained(tab)),
-        pinnedness);
+        pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
     CompleteAnimationAndLayout();
   }
 
@@ -1072,10 +1070,8 @@ void TabStrip::MoveTab(int from_model_index,
 
   layout_helper_->MoveTab(moving_tab->group(), from_model_index,
                           to_model_index);
-  layout_helper_->SetTabPinnedness(
-      to_model_index, data.pinned
-                          ? TabAnimationState::TabPinnedness::kPinned
-                          : TabAnimationState::TabPinnedness::kUnpinned);
+  layout_helper_->SetTabPinned(
+      to_model_index, data.pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
   StartMoveTabAnimation();
   if (TabDragController::IsAttachedTo(GetDragContext()) &&
       (last_tab != GetLastVisibleTab() || last_tab->dragging())) {
@@ -1132,9 +1128,8 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
       touch_layout_->SetXAndPinnedCount(start_x, pinned_tab_count);
     }
 
-    layout_helper_->SetTabPinnedness(
-        model_index, data.pinned ? TabAnimationState::TabPinnedness::kPinned
-                                 : TabAnimationState::TabPinnedness::kUnpinned);
+    layout_helper_->SetTabPinned(
+        model_index, data.pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
     if (GetWidget() && GetWidget()->IsVisible())
       StartPinnedTabAnimation();
     else
@@ -2080,16 +2075,14 @@ std::map<TabGroupId, TabGroupHeader*> TabStrip::GetGroupHeaders() {
   return group_headers;
 }
 
-void TabStrip::StartInsertTabAnimation(
-    int model_index,
-    TabAnimationState::TabPinnedness pinnedness) {
+void TabStrip::StartInsertTabAnimation(int model_index, TabPinned pinned) {
   if (!bounds_animator_.IsAnimating() && !in_tab_close_) {
     layout_helper_->InsertTabAt(
         model_index, tab_at(model_index),
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this),
                        base::Unretained(tab_at(model_index))),
-        pinnedness);
+        pinned);
   } else {
     // TODO(958173): Delete this branch once |TabStripLayoutHelper::animator_|
     // has taken over all animation responsibilities.
@@ -2098,7 +2091,7 @@ void TabStrip::StartInsertTabAnimation(
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this),
                        base::Unretained(tab_at(model_index))),
-        pinnedness);
+        pinned);
 
     PrepareForAnimation();
 

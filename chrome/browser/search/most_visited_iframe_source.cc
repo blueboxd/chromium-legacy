@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "url/gurl.h"
 
 namespace {
@@ -27,11 +28,12 @@ const char kSingleCSSPath[] = "/single.css";
 const char kSingleJSPath[] = "/single.js";
 
 // Multi-iframe version, used by third party remote NTPs.
+const char kAssertJsPath[] = "/assert.js";
+const char kCommonCSSPath[] = "/common.css";
 const char kTitleHTMLPath[] = "/title.html";
 const char kTitleCSSPath[] = "/title.css";
 const char kTitleJSPath[] = "/title.js";
 const char kUtilJSPath[] = "/util.js";
-const char kCommonCSSPath[] = "/common.css";
 
 // Edit custom links dialog iframe and resources, used by the local NTP and the
 // Google remote NTP.
@@ -105,6 +107,8 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_LOCAL_NTP_ANIMATIONS_JS, callback);
   } else if (path == kLocalNTPUtilsJSPath) {
     SendResource(IDR_LOCAL_NTP_UTILS_JS, callback);
+  } else if (path == kAssertJsPath) {
+    SendResource(IDR_WEBUI_JS_ASSERT, callback);
   } else {
     callback.Run(nullptr);
   }
@@ -152,19 +156,25 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
          path == kEditCSSPath || path == kEditJSPath || path == kAddSvgPath ||
          path == kAddWhiteSvgPath || path == kEditMenuSvgPath ||
          path == kLocalNTPCommonCSSPath || path == kAnimationsCSSPath ||
-         path == kAnimationsJSPath || path == kLocalNTPUtilsJSPath;
+         path == kAnimationsJSPath || path == kLocalNTPUtilsJSPath ||
+         path == kAssertJsPath;
 }
 
 void MostVisitedIframeSource::SendResource(
     int resource_id,
     const content::URLDataSource::GotDataCallback& callback,
     const ui::TemplateReplacements* replacements) {
-  base::StringPiece resource =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-  std::string response =
-      replacements != nullptr
-          ? ui::ReplaceTemplateExpressions(resource, *replacements)
-          : resource.as_string();
+  scoped_refptr<base::RefCountedMemory> bytes =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          resource_id);
+  if (!replacements) {
+    callback.Run(bytes);
+    return;
+  }
+
+  base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
+                          bytes->size());
+  std::string response = ui::ReplaceTemplateExpressions(input, *replacements);
   callback.Run(base::RefCountedString::TakeString(&response));
 }
 

@@ -2594,6 +2594,25 @@
             ]
         }
     ],
+    "GpuWatchdogV2": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GpuWatchdogV2"
+                    ]
+                }
+            ]
+        }
+    ],
     "GridLayoutForNtpShortcuts": [
         {
             "platforms": [
@@ -3520,26 +3539,6 @@
                     "name": "NativeWindowOcclusionTrackerWin",
                     "enable_features": [
                         "CalculateNativeWinOcclusion"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NaviOnboarding": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "AppsBackground-007",
-                    "params": {
-                        "new-user-modules": "nux-google-apps,nux-ntp-background,nux-set-as-default,signin-view",
-                        "onboarding-group": "AppsBackgroundSynthetic-007",
-                        "returning-user-modules": "nux-set-as-default"
-                    },
-                    "enable_features": [
-                        "NuxOnboarding"
                     ]
                 }
             ]

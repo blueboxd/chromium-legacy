@@ -40,8 +40,8 @@ public class TabGridSheetCoordinator {
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, null, null, null, bottomSheetController.getBottomSheet(), null, false,
-                COMPONENT_NAME);
+                null, null, TabProperties.UiType.CLOSABLE, null,
+                bottomSheetController.getBottomSheet(), null, false, COMPONENT_NAME);
 
         mMediator = new TabGridSheetMediator(mContext, bottomSheetController,
                 this::resetWithListOfTabs, mToolbarPropertyModel, tabModelSelector,

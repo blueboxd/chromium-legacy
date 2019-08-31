@@ -69,6 +69,9 @@ const char kSmallestDimensionHistogramId[] =
 const char kPeakWindowdPercentHistogramId[] =
     "PageLoad.Clients.Ads.Cpu.FullPage.PeakWindowedPercent";
 
+const char kHeavyAdInterventionTypeHistogramId[] =
+    "PageLoad.Clients.Ads.HeavyAds.InterventionType2";
+
 const char kHttpOkResponseHeader[] =
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html; charset=utf-8\r\n"
@@ -899,9 +902,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       heavy_ad_thresholds::kMaxNetworkBytes);
   waiter->Wait();
 
-  histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.HeavyAds.InterventionType",
-      FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Wait for the intervention page navigation to finish on the frame.
   same_tab_observer.Wait();
@@ -942,8 +944,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // We can't check whether the navigation didn't occur because the error page
   // load is not synchronous. Instead check that we didn't log intervention UMA
   // that is always recorded when the intervention occurs.
-  histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.HeavyAds.InterventionType", 0);
+  histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
 }
 
 // Check that we don't activate a HeavyAdIntervention field trial if we don't
@@ -972,8 +973,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       heavy_ad_thresholds::kMaxNetworkBytes / 2);
   waiter->Wait();
 
-  histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.HeavyAds.InterventionType", 0);
+  histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 0);
 
   // Verify that the trial is not activated if no heavy ads are seen.
   EXPECT_FALSE(base::FieldTrialList::IsTrialActive(
@@ -1019,9 +1019,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       heavy_ad_thresholds::kMaxNetworkBytes);
   waiter->Wait();
 
-  histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.HeavyAds.InterventionType",
-      FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Wait for the intervention page navigation to finish on the frame.
   first_frame_observer.Wait();
@@ -1043,9 +1042,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   waiter->Wait();
 
   // Check that the intervention did not trigger on this frame.
-  histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.HeavyAds.InterventionType",
-      FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
 }
 
 // Verify that UKM metrics are recorded correctly.

@@ -7,6 +7,8 @@
 #include <string>
 
 #include "ash/public/mojom/voice_interaction_controller.mojom-shared.h"
+#include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -93,7 +95,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // tests, or the account is logged in a device with a physical Assistant key
   // on keyboard.
   if (!chromeos::switches::IsGaiaServicesDisabled() &&
-      !ui::DeviceKeyboardHasAssistantKey()) {
+      !(ui::DeviceKeyboardHasAssistantKey() ||
+        base::EqualsCaseInsensitiveASCII(base::SysInfo::GetLsbReleaseBoard(),
+                                         "nocturne"))) {
     // Only enable non-dasher accounts for devices without physical key.
     bool account_supported = false;
     auto* identity_manager =

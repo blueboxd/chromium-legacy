@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.complex_tasks;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
 import org.chromium.chrome.browser.tab.TabAttributes;
@@ -27,10 +28,10 @@ public class TaskTabHelper {
      */
     public static void createForTab(Tab tab, Tab parentTab) {
         if (parentTab == null) return;
-        TabAttributes.from(tab).set(
-                TabAttributeKeys.PARENT_TAB_TASK_ID, nativeGetTaskId(parentTab.getWebContents()));
+        TabAttributes.from(tab).set(TabAttributeKeys.PARENT_TAB_TASK_ID,
+                TaskTabHelperJni.get().getTaskId(parentTab.getWebContents()));
         TabAttributes.from(tab).set(TabAttributeKeys.PARENT_TAB_ROOT_TASK_ID,
-                nativeGetRootTaskId(parentTab.getWebContents()));
+                TaskTabHelperJni.get().getRootTaskId(parentTab.getWebContents()));
     }
 
     @CalledByNative
@@ -46,6 +47,9 @@ public class TaskTabHelper {
         return parentRootTaskId == null ? INVALID_ID : parentRootTaskId;
     }
 
-    private static native long nativeGetTaskId(WebContents webContents);
-    private static native long nativeGetRootTaskId(WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        long getTaskId(WebContents webContents);
+        long getRootTaskId(WebContents webContents);
+    }
 }

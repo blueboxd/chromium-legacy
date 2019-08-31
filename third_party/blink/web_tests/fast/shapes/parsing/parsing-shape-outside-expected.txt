@@ -67,9 +67,9 @@ PASS getComputedStyleValue("shape-outside", "inset(10px 20px 30px 40px round 5px
 PASS getCSSText("shape-outside", "inset(10px round 0px / 10px)") is "inset(10px round 0px / 10px)"
 PASS getComputedStyleValue("shape-outside", "inset(10px round 0px / 10px)") is "inset(10px round 0px / 10px)"
 PASS getCSSText("shape-outside", "inset(calc(25%*3 - 10in) 0 0 0)") is "inset(calc(75% - 10in) 0px 0px)"
-FAIL getComputedStyleValue("shape-outside", "inset(calc(25%*3 - 10in) 0 0 0)") should be inset(calc(-960px + 75%) 0px 0px). Was inset(calc(75% + -960px) 0px 0px).
+FAIL getComputedStyleValue("shape-outside", "inset(calc(25%*3 - 10in) 0 0 0)") should be inset(calc(-960px + 75%) 0px 0px). Was inset(calc(75% - 960px) 0px 0px).
 PASS getCSSText("shape-outside", "inset(10px 10px 10px 10px round calc(25%*3 - 10in))") is "inset(10px round calc(75% - 10in))"
-FAIL getComputedStyleValue("shape-outside", "inset(10px 10px 10px 10px round calc(25%*3 - 10in))") should be inset(10px round calc(-960px + 75%)). Was inset(10px round calc(75% + -960px)).
+FAIL getComputedStyleValue("shape-outside", "inset(10px 10px 10px 10px round calc(25%*3 - 10in))") should be inset(10px round calc(-960px + 75%)). Was inset(10px round calc(75% - 960px)).
 PASS getCSSText("shape-outside", "circle()") is "circle(at 50% 50%)"
 PASS getComputedStyleValue("shape-outside", "circle()") is "circle(at 50% 50%)"
 PASS getCSSText("shape-outside", "circle(farthest-side)") is "circle(farthest-side at 50% 50%)"

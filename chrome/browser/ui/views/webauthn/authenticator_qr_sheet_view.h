@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
@@ -30,7 +31,7 @@ class AuthenticatorQRSheetView : public AuthenticatorRequestSheetView {
   void Update();
 
   AuthenticatorQRViewCentered* qr_view_ = nullptr;
-  std::array<uint8_t, 32> qr_generator_key_;
+  base::span<const uint8_t, 32> qr_generator_key_;
   base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorQRSheetView);

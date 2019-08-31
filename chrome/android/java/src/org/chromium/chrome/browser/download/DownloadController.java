@@ -13,6 +13,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -142,7 +143,8 @@ public class DownloadController {
     @CalledByNative
     private static void requestFileAccess(final long callbackId) {
         requestFileAccessPermissionHelper(result -> {
-            nativeOnAcquirePermissionResult(callbackId, result.first, result.second);
+            DownloadControllerJni.get().onAcquirePermissionResult(
+                    callbackId, result.first, result.second);
         });
     }
 
@@ -281,7 +283,8 @@ public class DownloadController {
         return false;
     }
 
-    // native methods
-    private static native void nativeOnAcquirePermissionResult(
-            long callbackId, boolean granted, String permissionToUpdate);
+    @NativeMethods
+    interface Natives {
+        void onAcquirePermissionResult(long callbackId, boolean granted, String permissionToUpdate);
+    }
 }

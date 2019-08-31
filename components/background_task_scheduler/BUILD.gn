@@ -30,10 +30,12 @@ if (is_android) {
   android_library("background_task_scheduler_java") {
     java_files = [
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTask.java",
+      "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskBroadcastReceiver.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskFactory.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskService.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskJobService.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskScheduler.java",
+      "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerAlarmManager.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerDelegate.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerExternalUma.java",
       "android/java/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerFactory.java",
@@ -90,6 +92,7 @@ if (is_android) {
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManagerTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskServiceTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskJobServiceTest.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerAlarmManagerTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImplTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefsTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUmaTest.java",

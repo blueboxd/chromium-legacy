@@ -288,7 +288,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXPECT_SET_NEEDS_COMMIT(1, top->SetBounds(arbitrary_size));
   EXPECT_SET_NEEDS_COMMIT(0, mask_layer1->SetBounds(arbitrary_size));
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetMaskLayer(mask_layer1.get()));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetMaskLayer(mask_layer1));
 
   // Set up the impl layers after the full tree is constructed, including the
   // mask layer.
@@ -948,8 +948,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2)));
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  test_layer->SetMaskLayer(mask_layer1.get()));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(mask_layer1));
 
   // The above tests should not have caused a change to the needs_display flag.
   EXPECT_FALSE(LayerNeedsDisplay(test_layer.get()));
@@ -1058,12 +1057,12 @@ TEST_F(LayerTest, MaskHasParent) {
   scoped_refptr<PictureLayer> mask_replacement = PictureLayer::Create(&client);
 
   parent->AddChild(child);
-  child->SetMaskLayer(mask.get());
+  child->SetMaskLayer(mask);
 
   EXPECT_EQ(parent.get(), child->parent());
   EXPECT_EQ(child.get(), mask->parent());
 
-  child->SetMaskLayer(mask_replacement.get());
+  child->SetMaskLayer(mask_replacement);
   EXPECT_EQ(nullptr, mask->parent());
   EXPECT_EQ(child.get(), mask_replacement->parent());
 }
@@ -1114,7 +1113,7 @@ TEST_F(LayerLayerTreeHostTest, EnteringTree) {
   // Set up a detached tree of layers. The host pointer should be nil for these
   // layers.
   parent->AddChild(child);
-  child->SetMaskLayer(mask.get());
+  child->SetMaskLayer(mask);
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(), nullptr);
 
@@ -1157,7 +1156,7 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
   // Masks should pick up the new host too.
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> child_mask = PictureLayer::Create(&client);
-  child->SetMaskLayer(child_mask.get());
+  child->SetMaskLayer(child_mask);
 
   parent->AddChild(child);
   AssertLayerTreeHostMatchesForSubtree(parent.get(), layer_tree_host.get());
@@ -1173,7 +1172,7 @@ TEST_F(LayerLayerTreeHostTest, ChangeHost) {
 
   // Same setup as the previous test.
   parent->AddChild(child);
-  child->SetMaskLayer(mask.get());
+  child->SetMaskLayer(mask);
 
   LayerTreeHostFactory factory;
   auto animation_host1 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
@@ -1245,7 +1244,7 @@ TEST_F(LayerLayerTreeHostTest, ReplaceMaskLayer) {
   scoped_refptr<Layer> mask_child = Layer::Create();
   scoped_refptr<PictureLayer> mask_replacement = PictureLayer::Create(&client);
 
-  parent->SetMaskLayer(mask.get());
+  parent->SetMaskLayer(mask);
   mask->AddChild(mask_child);
 
   LayerTreeHostFactory factory;
@@ -1257,7 +1256,7 @@ TEST_F(LayerLayerTreeHostTest, ReplaceMaskLayer) {
   AssertLayerTreeHostMatchesForSubtree(parent.get(), layer_tree_host.get());
 
   // Replacing the mask should clear out the old mask's subtree's host pointers.
-  parent->SetMaskLayer(mask_replacement.get());
+  parent->SetMaskLayer(mask_replacement);
   EXPECT_EQ(nullptr, mask->layer_tree_host());
   EXPECT_EQ(nullptr, mask_child->layer_tree_host());
 
@@ -1705,7 +1704,7 @@ TEST_F(LayerTest, UpdatingClipRect) {
   // Setting a mask.
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
-  clipped_2->SetMaskLayer(mask.get());
+  clipped_2->SetMaskLayer(mask);
 
   // Setting a filter that moves pixels.
   FilterOperations move_pixel_filters;
@@ -1818,7 +1817,7 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
   // Setting a mask.
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
-  layer_2->SetMaskLayer(mask.get());
+  layer_2->SetMaskLayer(mask);
 
   layer_1->SetRoundedCorner(kUpdatedRoundedCorners);
   layer_2->SetRoundedCorner(kUpdatedRoundedCorners);

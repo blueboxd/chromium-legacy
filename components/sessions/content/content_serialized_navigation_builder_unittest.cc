@@ -4,10 +4,6 @@
 
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/content/content_record_password_state.h"
@@ -68,9 +64,10 @@ std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetReferrer(content::Referrer(
       test_data::kReferrerURL,
       static_cast<network::mojom::ReferrerPolicy>(test_data::kReferrerPolicy)));
-  navigation_entry->SetURL(test_data::kURL);
   navigation_entry->SetVirtualURL(test_data::kVirtualURL);
   navigation_entry->SetTitle(test_data::kTitle);
+  navigation_entry->SetPageState(
+      content::PageState::CreateFromEncodedData(test_data::kEncodedPageState));
   navigation_entry->SetTransitionType(test_data::kTransitionType);
   navigation_entry->SetHasPostData(test_data::kHasPostData);
   navigation_entry->SetPostID(test_data::kPostID);
@@ -150,8 +147,7 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   EXPECT_EQ(test_data::kReferrerPolicy, navigation.referrer_policy());
   EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
-  EXPECT_EQ(navigation_entry->GetPageState().ToEncodedData(),
-            navigation.encoded_page_state());
+  EXPECT_EQ(test_data::kEncodedPageState, navigation.encoded_page_state());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kHasPostData, navigation.has_post_data());
@@ -192,7 +188,7 @@ TEST_F(ContentSerializedNavigationBuilderTest,
       ContentSerializedNavigationBuilder::FromNavigationEntry(
           test_data::kIndex, navigation_entry.get(),
           ContentSerializedNavigationBuilder::DEFAULT);
-  EXPECT_EQ(navigation_entry->GetPageState().ToEncodedData(),
+  EXPECT_EQ(test_data::kEncodedPageState,
             default_navigation.encoded_page_state());
 
   const SerializedNavigationEntry& excluded_page_state_navigation =
@@ -222,10 +218,9 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
   EXPECT_EQ(test_data::kReferrerURL, new_navigation_entry->GetReferrer().url);
   EXPECT_EQ(test_data::kReferrerPolicy,
             static_cast<int>(new_navigation_entry->GetReferrer().policy));
-  EXPECT_EQ(test_data::kURL, new_navigation_entry->GetURL());
   EXPECT_EQ(test_data::kVirtualURL, new_navigation_entry->GetVirtualURL());
   EXPECT_EQ(test_data::kTitle, new_navigation_entry->GetTitle());
-  EXPECT_EQ(old_navigation_entry->GetPageState().ToEncodedData(),
+  EXPECT_EQ(test_data::kEncodedPageState,
             new_navigation_entry->GetPageState().ToEncodedData());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       new_navigation_entry->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD));

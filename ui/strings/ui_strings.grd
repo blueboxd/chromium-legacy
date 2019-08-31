@@ -976,23 +976,54 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES" desc="The label to be shown as the title of the dialog when user click on a phone number, if there are no phones or apps to choose from.">
         Call this number from your phone?
       </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND" desc="The label to be shown as the title of the dialog when user click on a phone number, if sending it to a device failed.">
-        Can't send number
-      </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
         To send a number from here to your Android phone, <ph name="TROUBLESHOOT_LINK">$1<ex>turn on sync</ex></ph> for both devices in settings.
       </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
         turn on sync
       </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE" desc="The label to be shown on the dialog when user click on a phone number, if sending it to a device failed.">
-        Check your phone's connection and try again
-      </message>
       <message name="IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL" desc="The label to be shown next to the omnibox icon when the message is being sent to the other device.">
         Sending...
       </message>
       <message name="IDS_BROWSER_SHARING_DIALOG_DEVICE_SUBTITLE_LAST_ACTIVE_DAYS" desc="The label to be shown below the name of a valid device indicating the last active time of device,">
         {DAYS, plural, =0 {Active today} =1 {Active 1 day ago} other {Active # days ago}}
+      </message>
+
+      <!-- Sharing content types -->
+      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="The label used to describe that the content type being shared is a text.">
+        Text
+      </message>
+      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_NUMBER" desc="The label used to describe that the content type being shared is a number.">
+        Number
+      </message>
+
+      <!-- Sharing dialog error messages -->
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_GENERIC_ERROR" desc="The label to be shown as the title of the dialog when we encounter an error that can be fixed by the user. Eg, device not connected to internet or sync turned off.">
+        Can't share <ph name="CONTENT_TYPE">$1<ex>video</ex></ph>
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_INTERNAL_ERROR" desc="The label to be shown as the title of the dialog when an internal error occurred while sending the message.">
+        Couldn't share <ph name="CONTENT_TYPE">$1<ex>video</ex></ph>
+      </message>
+
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND" desc="The text to be shown on the dialog when an error occurred because the device is not synced.">
+        Make sure <ph name="TARGET_DEVICE_NAME">$1<ex>Pixel XL</ex></ph> has sync turned on in Chrome, and then try sending again.
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_NETWORK_ERROR" desc="The text to be shown on the dialog when the sender device has network issues.">
+        Make sure this device is connected to the internet.
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_ACK_TIMEOUT" desc="The text to be shown on the dialog when the recipient device has network issues.">
+        Make sure <ph name="TARGET_DEVICE_NAME">$1<ex>Pixel XL</ex></ph> is connected to the internet.
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR" desc="The text to be shown on the dialog when an internal error occurred while sending the message.">
+        Something went wrong. Try again later.
+      </message>
+
+      <!-- Shared clipboard error message. Could potentially be made generic -->
+      <message name="IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE" desc="The label to be shown as the title of the dialog when the text shared is too large.">
+        Text is too large
+      </message>
+      <message name="IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TEXT_PAYLOAD_TOO_LARGE" desc="The text to be shown on the dialog when the text shared is too large.">
+        Try sharing the text in smaller chunks.
       </message>
     </messages>
   </release>

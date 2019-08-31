@@ -493,7 +493,8 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
   }
 
   // caBLE is independent of the BLE transport.
-  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
+  if (base::FeatureList::IsEnabled(features::kWebAuthCable) ||
+      base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     transports.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
@@ -555,6 +556,15 @@ void AuthenticatorCommon::StartMakeCredentialRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    device::QRGeneratorKey qr_generator_key(
+        device::CableDiscoveryData::NewQRKey());
+    if (request_delegate_->SetCableTransportInfo(
+            /*cable_extension_provided=*/false, qr_generator_key)) {
+      discovery_factory->set_cable_data({}, std::move(qr_generator_key));
+    }
+  }
+
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       connector_, discovery_factory, GetTransports(caller_origin_, transports_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
@@ -589,9 +599,22 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
-  if (ctap_get_assertion_request_->cable_extension) {
-    discovery_factory->set_cable_data(
-        *ctap_get_assertion_request_->cable_extension);
+  std::vector<device::CableDiscoveryData> cable_extension;
+  if (ctap_get_assertion_request_->cable_extension &&
+      request_delegate_->ShouldPermitCableExtension(caller_origin_)) {
+    cable_extension = *ctap_get_assertion_request_->cable_extension;
+  }
+
+  base::Optional<device::QRGeneratorKey> qr_generator_key;
+  if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+    qr_generator_key.emplace(device::CableDiscoveryData::NewQRKey());
+  }
+
+  if ((!cable_extension.empty() || qr_generator_key.has_value()) &&
+      request_delegate_->SetCableTransportInfo(!cable_extension.empty(),
+                                               qr_generator_key)) {
+    discovery_factory->set_cable_data(std::move(cable_extension),
+                                      std::move(qr_generator_key));
   }
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
@@ -1003,7 +1026,7 @@ void AuthenticatorCommon::Cancel() {
 
 // Callback to handle the async registration response from a U2fDevice.
 void AuthenticatorCommon::OnRegisterResponse(
-    device::FidoReturnCode status_code,
+    device::MakeCredentialStatus status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
     const device::FidoAuthenticator* authenticator) {
   if (!request_) {
@@ -1014,7 +1037,7 @@ void AuthenticatorCommon::OnRegisterResponse(
   }
 
   switch (status_code) {
-    case device::FidoReturnCode::kUserConsentButCredentialExcluded:
+    case device::MakeCredentialStatus::kUserConsentButCredentialExcluded:
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
@@ -1024,85 +1047,75 @@ void AuthenticatorCommon::OnRegisterResponse(
               kKeyAlreadyRegistered,
           blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
       return;
-    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
+    case device::MakeCredentialStatus::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
           Focus::kDoCheck);
       return;
-    case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
-      NOTREACHED() << "This should only be reachable for assertions";
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-          Focus::kDoCheck);
-      return;
-    case device::FidoReturnCode::kUserConsentDenied:
+    case device::MakeCredentialStatus::kUserConsentDenied:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kUserConsentDenied,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kSoftPINBlock:
+    case device::MakeCredentialStatus::kSoftPINBlock:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kSoftPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kHardPINBlock:
+    case device::MakeCredentialStatus::kHardPINBlock:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kHardPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
+    case device::MakeCredentialStatus::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
+    case device::MakeCredentialStatus::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingResidentKeys,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+    case device::MakeCredentialStatus::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
-      NOTREACHED()
-          << "This should only be reachable from CredentialManagementHandler";
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-          Focus::kDoCheck);
-      return;
-    case device::FidoReturnCode::kAuthenticatorMissingBioEnrollment:
-      NOTREACHED() << "This should only be reachable from BioEnrollmentHandler";
-      InvokeCallbackAndCleanup(
-          std::move(make_credential_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-          Focus::kDoCheck);
-      return;
-    case device::FidoReturnCode::kStorageFull:
+    case device::MakeCredentialStatus::kStorageFull:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kStorageFull,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kSuccess:
+    case device::MakeCredentialStatus::kWinInvalidStateError:
+      InvokeCallbackAndCleanup(
+          std::move(make_credential_response_callback_),
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
+          Focus::kDoCheck);
+      return;
+    case device::MakeCredentialStatus::kWinNotAllowedError:
+      InvokeCallbackAndCleanup(
+          std::move(make_credential_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+          Focus::kDoCheck);
+      return;
+    case device::MakeCredentialStatus::kSuccess:
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
 
@@ -1231,7 +1244,7 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
 }
 
 void AuthenticatorCommon::OnSignResponse(
-    device::FidoReturnCode status_code,
+    device::GetAssertionStatus status_code,
     base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
         response_data,
     const device::FidoAuthenticator* authenticator) {
@@ -1245,89 +1258,67 @@ void AuthenticatorCommon::OnSignResponse(
   }
 
   switch (status_code) {
-    case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
+    case device::GetAssertionStatus::kUserConsentButCredentialNotRecognized:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kKeyNotRegistered,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
+    case device::GetAssertionStatus::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kUserConsentButCredentialExcluded:
-      NOTREACHED() << "This should only be reachable for registrations";
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-      return;
-    case device::FidoReturnCode::kUserConsentDenied:
+    case device::GetAssertionStatus::kUserConsentDenied:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kUserConsentDenied,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kSoftPINBlock:
+    case device::GetAssertionStatus::kSoftPINBlock:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kSoftPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kHardPINBlock:
+    case device::GetAssertionStatus::kHardPINBlock:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kHardPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
+    case device::GetAssertionStatus::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
+    case device::GetAssertionStatus::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingResidentKeys,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+    case device::GetAssertionStatus::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
-      NOTREACHED()
-          << "This should only be reachable from CredentialManagementHandler";
+    case device::GetAssertionStatus::kWinNotAllowedError:
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::FidoReturnCode::kAuthenticatorMissingBioEnrollment:
-      NOTREACHED() << "This should only be reachable from BioEnrollmentHandler";
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-      return;
-    case device::FidoReturnCode::kStorageFull:
-      NOTREACHED() << "Should not be possible for assertions.";
-      SignalFailureToRequestDelegate(
-          authenticator,
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kStorageFull,
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-      return;
-    case device::FidoReturnCode::kSuccess:
+    case device::GetAssertionStatus::kSuccess:
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
 
@@ -1380,7 +1371,7 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
 
   // If WebAuthnUi is enabled, this error blocks until after receiving user
   // acknowledgement. Otherwise, the error is returned right away.
-  if (request_delegate_->DoesBlockRequestOnFailure(authenticator, reason)) {
+  if (request_delegate_->DoesBlockRequestOnFailure(reason)) {
     // Cancel pending authenticator requests before the error dialog is shown.
     request_->CancelActiveAuthenticators();
     return;

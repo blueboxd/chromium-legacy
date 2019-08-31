@@ -70,6 +70,9 @@ class ASH_EXPORT AshColorProvider {
     kIconPrimary,
     kIconSecondary,
     kIconRed,
+    // Color for prominent icon button, e.g, "Add connection" icon button inside
+    // VPN detailed view.
+    kProminentIconButton,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

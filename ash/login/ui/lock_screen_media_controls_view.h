@@ -22,7 +22,6 @@ class Connector;
 namespace views {
 class Label;
 class ImageView;
-class ToggleImageButton;
 }  // namespace views
 
 namespace media_message_center {
@@ -30,6 +29,10 @@ class MediaControlsProgressView;
 }
 
 namespace ash {
+
+namespace {
+class MediaActionButton;
+}  // namespace
 
 class MediaControlsHeaderView;
 class NonAccessibleView;
@@ -167,12 +170,6 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Returns the rounded rectangle clip path for the current artwork.
   SkPath GetArtworkClipPath() const;
 
-  // Creates and adds a new media button to |button_row_|. This should not be
-  // used to create toggle buttons such as play/pause.
-  void CreateMediaButton(int size,
-                         media_session::mojom::MediaSessionAction action,
-                         const base::string16& accessible_name);
-
   // Updates the visibility of buttons on |button_row_| depending on what is
   // available in the current media session.
   void UpdateActionButtonsVisibility();
@@ -251,7 +248,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   views::Label* title_label_ = nullptr;
   views::Label* artist_label_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
-  views::ToggleImageButton* play_pause_button_ = nullptr;
+  MediaActionButton* play_pause_button_ = nullptr;
   media_message_center::MediaControlsProgressView* progress_ = nullptr;
 
   // Callbacks.

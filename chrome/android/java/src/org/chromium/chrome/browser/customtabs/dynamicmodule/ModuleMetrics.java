@@ -10,6 +10,7 @@ import android.support.annotation.StringDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 
@@ -174,8 +175,11 @@ public final class ModuleMetrics {
      * @param suffix Histogram suffix.
      */
     public static void recordCodeMemoryFootprint(String packageName, String suffix) {
-        nativeRecordCodeMemoryFootprint(packageName, suffix);
+        ModuleMetricsJni.get().recordCodeMemoryFootprint(packageName, suffix);
     }
 
-    private static native void nativeRecordCodeMemoryFootprint(String packageName, String suffix);
+    @NativeMethods
+    interface Natives {
+        void recordCodeMemoryFootprint(String packageName, String suffix);
+    }
 }

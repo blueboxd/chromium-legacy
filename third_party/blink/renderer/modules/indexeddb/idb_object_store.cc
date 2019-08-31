@@ -300,11 +300,19 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
 
 static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
     v8::Isolate* isolate,
+    const IDBObjectStoreMetadata& store_metadata,
     const IDBIndexMetadata& index_metadata,
     const ScriptValue& object_value) {
   NonThrowableExceptionState exception_state;
+
+  // Look up the key using the index's key path.
   std::unique_ptr<IDBKey> index_key = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      isolate, object_value, exception_state, index_metadata.key_path);
+      isolate, object_value, exception_state, store_metadata.key_path,
+      index_metadata.key_path);
+
+  // No match. (In the special case for a store with a key generator and in-line
+  // keys and where the store and index key paths match, the back-end will
+  // synthesize an index key.)
   if (!index_key)
     return Vector<std::unique_ptr<IDBKey>>();
 
@@ -542,10 +550,10 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   for (const auto& it : Metadata().indexes) {
     if (clone.IsEmpty())
       value_wrapper.Clone(script_state, &clone);
-    index_keys.emplace_back(
-        IDBIndexKeys{.id = it.key,
-                     .keys = GenerateIndexKeysForValue(
-                         script_state->GetIsolate(), *it.value, clone)});
+    index_keys.emplace_back(IDBIndexKeys{
+        .id = it.key,
+        .keys = GenerateIndexKeysForValue(script_state->GetIsolate(),
+                                          Metadata(), *it.value, clone)});
   }
   // Records 1KB to 1GB.
   UMA_HISTOGRAM_COUNTS_1M(
@@ -687,11 +695,13 @@ class IndexPopulator final : public NativeEventListener {
                  IDBDatabase* database,
                  int64_t transaction_id,
                  int64_t object_store_id,
+                 scoped_refptr<const IDBObjectStoreMetadata> store_metadata,
                  scoped_refptr<const IDBIndexMetadata> index_metadata)
       : script_state_(script_state),
         database_(database),
         transaction_id_(transaction_id),
         object_store_id_(object_store_id),
+        store_metadata_(store_metadata),
         index_metadata_(std::move(index_metadata)) {
     DCHECK(index_metadata_.get());
   }
@@ -703,6 +713,9 @@ class IndexPopulator final : public NativeEventListener {
   }
 
  private:
+  const IDBObjectStoreMetadata& ObjectStoreMetadata() const {
+    return *store_metadata_;
+  }
   const IDBIndexMetadata& IndexMetadata() const { return *index_metadata_; }
 
   void Invoke(ExecutionContext* execution_context, Event* event) override {
@@ -737,6 +750,7 @@ class IndexPopulator final : public NativeEventListener {
       index_keys.emplace_back(IDBIndexKeys{
           .id = IndexMetadata().id,
           .keys = GenerateIndexKeysForValue(script_state_->GetIsolate(),
+                                            ObjectStoreMetadata(),
                                             IndexMetadata(), value)});
 
       database_->Backend()->SetIndexKeys(transaction_id_, object_store_id_,
@@ -757,6 +771,7 @@ class IndexPopulator final : public NativeEventListener {
   Member<IDBDatabase> database_;
   const int64_t transaction_id_;
   const int64_t object_store_id_;
+  scoped_refptr<const IDBObjectStoreMetadata> store_metadata_;
   scoped_refptr<const IDBIndexMetadata> index_metadata_;
 };
 }  // namespace
@@ -838,7 +853,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
   // This is kept alive by being the success handler of the request, which is in
   // turn kept alive by the owning transaction.
   auto* index_populator = MakeGarbageCollected<IndexPopulator>(
-      script_state, transaction()->db(), transaction_->Id(), Id(),
+      script_state, transaction()->db(), transaction_->Id(), Id(), metadata_,
       std::move(index_metadata));
   index_request->setOnsuccess(index_populator);
   return index;

@@ -29,7 +29,6 @@
  */
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -93,21 +92,25 @@ class TouchActionTrackingWebWidgetClient
 class TouchActionTest : public testing::Test {
  public:
   TouchActionTest() : base_url_("http://www.test.com/") {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |web_view_helper_|.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString(base_url_), test::CoreTestDataPath(),
         "touch-action-tests.css", "text/css");
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |web_view_helper_|.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString(base_url_), test::CoreTestDataPath(), "touch-action-tests.js",
         "text/javascript");
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |web_view_helper_|.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString(base_url_), test::CoreTestDataPath(), "white-1x1.png",
         "image/png");
   }
 
   void TearDown() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
  protected:
@@ -197,6 +200,8 @@ void TouchActionTest::RunIFrameTest(String file) {
 WebViewImpl* TouchActionTest::SetupTest(
     String file,
     TouchActionTrackingWebWidgetClient* client) {
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |web_view_helper_|.
   url_test_helpers::RegisterMockedURLLoadFromBase(
       WebString(base_url_), test::CoreTestDataPath(), WebString(file));
   // Note that JavaScript must be enabled for shadow DOM tests.

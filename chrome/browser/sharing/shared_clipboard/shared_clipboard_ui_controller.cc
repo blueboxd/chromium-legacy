@@ -81,6 +81,28 @@ void SharedClipboardUiController::OnHelpTextClicked() {
   // No help text
 }
 
+base::string16 SharedClipboardUiController::GetContentType() const {
+  return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT);
+}
+
+base::string16 SharedClipboardUiController::GetErrorDialogTitle() const {
+  if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE);
+  }
+
+  return SharingUiController::GetErrorDialogTitle();
+}
+
+base::string16 SharedClipboardUiController::GetErrorDialogText() const {
+  if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TEXT_PAYLOAD_TOO_LARGE);
+  }
+
+  return SharingUiController::GetErrorDialogText();
+}
+
 const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
   return kSendTabToSelfIcon;
 }

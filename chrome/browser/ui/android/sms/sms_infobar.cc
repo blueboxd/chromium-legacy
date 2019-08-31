@@ -27,7 +27,8 @@ void SmsInfoBar::Create(content::WebContents* web_contents,
   auto infobar =
       std::make_unique<SmsInfoBar>(web_contents, std::move(delegate));
   auto* infobar_service = InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(std::move(infobar));
+  infobar_service->RemoveAllInfoBars(/*animate=*/false);
+  infobar_service->AddInfoBar(std::move(infobar), /*replace_existing=*/true);
 }
 
 SmsInfoBar::SmsInfoBar(content::WebContents* web_contents,

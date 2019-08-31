@@ -2369,9 +2369,7 @@ class OverviewSessionRoundedCornerTest : public OverviewSessionTest {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during animations.
-// TODO(crbug.com/941048): this test leaks WindowMirrorView, which causes
-// problems. Fix leak and then reenable.
-TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
+TEST_F(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2557,14 +2555,12 @@ TEST_F(OverviewSessionTest, ShadowBounds) {
 }
 
 // Verify that attempting to drag with a secondary finger works as expected.
-// Disabled due to flakiness: crbug.com/834708
-TEST_F(OverviewSessionTest, DISABLED_DraggingWithTwoFingers) {
+TEST_F(OverviewSessionTest, DraggingWithTwoFingers) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
   EnterTabletMode();
   ToggleOverview();
-  base::RunLoop().RunUntilIdle();
   OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
   OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
 
@@ -2616,7 +2612,6 @@ TEST_F(OverviewSessionTest, DISABLED_DraggingWithTwoFingers) {
   last_center_point = item1->target_bounds().CenterPoint();
   generator->ReleaseTouchId(kTouchId2);
   generator->PressTouchId(kTouchId2);
-  dispatch_long_press();
   generator->MoveTouchIdBy(kTouchId2, 40, 40);
   EXPECT_NE(last_center_point, item1->target_bounds().CenterPoint());
   EXPECT_EQ(original_bounds2.CenterPoint(),

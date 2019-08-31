@@ -111,7 +111,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
     @Override
     public void cancel() {
-        onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        // Not implemented, ignored because request sent to gmscore fido cannot be cancelled.
         return;
     }
 

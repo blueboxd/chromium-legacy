@@ -392,11 +392,12 @@ void DatabaseImpl::Count(
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+        pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
+                             std::move(pending_callbacks), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -420,11 +421,12 @@ void DatabaseImpl::DeleteRange(
     int64_t transaction_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+        pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
+                             std::move(pending_callbacks), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -445,11 +447,12 @@ void DatabaseImpl::DeleteRange(
 void DatabaseImpl::GetKeyGeneratorCurrentNumber(
     int64_t transaction_id,
     int64_t object_store_id,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+        pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
+                             std::move(pending_callbacks), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -467,11 +470,12 @@ void DatabaseImpl::GetKeyGeneratorCurrentNumber(
 void DatabaseImpl::Clear(
     int64_t transaction_id,
     int64_t object_store_id,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+        pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
+                             std::move(pending_callbacks), idb_runner_));
   if (!connection_->IsConnected())
     return;
 

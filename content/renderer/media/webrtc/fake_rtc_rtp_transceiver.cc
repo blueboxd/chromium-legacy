@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "content/renderer/media/webrtc/fake_rtc_rtp_transceiver.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 
 namespace content {
 

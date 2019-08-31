@@ -72,10 +72,13 @@ class NativeFileSystemPermissionContext {
       int frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) = 0;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class SensitiveDirectoryResult {
-    kAllowed,   // Access to directory is okay.
-    kTryAgain,  // User should pick a different directory.
-    kAbort,     // Abandon entirely, as if picking was cancelled.
+    kAllowed = 0,   // Access to directory is okay.
+    kTryAgain = 1,  // User should pick a different directory.
+    kAbort = 2,     // Abandon entirely, as if picking was cancelled.
+    kMaxValue = kAbort
   };
   // Checks if access to the given |paths| should be allowed or blocked. This is
   // used to implement blocks for certain sensitive directories such as the

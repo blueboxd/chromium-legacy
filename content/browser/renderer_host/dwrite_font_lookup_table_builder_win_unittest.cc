@@ -87,7 +87,9 @@ class DWriteFontLookupTableBuilderTimeoutTest
 // Run a test similar to DWriteFontProxyImplUnitTest, TestFindUniqueFont but
 // without going through Mojo and running it on the DWRiteFontLookupTableBuilder
 // class directly.
-TEST_F(DWriteFontLookupTableBuilderTest, TestFindUniqueFontDirect) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_F(DWriteFontLookupTableBuilderTest, DISABLED_TestFindUniqueFontDirect) {
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
   bool test_callback_executed = false;
   font_lookup_table_builder_->QueueShareMemoryRegionWhenReady(
@@ -101,7 +103,9 @@ TEST_F(DWriteFontLookupTableBuilderTest, TestFindUniqueFontDirect) {
   ASSERT_TRUE(test_callback_executed);
 }
 
-TEST_P(DWriteFontLookupTableBuilderTimeoutTest, TestTimeout) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_P(DWriteFontLookupTableBuilderTimeoutTest, DISABLED_TestTimeout) {
   font_lookup_table_builder_->SetSlowDownIndexingForTestingWithTimeout(
       GetParam(), kTestingTimeout);
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
@@ -127,14 +131,18 @@ TEST_P(DWriteFontLookupTableBuilderTimeoutTest, TestTimeout) {
   ASSERT_TRUE(test_callback_executed);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    DWriteFontLookupTableBuilderTimeoutTest,
-    ::testing::Values(
-        DWriteFontLookupTableBuilder::SlowDownMode::kDelayEachTask,
-        DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask));
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+// INSTANTIATE_TEST_SUITE_P(
+//     ,
+//     DWriteFontLookupTableBuilderTimeoutTest,
+//     ::testing::Values(
+//         DWriteFontLookupTableBuilder::SlowDownMode::kDelayEachTask,
+//         DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask));
 
-TEST_F(DWriteFontLookupTableBuilderTest, TestReadyEarly) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_F(DWriteFontLookupTableBuilderTest, DISABLED_TestReadyEarly) {
   font_lookup_table_builder_->SetSlowDownIndexingForTestingWithTimeout(
       DWriteFontLookupTableBuilder::SlowDownMode::kHangOneTask,
       kTestingTimeout);
@@ -154,7 +162,9 @@ TEST_F(DWriteFontLookupTableBuilderTest, TestReadyEarly) {
   ASSERT_TRUE(test_callback_executed);
 }
 
-TEST_F(DWriteFontLookupTableBuilderTest, RepeatedScheduling) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_F(DWriteFontLookupTableBuilderTest, DISABLED_RepeatedScheduling) {
   for (unsigned i = 0; i < 3; ++i) {
     font_lookup_table_builder_->ResetLookupTableForTesting();
     font_lookup_table_builder_->SetCachingEnabledForTesting(false);
@@ -171,11 +181,15 @@ TEST_F(DWriteFontLookupTableBuilderTest, RepeatedScheduling) {
   }
 }
 
-TEST_F(DWriteFontLookupTableBuilderTest, FontsHash) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_F(DWriteFontLookupTableBuilderTest, DISABLED_FontsHash) {
   ASSERT_GT(font_lookup_table_builder_->ComputePersistenceHash().size(), 0u);
 }
 
-TEST_F(DWriteFontLookupTableBuilderTest, HandleCorruptCacheFile) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_F(DWriteFontLookupTableBuilderTest, DISABLED_HandleCorruptCacheFile) {
   // Cycle once to build cache file.
   font_lookup_table_builder_->ResetLookupTableForTesting();
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();

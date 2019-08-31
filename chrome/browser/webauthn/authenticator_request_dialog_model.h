@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/observable_authenticator_list.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
@@ -391,6 +393,10 @@ class AuthenticatorRequestDialogModel {
     return available_transports_;
   }
 
+  base::span<const uint8_t, 32> qr_generator_key() const {
+    return *qr_generator_key_;
+  }
+
   void CollectPIN(base::Optional<int> attempts,
                   base::OnceCallback<void(std::string)> provide_pin_cb);
   bool has_attempted_pin_entry() const {
@@ -419,6 +425,10 @@ class AuthenticatorRequestDialogModel {
   void set_might_create_resident_credential(bool v) {
     might_create_resident_credential_ = v;
   }
+
+  void set_cable_transport_info(
+      bool cable_extension_provided,
+      base::Optional<device::QRGeneratorKey> qr_generator_key);
 
   const std::string& relying_party_id() const { return relying_party_id_; }
 
@@ -501,6 +511,11 @@ class AuthenticatorRequestDialogModel {
   // should be included on the dialog sheet shown when encountering certain
   // errors.
   bool request_may_start_over_ = true;
+
+  // cable_extension_provided_ indicates whether the request included a caBLE
+  // extension.
+  bool cable_extension_provided_ = false;
+  base::Optional<device::QRGeneratorKey> qr_generator_key_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

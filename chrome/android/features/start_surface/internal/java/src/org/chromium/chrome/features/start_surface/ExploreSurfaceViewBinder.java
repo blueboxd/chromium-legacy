@@ -11,6 +11,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
 import android.support.annotation.Nullable;
+import android.support.v4.widget.NestedScrollView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -23,15 +24,21 @@ import org.chromium.ui.modelutil.PropertyModel;
 /** Binder for the explore surface. */
 class ExploreSurfaceViewBinder {
     /**
-     * The view holder holds the parent view and the header container view.
+     * The view holder holds the parent view, the possible scroll container and header container
+     * view.
      */
     public static class ViewHolder {
         public final ViewGroup parentView;
         @Nullable
+        public final NestedScrollView scrollContainer;
+        @Nullable
         public final ViewGroup headerContainerView;
 
-        ViewHolder(ViewGroup parentView, @Nullable ViewGroup headerContainerView) {
+        ViewHolder(ViewGroup parentView, @Nullable NestedScrollView scrollContainer,
+                @Nullable ViewGroup headerContainerView) {
+            assert (scrollContainer == null) == (headerContainerView == null);
             this.parentView = parentView;
+            this.scrollContainer = scrollContainer;
             this.headerContainerView = headerContainerView;
         }
     }
@@ -54,10 +61,12 @@ class ExploreSurfaceViewBinder {
     /**
      * Set the explore surface visibility.
      * Note that if the {@link ViewHolder.headerContainerView} is not null, the feed surface view is
-     * added to the {@link ViewHolder.headerContainerView}, then the {@link
-     * ViewHolder.headerContainerView} is added to the {@link ViewHolder.parentView}. This is for
-     * the alignment between {@link ViewHolder.headerContainerView} and the feed surface view to
-     * avoid another level of view hiearachy. If the {@link ViewHolder.headerContainerView} is null,
+     * added to the {@link ViewHolder.headerContainerView}. This is for the alignment between the
+     * {@link ViewHolder.headerContainerView} and the feed surface view to avoid another level of
+     * view hiearachy. Then {@link ViewHolder.headerContainerView} is added to {@link
+     * ViewHolder.scrollContainer}. This allows the {@link ViewHolder.headerContainerView} scrolls
+     * together with the feed surface view. Finally, we add the {@link ViewHolder.scrollContainer}
+     * to the {@link ViewHolder.parentView}. If the {@link ViewHolder.headerContainerView} is null,
      * then the feed surface view is added to the {@link ViewHolder.parentView} directly.
      * @param viewHolder The view holder holds the parent and possible the header container view.
      * @param model The property model.
@@ -68,14 +77,15 @@ class ExploreSurfaceViewBinder {
         if (model.get(FEED_SURFACE_COORDINATOR) == null) return;
 
         if (viewHolder.headerContainerView != null) {
-            if (viewHolder.headerContainerView.getParent() == null) {
-                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            if (viewHolder.scrollContainer.getParent() == null) {
+                viewHolder.scrollContainer.addView(viewHolder.headerContainerView);
+                FrameLayout.LayoutParams layoutParams =
+                        (FrameLayout.LayoutParams) viewHolder.scrollContainer.getLayoutParams();
                 layoutParams.bottomMargin = model.get(BOTTOM_BAR_HEIGHT);
                 layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
-                viewHolder.parentView.addView(viewHolder.headerContainerView, layoutParams);
+                viewHolder.parentView.addView(viewHolder.scrollContainer);
             }
-            viewHolder.headerContainerView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
+            viewHolder.scrollContainer.setVisibility(isShowing ? View.VISIBLE : View.GONE);
         }
 
         View feedSurfaceView = model.get(FEED_SURFACE_COORDINATOR).getView();

@@ -64,7 +64,7 @@ class CredentialManagementHandlerTest : public ::testing::Test {
       base::Optional<size_t>>
       get_credentials_callback_;
   test::ValueCallbackReceiver<CtapDeviceResponseCode> delete_callback_;
-  test::ValueCallbackReceiver<FidoReturnCode> finished_callback_;
+  test::ValueCallbackReceiver<CredentialManagementStatus> finished_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
 
 #if defined(OS_WIN)

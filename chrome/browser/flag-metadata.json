@@ -2419,16 +2419,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "new-password-form-parsing",
-    "owners": [ "dvadym" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "new-password-form-parsing-for-saving",
-    "owners": [ "dvadym" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "new-tabstrip-animation",
     "owners": [ "tbergquist" ],
     "expiry_milestone": 81
@@ -2599,6 +2589,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-on-focus-suggestions",
+    "owners": [ "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
@@ -2706,11 +2701,6 @@
   {
     "name": "on-the-fly-mhtml-hash-computation",
     "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "only-new-password-form-parsing",
-    "owners": [ "dvadym" ],
     "expiry_milestone": 76
   },
   {

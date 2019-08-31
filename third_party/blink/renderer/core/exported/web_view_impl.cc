@@ -1014,7 +1014,8 @@ void WebViewImpl::EnableTapHighlightAtPoint(
 void WebViewImpl::EnableTapHighlights(
     HeapVector<Member<Node>>& highlight_nodes) {
   GetPage()->GetLinkHighlights().SetTapHighlights(highlight_nodes);
-  UpdateAllLifecyclePhases(LifecycleUpdateReason::kOther);
+  UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
+                  WebWidget::LifecycleUpdateReason::kOther);
 }
 
 void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
@@ -1378,7 +1379,8 @@ void WebViewImpl::ResizeViewWhileAnchored(float top_controls_height,
   // Update lifecyle phases immediately to recalculate the minimum scale limit
   // for rotation anchoring, and to make sure that no lifecycle states are
   // stale if this WebView is embedded in another one.
-  UpdateAllLifecyclePhases(LifecycleUpdateReason::kOther);
+  UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
+                  WebWidget::LifecycleUpdateReason::kOther);
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
@@ -1455,6 +1457,10 @@ void WebViewImpl::DidEnterFullscreen() {
 
 void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
+}
+
+void WebViewImpl::SetWebWidget(WebWidget* widget) {
+  web_widget_ = widget;
 }
 
 void WebViewImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
@@ -1573,8 +1579,8 @@ void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
       .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
-void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
-                                  LifecycleUpdateReason reason) {
+void WebViewImpl::UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
+                                  WebWidget::LifecycleUpdateReason reason) {
   TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
   if (!MainFrameImpl())
     return;
@@ -1584,7 +1590,7 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
 
   PageWidgetDelegate::UpdateLifecycle(
       *AsView().page, *MainFrameImpl()->GetFrame(), requested_update, reason);
-  if (requested_update != LifecycleUpdate::kAll)
+  if (requested_update != WebWidget::LifecycleUpdate::kAll)
     return;
 
   // There is no background color for non-composited WebViews (eg printing).
@@ -3585,7 +3591,7 @@ void WebViewImpl::RestorePageFromBackForwardCache() {
 }
 
 WebWidget* WebViewImpl::MainFrameWidget() {
-  return this;
+  return web_widget_;
 }
 
 void WebViewImpl::AddAutoplayFlags(int32_t value) {

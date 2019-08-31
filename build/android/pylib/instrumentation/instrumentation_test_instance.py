@@ -40,13 +40,6 @@ _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
 _VALID_ANNOTATIONS = set(_DEFAULT_ANNOTATIONS +
                          _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS)
 
-# These test methods are inherited from android.test base test class and
-# should be permitted for not having size annotation. For more, please check
-# https://developer.android.com/reference/android/test/AndroidTestCase.html
-# https://developer.android.com/reference/android/test/ServiceTestCase.html
-_TEST_WITHOUT_SIZE_ANNOTATIONS = [
-    'testAndroidTestCaseSetupProperly', 'testServiceTestCaseSetUpProperly']
-
 _EXTRA_DRIVER_TEST_LIST = (
     'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestList')
 _EXTRA_DRIVER_TEST_LIST_FILE = (
@@ -257,8 +250,7 @@ def FilterTests(tests, filter_str=None, annotations=None,
       continue
 
     # Enforce that all tests declare their size.
-    if (not any(a in _VALID_ANNOTATIONS for a in t['annotations'])
-        and t['method'] not in _TEST_WITHOUT_SIZE_ANNOTATIONS):
+    if not any(a in _VALID_ANNOTATIONS for a in t['annotations']):
       raise MissingSizeAnnotationError(GetTestName(t))
 
     if (not annotation_filter(t['annotations'])

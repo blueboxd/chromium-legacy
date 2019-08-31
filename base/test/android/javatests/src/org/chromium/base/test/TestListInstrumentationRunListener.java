@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
+import org.junit.runners.model.InitializationError;
 
 import org.chromium.base.Log;
 
@@ -47,23 +48,33 @@ public class TestListInstrumentationRunListener extends InstrumentationRunListen
         }
     }
 
+    @Override
+    public void testFinished(Description desc) throws Exception {
+        Class<?> testClass = desc.getTestClass();
+        JSONObject classEntry = mTestClassJsonMap.get(testClass);
+        if (classEntry == null) {
+            classEntry =
+                    new JSONObject()
+                            .put("class", testClass.getName())
+                            .put("superclass", testClass.getSuperclass().getName())
+                            .put("annotations",
+                                    getAnnotationJSON(Arrays.asList(testClass.getAnnotations())))
+                            .put("methods", new JSONArray());
+            mTestClassJsonMap.put(testClass, classEntry);
+        }
+        ((JSONArray) classEntry.get("methods")).put(getTestMethodJSON(desc));
+    }
+
     /**
      * Store the test method description to a Map at the beginning of a test run.
      */
     @Override
     public void testStarted(Description desc) throws Exception {
-        if (mTestClassJsonMap.containsKey(desc.getTestClass())) {
-            ((JSONArray) mTestClassJsonMap.get(desc.getTestClass()).get("methods"))
-                .put(getTestMethodJSON(desc));
-        } else {
-            Class<?> testClass = desc.getTestClass();
-            mTestClassJsonMap.put(desc.getTestClass(), new JSONObject()
-                    .put("class", testClass.getName())
-                    .put("superclass", testClass.getSuperclass().getName())
-                    .put("annotations",
-                            getAnnotationJSON(Arrays.asList(testClass.getAnnotations())))
-                    .put("methods", new JSONArray().put(getTestMethodJSON(desc))));
-        }
+        // BaseJUnit4ClassRunner only fires testFinished(), so a call to testStarted means a
+        // different runner is active, and the test is actually being executed rather than just
+        // listed.
+        throw new InitializationError("All tests must use @RunWith(BaseJUnit4ClassRunner.class) or "
+                + "a subclass thereof. Found that this test does not: " + desc.getTestClass());
     }
 
     /**

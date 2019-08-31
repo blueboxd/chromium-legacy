@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_TEST_HELPER_H_
-#define COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_TEST_HELPER_H_
+#ifndef COMPONENTS_SESSIONS_SESSION_TYPES_TEST_HELPER_H_
+#define COMPONENTS_SESSIONS_SESSION_TYPES_TEST_HELPER_H_
 
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -29,7 +28,6 @@ extern const int kIndex;
 extern const int kUniqueID;
 extern const GURL kReferrerURL;
 extern const int kReferrerPolicy;
-extern const GURL kURL;
 extern const GURL kVirtualURL;
 extern const base::string16 kTitle;
 extern const std::string kEncodedPageState;
@@ -65,11 +63,6 @@ class SerializedNavigationEntryTestHelper {
                                      const SerializedNavigationEntry& actual);
 
   // Creates a SerializedNavigationEntry using the |test_data| constants above.
-  //
-  // Note that the returned SerializedNavigationEntry will have a bogus
-  // PageState and therefore can only be used in limited unit tests (e.g. it
-  // will most likely hit DCHECKs/NOTREACHEDs when passed to the //content
-  // layer).
   static SerializedNavigationEntry CreateNavigationForTest();
 
   static void SetReferrerPolicy(int policy,
@@ -104,6 +97,6 @@ class SerializedNavigationEntryTestHelper {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SerializedNavigationEntryTestHelper);
 };
 
-}  // namespace sessions
+}  // sessions
 
-#endif  // COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_TEST_HELPER_H_
+#endif  // COMPONENTS_SESSIONS_SESSION_TYPES_TEST_HELPER_H_

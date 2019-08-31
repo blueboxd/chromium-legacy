@@ -340,11 +340,11 @@ class JPEGImageReader final {
   USING_FAST_MALLOC(JPEGImageReader);
 
  public:
-  JPEGImageReader(JPEGImageDecoder* decoder)
+  JPEGImageReader(JPEGImageDecoder* decoder, size_t initial_offset)
       : decoder_(decoder),
         needs_restart_(false),
-        restart_position_(0),
-        next_read_position_(0),
+        restart_position_(initial_offset),
+        next_read_position_(initial_offset),
         last_set_byte_(nullptr),
         state_(JPEG_HEADER),
         samples_(nullptr) {
@@ -854,11 +854,13 @@ void term_source(j_decompress_ptr jd) {
 
 JPEGImageDecoder::JPEGImageDecoder(AlphaOption alpha_option,
                                    const ColorBehavior& color_behavior,
-                                   size_t max_decoded_bytes)
+                                   size_t max_decoded_bytes,
+                                   size_t offset)
     : ImageDecoder(alpha_option,
                    ImageDecoder::kDefaultBitDepth,
                    color_behavior,
-                   max_decoded_bytes) {}
+                   max_decoded_bytes),
+      offset_(offset) {}
 
 JPEGImageDecoder::~JPEGImageDecoder() = default;
 
@@ -1184,7 +1186,7 @@ void JPEGImageDecoder::Decode(bool only_size) {
     return;
 
   if (!reader_) {
-    reader_ = std::make_unique<JPEGImageReader>(this);
+    reader_ = std::make_unique<JPEGImageReader>(this, offset_);
     reader_->SetData(data_.get());
   }
 

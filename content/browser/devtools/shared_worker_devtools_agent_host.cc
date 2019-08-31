@@ -67,7 +67,7 @@ void SharedWorkerDevToolsAgentHost::Reload() {
 
 bool SharedWorkerDevToolsAgentHost::Close() {
   if (worker_host_)
-    worker_host_->TerminateWorker();
+    worker_host_->Destruct();
   return true;
 }
 

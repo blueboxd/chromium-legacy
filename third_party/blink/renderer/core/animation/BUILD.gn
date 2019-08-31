@@ -269,7 +269,6 @@ blink_core_sources("animation") {
 
 blink_core_tests("unit_tests") {
   sources = [
-    "animation_clock_test.cc",
     "animation_effect_test.cc",
     "animation_input_helpers_test.cc",
     "animation_sim_test.cc",

@@ -9,6 +9,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.support.graphics.drawable.Animatable2Compat;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -36,6 +39,8 @@ public class TabGridIphItemView extends FrameLayout {
     private ScrimView.ScrimParams mScrimParams;
     private Drawable mIphDrawable;
     private PopupWindow mIphWindow;
+    private Animatable mIphAnimation;
+    private Animatable2Compat.AnimationCallback mAnimationCallback;
 
     public TabGridIphItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -57,6 +62,14 @@ public class TabGridIphItemView extends FrameLayout {
                 mIphDialogView.findViewById(R.id.iph_drag_and_drop_dialog_close_button);
         mIphDrawable =
                 ((ImageView) mIphDialogView.findViewById(R.id.animation_drawable)).getDrawable();
+        mIphAnimation = (Animatable) mIphDrawable;
+        mAnimationCallback = new Animatable2Compat.AnimationCallback() {
+            @Override
+            public void onAnimationEnd(Drawable drawable) {
+                Handler handler = new Handler();
+                handler.postDelayed(mIphAnimation::start, 1500);
+            }
+        };
         backgroundView.addView(mIphDialogView);
         mIphWindow = new PopupWindow(backgroundView, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
@@ -105,6 +118,8 @@ public class TabGridIphItemView extends FrameLayout {
     void closeIphDialog() {
         mIphWindow.dismiss();
         mScrimView.hideScrim(true);
+        AnimatedVectorDrawableCompat.unregisterAnimationCallback(mIphDrawable, mAnimationCallback);
+        mIphAnimation.stop();
     }
 
     /**
@@ -115,7 +130,8 @@ public class TabGridIphItemView extends FrameLayout {
             mScrimView.showScrim(mScrimParams);
         }
         mIphWindow.showAtLocation((View) getParent(), Gravity.CENTER, 0, 0);
-        ((Animatable) mIphDrawable).start();
+        AnimatedVectorDrawableCompat.registerAnimationCallback(mIphDrawable, mAnimationCallback);
+        mIphAnimation.start();
     }
 
     private Drawable getScaledCloseImageDrawable() {

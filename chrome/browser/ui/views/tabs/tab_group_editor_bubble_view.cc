@@ -73,14 +73,10 @@ base::string16 TabGroupEditorBubbleView::GetWindowTitle() const {
 bool TabGroupEditorBubbleView::Accept() {
   TabGroupVisualData old_data = *tab_controller_->GetVisualDataForGroup(group_);
 
-  base::string16 title = title_field_->GetText();
-  if (title.empty())
-    title = old_data.title();
-
   base::Optional<SkColor> selected_color = color_selector_->GetSelectedColor();
   const SkColor color =
       selected_color.has_value() ? selected_color.value() : old_data.color();
-  TabGroupVisualData new_data(std::move(title), color);
+  TabGroupVisualData new_data(title_field_->GetText(), color);
 
   tab_controller_->SetVisualDataForGroup(group_, new_data);
 
@@ -95,6 +91,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   SetAnchorView(anchor_view);
 
   const auto* layout_provider = ChromeLayoutProvider::Get();
+  const TabGroupVisualData* current_data =
+      tab_controller_->GetVisualDataForGroup(group_);
 
   // Add the text field for editing the title along with a label above it.
   View* title_label = AddChildView(std::make_unique<views::Label>(
@@ -103,6 +101,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   title_field_ = AddChildView(std::make_unique<views::Textfield>());
   title_field_->SetAssociatedLabel(title_label);
   title_field_->SetDefaultWidthInChars(15);
+  title_field_->SetText(current_data->title());
 
   title_field_->SetProperty(
       views::kMarginsKey,

@@ -13,16 +13,16 @@ WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewImpl& web_view)
     : WebFrameWidgetBase(client),
       web_view_(&web_view),
-      self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
+  web_view_->SetWebWidget(this);
+}
 
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
 void WebViewFrameWidget::Close() {
   // Closing the WebViewFrameWidget happens in response to the local main frame
   // being detached from the Page/WebViewImpl.
-  // TODO(danakj): Close the WebWidget parts of WebViewImpl here. This should
-  // drop the WebWidgetClient from it as well. For now, WebViewImpl requires a
-  // WebWidgetClient to always be present so this does nothing.
+  web_view_->SetWebWidget(nullptr);
   web_view_ = nullptr;
   WebFrameWidgetBase::Close();
   self_keep_alive_.Clear();

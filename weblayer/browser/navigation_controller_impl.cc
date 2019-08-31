@@ -85,7 +85,7 @@ void NavigationControllerImpl::DidStartNavigation(
       std::make_unique<NavigationImpl>(navigation_handle);
   auto* navigation = navigation_map_[navigation_handle].get();
   for (auto& observer : observers_)
-    observer.NavigationStarted(*navigation);
+    observer.NavigationStarted(navigation);
 }
 
 void NavigationControllerImpl::DidRedirectNavigation(
@@ -96,7 +96,7 @@ void NavigationControllerImpl::DidRedirectNavigation(
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
   for (auto& observer : observers_)
-    observer.NavigationRedirected(*navigation);
+    observer.NavigationRedirected(navigation);
 }
 
 void NavigationControllerImpl::ReadyToCommitNavigation(
@@ -107,7 +107,7 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
   for (auto& observer : observers_)
-    observer.NavigationCommitted(*navigation);
+    observer.NavigationCommitted(navigation);
 }
 
 void NavigationControllerImpl::DidFinishNavigation(
@@ -120,10 +120,10 @@ void NavigationControllerImpl::DidFinishNavigation(
   if (navigation_handle->GetNetErrorCode() == net::OK &&
       !navigation_handle->IsErrorPage()) {
     for (auto& observer : observers_)
-      observer.NavigationCompleted(*navigation);
+      observer.NavigationCompleted(navigation);
   } else {
     for (auto& observer : observers_)
-      observer.NavigationFailed(*navigation);
+      observer.NavigationFailed(navigation);
   }
 
   navigation_map_.erase(navigation_map_.find(navigation_handle));

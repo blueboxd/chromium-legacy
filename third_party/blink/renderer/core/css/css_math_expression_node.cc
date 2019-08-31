@@ -1103,8 +1103,13 @@ CSSMathExpressionNode* CSSMathExpressionNode::Create(
 
 // static
 CSSMathExpressionNode* CSSMathExpressionNode::Create(PixelsAndPercent value) {
-  double pixels = value.pixels;
   double percent = value.percent;
+  double pixels = value.pixels;
+  CSSMathOperator op = CSSMathOperator::kAdd;
+  if (pixels < 0) {
+    pixels = -pixels;
+    op = CSSMathOperator::kSubtract;
+  }
   return CSSMathExpressionBinaryOperation::Create(
       CSSMathExpressionNumericLiteral::Create(
           CSSNumericLiteralValue::Create(
@@ -1114,7 +1119,7 @@ CSSMathExpressionNode* CSSMathExpressionNode::Create(PixelsAndPercent value) {
           CSSNumericLiteralValue::Create(pixels,
                                          CSSPrimitiveValue::UnitType::kPixels),
           pixels == trunc(pixels)),
-      CSSMathOperator::kAdd);
+      op);
 }
 
 // static

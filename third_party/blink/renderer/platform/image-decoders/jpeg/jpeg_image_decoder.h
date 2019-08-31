@@ -36,7 +36,10 @@ class JPEGImageReader;
 
 class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
  public:
-  JPEGImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
+  JPEGImageDecoder(AlphaOption,
+                   const ColorBehavior&,
+                   size_t max_decoded_bytes,
+                   size_t offset = 0);
   ~JPEGImageDecoder() override;
 
   // ImageDecoder:
@@ -79,6 +82,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   void Decode(bool only_size);
 
   std::unique_ptr<JPEGImageReader> reader_;
+  const size_t offset_;
   std::unique_ptr<ImagePlanes> image_planes_;
   IntSize decoded_size_;
   Vector<SkISize> supported_decode_sizes_;

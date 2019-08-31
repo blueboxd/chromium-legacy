@@ -26,6 +26,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -393,6 +395,8 @@ class AccessibilityManager
 
   void SetProfile(Profile* profile);
 
+  void SetProfileByUser(const user_manager::User* user);
+
   void UpdateChromeOSAccessibilityHistograms();
 
   void PlayVolumeAdjustSound();
@@ -425,43 +429,41 @@ class AccessibilityManager
   void OnActiveOutputNodeChanged() override;
 
   // Profile which has the current a11y context.
-  Profile* profile_;
+  Profile* profile_ = nullptr;
 
   content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
-  std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
-      session_state_observer_;
 
-  bool spoken_feedback_enabled_;
-  bool select_to_speak_enabled_;
-  bool switch_access_enabled_;
-  bool autoclick_enabled_;
+  bool spoken_feedback_enabled_ = false;
+  bool select_to_speak_enabled_ = false;
+  bool switch_access_enabled_ = false;
+  bool autoclick_enabled_ = false;
 
   AccessibilityStatusCallbackList callback_list_;
 
-  bool braille_display_connected_;
+  bool braille_display_connected_ = false;
   ScopedObserver<extensions::api::braille_display_private::BrailleController,
-                 AccessibilityManager>
-      scoped_braille_observer_;
+                 extensions::api::braille_display_private::BrailleObserver>
+      scoped_braille_observer_{this};
 
-  bool braille_ime_current_;
+  bool braille_ime_current_ = false;
 
-  ChromeVoxPanel* chromevox_panel_;
+  ChromeVoxPanel* chromevox_panel_ = nullptr;
   std::unique_ptr<AccessibilityPanelWidgetObserver>
       chromevox_panel_widget_observer_;
 
-  SwitchAccessPanel* switch_access_panel_;
+  SwitchAccessPanel* switch_access_panel_ = nullptr;
   std::unique_ptr<AccessibilityPanelWidgetObserver>
       switch_access_panel_widget_observer_;
 
   std::string keyboard_listener_extension_id_;
-  bool keyboard_listener_capture_;
+  bool keyboard_listener_capture_ = false;
 
   // Listen to extension unloaded notifications.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   std::unique_ptr<AccessibilityExtensionLoader> autoclick_extension_loader_;
 

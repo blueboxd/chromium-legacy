@@ -217,7 +217,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // channel of the mask layer's content is used as an alpha mask of this
   // layer's content. IOW the mask's alpha is multiplied by this layer's alpha
   // for each matching pixel.
-  void SetMaskLayer(PictureLayer* mask_layer);
+  void SetMaskLayer(scoped_refptr<PictureLayer> mask_layer);
   PictureLayer* mask_layer() { return inputs_.mask_layer.get(); }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and

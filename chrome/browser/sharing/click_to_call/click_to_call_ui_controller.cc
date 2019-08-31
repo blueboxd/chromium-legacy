@@ -115,6 +115,10 @@ SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
   return window->ShowClickToCallDialog(web_contents(), this);
 }
 
+base::string16 ClickToCallUiController::GetContentType() const {
+  return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_CONTENT_TYPE_NUMBER);
+}
+
 const gfx::VectorIcon& ClickToCallUiController::GetVectorIcon() const {
   return vector_icons::kCallIcon;
 }

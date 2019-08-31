@@ -317,8 +317,10 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (session->chrome->GetBrowserInfo()->is_headless) {
     std::string download_directory;
     if (capabilities.prefs &&
-        capabilities.prefs->GetString("download.default_directory",
-                                      &download_directory))
+        (capabilities.prefs->GetString("download.default_directory",
+                                       &download_directory) ||
+         capabilities.prefs->GetStringWithoutPathExpansion(
+             "download.default_directory", &download_directory)))
       session->headless_download_directory =
           std::make_unique<std::string>(download_directory);
     else

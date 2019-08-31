@@ -25,7 +25,9 @@ test can query for whether each submitted frame used the correct pose.
         [sessionTypes.IMMERSIVE]: 'local',
         [sessionTypes.MAGIC_WINDOW]: 'local',
         [sessionTypes.AR]: 'local'
-      }
+      };
+
+      nonImmersiveSessionInit = { requiredFeatures: ['local'] };
       requestMagicWindowSession();
 
       let MAX_FRAME_CALLBACKS = 10;

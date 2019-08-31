@@ -604,6 +604,22 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
   EXPECT_TRUE(params_.quic_host_allowlist.empty());
 }
 
+TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
+  FLAGS_quic_supports_tls_handshake = false;
+  FLAGS_quic_reloadable_flag_quic_enable_version_99 = false;
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["set_quic_flags"] =
+      "FLAGS_quic_supports_tls_handshake=true,"
+      "FLAGS_quic_reloadable_flag_quic_enable_version_99=true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(FLAGS_quic_supports_tls_handshake);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_99);
+}
+
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["http2_settings"] = "7:1234,25:5678";

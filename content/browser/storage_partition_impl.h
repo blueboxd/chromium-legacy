@@ -94,6 +94,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void ShutdownBackgroundSyncContextForTesting();
   void OverrideBackgroundSyncContextForTesting(
       BackgroundSyncContextImpl* background_sync_context);
+  void OverrideSharedWorkerServiceForTesting(
+      std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service);
 
   // StoragePartition interface.
   base::FilePath GetPath() override;
@@ -211,6 +213,10 @@ class CONTENT_EXPORT StoragePartitionImpl
                              const net::SSLInfo& ssl_info,
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
+  void OnFileUploadRequested(uint32_t process_id,
+                             bool async,
+                             const std::vector<base::FilePath>& file_paths,
+                             OnFileUploadRequestedCallback callback) override;
   void OnCanSendReportingReports(
       const std::vector<url::Origin>& origins,
       OnCanSendReportingReportsCallback callback) override;

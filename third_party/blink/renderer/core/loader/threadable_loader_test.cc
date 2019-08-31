@@ -10,7 +10,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -91,22 +90,16 @@ KURL RedirectLoopURL() {
   return KURL("http://example.com/loop").Copy();
 }
 
-void ServeAsynchronousRequests() {
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-}
-
-void UnregisterAllURLsAndClearMemoryCache() {
-  Platform::Current()
-      ->GetURLLoaderMockFactory()
-      ->UnregisterAllURLsAndClearMemoryCache();
-}
-
 void SetUpSuccessURL() {
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |dummy_page_holder_|.
   url_test_helpers::RegisterMockedURLLoad(
       SuccessURL(), test::CoreTestDataPath(kFileName), "text/html");
 }
 
 void SetUpErrorURL() {
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |dummy_page_holder_|.
   url_test_helpers::RegisterMockedErrorURLLoad(ErrorURL());
 }
 
@@ -123,6 +116,8 @@ void SetUpRedirectURL() {
   response.AddHttpHeaderField("Location", SuccessURL().GetString());
   response.AddHttpHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |dummy_page_holder_|.
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath(kFileName), response);
 }
@@ -140,6 +135,8 @@ void SetUpRedirectLoopURL() {
   response.AddHttpHeaderField("Location", RedirectLoopURL().GetString());
   response.AddHttpHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |dummy_page_holder_|.
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath(kFileName), response);
 }
@@ -186,14 +183,14 @@ class ThreadableLoaderTestHelper final {
 
   void OnSetUp() { SetUpMockURLs(); }
 
-  void OnServeRequests() { ServeAsynchronousRequests(); }
+  void OnServeRequests() { url_test_helpers::ServeAsynchronousRequests(); }
 
   void OnTearDown() {
     if (loader_) {
       loader_->Cancel();
       loader_ = nullptr;
     }
-    UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
  private:

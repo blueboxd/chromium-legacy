@@ -32,19 +32,18 @@ class IntersectionObserverController
 
   // Immediately deliver all notifications for all observers for which
   // (observer->GetDeliveryBehavior() == behavior).
-  void DeliverIntersectionObservations(
-      IntersectionObserver::DeliveryBehavior behavior);
+  void DeliverNotifications(IntersectionObserver::DeliveryBehavior behavior);
 
   // The flags argument is composed of values from
   // IntersectionObservation::ComputeFlags. They are dirty bits that control
   // whether an IntersectionObserver needs to do any work. The return value
   // communicates whether observer->trackVisibility() is true for any tracked
   // observer.
-  bool ComputeTrackedIntersectionObservations(unsigned flags);
-  // The second argument indicates whether the Element is being tracked by any
+  bool ComputeIntersections(unsigned flags);
+  // The second argument indicates whether the Element is a target of any
   // observers for which observer->trackVisibility() is true.
-  void AddTrackedTarget(Element&, bool);
-  void RemoveTrackedTarget(Element&);
+  void AddTrackedElement(Element&, bool);
+  void RemoveTrackedElement(Element&);
   bool NeedsOcclusionTracking() const { return needs_occlusion_tracking_; }
 
   void Trace(blink::Visitor*) override;
@@ -52,21 +51,21 @@ class IntersectionObserverController
     return "IntersectionObserverController";
   }
   unsigned GetTrackedTargetCountForTesting() const {
-    return tracked_observation_targets_.size();
+    return tracked_elements_.size();
   }
 
  private:
-  void PostTaskToDeliverObservations();
+  void PostTaskToDeliverNotifications();
 
  private:
-  // Elements in this document which are the target of an
-  // IntersectionObservation.
-  HeapHashSet<WeakMember<Element>> tracked_observation_targets_;
+  // Elements in this document which are the target of an IntersectionObserver
+  // with implicit root; or the explicit root of an IntersectionObserver.
+  HeapHashSet<WeakMember<Element>> tracked_elements_;
   // IntersectionObservers for which this is the execution context of the
   // callback.
   HeapHashSet<Member<IntersectionObserver>> pending_intersection_observers_;
-  // This is 'true' if any tracked observation target is being tracked by an
-  // observer for which observer->trackVisibility() is true.
+  // This is 'true' if any tracked element is the target of an observer for
+  // which observer->trackVisibility() is true.
   bool needs_occlusion_tracking_;
 };
 

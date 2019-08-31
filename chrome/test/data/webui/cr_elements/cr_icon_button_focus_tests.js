@@ -50,4 +50,18 @@ suite('cr-icon-button-focus-tests', function() {
     button.noink = true;
     assertTrue(button.getRipple().holdDown);
   });
+
+  test('no ripple until focus', () => {
+    assertFalse(button.hasRipple());
+    button.focus();
+    assertTrue(button.hasRipple());
+  });
+
+  test('when noink, no ripple until mouse down', () => {
+    button.noink = true;
+    button.focus();
+    assertFalse(button.hasRipple());
+    button.dispatchEvent(new PointerEvent('pointerdown'));
+    assertTrue(button.hasRipple());
+  });
 });

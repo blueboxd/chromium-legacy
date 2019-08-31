@@ -38,21 +38,22 @@ TouchInputPolicy TouchInputPolicyFromApplicationConfig(
 
 }  // namespace
 
-CastComponent::CastComponent(
-    CastRunner* runner,
-    chromium::cast::ApplicationConfig application_config,
-    std::unique_ptr<ApiBindingsClient> api_bindings_client,
-    std::unique_ptr<base::fuchsia::StartupContext> context,
-    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-        controller_request,
-    std::unique_ptr<cr_fuchsia::AgentManager> agent_manager)
-    : WebComponent(runner, std::move(context), std::move(controller_request)),
-      agent_manager_(std::move(agent_manager)),
-      application_config_(std::move(application_config)),
+CastComponent::CastComponentParams::CastComponentParams() = default;
+CastComponent::CastComponentParams::CastComponentParams(CastComponentParams&&) =
+    default;
+CastComponent::CastComponentParams::~CastComponentParams() = default;
+
+CastComponent::CastComponent(CastRunner* runner,
+                             CastComponent::CastComponentParams params)
+    : WebComponent(runner,
+                   std::move(params.startup_context),
+                   std::move(params.controller_request)),
+      agent_manager_(std::move(params.agent_manager)),
+      application_config_(std::move(params.app_config)),
       touch_input_policy_(
           TouchInputPolicyFromApplicationConfig(application_config_)),
       connector_(frame()),
-      api_bindings_client_(std::move(api_bindings_client)),
+      api_bindings_client_(std::move(params.api_bindings_client)),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 

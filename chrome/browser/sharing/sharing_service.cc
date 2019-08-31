@@ -123,7 +123,7 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
 SharingService::GetDeviceCandidates(int required_capabilities) const {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
-  if (!IsSyncEnabled())
+  if (IsSyncDisabled())
     return device_candidates;
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
@@ -396,10 +396,14 @@ SharingSyncPreference* SharingService::GetSyncPreferences() const {
 }
 
 bool SharingService::IsSyncDisabled() const {
+  // TODO(alexchau): Better way to make
+  // ClickToCallBrowserTest.ContextMenu_DevicesAvailable_SyncTurnedOff pass
+  // without unnecessarily checking SyncService::GetDisableReasons.
   return sync_service_ &&
          (sync_service_->GetTransportState() ==
               syncer::SyncService::TransportState::DISABLED ||
           (sync_service_->GetTransportState() ==
                syncer::SyncService::TransportState::ACTIVE &&
-           !sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES)));
+           !sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES)) ||
+          sync_service_->GetDisableReasons());
 }

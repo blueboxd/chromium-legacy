@@ -74,6 +74,24 @@ bool IsAlternateProtocolValid(NextProto protocol) {
   return false;
 }
 
+bool IsProtocolEnabled(NextProto protocol,
+                       bool is_http2_enabled,
+                       bool is_quic_enabled) {
+  switch (protocol) {
+    case kProtoUnknown:
+      NOTREACHED();
+      return false;
+    case kProtoHTTP11:
+      return true;
+    case kProtoHTTP2:
+      return is_http2_enabled;
+    case kProtoQUIC:
+      return is_quic_enabled;
+  }
+  NOTREACHED();
+  return false;
+}
+
 // static
 AlternativeServiceInfo
 AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
@@ -141,6 +159,55 @@ std::ostream& operator<<(std::ostream& os,
                          const AlternativeService& alternative_service) {
   os << alternative_service.ToString();
   return os;
+}
+
+AlternativeServiceInfoVector ProcessAlternativeServices(
+    const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
+        alternative_service_vector,
+    bool is_http2_enabled,
+    bool is_quic_enabled,
+    const quic::ParsedQuicVersionVector& supported_quic_versions,
+    bool support_ietf_format_quic_altsvc) {
+  // Convert spdy::SpdyAltSvcWireFormat::AlternativeService entries
+  // to net::AlternativeServiceInfo.
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  for (const spdy::SpdyAltSvcWireFormat::AlternativeService&
+           alternative_service_entry : alternative_service_vector) {
+    NextProto protocol =
+        NextProtoFromString(alternative_service_entry.protocol_id);
+    if (!IsAlternateProtocolValid(protocol) ||
+        !IsProtocolEnabled(protocol, is_http2_enabled, is_quic_enabled) ||
+        !IsPortValid(alternative_service_entry.port)) {
+      continue;
+    }
+    // Check if QUIC version is supported. Filter supported QUIC versions.
+    quic::ParsedQuicVersionVector advertised_versions;
+    if (protocol == kProtoQUIC && !alternative_service_entry.version.empty()) {
+      advertised_versions = FilterSupportedAltSvcVersions(
+          alternative_service_entry, supported_quic_versions,
+          support_ietf_format_quic_altsvc);
+      if (advertised_versions.empty())
+        continue;
+    }
+    AlternativeService alternative_service(protocol,
+                                           alternative_service_entry.host,
+                                           alternative_service_entry.port);
+    base::Time expiration =
+        base::Time::Now() +
+        base::TimeDelta::FromSeconds(alternative_service_entry.max_age);
+    AlternativeServiceInfo alternative_service_info;
+    if (protocol == kProtoQUIC) {
+      alternative_service_info =
+          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+              alternative_service, expiration, advertised_versions);
+    } else {
+      alternative_service_info =
+          AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+              alternative_service, expiration);
+    }
+    alternative_service_info_vector.push_back(alternative_service_info);
+  }
+  return alternative_service_info_vector;
 }
 
 }  // namespace net

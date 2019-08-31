@@ -35,6 +35,8 @@ public class BackgroundTaskJobServiceTest {
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
     @Mock
+    private BackgroundTaskSchedulerDelegate mAlarmManagerDelegate;
+    @Mock
     private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
     @Mock
     private BackgroundTaskSchedulerImpl mBackgroundTaskSchedulerImpl;
@@ -43,7 +45,7 @@ public class BackgroundTaskJobServiceTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
-                new BackgroundTaskSchedulerImpl(mDelegate));
+                new BackgroundTaskSchedulerImpl(mDelegate, mAlarmManagerDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         TestBackgroundTask.reset();
         BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());

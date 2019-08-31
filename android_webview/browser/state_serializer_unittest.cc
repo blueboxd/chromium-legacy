@@ -33,6 +33,8 @@ std::unique_ptr<content::NavigationEntry> CreateNavigationEntry() {
   referrer.url = GURL("http://referrer_url");
   referrer.policy = network::mojom::ReferrerPolicy::kOrigin;
   const base::string16 title(base::UTF8ToUTF16("title"));
+  const content::PageState page_state =
+      content::PageState::CreateFromEncodedData("completely bogus state");
   const bool has_post_data = true;
   const GURL original_request_url("http://original_request_url");
   const GURL base_url_for_data_url("http://base_url");
@@ -45,6 +47,7 @@ std::unique_ptr<content::NavigationEntry> CreateNavigationEntry() {
   entry->SetVirtualURL(virtual_url);
   entry->SetReferrer(referrer);
   entry->SetTitle(title);
+  entry->SetPageState(page_state);
   entry->SetHasPostData(has_post_data);
   entry->SetOriginalRequestURL(original_request_url);
   entry->SetBaseURLForDataURL(base_url_for_data_url);

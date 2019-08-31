@@ -1554,14 +1554,22 @@ DISABLE_CFI_PERF
 void LayoutGrid::UpdateAutoMarginsInRowAxisIfNeeded(LayoutBox& child) {
   DCHECK(!child.IsOutOfFlowPositioned());
 
+  const Length& margin_start = child.StyleRef().MarginStartUsing(StyleRef());
+  const Length& margin_end = child.StyleRef().MarginEndUsing(StyleRef());
+  LayoutUnit margin_logical_width;
+  // We should only consider computed margins if their specified value isn't
+  // 'auto', since such computed value may come from a previous layout and may
+  // be incorrect now.
+  if (!margin_start.IsAuto())
+    margin_logical_width += child.MarginStart();
+  if (!margin_end.IsAuto())
+    margin_logical_width += child.MarginEnd();
   LayoutUnit available_alignment_space =
       child.OverrideContainingBlockContentLogicalWidth() -
-      child.LogicalWidth() - child.MarginLogicalWidth();
+      child.LogicalWidth() - margin_logical_width;
   if (available_alignment_space <= 0)
     return;
 
-  const Length& margin_start = child.StyleRef().MarginStartUsing(StyleRef());
-  const Length& margin_end = child.StyleRef().MarginEndUsing(StyleRef());
   if (margin_start.IsAuto() && margin_end.IsAuto()) {
     child.SetMarginStart(available_alignment_space / 2, Style());
     child.SetMarginEnd(available_alignment_space / 2, Style());
@@ -1578,14 +1586,22 @@ DISABLE_CFI_PERF
 void LayoutGrid::UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
   DCHECK(!child.IsOutOfFlowPositioned());
 
+  const Length& margin_before = child.StyleRef().MarginBeforeUsing(StyleRef());
+  const Length& margin_after = child.StyleRef().MarginAfterUsing(StyleRef());
+  LayoutUnit margin_logical_height;
+  // We should only consider computed margins if their specified value isn't
+  // 'auto', since such computed value may come from a previous layout and may
+  // be incorrect now.
+  if (!margin_before.IsAuto())
+    margin_logical_height += child.MarginBefore();
+  if (!margin_after.IsAuto())
+    margin_logical_height += child.MarginAfter();
   LayoutUnit available_alignment_space =
       child.OverrideContainingBlockContentLogicalHeight() -
-      child.LogicalHeight() - child.MarginLogicalHeight();
+      child.LogicalHeight() - margin_logical_height;
   if (available_alignment_space <= 0)
     return;
 
-  const Length& margin_before = child.StyleRef().MarginBeforeUsing(StyleRef());
-  const Length& margin_after = child.StyleRef().MarginAfterUsing(StyleRef());
   if (margin_before.IsAuto() && margin_after.IsAuto()) {
     child.SetMarginBefore(available_alignment_space / 2, Style());
     child.SetMarginAfter(available_alignment_space / 2, Style());

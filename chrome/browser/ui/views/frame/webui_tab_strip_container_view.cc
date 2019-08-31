@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
@@ -58,11 +60,14 @@ WebUITabStripContainerView::CreateControlButtons() {
   new_tab_button->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kAddIcon, gfx::kGoogleGrey700));
+  new_tab_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
 
+  // TODO(pbos): Replace this button with tab counter. Remember to add a
+  // tooltip.
   ToolbarButton* const toggle_button = toolbar_button_container->AddChildView(
       std::make_unique<ToolbarButton>(this));
   toggle_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON);
-  // TODO(pbos): Replace this icon tab counter.
   toggle_button->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kCaretUpIcon, gfx::kGoogleGrey700));

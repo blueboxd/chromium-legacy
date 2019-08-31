@@ -39,6 +39,9 @@ class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
 
+enum class GetAssertionStatus;
+enum class MakeCredentialStatus;
+
 }  // namespace device
 
 namespace service_manager {
@@ -137,7 +140,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   // Callback to handle the async response from a U2fDevice.
   void OnRegisterResponse(
-      device::FidoReturnCode status_code,
+      device::MakeCredentialStatus status_code,
       base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
       const device::FidoAuthenticator* authenticator);
 
@@ -150,7 +153,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   // Callback to handle the async response from a U2fDevice.
   void OnSignResponse(
-      device::FidoReturnCode status_code,
+      device::GetAssertionStatus status_code,
       base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
           response_data,
       const device::FidoAuthenticator* authenticator);

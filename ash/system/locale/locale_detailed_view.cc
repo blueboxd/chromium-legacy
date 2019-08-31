@@ -76,7 +76,10 @@ class LocaleItem : public ActionableView {
     if (checked_) {
       views::ImageView* checked_image = TrayPopupUtils::CreateMainImageView();
       checked_image->SetImage(gfx::CreateVectorIcon(
-          kCheckCircleIcon, kMenuIconSize, gfx::kGoogleGreen700));
+          kCheckCircleIcon, kMenuIconSize,
+          AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+              AshColorProvider::ContentLayerType::kProminentIconButton,
+              kProminentIconButtonColor)));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
     SetAccessibleName(display_name_view->GetText());

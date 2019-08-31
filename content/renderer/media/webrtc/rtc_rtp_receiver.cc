@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -184,7 +184,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
 
   void SetJitterBufferMinimumDelay(base::Optional<double> delay_seconds) {
     webrtc_receiver_->SetJitterBufferMinimumDelay(
-        ToAbslOptional(delay_seconds));
+        blink::ToAbslOptional(delay_seconds));
   }
 
  private:

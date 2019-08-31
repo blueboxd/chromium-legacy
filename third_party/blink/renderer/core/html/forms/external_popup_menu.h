@@ -44,7 +44,6 @@ class HTMLSelectElement;
 class LocalFrame;
 class WebExternalPopupMenu;
 class WebMouseEvent;
-class WebView;
 struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu is a PopupMenu implementation for macOS and Android.
@@ -52,7 +51,7 @@ struct WebPopupMenuInfo;
 class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
                                             public WebExternalPopupMenuClient {
  public:
-  ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebView&);
+  ExternalPopupMenu(LocalFrame&, HTMLSelectElement&);
   ~ExternalPopupMenu() override;
 
   // Fills |info| with the popup menu information contained in the
@@ -84,7 +83,6 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
 
   Member<HTMLSelectElement> owner_element_;
   Member<LocalFrame> local_frame_;
-  WebView& web_view_;
   std::unique_ptr<WebMouseEvent> synthetic_event_;
   TaskRunnerTimer<ExternalPopupMenu> dispatch_event_timer_;
   // The actual implementor of the show menu.

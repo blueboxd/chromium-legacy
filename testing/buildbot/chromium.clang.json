@@ -38230,7 +38230,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38245,7 +38245,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38260,7 +38260,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38275,7 +38275,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38290,7 +38290,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38305,7 +38305,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38320,7 +38320,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38335,7 +38335,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38350,7 +38350,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38365,7 +38365,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38381,7 +38381,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38396,7 +38396,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38411,7 +38411,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38431,7 +38431,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38446,7 +38446,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38464,7 +38464,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38479,7 +38479,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38494,7 +38494,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38509,7 +38509,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38524,7 +38524,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38539,7 +38539,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38554,7 +38554,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38569,7 +38569,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38584,7 +38584,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38599,7 +38599,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38614,7 +38614,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ],
           "shards": 6
@@ -38635,7 +38635,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38650,7 +38650,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38665,7 +38665,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38680,7 +38680,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38695,7 +38695,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38710,7 +38710,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38725,7 +38725,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38740,7 +38740,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38755,7 +38755,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38770,7 +38770,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38785,7 +38785,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38800,7 +38800,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38815,7 +38815,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38830,7 +38830,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38845,7 +38845,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38860,7 +38860,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38875,7 +38875,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38890,7 +38890,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38905,7 +38905,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38920,7 +38920,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38935,7 +38935,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38950,7 +38950,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38965,7 +38965,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38980,7 +38980,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -38996,7 +38996,7 @@
           "dimension_sets": [
             {
               "integrity": "high",
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39011,7 +39011,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ],
           "shards": 3
@@ -39032,7 +39032,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39047,7 +39047,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39062,7 +39062,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39077,7 +39077,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39092,7 +39092,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39107,7 +39107,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39122,7 +39122,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39137,7 +39137,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39152,7 +39152,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39167,7 +39167,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39182,7 +39182,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39197,7 +39197,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39212,7 +39212,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39227,7 +39227,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39242,7 +39242,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39257,7 +39257,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39272,7 +39272,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39287,7 +39287,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39302,7 +39302,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39317,7 +39317,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39332,7 +39332,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39348,7 +39348,7 @@
           "dimension_sets": [
             {
               "integrity": "high",
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39363,7 +39363,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39378,7 +39378,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39393,7 +39393,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39408,7 +39408,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39424,7 +39424,7 @@
           "dimension_sets": [
             {
               "integrity": "high",
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39439,7 +39439,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39454,7 +39454,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39469,7 +39469,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39484,7 +39484,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39499,7 +39499,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39514,7 +39514,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39529,7 +39529,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39544,7 +39544,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39559,7 +39559,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39574,7 +39574,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39589,7 +39589,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39604,7 +39604,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39619,7 +39619,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39634,7 +39634,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39649,7 +39649,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39664,7 +39664,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39679,7 +39679,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },
@@ -39694,7 +39694,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10"
+              "os": "Windows-10-15063"
             }
           ]
         },

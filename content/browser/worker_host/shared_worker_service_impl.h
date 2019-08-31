@@ -52,9 +52,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
                        const std::string& name,
                        const url::Origin& constructor_origin) override;
 
-  void TerminateAllWorkersForTesting(base::OnceClosure callback);
-  void SetWorkerTerminationCallbackForTesting(base::OnceClosure callback);
-
   // Uses |url_loader_factory| to load workers' scripts instead of
   // StoragePartition's URLLoaderFactoryGetter.
   void SetURLLoaderFactoryForTesting(
@@ -72,13 +69,15 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const blink::MessagePortChannel& port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
-  void DestroyHost(SharedWorkerHost* host);
+  // Virtual for testing.
+  virtual void DestroyHost(SharedWorkerHost* host);
 
   StoragePartitionImpl* storage_partition() { return storage_partition_; }
 
  private:
-  friend class SharedWorkerServiceImplTest;
   friend class SharedWorkerHostTest;
+  friend class SharedWorkerServiceImplTest;
+  friend class TestSharedWorkerServiceImpl;
   FRIEND_TEST_ALL_PREFIXES(NetworkServiceRestartBrowserTest, SharedWorker);
 
   // Creates a new worker in the client's renderer process.
@@ -121,15 +120,16 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
           controller_service_worker_object_host);
 
   // Returns nullptr if there is no such host.
-  SharedWorkerHost* FindAvailableSharedWorkerHost(
-      const SharedWorkerInstance& instance);
+  SharedWorkerHost* FindMatchingSharedWorkerHost(
+      const GURL& url,
+      const std::string& name,
+      const url::Origin& constructor_origin);
 
   void ScriptLoadFailed(
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client);
 
   std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
       worker_hosts_;
-  base::OnceClosure terminate_all_workers_callback_;
 
   // |storage_partition_| owns |this|.
   StoragePartitionImpl* const storage_partition_;

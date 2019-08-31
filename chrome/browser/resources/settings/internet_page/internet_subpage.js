@@ -576,7 +576,7 @@ Polymer({
     assert(this.defaultNetwork !== undefined);
     const networkState = e.detail;
     e.target.blur();
-    if (this.canConnect_(networkState)) {
+    if (this.canAttemptConnection_(networkState)) {
       this.fire('network-connect', {networkState: networkState});
       return;
     }
@@ -601,11 +601,13 @@ Polymer({
   },
 
   /**
-   * Determines whether or not a network state can be connected to.
+   * Determines whether or not it is possible to attempt a connection to the
+   * provided network (e.g., whether it's possible to connect or configure the
+   * network for connection).
    * @param {!OncMojo.NetworkStateProperties} state The network state.
    * @private
    */
-  canConnect_: function(state) {
+  canAttemptConnection_: function(state) {
     if (state.connectionState != mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
@@ -616,6 +618,11 @@ Polymer({
         (!this.defaultNetwork ||
          !OncMojo.connectionStateIsConnected(
              this.defaultNetwork.connectionState))) {
+      return false;
+    }
+    // Cellular networks do not have a configuration flow, so it's not possible
+    // to attempt a connection if the network is not conncetable.
+    if (state.type == mojom.NetworkType.kCellular && !state.connectable) {
       return false;
     }
     return true;

@@ -30,17 +30,14 @@ class PreviewsOptimizationGuide {
   // Returns whether the optimization guide is ready to receive requests.
   virtual bool IsReady() const = 0;
 
-  // Returns whether |type| can be applied for the URL associated with
-  // |navigation_handle|. If so |out_ect_threshold| provides the maximum
-  // effective connection type to trigger the preview for. |previews_data| can
-  // be modified (for further details provided by hints). Note that this will
+  // Returns whether |type| is allowed for the URL associated with
+  // |navigation_handle| and the current conditions. |previews_data| can be
+  // modified (for further details provided by hints). Note that this will
   // return false if a hint is needed to determine if the preview is allowed but
   // we do not have everything we need to make that determination in memory.
-  virtual bool CanApplyPreview(
-      PreviewsUserData* previews_data,
-      content::NavigationHandle* navigation_handle,
-      PreviewsType type,
-      net::EffectiveConnectionType* out_ect_threshold) = 0;
+  virtual bool CanApplyPreview(PreviewsUserData* previews_data,
+                               content::NavigationHandle* navigation_handle,
+                               PreviewsType type) = 0;
 
   // Returns whether |navigation_handle| may have associated optimization hints
   // (specifically, PageHints). If so, but the hints are not available

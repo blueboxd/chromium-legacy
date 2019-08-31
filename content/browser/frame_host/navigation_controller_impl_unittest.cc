@@ -2450,6 +2450,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
           std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entry->SetTitle(base::ASCIIToUTF16("Title"));
+  entry->SetPageState(PageState::CreateFromEncodedData("state"));
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
   entries.push_back(std::move(entry));
@@ -2518,6 +2519,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
           std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   new_entry->SetTitle(base::ASCIIToUTF16("Title"));
+  new_entry->SetPageState(PageState::CreateFromEncodedData("state"));
   entries.push_back(std::move(new_entry));
   std::unique_ptr<WebContents> our_contents =
       WebContents::Create(WebContents::CreateParams(browser_context()));

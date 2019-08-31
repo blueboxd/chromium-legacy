@@ -25,7 +25,7 @@ class ProgressCenterImpl {
 
     /**
      * List of panel UI managed by the progress center.
-     * @private @const {!Array<ProgressCenterPanel>}
+     * @private @const {!Array<ProgressCenterPanelInterface>}
      */
     this.panels_ = [];
   }
@@ -86,7 +86,7 @@ class ProgressCenterImpl {
 
   /**
    * Adds a panel UI to the notification center.
-   * @param {ProgressCenterPanel} panel Panel UI.
+   * @param {ProgressCenterPanelInterface} panel Panel UI.
    */
   addPanel(panel) {
     if (this.panels_.indexOf(panel) !== -1) {
@@ -110,7 +110,7 @@ class ProgressCenterImpl {
 
   /**
    * Removes a panel UI from the notification center.
-   * @param {ProgressCenterPanel} panel Panel UI.
+   * @param {ProgressCenterPanelInterface} panel Panel UI.
    */
   removePanel(panel) {
     const index = this.panels_.indexOf(panel);

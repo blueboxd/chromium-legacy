@@ -35,7 +35,10 @@ DelayedTaskManager::DelayedTask& DelayedTaskManager::DelayedTask::operator=(
 
 bool DelayedTaskManager::DelayedTask::operator<=(
     const DelayedTask& other) const {
-  return task.delayed_run_time <= other.task.delayed_run_time;
+  if (task.delayed_run_time == other.task.delayed_run_time) {
+    return task.sequence_num <= other.task.sequence_num;
+  }
+  return task.delayed_run_time < other.task.delayed_run_time;
 }
 
 bool DelayedTaskManager::DelayedTask::IsScheduled() const {

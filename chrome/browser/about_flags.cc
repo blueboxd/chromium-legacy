@@ -87,6 +87,7 @@
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
@@ -855,6 +856,13 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
+    {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
+const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealbox,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPRealbox),
+     "t3316133" /* variation_id */}};
+
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -1198,11 +1206,16 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_Toolbar[] = {
+    {"start_surface_variation", "toolbar"}};
+
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
     {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
-     base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr}};
+     base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
+    {"Start Surface Toolbar", kStartSurfaceAndroid_Toolbar,
+     base::size(kStartSurfaceAndroid_Toolbar), nullptr}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -1731,19 +1744,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
-    {"new-password-form-parsing",
-     flag_descriptions::kNewPasswordFormParsingName,
-     flag_descriptions::kNewPasswordFormParsingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kNewPasswordFormParsing)},
-    {"new-password-form-parsing-for-saving",
-     flag_descriptions::kNewPasswordFormParsingForSavingName,
-     flag_descriptions::kNewPasswordFormParsingForSavingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kNewPasswordFormParsingForSaving)},
-    {"only-new-password-form-parsing",
-     flag_descriptions::kOnlyNewPasswordFormParsingName,
-     flag_descriptions::kOnlyNewPasswordFormParsingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kOnlyNewParser)},
     {"username-first-flow", flag_descriptions::kUsernameFirstFlowName,
      flag_descriptions::kUsernameFirstFlowDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlow)},
@@ -2690,11 +2690,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
-    {"omnibox-on-device-head-suggestions",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
-
     {"omnibox-search-engine-logo",
      flag_descriptions::kOmniboxSearchEngineLogoName,
      flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
@@ -2702,6 +2697,18 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxSearchEngineLogoFeatureVariations,
                                     "OmniboxSearchEngineLogo")},
 #endif  // defined(OS_ANDROID)
+
+    {"omnibox-on-device-head-suggestions",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
+
+    {"omnibox-on-focus-suggestions",
+     flag_descriptions::kOmniboxOnFocusSuggestionsName,
+     flag_descriptions::kOmniboxOnFocusSuggestionsDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOnFocusSuggestions,
+                                    kOmniboxOnFocusSuggestionsVariations,
+                                    "OmniboxBundledExperimentV1")},
 
     {"omnibox-rich-entity-suggestions",
      flag_descriptions::kOmniboxRichEntitySuggestionsName,

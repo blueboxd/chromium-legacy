@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/public/graph/worker_node.h"
 #include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
@@ -56,6 +58,16 @@ class PerformanceManager {
   using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
   static void CallOnGraph(const base::Location& from_here,
                           GraphCallback graph_callback);
+
+  // Posts a callback that will run on the PM sequence, and be provided a
+  // pointer to the Graph. Valid to be called from the main thread only, and
+  // only if "IsAvailable" returns true. The return value is returned as an
+  // argument to the reply callback.
+  template <typename TaskReturnType>
+  void CallOnGraphAndReplyWithResult(
+      const base::Location& from_here,
+      base::OnceCallback<TaskReturnType(GraphImpl*)> task,
+      base::OnceCallback<void(TaskReturnType)> reply);
 
   // Passes a GraphOwned object into the Graph on the PM sequence. Should only
   // be called from the main thread and only if "IsAvailable" returns true.
@@ -150,6 +162,10 @@ class PerformanceManager {
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
   void CallOnGraphImpl(GraphCallback graph_callback);
 
+  template <typename TaskReturnType>
+  TaskReturnType CallOnGraphAndReplyWithResultImpl(
+      base::OnceCallback<TaskReturnType(GraphImpl*)> task);
+
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   GraphImpl graph_;
@@ -157,7 +173,6 @@ class PerformanceManager {
   // Provided to |graph_|.
   // TODO(siggi): This no longer needs to go through mojo.
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
-
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -167,6 +182,26 @@ class PerformanceManager {
 template <typename NodeType>
 void PerformanceManager::DeleteNode(std::unique_ptr<NodeType> node) {
   PostDeleteNode(std::move(node));
+}
+
+template <typename TaskReturnType>
+void PerformanceManager::CallOnGraphAndReplyWithResult(
+    const base::Location& from_here,
+    base::OnceCallback<TaskReturnType(GraphImpl*)> task,
+    base::OnceCallback<void(TaskReturnType)> reply) {
+  auto* pm = GetInstance();
+  base::PostTaskAndReplyWithResult(
+      pm->task_runner_.get(), from_here,
+      base::BindOnce(&PerformanceManager::CallOnGraphAndReplyWithResultImpl<
+                         TaskReturnType>,
+                     base::Unretained(pm), std::move(task)),
+      std::move(reply));
+}
+
+template <typename TaskReturnType>
+TaskReturnType PerformanceManager::CallOnGraphAndReplyWithResultImpl(
+    base::OnceCallback<TaskReturnType(GraphImpl*)> task) {
+  return std::move(task).Run(&graph_);
 }
 
 }  // namespace performance_manager

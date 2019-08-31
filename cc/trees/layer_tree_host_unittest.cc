@@ -615,6 +615,11 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostFreeContextResourcesOnDestroy
     : public LayerTreeHostContextCacheTest {
  public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // TODO(crbug.com/985009): Fix test with surface sync enabled.
+    settings->enable_surface_synchronization = false;
+  }
+
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const viz::BeginFrameArgs& args) override {
     // Ensure that our initialization expectations have completed.
@@ -1745,6 +1750,11 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestAnimationOpacityMutatedUsingLayerLists);
 class LayerTreeHostTestAnimationTransformMutatedNotUsingLayerLists
     : public LayerTreeHostTest {
  protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // TODO(crbug.com/985009): Fix test with surface sync enabled.
+    settings->enable_surface_synchronization = false;
+  }
+
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     EXPECT_EQ(gfx::Transform(), root->transform());
@@ -2145,7 +2155,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     child_layer_->SetBounds(gfx::Size(10, 10));
     mask_layer_ = base::MakeRefCounted<UpdateCountingLayer>(&client_);
     mask_layer_->SetBounds(gfx::Size(10, 10));
-    child_layer_->SetMaskLayer(mask_layer_.get());
+    child_layer_->SetMaskLayer(mask_layer_);
     root->AddChild(child_layer_);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
@@ -2166,7 +2176,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
         EXPECT_EQ(child_layer_->update_count(), 0);
 
         layer_tree_host()->root_layer()->RemoveAllChildren();
-        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer_.get());
+        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer_);
         break;
     }
   }
@@ -2312,8 +2322,8 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     root->SetBounds(bounds_);
     layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root);
-    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(bounds_), 1.f,
-                                               viz::LocalSurfaceIdAllocation());
+    layer_tree_host()->SetViewportRectAndScale(
+        gfx::Rect(bounds_), 1.f, GetCurrentLocalSurfaceIdAllocation());
 
     PostSetNeedsCommitToMainThread();
     client_.set_bounds(layer_->bounds());
@@ -2348,8 +2358,9 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   void DidCommitAndDrawFrame() override {
     // On the second commit, resize the viewport.
     if (num_draws_ == 1) {
+      GenerateNewLocalSurfaceId();
       layer_tree_host()->SetViewportRectAndScale(
-          gfx::Rect(400, 64), 1.f, viz::LocalSurfaceIdAllocation());
+          gfx::Rect(400, 64), 1.f, GetCurrentLocalSurfaceIdAllocation());
     }
     if (num_draws_ < 2) {
       layer_tree_host()->SetNeedsRedrawRect(invalid_rect_);
@@ -3467,30 +3478,20 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferMainFrameUpdate);
 class LayerTreeHostInvalidLocalSurfaceIdDefersCommit
     : public LayerTreeHostTestDeferMainFrameUpdate {
  public:
-  LayerTreeHostInvalidLocalSurfaceIdDefersCommit() = default;
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // With surface synchronization turned on, commits are deferred until a
-    // LocalSurfaceId has been assigned. The set up code sets the size of the
-    // LayerTreeHost (using SetViewportRectAndScale()), without providing a
-    // LocalSurfaceId. So, commits should be deferred until we set an id later
-    // during the test (in AllowCommits() override below).
-    settings->enable_surface_synchronization = true;
+  LayerTreeHostInvalidLocalSurfaceIdDefersCommit() {
+    SkipAllocateInitialLocalSurfaceId();
   }
-
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void AllowCommits() override {
-    allocator_.GenerateId();
+    GenerateNewLocalSurfaceId();
     PostSetLocalSurfaceIdAllocationToMainThread(
-        allocator_.GetCurrentLocalSurfaceIdAllocation());
+        GetCurrentLocalSurfaceIdAllocation());
   }
 
   bool IsCommitAllowed() const override {
-    return allocator_.GetCurrentLocalSurfaceIdAllocation().IsValid();
+    return GetCurrentLocalSurfaceIdAllocation().IsValid();
   }
-
- private:
-  viz::ParentLocalSurfaceIdAllocator allocator_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostInvalidLocalSurfaceIdDefersCommit);
@@ -4353,8 +4354,9 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
         ++expected_push_properties_grandchild_;
         break;
       case 10:
+        GenerateNewLocalSurfaceId();
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(20, 20), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(20, 20), 1.f, GetCurrentLocalSurfaceIdAllocation());
         // No layers need commit.
         break;
       case 11:
@@ -6734,12 +6736,13 @@ class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
         // Setting an empty viewport causes draws to get skipped, so the active
         // tree won't update draw properties.
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(), 1.f, GetCurrentLocalSurfaceIdAllocation());
         child_->SetForceRenderSurfaceForTesting(false);
         break;
       case 3:
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(root_->bounds()), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(root_->bounds()), 1.f,
+            GetCurrentLocalSurfaceIdAllocation());
     }
   }
 
@@ -7710,37 +7713,24 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPresentationTime);
 // Makes sure that viz::LocalSurfaceId is propagated to the LayerTreeFrameSink.
 class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_surface_synchronization = true;
-  }
-
-  void BeginTest() override {
-    allocator_.GenerateId();
-    expected_local_surface_id_allocation_ =
-        allocator_.GetCurrentLocalSurfaceIdAllocation();
-    PostSetLocalSurfaceIdAllocationToMainThread(
-        expected_local_surface_id_allocation_);
-  }
+  void BeginTest() override {}
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     EXPECT_EQ(
-        expected_local_surface_id_allocation_,
+        GetCurrentLocalSurfaceIdAllocation(),
         host_impl->active_tree()->local_surface_id_allocation_from_parent());
     return draw_result;
   }
 
   void DisplayReceivedLocalSurfaceIdOnThread(
       const viz::LocalSurfaceId& local_surface_id) override {
-    EXPECT_EQ(expected_local_surface_id_allocation_.local_surface_id(),
+    EXPECT_EQ(GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
               local_surface_id);
     EndTest();
   }
-
-  viz::LocalSurfaceIdAllocation expected_local_surface_id_allocation_;
-  viz::ParentLocalSurfaceIdAllocator allocator_;
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);
 
@@ -7748,18 +7738,9 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);
 // viz::LocalSurfaceIds that only involve the child sequence number.
 class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_surface_synchronization = true;
-  }
-
   void BeginTest() override {
-    allocator_.GenerateId();
-    expected_local_surface_id_allocation_ =
-        allocator_.GetCurrentLocalSurfaceIdAllocation();
     EXPECT_TRUE(child_allocator_.UpdateFromParent(
-        allocator_.GetCurrentLocalSurfaceIdAllocation()));
-    PostSetLocalSurfaceIdAllocationToMainThread(
-        expected_local_surface_id_allocation_);
+        GetCurrentLocalSurfaceIdAllocation()));
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
@@ -7768,7 +7749,7 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     // We should not be picking up the newer |child_local_surface_id_|.
     EXPECT_EQ(
-        expected_local_surface_id_allocation_,
+        GetCurrentLocalSurfaceIdAllocation(),
         host_impl->active_tree()->local_surface_id_allocation_from_parent());
 
     // This initial test setup triggers a commit and subsequent draw. Upon the
@@ -7784,7 +7765,7 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
       child_allocator_.GenerateId();
       child_local_surface_id_allocation_ =
           child_allocator_.GetCurrentLocalSurfaceIdAllocation();
-      EXPECT_NE(expected_local_surface_id_allocation_,
+      EXPECT_NE(GetCurrentLocalSurfaceIdAllocation(),
                 child_local_surface_id_allocation_);
       PostSetLocalSurfaceIdAllocationToMainThread(
           child_local_surface_id_allocation_);
@@ -7795,14 +7776,12 @@ class LayerTreeHostTestLocalSurfaceIdSkipChildNum : public LayerTreeHostTest {
 
   void DisplayReceivedLocalSurfaceIdOnThread(
       const viz::LocalSurfaceId& local_surface_id) override {
-    EXPECT_EQ(expected_local_surface_id_allocation_.local_surface_id(),
+    EXPECT_EQ(GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
               local_surface_id);
     EndTest();
   }
 
-  viz::LocalSurfaceIdAllocation expected_local_surface_id_allocation_;
   viz::LocalSurfaceIdAllocation child_local_surface_id_allocation_;
-  viz::ParentLocalSurfaceIdAllocator allocator_;
   viz::ChildLocalSurfaceIdAllocator child_allocator_;
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceIdSkipChildNum);
@@ -7811,16 +7790,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceIdSkipChildNum);
 // to LayerTreeFrameSink.
 class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_surface_synchronization = true;
-  }
-
   void BeginTest() override {
-    allocator_.GenerateId();
-    expected_parent_local_surface_id_allocation_ =
-        allocator_.GetCurrentLocalSurfaceIdAllocation();
-    PostSetLocalSurfaceIdAllocationToMainThread(
-        expected_parent_local_surface_id_allocation_);
     PostRequestNewLocalSurfaceIdToMainThread();
   }
 
@@ -7829,7 +7799,7 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
     EXPECT_EQ(
-        expected_parent_local_surface_id_allocation_,
+        GetCurrentLocalSurfaceIdAllocation(),
         host_impl->active_tree()->local_surface_id_allocation_from_parent());
     return draw_result;
   }
@@ -7837,7 +7807,7 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
   void DisplayReceivedLocalSurfaceIdOnThread(
       const viz::LocalSurfaceId& local_surface_id) override {
     const viz::LocalSurfaceId& expected_parent_local_surface_id =
-        expected_parent_local_surface_id_allocation_.local_surface_id();
+        GetCurrentLocalSurfaceIdAllocation().local_surface_id();
     viz::LocalSurfaceId child_local_surface_id(
         expected_parent_local_surface_id.parent_sequence_number(),
         expected_parent_local_surface_id.child_sequence_number() + 1,
@@ -7853,9 +7823,6 @@ class LayerTreeHostTestRequestNewLocalSurfaceId : public LayerTreeHostTest {
         host_impl->active_tree()->new_local_surface_id_request_for_testing());
     EndTest();
   }
-
-  viz::LocalSurfaceIdAllocation expected_parent_local_surface_id_allocation_;
-  viz::ParentLocalSurfaceIdAllocator allocator_;
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRequestNewLocalSurfaceId);
 
@@ -8593,7 +8560,7 @@ class DontUpdateLayersWithEmptyBounds : public LayerTreeTest {
     mask_client_.set_bounds(gfx::Size(9, 9));
     mask_->SetBounds(gfx::Size(9, 9));
 
-    child_->SetMaskLayer(mask_.get());
+    child_->SetMaskLayer(mask_);
     root->AddChild(child_);
     layer_tree_host()->SetRootLayer(std::move(root));
     LayerTreeTest::SetupTree();
@@ -8648,28 +8615,18 @@ class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
  public:
   LayerTreeHostTestNewLocalSurfaceIdForcesDraw() {}
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_surface_synchronization = true;
-  }
-
   void BeginTest() override {
     layer_tree_host()->SetViewportRectAndScale(gfx::Rect(10, 10), 1.f,
                                                viz::LocalSurfaceIdAllocation());
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
-    allocator_.GenerateId();
-    local_surface_id_allocation_ =
-        allocator_.GetCurrentLocalSurfaceIdAllocation();
-    PostSetLocalSurfaceIdAllocationToMainThread(local_surface_id_allocation_);
   }
 
   void DidReceiveCompositorFrameAck() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        allocator_.GenerateId();
-        local_surface_id_allocation_ =
-            allocator_.GetCurrentLocalSurfaceIdAllocation();
+        GenerateNewLocalSurfaceId();
         PostSetLocalSurfaceIdAllocationToMainThread(
-            local_surface_id_allocation_);
+            GetCurrentLocalSurfaceIdAllocation());
         break;
       case 2:
         EndTest();
@@ -8678,9 +8635,6 @@ class LayerTreeHostTestNewLocalSurfaceIdForcesDraw : public LayerTreeHostTest {
         NOTREACHED();
     }
   }
-
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
-  viz::ParentLocalSurfaceIdAllocator allocator_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNewLocalSurfaceIdForcesDraw);

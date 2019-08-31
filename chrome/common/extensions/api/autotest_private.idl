@@ -535,5 +535,11 @@ namespace autotestPrivate {
     // Swap the windows in the split view.
     // |callback|: Called when the operation has completed.
     static void swapWindowsInSplitView(VoidCallback callback);
+
+    // Set ARC app window focused.
+    // |packageName|: the package name of the ARC app window.
+    // |callback|: called when the operation has completed.
+    static void setArcAppWindowFocus(DOMString packageName,
+                                     VoidCallback callback);
   };
 };

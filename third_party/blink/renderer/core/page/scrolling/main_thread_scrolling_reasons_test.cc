@@ -46,9 +46,7 @@ class MainThreadScrollingReasonsTest : public testing::Test {
   }
 
   ~MainThreadScrollingReasonsTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void NavigateTo(const String& url) {
@@ -67,6 +65,8 @@ class MainThreadScrollingReasonsTest : public testing::Test {
   }
 
   void RegisterMockedHttpURLLoad(const String& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |helper_|.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString(base_url_), test::CoreTestDataPath(), WebString(file_name));
   }

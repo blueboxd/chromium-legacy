@@ -451,11 +451,11 @@ class URLLoaderTest : public testing::Test {
     if (send_ssl_for_cert_error_)
       options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
-    std::unique_ptr<TestNetworkServiceClient> network_service_client;
+    std::unique_ptr<TestNetworkContextClient> network_context_client;
     if (allow_file_uploads_) {
-      network_service_client = std::make_unique<TestNetworkServiceClient>();
-      network_service_client->set_upload_files_invalid(upload_files_invalid_);
-      network_service_client->set_ignore_last_upload_file(
+      network_context_client = std::make_unique<TestNetworkContextClient>();
+      network_context_client->set_upload_files_invalid(upload_files_invalid_);
+      network_context_client->set_ignore_last_upload_file(
           ignore_last_upload_file_);
     }
 
@@ -469,8 +469,8 @@ class URLLoaderTest : public testing::Test {
     params.process_id = mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
     url_loader = std::make_unique<URLLoader>(
-        context(), network_service_client.get(),
-        nullptr /* network_context_client */,
+        context(), nullptr /* network_service_client */,
+        network_context_client.get(),
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
         mojo::MakeRequest(&loader), options, request,
         client_.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
@@ -1563,7 +1563,7 @@ TEST_F(URLLoaderTest, UploadFileWithoutNetworkServiceClient) {
   EXPECT_EQ(net::ERR_ACCESS_DENIED, Load(test_server()->GetURL("/echo")));
 }
 
-class CallbackSavingNetworkServiceClient : public TestNetworkServiceClient {
+class CallbackSavingNetworkContextClient : public TestNetworkContextClient {
  public:
   void OnFileUploadRequested(uint32_t process_id,
                              bool async,
@@ -1608,11 +1608,11 @@ TEST_F(URLLoaderTest, UploadFileCanceled) {
   static mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
   params.is_corb_enabled = false;
-  auto network_service_client =
-      std::make_unique<CallbackSavingNetworkServiceClient>();
+  auto network_context_client =
+      std::make_unique<CallbackSavingNetworkContextClient>();
   std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
-      context(), network_service_client.get(),
-      nullptr /* network_context_client */,
+      context(), nullptr /* network_service_client */,
+      network_context_client.get(),
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
       mojo::MakeRequest(&loader), 0, request, client()->CreateInterfacePtr(),
       TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
@@ -1620,8 +1620,8 @@ TEST_F(URLLoaderTest, UploadFileCanceled) {
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
       nullptr /* origin_policy_manager */);
 
-  mojom::NetworkServiceClient::OnFileUploadRequestedCallback callback;
-  network_service_client->RunUntilUploadRequested(&callback);
+  mojom::NetworkContextClient::OnFileUploadRequestedCallback callback;
+  network_context_client->RunUntilUploadRequested(&callback);
 
   // Check we can call the callback from a deleted URLLoader without crashing.
   url_loader.reset();

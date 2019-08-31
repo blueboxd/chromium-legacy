@@ -14,13 +14,15 @@
 
 namespace sync_wifi {
 
-// Represents a change to the local network stack which hasn't been saved yet.
+// Represents a change to the local network stack which hasn't been saved yet,
+// including the number of completed attempts to save it.
 class PendingNetworkConfigurationUpdate {
  public:
   PendingNetworkConfigurationUpdate(
       const std::string& ssid,
       const std::string& change_guid,
-      const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics);
+      const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics,
+      int completed_attempts);
   PendingNetworkConfigurationUpdate(
       const PendingNetworkConfigurationUpdate& update);
   virtual ~PendingNetworkConfigurationUpdate();
@@ -38,6 +40,8 @@ class PendingNetworkConfigurationUpdate {
     return specifics_;
   }
 
+  int completed_attempts() { return completed_attempts_; }
+
   // Returns |true| if the update operation is deleting a network.
   bool IsDeleteOperation() const;
 
@@ -45,6 +49,7 @@ class PendingNetworkConfigurationUpdate {
   const std::string ssid_;
   const std::string change_guid_;
   const base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics_;
+  int completed_attempts_;
 };
 
 }  // namespace sync_wifi

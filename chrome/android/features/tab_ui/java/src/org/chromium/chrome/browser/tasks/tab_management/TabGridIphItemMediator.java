@@ -30,21 +30,19 @@ class TabGridIphItemMediator implements TabSwitcherMediator.IphProvider {
     private void setupOnClickListeners() {
         View.OnClickListener showIPHOnClickListener = view -> {
             mModel.set(TabGridIphItemProperties.IS_IPH_DIALOG_VISIBLE, true);
-            // When the dialog is showing, the entrance should be closed.
-            mModel.set(TabGridIphItemProperties.IS_IPH_ENTRANCE_VISIBLE, false);
         };
         mModel.set(
                 TabGridIphItemProperties.IPH_ENTRANCE_SHOW_BUTTON_LISTENER, showIPHOnClickListener);
 
         View.OnClickListener closeIPHDialogOnClickListener = view -> {
             mModel.set(TabGridIphItemProperties.IS_IPH_DIALOG_VISIBLE, false);
-            dismissIPHFeature();
         };
         mModel.set(TabGridIphItemProperties.IPH_DIALOG_CLOSE_BUTTON_LISTENER,
                 closeIPHDialogOnClickListener);
 
         View.OnClickListener closeIPHEntranceOnClickListener = view -> {
             mModel.set(TabGridIphItemProperties.IS_IPH_ENTRANCE_VISIBLE, false);
+            // Dismiss the drag-and-drop IPH feature when user explicitly closes the entrance.
             dismissIPHFeature();
         };
         mModel.set(TabGridIphItemProperties.IPH_ENTRANCE_CLOSE_BUTTON_LISTENER,
@@ -56,7 +54,6 @@ class TabGridIphItemMediator implements TabSwitcherMediator.IphProvider {
             @Override
             public void onScrimClick() {
                 mModel.set(TabGridIphItemProperties.IS_IPH_DIALOG_VISIBLE, false);
-                dismissIPHFeature();
             }
 
             @Override

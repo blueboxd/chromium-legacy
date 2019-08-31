@@ -18,8 +18,8 @@
 #include "base/timer/timer.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_video_track_source.h"
 #include "media/base/limits.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_video_track_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
@@ -78,7 +78,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   WebRtcVideoSourceAdapter(
       const scoped_refptr<base::SingleThreadTaskRunner>&
           libjingle_worker_thread,
-      const scoped_refptr<WebRtcVideoTrackSource>& source,
+      const scoped_refptr<blink::WebRtcVideoTrackSource>& source,
       base::TimeDelta refresh_interval,
       const base::RepeatingClosure& refresh_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -117,7 +117,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   // IO-thread.
   scoped_refptr<base::SingleThreadTaskRunner> libjingle_worker_thread_;
 
-  scoped_refptr<WebRtcVideoTrackSource> video_source_;
+  scoped_refptr<blink::WebRtcVideoTrackSource> video_source_;
 
   // Used to protect |video_source_|. It is taken by libjingle's worker
   // thread for each video frame that is delivered but only taken on the
@@ -142,7 +142,7 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
 
 MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& libjingle_worker_thread,
-    const scoped_refptr<WebRtcVideoTrackSource>& source,
+    const scoped_refptr<blink::WebRtcVideoTrackSource>& source,
     base::TimeDelta refresh_interval,
     const base::RepeatingClosure& refresh_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -252,9 +252,9 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
 
   // TODO(pbos): Consolidate WebRtcVideoCapturerAdapter into WebRtcVideoSource
   // by removing the need for and dependency on a cricket::VideoCapturer.
-  video_source_ = scoped_refptr<WebRtcVideoTrackSource>(
-      new rtc::RefCountedObject<WebRtcVideoTrackSource>(is_screencast,
-                                                        needs_denoising));
+  video_source_ = scoped_refptr<blink::WebRtcVideoTrackSource>(
+      new rtc::RefCountedObject<blink::WebRtcVideoTrackSource>(
+          is_screencast, needs_denoising));
 
   // TODO(pbos): Consolidate the local video track with the source proxy and
   // move into PeerConnectionDependencyFactory. This now separately holds on a

@@ -17,6 +17,7 @@
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -50,10 +51,10 @@ using password_manager::metrics_util::PasswordType;
 // (8) |   UI   | On receiving response, handle response and finish.
 //     |        | On request timeout, cancel request.
 //     |        | On deletion of |password_protection_service_|, cancel request.
-class PasswordProtectionRequest
-    : public base::RefCountedThreadSafe<
-          PasswordProtectionRequest,
-          content::BrowserThread::DeleteOnUIThread> {
+class PasswordProtectionRequest : public base::RefCountedThreadSafe<
+                                      PasswordProtectionRequest,
+                                      content::BrowserThread::DeleteOnUIThread>,
+                                  public content::WebContentsObserver {
  public:
   PasswordProtectionRequest(content::WebContents* web_contents,
                             const GURL& main_frame_url,
@@ -122,6 +123,9 @@ class PasswordProtectionRequest
   // Cancels navigation if there is modal warning showing, resumes it otherwise.
   void HandleDeferredNavigations();
 
+  // WebContentsObserver implementation
+  void WebContentsDestroyed() override;
+
  protected:
   friend class base::RefCountedThreadSafe<PasswordProtectionRequest>;
 
@@ -131,7 +135,7 @@ class PasswordProtectionRequest
   friend class base::DeleteHelper<PasswordProtectionRequest>;
   friend class PasswordProtectionServiceTest;
   friend class ChromePasswordProtectionServiceTest;
-  virtual ~PasswordProtectionRequest();
+  ~PasswordProtectionRequest() override;
 
   // Start checking the whitelist.
   void CheckWhitelist();

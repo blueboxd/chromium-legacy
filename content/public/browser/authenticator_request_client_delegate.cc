@@ -19,7 +19,6 @@ AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
 bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
-    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   return false;
 }
@@ -49,6 +48,17 @@ bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {
 
 void AuthenticatorRequestClientDelegate::SetMightCreateResidentCredential(
     bool v) {}
+
+bool AuthenticatorRequestClientDelegate::ShouldPermitCableExtension(
+    const url::Origin& origin) {
+  return false;
+}
+
+bool AuthenticatorRequestClientDelegate::SetCableTransportInfo(
+    bool cable_extension_provided,
+    base::Optional<device::QRGeneratorKey> qr_generator_key) {
+  return false;
+}
 
 void AuthenticatorRequestClientDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,

@@ -298,13 +298,15 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
                        base::StrCat({base::UTF16ToUTF8(match.keyword), " "}),
                        base::CompareCase::INSENSITIVE_ASCII);
   if (is_search_type) {
+    const TemplateURL* template_url =
+        client_->GetTemplateURLService()->GetDefaultSearchProvider();
     match.from_keyword =
-        // Either the match is not from the default search provider:
-        match.keyword != client_->GetTemplateURLService()
-                             ->GetDefaultSearchProvider()
-                             ->keyword() ||
-        // Or it is, but keyword mode was invoked explicitly and the keyword
-        // in the input is also of the default search provider.
+        // Either the default search provider is disabled,
+        !template_url ||
+        // or the match is not from the default search provider,
+        match.keyword != template_url->keyword() ||
+        // or keyword mode was invoked explicitly and the keyword in the input
+        // is also of the default search provider.
         (input.prefer_keyword() && keyword_matches);
   }
   // True if input is in keyword mode and the match is a URL suggestion or the

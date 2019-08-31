@@ -98,19 +98,19 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   bool CoversRect(const gfx::Rect& layer_rect) const;
 
   // Returns true if this raster source has anything to rasterize.
-  virtual bool HasRecordings() const;
+  bool HasRecordings() const;
 
   // Valid rectangle in which everything is recorded and can be rastered from.
-  virtual gfx::Rect RecordedViewport() const;
+  gfx::Rect RecordedViewport() const;
 
   // Returns true if this raster source may try and draw text.
   bool HasText() const;
 
   // Tracing functionality.
-  virtual void DidBeginTracing();
-  virtual void AsValueInto(base::trace_event::TracedValue* array) const;
-  virtual sk_sp<SkPicture> GetFlattenedPicture();
-  virtual size_t GetMemoryUsage() const;
+  void DidBeginTracing();
+  void AsValueInto(base::trace_event::TracedValue* array) const;
+  sk_sp<SkPicture> GetFlattenedPicture();
+  size_t GetMemoryUsage() const;
 
   const scoped_refptr<DisplayItemList>& GetDisplayItemList() const {
     return display_list_;

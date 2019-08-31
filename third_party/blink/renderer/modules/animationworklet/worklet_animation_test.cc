@@ -102,8 +102,9 @@ class WorkletAnimationTest : public RenderingTest {
   }
 
   void SimulateFrame(double milliseconds) {
-    base::TimeTicks tick = base::TimeTicks() + ToTimeDelta(milliseconds);
-    GetDocument().GetAnimationClock().ResetTimeForTesting(tick);
+    base::TimeTicks tick =
+        GetDocument().Timeline().ZeroTime() + ToTimeDelta(milliseconds);
+    GetDocument().GetAnimationClock().UpdateTime(tick);
     GetDocument().GetWorkletAnimationController().UpdateAnimationStates();
     GetDocument().GetWorkletAnimationController().UpdateAnimationTimings(
         kTimingUpdateForAnimationFrame);
@@ -244,8 +245,8 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Input time changes. Need to peek again.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(
-      base::TimeTicks() + ToTimeDelta(111.0 + 123.4));
+  GetDocument().GetAnimationClock().UpdateTime(
+      GetDocument().Timeline().ZeroTime() + ToTimeDelta(111.0 + 123.4));
 
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.worklet_id);

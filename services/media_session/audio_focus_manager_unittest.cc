@@ -156,6 +156,18 @@ class AudioFocusManagerTest
     return observer;
   }
 
+  std::unique_ptr<test::TestAudioFocusObserver> CreateSourceObserver(
+      const base::UnguessableToken& source_id) {
+    std::unique_ptr<test::TestAudioFocusObserver> observer =
+        std::make_unique<test::TestAudioFocusObserver>();
+
+    GetService()->AddSourceObserver(source_id,
+                                    observer->BindNewPipeAndPassRemote());
+
+    audio_focus_remote_.FlushForTesting();
+    return observer;
+  }
+
   mojom::MediaSessionInfo::SessionState GetStateFromParam(
       mojom::MediaSessionInfo::SessionState state) {
     // If enforcement is enabled then returns the provided state, otherwise
@@ -205,11 +217,30 @@ class AudioFocusManagerTest
     return controller_manager_remote_;
   }
 
+  std::vector<mojom::AudioFocusRequestStatePtr> GetSourceFocusRequests(
+      const base::UnguessableToken& source_id) {
+    std::vector<mojom::AudioFocusRequestStatePtr> result;
+
+    GetService()->GetSourceFocusRequests(
+        source_id,
+        base::BindOnce(
+            [](std::vector<mojom::AudioFocusRequestStatePtr>* out,
+               std::vector<mojom::AudioFocusRequestStatePtr> requests) {
+              *out = std::move(requests);
+            },
+            &result));
+
+    audio_focus_remote_.FlushForTesting();
+    return result;
+  }
+
   const base::UnguessableToken& GetIdentityForLastRequest() const {
     return service_->audio_focus_manager_for_testing()
         .audio_focus_stack_.back()
         ->identity();
   }
+
+  void FlushForTesting() { audio_focus_remote_.FlushForTesting(); }
 
  private:
   int GetCountForType(mojom::AudioFocusType type) {
@@ -1622,6 +1653,104 @@ TEST_P(AudioFocusManagerTest, RequestIdValidation) {
                                        mojom::AudioFocusType::kGain,
                                        base::UnguessableToken::Create()));
   EXPECT_EQ(request_id, GetAudioFocusedSession());
+}
+
+TEST_P(AudioFocusManagerTest, SourceObservers) {
+  // Create two identity observers for two different identities.
+  base::UnguessableToken identity_1 = base::UnguessableToken::Create();
+  base::UnguessableToken identity_2 = base::UnguessableToken::Create();
+  std::unique_ptr<test::TestAudioFocusObserver> observer_1 =
+      CreateSourceObserver(identity_1);
+  std::unique_ptr<test::TestAudioFocusObserver> observer_2 =
+      CreateSourceObserver(identity_2);
+
+  // Request audio focus for the first identity.
+  SetSource(identity_1, kExampleSourceName);
+  test::MockMediaSession media_session_1;
+  base::UnguessableToken request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+
+  // The observer for the first identity should see the gained focus, while the
+  // observer for the second identity should see nothing.
+  EXPECT_EQ(request_id_1, observer_1->focus_gained_session()->request_id);
+  EXPECT_TRUE(observer_2->focus_gained_session().is_null());
+
+  // Request audio focus for the second identity.
+  SetSource(identity_2, kExampleSourceName);
+  test::MockMediaSession media_session_2;
+  base::UnguessableToken request_id_2 =
+      RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+
+  // The observer for the first identity should still show the first request,
+  // while the observer for the second identity should see the new session.
+  EXPECT_EQ(request_id_1, observer_1->focus_gained_session()->request_id);
+  EXPECT_EQ(request_id_2, observer_2->focus_gained_session()->request_id);
+
+  // Make another request in the second identity.
+  test::MockMediaSession media_session_3;
+  base::UnguessableToken request_id_3 =
+      RequestAudioFocus(&media_session_3, mojom::AudioFocusType::kGain);
+
+  // The observer for the first identity should still show the first request,
+  // while the observer for the second identity should see the new session.
+  EXPECT_EQ(request_id_1, observer_1->focus_gained_session()->request_id);
+  EXPECT_EQ(request_id_3, observer_2->focus_gained_session()->request_id);
+
+  // Abandon the topmost session.
+  media_session_3.AbandonAudioFocusFromClient();
+  FlushForTesting();
+
+  // The observer for the second identity should get the new lost and gained
+  // sessions, with no updates to the first observer.
+  EXPECT_EQ(request_id_3, observer_2->focus_lost_session()->request_id);
+  EXPECT_EQ(request_id_2, observer_2->focus_gained_session()->request_id);
+  EXPECT_EQ(request_id_1, observer_1->focus_gained_session()->request_id);
+  EXPECT_TRUE(observer_1->focus_lost_session().is_null());
+}
+
+TEST_P(AudioFocusManagerTest, GetSourceFocusRequests) {
+  // Establish identities.
+  base::UnguessableToken identity_1 = base::UnguessableToken::Create();
+  base::UnguessableToken identity_2 = base::UnguessableToken::Create();
+  base::UnguessableToken identity_3 = base::UnguessableToken::Create();
+
+  // Create a focus request for the first identity.
+  SetSource(identity_1, kExampleSourceName);
+  test::MockMediaSession media_session_1;
+  base::UnguessableToken request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+
+  // Create a focus request for the second identity.
+  SetSource(identity_2, kExampleSourceName);
+  test::MockMediaSession media_session_2;
+  base::UnguessableToken request_id_2 =
+      RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+
+  // Create another focus request for the first identity.
+  SetSource(identity_1, kExampleSourceName);
+  test::MockMediaSession media_session_3;
+  base::UnguessableToken request_id_3 =
+      RequestAudioFocus(&media_session_3, mojom::AudioFocusType::kGain);
+
+  // Use the GetSourceFocusRequests API to get requests for each identity.
+  std::vector<mojom::AudioFocusRequestStatePtr> identity_1_requests =
+      GetSourceFocusRequests(identity_1);
+  std::vector<mojom::AudioFocusRequestStatePtr> identity_2_requests =
+      GetSourceFocusRequests(identity_2);
+  std::vector<mojom::AudioFocusRequestStatePtr> identity_3_requests =
+      GetSourceFocusRequests(identity_3);
+
+  // Ensure that the API returned the right requests for the first identity.
+  EXPECT_EQ(2u, identity_1_requests.size());
+  EXPECT_EQ(request_id_1, identity_1_requests[0]->request_id);
+  EXPECT_EQ(request_id_3, identity_1_requests[1]->request_id);
+
+  // Ensure that the API returned the right requests for the second identity.
+  EXPECT_EQ(1u, identity_2_requests.size());
+  EXPECT_EQ(request_id_2, identity_2_requests[0]->request_id);
+
+  // Ensure that the API returned nothing for the unused identity.
+  EXPECT_TRUE(identity_3_requests.empty());
 }
 
 }  // namespace media_session

@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 
 import java.util.List;
 
@@ -101,17 +102,16 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder fromViewHolder,
             RecyclerView.ViewHolder toViewHolder) {
-        assert fromViewHolder instanceof TabGridViewHolder;
-        assert toViewHolder instanceof TabGridViewHolder;
-
         mSelectedTabIndex = toViewHolder.getAdapterPosition();
         if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
             mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, false);
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
         }
 
-        int currentTabId = ((TabGridViewHolder) fromViewHolder).getTabId();
-        int destinationTabId = ((TabGridViewHolder) toViewHolder).getTabId();
+        int currentTabId = ((SimpleRecyclerViewAdapter.ViewHolder) fromViewHolder)
+                                   .model.get(TabProperties.TAB_ID);
+        int destinationTabId = ((SimpleRecyclerViewAdapter.ViewHolder) toViewHolder)
+                                       .model.get(TabProperties.TAB_ID);
         int distance = toViewHolder.getAdapterPosition() - fromViewHolder.getAdapterPosition();
         TabModelFilter filter =
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
@@ -135,9 +135,8 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int i) {
-        assert viewHolder instanceof TabGridViewHolder;
-
-        mTabClosedListener.run(((TabGridViewHolder) viewHolder).getTabId());
+        mTabClosedListener.run(((SimpleRecyclerViewAdapter.ViewHolder) viewHolder)
+                                       .model.get(TabProperties.TAB_ID));
         RecordUserAction.record("MobileStackViewSwipeCloseTab." + mComponentName);
     }
 
@@ -177,7 +176,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 if (ungroupViewHolder != null) {
                     View ungroupItemView = ungroupViewHolder.itemView;
                     filter.moveTabOutOfGroup(
-                            mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
+                            mModel.get(mUnGroupTabIndex).model.get(TabProperties.TAB_ID));
                     mRecyclerView.getLayoutManager().removeView(ungroupItemView);
                     RecordUserAction.record("TabGrid.Drag.RemoveFromGroup." + mComponentName);
                 }
@@ -212,10 +211,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             float alpha = Math.max(0.2f, 1f - 0.8f * Math.abs(dX) / mSwipeToDismissThreshold);
-            int index = mModel.indexFromId(((TabGridViewHolder) viewHolder).getTabId());
+            int index = mModel.indexFromId(((SimpleRecyclerViewAdapter.ViewHolder) viewHolder)
+                                                   .model.get(TabProperties.TAB_ID));
             if (index == TabModel.INVALID_TAB_INDEX) return;
 
-            mModel.get(index).set(TabProperties.ALPHA, alpha);
+            mModel.get(index).model.set(TabProperties.ALPHA, alpha);
             boolean isOverThreshold = Math.abs(dX) >= mSwipeToDismissThreshold;
             if (isOverThreshold && !mIsSwipingToDismiss) {
                 viewHolder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);

@@ -303,7 +303,9 @@ void TestWhenLookupTableReady(
 }
 }  // namespace
 
-TEST_F(DWriteFontProxyTableMatchingTest, TestFindUniqueFont) {
+// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
+// tests once the root cause for flakiness is addressed.
+TEST_F(DWriteFontProxyTableMatchingTest, DISABLED_TestFindUniqueFont) {
   bool lookup_table_results_were_tested = false;
   dwrite_font_proxy().GetUniqueNameLookupTable(base::BindOnce(
       &TestWhenLookupTableReady, &lookup_table_results_were_tested));

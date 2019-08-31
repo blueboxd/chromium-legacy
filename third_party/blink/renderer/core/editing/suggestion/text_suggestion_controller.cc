@@ -235,7 +235,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
 
   if (!text_suggestion_host_) {
     GetFrame().GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&text_suggestion_host_));
+        text_suggestion_host_.BindNewPipeAndPassReceiver());
   }
 
   text_suggestion_host_->StartSuggestionMenuTimer();

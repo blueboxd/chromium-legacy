@@ -1269,6 +1269,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Locale& GetCachedLocale(const AtomicString& locale = g_null_atom);
 
   AnimationClock& GetAnimationClock();
+  const AnimationClock& GetAnimationClock() const;
   DocumentTimeline& Timeline() const { return *timeline_; }
   PendingAnimations& GetPendingAnimations() { return *pending_animations_; }
   WorkletAnimationController& GetWorkletAnimationController() {

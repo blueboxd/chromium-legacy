@@ -43,7 +43,7 @@ namespace {
 constexpr uint8_t kBogusCredentialId[] = {0x01, 0x02, 0x03, 0x04};
 
 using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
-    FidoReturnCode,
+    GetAssertionStatus,
     base::Optional<std::vector<AuthenticatorGetAssertionResponse>>,
     const FidoAuthenticator*>;
 
@@ -204,7 +204,7 @@ TEST_F(FidoGetAssertionHandlerTest, CtapRequestOnSingleDevice) {
   discovery()->AddDevice(std::move(device));
   get_assertion_callback().WaitForCallback();
 
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
 }
@@ -221,7 +221,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
 
   discovery()->AddDevice(std::move(device));
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
 }
@@ -244,7 +244,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
+  EXPECT_EQ(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
             get_assertion_callback().status());
 }
 
@@ -267,7 +267,7 @@ TEST_F(FidoGetAssertionHandlerTest,
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
+  EXPECT_EQ(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
             get_assertion_callback().status());
 }
 
@@ -284,7 +284,7 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectRpIdHash) {
   discovery()->AddDevice(std::move(device));
 
   get_assertion_callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorResponseInvalid,
             get_assertion_callback().status());
 }
 
@@ -309,7 +309,7 @@ TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
   discovery()->AddDevice(std::move(device));
 
   get_assertion_callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorResponseInvalid,
             get_assertion_callback().status());
 }
 
@@ -331,7 +331,7 @@ TEST_F(FidoGetAssertionHandlerTest, ValidEmptyCredential) {
   get_assertion_callback().WaitForCallback();
   const auto& response = get_assertion_callback().value<0>();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   ASSERT_TRUE(response);
   ASSERT_EQ(1u, response->size());
   EXPECT_TRUE(response.value()[0].credential());
@@ -359,7 +359,7 @@ TEST_F(FidoGetAssertionHandlerTest, TruncatedUTF8) {
   get_assertion_callback().WaitForCallback();
   const auto& response = get_assertion_callback().value<0>();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   ASSERT_TRUE(response);
   ASSERT_EQ(1u, response->size());
   ASSERT_TRUE(response.value()[0].user_entity());
@@ -399,7 +399,7 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectUserEntity) {
   discovery()->AddDevice(std::move(device));
 
   get_assertion_callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorResponseInvalid,
             get_assertion_callback().status());
 }
 
@@ -518,7 +518,7 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyUsbTransportAllowed) {
 
   get_assertion_callback().WaitForCallback();
 
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
@@ -552,7 +552,7 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyBleTransportAllowed) {
 
   get_assertion_callback().WaitForCallback();
 
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
@@ -586,7 +586,7 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyNfcTransportAllowed) {
 
   get_assertion_callback().WaitForCallback();
 
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
@@ -625,7 +625,7 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
 
   get_assertion_callback().WaitForCallback();
 
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
@@ -635,7 +635,7 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
 
 // If a device with transport type kInternal returns a
 // CTAP2_ERR_OPERATION_DENIED error, the request should complete with
-// FidoReturnCode::kUserConsentDenied. Pending authenticators should be
+// GetAssertionStatus::kUserConsentDenied. Pending authenticators should be
 // cancelled.
 TEST_F(FidoGetAssertionHandlerTest,
        TestRequestWithOperationDeniedErrorPlatform) {
@@ -661,7 +661,7 @@ TEST_F(FidoGetAssertionHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_assertion_callback().was_called());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
+  EXPECT_EQ(GetAssertionStatus::kUserConsentDenied,
             get_assertion_callback().status());
 }
 
@@ -680,12 +680,12 @@ TEST_F(FidoGetAssertionHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_assertion_callback().was_called());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
+  EXPECT_EQ(GetAssertionStatus::kUserConsentDenied,
             get_assertion_callback().status());
 }
 
 // If a device returns CTAP2_ERR_PIN_AUTH_INVALID, the request should complete
-// with FidoReturnCode::kUserConsentDenied.
+// with GetAssertionStatus::kUserConsentDenied.
 TEST_F(FidoGetAssertionHandlerTest, TestRequestWithPinAuthInvalid) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device->ExpectCtap2CommandAndRespondWithError(
@@ -698,7 +698,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestRequestWithPinAuthInvalid) {
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(get_assertion_callback().was_called());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
+  EXPECT_EQ(GetAssertionStatus::kUserConsentDenied,
             get_assertion_callback().status());
 }
 
@@ -738,7 +738,7 @@ TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
   discovery()->AddDevice(std::move(broken_device));
 
   get_assertion_callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
 }
 
 // Tests a scenario where authenticator of incorrect transport type was used to

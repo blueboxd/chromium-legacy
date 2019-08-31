@@ -22,6 +22,7 @@
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -54,7 +55,8 @@ class PreviewsUserData;
 // from the OptimizationGuideService.
 class PreviewsOptimizationGuideImpl
     : public PreviewsOptimizationGuide,
-      public optimization_guide::OptimizationGuideServiceObserver {
+      public optimization_guide::OptimizationGuideServiceObserver,
+      public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   // The embedder guarantees |optimization_guide_service| outlives |this|.
   // The embedder guarantees that |previews_top_host_provider_| outlives |this|.
@@ -66,17 +68,16 @@ class PreviewsOptimizationGuideImpl
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       optimization_guide::TopHostProvider* top_host_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::NetworkQualityTracker* network_quality_tracker);
 
   ~PreviewsOptimizationGuideImpl() override;
 
   // PreviewsOptimizationGuide implementation:
   bool IsReady() const override;
-  bool CanApplyPreview(
-      PreviewsUserData* previews_data,
-      content::NavigationHandle* navigation_handle,
-      PreviewsType type,
-      net::EffectiveConnectionType* out_ect_threshold) override;
+  bool CanApplyPreview(PreviewsUserData* previews_data,
+                       content::NavigationHandle* navigation_handle,
+                       PreviewsType type) override;
   bool MaybeLoadOptimizationHints(content::NavigationHandle* navigation_handle,
                                   base::OnceClosure callback) override;
   bool GetResourceLoadingHints(
@@ -90,6 +91,11 @@ class PreviewsOptimizationGuideImpl
   // processing.
   void OnHintsComponentAvailable(
       const optimization_guide::HintsComponentInfo& info) override;
+
+  // network::NetworkQualityTracker::EffectiveConnectionTypeObserver
+  // implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType effective_connection_type) override;
 
   PreviewsHints* GetHintsForTesting() { return hints_.get(); }
 
@@ -197,6 +203,13 @@ class PreviewsOptimizationGuideImpl
 
   // Used for fetching Hints by the Hints Fetcher.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The network quality tracker that this guide is listening to. Not owned.
+  network::NetworkQualityTracker* network_quality_tracker_;
+
+  // The current estimate of the effective connection type.
+  net::EffectiveConnectionType current_effective_connection_type_ =
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<PreviewsOptimizationGuideImpl> ui_weak_ptr_factory_{

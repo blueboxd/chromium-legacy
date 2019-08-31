@@ -7,7 +7,7 @@ module media_session.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 // These are the different modes the AudioFocusManager can enforce audio focus.
 [Extensible]
@@ -90,7 +90,7 @@ interface AudioFocusRequestClient {
 // Controls audio focus across the entire system. After binding
 // AudioFocusManager clients should call SetSource to identify themselves to
 // the media session service.
-// Next Method ID: 7
+// Next Method ID: 9
 // Deprecated method IDs: 3
 interface AudioFocusManager {
   // Requests audio focus with |type| for the |media_session| with
@@ -137,6 +137,18 @@ interface AudioFocusManager {
 
   // Sets the enforcement mode for the Audio Focus Manager.
   [MinVersion=5] SetEnforcementMode@5(EnforcementMode mode);
+
+  // Adds observers that receive audio focus events only for their associated
+  // source.
+  [MinVersion=7] AddSourceObserver@7(
+      mojo_base.mojom.UnguessableToken source_id,
+      pending_remote<AudioFocusObserver> observer);
+
+  // Gets all the information about all |MediaSessions| that have requested
+  // audio focus and their current requested type for the given source.
+  [MinVersion=7] GetSourceFocusRequests@8(
+      mojo_base.mojom.UnguessableToken source_id)
+          => (array<AudioFocusRequestState> requests);
 };
 
 // Provides debug information about audio focus requests.

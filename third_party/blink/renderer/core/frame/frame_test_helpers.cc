@@ -354,8 +354,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
   // This happens before CreateForMainFrame as the WebFrameWidget binding to the
   // WebLocalFrameImpl sets up animations.
-  web_view_->MainFrameWidget()->SetAnimationHost(
-      test_web_widget_client_->animation_host());
+  web_view_->SetAnimationHost(test_web_widget_client_->animation_host());
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
@@ -423,8 +422,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
       web_widget_client, owned_test_web_widget_client_);
-  web_view_->MainFrameWidget()->SetAnimationHost(
-      test_web_widget_client_->animation_host());
+  web_view_->SetAnimationHost(test_web_widget_client_->animation_host());
 
   return web_view_;
 }
@@ -460,7 +458,7 @@ WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
 }
 
 void WebViewHelper::Resize(WebSize size) {
-  GetWebView()->MainFrameWidget()->Resize(size);
+  GetWebView()->Resize(size);
 }
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,

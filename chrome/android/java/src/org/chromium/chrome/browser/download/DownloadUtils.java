@@ -30,6 +30,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -1003,7 +1004,7 @@ public class DownloadUtils {
     public static String getFailStatusString(@FailState int failState) {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isFullBrowserStarted()) {
-            return nativeGetFailStateMessage(failState);
+            return DownloadUtilsJni.get().getFailStateMessage(failState);
         }
         Context context = ContextUtils.getApplicationContext();
         return context.getString(R.string.download_notification_failed);
@@ -1045,7 +1046,7 @@ public class DownloadUtils {
      * @return The resume mode for the current fail state.
      */
     public static @ResumeMode int getResumeMode(String url, @FailState int failState) {
-        return nativeGetResumeMode(url, failState);
+        return DownloadUtilsJni.get().getResumeMode(url, failState);
     }
 
     /**
@@ -1298,6 +1299,9 @@ public class DownloadUtils {
         return originalUri;
     }
 
-    private static native String nativeGetFailStateMessage(@FailState int failState);
-    private static native int nativeGetResumeMode(String url, @FailState int failState);
+    @NativeMethods
+    interface Natives {
+        String getFailStateMessage(@FailState int failState);
+        int getResumeMode(String url, @FailState int failState);
+    }
 }

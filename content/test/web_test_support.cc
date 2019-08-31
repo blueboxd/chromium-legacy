@@ -12,7 +12,9 @@
 #include "build/build_config.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
+#include "content/browser/worker_host/test_shared_worker_service_impl.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/storage_partition.h"
@@ -176,11 +178,22 @@ void EnableBrowserWebTestMode() {
   RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }
 
-void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
-                                         base::OnceClosure callback) {
-  static_cast<SharedWorkerServiceImpl*>(
+void InjectTestSharedWorkerService(StoragePartition* storage_partition) {
+  auto* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(storage_partition);
+
+  storage_partition_impl->OverrideSharedWorkerServiceForTesting(
+      std::make_unique<TestSharedWorkerServiceImpl>(
+          storage_partition_impl,
+          storage_partition_impl->GetServiceWorkerContext(),
+          storage_partition_impl->GetAppCacheService()));
+}
+
+void TerminateAllSharedWorkers(StoragePartition* storage_partition,
+                               base::OnceClosure callback) {
+  static_cast<TestSharedWorkerServiceImpl*>(
       storage_partition->GetSharedWorkerService())
-      ->TerminateAllWorkersForTesting(std::move(callback));
+      ->TerminateAllWorkers(std::move(callback));
 }
 
 int GetLocalSessionHistoryLength(RenderView* render_view) {

@@ -68,7 +68,12 @@ cast_shared_library("libcast_media_1.0_avsync") {
 
   if (use_alsa) {
     deps += [ "//chromecast/media/cma/backend/alsa:cma_backend_support" ]
-    libs = [ "videodecoderformixer" ]
+    if (!is_cast_desktop_build) {
+      libs = [ "videodecoderformixer" ]
+    } else {
+      deps +=
+          [ "//chromecast/media/cma/backend/desktop:video_decoder_for_mixer" ]
+    }
   }
 
   if (is_fuchsia) {

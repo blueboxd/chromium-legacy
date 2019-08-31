@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -338,6 +339,10 @@ class TabStripModel {
   // pointer is valid until all tabs in |group| are destroyed or until
   // SetVisualDataForGroup is called for |group|.
   const TabGroupVisualData* GetVisualDataForGroup(TabGroupId group) const;
+
+  // Returns a title for |group| that can be shown in the UI, generating a
+  // descriptive placeholder if the user has not named the group.
+  base::string16 GetUserVisibleGroupTitle(TabGroupId group) const;
 
   // Sets the visual data for |group|. Notifies observers of the change.
   void SetVisualDataForGroup(TabGroupId group, TabGroupVisualData data);

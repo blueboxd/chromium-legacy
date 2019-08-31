@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -12,10 +14,22 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * List of properties to designate information about a single tab.
  */
 public class TabProperties {
+    /** IDs for possible types of UI in the tab list. */
+    @IntDef({UiType.SELECTABLE, UiType.CLOSABLE, UiType.STRIP})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UiType {
+        int SELECTABLE = 0;
+        int CLOSABLE = 1;
+        int STRIP = 2;
+    }
+
     public static final PropertyModel.WritableIntPropertyKey TAB_ID =
             new PropertyModel.WritableIntPropertyKey();
 
@@ -37,6 +51,9 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey IS_SELECTED = new WritableBooleanPropertyKey();
+
+    public static final WritableObjectPropertyKey<ColorStateList> CHECKED_DRAWABLE_STATE_LIST =
+            new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             CREATE_GROUP_LISTENER = new WritableObjectPropertyKey<>();
@@ -64,9 +81,10 @@ public class TabProperties {
 
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
-            TITLE, IS_SELECTED, CREATE_GROUP_LISTENER, ALPHA, CARD_ANIMATION_STATUS,
-            SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE, IS_INCOGNITO,
-            SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID};
+            TITLE, IS_SELECTED, CHECKED_DRAWABLE_STATE_LIST, CREATE_GROUP_LISTENER, ALPHA,
+            CARD_ANIMATION_STATUS, SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE,
+            IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
+            TABSTRIP_FAVICON_BACKGROUND_COLOR_ID};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,

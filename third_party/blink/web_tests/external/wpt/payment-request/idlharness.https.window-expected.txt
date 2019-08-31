@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
-Found 109 tests; 107 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS idl_test setup
+Found 78 tests; 76 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
+ define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
+                        ^ Trailing comma in arguments list"
 PASS PaymentRequest interface: existence and properties of interface object
 PASS PaymentRequest interface object length
 PASS PaymentRequest interface object name
@@ -19,21 +21,6 @@ FAIL PaymentRequest interface: attribute onmerchantvalidation assert_true: The p
 PASS PaymentRequest interface: attribute onshippingaddresschange
 PASS PaymentRequest interface: attribute onshippingoptionchange
 PASS PaymentRequest interface: attribute onpaymentmethodchange
-PASS PaymentRequest must be primary interface of paymentRequest
-PASS Stringification of paymentRequest
-PASS PaymentRequest interface: paymentRequest must inherit property "show([object Object])" with the proper type
-PASS PaymentRequest interface: calling show([object Object]) on paymentRequest with too few arguments must throw TypeError
-PASS PaymentRequest interface: paymentRequest must inherit property "abort()" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "canMakePayment()" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "hasEnrolledInstrument()" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "id" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "shippingAddress" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "shippingOption" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "shippingType" with the proper type
-FAIL PaymentRequest interface: paymentRequest must inherit property "onmerchantvalidation" with the proper type assert_inherits: property "onmerchantvalidation" not found in prototype chain
-PASS PaymentRequest interface: paymentRequest must inherit property "onshippingaddresschange" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "onshippingoptionchange" with the proper type
-PASS PaymentRequest interface: paymentRequest must inherit property "onpaymentmethodchange" with the proper type
 PASS PaymentAddress interface: existence and properties of interface object
 PASS PaymentAddress interface object length
 PASS PaymentAddress interface object name
@@ -78,12 +65,6 @@ PASS MerchantValidationEvent interface: existence and properties of interface pr
 PASS MerchantValidationEvent interface: attribute methodName
 PASS MerchantValidationEvent interface: attribute validationURL
 PASS MerchantValidationEvent interface: operation complete([object Object])
-PASS MerchantValidationEvent must be primary interface of new MerchantValidationEvent("merchantvalidation")
-PASS Stringification of new MerchantValidationEvent("merchantvalidation")
-PASS MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "methodName" with the proper type
-PASS MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "validationURL" with the proper type
-PASS MerchantValidationEvent interface: new MerchantValidationEvent("merchantvalidation") must inherit property "complete([object Object])" with the proper type
-PASS MerchantValidationEvent interface: calling complete([object Object]) on new MerchantValidationEvent("merchantvalidation") with too few arguments must throw TypeError
 PASS PaymentMethodChangeEvent interface: existence and properties of interface object
 PASS PaymentMethodChangeEvent interface object length
 PASS PaymentMethodChangeEvent interface object name
@@ -92,12 +73,6 @@ PASS PaymentMethodChangeEvent interface: existence and properties of interface p
 PASS PaymentMethodChangeEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentMethodChangeEvent interface: attribute methodName
 PASS PaymentMethodChangeEvent interface: attribute methodDetails
-PASS PaymentMethodChangeEvent must be primary interface of new PaymentMethodChangeEvent("paymentmethodchange")
-PASS Stringification of new PaymentMethodChangeEvent("paymentmethodchange")
-PASS PaymentMethodChangeEvent interface: new PaymentMethodChangeEvent("paymentmethodchange") must inherit property "methodName" with the proper type
-PASS PaymentMethodChangeEvent interface: new PaymentMethodChangeEvent("paymentmethodchange") must inherit property "methodDetails" with the proper type
-PASS PaymentRequestUpdateEvent interface: new PaymentMethodChangeEvent("paymentmethodchange") must inherit property "updateWith([object Object])" with the proper type
-PASS PaymentRequestUpdateEvent interface: calling updateWith([object Object]) on new PaymentMethodChangeEvent("paymentmethodchange") with too few arguments must throw TypeError
 PASS PaymentRequestUpdateEvent interface: existence and properties of interface object
 PASS PaymentRequestUpdateEvent interface object length
 PASS PaymentRequestUpdateEvent interface object name
@@ -105,9 +80,5 @@ PASS PaymentRequestUpdateEvent interface: existence and properties of interface 
 PASS PaymentRequestUpdateEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentRequestUpdateEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentRequestUpdateEvent interface: operation updateWith([object Object])
-PASS PaymentRequestUpdateEvent must be primary interface of new PaymentRequestUpdateEvent("paymentrequestupdate")
-PASS Stringification of new PaymentRequestUpdateEvent("paymentrequestupdate")
-PASS PaymentRequestUpdateEvent interface: new PaymentRequestUpdateEvent("paymentrequestupdate") must inherit property "updateWith([object Object])" with the proper type
-PASS PaymentRequestUpdateEvent interface: calling updateWith([object Object]) on new PaymentRequestUpdateEvent("paymentrequestupdate") with too few arguments must throw TypeError
 Harness: the test ran to completion.
 

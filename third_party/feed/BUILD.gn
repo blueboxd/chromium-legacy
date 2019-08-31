@@ -105,6 +105,9 @@ android_library("feed_lib_java") {
     "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
+  if (!is_java_debug) {
+    proguard_configs = [ "src/src/main/java/com/google/android/libraries/feed/buildtools/proguard/r8_release.flags" ]
+  }
 }
 
 android_library("feed_conformance_test_lib_android_java") {

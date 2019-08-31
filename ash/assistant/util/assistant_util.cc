@@ -5,6 +5,16 @@
 #include "ash/assistant/util/assistant_util.h"
 
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "base/system/sys_info.h"
+
+namespace {
+
+constexpr char kEveBoardName[] = "eve";
+constexpr char kNocturneBoardName[] = "nocturne";
+
+bool g_override_is_google_device = false;
+
+}  // namespace
 
 namespace ash {
 namespace assistant {
@@ -55,6 +65,16 @@ bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
     case AssistantEntryPoint::kSetup:
       return true;
   }
+}
+
+bool IsGoogleDevice() {
+  const std::string board_name = base::SysInfo::GetLsbReleaseBoard();
+  return g_override_is_google_device || board_name == kEveBoardName ||
+         board_name == kNocturneBoardName;
+}
+
+void OverrideIsGoogleDeviceForTesting() {
+  g_override_is_google_device = true;
 }
 
 }  // namespace util

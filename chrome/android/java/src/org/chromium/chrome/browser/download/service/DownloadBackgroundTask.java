@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.profiles.ProfileKey;
@@ -62,8 +63,8 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
                         .isFullBrowserStarted()
                 || mStartsServiceManagerOnly;
         ProfileKey key = ProfileKey.getLastUsedProfileKey().getOriginalKey();
-        nativeStartBackgroundTask(
-                key, mCurrentTaskType, needsReschedule -> callback.taskFinished(needsReschedule));
+        DownloadBackgroundTaskJni.get().startBackgroundTask(DownloadBackgroundTask.this, key,
+                mCurrentTaskType, needsReschedule -> callback.taskFinished(needsReschedule));
     }
 
     @Override
@@ -81,7 +82,8 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         @DownloadTaskType
         int taskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
         ProfileKey key = ProfileKey.getLastUsedProfileKey().getOriginalKey();
-        return nativeStopBackgroundTask(key, taskType);
+        return DownloadBackgroundTaskJni.get().stopBackgroundTask(
+                DownloadBackgroundTask.this, key, taskType);
     }
 
     @Override
@@ -89,7 +91,10 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         DownloadTaskScheduler.rescheduleAllTasks();
     }
 
-    private native void nativeStartBackgroundTask(
-            ProfileKey key, int taskType, Callback<Boolean> callback);
-    private native boolean nativeStopBackgroundTask(ProfileKey key, int taskType);
+    @NativeMethods
+    interface Natives {
+        void startBackgroundTask(DownloadBackgroundTask caller, ProfileKey key, int taskType,
+                Callback<Boolean> callback);
+        boolean stopBackgroundTask(DownloadBackgroundTask caller, ProfileKey key, int taskType);
+    }
 }

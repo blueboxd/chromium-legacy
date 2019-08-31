@@ -83,6 +83,8 @@ SpdySessionPool::SpdySessionPool(
     TransportSecurityState* transport_security_state,
     const quic::ParsedQuicVersionVector& quic_supported_versions,
     bool enable_ping_based_connection_checking,
+    bool is_http2_enabled,
+    bool is_quic_enabled,
     bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
@@ -98,6 +100,8 @@ SpdySessionPool::SpdySessionPool(
       enable_sending_initial_data_(true),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
+      is_http2_enabled_(is_http2_enabled),
+      is_quic_enabled_(is_quic_enabled),
       support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       session_max_recv_window_size_(session_max_recv_window_size),
       session_max_queued_capped_frames_(session_max_queued_capped_frames),
@@ -663,10 +667,10 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       key, http_server_properties_, transport_security_state_,
       ssl_client_context_ ? ssl_client_context_->ssl_config_service() : nullptr,
       quic_supported_versions_, enable_sending_initial_data_,
-      enable_ping_based_connection_checking_, support_ietf_format_quic_altsvc_,
-      is_trusted_proxy, session_max_recv_window_size_,
-      session_max_queued_capped_frames_, initial_settings_,
-      greased_http2_frame_, time_func_, push_delegate_,
+      enable_ping_based_connection_checking_, is_http2_enabled_,
+      is_quic_enabled_, support_ietf_format_quic_altsvc_, is_trusted_proxy,
+      session_max_recv_window_size_, session_max_queued_capped_frames_,
+      initial_settings_, greased_http2_frame_, time_func_, push_delegate_,
       network_quality_estimator_, net_log);
 }
 

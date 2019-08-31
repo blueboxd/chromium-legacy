@@ -270,8 +270,7 @@ AuthenticatorQRSheetView::AuthenticatorQRSheetView(
     : AuthenticatorRequestSheetView(std::move(sheet_model)),
       qr_generator_key_(reinterpret_cast<AuthenticatorQRSheetModel*>(model())
                             ->dialog_model()
-                            ->transport_availability()
-                            ->qr_generator_key.value()) {}
+                            ->qr_generator_key()) {}
 
 AuthenticatorQRSheetView::~AuthenticatorQRSheetView() = default;
 

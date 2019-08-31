@@ -186,7 +186,8 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
 void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::Button::GetAccessibleNodeData(node_data);
 
-  if (desk_->is_active()) {
+  // Note that the desk may have already been destroyed.
+  if (desk_ && desk_->is_active()) {
     node_data->AddStringAttribute(
         ax::mojom::StringAttribute::kValue,
         l10n_util::GetStringUTF8(

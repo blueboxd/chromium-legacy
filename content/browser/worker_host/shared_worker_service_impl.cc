@@ -61,6 +61,10 @@ SharedWorkerServiceImpl::SharedWorkerServiceImpl(
 
 SharedWorkerServiceImpl::~SharedWorkerServiceImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Note: This ideally should dchecks that |worker_hosts_| is empty,
+  // but some tests do not tear down everything correctly.
+  worker_hosts_.clear();
 }
 
 bool SharedWorkerServiceImpl::TerminateWorker(
@@ -68,38 +72,14 @@ bool SharedWorkerServiceImpl::TerminateWorker(
     const std::string& name,
     const url::Origin& constructor_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto& host : worker_hosts_) {
-    if (host->IsAvailable() &&
-        host->instance().Matches(url, name, constructor_origin)) {
-      host->TerminateWorker();
-      return true;
-    }
+
+  SharedWorkerHost* worker_host =
+      FindMatchingSharedWorkerHost(url, name, constructor_origin);
+  if (worker_host) {
+    DestroyHost(worker_host);
+    return true;
   }
   return false;
-}
-
-void SharedWorkerServiceImpl::TerminateAllWorkersForTesting(
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!terminate_all_workers_callback_);
-  if (worker_hosts_.empty()) {
-    // Run callback asynchronously to avoid re-entering the caller.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
-  } else {
-    terminate_all_workers_callback_ = std::move(callback);
-    // Use an explicit iterator and be careful because TerminateWorker() can
-    // call DestroyHost(), which removes the host from |worker_hosts_| and could
-    // invalidate the iterator.
-    for (auto it = worker_hosts_.begin(); it != worker_hosts_.end();)
-      (*it++)->TerminateWorker();
-  }
-}
-
-void SharedWorkerServiceImpl::SetWorkerTerminationCallbackForTesting(
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  terminate_all_workers_callback_ = std::move(callback);
 }
 
 void SharedWorkerServiceImpl::SetURLLoaderFactoryForTesting(
@@ -145,7 +125,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       info->content_security_policy, info->content_security_policy_type,
       info->creation_address_space, creation_context_type);
 
-  SharedWorkerHost* host = FindAvailableSharedWorkerHost(instance);
+  SharedWorkerHost* host = FindMatchingSharedWorkerHost(
+      instance.url(), instance.name(), instance.constructor_origin());
   if (host) {
     // Non-secure contexts cannot connect to secure workers, and secure contexts
     // cannot connect to non-secure workers:
@@ -189,10 +170,6 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   worker_hosts_.erase(worker_hosts_.find(host));
-
-  // Run the termination callback if no more workers.
-  if (worker_hosts_.empty() && terminate_all_workers_callback_)
-    std::move(terminate_all_workers_callback_).Run();
 }
 
 void SharedWorkerServiceImpl::CreateWorker(
@@ -310,10 +287,10 @@ void SharedWorkerServiceImpl::StartWorker(
   RenderProcessHost* worker_process_host =
       RenderProcessHost::FromID(host->worker_process_id());
   // If the target process is shutting down, then just drop this request and
-  // tell the host to destruct. This also means clients that were still waiting
-  // for the shared worker to start will fail.
+  // terminate the worker. This also means clients that were still waiting for
+  // the shared worker to start will fail.
   if (!worker_process_host || IsShuttingDown(worker_process_host)) {
-    host->TerminateWorker();
+    DestroyHost(host.get());
     return;
   }
 
@@ -328,10 +305,12 @@ void SharedWorkerServiceImpl::StartWorker(
   host->AddClient(std::move(client), client_process_id, frame_id, message_port);
 }
 
-SharedWorkerHost* SharedWorkerServiceImpl::FindAvailableSharedWorkerHost(
-    const SharedWorkerInstance& instance) {
+SharedWorkerHost* SharedWorkerServiceImpl::FindMatchingSharedWorkerHost(
+    const GURL& url,
+    const std::string& name,
+    const url::Origin& constructor_origin) {
   for (auto& host : worker_hosts_) {
-    if (host->IsAvailable() && host->instance().Matches(instance))
+    if (host->instance().Matches(url, name, constructor_origin))
       return host.get();
   }
   return nullptr;

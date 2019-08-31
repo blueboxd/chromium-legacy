@@ -174,8 +174,9 @@ importer.DriveDuplicateFinder.MAX_CACHED_HASHCODES_ = 10000;
  * primary source for duplicate checking (with the exception
  * of in-scan deduplication, where duplicate results that
  * are within the scan are ignored).
+ * @implements {importer.DispositionChecker}
  */
-importer.DispositionChecker = class DispositionChecker {
+importer.DispositionCheckerImpl = class {
   /**
    * @param {!importer.HistoryLoader} historyLoader
    * @param {!importer.DriveDuplicateFinder} contentMatcher
@@ -267,17 +268,8 @@ importer.DispositionChecker = class DispositionChecker {
    * @return {!importer.DispositionChecker.CheckerFunction}
    */
   static createChecker(historyLoader) {
-    const checker = new importer.DispositionChecker(
+    const checker = new importer.DispositionCheckerImpl(
         historyLoader, new importer.DriveDuplicateFinder());
     return checker.getDisposition.bind(checker);
   }
 };
-
-/**
- * Define a function type that returns a Promise that resolves the content
- * disposition of an entry.
- *
- * @typedef {function(!FileEntry, !importer.Destination, !importer.ScanMode):
- *     !Promise<!importer.Disposition>}
- */
-importer.DispositionChecker.CheckerFunction;

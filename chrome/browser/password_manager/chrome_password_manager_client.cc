@@ -832,7 +832,7 @@ void ChromePasswordManagerClient::GenerationAvailableForForm(
           password_generation_driver_bindings_.GetCurrentTargetFrame(), form,
           BadMessageReason::CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM))
     return;
-  password_manager_.GenerationAvailableForForm(form);
+  // TODO(https://crbug.com/949519): remove this method.
 }
 
 void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {

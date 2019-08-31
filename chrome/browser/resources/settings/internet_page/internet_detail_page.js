@@ -701,12 +701,18 @@ Polymer({
     if (this.isArcVpn_(managedProperties)) {
       return false;
     }
-
+    if (managedProperties.connectionState !=
+        mojom.ConnectionStateType.kNotConnected) {
+      return false;
+    }
+    // Cellular is not configurable, so we show a disabled connect button of
+    // connectable is false.
+    if (managedProperties.type != mojom.NetworkType.kCellular) {
+      return true;
+    }
     // If 'connectable' is false we show the configure button.
     return managedProperties.connectable &&
-        managedProperties.type != mojom.NetworkType.kEthernet &&
-        managedProperties.connectionState ==
-        mojom.ConnectionStateType.kNotConnected;
+        managedProperties.type != mojom.NetworkType.kEthernet;
   },
 
   /**
@@ -909,6 +915,12 @@ Polymer({
     if (!propertiesReceived || outOfRange) {
       return false;
     }
+    // Cellular networks are not configurable, so we show a disabled 'Connect'
+    // button when not connectable.
+    if (managedProperties.type == mojom.NetworkType.kCellular &&
+        !managedProperties.connectable) {
+      return false;
+    }
     if (managedProperties.type == mojom.NetworkType.kVPN && !defaultNetwork) {
       return false;
     }
@@ -992,7 +1004,11 @@ Polymer({
 
   /** @private */
   onDisconnectTap_: function() {
-    this.networkingPrivate.startDisconnect(this.guid);
+    this.networkConfig_.startDisconnect(this.guid).then(response => {
+      if (!response.success) {
+        console.error('Disconnect failed for: ' + this.guid);
+      }
+    });
   },
 
   /** @private */

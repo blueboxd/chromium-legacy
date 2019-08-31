@@ -142,4 +142,36 @@ TEST_F(PerformanceManagerTest, CallOnGraph) {
   performance_manager()->DeleteNode(std::move(page_node));
 }
 
+TEST_F(PerformanceManagerTest, CallOnGraphAndReplyWithResult) {
+  // Create a page node for something to target.
+  std::unique_ptr<PageNodeImpl> page_node =
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
+  base::RunLoop run_loop;
+
+  EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());
+  base::OnceCallback<int(GraphImpl*)> task =
+      base::BindLambdaForTesting([&](GraphImpl* graph) {
+        EXPECT_TRUE(
+            PerformanceManager::GetInstance()->OnPMTaskRunnerForTesting());
+        EXPECT_EQ(page_node.get()->graph(), graph);
+        return 1;
+      });
+
+  bool reply_called = false;
+  base::OnceCallback<void(int)> reply = base::BindLambdaForTesting([&](int i) {
+    EXPECT_EQ(i, 1);
+    reply_called = true;
+    std::move(run_loop.QuitClosure()).Run();
+  });
+
+  performance_manager()->CallOnGraphAndReplyWithResult(
+      FROM_HERE, std::move(task), std::move(reply));
+  run_loop.Run();
+
+  performance_manager()->DeleteNode(std::move(page_node));
+
+  EXPECT_TRUE(reply_called);
+}
+
 }  // namespace performance_manager

@@ -4,9 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
-#include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/task/post_task.h"
@@ -16,35 +14,6 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace notifications {
-namespace {
-
-using FirstAndLastIters =
-    std::pair<base::circular_deque<Impression>::const_iterator,
-              base::circular_deque<Impression>::const_iterator>;
-
-base::Optional<FirstAndLastIters> FindFirstAndLastNotificationShownToday(
-    const base::circular_deque<Impression>& impressions,
-    const base::Time& now,
-    const base::Time& beginning_of_today) {
-  if (impressions.empty() || impressions.cbegin()->create_time > now ||
-      impressions.crbegin()->create_time < beginning_of_today)
-    return base::nullopt;
-
-  auto last =
-      std::upper_bound(impressions.cbegin(), impressions.cend(), now,
-                       [](const base::Time& lhs, const Impression& rhs) {
-                         return lhs < rhs.create_time;
-                       });
-
-  auto first =
-      std::lower_bound(impressions.cbegin(), last, beginning_of_today,
-                       [](const Impression& lhs, const base::Time& rhs) {
-                         return lhs.create_time < rhs;
-                       });
-  return base::make_optional<FirstAndLastIters>(first, last - 1);
-}
-
-}  // namespace
 
 bool ToLocalHour(int hour,
                  const base::Time& today,
@@ -84,30 +53,24 @@ void NotificationsShownToday(
     int* shown_total,
     SchedulerClientType* last_shown_type,
     base::Clock* clock) {
-  base::Time last_shown_time;
   base::Time now = clock->Now();
   base::Time beginning_of_today;
   bool success = ToLocalHour(0, now, 0, &beginning_of_today);
+  base::Time last_shown_time = beginning_of_today;
   DCHECK(success);
   for (const auto& state : client_states) {
     auto* client_state = state.second;
-
-    auto iter_pair = FindFirstAndLastNotificationShownToday(
-        client_state->impressions, now, beginning_of_today);
-
-    if (!iter_pair)
-      continue;
-
-    if (iter_pair->second != client_state->impressions.cend())
-      DLOG(ERROR) << "Wrong format: time stamped to the future! "
-                  << iter_pair->second->create_time;
-
-    if (iter_pair->second->create_time > last_shown_time) {
-      last_shown_time = iter_pair->second->create_time;
-      *last_shown_type = client_state->type;
+    int count = 0;
+    for (const auto& impression : client_state->impressions) {
+      if (impression.create_time >= beginning_of_today &&
+          impression.create_time <= now) {
+        count++;
+        if (impression.create_time >= last_shown_time) {
+          last_shown_time = impression.create_time;
+          *last_shown_type = client_state->type;
+        }
+      }
     }
-
-    int count = std::distance(iter_pair->first, iter_pair->second) + 1;
     (*shown_per_type)[client_state->type] = count;
     (*shown_total) += count;
   }

@@ -162,6 +162,10 @@ class VideoWakeLockTest : public PageTestBase {
 
   void SimulateContextDestroyed() { GetDocument().NotifyContextDestroyed(); }
 
+  void SimulateNetworkState(HTMLMediaElement::NetworkState network_state) {
+    video_->SetNetworkState(network_state);
+  }
+
  private:
   Persistent<HTMLVideoElement> video_;
   Persistent<VideoWakeLock> video_wake_lock_;
@@ -344,6 +348,18 @@ TEST_F(VideoWakeLockTest, DestroyingContextCancelsLock) {
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 
   SimulateContextDestroyed();
+  EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
+}
+
+TEST_F(VideoWakeLockTest, LoadingCancelsLock) {
+  SimulatePlaying();
+  EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
+
+  // The network state has to be non-empty for the resetting to actually kick.
+  SimulateNetworkState(HTMLMediaElement::kNetworkIdle);
+
+  Video()->SetSrc("");
+  test::RunPendingTasks();
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 

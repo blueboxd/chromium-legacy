@@ -48,7 +48,6 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -198,9 +197,7 @@ class WebFrameTest : public testing::Test {
         chrome_url_("chrome://") {}
 
   ~WebFrameTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void DisableRendererSchedulerThrottling() {
@@ -214,18 +211,31 @@ class WebFrameTest : public testing::Test {
   }
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via the WebViewHelper instance in each test case.
     RegisterMockedURLLoadFromBase(base_url_, file_name);
   }
 
   void RegisterMockedChromeURLLoad(const std::string& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via the WebViewHelper instance in each test case.
     RegisterMockedURLLoadFromBase(chrome_url_, file_name);
   }
 
   void RegisterMockedURLLoadFromBase(const std::string& base_url,
                                      const std::string& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via the WebViewHelper instance in each test case.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
+  }
+
+  void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
+                                               const WebString& file_path,
+                                               WebURLResponse response) {
+    url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
+        full_url, file_path, response);
   }
 
   void RegisterMockedHttpURLLoadWithCSP(const std::string& file_name,
@@ -238,13 +248,15 @@ class WebFrameTest : public testing::Test {
                     : WebString("Content-Security-Policy"),
         WebString::FromUTF8(csp));
     std::string full_string = base_url_ + file_name;
-    url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
+    RegisterMockedURLLoadWithCustomResponse(
         ToKURL(full_string),
         test::CoreTestDataPath(WebString::FromUTF8(file_name)), response);
   }
 
   void RegisterMockedHttpURLLoadWithMimeType(const std::string& file_name,
                                              const std::string& mime_type) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via the WebViewHelper instance in each test case.
     url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name), WebString::FromUTF8(mime_type));
@@ -669,6 +681,8 @@ TEST_F(WebFrameTest, ChromePageNoJavascript) {
 TEST_F(WebFrameTest, LocationSetHostWithMissingPort) {
   std::string file_name = "print-location-href.html";
   RegisterMockedHttpURLLoad(file_name);
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase("http://internal.test:0/", file_name);
 
   frame_test_helpers::WebViewHelper web_view_helper;
@@ -692,6 +706,8 @@ TEST_F(WebFrameTest, LocationSetHostWithMissingPort) {
 TEST_F(WebFrameTest, LocationSetEmptyPort) {
   std::string file_name = "print-location-href.html";
   RegisterMockedHttpURLLoad(file_name);
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase("http://internal.test:0/", file_name);
 
   frame_test_helpers::WebViewHelper web_view_helper;
@@ -6998,13 +7014,13 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
   redirect_response.SetMimeType("text/html");
   redirect_response.SetHttpStatusCode(302);
   redirect_response.SetHttpHeaderField("Location", redirect);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-      test_url, redirect_response, file_path);
+  RegisterMockedURLLoadWithCustomResponse(test_url, file_path,
+                                          redirect_response);
 
   WebURLResponse final_response;
   final_response.SetMimeType("text/html");
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-      redirect_url, final_response, file_path);
+  RegisterMockedURLLoadWithCustomResponse(redirect_url, file_path,
+                                          final_response);
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "first_party_redirect.html");
@@ -8450,6 +8466,8 @@ TEST_F(WebFrameTest, ManifestFetch) {
 }
 
 TEST_F(WebFrameTest, ManifestCSPFetchAllow) {
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(not_base_url_, "link-manifest-fetch.json");
   RegisterMockedHttpURLLoadWithCSP("foo.html", "manifest-src *");
 
@@ -8465,6 +8483,8 @@ TEST_F(WebFrameTest, ManifestCSPFetchAllow) {
 }
 
 TEST_F(WebFrameTest, ManifestCSPFetchSelf) {
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(not_base_url_, "link-manifest-fetch.json");
   RegisterMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'");
 
@@ -8483,6 +8503,8 @@ TEST_F(WebFrameTest, ManifestCSPFetchSelf) {
 }
 
 TEST_F(WebFrameTest, ManifestCSPFetchSelfReportOnly) {
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(not_base_url_, "link-manifest-fetch.json");
   RegisterMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'",
                                    /* report only */ true);
@@ -8710,7 +8732,7 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
   WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
   MainFrame()->Swap(remote_frame);
 
-  remote_frame->View()->MainFrameWidget()->Resize(size);
+  remote_frame->View()->Resize(size);
 
   WebLocalFrame* local_frame =
       frame_test_helpers::CreateProvisional(*remote_frame);
@@ -9507,7 +9529,7 @@ TEST_F(WebFrameTest, FrameWidgetTest) {
       *helper.RemoteMainFrame(), WebString(), WebFrameOwnerProperties(),
       nullptr, nullptr, &child_widget_client);
 
-  helper.GetWebView()->MainFrameWidget()->Resize(WebSize(1000, 1000));
+  helper.GetWebView()->Resize(WebSize(1000, 1000));
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
@@ -10670,6 +10692,8 @@ class SaveImageFromDataURLWebFrameClient
 
 TEST_F(WebFrameTest, SaveImageAt) {
   std::string url = base_url_ + "image-with-data-url.html";
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(base_url_, "image-with-data-url.html");
   url_test_helpers::RegisterMockedURLLoad(
       ToKURL("http://test"), test::CoreTestDataPath("white-1x1.png"));
@@ -10709,6 +10733,8 @@ TEST_F(WebFrameTest, SaveImageAt) {
 
 TEST_F(WebFrameTest, SaveImageWithImageMap) {
   std::string url = base_url_ + "image-map.html";
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(base_url_, "image-map.html");
 
   frame_test_helpers::WebViewHelper helper;
@@ -10744,6 +10770,8 @@ TEST_F(WebFrameTest, CopyImageWithImageMap) {
   SaveImageFromDataURLWebFrameClient client;
 
   std::string url = base_url_ + "image-map.html";
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(base_url_, "image-map.html");
 
   frame_test_helpers::WebViewHelper helper;
@@ -10931,10 +10959,10 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("not_an_image.ico"), "image/x-icon");
   MultipleDataChunkDelegate delegate;
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(&delegate);
+  url_test_helpers::SetLoaderDelegate(&delegate);
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeAndLoad(url);
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
+  url_test_helpers::SetLoaderDelegate(nullptr);
 
   Document* document =
       To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
@@ -12401,7 +12429,7 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   // Because the child frame will have placeholder document loader, the main
   // frame will not finish loading, so
   // frame_test_helpers::PumpPendingRequestsForFrameToLoad doesn't work here.
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  url_test_helpers::ServeAsynchronousRequests();
 
   // Overwrite the client-handled child frame navigation with about:blank.
   WebLocalFrame* child = main_frame->FirstChild()->ToWebLocalFrame();

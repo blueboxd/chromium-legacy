@@ -50,6 +50,8 @@ SANITY_TEST_TARGET = 'cros_browser_sanity_test'
 # depending on which lab machine you're on.
 LAB_DUT_HOSTNAME = 'variable_chromeos_device_hostname'
 
+TAST_DEBUG_DOC = 'https://bit.ly/2LgvIXz'
+
 
 class TestFormatError(Exception):
   pass
@@ -349,6 +351,9 @@ class TastTest(RemoteTest):
         # https://godoc.org/chromium.googlesource.com/chromiumos/platform/tast.git/src/chromiumos/tast/testing#Error
         for err in errors:
           error_log += str(err['stack']) + '\n'
+      error_log += (
+           "\nIf you're unsure why this test failed, consult the steps "
+           'outlined in\n%s\n' % TAST_DEBUG_DOC)
       base_result = base_test_result.BaseTestResult(
           test['name'], result, duration=duration_ms, log=error_log)
       suite_results.AddResult(base_result)

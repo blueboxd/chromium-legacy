@@ -93,6 +93,12 @@ bool IsUPIVirtualPaymentAddress(const base::string16& value);
 // (IBAN). See https://en.wikipedia.org/wiki/International_Bank_Account_Number
 bool IsInternationalBankAccountNumber(const base::string16& value);
 
+// Return true if |value| is a 3 or 4 digit number.
+bool IsPlausibleCreditCardCVCNumber(const base::string16& value);
+
+// Returns true if the value is a 4 digit year in this century.
+bool IsPlausible4DigitExpirationYear(const base::string16& value);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_VALIDATION_H_

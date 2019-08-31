@@ -228,7 +228,7 @@ bool ReadTemperatureSensorInfo(const base::FilePath& sensor_dir,
     int32_t temperature = 0;
     if (base::ReadFileToString(temperature_path, &temperature_string) &&
         sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
-      has_data = false;
+      has_data = true;
       // CPU temp in millidegree Celsius to Celsius
       temperature /= 1000;
 

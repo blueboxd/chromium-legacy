@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
-
 namespace chromeos {
 
 namespace device_sync {
@@ -35,11 +33,13 @@ void CryptAuthMetadataSyncer::OnAttemptFinished(
     std::unique_ptr<CryptAuthKey> new_group_key,
     const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&
         encrypted_group_private_key,
-    const CryptAuthDeviceSyncResult& device_sync_result) {
+    const base::Optional<cryptauthv2::ClientDirective>& new_client_directive,
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(callback_);
   std::move(callback_).Run(id_to_device_metadata_packet_map,
                            std::move(new_group_key),
-                           encrypted_group_private_key, device_sync_result);
+                           encrypted_group_private_key, new_client_directive,
+                           device_sync_result_code);
 }
 
 }  // namespace device_sync

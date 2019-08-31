@@ -58,8 +58,8 @@ class TabSelectionEditorCoordinator {
         mTabModelSelector = tabModelSelector;
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
-                null, null, null, this::getItemViewType, this::getSelectionDelegate, null, null,
-                false, COMPONENT_NAME);
+                null, null, null, TabProperties.UiType.SELECTABLE, this::getSelectionDelegate, null,
+                null, false, COMPONENT_NAME);
 
         mTabSelectionEditorLayout = LayoutInflater.from(context)
                 .inflate(R.layout.tab_selection_editor_layout, null)
@@ -83,13 +83,6 @@ class TabSelectionEditorCoordinator {
     }
 
     /**
-     * Gets the view type for each item in the list.
-     */
-    int getItemViewType(PropertyModel item) {
-        return TabGridViewHolder.TabGridViewItemType.SELECTABLE_TAB;
-    }
-
-    /**
      * Resets {@link TabListCoordinator} with the provided list.
      * @param tabs List of {@link Tab}s to reset.
      */
@@ -102,5 +95,14 @@ class TabSelectionEditorCoordinator {
      */
     TabSelectionEditorController getController() {
         return mTabSelectionEditorMediator;
+    }
+
+    /**
+     * Destroy any members that needs clean up.
+     */
+    public void destroy() {
+        mTabListCoordinator.destroy();
+        mTabSelectionEditorMediator.destroy();
+        mTabSelectionEditorLayoutChangeProcessor.destroy();
     }
 }

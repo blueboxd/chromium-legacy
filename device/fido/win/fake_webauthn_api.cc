@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 
@@ -97,12 +98,33 @@ HRESULT FakeWinWebAuthnApi::AuthenticatorGetAssertion(
 
 HRESULT FakeWinWebAuthnApi::CancelCurrentOperation(GUID* cancellation_id) {
   DCHECK(is_available_);
+  NOTREACHED() << "not implemented";
   return E_NOTIMPL;
 }
 
 PCWSTR FakeWinWebAuthnApi::GetErrorName(HRESULT hr) {
   DCHECK(is_available_);
-  return L"not implemented";
+  // See the comment for WebAuthNGetErrorName() in <webauthn.h>.
+  switch (hr) {
+    case S_OK:
+      return STRING16_LITERAL("Success");
+    case NTE_EXISTS:
+      return STRING16_LITERAL("InvalidStateError");
+    case HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED):
+    case NTE_NOT_SUPPORTED:
+    case NTE_TOKEN_KEYSET_STORAGE_FULL:
+      return STRING16_LITERAL("ConstraintError");
+    case NTE_INVALID_PARAMETER:
+      return STRING16_LITERAL("NotSupportedError");
+    case NTE_DEVICE_NOT_FOUND:
+    case NTE_NOT_FOUND:
+    case HRESULT_FROM_WIN32(ERROR_CANCELLED):
+    case NTE_USER_CANCELLED:
+    case HRESULT_FROM_WIN32(ERROR_TIMEOUT):
+      return STRING16_LITERAL("NotAllowedError");
+    default:
+      return STRING16_LITERAL("UnknownError");
+  }
 }
 
 void FakeWinWebAuthnApi::FreeCredentialAttestation(

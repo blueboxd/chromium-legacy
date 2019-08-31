@@ -19,10 +19,19 @@ class Connector;
 
 namespace device {
 
+enum class BioEnrollmentStatus {
+  kSuccess,
+  kAuthenticatorResponseInvalid,
+  kSoftPINBlock,
+  kHardPINBlock,
+  kNoPINSet,
+  kAuthenticatorMissingBioEnrollment,
+};
+
 class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     : public FidoRequestHandlerBase {
  public:
-  using ErrorCallback = base::OnceCallback<void(FidoReturnCode)>;
+  using ErrorCallback = base::OnceCallback<void(BioEnrollmentStatus)>;
   using GetPINCallback =
       base::RepeatingCallback<void(int64_t retries,
                                    base::OnceCallback<void(std::string)>)>;

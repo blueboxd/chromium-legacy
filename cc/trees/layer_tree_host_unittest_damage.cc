@@ -107,7 +107,7 @@ class LayerTreeHostDamageTestSetViewportRectAndScale
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         layer_tree_host()->SetViewportRectAndScale(
-            gfx::Rect(15, 15), 1.f, viz::LocalSurfaceIdAllocation());
+            gfx::Rect(15, 15), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
     }
   }

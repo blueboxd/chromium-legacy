@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -246,10 +246,10 @@ FakeRtpTransceiver::FakeRtpTransceiver(
     : media_type_(media_type),
       sender_(std::move(sender)),
       receiver_(std::move(receiver)),
-      mid_(ToAbslOptional(std::move(mid))),
+      mid_(blink::ToAbslOptional(std::move(mid))),
       stopped_(stopped),
       direction_(direction),
-      current_direction_(ToAbslOptional(current_direction)) {}
+      current_direction_(blink::ToAbslOptional(current_direction)) {}
 
 FakeRtpTransceiver::~FakeRtpTransceiver() {}
 

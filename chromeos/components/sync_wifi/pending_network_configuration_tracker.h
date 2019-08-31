@@ -14,8 +14,8 @@
 
 namespace sync_wifi {
 
-// Tracks updates to the local network stack while they are pending.  Updates
-// are stored persistently.
+// Tracks updates to the local network stack while they are pending, including
+// how many attempts have been executed.  Updates are stored persistently.
 class PendingNetworkConfigurationTracker {
  public:
   PendingNetworkConfigurationTracker() = default;
@@ -35,15 +35,18 @@ class PendingNetworkConfigurationTracker {
   virtual void MarkComplete(const std::string& change_guid,
                             const std::string& ssid) = 0;
 
-  // Returns true if this change is still in the list.  If a change is in
-  // process but a new change comes in for the same ssid, the first one will
-  // no longer be tracked.
-  virtual bool IsChangeTracked(const std::string& change_guid,
-                               const std::string& ssid) = 0;
-
-  // Returns all in flight updates.
+  // Returns all pending updates.
   virtual std::vector<PendingNetworkConfigurationUpdate>
   GetPendingUpdates() = 0;
+
+  // Returns the requested pending update, if it exists.
+  virtual base::Optional<PendingNetworkConfigurationUpdate> GetPendingUpdate(
+      const std::string& change_guid,
+      const std::string& ssid) = 0;
+
+  // Increments the number of completed attempts for the given update.
+  virtual void IncrementCompletedAttempts(const std::string& change_guid,
+                                          const std::string& ssid) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PendingNetworkConfigurationTracker);

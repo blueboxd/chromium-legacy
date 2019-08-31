@@ -103,11 +103,11 @@ void ReportingContext::CountReport(Report* report) {
   UseCounter::Count(execution_context_, feature);
 }
 
-const mojom::blink::ReportingServiceProxyPtr&
+const mojo::Remote<mojom::blink::ReportingServiceProxy>&
 ReportingContext::GetReportingService() const {
   if (!reporting_service_) {
     Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        mojo::MakeRequest(&reporting_service_));
+        reporting_service_.BindNewPipeAndPassReceiver());
   }
   return reporting_service_;
 }

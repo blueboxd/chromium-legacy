@@ -34,7 +34,7 @@ class CryptAuthGroupPrivateKeySharer {
  public:
   using IdToEncryptingKeyMap = base::flat_map<std::string, std::string>;
   using ShareGroupPrivateKeyAttemptFinishedCallback =
-      base::OnceCallback<void(const CryptAuthDeviceSyncResult::ResultCode&)>;
+      base::OnceCallback<void(CryptAuthDeviceSyncResult::ResultCode)>;
 
   virtual ~CryptAuthGroupPrivateKeySharer();
 
@@ -58,7 +58,7 @@ class CryptAuthGroupPrivateKeySharer {
       const IdToEncryptingKeyMap& id_to_encrypting_key_map) = 0;
 
   void OnAttemptFinished(
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code);
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
  private:
   ShareGroupPrivateKeyAttemptFinishedCallback callback_;

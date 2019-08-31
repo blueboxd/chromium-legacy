@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
+#include "content/public/browser/mhtml_generation_result.h"
 
 namespace base {
 class FilePath;
@@ -67,7 +68,7 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
                            const base::string16& title,
                            const std::string& name_space,
                            base::Time mhtml_start_time,
-                           int64_t file_size);
+                           const content::MHTMLGenerationResult& result);
   void OnComputeDigestDone(const GURL& url,
                            const base::FilePath& file_path,
                            const base::string16& title,

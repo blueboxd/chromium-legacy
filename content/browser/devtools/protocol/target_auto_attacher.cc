@@ -153,6 +153,9 @@ void TargetAutoAttacher::UpdatePortals() {
          outer_web_contents->GetInnerWebContents()) {
       WebContentsImpl* web_contents_impl =
           static_cast<WebContentsImpl*>(web_contents);
+      if (!web_contents_impl->IsPortal())
+        continue;
+
       scoped_refptr<DevToolsAgentHost> new_host =
           RenderFrameDevToolsAgentHost::GetOrCreateFor(
               web_contents_impl->GetFrameTree()->root());

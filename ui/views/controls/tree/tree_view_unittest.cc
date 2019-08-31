@@ -13,6 +13,7 @@
 #include "ui/base/models/tree_node_model.h"
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/test/views_test_base.h"
 
 using ui::TreeModel;
@@ -308,6 +309,41 @@ TEST_F(TreeViewTest, TreeNodesRemoved) {
   EXPECT_EQ("root [a c]", TreeViewContentsAsString());
   EXPECT_EQ("c", GetSelectedNodeTitle());
   EXPECT_EQ(2, GetRowCount());
+}
+
+class TestController : public TreeViewController {
+ public:
+  void OnTreeViewSelectionChanged(TreeView* tree_view) override {
+    call_count_++;
+  }
+
+  bool CanEdit(TreeView* tree_view, ui::TreeModelNode* node) override {
+    return true;
+  }
+
+  int selection_change_count() const { return call_count_; }
+
+ private:
+  int call_count_ = 0;
+};
+
+TEST_F(TreeViewTest, RemovingLastNodeNotifiesSelectionChanged) {
+  TestController controller;
+  tree_.SetController(&controller);
+  tree_.SetRootShown(false);
+  tree_.SetModel(&model_);
+
+  // Remove all but one node.
+  model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
+  model_.Remove(GetNodeByTitle("c")->parent(), GetNodeByTitle("c"));
+  tree_.SetSelectedNode(GetNodeByTitle("a"));
+  EXPECT_EQ("root [a]", TreeViewContentsAsString());
+
+  const int prior_call_count = controller.selection_change_count();
+  // Remove the final node and expect
+  // |TestController::OnTreeViewSelectionChanged| to be called.
+  model_.Remove(GetNodeByTitle("a")->parent(), GetNodeByTitle("a"));
+  EXPECT_EQ(prior_call_count + 1, controller.selection_change_count());
 }
 
 // Verifies changing a node title works.

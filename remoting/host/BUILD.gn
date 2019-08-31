@@ -292,6 +292,8 @@ static_library("common") {
     "username.h",
     "xmpp_register_support_host_request.cc",
     "xmpp_register_support_host_request.h",
+    "xsession_chooser_linux.cc",
+    "xsession_chooser_ui.inc",
   ]
 
   libs = []
@@ -384,6 +386,7 @@ static_library("common") {
       "disconnect_window_linux.cc",
       "me2me_desktop_environment.cc",
       "me2me_desktop_environment.h",
+      "xsession_chooser_linux.cc",
     ]
     deps += [
       "//ash",

@@ -101,9 +101,14 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_CLICK_TO_CALL = 9;
 
     /**
-     * Unique identifier for Shared Clipboard notifications.
+     * Unique identifier for Shared Clipboard incoming notifications.
      */
-    public static final int NOTIFICATION_ID_SHARED_CLIPBOARD = 10;
+    public static final int NOTIFICATION_ID_SHARED_CLIPBOARD_INCOMING = 10;
+
+    /**
+     * Unique identifier for Shared Clipboard outgoing notifications.
+     */
+    public static final int NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING = 11;
 
     /**
      * Separator used to separate the notification origin from additional data such as the

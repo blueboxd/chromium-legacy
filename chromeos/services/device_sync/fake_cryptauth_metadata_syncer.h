@@ -11,17 +11,18 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 #include "chromeos/services/device_sync/cryptauth_metadata_syncer.h"
 #include "chromeos/services/device_sync/cryptauth_metadata_syncer_impl.h"
 #include "chromeos/services/device_sync/proto/cryptauth_better_together_device_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
 class CryptAuthClientFactory;
-class CryptAuthDeviceSyncResult;
 class CryptAuthKey;
 
 class FakeCryptAuthMetadataSyncer : public CryptAuthMetadataSyncer {
@@ -53,7 +54,8 @@ class FakeCryptAuthMetadataSyncer : public CryptAuthMetadataSyncer {
       std::unique_ptr<CryptAuthKey> new_group_key,
       const base::Optional<cryptauthv2::EncryptedGroupPrivateKey>&
           encrypted_group_private_key,
-      const CryptAuthDeviceSyncResult& device_sync_result);
+      const base::Optional<cryptauthv2::ClientDirective>& new_client_directive,
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
  private:
   // CryptAuthMetadataSyncer:

@@ -28,11 +28,7 @@ public class ExpandablePreferenceGroup extends PreferenceGroup {
     private Drawable mDrawable;
 
     public ExpandablePreferenceGroup(Context context, AttributeSet attrs) {
-        super(context, attrs, android.R.attr.preferenceStyle);
-
-        // TODO(crbug.com/985727): Determine why PreferenceGroup doesn't automatically use the
-        // preference layout set by the theme.
-        setLayoutResource(R.layout.preference_compat);
+        super(context, attrs, R.attr.preferenceStyle);
 
         setWidgetLayoutResource(R.layout.checkable_image_view_widget);
     }

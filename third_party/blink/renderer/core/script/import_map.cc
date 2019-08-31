@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
@@ -146,35 +147,30 @@ KURL NormalizeValue(const String& key,
 // Parse |text| as an import map. Errors (e.g. json parsing error, invalid
 // keys/values, etc.) are basically ignored, except that they are reported to
 // the console |logger|.
-// TODO(hiroshige): Handle errors in a spec-conformant way once specified.
-// https://github.com/WICG/import-maps/issues/100
-ImportMap* ImportMap::Create(const Modulator& modulator_for_built_in_modules,
-                             const String& input,
-                             const KURL& base_url,
-                             ConsoleLogger& logger) {
+ImportMap* ImportMap::Parse(const Modulator& modulator,
+                            const String& input,
+                            const KURL& base_url,
+                            ConsoleLogger& logger,
+                            ScriptValue* error_to_rethrow) {
+  DCHECK(error_to_rethrow);
+
   // <spec step="1">Let parsed be the result of parsing JSON into Infra values
   // given input.</spec>
   std::unique_ptr<JSONValue> parsed = ParseJSON(input);
 
   if (!parsed) {
-    logger.AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
-                             mojom::ConsoleMessageLevel::kError,
-                             "Failed to parse import map: invalid JSON");
-    // TODO(hiroshige): Return null.
-    return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
-                                           SpecifierMap());
+    *error_to_rethrow =
+        modulator.CreateSyntaxError("Failed to parse import map: invalid JSON");
+    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
   }
 
   // <spec step="2">If parsed is not a map, then throw a TypeError indicating
   // that the top-level value must be a JSON object.</spec>
   std::unique_ptr<JSONObject> parsed_map = JSONObject::From(std::move(parsed));
   if (!parsed_map) {
-    logger.AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
-                             mojom::ConsoleMessageLevel::kError,
-                             "Failed to parse import map: not an object");
-    // TODO(hiroshige): Return null.
-    return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
-                                           SpecifierMap());
+    *error_to_rethrow =
+        modulator.CreateTypeError("Failed to parse import map: not an object");
+    return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
   }
 
   // <spec step="3">Let sortedAndNormalizedImports be an empty map.</spec>
@@ -187,13 +183,10 @@ ImportMap* ImportMap::Create(const Modulator& modulator_for_built_in_modules,
     // object.</spec>
     JSONObject* imports = parsed_map->GetJSONObject("imports");
     if (!imports) {
-      logger.AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
-                               mojom::ConsoleMessageLevel::kError,
-                               "Failed to parse import map: \"imports\" "
-                               "top-level key must be a JSON object.");
-      // TODO(hiroshige): Return null.
-      return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
-                                             SpecifierMap());
+      *error_to_rethrow = modulator.CreateTypeError(
+          "Failed to parse import map: \"imports\" "
+          "top-level key must be a JSON object.");
+      return MakeGarbageCollected<ImportMap>(modulator, SpecifierMap());
     }
 
     // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
@@ -210,7 +203,7 @@ ImportMap* ImportMap::Create(const Modulator& modulator_for_built_in_modules,
   // <spec step="8">Return the import map whose imports are
   // sortedAndNormalizedImports and whose scopes scopes are
   // sortedAndNormalizedScopes.</spec>
-  return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
+  return MakeGarbageCollected<ImportMap>(modulator,
                                          sorted_and_normalized_imports);
 }
 

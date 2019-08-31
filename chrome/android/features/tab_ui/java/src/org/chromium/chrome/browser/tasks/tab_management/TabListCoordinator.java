@@ -11,22 +11,23 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.ui.modelutil.PropertyKey;
-import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.RecyclerViewAdapter;
-import org.chromium.ui.modelutil.SimpleRecyclerViewMcpBase;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
+import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -55,14 +56,10 @@ public class TabListCoordinator implements Destroyable {
 
     static final int GRID_LAYOUT_SPAN_COUNT_PORTRAIT = 2;
     static final int GRID_LAYOUT_SPAN_COUNT_LANDSCAPE = 3;
-    private final SimpleRecyclerViewMcpBase mModelChangeProcessor;
     private final TabListMediator mMediator;
     private final TabListRecyclerView mRecyclerView;
     private final @TabListMode int mMode;
     private final Rect mThumbnailLocationOfCurrentTab = new Rect();
-    private final SimpleRecyclerViewMcpBase
-            .ItemViewTypeCallback<PropertyModel> mGridDefaultItemViewTypeCallback =
-            (item) -> TabGridViewHolder.TabGridViewItemType.CLOSABLE_TAB;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -79,7 +76,7 @@ public class TabListCoordinator implements Destroyable {
      * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
      *                                        click on a grid card.
      * @param dialogHandler A handler to handle requests about updating TabGridDialog.
-     * @param itemViewTypeCallback Callback that returns the view type for each item in the list.
+     * @param itemType The item type to put in the list of tabs.
      * @param selectionDelegateProvider Provider to provide selected Tabs for a selectable tab list.
      *                                  It's NULL when selection is not possible.
      * @param parentView {@link ViewGroup} The root view of the UI.
@@ -96,41 +93,43 @@ public class TabListCoordinator implements Destroyable {
             @Nullable TabListMediator.CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            @Nullable TabListMediator.TabGridDialogHandler dialogHandler,
-            SimpleRecyclerViewMcpBase.ItemViewTypeCallback<PropertyModel> itemViewTypeCallback,
+            @Nullable TabListMediator.TabGridDialogHandler dialogHandler, @UiType int itemType,
             @Nullable TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
             @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
             boolean attachToParent, String componentName) {
-        TabListModel tabListModel = new TabListModel();
         mMode = mode;
-
-        RecyclerViewAdapter adapter;
+        TabListModel modelList = new TabListModel();
+        SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(modelList);
+        RecyclerView.RecyclerListener recyclerListener = null;
         if (mMode == TabListMode.GRID || mMode == TabListMode.CAROUSEL) {
-            if (itemViewTypeCallback == null) {
-                itemViewTypeCallback = mGridDefaultItemViewTypeCallback;
-            }
+            adapter.registerType(UiType.SELECTABLE, () -> {
+                return (ViewGroup) LayoutInflater.from(context).inflate(
+                        R.layout.selectable_tab_grid_card_item, parentView, false);
+            }, TabGridViewBinder::bindSelectableTab);
 
-            SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey> mcp =
-                    new SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey>(
-                            itemViewTypeCallback, TabGridViewBinder::onBindViewHolder,
-                            tabListModel) {
-                        @Override
-                        public void onViewRecycled(TabGridViewHolder viewHolder) {
-                            viewHolder.resetThumbnail();
-                        }
-                    };
-            if (mode == TabListMode.CAROUSEL) {
-                adapter = new RecyclerViewAdapter<>(mcp, TabCarouselViewHolder::create);
-            } else {
-                adapter = new RecyclerViewAdapter<>(mcp, TabGridViewHolder::create);
-            }
-            mModelChangeProcessor = mcp;
+            adapter.registerType(UiType.CLOSABLE, () -> {
+                ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
+                        R.layout.closable_tab_grid_card_item, parentView, false);
+                if (mMode == TabListMode.CAROUSEL) {
+                    group.getLayoutParams().width = context.getResources().getDimensionPixelSize(
+                            R.dimen.tab_carousel_card_width);
+                }
+                return group;
+            }, TabGridViewBinder::bindClosableTab);
+
+            recyclerListener = (holder) -> {
+                ViewLookupCachingFrameLayout root = (ViewLookupCachingFrameLayout) holder.itemView;
+                ImageView thumbnail = (ImageView) root.fastFindViewById(R.id.tab_thumbnail);
+                if (thumbnail == null) return;
+                thumbnail.setImageDrawable(null);
+                thumbnail.setMinimumHeight(thumbnail.getWidth());
+            };
         } else if (mMode == TabListMode.STRIP) {
-            SimpleRecyclerViewMcpBase<PropertyModel, TabStripViewHolder, PropertyKey> mcp =
-                    new SimpleRecyclerViewMcpBase<>(
-                            null, TabStripViewBinder::onBindViewHolder, tabListModel);
-            adapter = new RecyclerViewAdapter<>(mcp, TabStripViewHolder::create);
-            mModelChangeProcessor = mcp;
+            adapter.registerType(UiType.STRIP, () -> {
+                return (ViewGroup) LayoutInflater.from(context).inflate(
+                        R.layout.tab_strip_item, parentView, false);
+            }, TabStripViewBinder::bind);
+
         } else {
             throw new IllegalArgumentException(
                     "Attempting to create a tab list UI with invalid mode");
@@ -155,6 +154,7 @@ public class TabListCoordinator implements Destroyable {
 
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setHasFixedSize(true);
+        if (recyclerListener != null) mRecyclerView.setRecyclerListener(recyclerListener);
 
         if (dynamicResourceLoader != null) {
             mRecyclerView.createDynamicView(dynamicResourceLoader);
@@ -163,10 +163,10 @@ public class TabListCoordinator implements Destroyable {
         TabListFaviconProvider tabListFaviconProvider =
                 new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
-        mMediator = new TabListMediator(context, tabListModel, tabModelSelector, thumbnailProvider,
+        mMediator = new TabListMediator(context, modelList, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
                 createGroupButtonProvider, selectionDelegateProvider,
-                gridCardOnClickListenerProvider, dialogHandler, componentName);
+                gridCardOnClickListenerProvider, dialogHandler, componentName, itemType);
 
         if (mMode == TabListMode.GRID) {
             GridLayoutManager gridLayoutManager =
@@ -266,6 +266,7 @@ public class TabListCoordinator implements Destroyable {
     @Override
     public void destroy() {
         mMediator.destroy();
+        mRecyclerView.setRecyclerListener(null);
     }
 
     int getResourceId() {

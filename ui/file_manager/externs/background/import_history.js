@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Namespace
-var importer;
+var importer = importer || {};
 
 /**
  * A persistent data store for Cloud Import history information.

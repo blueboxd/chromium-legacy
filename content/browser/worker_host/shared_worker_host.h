@@ -110,8 +110,9 @@ class CONTENT_EXPORT SharedWorkerHost
   void CreateAppCacheBackend(
       mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
 
-  // Terminates the given worker, i.e. based on a UI action.
-  void TerminateWorker();
+  // Causes this instance to be deleted, which will terminate the worker. May
+  // be done based on a UI action.
+  void Destruct();
 
   void AddClient(mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
                  int client_process_id,
@@ -125,20 +126,16 @@ class CONTENT_EXPORT SharedWorkerHost
 
   const SharedWorkerInstance& instance() const { return instance_; }
   int worker_process_id() const { return worker_process_id_; }
-  bool IsAvailable() const;
+
+  // Signals the remote worker to terminate and returns the mojo::Remote
+  // instance so the caller can be notified when the connection is lost. Should
+  // be called right before deleting this instance.
+  mojo::Remote<blink::mojom::SharedWorker> TerminateRemoteWorkerForTesting();
 
   base::WeakPtr<SharedWorkerHost> AsWeakPtr();
 
  private:
   friend class SharedWorkerHostTest;
-
-  enum class Phase {
-    kInitial,
-    kStarted,
-    kClosed,
-    kTerminationSent,
-    kTerminationSentAndClosed
-  };
 
   class ScopedDevToolsHandle;
 
@@ -183,8 +180,6 @@ class CONTENT_EXPORT SharedWorkerHost
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateNetworkFactoryForSubresources(bool* bypass_redirect_checks);
 
-  void AdvanceTo(Phase phase);
-
   mojo::Receiver<blink::mojom::SharedWorkerHost> receiver_{this};
 
   // |service_| owns |this|.
@@ -224,7 +219,8 @@ class CONTENT_EXPORT SharedWorkerHost
 
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
-  Phase phase_ = Phase::kInitial;
+  // Indicates if Start() was invoked on this instance.
+  bool started_ = false;
 
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_{this};
 

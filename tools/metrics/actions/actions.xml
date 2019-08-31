@@ -13938,6 +13938,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="NativeFileSystemAPI.OpenedBubble">
+  <owner>mek@chromium.org</owner>
+  <owner>src/content/browser/native_file_system/OWNERS</owner>
+  <description>
+    Recorded any time the user opens the usage indicator bubble for the Native
+    File System API.
+  </description>
+</action>
+
+<action name="NativeFileSystemAPI.RevokePermissions">
+  <owner>mek@chromium.org</owner>
+  <owner>src/content/browser/native_file_system/OWNERS</owner>
+  <description>
+    Recorded any time the user revokes all Native File System API permissions
+    from the usage indicator bubble.
+  </description>
+</action>
+
 <action name="NativeUI_Applications">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -2,60 +2,57 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Private property symbols
-// TODO(tkent): Use private fields.
-const _value = Symbol('A boolean track value field');
-const _trackElement = Symbol('A track element field');
-const _fillElement = Symbol('A trackFill element field');
-const _slotElement = Symbol('A slot element field');
-
 export class SwitchTrack {
+  #value;
+  #trackElement;
+  #fillElement;
+  #slotElement;
+
   /**
    * @param {!Document} factory A factory for elements created for this track.
    */
   constructor(factory) {
-    this[_value] = false;
-    this._initializeDOM(factory);
+    this.#value = false;
+    this.#initializeDOM(factory);
   }
 
   /**
    * @return {!Element}
    */
   get element() {
-    return this[_trackElement];
+    return this.#trackElement;
   }
 
   /**
    * @param {Boolean} newValue
    */
   set value(newValue) {
-    const oldValue = this[_value];
-    this[_value] = Boolean(newValue);
+    const oldValue = this.#value;
+    this.#value = Boolean(newValue);
 
-    const bar = this[_fillElement];
+    const bar = this.#fillElement;
     if (bar) {
-      bar.style.inlineSize = this[_value] ? '100%' : '0%';
-      if (oldValue !== this[_value]) {
-        this._addSlot();
+      bar.style.inlineSize = this.#value ? '100%' : '0%';
+      if (oldValue !== this.#value) {
+        this.#addSlot();
       }
     }
   }
 
-  // TODO(tkent): Use private fields. #initializeDOM = factory => { ...};
   /**
    * @param {!Document} factory A factory for elements created for this track.
    */
-  _initializeDOM(factory) {
-    this[_trackElement] = factory.createElement('div');
-    this[_trackElement].id = 'track';
-    this[_trackElement].part.add('track');
-    this[_fillElement] = factory.createElement('span');
-    this[_fillElement].id = 'trackFill';
-    this[_fillElement].part.add('track-fill');
-    this[_trackElement].appendChild(this[_fillElement]);
-    this[_slotElement] = factory.createElement('slot');
-    this._addSlot();
-  }
+  #initializeDOM = factory => {
+    this.#trackElement = factory.createElement('div');
+    this.#trackElement.id = 'track';
+    this.#trackElement.part.add('track');
+    this.#fillElement = factory.createElement('span');
+    this.#fillElement.id = 'trackFill';
+    this.#fillElement.part.add('track-fill');
+    this.#trackElement.appendChild(this.#fillElement);
+    this.#slotElement = factory.createElement('slot');
+    this.#addSlot();
+  };
 
   /**
    * Add the <slot>
@@ -63,11 +60,11 @@ export class SwitchTrack {
    *   - as a child of _fillElement if _value is false
    * This behavior is helpful to show text in the track.
    */
-  _addSlot() {
-    if (this[_value]) {
-      this[_fillElement].appendChild(this[_slotElement]);
+  #addSlot = () => {
+    if (this.#value) {
+      this.#fillElement.appendChild(this.#slotElement);
     } else {
-      this[_trackElement].appendChild(this[_slotElement]);
+      this.#trackElement.appendChild(this.#slotElement);
     }
-  }
+  };
 }

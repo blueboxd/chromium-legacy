@@ -43,7 +43,7 @@ class WebIDBFactoryImpl : public WebIDBFactory {
                       bool force_close) override;
 
  private:
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
   mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
   GetDatabaseCallbacksProxy(

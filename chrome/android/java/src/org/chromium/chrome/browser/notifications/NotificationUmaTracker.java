@@ -111,8 +111,10 @@ public class NotificationUmaTracker {
         int WEB_APP_ACTION_OPEN_IN_CHROME = 8;
         // Setting button in offline content suggestion notification.
         int OFFLINE_CONTENT_SUGGESTION_SETTINGS = 9;
+        // Dismiss button on sharing notification.
+        int SHARING_DISMISS = 10;
 
-        int NUM_ENTRIES = 10;
+        int NUM_ENTRIES = 11;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =

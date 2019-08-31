@@ -29,7 +29,7 @@ void CryptAuthFeatureStatusGetter::GetFeatureStatuses(
 
 void CryptAuthFeatureStatusGetter::OnAttemptFinished(
     const IdToFeatureStatusMap& id_to_feature_status_map,
-    const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(callback_);
   std::move(callback_).Run(id_to_feature_status_map, device_sync_result_code);
 }

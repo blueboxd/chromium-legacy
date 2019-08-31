@@ -171,9 +171,6 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
           .current_password_present = true,
       },
   };
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
-
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.description);
     std::map<base::string16, const PasswordForm*> best_matches;

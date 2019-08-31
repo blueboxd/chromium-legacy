@@ -17,7 +17,7 @@ FakeCryptAuthGroupPrivateKeySharer::~FakeCryptAuthGroupPrivateKeySharer() =
     default;
 
 void FakeCryptAuthGroupPrivateKeySharer::FinishAttempt(
-    const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(request_context_);
   DCHECK(group_key_);
   DCHECK(id_to_encrypting_key_map_);

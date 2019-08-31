@@ -13,15 +13,14 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using password_manager::PasswordFormManager;
+using password_manager::NewPasswordFormManager;
 
 namespace {
 
@@ -29,7 +28,7 @@ class TestUpdatePasswordInfoBarDelegate : public UpdatePasswordInfoBarDelegate {
  public:
   TestUpdatePasswordInfoBarDelegate(
       content::WebContents* web_contents,
-      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::NewPasswordFormManager> form_to_save,
       bool is_smartlock_branding_enabled)
       : UpdatePasswordInfoBarDelegate(web_contents,
                                       std::move(form_to_save),
@@ -50,20 +49,20 @@ class UpdatePasswordInfoBarDelegateTest
   void TearDown() override;
 
   const autofill::PasswordForm& test_form() { return test_form_; }
-  std::unique_ptr<password_manager::PasswordFormManager>
+  std::unique_ptr<password_manager::NewPasswordFormManager>
   CreateTestFormManager();
 
  protected:
   std::unique_ptr<PasswordManagerInfoBarDelegate> CreateDelegate(
-      std::unique_ptr<password_manager::PasswordFormManager>
+      std::unique_ptr<password_manager::NewPasswordFormManager>
           password_form_manager,
       bool is_smartlock_branding_enabled);
 
   password_manager::StubPasswordManagerClient client_;
   password_manager::StubPasswordManagerDriver driver_;
-  password_manager::PasswordManager password_manager_;
 
   autofill::PasswordForm test_form_;
+  autofill::FormData observed_form_;
 
  private:
   password_manager::FakeFormFetcher fetcher_;
@@ -71,11 +70,24 @@ class UpdatePasswordInfoBarDelegateTest
   DISALLOW_COPY_AND_ASSIGN(UpdatePasswordInfoBarDelegateTest);
 };
 
-UpdatePasswordInfoBarDelegateTest::UpdatePasswordInfoBarDelegateTest()
-    : password_manager_(&client_) {
+UpdatePasswordInfoBarDelegateTest::UpdatePasswordInfoBarDelegateTest() {
   test_form_.origin = GURL("https://example.com");
   test_form_.username_value = base::ASCIIToUTF16("username");
   test_form_.password_value = base::ASCIIToUTF16("12345");
+
+  // Create a simple sign-in form.
+  observed_form_.url = test_form_.origin;
+  autofill::FormFieldData field;
+  field.form_control_type = "text";
+  field.value = test_form_.username_value;
+  observed_form_.fields.push_back(field);
+  field.form_control_type = "password";
+  field.value = test_form_.password_value;
+  observed_form_.fields.push_back(field);
+
+  // Turn off waiting for server predictions in order to avoid dealing with
+  // posted tasks in NewPasswordFormManager.
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 }
 
 void UpdatePasswordInfoBarDelegateTest::SetUp() {
@@ -90,19 +102,19 @@ void UpdatePasswordInfoBarDelegateTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
-std::unique_ptr<password_manager::PasswordFormManager>
+std::unique_ptr<password_manager::NewPasswordFormManager>
 UpdatePasswordInfoBarDelegateTest::CreateTestFormManager() {
-  auto manager = std::make_unique<password_manager::PasswordFormManager>(
-      &password_manager_, &client_, driver_.AsWeakPtr(), test_form(),
-      std::make_unique<password_manager::StubFormSaver>(), &fetcher_);
-  manager->Init(nullptr);
-  manager->ProvisionallySave(test_form());
+  auto manager = std::make_unique<password_manager::NewPasswordFormManager>(
+      &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
+      std::make_unique<password_manager::StubFormSaver>(),
+      nullptr /* metrics_recorder */);
+  manager->ProvisionallySave(observed_form_, &driver_);
   return manager;
 }
 
 std::unique_ptr<PasswordManagerInfoBarDelegate>
 UpdatePasswordInfoBarDelegateTest::CreateDelegate(
-    std::unique_ptr<password_manager::PasswordFormManager>
+    std::unique_ptr<password_manager::NewPasswordFormManager>
         password_form_manager,
     bool is_smartlock_branding_enabled) {
   std::unique_ptr<PasswordManagerInfoBarDelegate> delegate(
@@ -113,8 +125,8 @@ UpdatePasswordInfoBarDelegateTest::CreateDelegate(
 }
 
 TEST_F(UpdatePasswordInfoBarDelegateTest, HasDetailsMessageForSignedIn) {
-  std::unique_ptr<password_manager::PasswordFormManager> password_form_manager(
-      CreateTestFormManager());
+  std::unique_ptr<password_manager::NewPasswordFormManager>
+      password_form_manager(CreateTestFormManager());
   std::unique_ptr<PasswordManagerInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
                      true /* is_smartlock_branding_enabled */));
@@ -123,8 +135,8 @@ TEST_F(UpdatePasswordInfoBarDelegateTest, HasDetailsMessageForSignedIn) {
 }
 
 TEST_F(UpdatePasswordInfoBarDelegateTest, EmptyDetailsMessageForNotSignedIn) {
-  std::unique_ptr<password_manager::PasswordFormManager> password_form_manager(
-      CreateTestFormManager());
+  std::unique_ptr<password_manager::NewPasswordFormManager>
+      password_form_manager(CreateTestFormManager());
   std::unique_ptr<PasswordManagerInfoBarDelegate> infobar(
       CreateDelegate(std::move(password_form_manager),
                      false /* is_smartlock_branding_enabled */));

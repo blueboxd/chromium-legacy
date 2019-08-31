@@ -44,6 +44,8 @@ public class BackgroundTaskGcmTaskServiceTest {
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
     @Mock
+    private BackgroundTaskSchedulerDelegate mAlarmManagerDelegate;
+    @Mock
     private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
     @Mock
     private BackgroundTaskSchedulerImpl mBackgroundTaskSchedulerImpl;
@@ -52,7 +54,7 @@ public class BackgroundTaskGcmTaskServiceTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
-                new BackgroundTaskSchedulerImpl(mDelegate));
+                new BackgroundTaskSchedulerImpl(mDelegate, mAlarmManagerDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         sReturnThroughCallback = false;
         sNeedsRescheduling = false;

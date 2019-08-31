@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,9 +33,7 @@ class TabAnimationTest : public testing::Test {
 
 TEST_F(TabAnimationTest, StaticAnimationDoesNotChange) {
   TabAnimationState static_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
+      TabOpen::kOpen, TabPinned::kUnpinned, TabActive::kInactive, 0);
   TabAnimation static_animation(static_state, base::BindOnce([]() {}));
 
   EXPECT_EQ(kZeroDuration, static_animation.GetTimeRemaining());
@@ -48,11 +47,8 @@ TEST_F(TabAnimationTest, StaticAnimationDoesNotChange) {
 
 TEST_F(TabAnimationTest, AnimationAnimates) {
   TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
+      TabOpen::kOpen, TabPinned::kUnpinned, TabActive::kInactive, 0);
+  TabAnimationState target_state = initial_state.WithPinned(TabPinned::kPinned);
   TabAnimation animation(initial_state, base::BindOnce([]() {}));
   animation.AnimateTo(target_state);
 
@@ -72,11 +68,8 @@ TEST_F(TabAnimationTest, AnimationAnimates) {
 
 TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
   TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
+      TabOpen::kOpen, TabPinned::kUnpinned, TabActive::kInactive, 0);
+  TabAnimationState target_state = initial_state.WithPinned(TabPinned::kPinned);
   TabAnimation animation(initial_state, base::BindOnce([]() {}));
   animation.AnimateTo(target_state);
 
@@ -89,11 +82,8 @@ TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
 
 TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
   TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
+      TabOpen::kOpen, TabPinned::kUnpinned, TabActive::kInactive, 0);
+  TabAnimationState target_state = initial_state.WithPinned(TabPinned::kPinned);
   TabAnimation animation(initial_state, base::BindOnce([]() {}));
   animation.AnimateTo(target_state);
 
@@ -108,11 +98,8 @@ TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
 
 TEST_F(TabAnimationTest, RetargetedAnimationKeepsDuration) {
   TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
+      TabOpen::kOpen, TabPinned::kUnpinned, TabActive::kInactive, 0);
+  TabAnimationState target_state = initial_state.WithPinned(TabPinned::kPinned);
   TabAnimation animation(initial_state, base::BindOnce([]() {}));
   animation.AnimateTo(target_state);
 
@@ -136,9 +123,7 @@ TEST_F(TabAnimationTest, TestNotifyCloseCompleted) {
     bool was_closed_ = false;
   };
   TabAnimationState static_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
+      TabOpen::kOpen, TabPinned::kUnpinned, TabActive::kInactive, 0);
   TabClosedDetector tab_closed_detector;
   TabAnimation animation(
       static_state, base::BindOnce(&TabClosedDetector::NotifyTabClosed,

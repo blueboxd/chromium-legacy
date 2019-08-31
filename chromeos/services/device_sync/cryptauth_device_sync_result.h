@@ -71,7 +71,7 @@ class CryptAuthDeviceSyncResult {
 
   enum class ResultType { kSuccess, kNonFatalError, kFatalError };
 
-  static ResultType GetResultType(const ResultCode& result_code);
+  static ResultType GetResultType(ResultCode result_code);
 
   CryptAuthDeviceSyncResult(
       ResultCode result_code,

@@ -26,11 +26,11 @@ class FidoDiscoveryFactory;
 // and relaying response to the relying party.
 //
 // TODO: this class should be dropped; it's not pulling its weight.
-template <class Response>
+template <typename Status, typename Response>
 class FidoRequestHandler : public FidoRequestHandlerBase {
  public:
   using CompletionCallback =
-      base::OnceCallback<void(FidoReturnCode status_code,
+      base::OnceCallback<void(Status status,
                               base::Optional<Response> response_data,
                               const FidoAuthenticator* authenticator)>;
 
@@ -54,7 +54,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
   // Converts authenticator response code received from CTAP1/CTAP2 device into
   // FidoReturnCode and passes response data to webauth::mojom::Authenticator.
   void OnAuthenticatorResponse(FidoAuthenticator* authenticator,
-                               FidoReturnCode result,
+                               Status status,
                                base::Optional<Response> response_data) {
     if (is_complete()) {
       // TODO: this should be handled at a higher level and so there should be
@@ -63,57 +63,10 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
     }
 
     std::move(completion_callback_)
-        .Run(result, std::move(response_data), authenticator);
+        .Run(status, std::move(response_data), authenticator);
   }
 
   CompletionCallback completion_callback_;
-
-  static base::Optional<FidoReturnCode>
-  ConvertDeviceResponseCodeToFidoReturnCode(
-      CtapDeviceResponseCode device_response_code) {
-    switch (device_response_code) {
-      case CtapDeviceResponseCode::kSuccess:
-        return FidoReturnCode::kSuccess;
-
-      // These errors are only returned after the user interacted with the
-      // authenticator.
-      case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
-        return FidoReturnCode::kUserConsentButCredentialExcluded;
-      case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
-        return FidoReturnCode::kUserConsentButCredentialNotRecognized;
-
-      // The user explicitly denied the operation. Touch ID returns this error
-      // when the user cancels the macOS prompt. External authenticators may
-      // return it e.g. after the user fails fingerprint verification.
-      case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
-        return FidoReturnCode::kUserConsentDenied;
-
-      // External authenticators may return this error if internal user
-      // verification fails for a make credential request or if the pin token is
-      // not valid.
-      case CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid:
-        return FidoReturnCode::kUserConsentDenied;
-
-      case CtapDeviceResponseCode::kCtap2ErrKeyStoreFull:
-        return FidoReturnCode::kStorageFull;
-
-      // This error is returned by some authenticators (e.g. the "Yubico FIDO
-      // 2" CTAP2 USB keys) during GetAssertion **before the user interacted
-      // with the device**. The authenticator does this to avoid blinking (and
-      // possibly asking the user for their PIN) for requests it knows
-      // beforehand it cannot handle.
-      //
-      // Ignore this error to avoid canceling the request without user
-      // interaction.
-      case CtapDeviceResponseCode::kCtap2ErrInvalidCredential:
-        return base::nullopt;
-
-      // For all other errors, the authenticator will be dropped, and other
-      // authenticators may continue.
-      default:
-        return base::nullopt;
-    }
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandler);

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.items;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -46,7 +47,8 @@ public class OfflineContentAggregatorFactory {
      */
     public static OfflineContentProvider get() {
         if (sProvider == null) {
-            sProvider = getProvider(nativeGetOfflineContentAggregator());
+            sProvider = getProvider(
+                    OfflineContentAggregatorFactoryJni.get().getOfflineContentAggregator());
         }
         return sProvider;
     }
@@ -59,5 +61,8 @@ public class OfflineContentAggregatorFactory {
         }
     }
 
-    private static native OfflineContentProvider nativeGetOfflineContentAggregator();
+    @NativeMethods
+    interface Natives {
+        OfflineContentProvider getOfflineContentAggregator();
+    }
 }

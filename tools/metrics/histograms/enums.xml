@@ -13154,7 +13154,8 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Desk-switch keyboard shortcut"/>
   <int value="3" label="Mini_view button press"/>
   <int value="4" label="Window on desk activated"/>
-  <int value="5" label="Desk-switch 4-finger touchpad swipe"/>
+  <int value="5" label="Desk-switch 3-finger touchpad swipe"/>
+  <int value="6" label="User switch in a multi-profile session"/>
 </enum>
 
 <enum name="DesktopCaptureCounters">
@@ -20452,6 +20453,7 @@ Called by update_net_error_codes.py.-->
   <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
   <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
+  <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24489,6 +24491,9 @@ Called by update_net_error_codes.py.-->
   <int value="3012" label="FetchRedirectError"/>
   <int value="3013" label="FetchRedirectManual"/>
   <int value="3014" label="FetchCacheReload"/>
+  <int value="3015" label="V8Window_ChooseFileSystemEntries_Method"/>
+  <int value="3016"
+      label="V8FileSystemDirectoryHandle_GetSystemDirectory_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29575,12 +29580,28 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HeavyAdStatus">
+  <obsolete>
+    Deprected 09/2019 in favor of HeavyAdStatus2.
+  </obsolete>
   <int value="0" label="Not heavy"/>
   <int value="1" label="Network">
     The ad exceeded the network threshold for the Heavy Ad Intervention.
   </int>
   <int value="2" label="CPU">
     The ad exceeded the CPU threshold for the Heavy Ad Intervention.
+  </int>
+</enum>
+
+<enum name="HeavyAdStatus2">
+  <int value="0" label="Not heavy"/>
+  <int value="1" label="Network">
+    The ad exceeded the network threshold for the Heavy Ad Intervention.
+  </int>
+  <int value="2" label="Total CPU">
+    The ad exceeded the total CPU usage threshold for the Heavy Ad Intervention.
+  </int>
+  <int value="3" label="Peak CPU">
+    The ad exceeded the peak CPU usage threshold for the Heavy Ad Intervention.
   </int>
 </enum>
 
@@ -34899,6 +34920,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
   <int value="-1442753429" label="SystemTrayFeaturePodsPagination:disabled"/>
+  <int value="-1441695001" label="OmniboxOnFocusSuggestions:enabled"/>
   <int value="-1441340278" label="NewTabPageIcons:enabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
@@ -35320,6 +35342,7 @@ from previous Chrome versions.
   <int value="-913294939" label="DriveFS:enabled"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
   <int value="-910452816" label="ChromeOSParentalControlsSettings:disabled"/>
+  <int value="-909351661" label="OmniboxOnFocusSuggestions:disabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-905538983" label="SimplifyHttpsIndicator:disabled"/>
@@ -35368,7 +35391,6 @@ from previous Chrome versions.
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
-  <int value="-847651283" label="new-password-form-parsing:disabled"/>
   <int value="-847216521" label="ChromeDuplex:enabled"/>
   <int value="-844537521" label="HttpFormWarning:disabled"/>
   <int value="-844381918" label="ArcNativeBridgeExperiment:disabled"/>
@@ -36212,7 +36234,6 @@ from previous Chrome versions.
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>
-  <int value="348115702" label="new-password-form-parsing-for-saving:enabled"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
   <int value="350616049" label="IntentPicker:disabled"/>
@@ -36817,8 +36838,6 @@ from previous Chrome versions.
   <int value="1198839129" label="OfflinePagesLivePageSharing:enabled"/>
   <int value="1201008500"
       label="EnableAmbientAuthenticationInIncognito:enabled"/>
-  <int value="1201441984"
-      label="new-password-form-parsing-for-saving:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
   <int value="1209221384" label="enable-experimental-accessibility-features"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>
@@ -36998,7 +37017,6 @@ from previous Chrome versions.
   <int value="1413158119" label="WebRtcRemoteEventLog:disabled"/>
   <int value="1413948819" label="NupPrinting:enabled"/>
   <int value="1415806054" label="WebAssemblyCodeGC:enabled"/>
-  <int value="1416309272" label="only-new-password-form-parsing:enabled"/>
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
   <int value="1418054870" label="SpecialLocale:enabled"/>
   <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
@@ -37066,7 +37084,6 @@ from previous Chrome versions.
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
-  <int value="1524874202" label="only-new-password-form-parsing:disabled"/>
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>
@@ -40944,6 +40961,16 @@ Called by update_use_counter_css.py.-->
 <enum name="NaClValidationCacheEnum">
   <int value="0" label="Miss"/>
   <int value="1" label="Hit"/>
+</enum>
+
+<enum name="NativeFileSystemPermissionRequestOutcome">
+  <int value="0" label="Blocked by Content Setting"/>
+  <int value="1" label="Blocked from invalid frame"/>
+  <int value="2" label="Blocked for lack of user activation"/>
+  <int value="3" label="Blocked from third-party context"/>
+  <int value="4" label="Granted"/>
+  <int value="5" label="Denied by user"/>
+  <int value="6" label="Dismissed by user"/>
 </enum>
 
 <enum name="NativeLibraryPreloaderResult">
@@ -44830,86 +44857,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="forced query"/>
 </enum>
 
-<enum name="OmniboxPageContext">
-  <int value="0" label="invalid spec; shouldn't happen"/>
-  <int value="1"
-      label="extension-replaced new tab page OR obsolete new tab page"/>
-  <int value="2" label="about:blank"/>
-  <int value="3" label="the user's home page"/>
-  <int value="4" label="other (typically an arbitrary URL)"/>
-  <int value="5" label="obsolete: instant new tab page"/>
-  <int value="6" label="search results page with search term replacement"/>
-  <int value="7" label="new tab page with omnibox as starting focus"/>
-  <int value="8" label="new tab page with fakebox as starting focus"/>
-  <int value="9" label="search results page without search term replacement"/>
-  <int value="10" label="home screen"/>
-  <int value="11" label="search app"/>
-  <int value="12" label="maps app"/>
-  <int value="13" label="interaction starting with the search button"/>
-</enum>
-
-<enum name="OmniboxProviderAndResultType">
-  <int value="101" label="URL_WHAT_YOU_TYPED via HistoryURL provider"/>
-  <int value="102" label="HISTORY_URL via HistoryURL provider"/>
-  <int value="302" label="HISTORY_URL via HistoryQuick provider"/>
-  <int value="303" label="HISTORY_TITLE via HistoryQuick provider"/>
-  <int value="406" label="NAVSUGGEST via SearchProvider"/>
-  <int value="407" label="SEARCH_WHAT_YOU_TYPED via SearchProvider"/>
-  <int value="408" label="SEARCH_HISTORY via SearchProvider"/>
-  <int value="409" label="SEARCH_SUGGEST via SearchProvider"/>
-  <int value="410" label="SEARCH_OTHER_ENGINE via SearchProvider"/>
-  <int value="414" label="SEARCH_SUGGEST_ENTITY via SearchProvider"/>
-  <int value="415" label="SEARCH_SUGGEST_TAIL via SearchProvider"/>
-  <int value="416" label="SEARCH_SUGGEST_PERSONALIZED via SearchProvider"/>
-  <int value="422" label="SEARCH_SUGGEST_ANSWER via SearchProvider"/>
-  <int value="423" label="CALCULATOR via SearchProvider"/>
-  <int value="505" label="HISTORY_KEYWORD via KeywordProvider"/>
-  <int value="510" label="SEARCH_OTHER_ENGINE via KeywordProvider"/>
-  <int value="606" label="NAVSUGGEST via BuiltinProvider"/>
-  <int value="700" label="UNKNOWN_RESULT_TYPE via Shortcuts provider"/>
-  <int value="701" label="URL_WHAT_YOU_TYPED via Shortcuts provider"/>
-  <int value="702" label="HISTORY_URL via Shortcuts provider"/>
-  <int value="703" label="HISTORY_TITLE via Shortcuts provider"/>
-  <int value="705" label="HISTORY_KEYWORD via Shortcuts provider"/>
-  <int value="708" label="SEARCH_HISTORY via Shortcuts provider"/>
-  <int value="710" label="SEARCH_OTHER_ENGINE via Shortcuts provider"/>
-  <int value="713" label="BOOKMARK_TITLE via Shortcuts provider"/>
-  <int value="716" label="SEARCH_SUGGEST_PERSONALIZED via Shortcuts provider"/>
-  <int value="717" label="SEARCH_SUGGEST_PROFILE via Shortcuts provider"/>
-  <int value="1013" label="BOOKMARK_TITLE via BookmarkProvider"/>
-  <int value="1106" label="NAVSUGGEST via ZeroSuggest"/>
-  <int value="1109" label="SEARCH_SUGGEST via ZeroSuggest"/>
-  <int value="1116" label="SEARCH_SUGGEST_PERSONALIZED via ZeroSuggest"/>
-  <int value="1202" label="HISTORY_URL from on-device service"/>
-  <int value="1212" label="CONTACT from on-device service"/>
-  <int value="1218" label="APP_RESULT from on-device service"/>
-  <int value="1219" label="APP from on-device service"/>
-  <int value="1220" label="LEGACY_ON_DEVICE from on-device service"/>
-  <int value="1424" label="CLIPBOARD_URL from Clipboard provider"/>
-  <int value="1428" label="CLIPBOARD_TEXT from Clipboard provider"/>
-  <int value="1429" label="CLIPBOARD_IMAGE from Clipboard provider"/>
-  <int value="1627" label="DOCUMENT via DocumentProvider"/>
-</enum>
-
-<enum name="OmniboxProviderType">
-  <int value="1" label="HistoryURL"/>
-  <int value="2" label="deprecated: HistoryContents"/>
-  <int value="3" label="HistoryQuick"/>
-  <int value="4" label="SearchProvider"/>
-  <int value="5" label="KeywordProvider"/>
-  <int value="6" label="BuiltinProvider"/>
-  <int value="7" label="ShortcutsProvider"/>
-  <int value="8" label="deprecated: ExtensionAppProvider"/>
-  <int value="9" label="deprecated: ContactsProvider"/>
-  <int value="10" label="BookmarkProvider"/>
-  <int value="11" label="ZeroSuggest"/>
-  <int value="12" label="on device (only used by Android GSA)"/>
-  <int value="13" label="on device chrome (chrome content provider)"/>
-  <int value="14" label="clipboard provider"/>
-  <int value="15" label="deprecated: Physical Web"/>
-  <int value="16" label="DocumentProvider"/>
-</enum>
-
 <enum name="OmniboxSearchEngine">
   <int value="0" label="Unknown"/>
   <int value="1" label="Google"/>
@@ -45051,15 +44998,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
-</enum>
-
-<enum name="OmniboxSummarizedResultType">
-  <int value="0" label="URL"/>
-  <int value="1" label="search"/>
-  <int value="2" label="app/extension"/>
-  <int value="3" label="contact"/>
-  <int value="4" label="on-device"/>
-  <int value="5" label="unknown"/>
 </enum>
 
 <enum name="OmniboxUserTextCleared">
@@ -46030,6 +45968,22 @@ Called by update_net_trust_anchors.py.-->
   <int value="8"
       label="HTTP method or url scheme does not meet the requirement."/>
   <int value="9" label="Unknown range support from the response header."/>
+</enum>
+
+<enum name="ParentAccessCodeAction">
+  <summary>Action resulting from parent access code dialog</summary>
+  <int value="0" label="Validation success"/>
+  <int value="1" label="Validation error"/>
+  <int value="2" label="Validation canceled by user"/>
+  <int value="3" label="Get help user action"/>
+</enum>
+
+<enum name="ParentAccessCodeUsage">
+  <summary>Context in which parent access code was used</summary>
+  <int value="0" label="Time limits"/>
+  <int value="1" label="Time change on login screen"/>
+  <int value="2" label="Time change user session"/>
+  <int value="3" label="Timezone change"/>
 </enum>
 
 <enum name="ParentFrameKnown">
@@ -53725,6 +53679,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Payload is too large"/>
 </enum>
 
+<enum name="SensitiveDirectoryAccessResult">
+  <int value="0" label="Allowed"/>
+  <int value="1" label="Blocked, try again"/>
+  <int value="2" label="Blocked"/>
+</enum>
+
 <enum name="ServiceProcessEventType">
   <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
   <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>
@@ -60148,9 +60108,9 @@ Full version information for the fingerprint enum values:
 
 <enum name="UpdateEngineDownloadErrorCode">
   <int value="0" label="Download Error"/>
-  <int value="97" label="libcurl recovered from unresolved host error"/>
-  <int value="98" label="libcurl unresolved host error"/>
-  <int value="99" label="libcurl HTTP request internal error"/>
+  <int value="97" label="libcurl Recovered From Unresolved Host Error"/>
+  <int value="98" label="libcurl Unresolved Host Error"/>
+  <int value="99" label="libcurl HTTP Request Internal Error"/>
   <int value="100" label="Input Malformed (Internal Error)"/>
   <int value="101" label="Unknown HTTP Status (not 200-599)"/>
   <int value="400" label="Bad Request (HTTP Status 400)"/>
@@ -60245,6 +60205,10 @@ Full version information for the fingerprint enum values:
   <int value="53" label="kErrorCodeNoUpdate"/>
   <int value="54" label="kErrorCodeRollbackNotPossible"/>
   <int value="55" label="kErrorCodeFirstActiveOmahaPingSentPersistenceError"/>
+  <int value="56" label="kErrorCodeVerityCalculationError"/>
+  <int value="57" label="kErrorCodeInternalLibCurlError"/>
+  <int value="58" label="kErrorCodeUnresolvedHostError"/>
+  <int value="59" label="kErrorCodeUnresolvedHostRecovered"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">

@@ -102,11 +102,13 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   ~IndexedDBDispatcherHost() override;
 
   // blink::mojom::IDBFactory implementation:
-  void GetDatabaseInfo(
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
+  void GetDatabaseInfo(mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                           pending_callbacks) override;
   void GetDatabaseNames(
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
-  void Open(blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+      mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+          pending_callbacks) override;
+  void Open(mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                pending_callbacks,
             mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
                 database_callbacks_remote,
             const base::string16& name,
@@ -114,10 +116,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
             mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
                 transaction_receiver,
             int64_t transaction_id) override;
-  void DeleteDatabase(
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
-      const base::string16& name,
-      bool force_close) override;
+  void DeleteDatabase(mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+                          pending_callbacks,
+                      const base::string16& name,
+                      bool force_close) override;
   void AbortTransactionsAndCompactDatabase(
       AbortTransactionsAndCompactDatabaseCallback callback) override;
   void AbortTransactionsForDatabase(

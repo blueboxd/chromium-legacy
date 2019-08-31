@@ -52,6 +52,23 @@ bool CompareAnimations(const Member<Animation>& left,
                        const Member<Animation>& right) {
   return Animation::HasLowerPriority(left.Get(), right.Get());
 }
+
+// Returns the current animation time for a given |document|. This is
+// the animation clock time capped to be at least this document's
+// ZeroTime() such that the animation time is never negative when converted.
+base::TimeTicks CurrentAnimationTime(const Document* document) {
+  base::TimeTicks animation_time = document->GetAnimationClock().CurrentTime();
+  base::TimeTicks document_zero_time = document->Timeline().ZeroTime();
+
+  // The AnimationClock time may be null or less than the local document's
+  // zero time if we have not generated any frames for this document yet. If
+  // so, assume animation_time is the document zero time.
+  if (animation_time < document_zero_time)
+    return document_zero_time;
+
+  return animation_time;
+}
+
 }  // namespace
 
 // This value represents 1 frame at 30Hz plus a little bit of wiggle room.
@@ -247,10 +264,7 @@ base::Optional<base::TimeDelta> DocumentTimeline::CurrentTimeInternal() {
   base::Optional<base::TimeDelta> result =
       playback_rate_ == 0
           ? ZeroTime().since_origin()
-          : (base::TimeDelta::FromSecondsD(
-                 GetDocument()->GetAnimationClock().CurrentTime()) -
-             ZeroTime().since_origin()) *
-                playback_rate_;
+          : (CurrentAnimationTime(GetDocument()) - ZeroTime()) * playback_rate_;
   return result;
 }
 
@@ -301,13 +315,9 @@ void DocumentTimeline::SetPlaybackRate(double playback_rate) {
     return;
   base::TimeDelta current_time = CurrentTimeInternal().value();
   playback_rate_ = playback_rate;
-  base::TimeDelta zero_time =
-      playback_rate == 0
-          ? current_time
-          : base::TimeDelta::FromSecondsD(
-                GetDocument()->GetAnimationClock().CurrentTime()) -
-                current_time / playback_rate;
-  zero_time_ = base::TimeTicks() + zero_time;
+  zero_time_ = playback_rate == 0 ? base::TimeTicks() + current_time
+                                  : CurrentAnimationTime(GetDocument()) -
+                                        current_time / playback_rate;
   zero_time_initialized_ = true;
 
   // Corresponding compositor animation may need to be restarted to pick up

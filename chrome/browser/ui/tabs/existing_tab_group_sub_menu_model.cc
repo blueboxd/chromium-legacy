@@ -23,9 +23,8 @@ void ExistingTabGroupSubMenuModel::Build() {
   // Start command ids after the parent menu's ids to avoid collisions.
   int group_index = kFirstCommandIndex;
   for (TabGroupId group : model_->ListTabGroups()) {
-    if (ShouldShowGroup(model_, context_index_, group)) {
-      AddItem(group_index, model_->GetVisualDataForGroup(group)->title());
-    }
+    if (ShouldShowGroup(model_, context_index_, group))
+      AddItem(group_index, model_->GetUserVisibleGroupTitle(group));
     group_index++;
   }
 }

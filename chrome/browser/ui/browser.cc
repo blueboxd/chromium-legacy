@@ -543,7 +543,7 @@ Browser::~Browser() {
   int num_downloads;
   if (!browser_defaults::kBrowserAliveWithNoWindows &&
       OkToCloseWithInProgressDownloads(&num_downloads) ==
-          DOWNLOAD_CLOSE_BROWSER_SHUTDOWN) {
+          DownloadCloseType::kBrowserShutdown) {
     DownloadCoreService::CancelAllDownloads();
   }
 
@@ -830,7 +830,7 @@ void Browser::OnWindowClosing() {
 ////////////////////////////////////////////////////////////////////////////////
 // In-progress download termination handling:
 
-Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
+Browser::DownloadCloseType Browser::OkToCloseWithInProgressDownloads(
     int* num_downloads_blocking) const {
   DCHECK(num_downloads_blocking);
   *num_downloads_blocking = 0;
@@ -838,12 +838,12 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   // If we're not running a full browser process with a profile manager
   // (testing), it's ok to close the browser.
   if (!g_browser_process->profile_manager())
-    return DOWNLOAD_CLOSE_OK;
+    return DownloadCloseType::kOk;
 
   int total_download_count =
       DownloadCoreService::NonMaliciousDownloadCountAllProfiles();
   if (total_download_count == 0)
-    return DOWNLOAD_CLOSE_OK;  // No downloads; can definitely close.
+    return DownloadCloseType::kOk;  // No downloads; can definitely close.
 
   // Figure out how many windows are open total, and associated with this
   // profile, that are relevant for the ok-to-close decision.
@@ -865,7 +865,7 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   // which would cancel all current downloads.
   if (total_window_count == 0) {
     *num_downloads_blocking = total_download_count;
-    return DOWNLOAD_CLOSE_BROWSER_SHUTDOWN;
+    return DownloadCloseType::kBrowserShutdown;
   }
 
   // If there aren't any other windows on our profile, and we're an incognito
@@ -878,11 +878,13 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
       profile()->IsOffTheRecord()) {
     *num_downloads_blocking =
         download_core_service->NonMaliciousDownloadCount();
-    return DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE;
+    return profile()->IsGuestSession()
+               ? DownloadCloseType::kLastWindowInGuestSession
+               : DownloadCloseType::kLastWindowInIncognitoProfile;
   }
 
   // Those are the only conditions under which we will block shutdown.
-  return DOWNLOAD_CLOSE_OK;
+  return DownloadCloseType::kOk;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2472,9 +2474,9 @@ bool Browser::CanCloseWithInProgressDownloads() {
     return cancel_download_confirmation_state_ != WAITING_FOR_RESPONSE;
 
   int num_downloads_blocking;
-  Browser::DownloadClosePreventionType dialog_type =
+  DownloadCloseType dialog_type =
       OkToCloseWithInProgressDownloads(&num_downloads_blocking);
-  if (dialog_type == DOWNLOAD_CLOSE_OK)
+  if (dialog_type == DownloadCloseType::kOk)
     return true;
 
   // Closing this window will kill some downloads; prompt to make sure

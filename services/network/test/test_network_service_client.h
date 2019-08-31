@@ -24,18 +24,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
   explicit TestNetworkServiceClient(mojom::NetworkServiceClientRequest request);
   ~TestNetworkServiceClient() override;
 
-  void set_upload_files_invalid(bool upload_files_invalid) {
-    upload_files_invalid_ = upload_files_invalid;
-  }
-  void set_ignore_last_upload_file(bool ignore_last_upload_file) {
-    ignore_last_upload_file_ = ignore_last_upload_file;
-  }
-
   // network::mojom::NetworkServiceClient implementation:
-  void OnFileUploadRequested(uint32_t process_id,
-                             bool async,
-                             const std::vector<base::FilePath>& file_paths,
-                             OnFileUploadRequestedCallback callback) override;
   void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
                             OnLoadingStateUpdateCallback callback) override;
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
@@ -56,8 +45,6 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       const base::Optional<std::string>& raw_response_headers) override;
 
  private:
-  bool upload_files_invalid_ = false;
-  bool ignore_last_upload_file_ = false;
   mojo::Binding<mojom::NetworkServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkServiceClient);

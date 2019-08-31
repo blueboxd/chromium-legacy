@@ -4,6 +4,9 @@
 
 #include "cc/test/layer_tree_test.h"
 
+#include <memory>
+#include <string>
+
 #include "base/bind.h"
 #include "base/cfi_buildflags.h"
 #include "base/command_line.h"
@@ -824,7 +827,15 @@ void LayerTreeTest::DoBeginTest() {
   beginning_ = true;
   SetupTree();
   WillBeginTest();
+  bool allocate_local_surface_id = !skip_allocate_initial_local_surface_id_ &&
+                                   settings_.enable_surface_synchronization;
+  if (allocate_local_surface_id)
+    GenerateNewLocalSurfaceId();
   BeginTest();
+  if (allocate_local_surface_id) {
+    PostSetLocalSurfaceIdAllocationToMainThread(
+        GetCurrentLocalSurfaceIdAllocation());
+  }
   beginning_ = false;
   if (end_when_begin_returns_)
     RealEndTest();
@@ -835,6 +846,19 @@ void LayerTreeTest::DoBeginTest() {
     static_cast<LayerTreeHostForTesting*>(layer_tree_host_.get())
         ->set_test_started(true);
   }
+}
+
+void LayerTreeTest::SkipAllocateInitialLocalSurfaceId() {
+  skip_allocate_initial_local_surface_id_ = true;
+}
+
+const viz::LocalSurfaceIdAllocation&
+LayerTreeTest::GetCurrentLocalSurfaceIdAllocation() const {
+  return allocator_.GetCurrentLocalSurfaceIdAllocation();
+}
+
+void LayerTreeTest::GenerateNewLocalSurfaceId() {
+  allocator_.GenerateId();
 }
 
 void LayerTreeTest::SetupTree() {

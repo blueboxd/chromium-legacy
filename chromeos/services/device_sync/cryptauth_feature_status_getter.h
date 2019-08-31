@@ -37,7 +37,7 @@ class CryptAuthFeatureStatusGetter {
   using IdToFeatureStatusMap = base::flat_map<std::string, FeatureStatusMap>;
   using GetFeatureStatusesAttemptFinishedCallback =
       base::OnceCallback<void(const IdToFeatureStatusMap&,
-                              const CryptAuthDeviceSyncResult::ResultCode&)>;
+                              CryptAuthDeviceSyncResult::ResultCode)>;
 
   virtual ~CryptAuthFeatureStatusGetter();
 
@@ -59,7 +59,7 @@ class CryptAuthFeatureStatusGetter {
 
   void OnAttemptFinished(
       const IdToFeatureStatusMap& id_to_feature_status_map,
-      const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code);
+      CryptAuthDeviceSyncResult::ResultCode device_sync_result_code);
 
  private:
   GetFeatureStatusesAttemptFinishedCallback callback_;

@@ -7,13 +7,11 @@
 #include <stddef.h>
 
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-
-using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
 
 namespace blink {
 
@@ -314,13 +312,14 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   pending_onsuccess_callbacks_ = 0;
 }
 
-IDBCallbacksAssociatedPtrInfo WebIDBCursorImpl::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacks> callbacks) {
-  IDBCallbacksAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
-                                    task_runner_);
-  return ptr_info;
+mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
+WebIDBCursorImpl::GetCallbacksProxy(
+    std::unique_ptr<WebIDBCallbacks> callbacks_impl) {
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::move(callbacks_impl),
+      pending_callbacks.InitWithNewEndpointAndPassReceiver(), task_runner_);
+  return pending_callbacks;
 }
 
 }  // namespace blink

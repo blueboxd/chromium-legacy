@@ -2941,6 +2941,18 @@ jumbo_split_static_library("browser") {
       ]
       deps += [ "//chrome/browser/supervised_user/supervised_user_error_page" ]
     }
+
+    if (dfmify_dev_ui) {
+      sources += [
+        "android/dev_ui/dev_ui_module_provider.cc",
+        "android/dev_ui/dev_ui_module_provider.h",
+        "ui/webui/android/dev_ui_loader/dev_ui_loader_message_handler.cc",
+        "ui/webui/android/dev_ui_loader/dev_ui_loader_message_handler.h",
+        "ui/webui/android/dev_ui_loader/dev_ui_loader_ui.cc",
+        "ui/webui/android/dev_ui_loader/dev_ui_loader_ui.h",
+      ]
+      deps += [ "//chrome/android/modules/dev_ui/provider:jni_headers" ]
+    }
   } else {  # !is_android
     sources += [
       "accessibility/invert_bubble_prefs.cc",

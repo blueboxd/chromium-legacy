@@ -99,10 +99,12 @@ void TestMHTMLArchiver::GenerateMHTML(
   base::FilePath archive_file_path =
       archives_dir.AppendASCII(url_.ExtractFileName());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&TestMHTMLArchiver::OnGenerateMHTMLDone,
-                                base::Unretained(this), url_, archive_file_path,
-                                kTestTitle, create_archive_params.name_space,
-                                OfflineTimeNow(), kTestFileSize));
+      FROM_HERE,
+      base::BindOnce(&TestMHTMLArchiver::OnGenerateMHTMLDone,
+                     base::Unretained(this), url_, archive_file_path,
+                     kTestTitle, create_archive_params.name_space,
+                     OfflineTimeNow(),
+                     content::MHTMLGenerationResult(kTestFileSize, nullptr)));
 
   clock_->Advance(kTimeToSaveMhtml);
 }

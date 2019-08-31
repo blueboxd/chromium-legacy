@@ -789,6 +789,7 @@ jumbo_split_static_library("ui") {
     }
     deps += [
       "//chrome/android:jni_headers",
+      "//chrome/android/features/dev_ui:buildflags",
       "//chrome/browser/android/thin_webview:thin_webview",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/navigation_interception",

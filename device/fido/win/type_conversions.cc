@@ -13,9 +13,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/cbor/reader.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/get_assertion_request_handler.h"
+#include "device/fido/make_credential_request_handler.h"
 #include "device/fido/opaque_attestation_statement.h"
 
 namespace device {
@@ -192,31 +195,74 @@ std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
 
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name) {
-  // TODO(crbug/896522): Another mismatch of our authenticator models. Windows
-  // returns WebAuthn authenticator model status, whereas FidoAuthenticator
-  // wants to pass on CTAP-level response codes. Do a best effort at mapping
-  // them back down for now.
+  // See WebAuthNGetErrorName in <webauthn.h> for these string literals.
   //
-  // See WebAuthNGetErrorName in <webauthn.h> for these string values.
+  // Note that the set of errors that browser are allowed to return in a
+  // response to a WebAuthn call is much narrower than what the Windows
+  // WebAuthn API returns.  According to the WebAuthn spec, the only
+  // permissible errors are "InvalidStateError" (aka CREDENTIAL_EXCLUDED in
+  // Chromium code) and "NotAllowedError". Hence, we can collapse the set of
+  // Windows errors to a smaller set of CtapDeviceResponseCodes.
   static base::flat_map<base::string16, CtapDeviceResponseCode>
       kResponseCodeMap({
           {STRING16_LITERAL("Success"), CtapDeviceResponseCode::kSuccess},
-          // This should be something else for GetAssertion but that currently
-          // doesn't make a difference.
           {STRING16_LITERAL("InvalidStateError"),
            CtapDeviceResponseCode::kCtap2ErrCredentialExcluded},
           {STRING16_LITERAL("ConstraintError"),
-           CtapDeviceResponseCode::kCtap2ErrUnsupportedOption},
+           CtapDeviceResponseCode::kCtap2ErrOperationDenied},
           {STRING16_LITERAL("NotSupportedError"),
-           CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm},
+           CtapDeviceResponseCode::kCtap2ErrOperationDenied},
           {STRING16_LITERAL("NotAllowedError"),
            CtapDeviceResponseCode::kCtap2ErrOperationDenied},
           {STRING16_LITERAL("UnknownError"),
-           CtapDeviceResponseCode::kCtap2ErrOther},
+           CtapDeviceResponseCode::kCtap2ErrOperationDenied},
       });
-  return base::Contains(kResponseCodeMap, error_name)
-             ? kResponseCodeMap[error_name]
-             : CtapDeviceResponseCode::kCtap2ErrOther;
+  if (!base::Contains(kResponseCodeMap, error_name)) {
+    FIDO_LOG(ERROR) << "Unexpected error name: " << error_name;
+    return CtapDeviceResponseCode::kCtap2ErrOperationDenied;
+  }
+  return kResponseCodeMap[error_name];
+}
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+MakeCredentialStatus WinCtapDeviceResponseCodeToMakeCredentialStatus(
+    CtapDeviceResponseCode status) {
+  switch (status) {
+    case CtapDeviceResponseCode::kSuccess:
+      return MakeCredentialStatus::kSuccess;
+    case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
+      return MakeCredentialStatus::kWinInvalidStateError;
+    case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
+      return MakeCredentialStatus::kWinNotAllowedError;
+    default:
+      NOTREACHED() << "Must only be called with a status returned from "
+                      "WinErrorNameToCtapDeviceResponseCode().";
+      FIDO_LOG(ERROR) << "Unexpected CtapDeviceResponseCode: "
+                      << static_cast<int>(status);
+      return MakeCredentialStatus::kWinNotAllowedError;
+  }
+}
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+GetAssertionStatus WinCtapDeviceResponseCodeToGetAssertionStatus(
+    CtapDeviceResponseCode status) {
+  switch (status) {
+    case CtapDeviceResponseCode::kSuccess:
+      return GetAssertionStatus::kSuccess;
+    case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
+      return GetAssertionStatus::kWinNotAllowedError;
+    case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
+      // The API should never return InvalidStateError for GetAssertion.
+      FIDO_LOG(ERROR) << "Unexpected CtapDeviceResponseCode: "
+                      << static_cast<int>(status);
+      return GetAssertionStatus::kWinNotAllowedError;
+    default:
+      NOTREACHED() << "Must only be called with a status returned from "
+                      "WinErrorNameToCtapDeviceResponseCode().";
+      FIDO_LOG(ERROR) << "Unexpected CtapDeviceResponseCode: "
+                      << static_cast<int>(status);
+      return GetAssertionStatus::kWinNotAllowedError;
+  }
 }
 
 uint32_t ToWinAttestationConveyancePreference(

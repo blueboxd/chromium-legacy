@@ -297,6 +297,24 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
         ->GetID();
   }
 
+  void RetryUntilAllExpectedSubresourcesSeen() {
+    while (true) {
+      base::ThreadPoolInstance::Get()->FlushForTesting();
+      base::RunLoop().RunUntilIdle();
+
+      bool have_seen_all_expected_subresources = true;
+      for (const auto& expect : subresource_expected_) {
+        if (expect.second) {
+          have_seen_all_expected_subresources = false;
+          break;
+        }
+      }
+
+      if (have_seen_all_expected_subresources)
+        break;
+    }
+  }
+
  protected:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
@@ -339,6 +357,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(expect.second)
             << " GURL " << gurl
             << " was expected to be blocked, but was actually fetched";
+
         // Subresource should not be fetched again.
         subresource_expected_[gurl.path()] = false;
         return;
@@ -493,6 +512,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -516,6 +536,7 @@ IN_PROC_BROWSER_TEST_P(
   SetExpectedBarJpgRequest(true);
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -546,6 +567,7 @@ IN_PROC_BROWSER_TEST_P(
     ui_test_utils::NavigateToURL(
         browser(),
         GetURLWithMockHost(*https_server_, "/resource_loading_hints.html"));
+    RetryUntilAllExpectedSubresourcesSeen();
 
     int current_process_id = GetProcessID();
     EXPECT_NE(previous_process_id, current_process_id);
@@ -582,6 +604,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -643,6 +666,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -678,6 +702,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -723,6 +748,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -752,7 +778,7 @@ IN_PROC_BROWSER_TEST_P(
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
   // Set pattern to a string that does not matches https_url() path.
   ASSERT_EQ(std::string::npos, https_url().path().find("mismatched_pattern"));
-  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     "mismatched_pattern");
 
   SetExpectedFooJpgRequest(true);
@@ -762,7 +788,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // The URL is not whitelisted. Verify that the hints are not used.
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -785,7 +811,7 @@ IN_PROC_BROWSER_TEST_P(
   if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
   // Whitelist resource loading hints for https_url()'s' host and pattern.
-  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     https_url().path());
 
   // Hints should be used when loading https_url().
@@ -795,6 +821,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester_1;
 
   ui_test_utils::NavigateToURL(browser(), https_url());
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester_1,
@@ -862,6 +889,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -892,6 +920,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -924,7 +953,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // The URL is not whitelisted.
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -950,7 +979,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -975,7 +1004,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -1011,6 +1040,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",

@@ -7,14 +7,19 @@ package org.chromium.components.background_task_scheduler;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Base64;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -79,11 +84,6 @@ public class BackgroundTaskSchedulerPrefs {
             return mBackgroundTaskClass + ENTRY_SEPARATOR + mTaskId;
         }
 
-        /** Gets the name of background task class in this entry. */
-        public String getBackgroundTaskClass() {
-            return mBackgroundTaskClass;
-        }
-
         /** Gets the ID of the task in this entry. */
         public int getTaskId() {
             return mTaskId;
@@ -108,14 +108,14 @@ public class BackgroundTaskSchedulerPrefs {
                     continue;
                 }
                 editor.putString(
-                        String.valueOf(parsed.getTaskId()), getSerializedScheduledTaskProto());
+                        String.valueOf(parsed.getTaskId()), getEmptySerializedScheduledTaskProto());
                 BackgroundTaskSchedulerUma.getInstance().reportMigrationToProto(parsed.getTaskId());
             }
             editor.apply();
         }
     }
 
-    private static String getSerializedScheduledTaskProto() {
+    private static String getEmptySerializedScheduledTaskProto() {
         ScheduledTaskProto.ScheduledTask scheduledTask =
                 ScheduledTaskProto.ScheduledTask.newBuilder().build();
         return Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);
@@ -125,11 +125,60 @@ public class BackgroundTaskSchedulerPrefs {
     public static void addScheduledTask(TaskInfo taskInfo) {
         try (TraceEvent te = TraceEvent.scoped("BackgroundTaskSchedulerPrefs.addScheduledTask",
                      Integer.toString(taskInfo.getTaskId()))) {
+            ScheduledTaskProtoVisitor visitor = new ScheduledTaskProtoVisitor(taskInfo.getExtras());
+            taskInfo.getTimingInfo().accept(visitor);
+
             getSharedPreferences()
                     .edit()
-                    .putString(
-                            String.valueOf(taskInfo.getTaskId()), getSerializedScheduledTaskProto())
+                    .putString(String.valueOf(taskInfo.getTaskId()),
+                            visitor.getSerializedScheduledTask())
                     .apply();
+        }
+    }
+
+    private static class ScheduledTaskProtoVisitor implements TaskInfo.TimingInfoVisitor {
+        private String mSerializedScheduledTask;
+        private final Bundle mExtras;
+
+        ScheduledTaskProtoVisitor(Bundle extras) {
+            mExtras = extras;
+        }
+
+        // Only valid after a TimingInfo object was visited.
+        String getSerializedScheduledTask() {
+            return mSerializedScheduledTask;
+        }
+
+        @Override
+        public void visit(TaskInfo.OneOffInfo oneOffInfo) {
+            ScheduledTaskProto.ScheduledTask scheduledTask =
+                    ScheduledTaskProto.ScheduledTask.newBuilder()
+                            .setType(ScheduledTaskProto.ScheduledTask.Type.ONE_OFF)
+                            .build();
+            mSerializedScheduledTask =
+                    Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);
+        }
+
+        @Override
+        public void visit(TaskInfo.PeriodicInfo periodicInfo) {
+            ScheduledTaskProto.ScheduledTask scheduledTask =
+                    ScheduledTaskProto.ScheduledTask.newBuilder()
+                            .setType(ScheduledTaskProto.ScheduledTask.Type.PERIODIC)
+                            .build();
+            mSerializedScheduledTask =
+                    Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);
+        }
+
+        @Override
+        public void visit(TaskInfo.ExactInfo exactInfo) {
+            // TODO(crbug.com/970160): Set the extras field.
+            ScheduledTaskProto.ScheduledTask scheduledTask =
+                    ScheduledTaskProto.ScheduledTask.newBuilder()
+                            .setType(ScheduledTaskProto.ScheduledTask.Type.EXACT)
+                            .setTriggerMs(exactInfo.getTriggerAtMs())
+                            .build();
+            mSerializedScheduledTask =
+                    Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);
         }
     }
 
@@ -158,8 +207,55 @@ public class BackgroundTaskSchedulerPrefs {
     }
 
     /**
-     * Removes all scheduled tasks from shared preferences store. Removes tasks in the old
-     * storage format and in the proto format.
+     * Gets information associated with a task id.
+     * @param taskId the task id for which to retrieve data.
+     * @return stored data or null if data not found or invalid.
+     */
+    public static ScheduledTaskProto.ScheduledTask getScheduledTask(int taskId) {
+        String serialized = getSharedPreferences().getString(String.valueOf(taskId), null);
+        if (serialized == null) {
+            Log.e(TAG, "No data found for task id: " + taskId);
+            return null;
+        }
+
+        try {
+            return ScheduledTaskProto.ScheduledTask.parseFrom(Base64.decode(serialized, 0));
+        } catch (InvalidProtocolBufferException e) {
+            Log.e(TAG, "Invalid protocol buffer: " + e);
+            removeScheduledTask(taskId);
+            return null;
+        }
+    }
+
+    /**
+     * Gets all current scheduled task.
+     * @return map of task ids associated with scheduled task protos.
+     */
+    public static Map<Integer, ScheduledTaskProto.ScheduledTask> getScheduledTasks() {
+        try (TraceEvent te = TraceEvent.scoped("BackgroundTaskSchedulerPrefs.getScheduledTasks")) {
+            Map<Integer, ScheduledTaskProto.ScheduledTask> result = new HashMap<>();
+            for (Map.Entry<String, ?> entry : getSharedPreferences().getAll().entrySet()) {
+                try {
+                    int taskId = Integer.valueOf(entry.getKey());
+                    ScheduledTaskProto.ScheduledTask scheduledTask =
+                            ScheduledTaskProto.ScheduledTask.parseFrom(
+                                    Base64.decode(String.valueOf(entry.getValue()), 0));
+
+                    result.put(taskId, scheduledTask);
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, "Incorrect task id: " + entry.getKey());
+                } catch (InvalidProtocolBufferException e) {
+                    Log.e(TAG, "Invalid protocol buffer: " + e);
+                    removeScheduledTask(Integer.valueOf(entry.getKey()));
+                }
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Removes all scheduled tasks from shared preferences store. Removes tasks from the old
+     * storage format and from the proto format.
      */
     public static void removeAllTasks() {
         try (TraceEvent te = TraceEvent.scoped("BackgroundTaskSchedulerPrefs.removeAllTasks")) {

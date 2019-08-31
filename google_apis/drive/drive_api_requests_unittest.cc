@@ -33,6 +33,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -140,6 +141,12 @@ class DriveApiRequestsTest : public testing::Test {
     network_service_ptr->SetClient(std::move(network_service_client_ptr),
                                    network::mojom::NetworkServiceParams::New());
 
+    network::mojom::NetworkContextClientPtr network_context_client_ptr;
+    network_context_client_ =
+        std::make_unique<network::TestNetworkContextClient>(
+            mojo::MakeRequest(&network_context_client_ptr));
+    network_context_->SetClient(std::move(network_context_client_ptr));
+
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = network::mojom::kBrowserProcessId;
@@ -219,6 +226,7 @@ class DriveApiRequestsTest : public testing::Test {
   std::unique_ptr<DriveApiUrlGenerator> url_generator_;
   std::unique_ptr<network::mojom::NetworkService> network_service_;
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
+  std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
   network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>

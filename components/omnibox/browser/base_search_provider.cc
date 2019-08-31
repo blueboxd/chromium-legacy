@@ -445,7 +445,8 @@ void BaseSearchProvider::SetDeletionURL(const std::string& deletion_url,
     return;
 
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
-  if (!template_url_service)
+  if (!template_url_service ||
+      !template_url_service->GetDefaultSearchProvider())
     return;
   GURL url =
       template_url_service->GetDefaultSearchProvider()->GenerateSearchURL(

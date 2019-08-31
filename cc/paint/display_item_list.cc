@@ -144,6 +144,15 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
   auto state = std::make_unique<base::trace_event::TracedValue>();
   state->BeginDictionary("params");
 
+  gfx::Rect bounds;
+  if (rtree_.has_valid_bounds()) {
+    bounds = rtree_.GetBoundsOrDie();
+  } else {
+    // For tracing code, just use the entire positive quadrant if the |rtree_|
+    // has invalid bounds.
+    bounds = gfx::Rect(INT_MAX, INT_MAX);
+  }
+
   if (include_items) {
     state->BeginArray("items");
 
@@ -159,8 +168,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
           state.get());
 
       SkPictureRecorder recorder;
-      SkCanvas* canvas =
-          recorder.beginRecording(gfx::RectToSkRect(rtree_.GetBounds()));
+      SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(bounds));
       op->Raster(canvas, params);
       sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
@@ -176,12 +184,11 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     state->EndArray();  // "items".
   }
 
-  MathUtil::AddToTracedValue("layer_rect", rtree_.GetBounds(), state.get());
+  MathUtil::AddToTracedValue("layer_rect", bounds, state.get());
   state->EndDictionary();  // "params".
 
   {
     SkPictureRecorder recorder;
-    gfx::Rect bounds = rtree_.GetBounds();
     SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(bounds));
     canvas->translate(-bounds.x(), -bounds.y());
     canvas->clipRect(gfx::RectToSkRect(bounds));
@@ -197,7 +204,16 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
 
 void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DCHECK(usage_hint_ == kTopLevelDisplayItemList);
-  image_map_.Generate(&paint_op_buffer_, rtree_.GetBounds());
+
+  gfx::Rect bounds;
+  if (rtree_.has_valid_bounds()) {
+    bounds = rtree_.GetBoundsOrDie();
+  } else {
+    // Bounds are only used to size an SkNoDrawCanvas, pass INT_MAX.
+    bounds = gfx::Rect(INT_MAX, INT_MAX);
+  }
+
+  image_map_.Generate(&paint_op_buffer_, bounds);
 }
 
 void DisplayItemList::Reset() {
@@ -231,7 +247,7 @@ bool DisplayItemList::GetColorIfSolidInRect(const gfx::Rect& rect,
   DCHECK(usage_hint_ == kTopLevelDisplayItemList);
   std::vector<size_t>* offsets_to_use = nullptr;
   std::vector<size_t> offsets;
-  if (!rect.Contains(rtree_.GetBounds())) {
+  if (rtree_.has_valid_bounds() && !rect.Contains(rtree_.GetBoundsOrDie())) {
     rtree_.Search(rect, &offsets);
     offsets_to_use = &offsets;
   }

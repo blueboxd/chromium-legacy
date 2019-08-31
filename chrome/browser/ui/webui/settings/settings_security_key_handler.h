@@ -24,9 +24,11 @@ namespace device {
 struct AggregatedEnumerateCredentialsResponse;
 class FidoDiscoveryFactory;
 class CredentialManagementHandler;
+enum class CredentialManagementStatus;
 class SetPINRequestHandler;
 class ResetRequestHandler;
 class BioEnrollmentHandler;
+enum class BioEnrollmentStatus;
 }  // namespace device
 
 namespace settings {
@@ -152,7 +154,7 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
       base::Optional<size_t> remaining_credentials);
   void OnGatherPIN(int64_t num_retries, base::OnceCallback<void(std::string)>);
   void OnCredentialsDeleted(device::CtapDeviceResponseCode status);
-  void OnFinished(device::FidoReturnCode status);
+  void OnFinished(device::CredentialManagementStatus status);
 
   State state_ = State::kNone;
   base::OnceCallback<void(std::string)> credential_management_provide_pin_cb_;
@@ -185,7 +187,7 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
 
   void HandleStart(const base::ListValue* args);
   void OnReady();
-  void OnError(device::FidoReturnCode code);
+  void OnError(device::BioEnrollmentStatus status);
   void OnGatherPIN(int64_t retries, base::OnceCallback<void(std::string)>);
 
   void HandleProvidePIN(const base::ListValue* args);

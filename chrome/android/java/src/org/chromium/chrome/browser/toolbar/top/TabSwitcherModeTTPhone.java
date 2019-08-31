@@ -104,7 +104,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
             mNewTabViewButton.setOnClickListener(this);
         }
 
-        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
+        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled()
+                    || FeatureUtilities.isStartSurfaceEnabled())
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
             updateTabSwitchingElements(true);
         }
@@ -363,6 +364,11 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     }
 
     private void setIncognitoToggleVisibility(boolean showIncognitoToggle) {
+        // If StartSurface is enabled, the incognito switch is shown and handled
+        // by the IncognitoSwitchCoordinator in the
+        // TabSwitcherModeTTCoordinatorPhone.
+        if (FeatureUtilities.isStartSurfaceEnabled()) return;
+
         if (mIncognitoToggleTabLayout == null) {
             if (showIncognitoToggle) inflateIncognitoToggle();
         } else {
@@ -387,7 +393,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                     "tab_grid_layout_android_new_tab")
                             .equals("NewTabVariation")
-                || FeatureUtilities.isBottomToolbarEnabled() || mIncognitoToggleTabLayout == null) {
+                || FeatureUtilities.isBottomToolbarEnabled()
+                || !FeatureUtilities.isStartSurfaceEnabled() || mIncognitoToggleTabLayout == null) {
             return;
         }
         boolean hasIncognitoTabs = hasIncognitoTabs();

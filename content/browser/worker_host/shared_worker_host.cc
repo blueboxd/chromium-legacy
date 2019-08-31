@@ -98,19 +98,14 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
-  switch (phase_) {
-    case Phase::kInitial:
-      // Tell clients that this worker failed to start. This is only needed in
-      // kInitial. Once in kStarted, the worker in the renderer would alert this
-      // host if script loading failed.
-      for (const ClientInfo& info : clients_)
-        info.client->OnScriptLoadFailed();
-      break;
-    case Phase::kStarted:
-    case Phase::kClosed:
-    case Phase::kTerminationSent:
-    case Phase::kTerminationSentAndClosed:
-      break;
+  if (started_) {
+    // Attempt to notify the worker before disconnecting.
+    if (worker_)
+      worker_->Terminate();
+  } else {
+    // Tell clients that this worker failed to start.
+    for (const ClientInfo& info : clients_)
+      info.client->OnScriptLoadFailed();
   }
 
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
@@ -140,11 +135,12 @@ void SharedWorkerHost::Start(
     base::WeakPtr<ServiceWorkerObjectHost>
         controller_service_worker_object_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!started_);
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factories);
   DCHECK(!subresource_loader_factories->pending_default_factory());
 
-  AdvanceTo(Phase::kStarted);
+  started_ = true;
 
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       instance_.url(), instance_.name(), instance_.content_security_policy(),
@@ -334,56 +330,9 @@ void SharedWorkerHost::CreateAppCacheBackend(
       worker_process_host->GetID(), MSG_ROUTING_NONE, std::move(receiver));
 }
 
-void SharedWorkerHost::TerminateWorker() {
-  switch (phase_) {
-    case Phase::kInitial:
-      // The host is being asked to terminate the worker before it started.
-      // Tell clients that this worker failed to start.
-      for (const ClientInfo& info : clients_)
-        info.client->OnScriptLoadFailed();
-      // Tell the caller it terminated, so the caller doesn't wait forever.
-      AdvanceTo(Phase::kTerminationSentAndClosed);
-      OnWorkerConnectionLost();
-      // |this| is destroyed here.
-      return;
-    case Phase::kStarted:
-      AdvanceTo(Phase::kTerminationSent);
-      break;
-    case Phase::kClosed:
-      AdvanceTo(Phase::kTerminationSentAndClosed);
-      break;
-    case Phase::kTerminationSent:
-    case Phase::kTerminationSentAndClosed:
-      // Termination was already sent. TerminateWorker can be called twice in
-      // tests while cleaning up all the workers.
-      return;
-  }
-
-  devtools_handle_.reset();
-  worker_->Terminate();
-  // Now, we wait to observe OnWorkerConnectionLost.
-}
-
-void SharedWorkerHost::AdvanceTo(Phase phase) {
-  switch (phase_) {
-    case Phase::kInitial:
-      DCHECK(phase == Phase::kStarted ||
-             phase == Phase::kTerminationSentAndClosed);
-      break;
-    case Phase::kStarted:
-      DCHECK(phase == Phase::kClosed || phase == Phase::kTerminationSent);
-      break;
-    case Phase::kClosed:
-      DCHECK(phase == Phase::kTerminationSentAndClosed);
-      break;
-    case Phase::kTerminationSent:
-      DCHECK(phase == Phase::kTerminationSentAndClosed);
-      break;
-    case Phase::kTerminationSentAndClosed:
-      NOTREACHED();
-      break;
-  }
-  phase_ = phase;
+void SharedWorkerHost::Destruct() {
+  // Ask the service to destroy |this| which will terminate the worker.
+  service_->DestroyHost(this);
 }
 
 SharedWorkerHost::ClientInfo::ClientInfo(
@@ -409,28 +358,11 @@ void SharedWorkerHost::OnConnected(int connection_request_id) {
 }
 
 void SharedWorkerHost::OnContextClosed() {
-  devtools_handle_.reset();
+  // Not possible: there is no Mojo connection on which OnContextClosed can
+  // be called.
+  DCHECK(started_);
 
-  // Mark as closed - this will stop any further messages from being sent to the
-  // worker (messages can still be sent from the worker, for exception
-  // reporting, etc).
-  switch (phase_) {
-    case Phase::kInitial:
-      // Not possible: there is no Mojo connection on which OnContextClosed can
-      // be called.
-      NOTREACHED();
-      break;
-    case Phase::kStarted:
-      AdvanceTo(Phase::kClosed);
-      break;
-    case Phase::kTerminationSent:
-      AdvanceTo(Phase::kTerminationSentAndClosed);
-      break;
-    case Phase::kClosed:
-    case Phase::kTerminationSentAndClosed:
-      // Already closed, just ignore.
-      break;
-  }
+  Destruct();
 }
 
 void SharedWorkerHost::OnReadyForInspection(
@@ -466,20 +398,6 @@ SharedWorkerHost::GetRenderFrameIDsForWorker() {
         GlobalFrameRoutingId(info.client_process_id, info.frame_id));
   }
   return result;
-}
-
-bool SharedWorkerHost::IsAvailable() const {
-  switch (phase_) {
-    case Phase::kInitial:
-    case Phase::kStarted:
-      return true;
-    case Phase::kClosed:
-    case Phase::kTerminationSent:
-    case Phase::kTerminationSentAndClosed:
-      return false;
-  }
-  NOTREACHED();
-  return false;
 }
 
 base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
@@ -521,6 +439,19 @@ void SharedWorkerHost::SetServiceWorkerHandle(
   service_worker_handle_ = std::move(service_worker_handle);
 }
 
+mojo::Remote<blink::mojom::SharedWorker>
+SharedWorkerHost::TerminateRemoteWorkerForTesting() {
+  mojo::Remote<blink::mojom::SharedWorker> worker = std::move(worker_);
+
+  // Tell the remote worker to terminate.
+  if (worker && worker.is_connected()) {
+    worker.reset_on_disconnect();
+    worker->Terminate();
+  }
+
+  return worker;
+}
+
 void SharedWorkerHost::OnClientConnectionLost() {
   // We'll get a notification for each dropped connection.
   for (auto it = clients_.begin(); it != clients_.end(); ++it) {
@@ -531,13 +462,13 @@ void SharedWorkerHost::OnClientConnectionLost() {
   }
   // If there are no clients left, then it's cleanup time.
   if (clients_.empty())
-    TerminateWorker();
+    Destruct();
 }
 
 void SharedWorkerHost::OnWorkerConnectionLost() {
   // This will destroy |this| resulting in client's observing their mojo
   // connection being dropped.
-  service_->DestroyHost(this);
+  Destruct();
 }
 
 void SharedWorkerHost::GetInterface(

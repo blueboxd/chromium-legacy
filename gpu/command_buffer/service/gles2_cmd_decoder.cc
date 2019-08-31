@@ -8261,19 +8261,12 @@ void GLES2DecoderImpl::DoFramebufferParameteri(GLenum target,
                                                GLenum pname,
                                                GLint param) {
   const char* func_name = "glFramebufferParameteri";
-  DCHECK(pname == GL_FRAMEBUFFER_FLIP_Y_MESA);
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no framebuffer bound");
     return;
   }
-  if (param != GL_TRUE && param != GL_FALSE) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
-                       "invalid parameter, only GL_TRUE or GL_FALSE accepted");
-    return;
-  }
   api()->glFramebufferParameteriFn(target, pname, param);
-  framebuffer->SetFlipY(param == GL_TRUE);
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(

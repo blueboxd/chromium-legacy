@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
@@ -46,21 +47,24 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
         mAddedToHomescreen = true;
         // The title is ignored for app banners as we respect the developer-provided title.
         if (mNativePointer != 0) {
-            nativeAddToHomescreen(mNativePointer);
+            AppBannerUiDelegateAndroidJni.get().addToHomescreen(
+                    mNativePointer, AppBannerUiDelegateAndroid.this);
         }
     }
 
     @Override
     public void onNativeAppDetailsRequested() {
         if (mNativePointer != 0) {
-            nativeShowNativeAppDetails(mNativePointer);
+            AppBannerUiDelegateAndroidJni.get().showNativeAppDetails(
+                    mNativePointer, AppBannerUiDelegateAndroid.this);
         }
     }
 
     @Override
     public void onDialogDismissed() {
         if (!mAddedToHomescreen && mNativePointer != 0) {
-            nativeOnUiCancelled(mNativePointer);
+            AppBannerUiDelegateAndroidJni.get().onUiCancelled(
+                    mNativePointer, AppBannerUiDelegateAndroid.this);
         }
 
         mDialog = null;
@@ -139,7 +143,13 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
         return new AppBannerUiDelegateAndroid(nativePtr, tab);
     }
 
-    private native void nativeAddToHomescreen(long nativeAppBannerUiDelegateAndroid);
-    private native void nativeOnUiCancelled(long nativeAppBannerUiDelegateAndroid);
-    private native void nativeShowNativeAppDetails(long nativeAppBannerUiDelegateAndroid);
+    @NativeMethods
+    interface Natives {
+        void addToHomescreen(
+                long nativeAppBannerUiDelegateAndroid, AppBannerUiDelegateAndroid caller);
+        void onUiCancelled(
+                long nativeAppBannerUiDelegateAndroid, AppBannerUiDelegateAndroid caller);
+        void showNativeAppDetails(
+                long nativeAppBannerUiDelegateAndroid, AppBannerUiDelegateAndroid caller);
+    }
 }

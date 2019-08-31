@@ -98,6 +98,9 @@
     <module name="NoFinalizer">
       <property name="severity" value="info"/>
     </module>
+    <module name="NeedBraces">
+      <property name="allowSingleLineStatement" value="true"/>
+    </module>
     <module name="RegexpSinglelineJava">
       <property name="id" value="StringBufferCheck"/>
       <property name="severity" value="error"/>

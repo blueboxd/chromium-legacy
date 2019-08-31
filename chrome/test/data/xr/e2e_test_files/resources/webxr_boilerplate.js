@@ -74,6 +74,7 @@ sessionInfos[sessionTypes.AR] = new SessionInfo();
 sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 
 var immersiveSessionInit = {};
+var nonImmersiveSessionInit = {};
 
 function getSessionType(session) {
   if (session.mode == 'immersive-vr') {
@@ -209,7 +210,7 @@ function onXRFrame(t, frame) {
 function requestMagicWindowSession() {
   // Set up an inline session (magic window) drawing into the full screen canvas
   // on the page
-  navigator.xr.requestSession('inline')
+  navigator.xr.requestSession('inline', nonImmersiveSessionInit)
   .then((session) => {
     session.mode = 'inline';
     sessionInfos[sessionTypes.MAGIC_WINDOW].currentSession = session;

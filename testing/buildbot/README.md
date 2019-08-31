@@ -128,6 +128,10 @@ generated JSON file. Commonly used arguments include:
     * `can_use_on_swarming_builders`: if set to False, disables running this
       test on Swarming on any bot.
 
+    * `idempotent`: if set to False, prevents Swarming from returning the same
+      results of a similar run of the same test. See [task deduplication] for
+      more info.
+
 * `experiment_percentage`: an integer indicating that the test should be run
   as an experiment in the given percentage of builds. Tests running as
   experiments will not cause the containing builds to fail. Values should be
@@ -346,3 +350,5 @@ the data files. Some examples might include:
 
 `dpranke`, `jbudorick` or `kbr` will be glad to review any improvements you make
 to the tools. Thanks in advance for contributing!
+
+[task deduplication]: https://chromium.googlesource.com/infra/luci/luci-py/+/HEAD/appengine/swarming/doc/Detailed-Design.md#task-deduplication

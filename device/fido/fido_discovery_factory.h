@@ -43,7 +43,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
       ::service_manager::Connector* connector);
 
   // set_cable_data configures caBLE obtained via a WebAuthn extension.
-  void set_cable_data(std::vector<CableDiscoveryData> cable_data);
+  void set_cable_data(std::vector<CableDiscoveryData> cable_data,
+                      base::Optional<QRGeneratorKey> qr_generator_key);
 
 #if defined(OS_MACOSX)
   // Configures the Touch ID authenticator. Set to base::nullopt to disable it.
@@ -64,6 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   base::Optional<fido::mac::AuthenticatorConfig> mac_touch_id_config_;
 #endif  // defined(OS_MACOSX)
   base::Optional<std::vector<CableDiscoveryData>> cable_data_;
+  base::Optional<QRGeneratorKey> qr_generator_key_;
 };
 
 }  // namespace device

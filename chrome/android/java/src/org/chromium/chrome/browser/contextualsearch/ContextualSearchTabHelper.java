@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.view.ContextMenu;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
@@ -200,7 +201,8 @@ public class ContextualSearchTabHelper
         // Native initialization happens after a page loads or content is changed to ensure profile
         // is initialized.
         if (mNativeHelper == 0) {
-            mNativeHelper = nativeInit(tab.getProfile());
+            mNativeHelper = ContextualSearchTabHelperJni.get().init(
+                    ContextualSearchTabHelper.this, tab.getProfile());
         }
         if (mTemplateUrlObserver == null) {
             mTemplateUrlObserver = new TemplateUrlServiceObserver() {
@@ -228,7 +230,8 @@ public class ContextualSearchTabHelper
     @Override
     public void onDestroyed(Tab tab) {
         if (mNativeHelper != 0) {
-            nativeDestroy(mNativeHelper);
+            ContextualSearchTabHelperJni.get().destroy(
+                    mNativeHelper, ContextualSearchTabHelper.this);
             mNativeHelper = 0;
         }
         if (mTemplateUrlObserver != null) {
@@ -345,7 +348,8 @@ public class ContextualSearchTabHelper
                             contextualSearchManager.getContextualSearchSelectionClient()));
             contextualSearchManager.setCouldSmartSelectionBeActive(
                     mSelectionClientManager.isSmartSelectionEnabledInChrome());
-            nativeInstallUnhandledTapNotifierIfNeeded(mNativeHelper, webContents, mPxToDp);
+            ContextualSearchTabHelperJni.get().installUnhandledTapNotifierIfNeeded(
+                    mNativeHelper, ContextualSearchTabHelper.this, webContents, mPxToDp);
         }
     }
 
@@ -444,8 +448,11 @@ public class ContextualSearchTabHelper
         }
     }
 
-    private native long nativeInit(Profile profile);
-    private native void nativeInstallUnhandledTapNotifierIfNeeded(
-            long nativeContextualSearchTabHelper, WebContents webContents, float pxToDpScaleFactor);
-    private native void nativeDestroy(long nativeContextualSearchTabHelper);
+    @NativeMethods
+    interface Natives {
+        long init(ContextualSearchTabHelper caller, Profile profile);
+        void installUnhandledTapNotifierIfNeeded(long nativeContextualSearchTabHelper,
+                ContextualSearchTabHelper caller, WebContents webContents, float pxToDpScaleFactor);
+        void destroy(long nativeContextualSearchTabHelper, ContextualSearchTabHelper caller);
+    }
 }

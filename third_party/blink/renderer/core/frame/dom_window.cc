@@ -493,11 +493,17 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
       user_activation, options->transferUserActivation(), allow_autoplay);
 
   // Transfer user activation state in the source's renderer when
-  // |transferUserActivation| is true.
+  // |transferUserActivation| is true. We are making an expriment with
+  // dynamic delegation of "autoplay" capability using this post message
+  // approach to transfer user activation.
   // TODO(lanwei): we should execute the below code after the post task fires
   // (for both local and remote posting messages).
-  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
-      options->transferUserActivation() &&
+  bool should_transfer_user_activation =
+      RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+      options->transferUserActivation();
+  should_transfer_user_activation =
+      should_transfer_user_activation || allow_autoplay;
+  if (should_transfer_user_activation &&
       LocalFrame::HasTransientUserActivation(source_frame)) {
     GetFrame()->TransferUserActivationFrom(source_frame);
 

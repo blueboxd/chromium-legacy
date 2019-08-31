@@ -30,8 +30,28 @@ class FidoAuthenticator;
 class FidoDiscoveryFactory;
 class AuthenticatorMakeCredentialResponse;
 
+enum class MakeCredentialStatus {
+  kSuccess,
+  kAuthenticatorResponseInvalid,
+  kUserConsentButCredentialExcluded,
+  kUserConsentDenied,
+  kAuthenticatorRemovedDuringPINEntry,
+  kSoftPINBlock,
+  kHardPINBlock,
+  kAuthenticatorMissingResidentKeys,
+  // TODO(agl): kAuthenticatorMissingUserVerification can
+  // also be returned when the authenticator supports UV, but
+  // there's no UI support for collecting a PIN. This could
+  // be clearer.
+  kAuthenticatorMissingUserVerification,
+  kStorageFull,
+  kWinInvalidStateError,
+  kWinNotAllowedError,
+};
+
 class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
-    : public FidoRequestHandler<AuthenticatorMakeCredentialResponse> {
+    : public FidoRequestHandler<MakeCredentialStatus,
+                                AuthenticatorMakeCredentialResponse> {
  public:
   MakeCredentialRequestHandler(
       service_manager::Connector* connector,

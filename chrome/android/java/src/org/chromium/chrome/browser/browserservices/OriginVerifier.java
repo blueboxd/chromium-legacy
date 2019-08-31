@@ -13,6 +13,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsService.Relation;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -21,6 +24,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -46,8 +50,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsService.Relation;
 import dagger.Reusable;
 
 /**
@@ -255,7 +257,8 @@ public class OriginVerifier {
             // Early return for testing without native.
             return;
         }
-        mNativeOriginVerifier = nativeInit(Profile.getLastUsedProfile().getOriginalProfile());
+        mNativeOriginVerifier = OriginVerifierJni.get().init(
+                OriginVerifier.this, Profile.getLastUsedProfile().getOriginalProfile());
         assert mNativeOriginVerifier != 0;
         String relationship = null;
         switch (mRelation) {
@@ -271,8 +274,9 @@ public class OriginVerifier {
         }
 
         mVerificationStartTime = SystemClock.uptimeMillis();
-        boolean requestSent = nativeVerifyOrigin(mNativeOriginVerifier, mPackageName,
-                mSignatureFingerprint, mOrigin.toString(), relationship);
+        boolean requestSent =
+                OriginVerifierJni.get().verifyOrigin(mNativeOriginVerifier, OriginVerifier.this,
+                        mPackageName, mSignatureFingerprint, mOrigin.toString(), relationship);
         if (!requestSent) {
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.REQUEST_FAILURE);
@@ -300,7 +304,7 @@ public class OriginVerifier {
      */
     public void cleanUp() {
         if (mNativeOriginVerifier == 0) return;
-        nativeDestroy(mNativeOriginVerifier);
+        OriginVerifierJni.get().destroy(mNativeOriginVerifier, OriginVerifier.this);
         mNativeOriginVerifier = 0;
     }
 
@@ -359,7 +363,7 @@ public class OriginVerifier {
         return hexString.toString();
     }
 
-    /** Called asynchronously by nativeVerifyOrigin. */
+    /** Called asynchronously by OriginVerifierJni.get().verifyOrigin. */
     @CalledByNative
     private void onOriginVerificationResult(int result) {
         switch (result) {
@@ -445,8 +449,11 @@ public class OriginVerifier {
         VerificationResultStore.clearStoredRelationships();
     }
 
-    private native long nativeInit(Profile profile);
-    private native boolean nativeVerifyOrigin(long nativeOriginVerifier, String packageName,
-            String signatureFingerprint, String origin, String relationship);
-    private native void nativeDestroy(long nativeOriginVerifier);
+    @NativeMethods
+    interface Natives {
+        long init(OriginVerifier caller, Profile profile);
+        boolean verifyOrigin(long nativeOriginVerifier, OriginVerifier caller, String packageName,
+                String signatureFingerprint, String origin, String relationship);
+        void destroy(long nativeOriginVerifier, OriginVerifier caller);
+    }
 }

@@ -77,7 +77,8 @@ public class TabGroupUiCoordinator
         TabContentManager tabContentManager = activity.getTabContentManager();
 
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
-                mContext, tabModelSelector, null, null, false, null, null, null, null, null,
+                mContext, tabModelSelector, null, null, false, null, null, null,
+                TabProperties.UiType.STRIP, null,
                 mTabStripToolbarCoordinator.getTabListContainerView(), null, true, COMPONENT_NAME);
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {

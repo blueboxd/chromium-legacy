@@ -523,6 +523,23 @@ Finally, the main library is free to utilize Foo:
   foo->ProcessInput(const std::string& input);
 ```
 
+#### JNI
+
+Read the `jni_generator` [docs](../base/android/jni_generator/README.md) before
+reading this section.
+
+There are some subtleties to how JNI registration works with DFMs:
+
+* Generated wrapper `ClassNameJni` classes are packaged into the DFM's dex file
+* The class containing the actual native definitions, `GEN_JNI.java`, is always
+  stored in the base module
+* If the DFM is only included in bundles that use
+  [implicit JNI registration](android_native_libraries.md#JNI-Native-Methods-Resolution)
+  (i.e. Monochrome and newer), then no extra consideration is necessary
+* Otherwise, the DFM will need to provide a `generate_jni_registration` target
+  that will generate all of the native registration functions
+
+
 ### Adding Android resources
 
 In this section we will add the required build targets to add Android resources

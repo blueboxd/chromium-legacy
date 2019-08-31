@@ -26,3 +26,16 @@ cast_source_set("desktop") {
     "//media",
   ]
 }
+
+cast_source_set("video_decoder_for_mixer") {
+  sources = [
+    "cast_media_shlib_video.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media/cma/backend:null_video",
+    "//chromecast/public",
+    "//chromecast/public/media",
+  ]
+}

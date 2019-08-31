@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
@@ -24,6 +25,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -171,7 +173,8 @@ class DesksController::DeskAnimationBase
   }
 
  protected:
-  DeskAnimationBase(DesksController* controller) : controller_(controller) {}
+  explicit DeskAnimationBase(DesksController* controller)
+      : controller_(controller) {}
 
   // Abstract functions that can be overridden by child classes to do different
   // things when phase (1), and phase (3) completes. Note that
@@ -313,6 +316,7 @@ class DesksController::DeskRemovalAnimation
 
 DesksController::DesksController() {
   Shell::Get()->activation_client()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 
   for (int id : desks_util::GetDesksContainersIds())
     available_container_ids_.push(id);
@@ -324,6 +328,7 @@ DesksController::DesksController() {
 }
 
 DesksController::~DesksController() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
@@ -422,8 +427,6 @@ void DesksController::RemoveDesk(const Desk* desk,
 void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
   DCHECK(HasDesk(desk));
 
-  UMA_HISTOGRAM_ENUMERATION(kDeskSwitchHistogramName, source);
-
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview = overview_controller->InOverviewSession();
   if (desk == active_desk_) {
@@ -435,21 +438,30 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
     return;
   }
 
-  if (source == DesksSwitchSource::kDeskRemoved) {
+  UMA_HISTOGRAM_ENUMERATION(kDeskSwitchHistogramName, source);
+
+  const int target_desk_index = GetDeskIndex(desk);
+  if (source != DesksSwitchSource::kDeskRemoved) {
+    // Desk removal has its own a11y alert.
+    Shell::Get()
+        ->accessibility_controller()
+        ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+            IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_ACTIVATED,
+            base::NumberToString16(target_desk_index + 1)));
+  }
+
+  if (source == DesksSwitchSource::kDeskRemoved ||
+      source == DesksSwitchSource::kUserSwitch) {
+    // Desk switches due to desks removal or user switches in a multi-profile
+    // session result in immediate desk activation without animation.
     ActivateDeskInternal(desk, /*update_window_activation=*/!in_overview);
     return;
   }
 
-  Shell::Get()
-      ->accessibility_controller()
-      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
-          IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_ACTIVATED,
-          base::NumberToString16(GetDeskIndex(desk) + 1)));
-
   // New desks are always added at the end of the list to the right of existing
   // desks. Therefore, desks at lower indices are located on the left of desks
   // with higher indices.
-  const bool move_left = GetDeskIndex(active_desk_) < GetDeskIndex(desk);
+  const bool move_left = GetDeskIndex(active_desk_) < target_desk_index;
   animations_.emplace_back(
       std::make_unique<DeskActivationAnimation>(this, desk, move_left));
   animations_.back()->Launch();
@@ -554,6 +566,39 @@ void DesksController::OnWindowActivating(ActivationReason reason,
 void DesksController::OnWindowActivated(ActivationReason reason,
                                         aura::Window* gained_active,
                                         aura::Window* lost_active) {}
+
+void DesksController::OnActiveUserSessionChanged(const AccountId& account_id) {
+  // TODO(afakhry): Remove this when multi-profile support goes away.
+  if (!current_account_id_.is_valid()) {
+    // This is the login of the first primary user. No need to switch any desks.
+    current_account_id_ = account_id;
+    return;
+  }
+
+  user_to_active_desk_index_[current_account_id_] = GetDeskIndex(active_desk_);
+  current_account_id_ = account_id;
+
+  // Note the following constraints:
+  // - Simultaneously logged-in users share the same number of desks.
+  // - We don't sync and restore the number of desks nor the active desk
+  //   position from previous login sessions.
+  //
+  // Given the above, we do the following for simplicity:
+  // - If this user has never been seen before, we activate their first desk.
+  // - If one of the simultaneously logged-in users remove desks, that other
+  //   users' active-desk indices may become invalid. We won't create extra
+  //   desks for this user, but rather we will simply activate their last desk
+  //   on the right. Future user switches will update the pref for this user to
+  //   the correct value.
+  int new_user_active_desk_index =
+      /* This is a default initialized index to 0 if the id doesn't exist. */
+      user_to_active_desk_index_[current_account_id_];
+  new_user_active_desk_index = base::ClampToRange(
+      new_user_active_desk_index, 0, static_cast<int>(desks_.size()) - 1);
+
+  ActivateDesk(desks_[new_user_active_desk_index].get(),
+               DesksSwitchSource::kUserSwitch);
+}
 
 void DesksController::OnAnimationFinished(DeskAnimationBase* animation) {
   base::EraseIf(animations_, base::MatchesUniquePtr(animation));

@@ -909,29 +909,8 @@ def choose_x_session():
         # current user.
         return ["/bin/sh", startup_file]
 
-  # Choose a session wrapper script to run the session. On some systems,
-  # /etc/X11/Xsession fails to load the user's .profile, so look for an
-  # alternative wrapper that is more likely to match the script that the
-  # system actually uses for console desktop sessions.
-  SESSION_WRAPPERS = [
-    "/usr/sbin/lightdm-session",
-    "/etc/gdm/Xsession",
-    "/etc/X11/Xsession" ]
-  for session_wrapper in SESSION_WRAPPERS:
-    if os.path.exists(session_wrapper):
-      if os.path.exists("/usr/bin/unity-2d-panel"):
-        # On Ubuntu 12.04, the default session relies on 3D-accelerated
-        # hardware. Trying to run this with a virtual X display produces
-        # weird results on some systems (for example, upside-down and
-        # corrupt displays).  So if the ubuntu-2d session is available,
-        # choose it explicitly.
-        return [session_wrapper, "/usr/bin/gnome-session --session=ubuntu-2d"]
-      else:
-        # Use the session wrapper by itself, and let the system choose a
-        # session.
-        return [session_wrapper]
-  return None
-
+  # If there's no configuration, show the user a session chooser.
+  return [HOST_BINARY_PATH, "--type=xsession_chooser"]
 
 class ParentProcessLogger(object):
   """Redirects logs to the parent process, until the host is ready or quits.

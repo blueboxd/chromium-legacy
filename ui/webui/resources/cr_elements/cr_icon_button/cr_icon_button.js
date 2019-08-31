@@ -59,6 +59,7 @@ Polymer({
     focus: 'showRipple_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
+    pointerdown: 'ensureRipple',
     up: 'hideRipple_',
   },
 

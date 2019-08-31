@@ -127,8 +127,8 @@ class InlinedStructPtr {
     return *this;
   }
 
-  InlinedStructPtr(InlinedStructPtr&& other) { Take(&other); }
-  InlinedStructPtr& operator=(InlinedStructPtr&& other) {
+  InlinedStructPtr(InlinedStructPtr&& other) noexcept { Take(&other); }
+  InlinedStructPtr& operator=(InlinedStructPtr&& other) noexcept {
     Take(&other);
     return *this;
   }

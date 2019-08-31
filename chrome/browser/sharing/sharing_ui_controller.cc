@@ -100,6 +100,7 @@ void SharingUiController::SendMessageToDevice(
   last_dialog_id_++;
   is_loading_ = true;
   send_result_ = SharingSendMessageResult::kSuccessful;
+  target_device_name_ = device.client_name();
   UpdateIcon();
 
   sharing_service_->SendMessageToDevice(
@@ -135,18 +136,56 @@ void SharingUiController::UpdateDevices() {
       sharing_service_->GetDeviceCandidates(GetRequiredDeviceCapabilities());
 }
 
-// TODO(himanshujaju): Return different title based on |send_result_|.
-base::string16 SharingUiController::GetErrorDialogTitle() const {
-  DCHECK(HasSendFailed());
-  return l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND);
+base::string16 SharingUiController::GetTargetDeviceName() const {
+  return base::UTF8ToUTF16(target_device_name_);
 }
 
-// TODO(himanshujaju): Return different text based on |send_result_|.
+base::string16 SharingUiController::GetErrorDialogTitle() const {
+  switch (send_result()) {
+    case SharingSendMessageResult::kDeviceNotFound:
+    case SharingSendMessageResult::kNetworkError:
+    case SharingSendMessageResult::kAckTimeout:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_GENERIC_ERROR,
+          base::ToLowerASCII(GetContentType()));
+
+    case SharingSendMessageResult::kSuccessful:
+      NOTREACHED();
+      FALLTHROUGH;
+
+    case SharingSendMessageResult::kPayloadTooLarge:
+    case SharingSendMessageResult::kInternalError:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_INTERNAL_ERROR,
+          base::ToLowerASCII(GetContentType()));
+  }
+}
+
 base::string16 SharingUiController::GetErrorDialogText() const {
-  DCHECK(HasSendFailed());
-  return l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE);
+  switch (send_result()) {
+    case SharingSendMessageResult::kDeviceNotFound:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND,
+          GetTargetDeviceName());
+
+    case SharingSendMessageResult::kNetworkError:
+      return l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_NETWORK_ERROR);
+
+    case SharingSendMessageResult::kAckTimeout:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_ACK_TIMEOUT,
+          GetTargetDeviceName());
+
+    case SharingSendMessageResult::kSuccessful:
+      NOTREACHED();
+      FALLTHROUGH;
+
+    case SharingSendMessageResult::kPayloadTooLarge:
+    case SharingSendMessageResult::kInternalError:
+      return l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR);
+  }
 }
 
 void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {

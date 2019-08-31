@@ -291,8 +291,6 @@ const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of
 //    ZeroSuggestProvider.
-//  - "CustomEndpointURL" configures a custom endpoint for remote suggestions.
-//  - "CustomEndpointExperimentID" sends an id number to the custom endpoint.
 const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 

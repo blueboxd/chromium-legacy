@@ -270,8 +270,6 @@ test("web_engine_integration_tests") {
   sources = [
     "test_debug_listener.cc",
     "test_debug_listener.h",
-    "test_devtools_list_fetcher.cc",
-    "test_devtools_list_fetcher.h",
     "web_engine_debug_integration_test.cc",
     "web_engine_integration_test.cc",
   ]
@@ -283,8 +281,6 @@ test("web_engine_integration_tests") {
     "//base/test:run_all_unittests",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
-    "//net",
-    "//net:test_support",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
   package_deps = [ [

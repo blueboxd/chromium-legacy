@@ -64,12 +64,10 @@ class PLATFORM_EXPORT BMPImageReader final {
                  size_t decoded_and_header_offset,
                  size_t img_data_offset,
                  bool is_in_ico);
+  ~BMPImageReader();
 
   void SetBuffer(ImageFrame* buffer) { buffer_ = buffer; }
-  void SetData(SegmentReader* data) {
-    data_ = data;
-    fast_reader_.SetData(data);
-  }
+  void SetData(SegmentReader* data);
 
   // Does the actual decoding.  If |only_size| is true, decoding only
   // progresses as far as necessary to get the image size.  Returns
@@ -181,6 +179,9 @@ class PLATFORM_EXPORT BMPImageReader final {
 
   // Processes any embedded ICC color profile.
   bool ProcessEmbeddedColorProfile();
+
+  // Decodes the image data for compression types JPEG and PNG.
+  bool DecodeAlternateFormat();
 
   // For BI_[ALPHA]BITFIELDS images, initializes the bit_masks_[] and
   // bit_offsets_[] arrays.  ProcessInfoHeader() will initialize these for
@@ -334,6 +335,9 @@ class PLATFORM_EXPORT BMPImageReader final {
 
   // The BMP info header.
   BitmapInfoHeader info_header_;
+
+  // Used only for bitmaps with compression types JPEG or PNG.
+  std::unique_ptr<ImageDecoder> alternate_decoder_;
 
   // True if this is an OS/2 1.x (aka Windows 2.x) BMP.  The struct
   // layouts for this type of BMP are slightly different from the later,

@@ -116,7 +116,7 @@ cryptauthv2::ClientMetadata::InvocationReason ConvertInvocationReasonV1ToV2(
   }
 }
 
-void RecordEnrollmentResult(CryptAuthEnrollmentResult result) {
+void RecordEnrollmentResult(const CryptAuthEnrollmentResult& result) {
   base::UmaHistogramBoolean("CryptAuth.EnrollmentV2.Result.Success",
                             result.IsSuccess());
   base::UmaHistogramEnumeration("CryptAuth.EnrollmentV2.Result.ResultCode",
@@ -461,37 +461,41 @@ void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished(
   // Once an enrollment attempt finishes, no other callbacks should be
   // invoked. This is particularly relevant for timeout failures.
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // The enrollment result might be owned by the enroller, so we copy the result
+  // here before destroying the enroller.
+  CryptAuthEnrollmentResult enrollment_result_copy = enrollment_result;
   enroller_.reset();
 
-  if (enrollment_result.IsSuccess()) {
+  if (enrollment_result_copy.IsSuccess()) {
     PA_LOG(INFO) << "Enrollment attempt with invocation reason "
                  << current_client_metadata_->invocation_reason()
                  << " succeeded with result code "
-                 << enrollment_result.result_code();
+                 << enrollment_result_copy.result_code();
   } else {
     PA_LOG(WARNING) << "Enrollment attempt with invocation reason "
                     << current_client_metadata_->invocation_reason()
                     << " failed with result code "
-                    << enrollment_result.result_code();
+                    << enrollment_result_copy.result_code();
   }
 
   current_client_metadata_.reset();
 
-  RecordEnrollmentResult(enrollment_result);
+  RecordEnrollmentResult(enrollment_result_copy);
 
-  scheduler_->HandleEnrollmentResult(enrollment_result);
+  scheduler_->HandleEnrollmentResult(enrollment_result_copy);
 
   PA_LOG(INFO) << "Time until next enrollment attempt: "
                << GetTimeToNextAttempt();
 
-  if (!enrollment_result.IsSuccess()) {
+  if (!enrollment_result_copy.IsSuccess()) {
     PA_LOG(INFO) << "Number of consecutive Enrollment failures: "
                  << scheduler_->GetNumConsecutiveEnrollmentFailures();
   }
 
   SetState(State::kIdle);
 
-  NotifyEnrollmentFinished(enrollment_result.IsSuccess());
+  NotifyEnrollmentFinished(enrollment_result_copy.IsSuccess());
 }
 
 void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {

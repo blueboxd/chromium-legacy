@@ -58,6 +58,12 @@ class CORE_EXPORT IntersectionGeometry {
                        const Vector<float>& thresholds,
                        unsigned flags);
 
+  IntersectionGeometry(const RootGeometry& root_geometry,
+                       const Element& explicit_root,
+                       const Element& target,
+                       const Vector<float>& thresholds,
+                       unsigned flags);
+
   IntersectionGeometry(const IntersectionGeometry&) = default;
   ~IntersectionGeometry();
 

@@ -44,7 +44,7 @@ class GPU_GLES2_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
                               GLuint dest_texture,
                               bool do_copy);
 
-  void OnSize(GLint width, GLint height, bool flip_y);
+  void OnSize(GLint width, GLint height);
   void ReleaseTextures();
 
   GLuint CreateProgram(const char* defines,
@@ -58,7 +58,6 @@ class GPU_GLES2_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   bool supports_usampler_;
   bool supports_r8_image_;
   bool is_gles31_compatible_;
-  bool flip_y_;
 
   int frame_id_;
 

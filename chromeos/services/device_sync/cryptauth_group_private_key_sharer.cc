@@ -34,7 +34,7 @@ void CryptAuthGroupPrivateKeySharer::ShareGroupPrivateKey(
 }
 
 void CryptAuthGroupPrivateKeySharer::OnAttemptFinished(
-    const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
+    CryptAuthDeviceSyncResult::ResultCode device_sync_result_code) {
   DCHECK(callback_);
   std::move(callback_).Run(device_sync_result_code);
 }

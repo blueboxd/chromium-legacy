@@ -13,6 +13,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 MediaToolbarButtonController::MediaToolbarButtonController(
+    const base::UnguessableToken& source_id,
     service_manager::Connector* connector,
     MediaToolbarButtonControllerDelegate* delegate)
     : connector_(connector), delegate_(delegate) {
@@ -30,12 +31,14 @@ MediaToolbarButtonController::MediaToolbarButtonController(
   // Connect to receive audio focus events.
   connector_->Connect(media_session::mojom::kServiceName,
                       audio_focus_remote_.BindNewPipeAndPassReceiver());
-  audio_focus_remote_->AddObserver(
-      audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
+  audio_focus_remote_->AddSourceObserver(
+      source_id, audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 
-  audio_focus_remote_->GetFocusRequests(base::BindOnce(
-      &MediaToolbarButtonController::OnReceivedAudioFocusRequests,
-      weak_ptr_factory_.GetWeakPtr()));
+  audio_focus_remote_->GetSourceFocusRequests(
+      source_id,
+      base::BindOnce(
+          &MediaToolbarButtonController::OnReceivedAudioFocusRequests,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 MediaToolbarButtonController::~MediaToolbarButtonController() = default;

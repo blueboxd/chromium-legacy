@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL Invalid JSON assert_throws: function "() => parseFromString('{ imports: {} }', 'https://base.example/')" did not throw
-FAIL Mismatching the top-level schema / should throw for top-level non-objects assert_throws: function "() => parseFromString(input, baseURL)" did not throw
-FAIL Mismatching the top-level schema / should throw if imports is a non-object assert_throws: function "() => parseFromString(input, baseURL)" did not throw
+PASS Invalid JSON
+PASS Mismatching the top-level schema / should throw for top-level non-objects
+PASS Mismatching the top-level schema / should throw if imports is a non-object
 FAIL Mismatching the top-level schema / should throw if scopes is a non-object assert_throws: function "() => parseFromString(input, baseURL)" did not throw
 FAIL Mismatching the top-level schema / should ignore unspecified top-level entries assert_object_equals: expected property "0" missing
 PASS Mismatching the specifier map schema / should ignore entries where the address is not a string, array, or null

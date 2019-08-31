@@ -48,7 +48,7 @@ namespace device {
 namespace {
 
 using TestMakeCredentialRequestCallback = test::StatusAndValuesCallbackReceiver<
-    FidoReturnCode,
+    MakeCredentialStatus,
     base::Optional<AuthenticatorMakeCredentialResponse>,
     const FidoAuthenticator*>;
 
@@ -176,7 +176,7 @@ TEST_F(FidoMakeCredentialHandlerTest, TestCtap2MakeCredential) {
   discovery()->AddDevice(std::move(device));
 
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
@@ -192,7 +192,7 @@ TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegister) {
   discovery()->AddDevice(std::move(device));
 
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
   EXPECT_TRUE(request_handler->is_complete());
 }
 
@@ -211,7 +211,7 @@ TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithUserVerificationRequired) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingUserVerification,
+  EXPECT_EQ(MakeCredentialStatus::kAuthenticatorMissingUserVerification,
             callback().status());
 }
 
@@ -230,7 +230,7 @@ TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithResidentKeyRequirement) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingResidentKeys,
+  EXPECT_EQ(MakeCredentialStatus::kAuthenticatorMissingResidentKeys,
             callback().status());
 }
 
@@ -251,7 +251,7 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingUserVerification,
+  EXPECT_EQ(MakeCredentialStatus::kAuthenticatorMissingUserVerification,
             callback().status());
 }
 
@@ -311,7 +311,7 @@ TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyRequirementNotMet) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingResidentKeys,
+  EXPECT_EQ(MakeCredentialStatus::kAuthenticatorMissingResidentKeys,
             callback().status());
 }
 
@@ -391,7 +391,7 @@ TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyCancelOtherAuthenticator) {
   discovery()->AddDevice(std::move(device2));
 
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyCancel) {
@@ -446,7 +446,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->AddDevice(std::move(device));
 
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
 
   EXPECT_THAT(
       request_handler->transport_availability_info().available_transports,
@@ -478,7 +478,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
               UserVerificationRequirement::kRequired));
 
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
 
   EXPECT_THAT(
       request_handler->transport_availability_info().available_transports,
@@ -589,7 +589,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
 }
 
 // Tests that MakeCredential request fails when asking to use resident keys with
@@ -607,13 +607,13 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingResidentKeys,
+  EXPECT_EQ(MakeCredentialStatus::kAuthenticatorMissingResidentKeys,
             callback().status());
 }
 
 // If a device with transport type kInternal returns a
 // CTAP2_ERR_OPERATION_DENIED error, the request should complete with
-// FidoReturnCode::kUserConsentDenied.
+// MakeCredentialStatus::kUserConsentDenied.
 TEST_F(FidoMakeCredentialHandlerTest,
        TestRequestWithOperationDeniedErrorPlatform) {
   auto platform_device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
@@ -633,7 +633,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kUserConsentDenied, callback().status());
 }
 
 // Like |TestRequestWithOperationDeniedErrorPlatform|, but with a
@@ -656,11 +656,11 @@ TEST_F(FidoMakeCredentialHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kUserConsentDenied, callback().status());
 }
 
 // If a device returns CTAP2_ERR_PIN_AUTH_INVALID, the request should complete
-// with FidoReturnCode::kUserConsentDenied.
+// with MakeCredentialStatus::kUserConsentDenied.
 TEST_F(FidoMakeCredentialHandlerTest, TestRequestWithPinAuthInvalid) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device->ExpectCtap2CommandAndRespondWithError(
@@ -678,7 +678,7 @@ TEST_F(FidoMakeCredentialHandlerTest, TestRequestWithPinAuthInvalid) {
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
-  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kUserConsentDenied, callback().status());
 }
 
 MATCHER_P(IsCtap2Command, expected_command, "") {
@@ -717,7 +717,7 @@ TEST_F(FidoMakeCredentialHandlerTest, DeviceFailsImmediately) {
   discovery()->AddDevice(std::move(broken_device));
 
   callback().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
 }
 
 }  // namespace device

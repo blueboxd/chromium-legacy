@@ -102,7 +102,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void GetVisualsAvailability(
       int64_t offline_id,
       base::OnceCallback<void(VisualsAvailability)> callback) override;
-  const base::FilePath& GetInternalArchiveDirectory(
+  const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
   OfflineEventLogger* GetLogger() override;

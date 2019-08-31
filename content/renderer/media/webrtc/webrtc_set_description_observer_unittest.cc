@@ -18,9 +18,9 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -302,13 +302,14 @@ class WebRtcSetDescriptionObserverHandlerTest
     // Inspect transceiver states.
     EXPECT_TRUE(transceiver_state.is_initialized());
     EXPECT_EQ(transceiver.get(), transceiver_state.webrtc_transceiver());
-    EXPECT_TRUE(OptionalEquals(transceiver_state.mid(), transceiver->mid()));
+    EXPECT_TRUE(
+        blink::OptionalEquals(transceiver_state.mid(), transceiver->mid()));
     EXPECT_EQ(transceiver_state.stopped(), transceiver->stopped());
     EXPECT_TRUE(transceiver_state.direction() == transceiver->direction());
-    EXPECT_TRUE(OptionalEquals(transceiver_state.current_direction(),
-                               transceiver->current_direction()));
-    EXPECT_TRUE(OptionalEquals(transceiver_state.fired_direction(),
-                               transceiver->fired_direction()));
+    EXPECT_TRUE(blink::OptionalEquals(transceiver_state.current_direction(),
+                                      transceiver->current_direction()));
+    EXPECT_TRUE(blink::OptionalEquals(transceiver_state.fired_direction(),
+                                      transceiver->fired_direction()));
     // Inspect sender states.
     EXPECT_TRUE(transceiver_state.sender_state());
     const RtpSenderState& sender_state = *transceiver_state.sender_state();

@@ -73,6 +73,11 @@ class ScopedDeferMainFrameUpdate;
 }
 
 namespace blink {
+
+namespace frame_test_helpers {
+class WebViewHelper;
+}
+
 class BrowserControls;
 class DevToolsEmulator;
 class Frame;
@@ -95,7 +100,6 @@ struct WebTextAutosizerPageInfo;
 using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
 
 class CORE_EXPORT WebViewImpl final : public WebView,
-                                      private WebWidget,
                                       public RefCounted<WebViewImpl>,
                                       public PageWidgetEventHandler {
  public:
@@ -104,8 +108,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                              bool compositing_enabled,
                              WebViewImpl* opener);
 
-  // This method is overridden from both WebWidget and WebView. The former is
-  // meaningless, and this is only used to Close the WebView.
+  // All calls to Create() should be balanced with a call to Close(). This
+  // synchronously destroys the WebViewImpl.
   void Close() override;
 
   static HashSet<WebViewImpl*>& AllInstances();
@@ -164,6 +168,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebFloatPoint VisualViewportOffset() const override;
   WebFloatSize VisualViewportSize() const override;
   void ResizeVisualViewport(const WebSize&) override;
+  void Resize(const WebSize&) override;
   void ResetScrollAndScaleState() override;
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
@@ -181,7 +186,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DisableAutoResizeMode() override;
   void PerformPluginAction(const WebPluginAction&, const gfx::Point&) override;
   void AudioStateChanged(bool is_audio_playing) override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
+  WebHitTestResult HitTestResultAt(const gfx::Point&);
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
   uint64_t CreateUniqueIdentifierForRequest() override;
@@ -372,6 +377,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ClearAutoplayFlags() override;
   int32_t AutoplayFlagsForTest() override;
 
+  WebSize Size();
   IntSize MainFrameSize();
   WebDisplayMode DisplayMode() const { return display_mode_; }
 
@@ -406,10 +412,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Node* FindNodeFromScrollableCompositorElementId(
       cc::ElementId element_id) const;
 
-  // WebWidget overrides
-  void DidEnterFullscreen() override;
-  void DidExitFullscreen() override;
-  void Resize(const WebSize&) override;
+  void DidEnterFullscreen();
+  void DidExitFullscreen();
+
+  void SetWebWidget(WebWidget* widget);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
@@ -419,6 +425,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                            DivScrollIntoEditableTestZoomToLegibleScaleDisabled);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
                            DivScrollIntoEditableTestWithDeviceScaleFactor);
+  FRIEND_TEST_ALL_PREFIXES(WebViewTest, SetBaseBackgroundColorBeforeMainFrame);
+  friend class frame_test_helpers::WebViewHelper;
+  friend class SimCompositor;
+  friend class WebView;  // So WebView::Create can call our constructor
+  friend class WebViewFrameWidget;
+  friend class WTF::RefCounted<WebViewImpl>;
 
   // TODO(danakj): DCHECK in these that we're not inside a wrong API stackframe.
   struct ViewData;
@@ -429,44 +441,42 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // still valid until after this method is called.
   void DidDetachLocalMainFrame();
 
-  // WebWidget methods:
-  void SetAnimationHost(cc::AnimationHost*) override;
-  WebSize Size() override;
-  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
+  // These are temporary methods to allow WebViewFrameWidget to delegate to
+  // WebViewImpl. We expect to eventually move these out.
+  void SetAnimationHost(cc::AnimationHost*);
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
   void BeginFrame(base::TimeTicks last_frame_time,
-                  bool record_main_frame_metrics) override;
-  void DidBeginFrame() override;
-  void BeginRafAlignedInput() override;
-  void EndRafAlignedInput() override;
-  void BeginUpdateLayers() override;
-  void EndUpdateLayers() override;
-  void BeginCommitCompositorFrame() override;
-  void EndCommitCompositorFrame() override;
-  void RecordStartOfFrameMetrics() override;
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason) override;
-  void ThemeChanged() override;
-  WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
-  WebInputEventResult DispatchBufferedTouchEvents() override;
-  void SetCursorVisibilityState(bool is_visible) override;
-  void OnFallbackCursorModeToggled(bool is_on) override;
-  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
-  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override;
-  void SendOverscrollEventFromImplSide(
-      const gfx::Vector2dF& overscroll_delta,
-      cc::ElementId scroll_latched_element_id) override;
-  void SendScrollEndEventFromImplSide(
-      cc::ElementId scroll_latched_element_id) override;
-  void MouseCaptureLost() override;
+                  bool record_main_frame_metrics);
+  void DidBeginFrame();
+  void BeginRafAlignedInput();
+  void EndRafAlignedInput();
+  void BeginUpdateLayers();
+  void EndUpdateLayers();
+  void BeginCommitCompositorFrame();
+  void EndCommitCompositorFrame();
+  void RecordStartOfFrameMetrics();
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
+  void UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
+                       WebWidget::LifecycleUpdateReason reason);
+  void ThemeChanged();
+  WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&);
+  WebInputEventResult DispatchBufferedTouchEvents();
+  void SetCursorVisibilityState(bool is_visible);
+  void OnFallbackCursorModeToggled(bool is_on);
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args);
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info);
+  void SendOverscrollEventFromImplSide(const gfx::Vector2dF& overscroll_delta,
+                                       cc::ElementId scroll_latched_element_id);
+  void SendScrollEndEventFromImplSide(cc::ElementId scroll_latched_element_id);
+  void MouseCaptureLost();
   void SetFocus(bool enable) override;
-  bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool IsAcceleratedCompositingActive() const override;
-  void DidAcquirePointerLock() override;
-  void DidNotAcquirePointerLock() override;
-  void DidLosePointerLock() override;
-  void ShowContextMenu(WebMenuSourceType) override;
-  WebURL GetURLForDebugTrace() override;
+  bool SelectionBounds(WebRect& anchor, WebRect& focus) const;
+  bool IsAcceleratedCompositingActive() const;
+  void DidAcquirePointerLock();
+  void DidNotAcquirePointerLock();
+  void DidLosePointerLock();
+  void ShowContextMenu(WebMenuSourceType);
+  WebURL GetURLForDebugTrace();
 
   void SetPageScaleFactorAndLocation(float scale,
                                      bool is_pinch_gesture_active,
@@ -484,11 +494,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                bool browser_controls_shrink_layout);
 
   void UpdateBaseBackgroundColor();
-
-  friend class WebView;  // So WebView::Create can call our constructor
-  friend class WebViewFrameWidget;
-  friend class WTF::RefCounted<WebViewImpl>;
-  friend class SimCompositor;
 
   WebViewImpl(WebViewClient*,
               bool is_hidden,
@@ -692,6 +697,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // The local root whose document has |popup_mouse_wheel_event_listener_|
   // registered.
   WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
+
+  // The WebWidget for the main frame. This is expected to be unset when the
+  // WebWidget destroys itself.
+  WebWidget* web_widget_ = nullptr;
 
   WebPageImportanceSignals page_importance_signals_;
 

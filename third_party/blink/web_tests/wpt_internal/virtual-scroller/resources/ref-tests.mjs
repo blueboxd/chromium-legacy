@@ -26,6 +26,47 @@ export function testFullScroll500px(target) {
   });
 };
 
+export function testLargeChild(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    const largeChild = helpers.largeDiv("largeChild");
+    target.appendChild(largeChild);
+    const child = helpers.div("child");
+    target.appendChild(child);
+
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, largeChild.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+}
+
+export function testLargeChildComment(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    const largeChild = helpers.largeDiv("largeChild");
+    target.appendChild(largeChild);
+    // Ensure that non-element nodes don't cause problems.
+    target.appendChild(document.createComment("comment"));
+    target.appendChild(helpers.div("child"));
+
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, largeChild.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+}
+
 export function testMoveElement(target) {
   helpers.appendDivs(target, MORE_THAN_SCREENFUL, '10px');
   helpers.nextFrame(() => {

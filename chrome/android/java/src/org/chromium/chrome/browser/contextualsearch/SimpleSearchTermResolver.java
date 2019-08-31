@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -57,18 +58,21 @@ public class SimpleSearchTermResolver {
         mResponseCallback = responseCallback;
         if (baseWebContents != null && contextualSearchContext != null
                 && contextualSearchContext.canResolve()) {
-            Log.i(TAG, "calling nativeStartSearchTermResolutionRequest.");
-            nativeStartSearchTermResolutionRequest(
-                    mNativePointer, contextualSearchContext, baseWebContents);
+            Log.i(TAG,
+                    "calling SimpleSearchTermResolverJni.get().startSearchTermResolutionRequest.");
+            SimpleSearchTermResolverJni.get().startSearchTermResolutionRequest(mNativePointer,
+                    SimpleSearchTermResolver.this, contextualSearchContext, baseWebContents);
         }
     }
 
     /**
      * Called in response to the
-     * {@link ContextualSearchManager#nativeStartSearchTermResolutionRequest} method.
-     * If {@code nativeStartSearchTermResolutionRequest} is called with a previous request sill
-     * pending our native delegate is supposed to cancel all previous requests.  So this code
-     * should only be called with data corresponding to the most recent request.
+     * {@link
+     * ContextualSearchManager#SimpleSearchTermResolverJni.get().startSearchTermResolutionRequest}
+     * method. If {@code SimpleSearchTermResolverJni.get().startSearchTermResolutionRequest} is
+     * called with a previous request sill pending our native delegate is supposed to cancel all
+     * previous requests.  So this code should only be called with data corresponding to the most
+     * recent request.
      * @param isNetworkUnavailable Indicates if the network is unavailable, in which case all other
      *        parameters should be ignored.
      * @param responseCode The HTTP response code. If the code is not OK, the query should be
@@ -121,7 +125,7 @@ public class SimpleSearchTermResolver {
 
     /** Constructs the singleton instance. */
     private SimpleSearchTermResolver() {
-        mNativePointer = nativeInit();
+        mNativePointer = SimpleSearchTermResolverJni.get().init(SimpleSearchTermResolver.this);
     }
 
     /** Makes a Search URL from the given {@link ResolvedSearchTerm}. */
@@ -131,16 +135,21 @@ public class SimpleSearchTermResolver {
 
     /**
      * This method should be called to clean up storage when an instance of this class is
-     * no longer in use.  The nativeDestroy will call the destructor on the native instance.
+     * no longer in use.  The SimpleSearchTermResolverJni.get().destroy will call the destructor on
+     * the native instance.
      */
     void destroy() {
         assert mNativePointer != 0;
-        nativeDestroy(mNativePointer);
+        SimpleSearchTermResolverJni.get().destroy(mNativePointer, SimpleSearchTermResolver.this);
         mNativePointer = 0;
     }
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeSimpleSearchTermResolver);
-    private native void nativeStartSearchTermResolutionRequest(long nativeSimpleSearchTermResolver,
-            ContextualSearchContext contextualSearchContext, WebContents baseWebContents);
+    @NativeMethods
+    interface Natives {
+        long init(SimpleSearchTermResolver caller);
+        void destroy(long nativeSimpleSearchTermResolver, SimpleSearchTermResolver caller);
+        void startSearchTermResolutionRequest(long nativeSimpleSearchTermResolver,
+                SimpleSearchTermResolver caller, ContextualSearchContext contextualSearchContext,
+                WebContents baseWebContents);
+    }
 }

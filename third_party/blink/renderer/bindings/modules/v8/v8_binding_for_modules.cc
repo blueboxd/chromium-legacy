@@ -182,6 +182,8 @@ static const size_t kMaximumDepth = 1000;
 // returned but with an 'Invalid' entry; this is used for "multi-entry"
 // indexes where an array with invalid members is permitted will later be
 // sanitized.
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -245,6 +247,10 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
       }
       std::unique_ptr<IDBKey> subkey =
           CreateIDBKeyFromValue(isolate, item, stack, exception_state);
+      if (exception_state.HadException()) {
+        exception_state.RethrowV8Exception(block.Exception());
+        return nullptr;
+      }
       if (!subkey)
         subkeys.emplace_back(IDBKey::CreateInvalid());
       else
@@ -265,6 +271,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
 // sanitized. This is used to implement both of the following spec algorithms:
 // https://w3c.github.io/IndexedDB/#convert-value-to-key
 // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-multientry-key
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -310,6 +318,8 @@ static Vector<String> ParseKeyPath(const String& key_path) {
 // to a key is representing by returning an 'Invalid' key. (An array with
 // invalid members will be returned if needed.)
 // https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     v8::Isolate* isolate,
     v8::Local<v8::Value> v8_value,
@@ -397,6 +407,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
 // paths, nullptr is returned if evaluation of any sub-path fails, otherwise
 // an array key is returned (with potentially 'Invalid' members).
 // https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
 static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -411,6 +423,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
     for (const String& path : array) {
       auto key = CreateIDBKeyFromValueAndKeyPath(isolate, value, path,
                                                  exception_state);
+      if (exception_state.HadException())
+        return nullptr;
       // Evaluation of path failed - overall failure.
       if (!key)
         return nullptr;
@@ -423,6 +437,57 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
   DCHECK_EQ(key_path.GetType(), mojom::IDBKeyPathType::String);
   return CreateIDBKeyFromValueAndKeyPath(isolate, value, key_path.GetString(),
                                          exception_state);
+}
+
+// Evaluate an index's key path against a value and return a key. This
+// handles the special case for indexes where a compound key path
+// may result in "holes", depending on the store's properties.
+// Otherwise, nullptr is returned.
+// https://w3c.github.io/IndexedDB/#evaluate-a-key-path-on-a-value
+// A V8 exception may be thrown on bad data or by script's getters; if so,
+// callers should not make further V8 calls.
+static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPaths(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    const IDBKeyPath& store_key_path,
+    const IDBKeyPath& index_key_path,
+    ExceptionState& exception_state) {
+  DCHECK(!index_key_path.IsNull());
+  v8::HandleScope handle_scope(isolate);
+  if (index_key_path.GetType() == mojom::IDBKeyPathType::Array) {
+    const Vector<String>& array = index_key_path.Array();
+    const bool uses_inline_keys =
+        store_key_path.GetType() == mojom::IDBKeyPathType::String;
+    IDBKey::KeyArray result;
+    result.ReserveInitialCapacity(array.size());
+    for (const String& path : array) {
+      auto key = CreateIDBKeyFromValueAndKeyPath(isolate, value, path,
+                                                 exception_state);
+      if (exception_state.HadException())
+        return nullptr;
+      if (!key && uses_inline_keys && store_key_path.GetString() == path) {
+        // Compound keys that include the store's inline primary key which
+        // will be generated lazily are represented as "holes".
+        key = IDBKey::CreateNone();
+      } else if (!key) {
+        // Key path evaluation failed.
+        return nullptr;
+      } else if (!key->IsValid()) {
+        // An Invalid key is returned if not valid in this case (but not the
+        // other CreateIDBKeyFromValueAndKeyPath function) because:
+        // * Invalid members are only allowed for multi-entry arrays.
+        // * Array key paths can't be multi-entry.
+        return IDBKey::CreateInvalid();
+      }
+
+      result.emplace_back(std::move(key));
+    }
+    return IDBKey::CreateArray(std::move(result));
+  }
+
+  DCHECK_EQ(index_key_path.GetType(), mojom::IDBKeyPathType::String);
+  return CreateIDBKeyFromValueAndKeyPath(
+      isolate, value, index_key_path.GetString(), exception_state);
 }
 
 // Deserialize just the value data & blobInfo from the given IDBValue.
@@ -697,6 +762,17 @@ std::unique_ptr<IDBKey> NativeValueTraits<std::unique_ptr<IDBKey>>::NativeValue(
   IDB_TRACE("createIDBKeyFromValueAndKeyPath");
   return CreateIDBKeyFromValueAndKeyPath(isolate, value, key_path,
                                          exception_state);
+}
+
+std::unique_ptr<IDBKey> NativeValueTraits<std::unique_ptr<IDBKey>>::NativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state,
+    const IDBKeyPath& store_key_path,
+    const IDBKeyPath& index_key_path) {
+  IDB_TRACE("createIDBKeyFromValueAndKeyPaths");
+  return CreateIDBKeyFromValueAndKeyPaths(isolate, value, store_key_path,
+                                          index_key_path, exception_state);
 }
 
 IDBKeyRange* NativeValueTraits<IDBKeyRange*>::NativeValue(

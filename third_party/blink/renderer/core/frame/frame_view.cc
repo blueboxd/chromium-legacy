@@ -87,9 +87,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
          LayoutUnit(kMaxChildFrameScreenRectMovement))) {
       rect_in_parent_ = new_rect_in_parent;
       if (Page* page = GetFrame().GetPage()) {
-        rect_in_parent_stable_since_ =
-            base::TimeTicks() + base::TimeDelta::FromSecondsD(
-                                    page->Animator().Clock().CurrentTime());
+        rect_in_parent_stable_since_ = page->Animator().Clock().CurrentTime();
       } else {
         rect_in_parent_stable_since_ = base::TimeTicks::Now();
       }

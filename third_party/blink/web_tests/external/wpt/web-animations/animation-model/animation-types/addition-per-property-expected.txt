@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 568 tests; 539 PASS, 29 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 568 tests; 540 PASS, 28 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -539,7 +539,7 @@ FAIL rotate with different rotation axes assert_approx_equals: expected 0.57735 
 PASS translate (type: translateList) has testAddition function
 PASS translate
 PASS translate with underlying transform
-FAIL translate with underlying percentage value assert_equals: The value should be calc(50% - 200px) at 0ms expected "calc(50% - 200px)" but got "calc(50% + -200px)"
+PASS translate with underlying percentage value
 PASS scale (type: scaleList) has testAddition function
 PASS scale with two unspecified values
 PASS scale with one unspecified value

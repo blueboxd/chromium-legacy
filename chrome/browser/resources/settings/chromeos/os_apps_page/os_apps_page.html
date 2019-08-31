@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="app_management_page/app_management_page.html">
 <link rel="import" href="app_management_page/app_permission_view.html">
+<link rel="import" href="app_management_page/uninstall_button.html">
 <link rel="import" href="../../route.html">
 <link rel="import" href="../../settings_shared_css.html">
 
@@ -29,6 +30,8 @@
       <settings-subpage
           page-title="[[app_.title]]"
           title-icon="[[iconUrlFromId_(app_)]]">
+        <app-management-uninstall-button slot="subpage-title-extra">
+        </app-management-uninstall-button>
         <app-management-app-permission-view>
         </app-management-app-permission-view>
       </settings-subpage>

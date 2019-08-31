@@ -317,12 +317,13 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       transports_info.win_native_api_authenticator_id = "some_authenticator_id";
     }
 
+    AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
+
     if (base::Contains(test_case.transport_params,
                        TransportAvailabilityParam::kHasCableExtension)) {
-      transports_info.cable_pairing_data_supplied = true;
+      model.set_cable_transport_info(true, base::nullopt);
     }
 
-    AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.StartFlow(std::move(transports_info), test_case.last_used_transport,
                     &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
@@ -493,11 +494,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterAlreadyPowered) {
     transports_info.available_transports = {test_case.transport};
     transports_info.can_power_on_ble_adapter = true;
     transports_info.is_ble_powered = true;
-    transports_info.cable_pairing_data_supplied = true;
 
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.set_cable_transport_info(true, base::nullopt);
     model.StartFlow(std::move(transports_info), base::nullopt,
                     &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_final_step, model.current_step());
@@ -521,13 +522,13 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterNeedToBeManuallyPowered) {
     transports_info.available_transports = {test_case.transport};
     transports_info.can_power_on_ble_adapter = false;
     transports_info.is_ble_powered = false;
-    transports_info.cable_pairing_data_supplied = true;
 
     testing::NiceMock<MockDialogModelObserver> mock_observer;
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.AddObserver(&mock_observer);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.set_cable_transport_info(true, base::nullopt);
     model.StartFlow(std::move(transports_info), base::nullopt,
                     &test_paired_device_list_);
 
@@ -564,11 +565,11 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     transports_info.available_transports = {test_case.transport};
     transports_info.can_power_on_ble_adapter = true;
     transports_info.is_ble_powered = false;
-    transports_info.cable_pairing_data_supplied = true;
 
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.set_cable_transport_info(true, base::nullopt);
     model.StartFlow(std::move(transports_info), base::nullopt,
                     &test_paired_device_list_);
 

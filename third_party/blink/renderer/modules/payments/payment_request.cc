@@ -5,10 +5,12 @@
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/location.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
@@ -51,6 +53,9 @@
 #include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
+#if defined(OS_ANDROID)
+#include "third_party/blink/renderer/modules/payments/skip_to_gpay_utils.h"
+#endif  // defined(OS_ANDROID)
 #include "third_party/blink/renderer/modules/payments/update_payment_details_function.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -88,6 +93,8 @@ using ::payments::mojom::blink::PaymentValidationErrors;
 using ::payments::mojom::blink::PaymentValidationErrorsPtr;
 
 const char kHasEnrolledInstrumentDebugName[] = "hasEnrolledInstrument";
+const char kGooglePayMethod[] = "https://google.com/pay";
+const char kAndroidPayMethod[] = "https://android.com/pay";
 
 }  // namespace
 
@@ -130,7 +137,7 @@ struct TypeConverter<PaymentShippingOptionPtr, blink::PaymentShippingOption*> {
 };
 
 template <>
-struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions*> {
+struct TypeConverter<PaymentOptionsPtr, const blink::PaymentOptions*> {
   static PaymentOptionsPtr Convert(const blink::PaymentOptions* input) {
     PaymentOptionsPtr output = payments::mojom::blink::PaymentOptions::New();
     output->request_payer_name = input->requestPayerName();
@@ -407,8 +414,8 @@ void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
   // Serialize payment method specific data to be sent to the payment apps. The
   // payment apps are responsible for validating and processing their method
   // data asynchronously. Do not throw exceptions here.
-  if (supported_method == "https://android.com/pay" ||
-      supported_method == "https://google.com/pay") {
+  if (supported_method == kGooglePayMethod ||
+      supported_method == kAndroidPayMethod) {
     SetAndroidPayMethodData(input, output, exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
@@ -573,6 +580,8 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate* input,
 
 void ValidateAndConvertPaymentMethodData(
     const HeapVector<Member<PaymentMethodData>>& input,
+    const PaymentOptions* options,
+    bool& skip_to_gpay_ready,
     Vector<payments::mojom::blink::PaymentMethodDataPtr>& output,
     HashSet<String>& method_names,
     ExecutionContext& execution_context,
@@ -588,6 +597,12 @@ void ValidateAndConvertPaymentMethodData(
     return;
   }
 
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/984694): Remove this special hack for GPay after general
+  // delegation for shipping and contact information is available.
+  bool skip_to_gpay_eligible = SkipToGPayUtils::IsEligible(input);
+#endif
+
   for (const PaymentMethodData* payment_method_data : input) {
     if (!PaymentsValidators::IsValidMethodFormat(
             payment_method_data->supportedMethod())) {
@@ -598,7 +613,6 @@ void ValidateAndConvertPaymentMethodData(
     method_names.insert(payment_method_data->supportedMethod());
 
     output.push_back(payments::mojom::blink::PaymentMethodData::New());
-
     output.back()->supported_method = payment_method_data->supportedMethod();
 
     if (payment_method_data->hasData() &&
@@ -607,6 +621,17 @@ void ValidateAndConvertPaymentMethodData(
           execution_context.GetIsolate(),
           payment_method_data->supportedMethod(), payment_method_data->data(),
           output.back(), exception_state);
+
+      if (exception_state.HadException())
+        continue;
+
+#if defined(OS_ANDROID)
+      if (skip_to_gpay_eligible &&
+          payment_method_data->supportedMethod() == kGooglePayMethod &&
+          SkipToGPayUtils::PatchPaymentMethodData(*options, output.back())) {
+        skip_to_gpay_ready = true;
+      }
+#endif  // defined(OS_ANDROID)
     } else {
       output.back()->stringified_data = "";
     }
@@ -1084,10 +1109,16 @@ PaymentRequest::PaymentRequest(
   validated_details->id = id_ =
       details->hasId() ? details->id() : WTF::CreateCanonicalUUIDString();
 
+  // This flag is set to true by ValidateAndConvertPaymentMethodData() if this
+  // request is eligible for the Skip-to-GPay experimental flow and the GPay
+  // payment method data has been patched to delegate shipping and contact
+  // information collection to the GPay payment app.
+  bool skip_to_gpay_ready = false;
+
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
-  ValidateAndConvertPaymentMethodData(method_data, validated_method_data,
-                                      method_names_, *GetExecutionContext(),
-                                      exception_state);
+  ValidateAndConvertPaymentMethodData(method_data, options_, skip_to_gpay_ready,
+                                      validated_method_data, method_names_,
+                                      *GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -1097,10 +1128,22 @@ PaymentRequest::PaymentRequest(
   if (exception_state.HadException())
     return;
 
-  if (options_->requestShipping())
+  if (options_->requestShipping()) {
     shipping_type_ = options_->shippingType();
-  else
+
+    // Skip-to-GPay flow does not support changing shipping address or shipping
+    // options, so disable it if the merchant provides more than one shipping
+    // option for the user to choose from or if no payment option is selected up
+    // front, as this may indicate an intent to change it based on shipping
+    // address change.
+    if (!validated_details->shipping_options ||
+        !(validated_details->shipping_options->size() == 1 &&
+          validated_details->shipping_options->front()->selected)) {
+      skip_to_gpay_ready = false;
+    }
+  } else {
     validated_details->shipping_options = base::nullopt;
+  }
 
   DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||
          shipping_type_ == "delivery" || shipping_type_ == "pickup");
@@ -1116,10 +1159,18 @@ PaymentRequest::PaymentRequest(
   UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);
   mojo::PendingRemote<payments::mojom::blink::PaymentRequestClient> client;
   client_receiver_.Bind(client.InitWithNewPipeAndPassReceiver(), task_runner);
-  payment_provider_->Init(std::move(client), std::move(validated_method_data),
-                          std::move(validated_details),
-                          payments::mojom::blink::PaymentOptions::From(
-                              const_cast<PaymentOptions*>(options_.Get())));
+#if defined(OS_ANDROID)
+  payment_provider_->Init(
+      std::move(client), std::move(validated_method_data),
+      std::move(validated_details),
+      payments::mojom::blink::PaymentOptions::From(options_.Get()),
+      skip_to_gpay_ready);
+#else
+  payment_provider_->Init(
+      std::move(client), std::move(validated_method_data),
+      std::move(validated_details),
+      payments::mojom::blink::PaymentOptions::From(options_.Get()));
+#endif
 }
 
 void PaymentRequest::ContextDestroyed(ExecutionContext*) {

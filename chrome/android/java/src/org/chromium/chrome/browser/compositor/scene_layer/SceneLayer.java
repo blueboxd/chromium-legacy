@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Java representation of a scene layer.
@@ -28,7 +29,7 @@ public class SceneLayer {
      */
     protected void initializeNative() {
         if (mNativePtr == 0) {
-            mNativePtr = nativeInit();
+            mNativePtr = SceneLayerJni.get().init(SceneLayer.this);
         }
         assert mNativePtr != 0;
     }
@@ -38,7 +39,7 @@ public class SceneLayer {
      */
     public void destroy() {
         assert mNativePtr != 0;
-        nativeDestroy(mNativePtr);
+        SceneLayerJni.get().destroy(mNativePtr, SceneLayer.this);
         assert mNativePtr == 0;
     }
 
@@ -53,6 +54,9 @@ public class SceneLayer {
         return mNativePtr;
     }
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeSceneLayer);
+    @NativeMethods
+    interface Natives {
+        long init(SceneLayer caller);
+        void destroy(long nativeSceneLayer, SceneLayer caller);
+    }
 }

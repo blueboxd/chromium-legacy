@@ -564,7 +564,7 @@ gfx::RectF Layer::EffectiveClipRect() {
   return clip_rect_f;
 }
 
-void Layer::SetMaskLayer(PictureLayer* mask_layer) {
+void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.mask_layer.get() == mask_layer)
     return;

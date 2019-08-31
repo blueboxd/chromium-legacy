@@ -19,6 +19,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,6 +45,11 @@ constexpr int kSuggestionChipFullscreenY = 96;
 
 // The ratio of allowed bounds for apps grid view to its maximum margin.
 constexpr int kAppsGridMarginRatio = 16;
+constexpr int kAppsGridMarginRatioForSmallWidth = 12;
+
+// The width threshold under which kAppsGridMarginRatioForSmallWidth should be
+// used to calculate apps grid horizontal margins.
+constexpr int kAppsGridMarginSmallWidthThreshold = 600;
 
 // The minimum margin of apps grid view.
 constexpr int kAppsGridMinimumMargin = 8;
@@ -62,8 +68,15 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 gfx::Size AppsContainerView::GetNonAppsGridSize() {
   gfx::Size size;
 
+  // If ScalableAppList feature is enabled, there is no extra horizontal margin
+  // between grid view and the page switcher.
+  const int min_grid_horizontal_margin =
+      app_list_features::IsScalableAppListEnabled()
+          ? 0
+          : kAppsGridMinimumMargin * 2;
+
   // Enlarge with the apps grid view insets and margin.
-  size.Enlarge(kAppsGridMinimumMargin * 2,
+  size.Enlarge(min_grid_horizontal_margin,
                AppsGridView::kFadeoutZoneHeight * 2);
 
   // Enlarge with suggestion chips.
@@ -269,9 +282,15 @@ void AppsContainerView::Layout() {
       rect.set_y(chip_container_rect.bottom());
       rect.set_height(rect.height() - kSuggestionChipFullscreenY -
                       kSuggestionChipContainerHeight);
+
       const int page_switcher_width =
           page_switcher_->GetPreferredSize().width();
-      rect.Inset(kAppsGridPageSwitcherSpacing + page_switcher_width, 0);
+
+      // With scalable app list feature enabled, the margins are calculated from
+      // the edge of the apps container, instead of container bounds inset by
+      // page switcher area.
+      if (!app_list_features::IsScalableAppListEnabled())
+        rect.Inset(kAppsGridPageSwitcherSpacing + page_switcher_width, 0);
 
       // Layout apps grid.
       gfx::Rect grid_rect = rect;
@@ -287,8 +306,13 @@ void AppsContainerView::Layout() {
       apps_grid_view_->SetLayout(cols, rows);
 
       // Calculate the maximum margin of apps grid.
+      const int horizontal_margin_ratio =
+          (app_list_features::IsScalableAppListEnabled() &&
+           rect.width() < kAppsGridMarginSmallWidthThreshold)
+              ? kAppsGridMarginRatioForSmallWidth
+              : kAppsGridMarginRatio;
       const int max_horizontal_margin =
-          grid_rect.width() / kAppsGridMarginRatio;
+          grid_rect.width() / horizontal_margin_ratio;
       const int max_vertical_margin = grid_rect.height() / kAppsGridMarginRatio;
 
       // Calculate the minimum size of apps grid.
@@ -299,22 +323,35 @@ void AppsContainerView::Layout() {
       // keep maximum margin if apps grid can maintain at least
       // |min_grid_size|; Otherwise, always keep at least
       // |kAppsGridMinimumMargin|.
-      const int horizontal_margin =
-          max_horizontal_margin * 2 <= grid_rect.width() - min_grid_size.width()
-              ? max_horizontal_margin
-              : std::max(kAppsGridMinimumMargin,
-                         (grid_rect.width() - min_grid_size.width()) / 2);
-      const int vertical_margin =
-          max_vertical_margin * 2 <= grid_rect.height() - min_grid_size.height()
+      int horizontal_margin = max_horizontal_margin;
+      if (app_list_features::IsScalableAppListEnabled()) {
+        // For scalable app list margins, ensure the max margin allow space for
+        // the page switcher (note that this is larger than
+        // |kAppsGridMinimumMargin|).
+        horizontal_margin =
+            std::max(max_horizontal_margin,
+                     kAppsGridPageSwitcherSpacing + page_switcher_width);
+      } else if (max_horizontal_margin * 2 >
+                 grid_rect.width() - min_grid_size.width()) {
+        horizontal_margin =
+            std::max(kAppsGridMinimumMargin,
+                     (grid_rect.width() - min_grid_size.width()) / 2);
+      }
+
+      int vertical_margin =
+          (max_vertical_margin * 2 <=
+           grid_rect.height() - min_grid_size.height())
               ? max_vertical_margin
               : std::max(kAppsGridMinimumMargin,
                          (grid_rect.height() - min_grid_size.height()) / 2);
+
       grid_rect.Inset(
           horizontal_margin,
           std::max(apps_grid_view_->GetInsets().top(), vertical_margin));
       grid_rect.ClampToCenteredSize(
           apps_grid_view_->GetMaximumTileGridSize(cols, rows));
       grid_rect.Inset(-apps_grid_view_->GetInsets());
+
       apps_grid_view_->SetBoundsRect(grid_rect);
 
       // Record the distance of y position between suggestion chip container

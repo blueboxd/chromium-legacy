@@ -80,6 +80,36 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
     OnFinished on_finished;
   };
 
+  // Actions that originated in parent access dialog. These values are persisted
+  // to metrics. Entries should not be renumbered and numeric values should
+  // never be reused.
+  enum class UMAAction {
+    kValidationSuccess = 0,
+    kValidationError = 1,
+    kCanceledByUser = 2,
+    kGetHelp = 3,
+    kMaxValue = kGetHelp,
+  };
+
+  // Context in which parent access code was used. These values are persisted to
+  // metrics. Entries should not be reordered and numeric values should never be
+  // reused.
+  enum class UMAUsage {
+    kTimeLimits = 0,
+    kTimeChangeLoginScreen = 1,
+    kTimeChangeInSession = 2,
+    kTimezoneChange = 3,
+    kMaxValue = kTimezoneChange,
+  };
+
+  // Histogram to log actions that originated in parent access dialog.
+  static constexpr char kUMAParentAccessCodeAction[] =
+      "Supervision.ParentAccessCode.Action";
+
+  // Histogram to log context in which parent access code was used.
+  static constexpr char kUMAParentAccessCodeUsage[] =
+      "Supervision.ParentAccessCode.Usage";
+
   // Creates parent access view that will validate the parent access code for a
   // specific child, when |account_id| is set, or to any child signed in the
   // device, when it is empty. |callbacks| will be called when user performs

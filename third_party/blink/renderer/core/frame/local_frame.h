@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
@@ -414,7 +415,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
-  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
+  const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
+      const;
 
   // Overlays a color on top of this LocalFrameView if it is associated with
   // the main frame. Should not have multiple consumers.
@@ -567,7 +569,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceRegistry* const interface_registry_;
   // This is declared mutable so that the service endpoint can be cached by
   // const methods.
-  mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
+  mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
 
   IntRect remote_viewport_intersection_;
   FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;

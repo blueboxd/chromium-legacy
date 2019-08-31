@@ -72,7 +72,8 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
     PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     optimization_guide::TopHostProvider* top_host_provider,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::NetworkQualityTracker* network_quality_tracker)
     : optimization_guide_service_(optimization_guide_service),
       ui_task_runner_(ui_task_runner),
       background_task_runner_(background_task_runner),
@@ -84,8 +85,10 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
       top_host_provider_(top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),
       pref_service_(pref_service),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(url_loader_factory),
+      network_quality_tracker_(network_quality_tracker) {
   DCHECK(optimization_guide_service_);
+  network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   hint_cache_->Initialize(
       optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
       base::BindOnce(&PreviewsOptimizationGuideImpl::OnHintCacheInitialized,
@@ -95,6 +98,7 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
 PreviewsOptimizationGuideImpl::~PreviewsOptimizationGuideImpl() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   optimization_guide_service_->RemoveObserver(this);
+  network_quality_tracker_->RemoveEffectiveConnectionTypeObserver(this);
 }
 
 bool PreviewsOptimizationGuideImpl::IsReady() const {
@@ -104,20 +108,20 @@ bool PreviewsOptimizationGuideImpl::IsReady() const {
 bool PreviewsOptimizationGuideImpl::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
-    PreviewsType type,
-    net::EffectiveConnectionType* out_ect_threshold) {
+    PreviewsType type) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (!hints_) {
     return false;
   }
 
-  if (out_ect_threshold)
-    *out_ect_threshold = params::GetECTThresholdForPreview(type);
-
   // Check if LITE_PAGE_REDIRECT is blacklisted or not.
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+    if (current_effective_connection_type_ >
+        params::GetECTThresholdForPreview(type)) {
+      return false;
+    }
+
+    if (params::LitePageRedirectPreviewIgnoresOptimizationGuideFilter()) {
       return true;
     }
 
@@ -127,10 +131,17 @@ bool PreviewsOptimizationGuideImpl::CanApplyPreview(
 
   // Check other previews.
   int inflation_percent = 0;
+  net::EffectiveConnectionType out_ect_threshold =
+      params::GetECTThresholdForPreview(type);
   std::string serialized_hint_version_string;
   if (!hints_->IsWhitelisted(navigation_handle->GetURL(), type,
-                             &inflation_percent, out_ect_threshold,
+                             &inflation_percent, &out_ect_threshold,
                              &serialized_hint_version_string)) {
+    return false;
+  }
+  // Also check the hint's ECT threshold against the current ECT if the type
+  // can be applied.
+  if (current_effective_connection_type_ > out_ect_threshold) {
     return false;
   }
 
@@ -436,6 +447,11 @@ void PreviewsOptimizationGuideImpl::ListenForNextUpdateForTesting(
   DCHECK(next_update_closure_.is_null())
       << "Only one update closure is supported at a time";
   next_update_closure_ = std::move(next_update_closure);
+}
+
+void PreviewsOptimizationGuideImpl::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType effective_connection_type) {
+  current_effective_connection_type_ = effective_connection_type;
 }
 
 }  // namespace previews

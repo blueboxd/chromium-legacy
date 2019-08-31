@@ -268,9 +268,12 @@ void ImeListView::AppendImeListAndProperties(
   DCHECK(ime_map_.empty());
   for (size_t i = 0; i < list.size(); i++) {
     const bool selected = current_ime_id == list[i].id;
-    views::View* ime_view =
-        new ImeListItemView(this, list[i].short_name, list[i].name, selected,
-                            gfx::kGoogleGreen700, use_unified_theme_);
+    views::View* ime_view = new ImeListItemView(
+        this, list[i].short_name, list[i].name, selected,
+        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+            AshColorProvider::ContentLayerType::kProminentIconButton,
+            kProminentIconButtonColor),
+        use_unified_theme_);
     scroll_content()->AddChildView(ime_view);
     ime_map_[ime_view] = list[i].id;
 

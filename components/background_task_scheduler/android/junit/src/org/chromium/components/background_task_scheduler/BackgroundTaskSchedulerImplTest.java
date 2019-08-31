@@ -45,17 +45,20 @@ public class BackgroundTaskSchedulerImplTest {
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
     @Mock
+    private BackgroundTaskSchedulerDelegate mAlarmManagerDelegate;
+    @Mock
     private BackgroundTaskSchedulerUma mBackgroundTaskSchedulerUma;
     private ShadowGcmNetworkManager mGcmNetworkManager;
 
     private TaskInfo mTask;
     private TaskInfo mExpirationTask;
+    private TaskInfo mExactTask;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(
-                new BackgroundTaskSchedulerImpl(mDelegate));
+                new BackgroundTaskSchedulerImpl(mDelegate, mAlarmManagerDelegate));
         BackgroundTaskSchedulerUma.setInstanceForTesting(mBackgroundTaskSchedulerUma);
         TestBackgroundTask.reset();
 
@@ -74,6 +77,9 @@ public class BackgroundTaskSchedulerImplTest {
                         .setExpiresAfterWindowEndTime(true)
                         .build();
         mExpirationTask = TaskInfo.createTask(TaskIds.TEST, expirationTimingInfo).build();
+        TaskInfo.TimingInfo exactTimingInfo =
+                TaskInfo.ExactInfo.create().setTriggerAtMs(1415926535000L).build();
+        mExactTask = TaskInfo.createTask(TaskIds.TEST, exactTimingInfo).build();
 
         BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
     }
@@ -88,6 +94,8 @@ public class BackgroundTaskSchedulerImplTest {
                 BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTask.getTaskId())
                         .getClass());
         verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(mTask));
+        verify(mAlarmManagerDelegate, times(0))
+                .schedule(eq(RuntimeEnvironment.application), eq(mExactTask));
         verify(mBackgroundTaskSchedulerUma, times(1))
                 .reportTaskScheduled(eq(TaskIds.TEST), eq(true));
         verify(mBackgroundTaskSchedulerUma, times(1))
@@ -103,6 +111,21 @@ public class BackgroundTaskSchedulerImplTest {
                 RuntimeEnvironment.application, mExpirationTask);
         verify(mBackgroundTaskSchedulerUma, times(1))
                 .reportTaskCreatedAndExpirationState(eq(TaskIds.TEST), eq(true));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testScheduleExactTaskSuccessful() {
+        doReturn(true)
+                .when(mAlarmManagerDelegate)
+                .schedule(eq(RuntimeEnvironment.application), eq(mExactTask));
+        BackgroundTaskSchedulerFactory.getScheduler().schedule(
+                RuntimeEnvironment.application, mExactTask);
+        verify(mAlarmManagerDelegate, times(1))
+                .schedule(eq(RuntimeEnvironment.application), eq(mExactTask));
+        verify(mDelegate, times(0)).schedule(eq(RuntimeEnvironment.application), eq(mExactTask));
+        verify(mBackgroundTaskSchedulerUma, times(1))
+                .reportTaskScheduled(eq(TaskIds.TEST), eq(true));
     }
 
     @Test
@@ -129,6 +152,23 @@ public class BackgroundTaskSchedulerImplTest {
                 BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(mTask.getTaskId())
                         .getClass());
         verify(mDelegate, times(1)).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
+        verify(mAlarmManagerDelegate, times(0))
+                .cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testCancelExactTask() {
+        BackgroundTaskSchedulerPrefs.addScheduledTask(mExactTask);
+
+        doNothing()
+                .when(mAlarmManagerDelegate)
+                .cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
+        BackgroundTaskSchedulerFactory.getScheduler().cancel(
+                RuntimeEnvironment.application, TaskIds.TEST);
+        verify(mDelegate, times(0)).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
+        verify(mAlarmManagerDelegate, times(1))
+                .cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
     }
 
     @Test
@@ -142,6 +182,10 @@ public class BackgroundTaskSchedulerImplTest {
 
         assertEquals(1, TestBackgroundTask.getRescheduleCalls());
         assertTrue(BackgroundTaskSchedulerPrefs.getScheduledTaskIds().isEmpty());
+
+        verify(mDelegate, times(0)).cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
+        verify(mAlarmManagerDelegate, times(0))
+                .cancel(eq(RuntimeEnvironment.application), eq(TaskIds.TEST));
     }
 
     @Test

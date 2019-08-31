@@ -9,7 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -25,7 +26,8 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
   explicit MockMojoIndexedDBCallbacks();
   ~MockMojoIndexedDBCallbacks() override;
 
-  blink::mojom::IDBCallbacksAssociatedPtrInfo CreateInterfacePtrAndBind();
+  mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+  CreateInterfacePtrAndBind();
 
   MOCK_METHOD2(Error, void(int32_t code, const base::string16& message));
 
@@ -70,7 +72,7 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
   MOCK_METHOD0(Success, void());
 
  private:
-  mojo::AssociatedBinding<blink::mojom::IDBCallbacks> binding_;
+  mojo::AssociatedReceiver<blink::mojom::IDBCallbacks> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockMojoIndexedDBCallbacks);
 };

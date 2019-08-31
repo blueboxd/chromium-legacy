@@ -19,6 +19,10 @@ constexpr size_t kCableQRSecretSize = 16;
 
 using CableEidArray = std::array<uint8_t, kCableEphemeralIdSize>;
 using CableSessionPreKeyArray = std::array<uint8_t, kCableSessionPreKeySize>;
+// QRGeneratorKey is a random, AES-256 key that is used by
+// |CableDiscoveryData::DeriveQRKeyMaterial| to encrypt a coarse timestamp and
+// generate QR secrets, EIDs, etc.
+using QRGeneratorKey = std::array<uint8_t, 32>;
 
 // Encapsulates information required to discover Cable device per single
 // credential. When multiple credentials are enrolled to a single account
@@ -38,6 +42,9 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
 
   CableDiscoveryData& operator=(const CableDiscoveryData& other);
   bool operator==(const CableDiscoveryData& other) const;
+
+  // NewQRKey returns a random key for QR generation.
+  static QRGeneratorKey NewQRKey();
 
   // CurrentTimeTick returns the current time as used by QR generation. The size
   // of these ticks is a purely local matter for Chromium.

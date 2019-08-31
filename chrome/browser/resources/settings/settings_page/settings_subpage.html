@@ -45,6 +45,13 @@
         width: var(--cr-icon-ripple-size);
       }
 
+      #title-icon {
+        height: 36px;
+        margin-inline-end: 12px;
+        margin-inline-start: 2px;
+        width: 36px;
+      }
+
       cr-icon-button {
         /* Centers the ripple on the icon with appropriate margin on right. */
         margin-inline-end: 10px;
@@ -67,6 +74,9 @@
     <div class="settings-box first" id="headerLine">
       <cr-icon-button class="icon-arrow-back" id="closeButton"
           on-click="onTapBack_" aria-label="$i18n{back}"></cr-icon-button>
+      <template is="dom-if" if="[[titleIcon]]">
+        <img id="title-icon" src="[[titleIcon]]">
+      </template>
       <h1 class="cr-title-text">[[pageTitle]]</h1>
       <slot name="subpage-title-extra"></slot>
       <template is="dom-if" if="[[learnMoreUrl]]">

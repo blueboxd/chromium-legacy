@@ -15,7 +15,7 @@
 
 // Resource usage thresholds for the Heavy Ad Intervention feature. These
 // numbers are platform specific and are intended to target 1 in 1000 ad iframes
-// on each platform.
+// on each platform, for network and CPU use respectively.
 namespace heavy_ad_thresholds {
 
 // Maximum number of network bytes allowed to be loaded by a frame. These
@@ -24,11 +24,14 @@ namespace heavy_ad_thresholds {
 // desktop.
 const int kMaxNetworkBytes = 4.0 * 1024 * 1024;
 
-// Maximum number of milliseconds of CPU use allowed to be used by a frame.
-// These numbers reflect the 99.9th percentile of the
-// PageLoad.Clients.Ads.Cpu.AdFrames.PerFrame.TotalUsage.Unactivated histogram
-// on mobile and desktop.
+// CPU thresholds are selected from AdFrameLoad UKM, and are intended to target
+// 1 in 1000 ad iframes combined, with each threshold responsible for roughly
+// half of those intervention. Maximum number of milliseconds of CPU use allowed
+// to be used by a frame.
 const int kMaxCpuTime = 60 * 1000;
+
+// Maximum percentage of CPU utilization over a 30 second window allowed.
+const int kMaxPeakWindowedPercent = 50;
 
 }  // namespace heavy_ad_thresholds
 
@@ -59,8 +62,9 @@ class FrameData {
   enum class HeavyAdStatus {
     kNone = 0,
     kNetwork = 1,
-    kCpu = 2,
-    kMaxValue = kCpu,
+    kTotalCpu = 2,
+    kPeakCpu = 3,
+    kMaxValue = kPeakCpu,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and

@@ -89,6 +89,8 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   FrameSequenceTracker* GetTrackerForTesting(FrameSequenceTrackerType type);
 
  private:
+  friend class FrameSequenceTrackerTest;
+
   // The callsite can use the type to manipulate the tracker.
   base::flat_map<FrameSequenceTrackerType,
                  std::unique_ptr<FrameSequenceTracker>>
@@ -160,6 +162,7 @@ class CC_EXPORT FrameSequenceTracker {
 
  private:
   friend class FrameSequenceTrackerCollection;
+  friend class FrameSequenceTrackerTest;
 
   explicit FrameSequenceTracker(FrameSequenceTrackerType type);
 

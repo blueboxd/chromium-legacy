@@ -6,27 +6,22 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_ANIMATION_STATE_H_
 
 #include <vector>
+#include "chrome/browser/ui/tabs/tab_types.h"
 
 // Contains the data necessary to determine the bounds of a tab even while
 // it's in the middle of animating between states.  Immutable (except for
 // replacement via assignment).
 class TabAnimationState {
  public:
-  enum class TabOpenness { kOpen, kClosed };
-
-  enum class TabPinnedness { kPinned, kUnpinned };
-
-  enum class TabActiveness { kActive, kInactive };
-
   // Returns the TabAnimationState that expresses the provided
   // ideal tab state. These correspond to the endpoints of animations.
   // |open| controls whether the returned TabAnimationState is fully open or
   // closed. |pinned| and |active| are analogous. |tab_index_offset| is the
   // distance, in tab indices, away from its current model position the tab
   // should be drawn at. It may be negative.
-  static TabAnimationState ForIdealTabState(TabOpenness open,
-                                            TabPinnedness pinned,
-                                            TabActiveness active,
+  static TabAnimationState ForIdealTabState(TabOpen open,
+                                            TabPinned pinned,
+                                            TabActive active,
                                             int tab_index_offset);
 
   // Interpolates from |origin| to |target| by |value|.
@@ -40,9 +35,9 @@ class TabAnimationState {
   float pinnedness() const { return pinnedness_; }
   float activeness() const { return activeness_; }
 
-  TabAnimationState WithOpenness(TabOpenness open) const;
-  TabAnimationState WithPinnedness(TabPinnedness pinned) const;
-  TabAnimationState WithActiveness(TabActiveness active) const;
+  TabAnimationState WithOpen(TabOpen open) const;
+  TabAnimationState WithPinned(TabPinned pinned) const;
+  TabAnimationState WithActive(TabActive active) const;
 
   int GetLeadingEdgeOffset(std::vector<int> tab_widths, int my_index) const;
 

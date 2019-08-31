@@ -1438,6 +1438,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_GETARCAPPWINDOWINFO = 1375,
   AUTOTESTPRIVATE_GETALLINSTALLEDAPPS = 1376,
   AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW = 1377,
+  AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS = 1378,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

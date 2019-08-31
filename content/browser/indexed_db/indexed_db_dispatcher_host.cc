@@ -139,33 +139,35 @@ void IndexedDBDispatcherHost::RenderProcessExited(
 }
 
 void IndexedDBDispatcherHost::GetDatabaseInfo(
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+        pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
-                             std::move(callbacks_info), IDBTaskRunner()));
+                             std::move(pending_callbacks), IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->GetDatabaseInfo(
       std::move(callbacks), context.origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
+        pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
-                             std::move(callbacks_info), IDBTaskRunner()));
+                             std::move(pending_callbacks), IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->GetDatabaseNames(
       std::move(callbacks), context.origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::Open(
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks> pending_callbacks,
     mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
         database_callbacks_remote,
     const base::string16& name,
@@ -178,7 +180,7 @@ void IndexedDBDispatcherHost::Open(
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
-                             std::move(callbacks_info), IDBTaskRunner()));
+                             std::move(pending_callbacks), IDBTaskRunner()));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
       new IndexedDBDatabaseCallbacks(indexed_db_context_,
                                      std::move(database_callbacks_remote),
@@ -199,7 +201,7 @@ void IndexedDBDispatcherHost::Open(
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
+    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks> pending_callbacks,
     const base::string16& name,
     bool force_close) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -207,7 +209,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
   const auto& context = bindings_.dispatch_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
-                             std::move(callbacks_info), IDBTaskRunner()));
+                             std::move(pending_callbacks), IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   indexed_db_context_->GetIDBFactory()->DeleteDatabase(
       name, std::move(callbacks), context.origin, indexed_db_path, force_close);

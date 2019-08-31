@@ -25,6 +25,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/http/http_stream_factory.h"
+#include "net/quic/platform/impl/quic_flags_impl.h"
 #include "net/quic/quic_utils_chromium.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -438,6 +439,19 @@ base::flat_set<std::string> GetQuicHostAllowlist(
   return base::flat_set<std::string>(std::move(host_vector));
 }
 
+void SetQuicFlags(const VariationParameters& quic_trial_params) {
+  std::string flags_list =
+      GetVariationParam(quic_trial_params, "set_quic_flags");
+  for (const auto& flag : base::SplitString(
+           flags_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::vector<std::string> tokens = base::SplitString(
+        flag, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (tokens.size() != 2)
+      continue;
+    SetQuicFlagByName(tokens[0], tokens[1]);
+  }
+}
+
 size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   unsigned value;
   if (base::StringToUint(
@@ -579,6 +593,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     params->quic_params.allow_server_migration =
         ShouldQuicAllowServerMigration(quic_trial_params);
     params->quic_host_allowlist = GetQuicHostAllowlist(quic_trial_params);
+
+    SetQuicFlags(quic_trial_params);
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(quic_trial_params);

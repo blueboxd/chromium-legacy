@@ -218,7 +218,8 @@ void PreviewsService::Initialize(
         std::make_unique<previews::PreviewsOptimizationGuideImpl>(
             optimization_guide_service, ui_task_runner, background_task_runner,
             profile_path, profile->GetPrefs(), database_provider,
-            top_host_provider_.get(), optimization_guide_url_loader_factory_);
+            top_host_provider_.get(), optimization_guide_url_loader_factory_,
+            g_browser_process->network_quality_tracker());
   }
 
   previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(

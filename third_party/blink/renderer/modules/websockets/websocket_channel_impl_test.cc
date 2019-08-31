@@ -1354,9 +1354,9 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, FailDuringThrottle) {
   {
     InSequence s;
     EXPECT_CALL(*raw_handshake_throttle_, ThrottleHandshake(_, _));
-    EXPECT_CALL(*raw_handshake_throttle_, Destructor());
     EXPECT_CALL(*ChannelClient(), DidError());
     EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+    EXPECT_CALL(*raw_handshake_throttle_, Destructor());
     EXPECT_CALL(checkpoint, Call(1));
   }
 
@@ -1375,9 +1375,9 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
   {
     InSequence s;
     EXPECT_CALL(*raw_handshake_throttle_, ThrottleHandshake(_, _));
-    EXPECT_CALL(*raw_handshake_throttle_, Destructor());
     EXPECT_CALL(*ChannelClient(), DidError());
     EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+    EXPECT_CALL(*raw_handshake_throttle_, Destructor());
     EXPECT_CALL(checkpoint, Call(1));
   }
 
@@ -1485,9 +1485,9 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, ConnectFailBeforeThrottle) {
   {
     InSequence s;
     EXPECT_CALL(*raw_handshake_throttle_, ThrottleHandshake(_, _));
-    EXPECT_CALL(*raw_handshake_throttle_, Destructor());
     EXPECT_CALL(*ChannelClient(), DidError());
     EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+    EXPECT_CALL(*raw_handshake_throttle_, Destructor());
   }
 
   ASSERT_TRUE(Channel()->Connect(url(), ""));

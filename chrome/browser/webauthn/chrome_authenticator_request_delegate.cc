@@ -123,19 +123,11 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 }
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
-    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   if (!IsWebAuthnUIEnabled())
     return false;
   if (!weak_dialog_model_)
     return false;
-
-#if defined(OS_WIN)
-  // Errors from the Windows API should not result in a Chrome error dialog.
-  if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
-    return false;
-  }
-#endif  // defined(OS_WIN)
 
   switch (reason) {
     case InterestingFailureReason::kTimeout:
@@ -237,6 +229,19 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 }
 
 bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
+  return true;
+}
+
+bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
+    const url::Origin& origin) {
+  return true;
+}
+
+bool ChromeAuthenticatorRequestDelegate::SetCableTransportInfo(
+    bool cable_extension_provided,
+    base::Optional<device::QRGeneratorKey> qr_generator_key) {
+  weak_dialog_model_->set_cable_transport_info(cable_extension_provided,
+                                               std::move(qr_generator_key));
   return true;
 }
 

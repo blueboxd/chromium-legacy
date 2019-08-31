@@ -15,10 +15,11 @@
 #include "ui/views/controls/button/button_controller.h"
 
 MediaToolbarButtonView::MediaToolbarButtonView(
+    const base::UnguessableToken& source_id,
     service_manager::Connector* connector)
     : ToolbarButton(this),
       connector_(connector),
-      controller_(connector_, this) {
+      controller_(source_id, connector_, this) {
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   SetTooltipText(

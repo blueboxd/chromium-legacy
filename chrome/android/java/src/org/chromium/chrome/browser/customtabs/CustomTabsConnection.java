@@ -22,6 +22,12 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
+import androidx.browser.customtabs.CustomTabsCallback;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.PostMessageServiceConnection;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,6 +43,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
@@ -83,12 +90,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import androidx.browser.customtabs.CustomTabsCallback;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.PostMessageServiceConnection;
 
 /**
  * Implementation of the ICustomTabsService interface.
@@ -911,8 +912,8 @@ public class CustomTabsConnection {
 
         String urlString = url.toString();
         String referrerString = referrer.toString();
-        nativeCreateAndStartDetachedResourceRequest(Profile.getLastUsedProfile(), session,
-                urlString, referrerString, policy,
+        CustomTabsConnectionJni.get().createAndStartDetachedResourceRequest(
+                Profile.getLastUsedProfile(), session, urlString, referrerString, policy,
                 DetachedResourceRequestMotivation.PARALLEL_REQUEST);
         if (mLogRequests) {
             Log.w(TAG, "startParallelRequest(%s, %s, %d)", urlString, referrerString, policy);
@@ -951,8 +952,8 @@ public class CustomTabsConnection {
             if (urlString.isEmpty() || !isValid(url)) continue;
 
             // Session is null because we don't need completion notifications.
-            nativeCreateAndStartDetachedResourceRequest(Profile.getLastUsedProfile(), null,
-                    urlString, referrerString, policy,
+            CustomTabsConnectionJni.get().createAndStartDetachedResourceRequest(
+                    Profile.getLastUsedProfile(), null, urlString, referrerString, policy,
                     DetachedResourceRequestMotivation.RESOURCE_PREFETCH);
             ++requestsSent;
 
@@ -1154,7 +1155,6 @@ public class CustomTabsConnection {
      */
     boolean notifySinglePageLoadMetric(CustomTabsSessionToken session, String metricName,
             long navigationStartTick, long offsetMs) {
-        if (!mClientManager.shouldGetPageLoadMetrics(session)) return false;
         if (!mNativeTickOffsetUsComputed) {
             // Compute offset from time ticks to uptimeMillis.
             mNativeTickOffsetUsComputed = true;
@@ -1185,6 +1185,7 @@ public class CustomTabsConnection {
      *     should be a key specifying the metric name and the metric value as the value.
      */
     boolean notifyPageLoadMetrics(CustomTabsSessionToken session, Bundle args) {
+        if (!mClientManager.shouldGetPageLoadMetrics(session)) return false;
         if (safeExtraCallback(session, PAGE_LOAD_METRICS_CALLBACK, args)) {
             logPageLoadMetricsCallback(args);
             return true;
@@ -1496,10 +1497,6 @@ public class CustomTabsConnection {
         recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_NOT_MATCHED);
     }
 
-    private static native void nativeCreateAndStartDetachedResourceRequest(Profile profile,
-            CustomTabsSessionToken session, String url, String origin, int referrerPolicy,
-            @DetachedResourceRequestMotivation int motivation);
-
     public ModuleLoader getModuleLoader(ComponentName componentName, @Nullable String assetName) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
             assetName = null;
@@ -1556,5 +1553,12 @@ public class CustomTabsConnection {
             Bundle extras) {
         return ChromeApplication.getComponent().resolveCustomTabsFileProcessor()
                 .processFile(sessionToken, uri, purpose, extras);
+    }
+
+    @NativeMethods
+    interface Natives {
+        void createAndStartDetachedResourceRequest(Profile profile, CustomTabsSessionToken session,
+                String url, String origin, int referrerPolicy,
+                @DetachedResourceRequestMotivation int motivation);
     }
 }

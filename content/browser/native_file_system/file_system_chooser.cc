@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -22,6 +23,28 @@
 namespace content {
 
 namespace {
+
+std::string TypeToString(blink::mojom::ChooseFileSystemEntryType type) {
+  switch (type) {
+    case blink::mojom::ChooseFileSystemEntryType::kOpenFile:
+      return "OpenFile";
+    case blink::mojom::ChooseFileSystemEntryType::kOpenMultipleFiles:
+      return "OpenMultipleFiles";
+    case blink::mojom::ChooseFileSystemEntryType::kSaveFile:
+      return "SaveFile";
+    case blink::mojom::ChooseFileSystemEntryType::kOpenDirectory:
+      return "OpenDirectory";
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+void RecordFileSelectionResult(blink::mojom::ChooseFileSystemEntryType type,
+                               int count) {
+  base::UmaHistogramCounts1000("NativeFileSystemAPI.FileChooserResult", count);
+  base::UmaHistogramCounts1000(
+      "NativeFileSystemAPI.FileChooserResult." + TypeToString(type), count);
+}
 
 bool GetFileTypesFromAcceptsOption(
     const blink::mojom::ChooseFileSystemEntryAcceptsOption& option,
@@ -156,6 +179,8 @@ void FileSystemChooser::MultiFilesSelected(
   auto* isolated_context = storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
 
+  RecordFileSelectionResult(type_, files.size());
+
   if (type_ == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
     // Create files if they don't yet exist, and truncate files if they do
     // exist.
@@ -201,6 +226,7 @@ void FileSystemChooser::MultiFilesSelected(
 }
 
 void FileSystemChooser::FileSelectionCanceled(void* params) {
+  RecordFileSelectionResult(type_, 0);
   callback_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

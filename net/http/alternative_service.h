@@ -14,8 +14,11 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/base/port_util.h"
+#include "net/quic/quic_http_utils.h"
 #include "net/socket/next_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 namespace net {
 
@@ -54,7 +57,14 @@ enum BrokenAlternateProtocolLocation {
 NET_EXPORT void HistogramBrokenAlternateProtocolLocation(
     BrokenAlternateProtocolLocation location);
 
+// Returns true if |protocol| is a valid protocol.
 NET_EXPORT bool IsAlternateProtocolValid(NextProto protocol);
+
+// Returns true if |protocol| is enabled, based on |is_http2_enabled|
+// and |is_quic_enabled|..
+NET_EXPORT bool IsProtocolEnabled(NextProto protocol,
+                                  bool is_http2_enabled,
+                                  bool is_quic_enabled);
 
 // (protocol, host, port) triple as defined in
 // https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html
@@ -201,6 +211,16 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
   // This list MUST be sorted in ascending order.
   quic::ParsedQuicVersionVector advertised_versions_;
 };
+
+using AlternativeServiceInfoVector = std::vector<AlternativeServiceInfo>;
+
+NET_EXPORT_PRIVATE AlternativeServiceInfoVector ProcessAlternativeServices(
+    const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
+        alternative_service_vector,
+    bool is_http2_enabled,
+    bool is_quic_enabled,
+    const quic::ParsedQuicVersionVector& supported_quic_versions,
+    bool support_ietf_format_quic_altsvc);
 
 }  // namespace net
 

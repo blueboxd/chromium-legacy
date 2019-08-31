@@ -2490,9 +2490,7 @@ class MockAuthenticatorRequestDelegateObserver
         failure_reasons_callback_(std::move(failure_reasons_callback)) {}
   ~MockAuthenticatorRequestDelegateObserver() override = default;
 
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override {
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     CHECK(failure_reasons_callback_);
     std::move(failure_reasons_callback_).Run(reason);
     return false;
@@ -3000,12 +2998,10 @@ class PINTestAuthenticatorRequestDelegate
 
   void FinishCollectPIN() override {}
 
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override {
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     *failure_reason_ = reason;
     return AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
-        authenticator, reason);
+        reason);
   }
 
  private:
@@ -3617,12 +3613,10 @@ class ResidentKeyTestAuthenticatorRequestDelegate
     *might_create_resident_credential_ = v;
   }
 
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override {
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     *failure_reason_ = reason;
     return AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
-        authenticator, reason);
+        reason);
   }
 
  private:

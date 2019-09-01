@@ -402,8 +402,14 @@ display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
     if (info->crtc()->mode_valid && SameMode(info->crtc()->mode, mode))
       *out_current_mode = modes.back().get();
 
-    if (mode.type & DRM_MODE_TYPE_PREFERRED)
-      *out_native_mode = modes.back().get();
+    if (mode.type & DRM_MODE_TYPE_PREFERRED) {
+      if (*out_native_mode == nullptr) {
+        *out_native_mode = modes.back().get();
+      } else {
+        LOG(WARNING) << "Found more than one preferred modes. The first one "
+                        "will be used.";
+      }
+    }
   }
 
   // If we couldn't find a preferred mode, then try to find a mode that has the

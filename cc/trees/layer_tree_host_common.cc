@@ -36,8 +36,7 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
                                       float page_scale_factor,
                                       const Layer* page_scale_layer,
                                       const Layer* inner_viewport_scroll_layer,
-                                      const Layer* outer_viewport_scroll_layer,
-                                      TransformNode* page_scale_transform_node)
+                                      const Layer* outer_viewport_scroll_layer)
     : root_layer(root_layer),
       device_viewport_rect(device_viewport_rect),
       device_transform(device_transform),
@@ -45,8 +44,7 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
       page_scale_factor(page_scale_factor),
       page_scale_layer(page_scale_layer),
       inner_viewport_scroll_layer(inner_viewport_scroll_layer),
-      outer_viewport_scroll_layer(outer_viewport_scroll_layer),
-      page_scale_transform_node(page_scale_transform_node) {}
+      outer_viewport_scroll_layer(outer_viewport_scroll_layer) {}
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
@@ -57,7 +55,6 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
                                         device_transform,
                                         1.f,
                                         1.f,
-                                        nullptr,
                                         nullptr,
                                         nullptr,
                                         nullptr) {}
@@ -517,9 +514,10 @@ static void RecordRenderSurfaceReasonsForTracing(
   }
 }
 
-void CalculateDrawPropertiesInternal(
+static void CalculateDrawPropertiesInternal(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
-    PropertyTreeOption property_tree_option) {
+    PropertyTreeOption property_tree_option,
+    LayerImplList* output_update_layer_list) {
   inputs->render_surface_list->clear();
 
   LayerImplList visible_layer_list;
@@ -611,6 +609,9 @@ void CalculateDrawPropertiesInternal(
   // CalculateDrawProperties.
   DCHECK(inputs->property_trees->effect_tree.GetRenderSurface(
       EffectTree::kContentsRootNodeId));
+
+  if (output_update_layer_list)
+    *output_update_layer_list = std::move(visible_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
@@ -636,11 +637,14 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
   draw_property_utils::FindLayersThatNeedUpdates(
       inputs->root_layer->layer_tree_host(), property_trees,
       &update_layer_list);
+
+  if (inputs->update_layer_list)
+    *inputs->update_layer_list = std::move(update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputs* inputs) {
-  CalculateDrawPropertiesInternal(inputs, DONT_BUILD_PROPERTY_TREES);
+  CalculateDrawPropertiesInternal(inputs, DONT_BUILD_PROPERTY_TREES, nullptr);
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
@@ -659,9 +663,11 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
         &old_render_surfaces, inputs->root_layer->layer_tree_impl());
     inputs->property_trees->ResetCachedData();
   }
-  CalculateDrawPropertiesInternal(inputs, inputs->property_trees->needs_rebuild
-                                              ? BUILD_PROPERTY_TREES
-                                              : DONT_BUILD_PROPERTY_TREES);
+  CalculateDrawPropertiesInternal(inputs,
+                                  inputs->property_trees->needs_rebuild
+                                      ? BUILD_PROPERTY_TREES
+                                      : DONT_BUILD_PROPERTY_TREES,
+                                  inputs->update_layer_list);
 }
 
 PropertyTrees* GetPropertyTrees(const Layer* layer) {

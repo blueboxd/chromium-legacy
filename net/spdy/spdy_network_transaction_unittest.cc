@@ -2360,8 +2360,8 @@ TEST_F(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kSize);
   rv = trans->Read(
       buf.get(), kSize,
-      base::Bind(&SpdyNetworkTransactionTest::StartTransactionCallback,
-                 helper.session(), default_url_, log_));
+      base::BindOnce(&SpdyNetworkTransactionTest::StartTransactionCallback,
+                     helper.session(), default_url_, log_));
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   // This forces an err_IO_pending, which sets the callback.
   data.Resume();
@@ -2408,10 +2408,9 @@ TEST_F(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   const int kSize = 3000;
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kSize);
   rv = trans->Read(
-      buf.get(),
-      kSize,
-      base::Bind(&SpdyNetworkTransactionTest::DeleteSessionCallback,
-                 base::Unretained(&helper)));
+      buf.get(), kSize,
+      base::BindOnce(&SpdyNetworkTransactionTest::DeleteSessionCallback,
+                     base::Unretained(&helper)));
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   data.Resume();
 

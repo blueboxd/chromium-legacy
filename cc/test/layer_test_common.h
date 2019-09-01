@@ -50,9 +50,6 @@ class LayerListSettings : public LayerTreeSettings {
   LayerListSettings() { use_layer_lists = true; }
 };
 
-// Returns the RenderSurfaceImpl into which the given layer draws.
-RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl);
-
 class LayerTestCommon {
  public:
   static const char* quad_string;
@@ -136,10 +133,10 @@ class LayerTestCommon {
     void RequestCopyOfOutput();
 
     LayerTreeFrameSink* layer_tree_frame_sink() const {
-      return host_->host_impl()->layer_tree_frame_sink();
+      return host_impl()->layer_tree_frame_sink();
     }
     viz::ClientResourceProvider* resource_provider() const {
-      return host_->host_impl()->resource_provider();
+      return host_impl()->resource_provider();
     }
     LayerImpl* root_layer_for_testing() const {
       return host_impl()->active_tree()->root_layer_for_testing();
@@ -147,7 +144,7 @@ class LayerTestCommon {
     FakeLayerTreeHost* host() { return host_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     TaskRunnerProvider* task_runner_provider() const {
-      return host_->host_impl()->task_runner_provider();
+      return host_impl()->task_runner_provider();
     }
     const viz::QuadList& quad_list() const { return render_pass_->quad_list; }
     scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
@@ -156,49 +153,35 @@ class LayerTestCommon {
     void BuildPropertyTreesForTesting() {
       host_impl()->active_tree()->BuildPropertyTreesForTesting();
     }
+
     void SetElementIdsForTesting() {
       host_impl()->active_tree()->SetElementIdsForTesting();
     }
 
-    void ExecuteCalculateDrawProperties(Layer* root_layer,
-                                        float device_scale_factor,
-                                        float page_scale_factor,
-                                        Layer* page_scale_layer,
-                                        Layer* inner_viewport_scroll_layer,
-                                        Layer* outer_viewport_scroll_layer);
-    void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
-                                        float device_scale_factor,
-                                        float page_scale_factor,
-                                        LayerImpl* page_scale_layer,
-                                        LayerImpl* inner_viewport_scroll_layer,
-                                        LayerImpl* outer_viewport_scroll_layer);
-
-    template <class LayerType>
-    void ExecuteCalculateDrawProperties(LayerType* root_layer) {
-      LayerType* page_scale_application_layer = nullptr;
-      LayerType* inner_viewport_scroll_layer = nullptr;
-      LayerType* outer_viewport_scroll_layer = nullptr;
-      ExecuteCalculateDrawProperties(
-          root_layer, 1.f, 1.f, page_scale_application_layer,
-          inner_viewport_scroll_layer, outer_viewport_scroll_layer);
-    }
-
-    template <class LayerType>
-    void ExecuteCalculateDrawProperties(LayerType* root_layer,
-                                        float device_scale_factor) {
-      LayerType* page_scale_application_layer = nullptr;
-      LayerType* inner_viewport_scroll_layer = nullptr;
-      LayerType* outer_viewport_scroll_layer = nullptr;
-      ExecuteCalculateDrawProperties(
-          root_layer, device_scale_factor, 1.f, page_scale_application_layer,
-          inner_viewport_scroll_layer, outer_viewport_scroll_layer);
-    }
+    void ExecuteCalculateDrawProperties(
+        LayerImpl* root_layer,
+        float device_scale_factor = 1.0f,
+        const gfx::Transform& device_transform = gfx::Transform(),
+        float page_scale_factor = 1.0f,
+        LayerImpl* page_scale_layer = nullptr);
 
     void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
         LayerImpl* root_layer);
 
     const RenderSurfaceList* render_surface_list_impl() const {
       return render_surface_list_impl_.get();
+    }
+
+    bool UpdateLayerImplListContains(int id) const {
+      for (const auto* layer : update_layer_impl_list_) {
+        if (layer->id() == id)
+          return true;
+      }
+      return false;
+    }
+
+    const LayerImplList& update_layer_impl_list() const {
+      return update_layer_impl_list_;
     }
 
    private:
@@ -222,6 +205,7 @@ class LayerTestCommon {
     scoped_refptr<AnimationTimeline> timeline_impl_;
     int layer_impl_id_;
     std::unique_ptr<RenderSurfaceList> render_surface_list_impl_;
+    LayerImplList update_layer_impl_list_;
   };
 };
 

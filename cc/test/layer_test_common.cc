@@ -32,18 +32,6 @@ namespace cc {
 // Align with expected and actual output.
 const char* LayerTestCommon::quad_string = "    Quad: ";
 
-RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl) {
-  EffectTree& effect_tree =
-      layer_impl->layer_tree_impl()->property_trees()->effect_tree;
-
-  if (RenderSurfaceImpl* surface =
-          effect_tree.GetRenderSurface(layer_impl->effect_tree_index()))
-    return surface;
-
-  return effect_tree.GetRenderSurface(
-      effect_tree.Node(layer_impl->effect_tree_index())->target_id);
-}
-
 static bool CanRectFBeSafelyRoundedToRect(const gfx::RectF& r) {
   // Ensure that range of float values is not beyond integer range.
   if (!r.IsExpressibleAsRect())
@@ -151,25 +139,23 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
       render_pass_(viz::RenderPass::Create()),
       layer_impl_id_(2) {
   std::unique_ptr<LayerImpl> root =
-      LayerImpl::Create(host_->host_impl()->active_tree(), 1);
-  host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
-  host_->host_impl()->SetVisible(true);
-  EXPECT_TRUE(
-      host_->host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get()));
+      LayerImpl::Create(host_impl()->active_tree(), 1);
+  host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl()->SetVisible(true);
+  EXPECT_TRUE(host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get()));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);
   animation_host_->AddAnimationTimeline(timeline_);
   // Create impl-side instance.
-  animation_host_->PushPropertiesTo(host_->host_impl()->animation_host());
-  timeline_impl_ =
-      host_->host_impl()->animation_host()->GetTimelineById(timeline_id);
+  animation_host_->PushPropertiesTo(host_impl()->animation_host());
+  timeline_impl_ = host_impl()->animation_host()->GetTimelineById(timeline_id);
 }
 
 LayerTestCommon::LayerImplTest::~LayerImplTest() {
   animation_host_->RemoveAnimationTimeline(timeline_);
   timeline_ = nullptr;
-  host_->host_impl()->ReleaseLayerTreeFrameSink();
+  host_impl()->ReleaseLayerTreeFrameSink();
 }
 
 LayerImpl* LayerTestCommon::LayerImplTest::EnsureRootLayerInPendingTree() {
@@ -185,6 +171,7 @@ void LayerTestCommon::LayerImplTest::CalcDrawProps(
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer_for_testing(), gfx::Rect(viewport_size), &render_surface_list);
+  inputs.update_layer_list = &update_layer_impl_list_;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
@@ -244,47 +231,11 @@ void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
 }
 
 void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
-    Layer* root_layer,
-    float device_scale_factor,
-    float page_scale_factor,
-    Layer* page_scale_layer,
-    Layer* inner_viewport_scroll_layer,
-    Layer* outer_viewport_scroll_layer) {
-  EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
-  gfx::Rect device_viewport_rect =
-      gfx::Rect(root_layer->bounds().width() * device_scale_factor,
-                root_layer->bounds().height() * device_scale_factor);
-
-  root_layer->layer_tree_host()->SetViewportRectAndScale(
-      device_viewport_rect, device_scale_factor,
-      viz::LocalSurfaceIdAllocation());
-
-  // We are probably not testing what is intended if the root_layer bounds are
-  // empty.
-  DCHECK(!root_layer->bounds().IsEmpty());
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root_layer, device_viewport_rect);
-  inputs.device_scale_factor = device_scale_factor;
-  inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_layer = page_scale_layer;
-  inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
-  inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
-  if (page_scale_layer) {
-    PropertyTrees* property_trees =
-        root_layer->layer_tree_host()->property_trees();
-    inputs.page_scale_transform_node = property_trees->transform_tree.Node(
-        page_scale_layer->transform_tree_index());
-  }
-  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-}
-
-void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
     LayerImpl* root_layer,
     float device_scale_factor,
+    const gfx::Transform& device_transform,
     float page_scale_factor,
-    LayerImpl* page_scale_layer,
-    LayerImpl* inner_viewport_scroll_layer,
-    LayerImpl* outer_viewport_scroll_layer) {
+    LayerImpl* page_scale_layer) {
   if (device_scale_factor !=
           root_layer->layer_tree_impl()->device_scale_factor() &&
       !root_layer->layer_tree_impl()->settings().use_layer_lists)
@@ -308,8 +259,9 @@ void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_layer = page_scale_layer;
-  inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
-  inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
+  inputs.device_transform = device_transform;
+  inputs.update_layer_list = &update_layer_impl_list_;
+
   if (page_scale_layer) {
     PropertyTrees* property_trees =
         root_layer->layer_tree_impl()->property_trees();

@@ -130,6 +130,14 @@ void SetupViewport(Layer* root,
                    scoped_refptr<Layer> outer_scroll_layer,
                    const gfx::Size& outer_bounds);
 
+// Returns the RenderSurfaceImpl into which the given layer draws.
+inline RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer) {
+  auto& effect_tree = GetPropertyTrees(layer)->effect_tree;
+  if (auto* surface = effect_tree.GetRenderSurface(layer->effect_tree_index()))
+    return surface;
+  return effect_tree.GetRenderSurface(GetEffectNode(layer)->target_id);
+}
+
 // TODO(wangxianzhu): Add functions to create property nodes not based on
 // layers when needed.
 

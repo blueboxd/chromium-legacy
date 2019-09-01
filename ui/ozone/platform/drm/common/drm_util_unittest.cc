@@ -615,6 +615,15 @@ TEST_F(DrmUtilTest, TestDisplayModesExtraction) {
   EXPECT_EQ(extracted_modes[0].get(), current_mode);
   EXPECT_EQ(extracted_modes[2].get(), native_mode);
   EXPECT_EQ(gfx::Size(800, 600), native_mode->size());
+
+  // While KMS specification says there should be at most one preferred mode per
+  // connector, we found monitors with more than one preferred mode. With this
+  // test we make sure the first one is the one used for native_mode.
+  modes_ptr[1].type |= DRM_MODE_TYPE_PREFERRED;
+  extracted_modes = ExtractDisplayModes(&info, active_pixel_size, &current_mode,
+                                        &native_mode);
+  ASSERT_EQ(5u, extracted_modes.size());
+  EXPECT_EQ(extracted_modes[1].get(), native_mode);
 }
 
 }  // namespace ui

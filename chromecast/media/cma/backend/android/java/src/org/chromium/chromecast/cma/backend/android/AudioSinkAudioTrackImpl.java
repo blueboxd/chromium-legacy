@@ -12,6 +12,7 @@ import android.media.AudioManager;
 import android.media.AudioTimestamp;
 import android.media.AudioTrack;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.util.SparseIntArray;
 
@@ -109,14 +110,10 @@ class AudioSinkAudioTrackImpl {
     private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
 
     // Internally Android fetches data from AudioTrack buffer in periods of 20ms.
-    private static final long ANDROID_AUDIO_PERIOD_SIZE_USEC = 20000;
-
-    // Minimum amount of data written to the AudioTrack before we can call play().
-    // This is needed to avoid hitting a (false) underrun.
-    private static final long PLAY_START_THRESHOLD_USEC = 40000;
+    private static final long ANDROID_AUDIO_PERIOD_SIZE_US = 20000;
 
     // Threshold at which we start logging low buffer warnings.
-    private static final long VERY_LOW_BUFFER_LEVEL_USEC = ANDROID_AUDIO_PERIOD_SIZE_USEC;
+    private static final long VERY_LOW_BUFFER_LEVEL = ANDROID_AUDIO_PERIOD_SIZE_US;
 
     private static long sInstanceCounter;
 
@@ -135,7 +132,7 @@ class AudioSinkAudioTrackImpl {
     private static final long MAX_TIME_IGNORING_TSTAMPS_NSECS = SEC_IN_NSEC;
 
     // Additional padding for minimum buffer time, determined experimentally.
-    private static final long MIN_BUFFERED_TIME_PADDING_USEC = 120000;
+    private static final long MIN_BUFFERED_TIME_PADDING_US = ANDROID_AUDIO_PERIOD_SIZE_US;
 
     // Max retries for AudioTrackBuilder
     private static final int MAX_RETRIES_FOR_AUDIO_TRACKS = 1;
@@ -152,7 +149,6 @@ class AudioSinkAudioTrackImpl {
     private ThrottledLog mBufferLevelWarningLog;
     private ThrottledLog mUnderrunWarningLog;
     private ThrottledLog mTStampJitterWarningLog;
-    private ThrottledLog mStatisticsLog;
 
     @IntDef({ReferenceTimestampState.STARTING_UP, ReferenceTimestampState.STABLE,
             ReferenceTimestampState.RESYNCING_AFTER_PAUSE,
@@ -180,9 +176,6 @@ class AudioSinkAudioTrackImpl {
     private int mSampleRateInHz;
 
     private AudioTrack mAudioTrack;
-
-    private long mBufferSizeInSec; // Size of AudioTrack Buffer allocated.
-    private long mBufferLevelUsec;
 
     // Timestamping logic for RenderingDelay calculations. See also the description for
     // getNewFramePos0Timestamp() for additional information.
@@ -223,7 +216,7 @@ class AudioSinkAudioTrackImpl {
      * Converts the given nanoseconds value into microseconds with proper rounding. It is assumed
      * that the value given is positive.
      */
-    private static long nSecToUsec(long nsecs) {
+    private static long convertNsecsToUsecs(long nsecs) {
         return (nsecs + 500) / 1000;
     }
 
@@ -239,7 +232,7 @@ class AudioSinkAudioTrackImpl {
     public static long getMinimumBufferedTime(int sampleRateInHz) {
         int sizeBytes = AudioTrack.getMinBufferSize(sampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
         long sizeUs = SEC_IN_USEC * (long) sizeBytes / (BYTES_PER_FRAME * (long) sampleRateInHz);
-        return sizeUs + MIN_BUFFERED_TIME_PADDING_USEC;
+        return sizeUs + MIN_BUFFERED_TIME_PADDING_US;
     }
 
     @CalledByNative
@@ -296,6 +289,12 @@ class AudioSinkAudioTrackImpl {
         return mLastTimestampUpdateNsec != NO_TIMESTAMP;
     }
 
+    /** Converts the given number of frames into an equivalent nanoTime period. */
+    private long convertFramesToNanoTime(long numOfFrames) {
+        // Use proper rounding (assumes all numbers are positive).
+        return (SEC_IN_NSEC * numOfFrames + mSampleRateInHz / 2) / mSampleRateInHz;
+    }
+
     /**
      * Initializes the instance by creating the AudioTrack object and allocating
      * the shared memory buffers.
@@ -309,7 +308,6 @@ class AudioSinkAudioTrackImpl {
         mBufferLevelWarningLog = new ThrottledLog(Log::w, 5, 1000, 5000);
         mUnderrunWarningLog = new ThrottledLog(Log::w, 5, 1000, 5000);
         mTStampJitterWarningLog = new ThrottledLog(Log::w, 5, 1000, 5000);
-        mStatisticsLog = new ThrottledLog(Log::i, 1, 1000, 5000);
 
         Log.i(mTag,
                 "Init:"
@@ -340,10 +338,10 @@ class AudioSinkAudioTrackImpl {
 
         int bufferSizeInBytes = MIN_BUFFER_SIZE_MULTIPLIER
                 * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
-        mBufferSizeInSec = bytesToSec(bufferSizeInBytes);
+        int bufferSizeInMs = 1000 * bufferSizeInBytes / (BYTES_PER_FRAME * mSampleRateInHz);
         Log.i(mTag,
-                "Init: create an AudioTrack of size=" + bufferSizeInBytes + " (" + mBufferSizeInSec
-                        + "sec) usageType=" + usageType + " contentType=" + contentType
+                "Init: create an AudioTrack of size=" + bufferSizeInBytes + " (" + bufferSizeInMs
+                        + "ms) usageType=" + usageType + " contentType=" + contentType
                         + " with session-id=" + sessionId);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -419,10 +417,16 @@ class AudioSinkAudioTrackImpl {
         return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_STOPPED;
     }
 
-    /**
-     * Stops the AudioTrack and returns an estimate of the time it takes for the remaining data
-     * left in the internal queue to be played out (in usecs).
-     */
+    private boolean isPlaying() {
+        return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING;
+    }
+
+    private boolean isPaused() {
+        return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_PAUSED;
+    }
+
+    /** Stops the AudioTrack and returns an estimate of the time it takes for the remaining data
+     * left in the internal queue to be played out (in usecs). */
     @CalledByNative
     private long prepareForShutdown() {
         long playtimeLeftNsecs;
@@ -442,7 +446,7 @@ class AudioSinkAudioTrackImpl {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 long most_frames_left =
                         Math.min(mTotalFramesWritten, mAudioTrack.getBufferSizeInFrames());
-                playtimeLeftNsecs = SEC_IN_NSEC * framesToSec(most_frames_left);
+                playtimeLeftNsecs = convertFramesToNanoTime(most_frames_left);
             } else {
                 // Using pre-M API. Don't know how many frames there are, so assume the worst case.
                 playtimeLeftNsecs = 0;
@@ -452,10 +456,8 @@ class AudioSinkAudioTrackImpl {
     }
 
     @CalledByNative
-    /**
-     * Closes the instance by stopping playback and releasing the AudioTrack
-     * object.
-     */
+    /** Closes the instance by stopping playback and releasing the AudioTrack
+     * object. */
     private void close() {
         Log.i(mTag, "Close AudioSinkAudioTrackImpl!");
         if (!mIsInitialized) {
@@ -480,7 +482,7 @@ class AudioSinkAudioTrackImpl {
         }
     }
 
-    private int getUnderrunCount() {
+    int getUnderrunCount() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return mAudioTrack.getUnderrunCount();
         }
@@ -488,62 +490,18 @@ class AudioSinkAudioTrackImpl {
         return 0;
     }
 
-    /** Convert the given number of bytes into an equivalent frames with proper rounding */
-    private long bytesToFrames(long bytes) {
-        return (bytes + BYTES_PER_FRAME / 2) / BYTES_PER_FRAME;
-    }
-
-    /** Convert the given number of frames into an equivalent seconds */
-    private long framesToSec(long frames) {
-        return frames / mSampleRateInHz;
-    }
-
-    /** Convert the given number of bytes into an equivalent seconds with proper rounding */
-    private long bytesToSec(long bytes) {
-        return framesToSec(bytesToFrames(bytes));
-    }
-
-    private void startPlayingIfItIsTime() {
-        if (mTotalFramesWritten > PLAY_START_THRESHOLD_USEC) {
-            play();
-        }
-    }
-
-    private void waitUntilBufferAvail(int bytes) {
-        long sleepTimeUsec = SEC_IN_USEC * bytesToSec(bytes);
-        long bufferSizeInUsec = SEC_IN_USEC * mBufferSizeInSec;
-        if (sleepTimeUsec >= bufferSizeInUsec / 2) {
-            sleepTimeUsec = bufferSizeInUsec / 2;
-        } else {
-            long d = sleepTimeUsec / ANDROID_AUDIO_PERIOD_SIZE_USEC;
-            if (d * ANDROID_AUDIO_PERIOD_SIZE_USEC < sleepTimeUsec) {
-                sleepTimeUsec = (d + 1) * ANDROID_AUDIO_PERIOD_SIZE_USEC;
-            }
-        }
-
-        if (DEBUG_LEVEL >= 1) {
-            Log.i(mTag, "Buffer full, sleep for " + sleepTimeUsec + "usec");
-        }
-
-        try {
-            Thread.sleep(sleepTimeUsec / 1000);
-        } catch (InterruptedException ex) {
-            Log.i(mTag, "Sleep was interrupted: " + ex);
-        }
-    }
-
-    /**
-     * Writes the PCM data of the given size into the AudioTrack object. The
+    /** Writes the PCM data of the given size into the AudioTrack object. The
      * PCM data is provided through the memory-mapped ByteBuffer.
      *
      * Returns the number of bytes written into the AudioTrack object, -1 for
      * error.
      */
     @CalledByNative
-    private int writePcm(int totalBytesToWrite) {
+    private int writePcm(int sizeInBytes) {
         if (DEBUG_LEVEL >= 3) {
             Log.i(mTag,
-                    "Writing new PCM data [" + totalBytesToWrite + "] state=" + getPlayStateString()
+                    "Writing new PCM data:"
+                            + " sizeInBytes=" + sizeInBytes + " state=" + getPlayStateString()
                             + " underruns=" + mLastUnderrunCount);
         }
 
@@ -553,70 +511,65 @@ class AudioSinkAudioTrackImpl {
         }
 
         // Check buffer level before feeding in new data.
-        checkBufferLevel();
+        if (haveValidRefPoint()) checkBufferLevel();
 
         // Setup the PCM ByteBuffer correctly.
-        mPcmBuffer.limit(totalBytesToWrite);
+        mPcmBuffer.limit(sizeInBytes);
+        mPcmBuffer.position(0);
 
-        long maxTimeToWriteNsec = 2 * bytesToSec(totalBytesToWrite) * SEC_IN_NSEC;
-        long startTimeNsec = System.nanoTime();
+        // Feed into AudioTrack - blocking call.
+        long beforeMsecs = SystemClock.elapsedRealtime();
+        int bytesWritten = mAudioTrack.write(mPcmBuffer, sizeInBytes, AudioTrack.WRITE_BLOCKING);
 
-        int bytesLeftToWrite = totalBytesToWrite;
-        int bytesWritten = 0;
+        if (bytesWritten < 0) {
+            int error = bytesWritten;
+            Log.e(mTag, "Couldn't write into AudioTrack (" + error + ")");
+            return error;
+        }
 
-        while (bytesLeftToWrite > 0) {
-            mPcmBuffer.position(totalBytesToWrite - bytesLeftToWrite);
-            long beforeNsecs = System.nanoTime();
-            bytesWritten =
-                    mAudioTrack.write(mPcmBuffer, bytesLeftToWrite, AudioTrack.WRITE_NON_BLOCKING);
+        if (isStopped()) {
+            // Data was written, start playing now.
+            play();
 
-            if (bytesWritten < 0) {
-                int error = bytesWritten;
-                Log.e(mTag, "Couldn't write into AudioTrack (" + error + ")");
-                return error;
-            }
-
-            mTotalFramesWritten = bytesToFrames(bytesWritten);
-            bytesLeftToWrite -= bytesWritten;
-            if (isStopped()) {
-                startPlayingIfItIsTime();
-            }
-
-            if (DEBUG_LEVEL >= 3) {
-                long lastRenderingDelayUsec =
-                        (mLastRenderingDelayUsecs == NO_TIMESTAMP) ? -1 : mLastRenderingDelayUsecs;
-                Log.i(mTag,
-                        "  wrote " + bytesWritten + "/" + bytesWritten
-                                + " total_bytes_written=" + (mTotalFramesWritten * BYTES_PER_FRAME)
-                                + " took:" + (elapsedNsec(beforeNsecs) / MSEC_IN_NSEC) + "ms"
-                                + " RenderingDelayUsec=" + lastRenderingDelayUsec
-                                + " BufferLevelUsec=" + mBufferLevelUsec);
-            }
-
-            if (bytesLeftToWrite > 0) {
-                waitUntilBufferAvail(bytesLeftToWrite);
-                checkBufferLevel();
-                maxTimeToWriteNsec = 2 * bytesToSec(bytesLeftToWrite) * SEC_IN_NSEC;
-                startTimeNsec = System.nanoTime();
-            }
-
-            if (bytesLeftToWrite > 0 && elapsedNsec(startTimeNsec) > maxTimeToWriteNsec) {
-                Log.e(mTag, "Took too long to write all data, abort!");
-                break;
+            // If not all data fit on the previous write() call (since we were not in PLAYING state
+            // it didn't block), do a second (now blocking) call to write().
+            int bytesLeft = sizeInBytes - bytesWritten;
+            if (bytesLeft > 0) {
+                mPcmBuffer.position(bytesWritten);
+                int moreBytesWritten =
+                        mAudioTrack.write(mPcmBuffer, bytesLeft, AudioTrack.WRITE_BLOCKING);
+                if (moreBytesWritten < 0) {
+                    int error = moreBytesWritten;
+                    Log.e(mTag, "Couldn't write into AudioTrack (" + error + ")");
+                    return error;
+                }
+                bytesWritten += moreBytesWritten;
             }
         }
-        int totalBytesWritten = totalBytesToWrite - bytesLeftToWrite;
-        updateSampleRateMeasure(bytesToFrames(totalBytesWritten));
 
-        updateRefPointTimestamp();
+        int framesWritten = bytesWritten / BYTES_PER_FRAME;
+        mTotalFramesWritten += framesWritten;
 
-        long lastRenderingDelayUsec =
-                (mLastRenderingDelayUsecs == NO_TIMESTAMP) ? -1 : mLastRenderingDelayUsecs;
-        mStatisticsLog.log(mTag,
-                "SampleRateHz=" + mSampleRateInHz + " RenderingDelayUsec=" + lastRenderingDelayUsec
-                        + " BufferLevelUsec=" + mBufferLevelUsec);
+        if (DEBUG_LEVEL >= 3) {
+            Log.i(mTag,
+                    "  wrote " + bytesWritten + "/" + sizeInBytes
+                            + " total_bytes_written=" + (mTotalFramesWritten * BYTES_PER_FRAME)
+                            + " took:" + (SystemClock.elapsedRealtime() - beforeMsecs) + "ms");
+        }
 
-        return totalBytesWritten;
+        if (bytesWritten < sizeInBytes && isPaused()) {
+            // We are in PAUSED state, in which case the write() is non-blocking. If not all data
+            // was written, we will come back here once we transition back into PLAYING state.
+            return bytesWritten;
+        }
+
+        updateSampleRateMeasure(framesWritten);
+
+        updateRenderingDelay();
+
+        // TODO(ckuiper): Log key statistics (SR and underruns, e.g.) in regular intervals
+
+        return bytesWritten;
     }
 
     /** Returns the elapsed time from the given start_time until now, in nsec. */
@@ -626,13 +579,13 @@ class AudioSinkAudioTrackImpl {
 
     private void checkBufferLevel() {
         long bufferLevel = mTotalFramesWritten - mAudioTrack.getPlaybackHeadPosition();
-        mBufferLevelUsec = SEC_IN_USEC * framesToSec(bufferLevel);
-        if (mBufferLevelUsec <= VERY_LOW_BUFFER_LEVEL_USEC) {
+        long bufferLevelUsec = convertNsecsToUsecs(convertFramesToNanoTime(bufferLevel));
+        if (bufferLevelUsec <= VERY_LOW_BUFFER_LEVEL) {
             long lastRenderingDelayUsec =
                     (mLastRenderingDelayUsecs == NO_TIMESTAMP) ? -1 : mLastRenderingDelayUsecs;
             boolean hitUnderrun = (getUnderrunCount() != mLastUnderrunCount);
             mBufferLevelWarningLog.log(mTag,
-                    "Low buffer level=" + mBufferLevelUsec + "us "
+                    "Low buffer level=" + bufferLevelUsec + "us "
                             + " RD=" + lastRenderingDelayUsec + (hitUnderrun ? "us *" : "us"));
         }
     }
@@ -667,8 +620,8 @@ class AudioSinkAudioTrackImpl {
 
         // Interpolate to get proper Rendering delay.
         long playoutTimeNsecs = getInterpolatedTStampNsecs(mTotalFramesWritten);
-        long playoutTimeUsecs = nSecToUsec(playoutTimeNsecs);
-        long nowUsecs = nSecToUsec(System.nanoTime());
+        long playoutTimeUsecs = convertNsecsToUsecs(playoutTimeNsecs);
+        long nowUsecs = convertNsecsToUsecs(System.nanoTime());
         long delayUsecs = playoutTimeUsecs - nowUsecs;
 
         // Populate RenderingDelay return value for native land.
@@ -701,14 +654,14 @@ class AudioSinkAudioTrackImpl {
             return NO_TIMESTAMP;
         }
         mOriginalFramePosOfLastTimestamp = ts.framePosition;
-        return ts.nanoTime - (SEC_IN_NSEC * framesToSec(ts.framePosition));
+        return ts.nanoTime - convertFramesToNanoTime(ts.framePosition);
     }
 
     /**
      * Returns a timestamp for the given frame position, interpolated from the reference timestamp.
      */
     private long getInterpolatedTStampNsecs(long framePosition) {
-        return mRefNanoTimeAtFramePos0 + (SEC_IN_NSEC * framesToSec(framePosition));
+        return mRefNanoTimeAtFramePos0 + convertFramesToNanoTime(framePosition);
     }
 
     /** Checks for underruns and if detected invalidates the reference point timestamp. */
@@ -834,7 +787,7 @@ class AudioSinkAudioTrackImpl {
                 long devNsec = mRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0;
                 if (Math.abs(devNsec) > TSTAMP_DEV_THRESHOLD_TO_IGNORE_NSEC) {
                     mTStampJitterWarningLog.log(
-                            mTag, "Too jittery timestamp (" + nSecToUsec(devNsec) + ")");
+                            mTag, "Too jittery timestamp (" + convertNsecsToUsecs(devNsec) + ")");
                     long timeSinceLastGoodTstamp = elapsedNsec(mLastTimestampUpdateNsec);
                     if (timeSinceLastGoodTstamp <= MAX_TIME_IGNORING_TSTAMPS_NSECS) {
                         return; // Ignore this one.
@@ -854,8 +807,8 @@ class AudioSinkAudioTrackImpl {
 
         // Got a new value.
         if (DEBUG_LEVEL >= 1) {
-            long dev1 = nSecToUsec(prevRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0);
-            long dev2 = nSecToUsec(prevRefNanoTimeAtFramePos0 - mRefNanoTimeAtFramePos0);
+            long dev1 = convertNsecsToUsecs(prevRefNanoTimeAtFramePos0 - newNanoTimeAtFramePos0);
+            long dev2 = convertNsecsToUsecs(prevRefNanoTimeAtFramePos0 - mRefNanoTimeAtFramePos0);
             Log.i(mTag,
                     "Updated mRefNanoTimeAtFramePos0=" + mRefNanoTimeAtFramePos0 / 1000 + " us ("
                             + dev1 + "/" + dev2 + ")");

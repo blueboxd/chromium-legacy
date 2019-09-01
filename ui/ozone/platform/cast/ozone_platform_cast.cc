@@ -116,9 +116,11 @@ class OzonePlatformCast : public OzonePlatform {
 
   void InitializeUI(const InitParams& params) override {
     device_manager_ = CreateDeviceManager();
-    overlay_manager_ = std::make_unique<OverlayManagerCast>();
     cursor_factory_ = std::make_unique<CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+
+    if (!params.viz_display_compositor)
+      overlay_manager_ = std::make_unique<OverlayManagerCast>();
 
     // Enable dummy software rendering support if GPU process disabled
     // or if we're an audio-only build.
@@ -141,6 +143,9 @@ class OzonePlatformCast : public OzonePlatform {
       surface_factory_ = std::make_unique<SurfaceFactoryCast>();
   }
   void InitializeGPU(const InitParams& params) override {
+    if (params.viz_display_compositor) {
+      overlay_manager_ = std::make_unique<OverlayManagerCast>();
+    }
     surface_factory_ =
         std::make_unique<SurfaceFactoryCast>(std::move(egl_platform_));
   }

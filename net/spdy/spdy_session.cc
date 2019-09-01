@@ -1670,8 +1670,8 @@ void SpdySession::InitializeInternal(SpdySessionPool* pool) {
   // Bootstrap the read loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(&SpdySession::PumpReadLoop,
-                          weak_factory_.GetWeakPtr(), READ_STATE_DO_READ, OK));
+      base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                     READ_STATE_DO_READ, OK));
 }
 
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
@@ -2404,8 +2404,8 @@ int SpdySession::DoWrite() {
       in_flight_write_->GetIOBufferForRemainingData();
   return socket_->Write(
       write_io_buffer.get(), in_flight_write_->GetRemainingSize(),
-      base::Bind(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
-                 WRITE_STATE_DO_WRITE_COMPLETE),
+      base::BindOnce(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
+                     WRITE_STATE_DO_WRITE_COMPLETE),
       NetworkTrafficAnnotationTag(in_flight_write_traffic_annotation));
 }
 

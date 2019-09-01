@@ -43,8 +43,7 @@ class CC_EXPORT LayerTreeHostCommon {
                                       float page_scale_factor,
                                       const Layer* page_scale_layer,
                                       const Layer* inner_viewport_scroll_layer,
-                                      const Layer* outer_viewport_scroll_layer,
-                                      TransformNode* page_scale_transform_node);
+                                      const Layer* outer_viewport_scroll_layer);
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
                                       const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform);
@@ -58,7 +57,8 @@ class CC_EXPORT LayerTreeHostCommon {
     const Layer* page_scale_layer;
     const Layer* inner_viewport_scroll_layer;
     const Layer* outer_viewport_scroll_layer;
-    TransformNode* page_scale_transform_node;
+    // If not null, accepts layers output from FindLayersThatNeedUpdates().
+    LayerList* update_layer_list = nullptr;
   };
 
   struct CC_EXPORT CalcDrawPropsImplInputs {
@@ -112,6 +112,9 @@ class CC_EXPORT LayerTreeHostCommon {
                                       const gfx::Rect& device_viewport_rect,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list);
+
+    // If not null, accepts layers output from FindLayersThatNeedUpdates().
+    LayerImplList* update_layer_list = nullptr;
   };
 
   static int CalculateLayerJitter(LayerImpl* scrolling_layer);

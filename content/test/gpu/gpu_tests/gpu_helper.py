@@ -8,8 +8,8 @@ import mock
 # This set must be the union of the driver tags used in WebGL and WebGL2
 # expectations files.
 EXPECTATIONS_DRIVER_TAGS = frozenset([
-    'intel_lt_25.20.100.6444',
-    'intel_lt_25.20.100.6577',
+    'angle_lt_25.20.100.6444',
+    'angle_lt_25.20.100.6577',
     'mesa_lt_17.1.6',
     'mesa_lt_17.3.9',
     'mesa_lt_19.1.2'

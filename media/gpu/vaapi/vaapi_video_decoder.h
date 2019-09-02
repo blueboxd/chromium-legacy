@@ -39,9 +39,12 @@ class VASurface;
 class VaapiVideoDecoder : public media::VideoDecoder,
                           public DecodeSurfaceHandler<VASurface> {
  public:
+  using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
+
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      std::unique_ptr<DmabufVideoFramePool> frame_pool);
+      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+      GetFramePoolCB get_pool);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
@@ -91,8 +94,10 @@ class VaapiVideoDecoder : public media::VideoDecoder,
     kError,             // decoder encountered an error.
   };
 
-  VaapiVideoDecoder(scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-                    std::unique_ptr<DmabufVideoFramePool> frame_pool);
+  VaapiVideoDecoder(
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+      GetFramePoolCB get_pool);
   ~VaapiVideoDecoder() override;
 
   // Destroy the VAAPIVideoDecoder, aborts pending decode requests and blocks
@@ -171,7 +176,8 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   double pixel_aspect_ratio_ = 0.0;
 
   // Video frame pool used to allocate and recycle video frames.
-  std::unique_ptr<DmabufVideoFramePool> frame_pool_;
+  GetFramePoolCB get_pool_cb_;
+  DmabufVideoFramePool* frame_pool_ = nullptr;
 
   // The mapping between buffer id and the timestamp.
   std::map<int32_t, base::TimeDelta> buffer_id_to_timestamp_;
@@ -191,8 +197,7 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
-  base::Thread decoder_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);

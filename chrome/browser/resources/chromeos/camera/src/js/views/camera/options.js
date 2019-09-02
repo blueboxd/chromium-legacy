@@ -22,23 +22,15 @@ cca.views.camera = cca.views.camera || {};
 /**
  * Creates a controller for the options of Camera view.
  * @param {cca.device.DeviceInfoUpdater} infoUpdater
- * @param {cca.mojo.MojoConnector} mojoConnector
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
-cca.views.camera.Options = function(
-    infoUpdater, mojoConnector, doSwitchDevice) {
+cca.views.camera.Options = function(infoUpdater, doSwitchDevice) {
   /**
    * @type {cca.device.DeviceInfoUpdater}
    * @private
    */
   this.infoUpdater_ = infoUpdater;
-
-  /**
-   * @type {cca.mojo.MojoConnector}
-   * @private
-   */
-  this.mojoConnector_ = mojoConnector;
 
   /**
    * @type {function()}
@@ -259,82 +251,6 @@ cca.views.camera.Options.prototype.updateAudioByMic_ = function() {
   if (this.audioTrack_) {
     this.audioTrack_.enabled = this.toggleMic_.checked;
   }
-};
-
-/**
- * Updates list of available video devices when changed, including the UI.
- * Does nothing if refreshing is already in progress.
- * @private
- */
-cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
-  if (this.refreshingVideoDeviceIds_) {
-    return;
-  }
-  this.refreshingVideoDeviceIds_ = true;
-
-  this.videoDevices_ = navigator.mediaDevices.enumerateDevices().then(
-      (devices) => devices.filter((device) => device.kind == 'videoinput'));
-
-  var multi = false;
-  this.videoDevices_.then((devices) => {
-    multi = devices.length >= 2;
-  }).catch(console.error).finally(() => {
-    cca.state.set('multi-camera', multi);
-    this.refreshingVideoDeviceIds_ = false;
-  });
-
-  this.devicesPrivateInfo_ = (async () => {
-    const devices = await this.videoDevices_;
-
-    const deviceOperator = this.mojoConnector_.getDeviceOperator();
-    if (!deviceOperator) {
-      cca.state.set('no-resolution-settings', true);
-      throw new Error('HALv1-api');
-    }
-    return await Promise.all(devices.map(
-        (d) => cca.device.Camera3DeviceInfo.create(d, deviceOperator)));
-  })();
-
-  (async () => {
-    try {
-      var devicesPrivateInfo = await this.devicesPrivateInfo_;
-    } catch (e) {
-      if (e.message == 'HALv1-api') {
-        return;
-      }
-      throw e;
-    }
-    let frontSetting = null;
-    let backSetting = null;
-    let externalSettings = [];
-    devicesPrivateInfo.forEach((info) => {
-      const setting = [info.deviceId, info.photoResols, info.videoResols];
-      switch (info.facing) {
-        case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
-          frontSetting = setting;
-          break;
-        case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
-          backSetting = setting;
-          break;
-        case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
-          externalSettings.push(setting);
-          break;
-        default:
-          console.error(`Ignore device of unknown facing: ${info.facing}`);
-      }
-    });
-    this.photoResolPreferrer_.updateResolutions(
-        frontSetting && [frontSetting[0], frontSetting[1]],
-        backSetting && [backSetting[0], backSetting[1]],
-        externalSettings.map(([deviceId, photoRs]) => [deviceId, photoRs]));
-    this.videoPreferrer_.updateResolutions(
-        frontSetting && [frontSetting[0], frontSetting[2]],
-        backSetting && [backSetting[0], backSetting[2]],
-        externalSettings.map(([deviceId, , videoRs]) => [deviceId, videoRs]));
-
-    this.videoPreferrer_.updateFpses(devicesPrivateInfo.map(
-        (info) => [info.deviceId, info.videoMaxFps, info.fpsRanges]));
-  })();
 };
 
 /**

@@ -71,6 +71,10 @@ source_set("v4l2") {
 
   configs += [ "//third_party/libyuv:libyuv_config" ]
 
+  public_deps = [
+    "//ui/gl",
+  ]
+
   deps = [
     "//base",
     "//gpu/ipc/common",

@@ -19012,6 +19012,7 @@ Called by update_net_error_codes.py.-->
   <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
   <int value="440"
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
+  <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20454,6 +20455,8 @@ Called by update_net_error_codes.py.-->
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
   <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
   <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
+  <int value="1379" label="LOGINSTATE_GETPROFILETYPE"/>
+  <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -20996,6 +20999,7 @@ Called by update_net_error_codes.py.-->
   <int value="219" label="kTransientBackground"/>
   <int value="220" label="kLogin"/>
   <int value="221" label="kLoginScreenStorage"/>
+  <int value="222" label="kLoginState"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -46751,6 +46755,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="1+ from Android"/>
 </enum>
 
+<enum name="PasswordManagerOnboardingState">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Should be shown"/>
+  <int value="2" label="Shown"/>
+</enum>
+
+<enum name="PasswordManagerOnboardingUIDismissalReason">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Rejected"/>
+  <int value="2" label="Dismissed"/>
+</enum>
+
 <enum name="PasswordManagerOsPasswordStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Unsupported platform"/>
@@ -54398,13 +54414,6 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
-<enum name="SharingClickToCallDialogType">
-  <int value="0" label="Dialog with devices and maybe apps"/>
-  <int value="1" label="Dialog without devices but with an app"/>
-  <int value="2" label="Educational dialog without devices or apps"/>
-  <int value="3" label="Error dialog"/>
-</enum>
-
 <enum name="SharingDeviceRegistrationResult">
   <int value="0" label="Operation is successful"/>
   <int value="1" label="Failed with Sync not ready"/>
@@ -54412,6 +54421,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Failed with FCM transient error"/>
   <int value="4" label="Failed with FCM fatal error"/>
   <int value="5" label="Device has not been registered"/>
+</enum>
+
+<enum name="SharingDialogType">
+  <int value="0" label="Dialog with devices and maybe apps"/>
+  <int value="1" label="Dialog without devices but with an app"/>
+  <int value="2" label="Educational dialog without devices or apps"/>
+  <int value="3" label="Error dialog"/>
 </enum>
 
 <enum name="SharingMessageType">

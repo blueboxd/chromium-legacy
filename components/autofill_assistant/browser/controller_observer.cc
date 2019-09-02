@@ -35,5 +35,7 @@ void ControllerObserver::OnPeekModeChanged(
 void ControllerObserver::OnOverlayColorsChanged(
     const UiDelegate::OverlayColors& colors) {}
 void ControllerObserver::OnFormChanged(const FormProto* form) {}
+void ControllerObserver::OnClientSettingsChanged(
+    const ClientSettings& settings) {}
 
 }  // namespace autofill_assistant

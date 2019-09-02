@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 class ChromePasswordManagerClient;
 
@@ -31,15 +32,26 @@ class OnboardingDialogView {
   // Sets the |kPasswordManagerOnboardingState| pref to |kShown|.
   void Show();
 
-  // Called from Java via JNI. Prompts user to save their password.
+  // Called from Java via JNI when the positive button is pressed,
+  // e.g. "Continue" or "Got it". Prompts the user to save their password.
   void OnboardingAccepted(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
 
-  // Called from Java via JNI.
+  // Called from Java via JNI when the negative button is pressed,
+  // e.g. "Cancel".
   void OnboardingRejected(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
 
+  // Called from Java via JNI when the dialog is dismissed in any other way,
+  // e.g. pressing the back button or navigating to another tab.
+  void OnboardingAborted(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
+
  private:
+  // Records the reaction to the onboarding and deletes this class.
+  void DismissWithReasonAndDelete(
+      password_manager::metrics_util::OnboardingUIDismissalReason reason);
+
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 

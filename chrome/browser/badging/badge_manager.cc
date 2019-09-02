@@ -9,11 +9,13 @@
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/badging/badge_manager_delegate.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,23 +29,15 @@
 
 namespace badging {
 
-std::string GetBadgeString(base::Optional<uint64_t> badge_content) {
-  if (!badge_content)
-    return "•";
-
-  if (badge_content > kMaxBadgeContent) {
-    return base::UTF16ToUTF8(l10n_util::GetStringFUTF16(
-        IDS_SATURATED_BADGE_CONTENT, base::FormatNumber(kMaxBadgeContent)));
-  }
-
-  return base::UTF16ToUTF8(base::FormatNumber(badge_content.value()));
-}
-
 BadgeManager::BadgeManager(Profile* profile) {
 #if defined(OS_MACOSX)
-  SetDelegate(std::make_unique<BadgeManagerDelegateMac>(profile));
+  SetDelegate(std::make_unique<BadgeManagerDelegateMac>(
+      profile, this,
+      &web_app::WebAppProviderBase::GetProviderBase(profile)->registrar()));
 #elif defined(OS_WIN)
-  SetDelegate(std::make_unique<BadgeManagerDelegateWin>(profile));
+  SetDelegate(std::make_unique<BadgeManagerDelegateWin>(
+      profile, this,
+      &web_app::WebAppProviderBase::GetProviderBase(profile)->registrar()));
 #endif
 }
 
@@ -66,79 +60,107 @@ void BadgeManager::BindRequest(
                                 std::move(context));
 }
 
-void BadgeManager::UpdateAppBadge(const base::Optional<std::string>& app_id,
-                                  base::Optional<uint64_t> content) {
-  // Badge content should never be 0 (it should be translated into a clear).
-  DCHECK_NE(content.value_or(1), 0u);
+bool BadgeManager::HasMoreSpecificBadgeForUrl(const GURL& scope,
+                                              const GURL& url) {
+  return MostSpecificBadgeForScope(url).spec().size() > scope.spec().size();
+}
 
-  if (!app_id) {
-    BadgeChangeIgnored();
+base::Optional<BadgeManager::BadgeValue> BadgeManager::GetBadgeValue(
+    const GURL& scope) {
+  const GURL& most_specific = MostSpecificBadgeForScope(scope);
+  if (most_specific == GURL::EmptyGURL())
+    return base::nullopt;
+
+  return base::make_optional(badged_scopes_[most_specific]);
+}
+
+void BadgeManager::SetBadgeForTesting(const GURL& scope, BadgeValue value) {
+  UpdateBadge(scope, value);
+}
+
+void BadgeManager::ClearBadgeForTesting(const GURL& scope) {
+  UpdateBadge(scope, base::nullopt);
+}
+
+void BadgeManager::UpdateBadge(const GURL& scope,
+                               base::Optional<BadgeValue> value) {
+  if (!value)
+    badged_scopes_.erase(scope);
+  else
+    badged_scopes_[scope] = value.value();
+
+  if (!delegate_)
+    return;
+
+  delegate_->OnBadgeUpdated(scope);
+}
+
+void BadgeManager::SetBadge(const GURL& scope,
+                            blink::mojom::BadgeValuePtr mojo_value) {
+  if (mojo_value->is_number() && mojo_value->get_number() == 0) {
+    mojo::ReportBadMessage(
+        "|value| should not be zero when it is |number| (ClearBadge should be "
+        "called instead)!");
     return;
   }
 
-  badged_apps_[app_id.value()] = content;
-
-  if (!delegate_)
+  if (!ScopeIsValidBadgeTarget(receivers_.current_context(), scope))
     return;
 
-  delegate_->OnBadgeSet(app_id.value(), content);
+  // Convert the mojo badge representation into a BadgeManager::BadgeValue.
+  BadgeValue value = mojo_value->is_flag()
+                         ? base::nullopt
+                         : base::make_optional(mojo_value->get_number());
+  UpdateBadge(scope, base::make_optional(value));
 }
 
-void BadgeManager::ClearAppBadge(const base::Optional<std::string>& app_id) {
-  if (!app_id) {
-    BadgeChangeIgnored();
+void BadgeManager::ClearBadge(const GURL& scope) {
+  if (!ScopeIsValidBadgeTarget(receivers_.current_context(), scope))
     return;
+
+  UpdateBadge(scope, base::nullopt);
+}
+
+GURL BadgeManager::MostSpecificBadgeForScope(const GURL& scope) {
+  const std::string& scope_string = scope.spec();
+  GURL best_match = GURL::EmptyGURL();
+  uint64_t longest_match = 0;
+
+  for (const auto& pair : badged_scopes_) {
+    const std::string& cur_scope_str = pair.first.spec();
+    if (scope_string.find(cur_scope_str) != 0)
+      continue;
+
+    if (longest_match >= cur_scope_str.size())
+      continue;
+
+    longest_match = cur_scope_str.size();
+    best_match = pair.first;
   }
 
-  badged_apps_.erase(app_id.value());
-  if (!delegate_)
-    return;
-
-  delegate_->OnBadgeCleared(app_id.value());
+  return best_match;
 }
 
-void BadgeManager::BadgeChangeIgnored() {
-  if (!delegate_)
-    return;
-
-  delegate_->OnBadgeChangeIgnoredForTesting();
-}
-
-void BadgeManager::SetInteger(uint64_t content) {
-  UpdateAppBadge(GetAppIdToBadge(receivers_.current_context()), content);
-}
-
-void BadgeManager::SetFlag() {
-  UpdateAppBadge(GetAppIdToBadge(receivers_.current_context()), base::nullopt);
-}
-
-void BadgeManager::ClearBadge() {
-  ClearAppBadge(GetAppIdToBadge(receivers_.current_context()));
-}
-
-base::Optional<std::string> BadgeManager::GetAppIdToBadge(
-    const BindingContext& context) {
+bool BadgeManager::ScopeIsValidBadgeTarget(const BindingContext& context,
+                                           const GURL& scope) {
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(context.process_id, context.frame_id);
   if (!frame)
-    return base::nullopt;
+    return false;
 
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(frame);
-  Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  if (!browser)
-    return base::nullopt;
+  return url::IsSameOriginWith(frame->GetLastCommittedURL(), scope);
+}
 
-  web_app::AppBrowserController* app_controller = browser->app_controller();
-  if (!app_controller)
-    return base::nullopt;
+std::string GetBadgeString(base::Optional<uint64_t> badge_content) {
+  if (!badge_content)
+    return "•";
 
-  // If the frame is not in scope, don't apply a badge.
-  if (!app_controller->IsUrlInAppScope(frame->GetLastCommittedURL())) {
-    return base::nullopt;
+  if (badge_content > kMaxBadgeContent) {
+    return base::UTF16ToUTF8(l10n_util::GetStringFUTF16(
+        IDS_SATURATED_BADGE_CONTENT, base::FormatNumber(kMaxBadgeContent)));
   }
 
-  return app_controller->GetAppId();
+  return base::UTF16ToUTF8(base::FormatNumber(badge_content.value()));
 }
 
 }  // namespace badging

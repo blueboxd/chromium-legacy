@@ -102,7 +102,6 @@ ExoTestBaseViews::ExoTestBaseViews() {}
 ExoTestBaseViews::~ExoTestBaseViews() {}
 
 void ExoTestBaseViews::SetUp() {
-  ui::SetUpInputMethodFactoryForTesting();
   views::ViewsTestBase::SetUp();
   // Takes care of its own lifetime.
   new wm::DefaultActivationClient(root_window());

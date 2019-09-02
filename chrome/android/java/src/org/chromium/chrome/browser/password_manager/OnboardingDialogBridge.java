@@ -53,12 +53,16 @@ public class OnboardingDialogBridge {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
                 nativeOnboardingAccepted(mNativeOnboardingDialogView);
                 return;
+            case DialogDismissalCause.NEGATIVE_BUTTON_CLICKED:
+                nativeOnboardingRejected(mNativeOnboardingDialogView);
+                return;
 
             default:
-                nativeOnboardingRejected(mNativeOnboardingDialogView);
+                nativeOnboardingAborted(mNativeOnboardingDialogView);
         }
     }
 
     private native void nativeOnboardingAccepted(long nativeOnboardingDialogView);
     private native void nativeOnboardingRejected(long nativeOnboardingDialogView);
+    private native void nativeOnboardingAborted(long nativeOnboardingDialogView);
 }

@@ -146,7 +146,6 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
   ~KeyboardUIControllerTest() override = default;
 
   void SetUp() override {
-    ui::SetUpInputMethodFactoryForTesting();
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     focus_controller_ = std::make_unique<TestFocusController>(root_window());
@@ -272,6 +271,7 @@ class KeyboardUIControllerTest : public aura::test::AuraTestBase,
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   bool keyboard_disabled_ = false;
   wm::DefaultScreenPositionClient screen_position_client_;
+  ui::ScopedTestInputMethodFactory scoped_test_input_method_factory_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIControllerTest);
 };
 

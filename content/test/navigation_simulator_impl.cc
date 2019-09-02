@@ -24,6 +24,7 @@
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/redirect_info.h"
 
@@ -1137,12 +1138,13 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
                           mojo::NullRemote(),
-                          navigation_client_ptr.PassInterface(), nullptr);
+                          navigation_client_ptr.PassInterface(),
+                          mojo::NullRemote());
   } else {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          mojo::NullRemote(), nullptr, nullptr);
+                          mojo::NullRemote(), nullptr, mojo::NullRemote());
   }
 
   NavigationRequest* request =

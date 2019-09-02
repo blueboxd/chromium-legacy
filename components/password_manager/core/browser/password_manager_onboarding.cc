@@ -5,11 +5,14 @@
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
 
 #include "base/feature_list.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace password_manager {
+
+using OnboardingState = password_manager::metrics_util::OnboardingState;
 
 OnboardingStateUpdate::OnboardingStateUpdate(
     scoped_refptr<password_manager::PasswordStore> store,

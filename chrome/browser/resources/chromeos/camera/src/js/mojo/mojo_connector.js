@@ -33,6 +33,13 @@ cca.mojo.MojoConnector = class {
      * @private
      */
     this.deviceOperator_ = null;
+
+    /**
+     * Promise that indicates if the device operator is ready.
+     * @type {!Promise}
+     * @private
+     */
+    this.isDeviceOperatorReady_ = this.initDeviceOperator();
   }
 
   /**
@@ -69,19 +76,21 @@ cca.mojo.MojoConnector = class {
    */
   async reset() {
     this.deviceOperator_ = null;
-    try {
-      await this.initDeviceOperator();
-    } catch (e) {
-      console.error(e);
-    }
+    this.isDeviceOperatorReady_ = this.initDeviceOperator();
   }
 
   /**
    * Gets the device operator.
-   * @return {?cca.mojo.DeviceOperator} The video capture device operator. For
-   *     non-v3 devices, it returns null.
+   * @return {!Promise<?cca.mojo.DeviceOperator>} The video capture device
+   *     operator. For non-v3 devices, it returns null.
    */
-  getDeviceOperator() {
+  async getDeviceOperator() {
+    try {
+      await this.isDeviceOperatorReady_;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
     return this.deviceOperator_;
   }
 };

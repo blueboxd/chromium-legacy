@@ -46,9 +46,13 @@ class PrefetchBrowserTest
     if (split_cache_enabled_) {
       enable_features.push_back(
           net::features::kSplitCacheByNetworkIsolationKey);
+      enable_features.push_back(
+          network::features::kPrefetchMainResourceNetworkIsolationKey);
     } else {
       disabled_features.push_back(
           net::features::kSplitCacheByNetworkIsolationKey);
+      disabled_features.push_back(
+          network::features::kPrefetchMainResourceNetworkIsolationKey);
     }
 
     feature_list_.InitWithFeatures(enable_features, disabled_features);
@@ -597,6 +601,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
   auto preload_request_counter = RequestCounter::CreateAndMonitor(
       cross_origin_server_.get(), preload_path, &preload_waiter);
   RegisterRequestHandler(cross_origin_server_.get());
+  base::RunLoop preload_waiter_second_request;
+  auto preload_request_counter_second_request =
+      RequestCounter::CreateAndMonitor(cross_origin_server_.get(), preload_path,
+                                       &preload_waiter_second_request);
+
   ASSERT_TRUE(cross_origin_server_->Start());
 
   const GURL cross_origin_target_url =
@@ -619,7 +628,47 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, CrossOriginWithPreload) {
   EXPECT_EQ(1, preload_request_counter->GetRequestCount());
   EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
 
-  WaitUntilLoaded(cross_origin_server_->GetURL(preload_path));
+  GURL cross_origin_preload_url = cross_origin_server_->GetURL(preload_path);
+  WaitUntilLoaded(cross_origin_preload_url);
+
+  // When SplitCache is enabled and the prefetch resource and its headers are
+  // fetched with a modified NetworkIsolationKey, the preload header resource
+  // must not be reusable by any other origin but its parent prefetch's.
+  // TODO(crbug.com/910708): When SplitCache is enabled by default, get rid of
+  // the below conditional.
+  if (split_cache_enabled_) {
+    // Spin up another server, hosting a page with a preload header identical to
+    // the one in |target_path|.
+    const char* reuse_preload_attempt_path = "/reuse.html";
+    RegisterResponse(
+        reuse_preload_attempt_path,
+        ResponseEntry(
+            base::StringPrintf("<head><title>Other site</title><script "
+                               "src='%s'></script></head>",
+                               cross_origin_preload_url.spec().c_str()),
+            "text/html",
+            {{"link",
+              base::StringPrintf("<%s>;rel=\"preload\";as=\"script\"",
+                                 cross_origin_preload_url.spec().c_str())},
+             {"access-control-allow-origin", "*"}}));
+    std::unique_ptr<net::EmbeddedTestServer> other_cross_origin_server =
+        std::make_unique<net::EmbeddedTestServer>(
+            net::EmbeddedTestServer::TYPE_HTTPS);
+    RegisterRequestHandler(other_cross_origin_server.get());
+
+    ASSERT_TRUE(other_cross_origin_server->Start());
+
+    // Navigate to a page on the above-created server. A request for the same
+    // preload header fetched earlier must not be reusable, and must hit the
+    // network.
+    EXPECT_TRUE(NavigateToURL(shell(), other_cross_origin_server->GetURL(
+                                           reuse_preload_attempt_path)));
+    preload_waiter_second_request.Run();
+    EXPECT_EQ(2, preload_request_counter_second_request->GetRequestCount());
+
+    // We won't need this server again.
+    EXPECT_TRUE(other_cross_origin_server->ShutdownAndWaitUntilComplete());
+  }
 
   // Shutdown the servers.
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());

@@ -13,6 +13,7 @@
 
 # Terminating renderer for bad IPC message, reason 205
 # RFH_ERROR_PROCESS_NON_ERROR_COMMIT
+# https://crbug.com/999850
 -CaptivePortalBrowserTest.GoBackToTimeout
 -DNSErrorPageTest.DNSError_DoSearch
 -DNSErrorPageTest.DNSError_GoBack2

@@ -312,9 +312,14 @@ void ExecutionContext::CountFeaturePolicyUsage(mojom::WebFeature feature) {
 
 bool ExecutionContext::FeaturePolicyFeatureObserved(
     mojom::FeaturePolicyFeature feature) {
-  if (parsed_feature_policies_[static_cast<size_t>(feature)])
+  size_t feature_index = static_cast<size_t>(feature);
+  if (parsed_feature_policies_.size() == 0) {
+    parsed_feature_policies_.resize(
+        static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
+  } else if (parsed_feature_policies_[feature_index]) {
     return true;
-  parsed_feature_policies_.set(static_cast<size_t>(feature));
+  }
+  parsed_feature_policies_[feature_index] = true;
   return false;
 }
 

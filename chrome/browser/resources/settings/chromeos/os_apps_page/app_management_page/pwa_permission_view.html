@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="browser_proxy.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="permission_item.html">
+<link rel="import" href="pin_to_shelf_item.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
-<link rel="import" href="pin_to_shelf_item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 
@@ -29,16 +30,16 @@
             <div class="header-text">$i18n{permissions}</div>
           </div>
           <app-management-permission-item id="location"
-            class="subpermission-row" icon="cr:location-on"
+            class="subpermission-row" icon="app-management:location"
             permission-label="$i18n{location}"
             permission-type="CONTENT_SETTINGS_TYPE_GEOLOCATION">
           </app-management-permission-item>
           <app-management-permission-item id="camera" class="subpermission-row"
-            icon="cr:videocam" permission-label="$i18n{camera}"
+            icon="app-management:camera" permission-label="$i18n{camera}"
             permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA">
           </app-management-permission-item>
           <app-management-permission-item id="microphone"
-            class="subpermission-row" icon="cr:mic"
+            class="subpermission-row" icon="app-management:microphone"
             permission-label="$i18n{microphone}"
             permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC">
           </app-management-permission-item>

@@ -34,6 +34,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
     mojom::URLLoaderClientPtr client;
     ResourceRequest request;
+    uint32_t options;
   };
 
   // Bitfield that is used with |SimulateResponseForPendingRequest()| to

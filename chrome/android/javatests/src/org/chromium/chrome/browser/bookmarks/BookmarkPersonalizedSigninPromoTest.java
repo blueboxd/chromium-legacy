@@ -43,6 +43,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiDisableIf;
@@ -65,12 +66,12 @@ public class BookmarkPersonalizedSigninPromoTest {
     public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    private final FakeAccountManagerDelegate mAccountManagerDelegate =
-            new FakeAccountManagerDelegate(FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule =
+            new AccountManagerTestRule(FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
 
     @Before
     public void setUp() throws Exception {
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManagerDelegate);
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
@@ -172,11 +173,9 @@ public class BookmarkPersonalizedSigninPromoTest {
     private void addTestAccount() {
         Account account = AccountManagerFacade.createAccountFromName(TEST_ACCOUNT_NAME);
         AccountHolder.Builder accountHolder = AccountHolder.builder(account).alwaysAccept(true);
-        mAccountManagerDelegate.addAccountHolderBlocking(accountHolder.build());
         ProfileDataSource.ProfileData profileData =
                 new ProfileDataSource.ProfileData(TEST_ACCOUNT_NAME, null, TEST_FULL_NAME, null);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mAccountManagerDelegate.setProfileData(TEST_ACCOUNT_NAME, profileData));
+        mAccountManagerTestRule.addAccount(accountHolder.build(), profileData);
     }
 
     private static class IntentCallbackHelper implements IntentCallback, Closeable {

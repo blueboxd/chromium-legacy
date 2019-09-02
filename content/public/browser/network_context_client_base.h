@@ -21,16 +21,17 @@ class CONTENT_EXPORT NetworkContextClientBase
   ~NetworkContextClientBase() override;
 
   // network::mojom::NetworkContextClient implementation:
-  void OnAuthRequired(const base::Optional<base::UnguessableToken>& window_id,
-                      uint32_t process_id,
-                      uint32_t routing_id,
-                      uint32_t request_id,
-                      const GURL& url,
-                      bool first_auth_attempt,
-                      const net::AuthChallengeInfo& auth_info,
-                      network::mojom::URLResponseHeadPtr head,
-                      network::mojom::AuthChallengeResponderPtr
-                          auth_challenge_responder) override;
+  void OnAuthRequired(
+      const base::Optional<base::UnguessableToken>& window_id,
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const GURL& url,
+      bool first_auth_attempt,
+      const net::AuthChallengeInfo& auth_info,
+      network::mojom::URLResponseHeadPtr head,
+      mojo::PendingRemote<network::mojom::AuthChallengeResponder>
+          auth_challenge_responder) override;
   void OnCertificateRequested(
       const base::Optional<base::UnguessableToken>& window_id,
       uint32_t process_id,

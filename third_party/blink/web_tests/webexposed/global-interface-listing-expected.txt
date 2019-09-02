@@ -5114,6 +5114,7 @@ interface Navigator
     getter product
     getter productSub
     getter scheduling
+    getter screen
     getter serial
     getter serviceWorker
     getter sms
@@ -7457,6 +7458,10 @@ interface Screen
     getter pixelDepth
     getter width
     method constructor
+interface ScreenManager
+    attribute @@toStringTag
+    method constructor
+    method requestDisplays
 interface ScreenOrientation : EventTarget
     attribute @@toStringTag
     getter angle

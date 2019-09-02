@@ -46,7 +46,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_observer.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/version_info/version_info.h"
@@ -84,8 +84,8 @@ class PasswordManagerBrowserTest : public PasswordManagerBrowserTestBase {
   PasswordManagerBrowserTest() {
     // Turn off waiting for server predictions before filing. It makes filling
     // behaviour more deterministic. Filling with server predictions is tested
-    // in NewPasswordFormManager unit tests.
-    password_manager::NewPasswordFormManager::
+    // in PasswordFormManager unit tests.
+    password_manager::PasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
   }
 

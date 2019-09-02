@@ -798,6 +798,8 @@ if (!is_android) {
       "../browser/background_fetch/background_fetch_browsertest.cc",
       "../browser/background_sync/background_sync_browsertest.cc",
       "../browser/background_sync/background_sync_metrics_browsertest.cc",
+      "../browser/badging/test_badge_manager_delegate.cc",
+      "../browser/badging/test_badge_manager_delegate.h",
       "../browser/banners/app_banner_manager_browsertest.cc",
       "../browser/banners/app_banner_manager_browsertest_base.cc",
       "../browser/banners/app_banner_manager_browsertest_base.h",
@@ -2002,6 +2004,8 @@ if (!is_android) {
         "../browser/chromeos/extensions/login_screen/login_screen_apitest_base.cc",
         "../browser/chromeos/extensions/login_screen/login_screen_apitest_base.h",
         "../browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_ui_apitest.cc",
+        "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
+        "../browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/login_screen/storage_apitest.cc",
         "../browser/chromeos/extensions/users_private/users_private_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_apitest.cc",
@@ -3594,7 +3598,10 @@ test("unit_tests") {
     # !is_android
     sources += [
       # Badging isn't supported on Android.
+      "../browser/badging/badge_manager_delegate_unittest.cc",
       "../browser/badging/badge_manager_unittest.cc",
+      "../browser/badging/test_badge_manager_delegate.cc",
+      "../browser/badging/test_badge_manager_delegate.h",
 
       # Bookmark export/import are handled via the BookmarkColumns
       # ContentProvider.
@@ -5814,8 +5821,8 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/extension_settings_helper.h",
       "../browser/sync/test/integration/extensions_helper.cc",
       "../browser/sync/test/integration/extensions_helper.h",
-      "../browser/sync/test/integration/fake_server_invalidation_service.cc",
-      "../browser/sync/test/integration/fake_server_invalidation_service.h",
+      "../browser/sync/test/integration/fake_server_invalidation_sender.cc",
+      "../browser/sync/test/integration/fake_server_invalidation_sender.h",
       "../browser/sync/test/integration/fake_server_match_status_checker.cc",
       "../browser/sync/test/integration/fake_server_match_status_checker.h",
       "../browser/sync/test/integration/feature_toggler.cc",

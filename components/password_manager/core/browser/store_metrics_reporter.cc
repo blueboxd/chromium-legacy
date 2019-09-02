@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -33,6 +34,10 @@ StoreMetricsReporter::StoreMetricsReporter(
       "PasswordManager.LeakDetection.Enabled",
       prefs->GetBoolean(
           password_manager::prefs::kPasswordLeakDetectionEnabled));
+  password_manager::metrics_util::LogOnboardingState(
+      static_cast<password_manager::metrics_util::OnboardingState>(
+          prefs->GetInteger(
+              password_manager::prefs::kPasswordManagerOnboardingState)));
 }
 
 StoreMetricsReporter::~StoreMetricsReporter() = default;

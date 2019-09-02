@@ -191,8 +191,14 @@ void DedicatedWorkerHost::StartScriptLoad(
     }
   }
 
-  appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
-      storage_partition_impl->GetAppCacheService(), worker_process_id_);
+  // A dedicated worker depends on its nearest ancestor's appcache host.
+  AppCacheHost* appcache_host = nullptr;
+  const AppCacheNavigationHandle* appcache_handle =
+      nearest_ancestor_render_frame_host->GetAppCacheNavigationHandle();
+  if (appcache_handle) {
+    appcache_host = storage_partition_impl->GetAppCacheService()->GetHost(
+        appcache_handle->appcache_host_id());
+  }
 
   service_worker_handle_ = std::make_unique<ServiceWorkerNavigationHandle>(
       storage_partition_impl->GetServiceWorkerContext());
@@ -202,7 +208,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       request_initiator_origin, network_isolation_key_, credentials_mode,
       std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
-      service_worker_handle_.get(), appcache_handle_->host()->GetWeakPtr(),
+      service_worker_handle_.get(),
+      appcache_host ? appcache_host->GetWeakPtr() : nullptr,
       std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
       storage_domain,
       base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,

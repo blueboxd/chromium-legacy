@@ -98,6 +98,7 @@ class ProfileSyncService : public SyncService,
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     std::string debug_identifier;
     bool autofill_enable_account_wallet_storage = false;
+    bool enable_passwords_account_storage = false;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -386,6 +387,7 @@ class ProfileSyncService : public SyncService,
   const std::string debug_identifier_;
 
   const bool autofill_enable_account_wallet_storage_;
+  const bool enable_passwords_account_storage_;
 
   // This specifies where to find the sync server.
   const GURL sync_service_url_;

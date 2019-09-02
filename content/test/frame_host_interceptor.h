@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
@@ -46,7 +47,8 @@ class FrameHostInterceptor : public WebContentsObserver {
       mojom::BeginNavigationParamsPtr* begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken>* blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client,
-      blink::mojom::NavigationInitiatorPtr* navigation_initiator);
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>*
+          navigation_initiator);
 
  private:
   class FrameAgent;

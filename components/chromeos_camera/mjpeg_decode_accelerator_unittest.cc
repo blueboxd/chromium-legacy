@@ -40,8 +40,6 @@
 #include "media/gpu/format_utils.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
-#include "media/gpu/video_frame_mapper.h"
-#include "media/gpu/video_frame_mapper_factory.h"
 #include "media/parsers/jpeg_parser.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -188,11 +186,20 @@ class MjpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
       const gfx::Size& coded_size,
       const gfx::Size& visible_size);
 
-  // Creates a zero-initialized DMA-buf backed VideoFrame.
+  // Creates a zero-initialized DMA-buf backed VideoFrame. Also returns the
+  // backing GpuMemoryBuffer in |backing_gmb| if it is not null.
   scoped_refptr<media::VideoFrame> CreateDmaBufVideoFrame(
       media::VideoPixelFormat format,
       const gfx::Size& coded_size,
-      const gfx::Size& visible_size);
+      const gfx::Size& visible_size,
+      std::unique_ptr<gfx::GpuMemoryBuffer>* backing_gmb = nullptr);
+
+  // Maps |gmb| into a VideoFrame containing the data pointers. |gmb| should
+  // outlive the returned Videoframe.
+  scoped_refptr<media::VideoFrame> MapToVideoFrame(
+      gfx::GpuMemoryBuffer* gmb,
+      const media::VideoFrameLayout& layout,
+      const gfx::Rect& visible_rect);
 
   // Gets a list of supported DMA-buf frame formats for
   // CreateDmaBufVideoFrame().
@@ -290,7 +297,8 @@ scoped_refptr<media::VideoFrame>
 MjpegDecodeAcceleratorTestEnvironment::CreateDmaBufVideoFrame(
     media::VideoPixelFormat format,
     const gfx::Size& coded_size,
-    const gfx::Size& visible_size) {
+    const gfx::Size& visible_size,
+    std::unique_ptr<gfx::GpuMemoryBuffer>* backing_gmb) {
   if (!gpu_memory_buffer_manager_) {
     LOG(ERROR) << "GpuMemoryBufferManager is not created" << format;
     return nullptr;
@@ -351,9 +359,39 @@ MjpegDecodeAcceleratorTestEnvironment::CreateDmaBufVideoFrame(
     LOG(ERROR) << "Failed to create VideoFrameLayout";
     return nullptr;
   }
+
+  if (backing_gmb)
+    *backing_gmb = std::move(gmb);
+
   return media::VideoFrame::WrapExternalDmabufs(
       *layout, gfx::Rect(visible_size), visible_size, std::move(dmabuf_fds),
       base::TimeDelta());
+}
+
+scoped_refptr<media::VideoFrame>
+MjpegDecodeAcceleratorTestEnvironment::MapToVideoFrame(
+    gfx::GpuMemoryBuffer* gmb,
+    const media::VideoFrameLayout& layout,
+    const gfx::Rect& visible_rect) {
+  DCHECK(gmb);
+  if (!gmb->Map()) {
+    LOG(ERROR) << "Failed to map GpuMemoryBuffer";
+    return nullptr;
+  }
+  std::array<uint8_t*, 3> data{};
+  for (size_t i = 0; i < layout.num_planes(); i++)
+    data[i] = static_cast<uint8_t*>(gmb->memory(i));
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::WrapExternalYuvDataWithLayout(
+          layout, visible_rect, visible_rect.size(), data[0], data[1], data[2],
+          base::TimeDelta());
+  if (!frame) {
+    LOG(ERROR) << "Failed to create VideoFrame";
+    return nullptr;
+  }
+  frame->AddDestructionObserver(
+      base::BindOnce(&gfx::GpuMemoryBuffer::Unmap, base::Unretained(gmb)));
+  return frame;
 }
 
 std::vector<media::VideoPixelFormat>
@@ -437,13 +475,11 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   base::UnsafeSharedMemoryRegion in_shm_;
   base::WritableSharedMemoryMapping in_shm_mapping_;
   // Output video frame from the hardware decoder.
+  std::unique_ptr<gfx::GpuMemoryBuffer> hw_out_gmb_;
   scoped_refptr<media::VideoFrame> hw_out_dmabuf_frame_;
   scoped_refptr<media::VideoFrame> hw_out_frame_;
   // Output video frame from the software decoder.
   scoped_refptr<media::VideoFrame> sw_out_frame_;
-
-  // Video frame mapper used to map |hw_out_dmabuf_frame_| for software access.
-  std::unique_ptr<media::VideoFrameMapper> frame_mapper_;
 
   // This should be the first member to get destroyed because |decoder_|
   // potentially uses other members in the JpegClient instance. For example,
@@ -510,9 +546,9 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
 
   if (use_dmabuf_) {
     // Map and convert the output frame to I420.
-    ASSERT_TRUE(frame_mapper_);
-    scoped_refptr<media::VideoFrame> mapped_frame =
-        frame_mapper_->Map(hw_out_dmabuf_frame_);
+    scoped_refptr<media::VideoFrame> mapped_frame = g_env->MapToVideoFrame(
+        hw_out_gmb_.get(), hw_out_dmabuf_frame_->layout(),
+        hw_out_dmabuf_frame_->visible_rect());
     ASSERT_TRUE(mapped_frame);
     hw_out_frame_ = media::test::ConvertVideoFrame(mapped_frame.get(),
                                                    media::PIXEL_FORMAT_I420);
@@ -558,11 +594,10 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
         g_env->GetSupportedDmaBufFormats();
     ASSERT_FALSE(supported_formats.empty());
     hw_out_dmabuf_frame_ = g_env->CreateDmaBufVideoFrame(
-        supported_formats[0], image_file->coded_size, image_file->visible_size);
+        supported_formats[0], image_file->coded_size, image_file->visible_size,
+        &hw_out_gmb_);
     ASSERT_TRUE(hw_out_dmabuf_frame_);
-    frame_mapper_ = media::VideoFrameMapperFactory::CreateMapper(
-        hw_out_dmabuf_frame_->format());
-    ASSERT_TRUE(frame_mapper_);
+    ASSERT_TRUE(hw_out_gmb_);
   } else {
     // MJDA only supports I420 format for SHM output buffer.
     hw_out_frame_ = g_env->CreateShmVideoFrame(media::PIXEL_FORMAT_I420,

@@ -126,7 +126,6 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
   ~KeyboardControllerWebContentTest() override {}
 
   void SetUp() override {
-    ui::SetUpInputMethodFactoryForTesting();
     InProcessBrowserTest::SetUp();
   }
 
@@ -170,6 +169,7 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<ui::DummyTextInputClient> client;
+  ui::ScopedTestInputMethodFactory scoped_test_input_method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerWebContentTest);
 };

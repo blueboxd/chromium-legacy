@@ -1289,7 +1289,8 @@
       'filepath': 'services/network/',
     },
     'nfc': {
-      'filepath': '/nfc/',
+      'filepath': 'services/device/nfc/|'\
+                  'third_party/blink/renderer/modules/nfc/'
     },
     'notification_scheduler': {
       'filepath': 'chrome/browser/notifications/proto/|'\
@@ -2335,6 +2336,7 @@
     'generic_sensor': ['juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
                        'raphael.kubo.da.costa@intel.com',
+                       'rijubrata.bhaumik@intel.com',
                        'timvolodine@chromium.org',
                        'wanming.lin@intel.com'],
     'geolocation': ['mattreynolds+watch@chromium.org'],
@@ -2446,7 +2448,8 @@
     'net_websockets': ['ricea+watch@chromium.org'],
     'netinfo': ['jkarlin+watch@chromium.org'],
     'network_service': ['network-service-reviews@chromium.org'],
-    'nfc': ['mattreynolds+watch@chromium.org'],
+    'nfc': ['mattreynolds+watch@chromium.org',
+            'rijubrata.bhaumik@intel.com'],
     'notification_scheduler': ['xingliu+watch@chromium.org'],
     'notifications': ['peter@chromium.org'],
     'nqe': ['tbansal+watch-nqe@chromium.org'],
@@ -2639,7 +2642,8 @@
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
     'video': ['posciak+watch@chromium.org'],
-    'video_capture': ['chfremer+watch@chromium.org'],
+    'video_capture': ['chfremer+watch@chromium.org',
+                      'rijubrata.bhaumik@intel.com'],
     'video_gpu': ['acourbot+watch@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'yhanada+watchvk@chromium.org',

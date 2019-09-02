@@ -16,7 +16,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -29,12 +29,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using password_manager::NewPasswordFormManager;
+using password_manager::PasswordFormManager;
 using password_manager::PasswordFormMetricsRecorder;
 
 namespace {
 
-class MockPasswordFormManager : public NewPasswordFormManager {
+class MockPasswordFormManager : public PasswordFormManager {
  public:
   MOCK_METHOD0(PermanentlyBlacklist, void());
 
@@ -44,18 +44,17 @@ class MockPasswordFormManager : public NewPasswordFormManager {
       const autofill::FormData& form,
       password_manager::FormFetcher* form_fetcher,
       scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder)
-      : NewPasswordFormManager(
-            client,
-            driver,
-            form,
-            form_fetcher,
-            std::make_unique<password_manager::StubFormSaver>(),
-            metrics_recorder) {}
+      : PasswordFormManager(client,
+                            driver,
+                            form,
+                            form_fetcher,
+                            std::make_unique<password_manager::StubFormSaver>(),
+                            metrics_recorder) {}
 
   // Constructor for federation credentials.
   MockPasswordFormManager(password_manager::PasswordManagerClient* client,
                           const autofill::PasswordForm& form)
-      : NewPasswordFormManager(
+      : PasswordFormManager(
             client,
             std::make_unique<autofill::PasswordForm>(form),
             std::make_unique<password_manager::FakeFormFetcher>(),
@@ -73,7 +72,7 @@ class TestSavePasswordInfoBarDelegate : public SavePasswordInfoBarDelegate {
  public:
   TestSavePasswordInfoBarDelegate(
       content::WebContents* web_contents,
-      std::unique_ptr<password_manager::NewPasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
       bool is_smartlock_branding_enabled)
       : SavePasswordInfoBarDelegate(web_contents,
                                     std::move(form_to_save),
@@ -100,7 +99,7 @@ class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   std::unique_ptr<PasswordManagerInfoBarDelegate> CreateDelegate(
-      std::unique_ptr<password_manager::NewPasswordFormManager>
+      std::unique_ptr<password_manager::PasswordFormManager>
           password_form_manager,
       bool is_smartlock_branding_enabled);
 
@@ -132,8 +131,8 @@ SavePasswordInfoBarDelegateTest::SavePasswordInfoBarDelegateTest() {
   observed_form_.fields.push_back(field);
 
   // Turn off waiting for server predictions in order to avoid dealing with
-  // posted tasks in NewPasswordFormManager.
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+  // posted tasks in PasswordFormManager.
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 }
 
 PrefService* SavePasswordInfoBarDelegateTest::prefs() {
@@ -161,7 +160,7 @@ SavePasswordInfoBarDelegateTest::CreateMockFormManager(
 
 std::unique_ptr<PasswordManagerInfoBarDelegate>
 SavePasswordInfoBarDelegateTest::CreateDelegate(
-    std::unique_ptr<password_manager::NewPasswordFormManager>
+    std::unique_ptr<password_manager::PasswordFormManager>
         password_form_manager,
     bool is_smartlock_branding_enabled) {
   std::unique_ptr<PasswordManagerInfoBarDelegate> delegate(

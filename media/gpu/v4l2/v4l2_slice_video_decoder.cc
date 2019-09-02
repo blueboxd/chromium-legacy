@@ -128,9 +128,10 @@ struct V4L2SliceVideoDecoder::OutputRequest {
 // static
 std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool) {
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+    GetFramePoolCB get_pool_cb) {
   DCHECK(client_task_runner->RunsTasksInCurrentSequence());
-  DCHECK(frame_pool);
+  DCHECK(get_pool_cb);
 
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device) {
@@ -139,7 +140,8 @@ std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
   }
 
   return base::WrapUnique<VideoDecoder>(new V4L2SliceVideoDecoder(
-      std::move(client_task_runner), std::move(device), std::move(frame_pool)));
+      std::move(client_task_runner), std::move(decoder_task_runner),
+      std::move(device), std::move(get_pool_cb)));
 }
 
 // static
@@ -156,22 +158,19 @@ SupportedVideoDecoderConfigs V4L2SliceVideoDecoder::GetSupportedConfigs() {
 
 V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     scoped_refptr<V4L2Device> device,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool)
+    GetFramePoolCB get_pool_cb)
     : device_(std::move(device)),
-      frame_pool_(std::move(frame_pool)),
+      get_pool_cb_(std::move(get_pool_cb)),
       client_task_runner_(std::move(client_task_runner)),
-      decoder_task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::WithBaseSyncPrimitives(),
-           base::TaskPriority::USER_VISIBLE})),
+      decoder_task_runner_(std::move(decoder_task_runner)),
       device_poll_thread_("V4L2SliceVideoDecoderDevicePollThread"),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
   weak_this_ = weak_this_factory_.GetWeakPtr();
-
-  frame_pool_->set_parent_task_runner(decoder_task_runner_);
 }
 
 V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
@@ -245,6 +244,7 @@ void V4L2SliceVideoDecoder::DestroyTask() {
   DCHECK(surfaces_at_device_.empty());
 
   weak_this_factory_.InvalidateWeakPtrs();
+
   delete this;
   VLOGF(2) << "Destroyed";
 }
@@ -317,6 +317,9 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     }
     SetState(State::kUninitialized);
   }
+
+  // Setup frame pool.
+  frame_pool_ = get_pool_cb_.Run();
 
   // Open V4L2 device.
   VideoCodecProfile profile = config.profile();

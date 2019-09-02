@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
-#include "net/base/features.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
@@ -491,7 +491,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     // remove this feature check, also remove the exceptions in
     // net/base/features.h DEPS as well as audit_non_blink_usage.py.
     if (base::FeatureList::IsEnabled(
-            net::features::kSplitCacheByNetworkIsolationKey) &&
+            network::features::kPrefetchMainResourceNetworkIsolationKey) &&
         EqualIgnoringASCIICase(params.as, "document")) {
       resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
     }

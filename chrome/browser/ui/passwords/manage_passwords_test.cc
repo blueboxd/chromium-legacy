@@ -20,12 +20,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "content/public/test/test_utils.h"
 
-using password_manager::NewPasswordFormManager;
+using password_manager::PasswordFormManager;
 
 namespace {
 constexpr char kTestOrigin[] = "https://www.example.com";
@@ -56,8 +56,8 @@ ManagePasswordsTest::ManagePasswordsTest() {
   observed_form_.fields.push_back(field);
 
   // Turn off waiting for server predictions in order to avoid dealing with
-  // posted tasks in NewPasswordFormManager.
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+  // posted tasks in PasswordFormManager.
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 }
 
 ManagePasswordsTest::~ManagePasswordsTest() = default;
@@ -87,7 +87,7 @@ void ManagePasswordsTest::SetupManagingPasswords() {
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
-  auto form_manager = std::make_unique<NewPasswordFormManager>(
+  auto form_manager = std::make_unique<PasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
       base::WrapUnique(new password_manager::StubFormSaver),
       nullptr /*  metrics_recorder */);
@@ -96,7 +96,7 @@ void ManagePasswordsTest::SetupPendingPassword() {
 }
 
 void ManagePasswordsTest::SetupAutomaticPassword() {
-  auto form_manager = std::make_unique<NewPasswordFormManager>(
+  auto form_manager = std::make_unique<PasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
       base::WrapUnique(new password_manager::StubFormSaver),
       nullptr /*  metrics_recorder */);

@@ -180,7 +180,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -542,14 +541,15 @@ struct PendingNavigation {
   mojom::BeginNavigationParamsPtr begin_navigation_params;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
   mojom::NavigationClientAssociatedPtrInfo navigation_client;
-  blink::mojom::NavigationInitiatorPtr navigation_initiator;
+  mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator;
 
   PendingNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_navigation_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator);
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator);
 };
 
 PendingNavigation::PendingNavigation(
@@ -557,7 +557,7 @@ PendingNavigation::PendingNavigation(
     mojom::BeginNavigationParamsPtr begin_navigation_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator)
+    mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator)
     : common_params(std::move(common_params)),
       begin_navigation_params(std::move(begin_navigation_params)),
       blob_url_loader_factory(std::move(blob_url_loader_factory)),
@@ -3890,7 +3890,7 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
 RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
   DCHECK(base::FeatureList::IsEnabled(
-      net::features::kSplitCacheByNetworkIsolationKey));
+      network::features::kPrefetchMainResourceNetworkIsolationKey));
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   bool bypass_redirect_checks = false;
   // Passing a nullopt NetworkIsolationKey ensures the factory is not
@@ -4152,7 +4152,8 @@ void RenderFrameHostImpl::BeginNavigation(
     mojom::BeginNavigationParamsPtr begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator) {
+    mojo::PendingRemote<blink::mojom::NavigationInitiator>
+        navigation_initiator) {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
     // Avoid starting any new navigations since this frame is in the process of
     // attaching an inner delegate.
@@ -5492,13 +5493,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   associated_registry_->AddInterface(
       base::BindRepeating(make_binding, base::Unretained(this)));
 
-  // TODO(crbug.com/955171): This shim is necessary due to the Mojo change from
-  // AssociatedInterfaceRequest to PendingAssociatedReceiver. It can be
-  // simplified once that is complete.
   associated_registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* self,
-         mojo::AssociatedInterfaceRequest<blink::mojom::PortalHost> request) {
-        Portal::BindPortalHostReceiver(self, std::move(request));
+         mojo::PendingAssociatedReceiver<blink::mojom::PortalHost> receiver) {
+        Portal::BindPortalHostReceiver(self, std::move(receiver));
       },
       base::Unretained(this)));
 

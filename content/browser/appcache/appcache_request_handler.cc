@@ -229,16 +229,16 @@ AppCacheRequestHandler::InitializeForMainResourceNetworkService(
           std::make_unique<AppCacheURLLoaderRequest>(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
-  handler->appcache_host_ = std::move(appcache_host);
+  if (handler)
+    handler->appcache_host_ = std::move(appcache_host);
   return handler;
 }
 
 // static
 bool AppCacheRequestHandler::IsMainResourceType(ResourceType type) {
-  // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
-  // to be a main resource.
-  if (type == ResourceType::kWorker)
-    return base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker);
+  // This returns false for kWorker, which is typically considered a main
+  // resource. In appcache, dedicated workers are treated as subresources of
+  // their nearest ancestor frame's appcache host unlike shared workers.
   return IsResourceTypeFrame(type) || type == ResourceType::kSharedWorker;
 }
 
@@ -571,8 +571,16 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     return false;
   }
   DCHECK(was_called);
-  if (IsMainResourceType(resource_type_))
+
+  // Create a subresource loader if needed (it's a main resource or a dedicated
+  // worker).
+  // In appcache, dedicated workers are treated as subresources of their nearest
+  // ancestor frame's appcache host. On the other hand, dedicated workers need
+  // their own subresource loader.
+  if (IsMainResourceType(resource_type_) ||
+      resource_type_ == ResourceType::kWorker) {
     should_create_subresource_loader_ = true;
+  }
   return true;
 }
 

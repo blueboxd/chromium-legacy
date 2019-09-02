@@ -146,6 +146,7 @@
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -7277,9 +7278,8 @@ void RenderFrameImpl::BeginNavigationInternal(
     navigation_client_impl_->MarkWasInitiatedInThisFrame();
   }
 
-  blink::mojom::NavigationInitiatorPtr initiator_ptr(
-      blink::mojom::NavigationInitiatorPtrInfo(
-          std::move(info->navigation_initiator_handle), 0));
+  mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator(
+      std::move(info->navigation_initiator_handle), 0);
 
   bool current_frame_has_download_sandbox_flag =
       !frame_->IsAllowedToDownloadWithoutUserActivation();
@@ -7293,7 +7293,7 @@ void RenderFrameImpl::BeginNavigationInternal(
                                  load_flags, has_download_sandbox_flag, from_ad,
                                  is_history_navigation_in_new_child_frame),
       std::move(begin_navigation_params), std::move(blob_url_token),
-      std::move(navigation_client_info), std::move(initiator_ptr));
+      std::move(navigation_client_info), std::move(navigation_initiator));
 }
 
 void RenderFrameImpl::DecodeDataURL(

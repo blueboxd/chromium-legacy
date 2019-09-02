@@ -40,8 +40,13 @@
 using signin::AccountReconcilorDelegate;
 using signin_metrics::AccountReconcilorState;
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+const base::Feature kUseMultiloginEndpoint{"UseMultiloginEndpoint",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kUseMultiloginEndpoint{"UseMultiloginEndpoint",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 namespace {
 

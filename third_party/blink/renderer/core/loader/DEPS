@@ -1,7 +1,4 @@
 specific_include_rules = {
-    "preload_helper.cc" : [
-        "+net/base/features.h"
-    ],
     "alternate_signed_exchange_resource_info.cc" : [
         "+net/http/http_request_headers.h"
     ],

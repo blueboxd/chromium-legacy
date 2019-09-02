@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "gc_api.h"
-#include <ostream>
 
 SafepointTable spt = GenSafepointTable();
-Heap* heap = new Heap();
+Heap* heap = nullptr;
 
 HeapAddress Heap::AllocRaw(long value) {
   assert(heap_ptr < kHeapSize && "Allocation failed: Heap full");
@@ -33,27 +32,26 @@ HeapAddress Heap::UpdatePointer(HeapAddress ptr) {
   return reinterpret_cast<HeapAddress>(new_ptr);
 }
 
-std::ostream& operator<<(std::ostream& os, const FrameRoots& fr) {
-  os << "Register Roots: NYI" << std::endl << "\t";
-  if (!fr.stack_roots_.size()) {
-    os << "Stack Roots: []" << std::endl;
-    return os;
+void FrameRoots::Print() const {
+  printf("\tRegister Roots: NYI\n");
+  if (!stack_roots_.size()) {
+    printf("\tStack Roots: []\n");
+    return;
   }
 
-  os << "Stack Roots: [";
-  for (auto SR : fr.stack_roots_) {
-    os << "RBP - " << SR << ", ";
+  printf("\tStack Roots: [");
+  for (auto SR : stack_roots_) {
+    printf("RBP - %d, ", SR);
   }
-  os << "\b\b]" << std::endl;
-  return os;
+  printf("\b\b]\n");
 }
 
-std::ostream& operator<<(std::ostream& os, const SafepointTable& st) {
-  os << "Safepoint Table:" << std::endl;
-  for (auto const& pair : st.roots_) {
-    os << "\t" << pair.first << ":\n\t" << pair.second << std::endl;
+void SafepointTable::Print() const {
+  printf("Safepoint Table\n");
+  for (auto const& pair : roots_) {
+    printf("Frame %p\n", reinterpret_cast<void*>(pair.first));
+    pair.second.Print();
   }
-  return os;
 }
 
 extern "C" void StackWalkAndMoveObjects(FramePtr fp) {
@@ -61,6 +59,11 @@ extern "C" void StackWalkAndMoveObjects(FramePtr fp) {
     // The caller's return address is always 1 machine word above the recorded
     // RBP value in the current frame
     auto ra = reinterpret_cast<ReturnAddress>(*(fp + 1));
+
+    // Step up into the caller's frame or bail if we're at the top of stack
+    fp = reinterpret_cast<FramePtr>(*fp);
+    if (reinterpret_cast<uintptr_t>(fp) == TopOfStack)
+      break;
 
     printf("==== Frame %p ====\n", reinterpret_cast<void*>(ra));
 
@@ -91,19 +94,24 @@ extern "C" void StackWalkAndMoveObjects(FramePtr fp) {
                reinterpret_cast<void*>(*stack_address));
       }
     }
-
-    // Step up into the caller's frame or bail if we're at the top of stack
-    fp = reinterpret_cast<FramePtr>(*fp);
-    if (reinterpret_cast<uintptr_t>(fp) < spt.stack_begin())
-      break;
   }
-
   heap->MoveObjects();
 }
 
 Handle<HeapObject> AllocateHeapObject(long data) {
   HeapAddress ptr = heap->AllocRaw(data);
-  /* long* ptr = new long; */
-  /* *ptr = data; */
   return Handle<HeapObject>::New(reinterpret_cast<HeapObject*>(ptr));
+}
+
+void InitGC() {
+  InitTopOfStack();
+  heap = new Heap();
+}
+
+void TeardownGC() {
+  delete heap;
+}
+
+void PrintSafepointTable() {
+  spt.Print();
 }

@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace network {
@@ -26,16 +27,16 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
     ignore_last_upload_file_ = ignore_last_upload_file;
   }
 
-  void OnAuthRequired(
-      const base::Optional<base::UnguessableToken>& window_id,
-      uint32_t process_id,
-      uint32_t routing_id,
-      uint32_t request_id,
-      const GURL& url,
-      bool first_auth_attempt,
-      const net::AuthChallengeInfo& auth_info,
-      network::mojom::URLResponseHeadPtr head,
-      mojom::AuthChallengeResponderPtr auth_challenge_responder) override {}
+  void OnAuthRequired(const base::Optional<base::UnguessableToken>& window_id,
+                      uint32_t process_id,
+                      uint32_t routing_id,
+                      uint32_t request_id,
+                      const GURL& url,
+                      bool first_auth_attempt,
+                      const net::AuthChallengeInfo& auth_info,
+                      network::mojom::URLResponseHeadPtr head,
+                      mojo::PendingRemote<mojom::AuthChallengeResponder>
+                          auth_challenge_responder) override {}
   void OnCertificateRequested(
       const base::Optional<base::UnguessableToken>& window_id,
       uint32_t process_id,

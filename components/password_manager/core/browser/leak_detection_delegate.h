@@ -55,9 +55,9 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   // Initiates the showing of the leak detection notification. If the account is
   // synced, it is called by |helper_| after the |leak_type| was asynchronously
   // determined.
-  void OnShowLeakDetectionNotifiction(CredentialLeakType leak_type,
-                                      GURL url,
-                                      base::string16 username);
+  void OnShowLeakDetectionNotification(CredentialLeakType leak_type,
+                                       GURL url,
+                                       base::string16 username);
 
   void OnError(LeakDetectionError error) override;
 

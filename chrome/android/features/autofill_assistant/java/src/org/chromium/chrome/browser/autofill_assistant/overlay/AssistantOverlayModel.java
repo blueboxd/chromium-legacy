@@ -40,9 +40,15 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<Integer> HIGHLIGHT_BORDER_COLOR =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<Integer> TAP_TRACKING_COUNT =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<Long> TAP_TRACKING_DURATION_MS =
+            new WritableObjectPropertyKey<>();
+
     public AssistantOverlayModel() {
         super(STATE, TOUCHABLE_AREA, RESTRICTED_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
-                HIGHLIGHT_BORDER_COLOR);
+                HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT, TAP_TRACKING_DURATION_MS);
     }
 
     @CalledByNative
@@ -87,6 +93,12 @@ public class AssistantOverlayModel extends PropertyModel {
     @CalledByNative
     private boolean setHighlightBorderColor(String colorString) {
         return setColor(HIGHLIGHT_BORDER_COLOR, colorString);
+    }
+
+    @CalledByNative
+    private void setTapTracking(int count, long durationMs) {
+        set(TAP_TRACKING_COUNT, count);
+        set(TAP_TRACKING_DURATION_MS, durationMs);
     }
 
     /**

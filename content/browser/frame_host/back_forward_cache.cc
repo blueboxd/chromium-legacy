@@ -144,8 +144,13 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
     return false;
 
   // Only store documents that have successful http status code.
-  // Note that for non-http navigations, |last_http_status_code| is equal to 0.
+  // Note that for error pages, |last_http_status_code| is equal to 0.
   if (rfh->last_http_status_code() != net::HTTP_OK)
+    return false;
+
+  // Do store main document with non HTTP/HTTPS URL scheme. In particular, this
+  // excludes the new tab page.
+  if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
     return false;
 
   return CanStoreRenderFrameHost(rfh);

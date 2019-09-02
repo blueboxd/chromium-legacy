@@ -157,6 +157,26 @@ static const int kT3TTL = 0x00000015;
 // +2 for the CNAME records, +1 for TXT record.
 static const unsigned kT3RecordCount = base::size(kT3IpAddresses) + 3;
 
+//-----------------------------------------------------------------------------
+// Query/response set for www.gstatic.com, ID is fixed to 4.
+static const char kT4HostName[] = "www.gstatic.com";
+static const uint16_t kT4Qtype = dns_protocol::kTypeA;
+static const char kT4DnsName[] = {0x03, 'w', 'w', 'w', 0x07, 'g',
+                                  's',  't', 'a', 't', 'i',  'c',
+                                  0x03, 'c', 'o', 'm', 0x00};
+static const size_t kT4QuerySize = 33;
+static const uint8_t kT4ResponseDatagram[] = {
+    // response contains the following IP addresses: 172.217.6.195.
+    0x00, 0x04, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x03, 0x77, 0x77, 0x77, 0x07, 0x67, 0x73, 0x74,
+    0x61, 0x74, 0x69, 0x63, 0x03, 0x63, 0x6f, 0x6d, 0x00, 0x00,
+    0x01, 0x00, 0x01, 0xc0, 0x0c, 0x00, 0x01, 0x00, 0x01, 0x00,
+    0x00, 0x01, 0x2b, 0x00, 0x04, 0xac, 0xd9, 0x06, 0xc3};
+
+static const char* const kT4IpAddresses[] = {"172.217.6.195"};
+static const int kT4TTL = 0x0000012b;
+static const unsigned kT4RecordCount = base::size(kT0IpAddresses);
+
 class AddressSorter;
 class DnsClient;
 class IPAddress;
@@ -249,17 +269,21 @@ class MockDnsClient : public DnsClient {
   bool CanUseSecureDnsTransactions() const override;
   bool CanUseInsecureDnsTransactions() const override;
   void SetInsecureEnabled(bool enabled) override;
+  bool FallbackFromSecureTransactionPreferred() const override;
   bool FallbackFromInsecureTransactionPreferred() const override;
   bool SetSystemConfig(base::Optional<DnsConfig> system_config) override;
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;
+  void SetRequestContextForProbes(
+      URLRequestContext* url_request_context) override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;
   void ClearInsecureFallbackFailures() override;
   base::Optional<DnsConfig> GetSystemConfigForTesting() const override;
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
+  void SetProbeSuccessForTest(unsigned index, bool success) override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
@@ -272,6 +296,10 @@ class MockDnsClient : public DnsClient {
     ignore_system_config_changes_ = ignore_system_config_changes;
   }
 
+  void set_doh_server_available(bool available) {
+    doh_server_available_ = available;
+  }
+
  private:
   class MockTransactionFactory;
 
@@ -281,6 +309,7 @@ class MockDnsClient : public DnsClient {
   int fallback_failures_ = 0;
   int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
   bool ignore_system_config_changes_ = false;
+  bool doh_server_available_ = true;
 
   base::Optional<DnsConfig> config_;
   DnsConfigOverrides overrides_;

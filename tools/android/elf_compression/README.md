@@ -18,7 +18,6 @@ version.
 ### Library constructor
 TODO(https://crbug.com/998082): describe this.
 
-
 ## Usage
 Firstly, the library needs to be build with the tool's constructor.
 TODO(https://crbug.com/998082): describe this.
@@ -34,3 +33,10 @@ compress.
 It is important to note that after running the script some of the common ELF
 tooling utilities, for example objcopy, may stop working because of the
 unusual (but legal) changes made to the library.
+
+## Testing
+To run tests:
+
+    test/compression_script_test.py
+
+The test simply verifies that the sample library is not broken after applying the script.

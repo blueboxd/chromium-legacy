@@ -590,15 +590,16 @@ interface NetworkContextClient {
   // |window_id| or else |process_id| and |routing_id| indicates
   // the frame making the request, see
   // network::ResourceRequest::fetch_window_id.
-  OnAuthRequired(mojo_base.mojom.UnguessableToken? window_id,
-                 uint32 process_id,
-                 uint32 routing_id,
-                 uint32 request_id,
-                 url.mojom.Url url,
-                 bool first_auth_attempt,
-                 AuthChallengeInfo auth_info,
-                 URLResponseHead? head,
-                 AuthChallengeResponder auth_challenge_responder);
+  OnAuthRequired(
+      mojo_base.mojom.UnguessableToken? window_id,
+      uint32 process_id,
+      uint32 routing_id,
+      uint32 request_id,
+      url.mojom.Url url,
+      bool first_auth_attempt,
+      AuthChallengeInfo auth_info,
+      URLResponseHead? head,
+      pending_remote<AuthChallengeResponder> auth_challenge_responder);
 
   // Called when an SSL certificate requested message is received for client
   // authentication.

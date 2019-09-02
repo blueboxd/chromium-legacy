@@ -188,6 +188,7 @@ class MockTransaction : public DnsTransaction,
                   const std::string& hostname,
                   uint16_t qtype,
                   bool secure,
+                  DnsConfig::SecureDnsMode secure_dns_mode,
                   URLRequestContext* url_request_context,
                   DnsTransactionFactory::CallbackType callback)
       : result_(MockDnsClientRule::FAIL),
@@ -465,10 +466,11 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
       DnsTransactionFactory::CallbackType callback,
       const NetLogWithSource&,
       bool secure,
+      DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* url_request_context) override {
     std::unique_ptr<MockTransaction> transaction =
         std::make_unique<MockTransaction>(rules_, hostname, qtype, secure,
-                                          url_request_context,
+                                          secure_dns_mode, url_request_context,
                                           std::move(callback));
     if (transaction->delayed())
       delayed_transactions_.push_back(transaction->AsWeakPtr());
@@ -476,6 +478,18 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
   }
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override {}
+
+  base::TimeDelta GetDelayUntilNextProbeForTest(
+      unsigned doh_server_index) override {
+    NOTREACHED();
+    return base::TimeDelta();
+  }
+
+  void StartDohProbes(URLRequestContext* url_request_context) override {}
+
+  DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
+    return DnsConfig::SecureDnsMode::AUTOMATIC;
+  }
 
   void CompleteDelayedTransactions() {
     DelayedTransactionList old_delayed_transactions;
@@ -518,6 +532,10 @@ void MockDnsClient::SetInsecureEnabled(bool enabled) {
   insecure_enabled_ = enabled;
 }
 
+bool MockDnsClient::FallbackFromSecureTransactionPreferred() const {
+  return !CanUseSecureDnsTransactions() || !doh_server_available_;
+}
+
 bool MockDnsClient::FallbackFromInsecureTransactionPreferred() const {
   return !CanUseInsecureDnsTransactions() ||
          fallback_failures_ >= max_fallback_failures_;
@@ -552,6 +570,9 @@ const DnsHosts* MockDnsClient::GetHosts() const {
   return &config->hosts;
 }
 
+void MockDnsClient::SetRequestContextForProbes(
+    URLRequestContext* url_request_context) {}
+
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {
   return GetEffectiveConfig() ? factory_.get() : nullptr;
 }
@@ -575,6 +596,8 @@ base::Optional<DnsConfig> MockDnsClient::GetSystemConfigForTesting() const {
 DnsConfigOverrides MockDnsClient::GetConfigOverridesForTesting() const {
   return overrides_;
 }
+
+void MockDnsClient::SetProbeSuccessForTest(unsigned index, bool success) {}
 
 void MockDnsClient::CompleteDelayedTransactions() {
   factory_->CompleteDelayedTransactions();

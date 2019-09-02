@@ -25,6 +25,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
  public:
   PasswordModelTypeController(
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+      std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_in_memory,
       syncer::SyncService* sync_service,
       const base::RepeatingClosure& state_changed_callback);
   ~PasswordModelTypeController() override;

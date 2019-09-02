@@ -67,7 +67,18 @@
             <div id="errorContainer" problem
                 hidden="[[!hasError_(parameters, userEdited_)]]">
               <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
-              [[getErrorText_(parameters, userEdited_)]]
+              <span hidden="[[!isErrorLabelVisible_(
+                                   errorLabelId_, userEdited_)]]">
+                [[i18nDynamic(locale, errorLabelId_)]]
+              </span>
+              <span hidden="[[!isErrorLabelVisible_(
+                                   errorLabelId_, userEdited_)]]">
+                [[i18nDynamic(locale, 'securityTokenPinDialogTryAgain')]]
+              </span>
+              <span hidden="[[!isAttemptsLeftVisible_(parameters)]]">
+                [[i18nDynamic(locale, 'securityTokenPinDialogAttemptsLeft',
+                              parameters.attemptsLeft)]]
+              </span>
             </div>
           </pin-keyboard>
         </div>

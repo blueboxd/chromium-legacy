@@ -26,13 +26,6 @@ import java.util.List;
  * Filters gestures that happen on the overlay.
  */
 class AssistantOverlayEventFilter extends EventFilter {
-    /**
-     * Complain after there's been {@link TAP_TRACKING_COUNT} taps within
-     * {@link @TAP_TRACKING_DURATION_MS} in the unallowed area.
-     */
-    private static final int TAP_TRACKING_COUNT = 3;
-    private static final long TAP_TRACKING_DURATION_MS = 5_000;
-
     /** A mode that describes what's happening to the current gesture. */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({GestureMode.NONE, GestureMode.TRACKING, GestureMode.FORWARDING})
@@ -51,6 +44,19 @@ class AssistantOverlayEventFilter extends EventFilter {
     private AssistantOverlayDelegate mDelegate;
     private ChromeFullscreenManager mFullscreenManager;
     private View mCompositorView;
+
+    /**
+     * Complain after there's been {@link #mTapTrackingCount} taps within
+     * {@link #mTapTrackingDurationMs} in the unallowed area.
+     *
+     * <p>The feature is disabled unless both are positive.
+     */
+    private int mTapTrackingCount;
+
+    /**
+     * How long to wait before resetting the tracking duration.
+     */
+    private long mTapTrackingDurationMs;
 
     /**
      * When in partial mode, let through scroll and pinch/zoom.
@@ -145,6 +151,14 @@ class AssistantOverlayEventFilter extends EventFilter {
 
     void setDelegate(AssistantOverlayDelegate delegate) {
         mDelegate = delegate;
+    }
+
+    void setTapTrackingCount(int count) {
+        mTapTrackingCount = count;
+    }
+
+    void setTapTrackingDurationMs(long durationMs) {
+        mTapTrackingDurationMs = durationMs;
     }
 
     /**
@@ -327,15 +341,17 @@ class AssistantOverlayEventFilter extends EventFilter {
 
     /** Considers whether to let the client know about unexpected taps. */
     private void onUnexpectedTap(MotionEvent e) {
+        if (mTapTrackingCount <= 0 || mTapTrackingDurationMs <= 0) return;
+
         long eventTimeMs = e.getEventTime();
         for (Iterator<Long> iter = mUnexpectedTapTimes.iterator(); iter.hasNext();) {
             Long timeMs = iter.next();
-            if ((eventTimeMs - timeMs) >= TAP_TRACKING_DURATION_MS) {
+            if ((eventTimeMs - timeMs) >= mTapTrackingDurationMs) {
                 iter.remove();
             }
         }
         mUnexpectedTapTimes.add(eventTimeMs);
-        if (mUnexpectedTapTimes.size() == TAP_TRACKING_COUNT && mDelegate != null) {
+        if (mUnexpectedTapTimes.size() == mTapTrackingCount && mDelegate != null) {
             mDelegate.onUnexpectedTaps();
             mUnexpectedTapTimes.clear();
         }

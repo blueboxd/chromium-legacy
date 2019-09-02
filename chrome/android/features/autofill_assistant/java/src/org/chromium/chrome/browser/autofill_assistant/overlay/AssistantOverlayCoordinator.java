@@ -59,6 +59,12 @@ public class AssistantOverlayCoordinator {
             } else if (AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR == propertyKey) {
                 mDrawable.setHighlightBorderColor(
                         model.get(AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR));
+            } else if (AssistantOverlayModel.TAP_TRACKING_COUNT == propertyKey) {
+                mEventFilter.setTapTrackingCount(
+                        model.get(AssistantOverlayModel.TAP_TRACKING_COUNT));
+            } else if (AssistantOverlayModel.TAP_TRACKING_DURATION_MS == propertyKey) {
+                mEventFilter.setTapTrackingDurationMs(
+                        model.get(AssistantOverlayModel.TAP_TRACKING_DURATION_MS));
             }
         });
     }

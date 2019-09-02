@@ -76,11 +76,14 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
   password_store_ = WebViewPasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
-  component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, version_info::Channel::STABLE, prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
-      profile_web_data_service_, account_web_data_service_, password_store_,
-      /*bookmark_sync_service=*/nullptr));
+  component_factory_ =
+      std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
+          this, version_info::Channel::STABLE,
+          prefs::kSavingBrowserHistoryDisabled,
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
+          profile_web_data_service_, account_web_data_service_, password_store_,
+          /*account_password_store=*/nullptr,
+          /*bookmark_sync_service=*/nullptr);
 }
 
 WebViewSyncClient::~WebViewSyncClient() {}

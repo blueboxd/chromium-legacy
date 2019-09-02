@@ -505,7 +505,8 @@ void LocalFrameClientImpl::BeginNavigation(
     const String& href_translate,
     WebContentSecurityPolicyList initiator_csp,
     network::mojom::IPAddressSpace initiator_address_space,
-    mojom::blink::NavigationInitiatorPtr navigation_initiator) {
+    mojo::PendingRemote<mojom::blink::NavigationInitiator>
+        navigation_initiator) {
   if (!web_frame_->Client())
     return;
 
@@ -528,7 +529,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->initiator_csp = std::move(initiator_csp);
   navigation_info->initiator_address_space = initiator_address_space;
   navigation_info->navigation_initiator_handle =
-      navigation_initiator.PassInterface().PassHandle();
+      navigation_initiator.PassPipe();
 
   // Can be null.
   LocalFrame* local_parent_frame = GetLocalParentFrame(web_frame_);

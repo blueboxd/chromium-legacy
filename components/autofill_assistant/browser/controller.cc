@@ -471,6 +471,10 @@ void Controller::GetOverlayColors(OverlayColors* colors) const {
   *colors = *overlay_colors_;
 }
 
+const ClientSettings& Controller::GetClientSettings() const {
+  return settings_;
+}
+
 void Controller::ReportNavigationStateChanged() {
   // Listeners are called in the same order they were added.
   for (auto* listener : listeners_) {
@@ -631,8 +635,12 @@ void Controller::OnGetScripts(const GURL& url,
                  Metrics::DropOutReason::GET_SCRIPTS_UNPARSABLE);
     return;
   }
-  if (response_proto.has_client_settings())
+  if (response_proto.has_client_settings()) {
     settings_.UpdateFromProto(response_proto.client_settings());
+    for (ControllerObserver& observer : observers_) {
+      observer.OnClientSettingsChanged(settings_);
+    }
+  }
 
   std::vector<std::unique_ptr<Script>> scripts;
   for (const auto& script_proto : response_proto.scripts()) {

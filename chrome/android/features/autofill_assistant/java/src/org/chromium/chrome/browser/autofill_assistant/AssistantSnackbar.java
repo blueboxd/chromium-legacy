@@ -13,8 +13,6 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
  * A simple UNDO snackbar with a delay.
  */
 class AssistantSnackbar {
-    private static final int DELAY_MS = 5_000;
-
     interface Callback {
         /**
          * Called once the snackbar is gone, after the delay has passed or after the user clicked
@@ -26,7 +24,8 @@ class AssistantSnackbar {
     }
 
     /** Shows the snackbar and reports the result to {@code callback}. */
-    static SnackbarController show(ChromeActivity activity, String message, Callback callback) {
+    static SnackbarController show(
+            ChromeActivity activity, int delayMs, String message, Callback callback) {
         SnackbarController controller = new SnackbarController() {
             @Override
             public void onAction(Object actionData) {
@@ -43,7 +42,7 @@ class AssistantSnackbar {
                                 Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
                         .setAction(activity.getString(R.string.undo), /* actionData= */ null);
         snackBar.setSingleLine(false);
-        snackBar.setDuration(DELAY_MS);
+        snackBar.setDuration(delayMs);
         activity.getSnackbarManager().showSnackbar(snackBar);
         return controller;
     }

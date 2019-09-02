@@ -210,12 +210,6 @@ cca.App.instance_ = null;
  */
 document.addEventListener('DOMContentLoaded', async () => {
   const mojoConnector = new cca.mojo.MojoConnector();
-  try {
-    await mojoConnector.initDeviceOperator();
-  } catch (e) {
-    console.error(e);
-  }
-
   if (!cca.App.instance_) {
     cca.App.instance_ = new cca.App(mojoConnector);
   }

@@ -2,8 +2,10 @@
 
 <link rel="import" href="../cr_input/cr_input.html">
 <link rel="import" href="../cr_scrollable_behavior.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 
 <dom-module id="cr-searchable-drop-down">
@@ -39,6 +41,25 @@
         position: absolute;
         top: 0;
         width: 100%;
+      }
+
+      #dropdown-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+        margin-top: -10px;
+        padding-inline-end: 6px;
+        position: absolute;
+        right: 0;
+        top: 50%;
+      }
+
+      :host-context([dir='rtl']) #dropdown-icon {
+        left: 0;
+        right: unset;
+      }
+
+      cr-input:focus-within #dropdown-icon {
+        --iron-icon-fill-color: var(--google-blue-600);
       }
 
       #input-box {
@@ -95,6 +116,7 @@
         invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]">
       <div id="input-overlay" slot="suffix">
         <div id="input-box">
+          <iron-icon id="dropdown-icon" icon="cr:arrow-drop-down"></iron-icon>
           <paper-progress id="loading" indeterminate hidden="[[!showLoading]]">
           </paper-progress>
         </div>

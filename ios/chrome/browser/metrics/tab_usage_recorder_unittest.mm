@@ -344,6 +344,15 @@ TEST_F(TabUsageRecorderTest, RendererTerminated) {
   histogram_tester_.ExpectUniqueSample(
       kRendererTerminationRecentlyAliveRenderers,
       kAliveTabsCountAtRendererTermination + 2, 1);
+
+  // Regression test for crbug.com/935205
+  // Terminate the same tab again. Verify that it isn't double-counted.
+  mock_tab_a->OnRenderProcessGone();
+  histogram_tester_.ExpectUniqueSample(kRendererTerminationAliveRenderers,
+                                       kAliveTabsCountAtRendererTermination, 1);
+  histogram_tester_.ExpectUniqueSample(
+      kRendererTerminationRecentlyAliveRenderers,
+      kAliveTabsCountAtRendererTermination + 2, 1);
 }
 
 // Verifies that metrics are recorded correctly when a renderer terminated tab

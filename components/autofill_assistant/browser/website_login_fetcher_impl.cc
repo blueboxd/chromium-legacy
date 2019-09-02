@@ -81,10 +81,9 @@ class WebsiteLoginFetcherImpl::PendingFetchLoginsRequest
     std::vector<const autofill::PasswordForm*> matches =
         form_fetcher_->GetNonFederatedMatches();
     std::map<base::string16, const autofill::PasswordForm*> best_matches;
-    std::vector<const autofill::PasswordForm*> not_best_matches;
     const autofill::PasswordForm* preferred_match = nullptr;
     password_manager_util::FindBestMatches(matches, &best_matches,
-                                           &not_best_matches, &preferred_match);
+                                           &preferred_match);
 
     std::vector<Login> logins;
     for (const auto& match : best_matches) {

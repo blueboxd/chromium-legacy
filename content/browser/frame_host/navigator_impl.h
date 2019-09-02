@@ -16,6 +16,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -97,7 +98,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache) override;
   void RestartNavigationAsCrossDocument(

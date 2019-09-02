@@ -220,8 +220,10 @@ void HTMLSlotElement::RecalcFlatTreeChildren() {
 
   if (assigned_nodes_.IsEmpty()) {
     // Use children as fallback
-    for (auto& child : NodeTraversal::ChildrenOf(*this))
-      flat_tree_children_.push_back(child);
+    for (auto& child : NodeTraversal::ChildrenOf(*this)) {
+      if (child.IsSlotable())
+        flat_tree_children_.push_back(child);
+    }
   } else {
     flat_tree_children_ = assigned_nodes_;
     for (auto& node : old_flat_tree_children) {

@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_session.h"
@@ -39,17 +41,33 @@ bool IsEqual(const base::Optional<DnsConfig>& c1, const DnsConfig* c2) {
   return c1.value() == *c2;
 }
 
-class DnsClientImpl : public DnsClient {
+constexpr base::TimeDelta kInitialDoHTimeout =
+    base::TimeDelta::FromMilliseconds(5000);
+
+class DnsClientImpl : public DnsClient,
+                      public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   DnsClientImpl(NetLog* net_log,
                 ClientSocketFactory* socket_factory,
                 const RandIntCallback& rand_int_callback)
-      : net_log_(net_log),
+      : probes_allowed_(false),
+        url_request_context_for_probes_(nullptr),
+        net_log_(net_log),
         socket_factory_(socket_factory),
-        rand_int_callback_(rand_int_callback) {}
+        rand_int_callback_(rand_int_callback) {
+    NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    delayed_probes_allowed_timer_.Start(
+        FROM_HERE, kInitialDoHTimeout,
+        base::Bind(&DnsClientImpl::SetProbesAllowed, base::Unretained(this)));
+  }
+
+  ~DnsClientImpl() override {
+    NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  }
 
   bool CanUseSecureDnsTransactions() const override {
-    return HasAvailableDohServer();
+    const DnsConfig* config = GetEffectiveConfig();
+    return config && config->dns_over_https_servers.size() > 0;
   }
 
   bool CanUseInsecureDnsTransactions() const override {
@@ -59,6 +77,13 @@ class DnsClientImpl : public DnsClient {
 
   void SetInsecureEnabled(bool enabled) override {
     insecure_enabled_ = enabled;
+  }
+
+  bool FallbackFromSecureTransactionPreferred() const override {
+    if (!CanUseSecureDnsTransactions())
+      return true;
+
+    return !(session_.get() && session_->HasAvailableDohServer());
   }
 
   bool FallbackFromInsecureTransactionPreferred() const override {
@@ -100,6 +125,11 @@ class DnsClientImpl : public DnsClient {
     return &config->hosts;
   }
 
+  void SetRequestContextForProbes(
+      URLRequestContext* url_request_context) override {
+    url_request_context_for_probes_ = url_request_context;
+  }
+
   DnsTransactionFactory* GetTransactionFactory() override {
     return session_.get() ? factory_.get() : nullptr;
   }
@@ -120,6 +150,10 @@ class DnsClientImpl : public DnsClient {
 
   DnsConfigOverrides GetConfigOverridesForTesting() const override {
     return config_overrides_;
+  }
+
+  void SetProbeSuccessForTest(unsigned index, bool success) override {
+    session_->SetProbeSuccess(index, success);
   }
 
  private:
@@ -175,15 +209,36 @@ class DnsClientImpl : public DnsClient {
           new DnsSession(std::move(new_effective_config).value(),
                          std::move(socket_pool), rand_int_callback_, net_log_);
       factory_ = DnsTransactionFactory::CreateFactory(session_.get());
+      StartDohProbes();
     }
   }
 
-  bool HasAvailableDohServer() const {
-    // TODO(crbug.com/985589): Once DoH probes are sent, update this such that a
-    // DoH server is considered successful if it has a successful probe state.
-    const DnsConfig* config = GetEffectiveConfig();
-    return config && config->dns_over_https_servers.size() > 0;
+  void OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType type) override {
+    if (session_) {
+      session_->UpdateTimeouts(type);
+      const char* kTrialName = "AsyncDnsFlushServerStatsOnConnectionTypeChange";
+      if (base::FieldTrialList::FindFullName(kTrialName) == "enable")
+        session_->InitializeServerStats();
+      if (type != NetworkChangeNotifier::CONNECTION_NONE)
+        StartDohProbes();
+    }
   }
+
+  void StartDohProbes() {
+    if (probes_allowed_) {
+      factory_->StartDohProbes(url_request_context_for_probes_);
+    } else {
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&DnsTransactionFactory::StartDohProbes,
+                         factory_->weak_factory_.GetWeakPtr(),
+                         url_request_context_for_probes_),
+          delayed_probes_allowed_timer_.GetCurrentDelay());
+    }
+  }
+
+  void SetProbesAllowed() { probes_allowed_ = true; }
 
   bool insecure_enabled_ = false;
   int insecure_fallback_failures_ = 0;
@@ -195,6 +250,11 @@ class DnsClientImpl : public DnsClient {
   std::unique_ptr<DnsTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_ =
       AddressSorter::CreateAddressSorter();
+  // Probes are not allowed until some amount of time has passed in order to
+  // prevent interference with startup tasks.
+  bool probes_allowed_;
+  base::OneShotTimer delayed_probes_allowed_timer_;
+  URLRequestContext* url_request_context_for_probes_;
 
   NetLog* net_log_;
 

@@ -123,6 +123,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
                          script_url.spec(), "main_script_url",
                          main_script_url.spec());
 
+  uint32_t options = network::mojom::kURLLoadOptionNone;
   network::ResourceRequest resource_request;
   resource_request.url = script_url;
   resource_request.site_for_cookies = main_script_url;
@@ -162,6 +163,11 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
         static_cast<int>(blink::mojom::RequestContextType::SERVICE_WORKER);
     resource_request.resource_type =
         static_cast<int>(ResourceType::kServiceWorker);
+
+    // Request SSLInfo. It will be persisted in service worker storage and
+    // may be used by ServiceWorkerNavigationLoader for navigations handled
+    // by this service worker.
+    options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
   } else {
     // The "fetch a classic worker-imported script" doesn't have any statement
     // about mode and credentials mode. Use the default value, which is
@@ -219,8 +225,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   network_loader_ = ServiceWorkerUpdatedScriptLoader::
       ThrottlingURLLoaderCoreWrapper::CreateLoaderAndStart(
           loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,
-          request_id, network::mojom::kURLLoadOptionNone, resource_request,
-          std::move(network_client), kUpdateCheckTrafficAnnotation);
+          request_id, options, resource_request, std::move(network_client),
+          kUpdateCheckTrafficAnnotation);
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted);
   network_loader_state_ =

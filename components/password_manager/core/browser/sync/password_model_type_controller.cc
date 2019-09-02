@@ -15,9 +15,12 @@ namespace password_manager {
 
 PasswordModelTypeController::PasswordModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_in_memory,
     syncer::SyncService* sync_service,
     const base::RepeatingClosure& state_changed_callback)
-    : ModelTypeController(syncer::PASSWORDS, std::move(delegate_on_disk)),
+    : ModelTypeController(syncer::PASSWORDS,
+                          std::move(delegate_on_disk),
+                          std::move(delegate_in_memory)),
       sync_service_(sync_service),
       state_changed_callback_(state_changed_callback) {}
 

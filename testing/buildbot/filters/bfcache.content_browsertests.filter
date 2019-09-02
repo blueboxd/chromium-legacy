@@ -54,6 +54,7 @@
 -NavigationHandleImplBrowserTest.StartToCommitMetrics
 
 # render_view_impl.cc. Check failed: !frame_widget_.
+# https://crbug.com/999846
 -NavigationControllerBrowserTest.PageStateAfterForwardInCompetingFrames
 -NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
 -NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
@@ -61,6 +62,7 @@
 -RenderFrameHostManagerTest.BackForwardNotStale
 
 # Javascript dialog is shown from a page in the BackForwardCache.
+# https://crbug.com/999847
 -NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames
 
 # history.back(); history.back() causes the tab to go back twice instead of
@@ -96,6 +98,7 @@
 -RenderFrameHostManagerTest.UnloadPushStateOnCrossProcessNavigation
 -RenderFrameHostManagerTest.WebUIJavascriptDisallowedAfterSwapOut
 -RenderProcessHostTest.KeepAliveRendererProcess
+-SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
 -SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest
 
@@ -106,20 +109,16 @@
 # Waiting for unload handler, but they aren't executed.
 -SitePerProcessBrowserTest.PartialUnloadHandler
 -SitePerProcessBrowserTest.Unload_ABAB
-
-# Expect the old RenderView to be removed. It isn't, because it it still used
-# by a bfcached document.
--SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
+-WebContentsImplBrowserTest.SetTitleOnUnload
 
 # Check failed: false. Navigation in an inactive frame
+# https://crbug.com/999848
 -NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithUserGesture
 -SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
 
-# Unload handler not run => Title not updated.
--WebContentsImplBrowserTest.SetTitleOnUnload
-
 # FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
 # In content::RenderFrameProxy::OnSetFrameOwnerProperties()
+# https://crbug.com/999849
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/0
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/1
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache
@@ -129,3 +128,10 @@
 # https://crbug.com/992891
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/1
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/0
+
+# Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
+# in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.
+# With the BackForwardCache, the RenderFrameHost is not deleted, so the
+# histogram is not recorded before the end of the test.
+-SignedExchangeRequestHandlerBrowserTest.Simple/3
+-SignedExchangeRequestHandlerBrowserTest.VariantMatch/3

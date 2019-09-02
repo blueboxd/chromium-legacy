@@ -12,6 +12,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -47,18 +48,34 @@ void OnboardingDialogView::Show() {
 
   client_->GetPrefs()->SetInteger(
       password_manager::prefs::kPasswordManagerOnboardingState,
-      static_cast<int>(password_manager::OnboardingState::kShown));
+      static_cast<int>(
+          password_manager::metrics_util::OnboardingState::kShown));
+}
+
+void OnboardingDialogView::DismissWithReasonAndDelete(
+    password_manager::metrics_util::OnboardingUIDismissalReason reason) {
+  password_manager::metrics_util::LogOnboardingUIDismissalReason(reason);
+  delete this;
 }
 
 void OnboardingDialogView::OnboardingAccepted(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   client_->OnOnboardingSuccessful(std::move(form_to_save_));
-  delete this;
+  DismissWithReasonAndDelete(
+      password_manager::metrics_util::OnboardingUIDismissalReason::kAccepted);
 }
 
 void OnboardingDialogView::OnboardingRejected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  delete this;
+  DismissWithReasonAndDelete(
+      password_manager::metrics_util::OnboardingUIDismissalReason::kRejected);
+}
+
+void OnboardingDialogView::OnboardingAborted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DismissWithReasonAndDelete(
+      password_manager::metrics_util::OnboardingUIDismissalReason::kDismissed);
 }

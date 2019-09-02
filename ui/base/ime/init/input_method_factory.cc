@@ -72,20 +72,27 @@ std::unique_ptr<InputMethod> CreateInputMethod(
 #endif
 }
 
-void SetUpInputMethodFactoryForTesting() {
-  if (g_input_method_set_for_testing)
-    return;
-
-  CHECK(!g_create_input_method_called)
-      << "ui::SetUpInputMethodFactoryForTesting was called after use of "
-      << "ui::CreateInputMethod.  You must call "
-      << "ui::SetUpInputMethodFactoryForTesting earlier.";
-
-  g_input_method_set_for_testing = true;
-}
-
 void SetUpInputMethodForTesting(InputMethod* input_method) {
   g_input_method_for_testing = input_method;
+}
+
+ScopedTestInputMethodFactory::ScopedTestInputMethodFactory() {
+  CHECK(!g_input_method_set_for_testing)
+      << "ScopedTestInputMethodFactory was created after calling "
+         "ui::SetUpInputMethodFactoryForTesting or inside another "
+         "ScopedTestInputMethodFactory lifetime.";
+
+  DLOG_IF(WARNING, g_create_input_method_called)
+      << "ui::CreateInputMethod was already called. That can happen when other "
+         "tests in the same process uses normal ui::InputMethod instance.";
+
+  g_input_method_set_for_testing = true;
+  g_create_input_method_called = false;
+}
+
+ScopedTestInputMethodFactory::~ScopedTestInputMethodFactory() {
+  g_input_method_set_for_testing = false;
+  g_create_input_method_called = false;
 }
 
 }  // namespace ui

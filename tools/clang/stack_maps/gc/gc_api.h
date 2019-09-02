@@ -7,7 +7,6 @@
 
 #include <assert.h>
 #include <map>
-#include <ostream>
 #include <vector>
 
 #include "objects.h"
@@ -96,14 +95,12 @@ class FrameRoots {
 
   bool empty() { return reg_roots_.empty() && stack_roots_.empty(); }
 
-  friend std::ostream& operator<<(std::ostream& os, const FrameRoots& fr);
+  void Print() const;
 
  private:
   std::vector<DWARF> reg_roots_;
   std::vector<RBPOffset> stack_roots_;
 };
-
-std::ostream& operator<<(std::ostream& os, const FrameRoots& fr);
 
 // A SafepointTable provides a runtime mapping of function return addresses to
 // on-stack and in-register gc root locations. Return addresses are used as a
@@ -112,32 +109,35 @@ std::ostream& operator<<(std::ostream& os, const FrameRoots& fr);
 // looking for the rootset.
 class SafepointTable {
  public:
-  SafepointTable(std::map<ReturnAddress, FrameRoots> roots,
-                 uintptr_t stack_begin)
-      : roots_(std::move(roots)), stack_begin_(stack_begin) {}
+  SafepointTable(std::map<ReturnAddress, FrameRoots> roots)
+      : roots_(std::move(roots)) {}
 
   const std::map<ReturnAddress, FrameRoots>* roots() { return &roots_; }
-  uintptr_t stack_begin() { return stack_begin_; }
 
-  friend std::ostream& operator<<(std::ostream& os, const SafepointTable& st);
+  void Print() const;
 
  private:
-  std::map<ReturnAddress, FrameRoots> roots_;
-  uintptr_t stack_begin_;
+  const std::map<ReturnAddress, FrameRoots> roots_;
 };
-
-std::ostream& operator<<(std::ostream& os, const SafepointTable& st);
 
 SafepointTable GenSafepointTable();
 
 extern SafepointTable spt;
 extern Heap* heap;
 
+// During stack scanning, the GC must know when it has reached the top of the
+// stack so that it can hand execution back over to the mutator. This global
+// variable serves that purpose - it is initialised in main to be equal to
+// main's RBP value, and checked against each time the gc steps up into the next
+// stack frame. For non-main threads this could be pthread top.
+extern "C" void InitTopOfStack();
+extern uintptr_t TopOfStack;
+
 void PrintSafepointTable();
 
 // Walks the execution stack looking for live gc roots. This function should
-// never be called directly. Instead, the void |BeginGC| function should be
-// called. |BeginGC| is an assembly shim which jumps to this function after
+// never be called directly. Instead, the void |GC| function should be
+// called. |GC| is an assembly shim which jumps to this function after
 // placing the value of RBP in RDI (First arg slot mandated by Sys V ABI).
 //
 // Stack walking starts from the address in `fp` (assumed to be RBP's

@@ -106,7 +106,7 @@ void LogSharingMessageAckTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
 }
 
-void LogClickToCallDialogShown(SharingClickToCallDialogType type) {
+void LogClickToCallDialogShown(SharingDialogType type) {
   base::UmaHistogramEnumeration("Sharing.ClickToCallDialogShown", type);
 }
 

@@ -55,6 +55,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -741,11 +742,11 @@ IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
         mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client);
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
         std::move(common_params), std::move(begin_params), mojo::NullRemote(),
-        navigation_client.PassInterface(), nullptr);
+        navigation_client.PassInterface(), mojo::NullRemote());
   } else {
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
         std::move(common_params), std::move(begin_params), mojo::NullRemote(),
-        nullptr, nullptr);
+        nullptr, mojo::NullRemote());
   }
   EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
             process_kill_waiter.Wait());

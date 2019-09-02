@@ -104,11 +104,13 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
   password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
-  component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
-      profile_web_data_service_, account_web_data_service_, password_store_,
-      ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
+  component_factory_ =
+      std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
+          this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
+          profile_web_data_service_, account_web_data_service_, password_store_,
+          /*account_password_store=*/nullptr,
+          ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_));
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}

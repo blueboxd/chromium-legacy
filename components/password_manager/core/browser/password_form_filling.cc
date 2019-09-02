@@ -121,7 +121,7 @@ LikelyFormFilling SendFillInformationToRenderer(
   }
   DCHECK(preferred_match);
 
-  // If the parser of the NewPasswordFormManager decides that there is no
+  // If the parser of the PasswordFormManager decides that there is no
   // current password field, no filling attempt will be made. In this case the
   // renderer won't treat this as the "first filling" and won't record metrics
   // accordingly. The browser should not do that either.

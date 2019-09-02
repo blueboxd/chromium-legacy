@@ -597,7 +597,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, std::move(common_params), std::move(navigation_params),
       std::move(commit_params), browser_initiated,
       false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
-      entry, std::move(navigation_ui_data), nullptr, nullptr,
+      entry, std::move(navigation_ui_data), nullptr, mojo::NullRemote(),
       rfh_restored_from_back_forward_cache));
 
   if (frame_entry) {
@@ -632,7 +632,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     bool override_user_agent,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator,
+    mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
   // Only normal navigations to a different document or reloads are expected.
@@ -758,8 +758,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       false /* from_begin_navigation */, true /* is_for_commit */,
       entry ? entry->GetFrameEntry(frame_tree_node) : nullptr, entry,
       nullptr /* navigation_ui_data */,
-      mojom::NavigationClientAssociatedPtrInfo(),
-      blink::mojom::NavigationInitiatorPtr(),
+      mojom::NavigationClientAssociatedPtrInfo(), mojo::NullRemote(),
       nullptr /* rfh_restored_from_back_forward_cache */));
 
   // Update the state of the NavigationRequest to match the fact that the
@@ -783,7 +782,7 @@ NavigationRequest::NavigationRequest(
     NavigationEntryImpl* entry,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator,
+    mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     RenderFrameHostImpl* rfh_restored_from_back_forward_cache)
     : frame_tree_node_(frame_tree_node),
       common_params_(std::move(common_params)),

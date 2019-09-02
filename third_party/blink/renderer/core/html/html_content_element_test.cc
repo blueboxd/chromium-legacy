@@ -41,7 +41,7 @@ TEST_F(HTMLContentElementTest, FallbackRecalcForReattach) {
 
   GetDocument().UpdateDistributionForLegacyDistributedNodes();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().GetStyleEngine().RecalcStyle({});
+  GetDocument().GetStyleEngine().RecalcStyle();
 
   EXPECT_TRUE(fallback->GetComputedStyle());
 }

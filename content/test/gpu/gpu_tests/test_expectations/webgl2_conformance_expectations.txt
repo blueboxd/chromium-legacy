@@ -6,7 +6,7 @@
 #         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3
 #         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
-# tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577 mesa_lt_17.1.6 mesa_lt_17.3.9 mesa_lt_19.1.2 ]
+# tags: [ angle_lt_25.20.100.6444 angle_lt_25.20.100.6577 mesa_lt_17.1.6 mesa_lt_17.3.9 mesa_lt_19.1.2 ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -127,21 +127,19 @@ crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dyna
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
 
-crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
-crbug.com/602688 [ opengl win passthrough intel intel_lt_25.20.100.6577 ] conformance2/textures/misc/texture-npot.html [ Failure ]
-# TODO(crbug.com/994852) : Add back driver version tag intel_lt_25.20.100.6577 to these 3 tests
-# once it is working again.
-crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
-crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
-crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
+crbug.com/602688 [ opengl win passthrough intel angle_lt_25.20.100.6577 ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
+crbug.com/602688 [ opengl win passthrough intel angle_lt_25.20.100.6577 ] conformance2/textures/misc/texture-npot.html [ Failure ]
+crbug.com/854100 [ opengl win passthrough intel angle_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
+crbug.com/957631 [ opengl win passthrough intel angle_lt_25.20.100.6577 ] conformance2/rendering/element-index-uint.html [ Failure ]
+crbug.com/angleproject/2880 [ opengl win passthrough intel angle_lt_25.20.100.6577 ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
 # Case no-over-optimization-on-uniform-array-08 always fail if run
 # case gl-min-uniforms first.
 # Temporarily skip these two cases now.
-crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/limits/gl-min-uniforms.html [ Skip ]
-crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Skip ]
+crbug.com/953243 [ opengl win passthrough intel angle_lt_25.20.100.6444 ] conformance/limits/gl-min-uniforms.html [ Skip ]
+crbug.com/953243 [ opengl win passthrough intel angle_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-08.html [ Skip ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
@@ -149,8 +147,8 @@ crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 # case biuDepthRange_001_to_002 first.
 # Temporarily skip these two cases now because this issue blocks
 # WEBGL_video_texture implementation.
-crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
-crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+crbug.com/907195 [ opengl win passthrough intel angle_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
+crbug.com/907195 [ opengl win passthrough intel angle_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]

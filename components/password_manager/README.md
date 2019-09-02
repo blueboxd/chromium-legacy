@@ -97,9 +97,6 @@ Here is a summary of the core responsibilities of the classes and interfaces:
   to offer password saving or updating existing credentials after a successful
   form submission.
 
-  Note: At the moment [`NewPasswordFormManager`] is the relevant class to look
-  at. This will soon replace the old [`PasswordFormManager`] implementation.
-
 * `*::PasswordManagerDriver` (1 per frame)
 
   The `*::PasswordManagerDriver` is the browser-side communication end-point for
@@ -155,7 +152,7 @@ Here is a summary of the core responsibilities of the classes and interfaces:
 [`mojom::PasswordAutofillAgent`]: https://cs.chromium.org/search?q=file:autofill_agent.mojom+"interface+PasswordAutofillAgent"
 [`mojom::PasswordGenerationAgent`]: https://cs.chromium.org/search?q=file:autofill_agent.mojom+"interface+PasswordGenerationAgent"
 [`mojom::PasswordManagerDriver`]: https://cs.chromium.org/search?q=file:autofill_driver.mojom+"interface+PasswordManagerDriver"
-[`NewPasswordFormManager`]: https://cs.chromium.org/search?q=file:/new_password_form_manager.h$
+[`PasswordFormManager`]: https://cs.chromium.org/search?q=file:/password_form_manager.h$
 [`password_manager::PasswordManagerDriver`]: https://cs.chromium.org/search?q=file:/password_manager_driver.h$
 [`password_manager::PasswordManagerDriver`]: https://cs.chromium.org/search?q=file:/password_manager_driver.h$
 [`PasswordAutofillAgent`]: https://cs.chromium.org/search?q=file:/password_autofill_agent.h$

@@ -1,0 +1,20 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/spark008/screen-enumeration/blob/master/EXPLAINER.md
+
+// TODO(staphany): Add working-area versions of width, height, left, and top
+// (e.g. like availWidth in the Screen interface).
+// TODO(staphany): Add orientation.
+dictionary Display {
+  required DOMString name;
+  required float scaleFactor;
+  required long width;
+  required long height;
+  required long left;
+  required long top;
+  required long colorDepth;
+  required boolean isPrimary;
+  required boolean isInternal;
+};

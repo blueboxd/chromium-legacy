@@ -1160,9 +1160,9 @@ void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
     media_type_when_not_printing_ = g_null_atom;
   }
 
-  frame_->GetDocument()->SetNeedsStyleRecalc(
-      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               style_change_reason::kStyleSheetChange));
+  frame_->GetDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
+      StyleChangeReasonForTracing::Create(
+          style_change_reason::kStyleSheetChange));
 }
 
 void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {

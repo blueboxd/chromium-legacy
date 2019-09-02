@@ -19,6 +19,7 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -158,7 +159,7 @@ class MockFrameHost : public mojom::FrameHost {
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo,
-      blink::mojom::NavigationInitiatorPtr) override {}
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>) override {}
 
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override {}

@@ -228,18 +228,15 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
 void FindBestMatches(
     std::vector<const PasswordForm*> matches,
     std::map<base::string16, const PasswordForm*>* best_matches,
-    std::vector<const PasswordForm*>* not_best_matches,
     const PasswordForm** preferred_match) {
   DCHECK(std::all_of(
       matches.begin(), matches.end(),
       [](const PasswordForm* match) { return !match->blacklisted_by_user; }));
   DCHECK(best_matches);
-  DCHECK(not_best_matches);
   DCHECK(preferred_match);
 
   *preferred_match = nullptr;
   best_matches->clear();
-  not_best_matches->clear();
 
   if (matches.empty())
     return;
@@ -251,8 +248,6 @@ void FindBestMatches(
     // The first match for |username| in the sorted array is best match.
     if (best_matches->find(username) == best_matches->end())
       best_matches->insert(std::make_pair(username, match));
-    else
-      not_best_matches->push_back(match);
   }
 
   *preferred_match = *matches.begin();

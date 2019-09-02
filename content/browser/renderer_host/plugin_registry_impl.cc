@@ -23,8 +23,9 @@ PluginRegistryImpl::PluginRegistryImpl(int render_process_id)
 
 PluginRegistryImpl::~PluginRegistryImpl() {}
 
-void PluginRegistryImpl::Bind(blink::mojom::PluginRegistryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void PluginRegistryImpl::Bind(
+    mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void PluginRegistryImpl::GetPlugins(bool refresh,

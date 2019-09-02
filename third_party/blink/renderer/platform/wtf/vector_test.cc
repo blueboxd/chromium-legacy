@@ -120,6 +120,21 @@ TEST(VectorTest, Erase) {
   EXPECT_EQ(int_vector.end(), end);
 }
 
+TEST(VectorTest, Resize) {
+  Vector<int> int_vector;
+  int_vector.resize(2);
+  EXPECT_EQ(2u, int_vector.size());
+  EXPECT_EQ(0, int_vector[0]);
+  EXPECT_EQ(0, int_vector[1]);
+
+  Vector<bool> bool_vector;
+  bool_vector.resize(3);
+  EXPECT_EQ(3u, bool_vector.size());
+  EXPECT_EQ(false, bool_vector[0]);
+  EXPECT_EQ(false, bool_vector[1]);
+  EXPECT_EQ(false, bool_vector[2]);
+}
+
 TEST(VectorTest, Iterator) {
   Vector<int> int_vector;
   int_vector.push_back(10);

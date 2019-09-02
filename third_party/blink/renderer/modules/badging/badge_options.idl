@@ -1,0 +1,12 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The options used to decide how to apply a badge.
+// See the explainer https://github.com/WICG/badging/blob/master/explainer.md
+dictionary BadgeOptions {
+    // The scope of the badge. This is resolved against the URL of the current
+    // page.
+    // https://github.com/WICG/badging/blob/master/explainer.md#badge-scope
+    DOMString scope = "/";
+};

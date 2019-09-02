@@ -103,6 +103,7 @@ mojom("mojom_platform") {
     "renderer_preference_watcher.mojom",
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
+    "screen_enumeration/screen_enumeration.mojom",
     "script/script_type.mojom",
     "selection_menu/selection_menu_behavior.mojom",
     "service_worker/controller_service_worker_mode.mojom",

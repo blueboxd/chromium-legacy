@@ -116,10 +116,6 @@ const char kBrowserContainerKeepsContentViewDescription[] =
     "When enable, the browser container keeps the content view in the view "
     "hierarchy, to avoid WKWebView from being unloaded from the process.";
 
-const char kBrowserTaskScheduler[] = "Task Scheduler";
-const char kBrowserTaskSchedulerDescription[] =
-    "Enables redirection of some task posting APIs to the task scheduler.";
-
 // TODO(crbug.com/893314) : Remove this flag.
 const char kClosingLastIncognitoTabName[] = "Closing Last Incognito Tab";
 const char kClosingLastIncognitoTabDescription[] =
@@ -131,10 +127,6 @@ const char kCollectionsCardPresentationStyleName[] =
 const char kCollectionsCardPresentationStyleDescription[] =
     "When enabled collections are presented using the new iOS13 card "
     "style.";
-
-const char kContextualSearch[] = "Contextual Search";
-const char kContextualSearchDescription[] =
-    "Whether or not Contextual Search is enabled.";
 
 const char kCopiedContentBehaviorName[] =
     "Enable differentiating between copied urls, text, and images";
@@ -157,30 +149,10 @@ const char kDetectMainThreadFreezeDescription[] =
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
-const char kEnableAutocompleteDataRetentionPolicyName[] =
-    "Enable automatic cleanup of expired Autocomplete entries.";
-const char kEnableAutocompleteDataRetentionPolicyDescription[] =
-    "If enabled, will clean-up Autocomplete entries whose last use date is "
-    "older than the current retention policy. These entries will be "
-    "permanently deleted from the client on startup, and will be unlinked "
-    "from sync.";
-
-const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
-    "Enable updated prompt explanation when offering credit card upload";
-const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
-    "If enabled, changes the server save card prompt's explanation to mention "
-    "the saving of the billing address.";
-
 const char kEnableAutofillSaveCardShowNoThanksName[] =
     "Show explicit decline option in credit card save prompts";
 const char kEnableAutofillSaveCardShowNoThanksDescription[] =
     "If enabled, adds a [No thanks] button to credit card save prompts.";
-
-const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
-    "Enable limit on offering to save the same credit card repeatedly";
-const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
-    "If enabled, prevents popping up the credit card offer-to-save prompt if "
-    "it has repeatedly been ignored, declined, or failed.";
 
 const char kEnableAutofillImportDynamicFormsName[] =
     "Allow credit card import from dynamic forms after entry";
@@ -225,11 +197,6 @@ const char kFullscreenViewportAdjustmentExperimentName[] =
 const char kFullscreenViewportAdjustmentExperimentDescription[] =
     "The different ways in which the web view's viewport is updated for scroll "
     "events.  The default option updates the web view's frame.";
-
-const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
-const char kHistoryBatchUpdatesFilterDescription[] =
-    "When enabled History inserts and deletes history items in the same "
-    "BatchUpdates block.";
 
 const char kIdentityDiscName[] = "Identity Disc";
 const char kIdentityDiscDescription[] =
@@ -289,17 +256,6 @@ const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
     "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
     "in the omnibox popup.";
 
-const char kOmniboxTabSwitchSuggestionsName[] =
-    "Enable 'switch to this tab' option";
-const char kOmniboxTabSwitchSuggestionsDescription[] =
-    "Enable the 'switch to this tab' options in the omnibox suggestions.";
-
-const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
-    "Hide the path, query, and ref of omnibox suggestions";
-const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
-    "Elides the path, query, and ref of suggested URLs in the omnibox "
-    "dropdown.";
-
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
@@ -322,10 +278,6 @@ const char kOptionalArticleThumbnailName[] =
 const char kOptionalArticleThumbnailDescription[] =
     "Make thumbnails of NTP articles optional due to European copyright "
     "directive(EUCD). Also change the layout of article cells";
-
-const char kPasswordGenerationName[] = "Password generation suggestion";
-const char kPasswordGenerationDescription[] =
-    "Add 'Suggest Password' in suggestion list for form completion.";
 
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
@@ -405,11 +357,6 @@ const char kUseDdljsonApiDescription[] =
 const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
-
-const char kUseNSURLSessionForGaiaSigninRequestsName[] =
-    "Use NSURLSession for sign-in requests";
-const char kUseNSURLSessionForGaiaSigninRequestsDescription[] =
-    "Use NSURLSession to make sign-in requests to Gaia";
 
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =

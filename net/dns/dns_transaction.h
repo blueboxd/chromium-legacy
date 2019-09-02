@@ -11,6 +11,8 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "net/base/request_priority.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/record_rdata.h"
@@ -59,7 +61,8 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
                                   const DnsResponse* response)>
       CallbackType;
 
-  virtual ~DnsTransactionFactory() {}
+  DnsTransactionFactory();
+  virtual ~DnsTransactionFactory();
 
   // Creates DnsTransaction for the given |hostname| and |qtype| (assuming
   // QCLASS is IN). |hostname| should be in the dotted form. A dot at the end
@@ -77,16 +80,30 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       CallbackType callback,
       const NetLogWithSource& net_log,
       bool secure,
+      DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by
   // transactions from this factory.
   virtual void AddEDNSOption(const OptRecordRdata::Opt& opt) = 0;
 
+  // Gets the delay until the next scheduled probe to the specified DoH server.
+  // Returns base::TimeDelta() if no probe scheduled.
+  virtual base::TimeDelta GetDelayUntilNextProbeForTest(
+      unsigned doh_server_index) = 0;
+
+  // Initiate probe sequences to all configured DoH resolvers.
+  virtual void StartDohProbes(URLRequestContext* context) = 0;
+
+  // Returns the default SecureDnsMode in the config.
+  virtual DnsConfig::SecureDnsMode GetSecureDnsModeForTest() = 0;
+
   // Creates a DnsTransactionFactory which creates DnsTransactionImpl using the
   // |session|.
   static std::unique_ptr<DnsTransactionFactory> CreateFactory(
       DnsSession* session) WARN_UNUSED_RESULT;
+
+  base::WeakPtrFactory<DnsTransactionFactory> weak_factory_{this};
 };
 
 }  // namespace net

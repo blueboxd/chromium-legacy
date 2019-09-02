@@ -19,7 +19,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -143,7 +143,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   StubPasswordManagerDriver driver_;
   PasswordForm pending_;
   FakeFormFetcher fetcher_;
-  NewPasswordFormManager form_manager_;
+  PasswordFormManager form_manager_;
 
   SyncCredentialsFilter filter_;
 };

@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -26,7 +26,7 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
-using password_manager::NewPasswordFormManager;
+using password_manager::PasswordFormManager;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using ::testing::_;
@@ -102,7 +102,7 @@ class ManagePasswordsStateTest : public testing::Test {
 
     passwords_data_.set_client(&mock_client_);
 
-    NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+    PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
   }
 
   PasswordForm& saved_match() { return saved_match_; }
@@ -116,17 +116,17 @@ class ManagePasswordsStateTest : public testing::Test {
   ManagePasswordsState& passwords_data() { return passwords_data_; }
   password_manager::PasswordManagerDriver& driver() { return driver_; }
 
-  // Returns a NewPasswordFormManager containing |test_stored_forms_| as the
+  // Returns a PasswordFormManager containing |test_stored_forms_| as the
   // best matches.
   // TODO(https://crbug.com/998496): Create a mock object which implements
   // PasswordFormManagerForUI interface.
-  std::unique_ptr<NewPasswordFormManager> CreateFormManager();
+  std::unique_ptr<PasswordFormManager> CreateFormManager();
 
-  // Returns a NewPasswordFormManager containing local_federated_form() as
+  // Returns a PasswordFormManager containing local_federated_form() as
   // a stored federated credential.
   // TODO(https://crbug.com/998496): Create a mock object which implements
   // PasswordFormManagerForUI interface.
-  std::unique_ptr<NewPasswordFormManager> CreateFormManagerWithFederation();
+  std::unique_ptr<PasswordFormManager> CreateFormManagerWithFederation();
 
   // Pushes irrelevant updates to |passwords_data_| and checks that they don't
   // affect the state.
@@ -142,7 +142,7 @@ class ManagePasswordsStateTest : public testing::Test {
 
  private:
   // Implements both CreateFormManager and CreateFormManagerWithFederation.
-  std::unique_ptr<NewPasswordFormManager> CreateFormManagerInternal(
+  std::unique_ptr<PasswordFormManager> CreateFormManagerInternal(
       bool include_federated);
 
   MockPasswordManagerClient mock_client_;
@@ -158,19 +158,19 @@ class ManagePasswordsStateTest : public testing::Test {
   std::vector<const PasswordForm*> test_stored_forms_;
 };
 
-std::unique_ptr<NewPasswordFormManager>
+std::unique_ptr<PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManager() {
   return CreateFormManagerInternal(false);
 }
 
-std::unique_ptr<NewPasswordFormManager>
+std::unique_ptr<PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManagerWithFederation() {
   return CreateFormManagerInternal(true);
 }
 
-std::unique_ptr<NewPasswordFormManager>
+std::unique_ptr<PasswordFormManager>
 ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
-  auto form_manager = std::make_unique<NewPasswordFormManager>(
+  auto form_manager = std::make_unique<PasswordFormManager>(
       &mock_client_, driver_.AsWeakPtr(), observed_form(), &fetcher_,
       base::WrapUnique(new password_manager::StubFormSaver),
       nullptr /*  metrics_recorder */);
@@ -316,8 +316,7 @@ TEST_F(ManagePasswordsStateTest, DefaultState) {
 TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
   test_stored_forms().push_back(&saved_match());
   test_stored_forms().push_back(&psl_match());
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnPendingPassword(std::move(test_form_manager));
 
@@ -332,8 +331,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSubmitted) {
 
 TEST_F(ManagePasswordsStateTest, PasswordSaved) {
   test_stored_forms().push_back(&saved_match());
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnPendingPassword(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
@@ -349,7 +347,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSaved) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordSubmittedFederationsPresent) {
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
+  std::unique_ptr<PasswordFormManager> test_form_manager(
       CreateFormManagerWithFederation());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnPendingPassword(std::move(test_form_manager));
@@ -404,8 +402,7 @@ TEST_F(ManagePasswordsStateTest, AutoSignin) {
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
   test_stored_forms().push_back(&psl_match());
   test_stored_forms().push_back(&saved_match());
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
 
   passwords_data().OnAutomaticPasswordSave(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::CONFIRMATION_STATE, passwords_data().state());
@@ -423,7 +420,7 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSave) {
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveWithFederations) {
   test_stored_forms().push_back(&saved_match());
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
+  std::unique_ptr<PasswordFormManager> test_form_manager(
       CreateFormManagerWithFederation());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
 
@@ -507,8 +504,7 @@ TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
 }
 
 TEST_F(ManagePasswordsStateTest, OnInactive) {
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
 
   passwords_data().OnPendingPassword(std::move(test_form_manager));
@@ -523,8 +519,7 @@ TEST_F(ManagePasswordsStateTest, OnInactive) {
 }
 
 TEST_F(ManagePasswordsStateTest, PendingPasswordAddBlacklisted) {
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnPendingPassword(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
@@ -557,8 +552,7 @@ TEST_F(ManagePasswordsStateTest, AutoSigninAddBlacklisted) {
 }
 
 TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveAddBlacklisted) {
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnAutomaticPasswordSave(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::CONFIRMATION_STATE, passwords_data().state());
@@ -578,8 +572,7 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnUpdatePassword(std::move(test_form_manager));
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
@@ -591,8 +584,7 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateAddBlacklisted) {
 TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
   test_stored_forms().push_back(&saved_match());
   test_stored_forms().push_back(&psl_match());
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnUpdatePassword(std::move(test_form_manager));
 
@@ -612,8 +604,7 @@ TEST_F(ManagePasswordsStateTest, AndroidPasswordUpdateSubmitted) {
   android_form.username_value = submitted_form().fields[0].value;
   android_form.password_value = base::ASCIIToUTF16("old pass");
   test_stored_forms().push_back(&android_form);
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
-      CreateFormManager());
+  std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnUpdatePassword(std::move(test_form_manager));
 
@@ -629,7 +620,7 @@ TEST_F(ManagePasswordsStateTest, AndroidPasswordUpdateSubmitted) {
 
 TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmittedWithFederations) {
   test_stored_forms().push_back(&saved_match());
-  std::unique_ptr<NewPasswordFormManager> test_form_manager(
+  std::unique_ptr<PasswordFormManager> test_form_manager(
       CreateFormManagerWithFederation());
   test_form_manager->ProvisionallySave(submitted_form(), &driver());
   passwords_data().OnUpdatePassword(std::move(test_form_manager));

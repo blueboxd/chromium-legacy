@@ -66,6 +66,7 @@ TEST_F(DnsClientTest, NoConfig) {
   client_->SetInsecureEnabled(true);
 
   EXPECT_FALSE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_FALSE(client_->CanUseInsecureDnsTransactions());
   EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -79,6 +80,7 @@ TEST_F(DnsClientTest, InvalidConfig) {
   client_->SetSystemConfig(DnsConfig());
 
   EXPECT_FALSE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_FALSE(client_->CanUseInsecureDnsTransactions());
   EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -92,6 +94,7 @@ TEST_F(DnsClientTest, CanUseSecureDnsTransactions_NoDohServers) {
   client_->SetSystemConfig(BasicValidConfig());
 
   EXPECT_FALSE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_TRUE(client_->CanUseInsecureDnsTransactions());
   EXPECT_FALSE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -106,6 +109,7 @@ TEST_F(DnsClientTest, InsecureNotEnabled) {
   client_->SetSystemConfig(ValidConfigWithDoh());
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_FALSE(client_->CanUseInsecureDnsTransactions());
   EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -115,6 +119,16 @@ TEST_F(DnsClientTest, InsecureNotEnabled) {
   EXPECT_TRUE(client_->GetTransactionFactory());
 }
 
+TEST_F(DnsClientTest, CanUseSecureDnsTransactions_ProbeSuccess) {
+  client_->SetSystemConfig(ValidConfigWithDoh());
+  EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
+
+  client_->SetProbeSuccessForTest(0, true /* success */);
+  EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_FALSE(client_->FallbackFromSecureTransactionPreferred());
+}
+
 TEST_F(DnsClientTest, DnsOverTlsActive) {
   client_->SetInsecureEnabled(true);
   DnsConfig config = ValidConfigWithDoh();
@@ -122,6 +136,7 @@ TEST_F(DnsClientTest, DnsOverTlsActive) {
   client_->SetSystemConfig(config);
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_FALSE(client_->CanUseInsecureDnsTransactions());
   EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -133,8 +148,10 @@ TEST_F(DnsClientTest, DnsOverTlsActive) {
 TEST_F(DnsClientTest, AllAllowed) {
   client_->SetInsecureEnabled(true);
   client_->SetSystemConfig(ValidConfigWithDoh());
+  client_->SetProbeSuccessForTest(0, true /* success */);
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_FALSE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_TRUE(client_->CanUseInsecureDnsTransactions());
   EXPECT_FALSE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -150,6 +167,7 @@ TEST_F(DnsClientTest, FallbackFromInsecureTransactionPreferred_Failures) {
 
   for (int i = 0; i < DnsClient::kMaxInsecureFallbackFailures; ++i) {
     EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+    EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
     EXPECT_TRUE(client_->CanUseInsecureDnsTransactions());
     EXPECT_FALSE(client_->FallbackFromInsecureTransactionPreferred());
 
@@ -157,12 +175,14 @@ TEST_F(DnsClientTest, FallbackFromInsecureTransactionPreferred_Failures) {
   }
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_TRUE(client_->CanUseInsecureDnsTransactions());
   EXPECT_TRUE(client_->FallbackFromInsecureTransactionPreferred());
 
   client_->ClearInsecureFallbackFailures();
 
   EXPECT_TRUE(client_->CanUseSecureDnsTransactions());
+  EXPECT_TRUE(client_->FallbackFromSecureTransactionPreferred());
   EXPECT_TRUE(client_->CanUseInsecureDnsTransactions());
   EXPECT_FALSE(client_->FallbackFromInsecureTransactionPreferred());
 }

@@ -4,7 +4,7 @@ function setInvisible(element) {
 }
 
 function setInvisibleActivatable(element) {
-  return setRenderSubtree(element, "invisible-activatable");
+  return setRenderSubtree(element, "invisible activatable");
 }
 
 function setVisible(element) {

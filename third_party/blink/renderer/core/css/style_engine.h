@@ -336,6 +336,8 @@ class CORE_EXPORT StyleEngine final
   void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
   void MarkForWhitespaceReattachment();
   void MarkAllElementsForStyleRecalc(const StyleChangeReasonForTracing& reason);
+  void MarkViewportStyleDirty();
+  bool IsViewportStyleDirty() const { return viewport_style_dirty_; }
 
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
@@ -346,7 +348,8 @@ class CORE_EXPORT StyleEngine final
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
-  void RecalcStyle(const StyleRecalcChange change);
+  void UpdateViewportStyle();
+  void RecalcStyle();
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
@@ -506,6 +509,7 @@ class CORE_EXPORT StyleEngine final
   bool uses_rem_units_ = false;
   bool in_layout_tree_rebuild_ = false;
   bool in_dom_removal_ = false;
+  bool viewport_style_dirty_ = false;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;

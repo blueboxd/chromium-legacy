@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/back_forward_cache.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -41,6 +43,8 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeUIForMediaStream);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kIgnoreCertificateErrors);
     feature_list_.InitAndEnableFeature(features::kBackForwardCache);
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
@@ -1598,6 +1602,77 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FetchWhileStoring) {
       }
     });
   )"));
+}
+
+// Only HTTP/HTTPS main document can enter the BackForwardCache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+
+  GURL http_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL https_url(https_server.GetURL("a.com", "/title1.html"));
+  GURL file_url = net::FilePathToFileURL(GetTestFilePath("", "title1.html"));
+  GURL data_url = GURL("data:text/html,");
+  GURL blank_url = GURL(url::kAboutBlankURL);
+  GURL webui_url = GetWebUIURL("gpu");
+
+  enum { STORED, DELETED };
+  struct {
+    int expectation;
+    GURL url;
+  } test_cases[] = {
+      // Only document with HTTP/HTTPS URLs are allowed to enter the
+      // BackForwardCache.
+      {STORED, http_url},
+      {STORED, https_url},
+
+      // Others aren't allowed.
+      {DELETED, file_url},
+      {DELETED, data_url},
+      {DELETED, webui_url},
+      {DELETED, blank_url},
+  };
+
+  char hostname[] = "a.unique";
+  for (auto& test_case : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "expectation = " << test_case.expectation << std::endl
+                 << "url = " << test_case.url << std::endl);
+
+    // 1) Navigate to.
+    EXPECT_TRUE(NavigateToURL(shell(), test_case.url));
+    RenderFrameHostImpl* rfh = current_frame_host();
+    RenderFrameDeletedObserver delete_observer(rfh);
+
+    // 2) Navigate away.
+    hostname[0]++;
+    GURL reset_url(embedded_test_server()->GetURL(hostname, "/title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), reset_url));
+
+    if (test_case.expectation == STORED) {
+      EXPECT_FALSE(delete_observer.deleted());
+      EXPECT_TRUE(rfh->is_in_back_forward_cache());
+      continue;
+    }
+
+    // On Android, navigations to about:blank keeps the same RenderFrameHost.
+    // Obviously, it can't enter the BackForwardCache, because it is still used
+    // to display the current document.
+    if (test_case.url == blank_url &&
+        !SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
+      EXPECT_FALSE(delete_observer.deleted());
+      EXPECT_FALSE(rfh->is_in_back_forward_cache());
+      EXPECT_EQ(rfh, current_frame_host());
+      continue;
+    }
+
+    delete_observer.WaitUntilDeleted();
+  }
 }
 
 }  // namespace content

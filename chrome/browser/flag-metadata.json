@@ -2716,7 +2716,7 @@
   {
     "name": "out-of-blink-cors",
     "owners": [ "toyoshim" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "overlay-new-layout",

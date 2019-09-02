@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -31,6 +32,8 @@ using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
+
+using OnboardingState = metrics_util::OnboardingState;
 
 class PasswordManagerOnboardingTest : public testing::Test {
  public:

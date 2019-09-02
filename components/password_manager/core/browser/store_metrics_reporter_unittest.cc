@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/sync_username_test_base.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -17,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Bool;
+using ::testing::Range;
 using ::testing::Return;
 
 namespace password_manager {
@@ -35,7 +37,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 // them.
 class StoreMetricsReporterTest
     : public SyncUsernameTestBase,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, bool, int>> {
  public:
   StoreMetricsReporterTest() {
     prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
@@ -44,6 +46,10 @@ class StoreMetricsReporterTest
                                            false);
     prefs_.registry()->RegisterBooleanPref(
         password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+    prefs_.registry()->RegisterIntegerPref(
+        password_manager::prefs::kPasswordManagerOnboardingState,
+        static_cast<int>(
+            password_manager::metrics_util::OnboardingState::kDoNotShow));
   }
 
   ~StoreMetricsReporterTest() override = default;
@@ -58,11 +64,14 @@ class StoreMetricsReporterTest
 TEST_P(StoreMetricsReporterTest, StoreIndependentMetrics) {
   const bool password_manager_enabled = std::get<0>(GetParam());
   const bool leak_detection_enabled = std::get<1>(GetParam());
+  const int onboarding_state = std::get<2>(GetParam());
 
   prefs_.SetBoolean(password_manager::prefs::kCredentialsEnableService,
                     password_manager_enabled);
   prefs_.SetBoolean(password_manager::prefs::kPasswordLeakDetectionEnabled,
                     leak_detection_enabled);
+  prefs_.SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
+                    onboarding_state);
   base::HistogramTester histogram_tester;
   EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(nullptr));
   StoreMetricsReporter reporter(&client_, sync_service(), identity_manager(),
@@ -72,6 +81,8 @@ TEST_P(StoreMetricsReporterTest, StoreIndependentMetrics) {
                                       password_manager_enabled, 1);
   histogram_tester.ExpectUniqueSample("PasswordManager.LeakDetection.Enabled",
                                       leak_detection_enabled, 1);
+  histogram_tester.ExpectUniqueSample("PasswordManager.Onboarding.State",
+                                      onboarding_state, 1);
 }
 
 // Test that sync username and syncing state are passed correctly to the
@@ -98,9 +109,16 @@ TEST_P(StoreMetricsReporterTest, StoreDependentMetrics) {
   store->ShutdownOnUIThread();
 }
 
-INSTANTIATE_TEST_SUITE_P(/*InstantiationName*/,
-                         StoreMetricsReporterTest,
-                         testing::Combine(Bool(), Bool()));
+INSTANTIATE_TEST_SUITE_P(
+    /*InstantiationName*/,
+    StoreMetricsReporterTest,
+    testing::Combine(
+        Bool(),
+        Bool(),
+        Range(0,
+              static_cast<int>(
+                  password_manager::metrics_util::OnboardingState::kMaxValue) +
+                  1)));
 
 }  // namespace
 }  // namespace password_manager

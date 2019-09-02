@@ -113,10 +113,8 @@ int ClickToCallDialogView::GetDialogButtons() const {
 }
 
 std::unique_ptr<views::View> ClickToCallDialogView::CreateFootnoteView() {
-  if (GetDialogType() !=
-      SharingClickToCallDialogType::kDialogWithoutDevicesWithApp) {
+  if (GetDialogType() != SharingDialogType::kDialogWithoutDevicesWithApp)
     return nullptr;
-  }
 
   return CreateHelpText(this);
 }
@@ -127,18 +125,18 @@ void ClickToCallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
   controller_->OnHelpTextClicked();
 }
 
-SharingClickToCallDialogType ClickToCallDialogView::GetDialogType() const {
+SharingDialogType ClickToCallDialogView::GetDialogType() const {
   if (send_failed_)
-    return SharingClickToCallDialogType::kErrorDialog;
+    return SharingDialogType::kErrorDialog;
 
   bool has_devices = !controller_->devices().empty();
   bool has_apps = !controller_->apps().empty();
 
   if (has_devices)
-    return SharingClickToCallDialogType::kDialogWithDevicesMaybeApps;
+    return SharingDialogType::kDialogWithDevicesMaybeApps;
 
-  return has_apps ? SharingClickToCallDialogType::kDialogWithoutDevicesWithApp
-                  : SharingClickToCallDialogType::kEducationalDialog;
+  return has_apps ? SharingDialogType::kDialogWithoutDevicesWithApp
+                  : SharingDialogType::kEducationalDialog;
 }
 
 void ClickToCallDialogView::Init() {
@@ -147,22 +145,22 @@ void ClickToCallDialogView::Init() {
   dialog_buttons_.clear();
 
   auto* provider = ChromeLayoutProvider::Get();
-  SharingClickToCallDialogType type = GetDialogType();
+  SharingDialogType type = GetDialogType();
   LogClickToCallDialogShown(type);
 
   switch (type) {
-    case SharingClickToCallDialogType::kErrorDialog:
+    case SharingDialogType::kErrorDialog:
       set_margins(
           provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
       InitErrorView();
       break;
-    case SharingClickToCallDialogType::kEducationalDialog:
+    case SharingDialogType::kEducationalDialog:
       set_margins(
           provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
       InitEmptyView();
       break;
-    case SharingClickToCallDialogType::kDialogWithoutDevicesWithApp:
-    case SharingClickToCallDialogType::kDialogWithDevicesMaybeApps:
+    case SharingDialogType::kDialogWithoutDevicesWithApp:
+    case SharingDialogType::kDialogWithDevicesMaybeApps:
       set_margins(
           gfx::Insets(provider->GetDistanceMetric(
                           views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
@@ -275,13 +273,13 @@ bool ClickToCallDialogView::ShouldShowCloseButton() const {
 
 base::string16 ClickToCallDialogView::GetWindowTitle() const {
   switch (GetDialogType()) {
-    case SharingClickToCallDialogType::kErrorDialog:
+    case SharingDialogType::kErrorDialog:
       return controller_->GetErrorDialogTitle();
-    case SharingClickToCallDialogType::kEducationalDialog:
+    case SharingDialogType::kEducationalDialog:
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
-    case SharingClickToCallDialogType::kDialogWithoutDevicesWithApp:
-    case SharingClickToCallDialogType::kDialogWithDevicesMaybeApps:
+    case SharingDialogType::kDialogWithoutDevicesWithApp:
+    case SharingDialogType::kDialogWithDevicesMaybeApps:
       return controller_->GetTitle();
   }
 }

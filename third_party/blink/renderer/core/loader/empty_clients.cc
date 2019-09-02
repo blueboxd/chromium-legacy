@@ -112,7 +112,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     const String&,
     WebContentSecurityPolicyList,
     network::mojom::IPAddressSpace,
-    mojom::blink::NavigationInitiatorPtr) {}
+    mojo::PendingRemote<mojom::blink::NavigationInitiator>) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 

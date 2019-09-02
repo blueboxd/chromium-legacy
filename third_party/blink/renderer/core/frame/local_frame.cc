@@ -774,8 +774,8 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   }
 
   document->MediaQueryAffectingValueChanged();
-  document->SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  document->GetStyleEngine().MarkViewportStyleDirty();
+  document->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   if (View() && View()->DidFirstLayout())
     document->UpdateStyleAndLayout();
@@ -783,8 +783,8 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
 
 void LocalFrame::DeviceScaleFactorChanged() {
   GetDocument()->MediaQueryAffectingValueChanged();
-  GetDocument()->SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  GetDocument()->GetStyleEngine().MarkViewportStyleDirty();
+  GetDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {

@@ -24,9 +24,8 @@
 
 namespace chromeos {
 
-void TextInputTestBase::SetUpInProcessBrowserTestFixture() {
-  ui::SetUpInputMethodFactoryForTesting();
-}
+TextInputTestBase::TextInputTestBase() = default;
+TextInputTestBase::~TextInputTestBase() = default;
 
 ui::InputMethod* TextInputTestBase::GetInputMethod() const {
   return browser()->window()->GetNativeWindow()->GetHost()->GetInputMethod();

@@ -22,7 +22,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -219,7 +219,7 @@ class PasswordControllerTest : public ChromeWebTest {
     // Disable wating, since most tests have nothing to do with predictions. All
     // tests that test working with prediction should explicitly turn
     // predictions on.
-    password_manager::NewPasswordFormManager::
+    password_manager::PasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
 
     passwordController_ =
@@ -1505,8 +1505,8 @@ TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     TearDown();
     ChromeWebTest::SetUp();
 
-    password_manager::NewPasswordFormManager::
-    set_wait_for_server_predictions_for_filling(false);
+    password_manager::PasswordFormManager::
+        set_wait_for_server_predictions_for_filling(false);
 
     auto client =
     std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());

@@ -76,7 +76,6 @@ class ExceptionHandlerServer {
     //! \brief Called on receipt of a crash dump request from a client.
     //!
     //! \param[in] client_process_id The process ID of the crashing client.
-    //! \param[in] client_uid The user ID of the crashing client.
     //! \param[in] info Information on the client.
     //! \param[in] requesting_thread_stack_address Any address within the stack
     //!     range for the the thread that sent the crash dump request. Optional.
@@ -89,7 +88,6 @@ class ExceptionHandlerServer {
     //! \return `true` on success. `false` on failure with a message logged.
     virtual bool HandleException(
         pid_t client_process_id,
-        uid_t client_uid,
         const ExceptionHandlerProtocol::ClientInformation& info,
         VMAddress requesting_thread_stack_address = 0,
         pid_t* requesting_thread_id = nullptr,
@@ -99,7 +97,6 @@ class ExceptionHandlerServer {
     //!     crash that should be mediated by a PtraceBroker.
     //!
     //! \param[in] client_process_id The process ID of the crashing client.
-    //! \param[in] client_uid The uid of the crashing client.
     //! \param[in] info Information on the client.
     //! \param[in] broker_sock A socket connected to the PtraceBroker.
     //! \param[out] local_report_id The unique identifier for the report created
@@ -107,12 +104,12 @@ class ExceptionHandlerServer {
     //! \return `true` on success. `false` on failure with a message logged.
     virtual bool HandleExceptionWithBroker(
         pid_t client_process_id,
-        uid_t client_uid,
         const ExceptionHandlerProtocol::ClientInformation& info,
         int broker_sock,
         UUID* local_report_id = nullptr) = 0;
 
-    virtual ~Delegate() {}
+   protected:
+    ~Delegate() {}
   };
 
   ExceptionHandlerServer();

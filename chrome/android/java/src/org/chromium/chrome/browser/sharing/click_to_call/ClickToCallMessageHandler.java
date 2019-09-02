@@ -47,9 +47,11 @@ public class ClickToCallMessageHandler {
 
         try {
             ContextUtils.getApplicationContext().startActivity(dialIntent);
+            ClickToCallUma.recordDialerPresent(true);
             ClickToCallUma.recordDialerShown(TextUtils.isEmpty(phoneNumber));
         } catch (ActivityNotFoundException activityNotFound) {
             // TODO(crbug.com/996644): Add error dialog when no dialer app is available.
+            ClickToCallUma.recordDialerPresent(false);
         }
     }
 

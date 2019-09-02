@@ -27,6 +27,16 @@ Polymer({
     },
 
     /**
+     * The i18n string ID containing the error label to be shown to the user.
+     * Is undefined when there's no error label.
+     * @private
+     */
+    errorLabelId_: {
+      type: String,
+      computed: 'computeErrorLabelId_(parameters)',
+    },
+
+    /**
      * Whether the current state is the wait for the processing completion
      * (i.e., the backend is verifying the entered PIN).
      * @private
@@ -44,6 +54,31 @@ Polymer({
     userEdited_: {
       type: Boolean,
       value: false,
+    },
+  },
+
+  /**
+   * Returns the i18n string ID for the current error label.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * @return {string|undefined}
+   * @private
+   */
+  computeErrorLabelId_: function(parameters) {
+    if (!parameters)
+      return;
+    switch (parameters.errorLabel) {
+      case OobeTypes.SecurityTokenPinDialogErrorType.NONE:
+        return;
+      case OobeTypes.SecurityTokenPinDialogErrorType.UNKNOWN:
+        return 'securityTokenPinDialogUnknownError';
+      case OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PIN:
+        return 'securityTokenPinDialogUnknownInvalidPin';
+      case OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PUK:
+        return 'securityTokenPinDialogUnknownInvalidPuk';
+      case OobeTypes.SecurityTokenPinDialogErrorType.MAX_ATTEMPTS_EXCEEDED:
+        return 'securityTokenPinDialogUnknownMaxAttemptsExceeded';
+      default:
+        assertNotReached(`Unexpected enum value: ${parameters.errorLabel}`);
     }
   },
 
@@ -107,66 +142,23 @@ Polymer({
   },
 
   /**
-   * Returns the text of the error message to be displayed to the user.
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * Returns whether the error label should be shown.
+   * @param {string} errorLabelId
    * @param {boolean} userEdited
-   * @return {string}
+   * @return {boolean}
    * @private
    */
-  getErrorText_: function(parameters, userEdited) {
-    if (!this.hasError_(parameters, userEdited))
-      return '';
-    return [
-      this.formatErrorLabel_(parameters, userEdited),
-      this.formatAttemptsLeft_(parameters)
-    ].join(' ');
+  isErrorLabelVisible_: function(errorLabelId, userEdited) {
+    return errorLabelId && !userEdited;
   },
 
   /**
-   * Returns the formatted PIN error label to be displayed to the user.
+   * Returns whether the PIN attempts left count should be shown.
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
-   * @param {boolean} userEdited
-   * @return {string}
+   * @return {boolean}
    * @private
    */
-  formatErrorLabel_: function(parameters, userEdited) {
-    if (!parameters || userEdited)
-      return '';
-    var errorLabel = '';
-    // TODO(crbug.com/964069): Make strings localized.
-    switch (parameters.errorLabel) {
-      case OobeTypes.SecurityTokenPinDialogErrorType.NONE:
-        break;
-      case OobeTypes.SecurityTokenPinDialogErrorType.UNKNOWN:
-        errorLabel = 'Unknown error.';
-        break;
-      case OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PIN:
-        errorLabel = 'Invalid PIN.';
-        break;
-      case OobeTypes.SecurityTokenPinDialogErrorType.INVALID_PUK:
-        errorLabel = 'Invalid PUK.';
-        break;
-      case OobeTypes.SecurityTokenPinDialogErrorType.MAX_ATTEMPTS_EXCEEDED:
-        errorLabel = 'Maximum allowed attempts exceeded.';
-        break;
-      default:
-        assertNotReached(`Unexpected enum value: ${parameters.errorLabel}`);
-    }
-    if (errorLabel && parameters.enableUserInput)
-      errorLabel = `${errorLabel} Please try again.`;
-    return errorLabel;
-  },
-
-  /**
-   * Returns the formatted PIN attempts left count to be displayed to the user.
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
-   * @return {string}
-   * @private
-   */
-  formatAttemptsLeft_: function(parameters) {
-    if (!parameters || parameters.attemptsLeft == -1)
-      return '';
-    // TODO(crbug.com/964069): Make the string localized.
-    return `Attempts left: ${parameters.attemptsLeft}`;
+  isAttemptsLeftVisible_: function(parameters) {
+    return parameters && parameters.attemptsLeft != -1;
   },
 });

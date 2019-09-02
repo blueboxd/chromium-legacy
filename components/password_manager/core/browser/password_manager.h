@@ -45,7 +45,7 @@ class PasswordFormManagerForUI;
 class PasswordFormManagerInterface;
 class PasswordFormMetricsRecorder;
 class PasswordManagerMetricsRecorder;
-class NewPasswordFormManager;
+class PasswordFormManager;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -157,7 +157,7 @@ class PasswordManager : public FormSubmissionObserver {
   PasswordManagerClient* client() { return client_; }
 
 #if defined(UNIT_TEST)
-  const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers()
+  const std::vector<std::unique_ptr<PasswordFormManager>>& form_managers()
       const {
     return form_managers_;
   }
@@ -259,16 +259,16 @@ class PasswordManager : public FormSubmissionObserver {
   void CreateFormManagers(PasswordManagerDriver* driver,
                           const std::vector<autofill::PasswordForm>& forms);
 
-  // Create NewPasswordFormManager for |form|, adds the newly created one to
+  // Create PasswordFormManager for |form|, adds the newly created one to
   // |form_managers_| and returns it.
-  NewPasswordFormManager* CreateFormManager(PasswordManagerDriver* driver,
-                                            const autofill::FormData& form);
+  PasswordFormManager* CreateFormManager(PasswordManagerDriver* driver,
+                                         const autofill::FormData& form);
 
-  // Passes |form| to NewPasswordFormManager that manages it for using it after
+  // Passes |form| to PasswordFormManager that manages it for using it after
   // detecting submission success for saving. |driver| is needed to determine
   // the match. If the function is called multiple times, only the form from the
   // last call is provisionally saved. Multiple calls is possible because it is
-  // called on any user keystroke. If there is no NewPasswordFormManager that
+  // called on any user keystroke. If there is no PasswordFormManager that
   // manages |form|, the new one is created. If |is_manual_fallback| is true
   // and the matched form manager has not recieved yet response from the
   // password store, then nullptr is returned. Returns manager which manages
@@ -277,9 +277,9 @@ class PasswordManager : public FormSubmissionObserver {
   // should be skipped on saving.
   // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
   // from PasswordForm to FormData, and remove it from arguments.
-  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
-                                                PasswordManagerDriver* driver,
-                                                bool is_manual_fallback);
+  PasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
+                                             PasswordManagerDriver* driver,
+                                             bool is_manual_fallback);
 
   // Returns the form manager that corresponds to the submitted form. It might
   // be nullptr if there is no submitted form.
@@ -301,9 +301,8 @@ class PasswordManager : public FormSubmissionObserver {
       BrowserSavePasswordProgressLogger* logger);
 
   scoped_refptr<PasswordFormMetricsRecorder>
-  GetMetricRecorderFromNewPasswordFormManager(
-      const autofill::FormData& form,
-      const PasswordManagerDriver* driver);
+  GetMetricRecorderFromPasswordFormManager(const autofill::FormData& form,
+                                           const PasswordManagerDriver* driver);
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.
@@ -313,14 +312,14 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.
-  NewPasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
-                                            const autofill::FormData& form);
+  PasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
+                                         const autofill::FormData& form);
 
   // Log a frame (main frame, iframe) of a submitted password form.
   void ReportSubmittedFormFrameMetric(const PasswordManagerDriver* driver,
                                       const autofill::PasswordForm& form);
 
-  // NewPasswordFormManager transition schemes:
+  // PasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.
   // form "seen"
   //      |
@@ -337,14 +336,14 @@ class PasswordManager : public FormSubmissionObserver {
   //                            ____ Prompt.
   //  --> (is_submitted = true) ---- Automatic save.
 
-  // Contains one NewPasswordFormManager per each form on the page.
-  // When a form is "seen" on a page, a NewPasswordFormManager is created
+  // Contains one PasswordFormManager per each form on the page.
+  // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
-  std::vector<std::unique_ptr<NewPasswordFormManager>> form_managers_;
+  std::vector<std::unique_ptr<PasswordFormManager>> form_managers_;
 
   // Corresponds to the submitted form, after navigion away before submission
   // success detection is finished.
-  std::unique_ptr<NewPasswordFormManager> owned_submitted_form_manager_;
+  std::unique_ptr<PasswordFormManager> owned_submitted_form_manager_;
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;

@@ -60,7 +60,7 @@ cca.mojo.ImageCapture = function(videoTrack, mojoConnector) {
  * @return {!Promise<!cca.mojo.PhotoCapabilities>} Promise for the result.
  */
 cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
-  const deviceOperator = this.mojoConnector_.getDeviceOperator();
+  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
   const supportedEffects = [cros.mojom.Effect.NO_EFFECT];
   const isPortraitModeSupported =
       await deviceOperator.isPortraitModeSupported(this.deviceId_);
@@ -91,7 +91,7 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
   if (photoEffects) {
     for (const effect of photoEffects) {
       const take = (async () => {
-        const deviceOperator = this.mojoConnector_.getDeviceOperator();
+        const deviceOperator = await this.mojoConnector_.getDeviceOperator();
         const device = deviceOperator.getDevice(this.deviceId_);
         const {status, blob} = await device.setReprocessOption(effect);
         if (status !== 0) {

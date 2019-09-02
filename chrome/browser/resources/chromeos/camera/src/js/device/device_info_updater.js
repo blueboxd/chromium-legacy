@@ -165,7 +165,7 @@ cca.device.DeviceInfoUpdater = class {
    * @private
    */
   async queryMojoDevicesInfo_() {
-    const deviceOperator = this.mojoConnector_.getDeviceOperator();
+    const deviceOperator = await this.mojoConnector_.getDeviceOperator();
     if (!deviceOperator) {
       return null;
     }

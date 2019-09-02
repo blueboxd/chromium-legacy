@@ -1015,6 +1015,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           DnsQueryType query_type,
           URLRequestContext* request_context,
           bool secure,
+          DnsConfig::SecureDnsMode secure_dns_mode,
           Delegate* delegate,
           const NetLogWithSource& job_net_log,
           const base::TickClock* tick_clock)
@@ -1023,6 +1024,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         query_type_(query_type),
         request_context_(request_context),
         secure_(secure),
+        secure_dns_mode_(secure_dns_mode),
         delegate_(delegate),
         net_log_(job_net_log),
         num_completed_transactions_(0),
@@ -1080,7 +1082,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
             base::BindOnce(&DnsTask::OnTransactionComplete,
                            base::Unretained(this), tick_clock_->NowTicks(),
                            dns_query_type),
-            net_log_, secure_, request_context_);
+            net_log_, secure_, secure_dns_mode_, request_context_);
     trans->SetRequestPriority(delegate_->priority());
     return trans;
   }
@@ -1440,6 +1442,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   // Whether lookups in this DnsTask should occur using DoH or plaintext.
   const bool secure_;
+  const DnsConfig::SecureDnsMode secure_dns_mode_;
 
   // The listener to the results of this DnsTask.
   Delegate* delegate_;
@@ -1490,6 +1493,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       HostResolverFlags host_resolver_flags,
       HostResolverSource requested_source,
       ResolveHostParameters::CacheUsage cache_usage,
+      DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* request_context,
       HostCache* host_cache,
       std::deque<TaskType> tasks,
@@ -1503,6 +1507,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         host_resolver_flags_(host_resolver_flags),
         requested_source_(requested_source),
         cache_usage_(cache_usage),
+        secure_dns_mode_(secure_dns_mode),
         request_context_(request_context),
         host_cache_(host_cache),
         tasks_(tasks),
@@ -1944,8 +1949,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     // Need to create the task even if we're going to post a failure instead of
     // running it, as a "started" job needs a task to be properly cleaned up.
     dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), hostname_,
-                                query_type_, request_context_, secure, this,
-                                net_log_, tick_clock_));
+                                query_type_, request_context_, secure,
+                                secure_dns_mode_, this, net_log_, tick_clock_));
     dns_task_->StartFirstTransaction();
     // Schedule a second transaction, if needed. DoH queries can bypass the
     // dispatcher and start immediately.
@@ -2312,6 +2317,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   const HostResolverFlags host_resolver_flags_;
   const HostResolverSource requested_source_;
   const ResolveHostParameters::CacheUsage cache_usage_;
+  const DnsConfig::SecureDnsMode secure_dns_mode_;
   URLRequestContext* const request_context_;
   // TODO(crbug.com/969847): Consider allowing requests within a single Job to
   // have different HostCaches.
@@ -2540,6 +2546,12 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
       UpdateJobsForChangedConfig();
     }
   }
+}
+
+void HostResolverManager::SetRequestContextForProbes(
+    URLRequestContext* url_request_context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  dns_client_->SetRequestContextForProbes(url_request_context);
 }
 
 void HostResolverManager::AddHostCacheInvalidator(
@@ -2779,9 +2791,9 @@ void HostResolverManager::CreateAndStartJob(
         weak_ptr_factory_.GetWeakPtr(), request->request_host().host(),
         effective_query_type, effective_host_resolver_flags,
         request->parameters().source, request->parameters().cache_usage,
-        request->request_context(), request->host_cache(), std::move(tasks),
-        request->priority(), proc_task_runner_, request->source_net_log(),
-        tick_clock_);
+        effective_secure_dns_mode, request->request_context(),
+        request->host_cache(), std::move(tasks), request->priority(),
+        proc_task_runner_, request->source_net_log(), tick_clock_);
     job = new_job.get();
     auto insert_result = jobs_.emplace(std::move(key), std::move(new_job));
     DCHECK(insert_result.second);
@@ -3064,7 +3076,7 @@ void HostResolverManager::PushDnsTasks(bool proc_task_allowed,
       break;
     case DnsConfig::SecureDnsMode::AUTOMATIC:
       DCHECK(!allow_cache || out_tasks->front() == TaskType::CACHE_LOOKUP);
-      if (!dns_client_->CanUseSecureDnsTransactions()) {
+      if (dns_client_->FallbackFromSecureTransactionPreferred()) {
         // Don't run a secure DnsTask if there are no available DoH servers.
         if (dns_tasks_allowed && insecure_tasks_allowed)
           out_tasks->push_back(TaskType::DNS);

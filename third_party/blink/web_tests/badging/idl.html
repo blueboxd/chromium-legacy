@@ -7,8 +7,8 @@
 <script type="text/plain" id="tested">
     interface ExperimentalBadge {
       [CallWith=ScriptState, RaisesException]
-      static void set(optional [EnforceRange] unsigned long long contents);
-      [CallWith=ScriptState] static void clear();
+      static void set(optional [EnforceRange] unsigned long long contents, optional BadgeOptions options);
+      [CallWith=ScriptState] static void clear(optional BadgeOptions options);
     };
 </script>
 <script>

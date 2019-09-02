@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.password_manager;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
@@ -90,16 +91,23 @@ public class PasswordManagerDialogTest {
 
     @Test
     @SmallTest
-    public void testOkPressedCallback() {
+    public void testAcceptedCallback() {
         onView(withId(R.id.positive_button)).perform(click());
         verify(mOnClick).onResult(DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
     }
 
     @Test
     @SmallTest
-    public void testCancelPressedCallback() {
+    public void testRejectedCallback() {
         onView(withId(R.id.negative_button)).perform(click());
         verify(mOnClick).onResult(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+    }
+
+    @Test
+    @SmallTest
+    public void testDismissedCallbackBackButton() {
+        pressBack();
+        verify(mOnClick).onResult(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
     }
 
     @Test

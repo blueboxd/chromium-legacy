@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/public/dns_protocol.h"
@@ -83,7 +84,7 @@ class DnsSessionTest : public testing::Test {
   void OnSocketFreed(unsigned server_index);
 
  protected:
-  void Initialize(unsigned num_servers);
+  void Initialize(unsigned num_servers, unsigned num_doh_servers);
   std::unique_ptr<DnsSession::SocketLease> Allocate(unsigned server_index);
   bool DidAllocate(unsigned server_index);
   bool DidFree(unsigned server_index);
@@ -126,13 +127,22 @@ class MockDnsSocketPool : public DnsSocketPool {
   DnsSessionTest* test_;
 };
 
-void DnsSessionTest::Initialize(unsigned num_servers) {
+void DnsSessionTest::Initialize(unsigned num_servers,
+                                unsigned num_doh_servers) {
   CHECK(num_servers < 256u);
   config_.nameservers.clear();
+  config_.dns_over_https_servers.clear();
   for (unsigned char i = 0; i < num_servers; ++i) {
     IPEndPoint dns_endpoint(IPAddress(192, 168, 1, i),
                             dns_protocol::kDefaultPort);
     config_.nameservers.push_back(dns_endpoint);
+  }
+  for (unsigned char i = 0; i < num_doh_servers; ++i) {
+    std::string server_template(
+        base::StringPrintf("https://mock.http/doh_test_%d{?dns}", i));
+    config_.dns_over_https_servers.push_back(
+        DnsConfig::DnsOverHttpsServerConfig(server_template,
+                                            true /* is_post */));
   }
 
   test_client_socket_factory_.reset(new TestClientSocketFactory());
@@ -210,7 +220,7 @@ TestClientSocketFactory::~TestClientSocketFactory() = default;
 TEST_F(DnsSessionTest, AllocateFree) {
   std::unique_ptr<DnsSession::SocketLease> lease1, lease2;
 
-  Initialize(2);
+  Initialize(2 /* num_servers */, 0 /* num_doh_servers */);
   EXPECT_TRUE(NoMoreEvents());
 
   lease1 = Allocate(0);
@@ -232,16 +242,20 @@ TEST_F(DnsSessionTest, AllocateFree) {
 
 // Expect default calculated timeout to be within 10ms of one in DnsConfig.
 TEST_F(DnsSessionTest, HistogramTimeoutNormal) {
-  Initialize(2);
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
   base::TimeDelta delta = session_->NextTimeout(0, 0) - config_.timeout;
+  EXPECT_LE(delta.InMilliseconds(), 10);
+  delta = session_->NextDohTimeout(0) - config_.timeout;
   EXPECT_LE(delta.InMilliseconds(), 10);
 }
 
 // Expect short calculated timeout to be within 10ms of one in DnsConfig.
 TEST_F(DnsSessionTest, HistogramTimeoutShort) {
   config_.timeout = base::TimeDelta::FromMilliseconds(15);
-  Initialize(2);
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
   base::TimeDelta delta = session_->NextTimeout(0, 0) - config_.timeout;
+  EXPECT_LE(delta.InMilliseconds(), 10);
+  delta = session_->NextDohTimeout(0) - config_.timeout;
   EXPECT_LE(delta.InMilliseconds(), 10);
 }
 
@@ -250,16 +264,78 @@ TEST_F(DnsSessionTest, HistogramTimeoutShort) {
 // the config timeout.)
 TEST_F(DnsSessionTest, HistogramTimeoutLong) {
   config_.timeout = base::TimeDelta::FromSeconds(15);
-  Initialize(2);
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
   base::TimeDelta timeout = session_->NextTimeout(0, 0);
+  EXPECT_EQ(timeout.InMilliseconds(), config_.timeout.InMilliseconds());
+  timeout = session_->NextDohTimeout(0);
   EXPECT_EQ(timeout.InMilliseconds(), config_.timeout.InMilliseconds());
 }
 
 // Ensures that reported negative RTT values don't cause a crash. Regression
 // test for https://crbug.com/753568.
 TEST_F(DnsSessionTest, NegativeRtt) {
-  Initialize(2);
-  session_->RecordRTT(0, base::TimeDelta::FromMilliseconds(-1));
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  session_->RecordRTT(0, false /* is_doh_server */, false /* is_probe */,
+                      base::TimeDelta::FromMilliseconds(-1));
+  session_->RecordRTT(0, true /* is_doh_server */, false /* is_probe */,
+                      base::TimeDelta::FromMilliseconds(-1));
+}
+
+TEST_F(DnsSessionTest, DohServerAvailability) {
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  EXPECT_FALSE(session_->HasAvailableDohServer());
+  EXPECT_EQ(session_->NumAvailableDohServers(), 0u);
+  session_->SetProbeSuccess(1, true /* success */);
+  EXPECT_TRUE(session_->HasAvailableDohServer());
+  EXPECT_EQ(session_->NumAvailableDohServers(), 1u);
+
+  // Record a probe failure.
+  session_->SetProbeSuccess(1, false /* success */);
+  EXPECT_FALSE(session_->HasAvailableDohServer());
+  EXPECT_EQ(session_->NumAvailableDohServers(), 0u);
+}
+
+TEST_F(DnsSessionTest, DohProbeConsecutiveFailures) {
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  session_->SetProbeSuccess(1, true /* success */);
+
+  for (size_t i = 0; i < kAutomaticModeFailureLimit; i++) {
+    EXPECT_TRUE(session_->HasAvailableDohServer());
+    session_->RecordServerFailure(1, true /* is_doh_server */);
+  }
+  EXPECT_FALSE(session_->HasAvailableDohServer());
+}
+
+TEST_F(DnsSessionTest, DohProbeNonConsecutiveFailures) {
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  session_->SetProbeSuccess(1, true /* success */);
+
+  for (size_t i = 0; i < kAutomaticModeFailureLimit - 1; i++) {
+    EXPECT_TRUE(session_->HasAvailableDohServer());
+    session_->RecordServerFailure(1, true /* is_doh_server */);
+  }
+  EXPECT_TRUE(session_->HasAvailableDohServer());
+
+  session_->RecordServerSuccess(1, true /* is_doh_server */);
+  EXPECT_TRUE(session_->HasAvailableDohServer());
+
+  session_->RecordServerFailure(1, true /* is_doh_server */);
+  EXPECT_FALSE(session_->HasAvailableDohServer());
+}
+
+TEST_F(DnsSessionTest, DohProbeRtt) {
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+  base::TimeDelta probe_time = base::TimeDelta::FromMilliseconds(300);
+  session_->RecordRTT(1, true /* is_doh_server */, true /* is_probe */,
+                      probe_time);
+
+  // Only the DoH server that had the successful probe should have an updated
+  // histogram.
+  base::TimeDelta delta =
+      session_->NextDohTimeout(1) - probe_time * kDohProbeTimeMultiplier;
+  EXPECT_LE(delta.InMilliseconds(), 10);
+  delta = session_->NextDohTimeout(0) - config_.timeout;
+  EXPECT_GE(delta.InMilliseconds(), 10);
 }
 
 }  // namespace

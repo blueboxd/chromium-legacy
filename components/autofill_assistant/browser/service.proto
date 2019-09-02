@@ -107,6 +107,29 @@ message ClientSettingsProto {
   // Maximum number of checks to run while waiting for the document to become
   // ready.
   optional int32 document_ready_check_count = 9;
+
+  // Whether graceful shutdown should be enabled. If false, the UI stays
+  // up until it's dismissed.
+  optional bool enable_graceful_shutdown = 10;
+
+  // How long to wait before shutting down during graceful shutdown. If 0
+  // shutdown happens immediately.
+  optional int32 graceful_shutdown_delay_ms = 11;
+
+  // How much time to give users to tap undo when they tap a cancel button.
+  optional int32 cancel_delay_ms = 12;
+
+  // If the user taps the overlay that many time within |tap_duration| turn the
+  // UI off and give them |tap_shutdown_delay| to undo. If 0, unexpected taps
+  // are ignored.
+  optional int32 tap_count = 13;
+
+  // Reset the unexpected tap counter after that time.
+  optional int32 tap_tracking_duration_ms = 14;
+
+  // How much time to give users to tap undo when after |tap_count| unexpected
+  // taps where
+  optional int32 tap_shutdown_delay_ms = 15;
 }
 
 message ScriptTimeoutError {

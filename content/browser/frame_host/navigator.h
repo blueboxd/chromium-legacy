@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -150,7 +151,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache);
 

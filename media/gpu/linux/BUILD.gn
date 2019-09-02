@@ -7,6 +7,36 @@ import("//media/gpu/args.gni")
 
 assert(use_v4l2_codec || use_vaapi)
 
+# The source that depends on //media/gpu/{vaapi,v4l2}. It is created to avoid
+# circular dependency because //media/gpu/linux:common could be depended by
+# //media/gpu/{vaapi,v4l2}.
+source_set("linux") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "video_decoder_pipeline.cc",
+    "video_decoder_pipeline.h",
+  ]
+
+  public_deps = [
+    ":common",
+  ]
+
+  deps = [
+    "//base",
+    "//media",
+    "//media/gpu:buildflags",
+    "//media/gpu:common",
+  ]
+
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
+  }
+
+  if (use_v4l2_codec) {
+    deps += [ "//media/gpu/v4l2" ]
+  }
+}
+
 source_set("common") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
@@ -18,8 +48,6 @@ source_set("common") {
     "platform_video_frame_pool.h",
     "platform_video_frame_utils.cc",
     "platform_video_frame_utils.h",
-    "video_decoder_pipeline.cc",
-    "video_decoder_pipeline.h",
   ]
 
   deps = [

@@ -5,7 +5,8 @@
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 
 #include "base/files/file_path.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -21,8 +22,9 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
  public:
   static void Bind(mojo::ScopedMessagePipeHandle handle) {
     DEFINE_STATIC_LOCAL(FakePluginRegistryImpl, impl, ());
-    impl.bindings_.AddBinding(
-        &impl, mojom::blink::PluginRegistryRequest(std::move(handle)));
+    impl.receivers_.Add(
+        &impl,
+        mojo::PendingReceiver<mojom::blink::PluginRegistry>(std::move(handle)));
   }
 
   // PluginRegistry
@@ -47,7 +49,7 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
   }
 
  private:
-  mojo::BindingSet<PluginRegistry> bindings_;
+  mojo::ReceiverSet<PluginRegistry> receivers_;
 };
 
 }  // namespace

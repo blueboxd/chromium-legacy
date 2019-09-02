@@ -729,8 +729,19 @@ IN_PROC_BROWSER_TEST_P(
                                          /*LOCAL_DELETION=*/0));
 }
 
+// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_PRE_PersistProgressMarkerOnRestart \
+  DISABLED_PRE_PersistProgressMarkerOnRestart
+#define MAYBE_PersistProgressMarkerOnRestart \
+  DISABLED_PersistProgressMarkerOnRestart
+#else
+#define MAYBE_PRE_PersistProgressMarkerOnRestart \
+  PRE_PersistProgressMarkerOnRestart
+#define MAYBE_PersistProgressMarkerOnRestart PersistProgressMarkerOnRestart
+#endif
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       PRE_PersistProgressMarkerOnRestart) {
+                       MAYBE_PRE_PersistProgressMarkerOnRestart) {
   const std::string title = "Seattle Sounders FC";
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
@@ -747,7 +758,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       PersistProgressMarkerOnRestart) {
+                       MAYBE_PersistProgressMarkerOnRestart) {
   const std::string title = "Seattle Sounders FC";
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =

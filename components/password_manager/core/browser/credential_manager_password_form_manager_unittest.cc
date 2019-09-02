@@ -47,7 +47,7 @@ class MockFormSaver : public StubFormSaver {
                     const base::string16& old_password));
 
   // Convenience downcasting method.
-  static MockFormSaver& Get(NewPasswordFormManager* form_manager) {
+  static MockFormSaver& Get(PasswordFormManager* form_manager) {
     return *static_cast<MockFormSaver*>(form_manager->form_saver());
   }
 

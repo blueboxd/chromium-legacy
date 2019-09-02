@@ -44,7 +44,8 @@ class FrameHostInterceptor::FrameAgent
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator) override {
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator) override {
     if (interceptor_->WillDispatchBeginNavigation(
             rfhi_, &common_params, &begin_params, &blob_url_token,
             &navigation_client, &navigation_initiator)) {
@@ -80,7 +81,8 @@ bool FrameHostInterceptor::WillDispatchBeginNavigation(
     mojom::BeginNavigationParamsPtr* begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken>* blob_url_token,
     mojom::NavigationClientAssociatedPtrInfo* navigation_client,
-    blink::mojom::NavigationInitiatorPtr* navigation_initiator) {
+    mojo::PendingRemote<blink::mojom::NavigationInitiator>*
+        navigation_initiator) {
   return true;
 }
 

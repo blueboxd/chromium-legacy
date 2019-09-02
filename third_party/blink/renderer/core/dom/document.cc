@@ -1897,8 +1897,9 @@ void Document::SetContentLanguage(const AtomicString& language) {
   content_language_ = language;
 
   // Document's style depends on the content language.
-  SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                               style_change_reason::kLanguage));
+  GetStyleEngine().MarkViewportStyleDirty();
+  GetStyleEngine().MarkAllElementsForStyleRecalc(
+      StyleChangeReasonForTracing::Create(style_change_reason::kLanguage));
 }
 
 void Document::setXMLVersion(const String& version,
@@ -2325,7 +2326,7 @@ bool Document::NeedsFullLayoutTreeUpdate() const {
     return true;
   if (!use_elements_needing_update_.IsEmpty())
     return true;
-  if (NeedsStyleRecalc())
+  if (style_engine_->IsViewportStyleDirty())
     return true;
   if (NeedsStyleInvalidation())
     return true;
@@ -2790,41 +2791,23 @@ void Document::UpdateStyle() {
   // tree properly.
   DCHECK(!NeedsLayoutTreeRebuild());
 
-  NthIndexCache nth_index_cache(*this);
+  // SetNeedsStyleRecalc should only happen on Element and Text nodes.
+  DCHECK(!NeedsStyleRecalc());
 
-  StyleRecalcChange change;
-  if (GetStyleChangeType() == kSubtreeStyleChange) {
-    change = change.ForceRecalcDescendants();
-
-    // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver()
-    // before calling StyleForViewport() below because apparently the
-    // StyleResolver's constructor has side effects. We should fix it. See
-    // printing/setPrinting.html, printing/width-overflow.html though they only
-    // fail on mac when accessing the resolver by what appears to be a viewport
-    // size difference.
-    scoped_refptr<ComputedStyle> viewport_style =
-        StyleResolver::StyleForViewport(*this);
-    if (ComputedStyle::ComputeDifference(viewport_style.get(),
-                                         GetLayoutView()->Style()) !=
-        ComputedStyle::Difference::kEqual) {
-      GetLayoutView()->SetStyle(std::move(viewport_style));
-    }
-  }
-
-  ClearNeedsStyleRecalc();
+  GetStyleEngine().UpdateViewportStyle();
 
   StyleResolver& resolver = EnsureStyleResolver();
-
   bool should_record_stats;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &should_record_stats);
   GetStyleEngine().SetStatsEnabled(should_record_stats);
 
   if (Element* document_element = documentElement()) {
-    if (change.TraverseChild(*document_element)) {
+    NthIndexCache nth_index_cache(*this);
+    if (StyleRecalcChange().TraverseChild(*document_element)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
       Element* viewport_defining = ViewportDefiningElement();
-      GetStyleEngine().RecalcStyle(change);
+      GetStyleEngine().RecalcStyle();
       if (viewport_defining != ViewportDefiningElement())
         ViewportDefiningElementDidChange();
     }
@@ -6270,9 +6253,10 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
       encoding_data_.Encoding().UsesVisualOrdering();
   if (should_use_visual_ordering != visually_ordered_) {
     visually_ordered_ = should_use_visual_ordering;
-    SetNeedsStyleRecalc(kSubtreeStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            style_change_reason::kVisuallyOrdered));
+    GetStyleEngine().MarkViewportStyleDirty();
+    GetStyleEngine().MarkAllElementsForStyleRecalc(
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kVisuallyOrdered));
   }
 }
 
@@ -6393,8 +6377,8 @@ void Document::setDesignMode(const String& value) {
   if (new_value == design_mode_)
     return;
   design_mode_ = new_value;
-  SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  GetStyleEngine().MarkViewportStyleDirty();
+  GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kDesignMode));
 }
 
@@ -8518,7 +8502,7 @@ void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
 }
 
 void Document::Dispose() {
-  navigation_initiator_bindings_.CloseAllBindings();
+  navigation_initiator_receivers_.Clear();
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

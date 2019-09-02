@@ -36,6 +36,7 @@
 
 #include "base/memory/scoped_refptr.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -129,7 +130,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const String& href_translate,
       WebContentSecurityPolicyList,
       network::mojom::IPAddressSpace,
-      mojom::blink::NavigationInitiatorPtr) override;
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;

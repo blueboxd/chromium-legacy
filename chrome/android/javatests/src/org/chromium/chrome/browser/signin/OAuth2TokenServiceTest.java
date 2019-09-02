@@ -11,6 +11,7 @@ import android.support.test.filters.SmallTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -20,7 +21,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -30,11 +31,13 @@ import java.util.concurrent.CountDownLatch;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class OAuth2TokenServiceTest {
     private AdvancedMockContext mContext;
-    private FakeAccountManagerDelegate mAccountManager;
+
+    @Rule
+    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     /**
      * Class handling GetAccessToken callbacks and providing a blocking {@link
-     * getToken}.
+     * #getToken()}.
      */
     class GetAccessTokenCallbackForTest implements OAuth2TokenService.GetAccessTokenCallback {
         private String mToken;
@@ -69,9 +72,6 @@ public class OAuth2TokenServiceTest {
     @Before
     public void setUp() throws Exception {
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
-        mAccountManager = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
     }
 
     @After
@@ -93,7 +93,7 @@ public class OAuth2TokenServiceTest {
     public void testGetAccountsOneAccountRegistered() {
         Account account1 = AccountManagerFacade.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
-        mAccountManager.addAccountHolderBlocking(accountHolder1);
+        mAccountManagerTestRule.addAccount(accountHolder1);
 
         String[] sysAccounts = OAuth2TokenService.getSystemAccountNames();
         Assert.assertEquals("There should be one registered account", 1, sysAccounts.length);
@@ -109,10 +109,10 @@ public class OAuth2TokenServiceTest {
     public void testGetAccountsTwoAccountsRegistered() {
         Account account1 = AccountManagerFacade.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
-        mAccountManager.addAccountHolderBlocking(accountHolder1);
+        mAccountManagerTestRule.addAccount(accountHolder1);
         Account account2 = AccountManagerFacade.createAccountFromName("bar@gmail.com");
         AccountHolder accountHolder2 = AccountHolder.builder(account2).build();
-        mAccountManager.addAccountHolderBlocking(accountHolder2);
+        mAccountManagerTestRule.addAccount(accountHolder2);
 
         String[] sysAccounts = OAuth2TokenService.getSystemAccountNames();
         Assert.assertEquals("There should be one registered account", 2, sysAccounts.length);
@@ -152,7 +152,7 @@ public class OAuth2TokenServiceTest {
                                               .hasBeenAccepted(scope, true)
                                               .authToken(scope, expectedToken)
                                               .build();
-        mAccountManager.addAccountHolderBlocking(accountHolder);
+        mAccountManagerTestRule.addAccount(accountHolder);
         GetAccessTokenCallbackForTest callback = new GetAccessTokenCallbackForTest();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { OAuth2TokenService.getAccessToken(account, scope, callback); });

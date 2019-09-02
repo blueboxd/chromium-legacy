@@ -30,8 +30,6 @@ namespace cors {
 
 // A class to manage CORS-preflight, making a CORS-preflight request, checking
 // its result, and owning a CORS-preflight cache.
-// TODO(toyoshim): Features explained above not fully implemented yet.
-// See also https://crbug.com/803766 to check a design doc.
 class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
  public:
   using CompletionCallback =

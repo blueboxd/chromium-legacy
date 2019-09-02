@@ -1232,6 +1232,10 @@ interface Response
     method formData
     method json
     method text
+interface ScreenManager
+    attribute @@toStringTag
+    method constructor
+    method requestDisplays
 interface SecurityPolicyViolationEvent : Event
     attribute @@toStringTag
     getter blockedURI
@@ -3688,6 +3692,7 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
+    getter screen
     getter serial
     getter storage
     getter usb

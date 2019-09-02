@@ -527,19 +527,12 @@ bool VotesUploader::FindUsernameInOtherPossibleUsernames(
 }
 
 bool VotesUploader::FindCorrectedUsernameElement(
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const std::vector<const PasswordForm*>& not_best_matches,
+    const std::vector<const PasswordForm*>& matches,
     const base::string16& username,
     const base::string16& password) {
   if (username.empty())
     return false;
-  for (const auto& key_value : best_matches) {
-    const PasswordForm* match = key_value.second;
-    if ((match->password_value == password) &&
-        FindUsernameInOtherPossibleUsernames(*match, username))
-      return true;
-  }
-  for (const PasswordForm* match : not_best_matches) {
+  for (const PasswordForm* match : matches) {
     if ((match->password_value == password) &&
         FindUsernameInOtherPossibleUsernames(*match, username))
       return true;

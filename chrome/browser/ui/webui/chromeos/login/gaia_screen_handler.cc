@@ -631,6 +631,18 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TITLE);
   builder->Add("securityTokenPinDialogSubtitle",
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_SUBTITLE);
+  builder->Add("securityTokenPinDialogTryAgain",
+               IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TRY_AGAIN);
+  builder->Add("securityTokenPinDialogAttemptsLeft",
+               IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT);
+  builder->Add("securityTokenPinDialogUnknownError",
+               IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR);
+  builder->Add("securityTokenPinDialogUnknownInvalidPin",
+               IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR);
+  builder->Add("securityTokenPinDialogUnknownInvalidPuk",
+               IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR);
+  builder->Add("securityTokenPinDialogUnknownMaxAttemptsExceeded",
+               IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR);
 }
 
 void GaiaScreenHandler::Initialize() {

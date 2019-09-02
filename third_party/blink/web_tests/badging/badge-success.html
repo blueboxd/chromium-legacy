@@ -11,16 +11,16 @@
 <body>
 <script>
 
-badge_test(() => { ExperimentalBadge.set(); }, 'setFlag');
+badge_test(() => { ExperimentalBadge.set(); }, 'flag');
 
-badge_test(() => { ExperimentalBadge.set(undefined); }, 'setFlag');
+badge_test(() => { ExperimentalBadge.set(undefined); }, 'flag');
 
-badge_test(() => { ExperimentalBadge.set(1); }, 'setInteger');
+badge_test(() => { ExperimentalBadge.set(1); }, 'number');
 
 // Setting the Badge to 0 should be equivalent to clearing the badge.
-badge_test(() => { ExperimentalBadge.set(0); }, 'clearBadge');
+badge_test(() => { ExperimentalBadge.set(0); }, 'clear');
 
-badge_test(() => { ExperimentalBadge.clear(); }, 'clearBadge');
+badge_test(() => { ExperimentalBadge.clear(); }, 'clear');
 
 </script>
 </body>

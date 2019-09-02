@@ -3,6 +3,11 @@
   </head>
   <body>
     <iframe name="in-scope" src="/ssl/google.html" id="in-scope"></iframe>
-    <iframe name="cross-site" src="https://example.com" id="cross-site"></iframe>
+    <iframe name="cross-site" id="cross-site"></iframe>
+    <script type="text/javascript">
+      const crossFrame = document.getElementById('cross-site');
+      const crossSiteUrl = new URLSearchParams(location.search).get('url');
+      crossFrame.src = crossSiteUrl;
+    </script>
   </body>
 </html>

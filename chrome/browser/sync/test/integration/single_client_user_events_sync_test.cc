@@ -162,7 +162,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
   EXPECT_TRUE(ExpectUserEvents({specifics1, specifics1, specifics2}));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
+// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_RetryParallel DISABLED_RetryParallel
+#else
+#define MAYBE_RetryParallel RetryParallel
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, MAYBE_RetryParallel) {
   ASSERT_TRUE(SetupSync());
   bool first = true;
   const UserEventSpecifics specifics1 =

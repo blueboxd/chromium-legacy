@@ -149,6 +149,9 @@ class NET_EXPORT HostResolverManager
   // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(DnsConfigOverrides overrides);
 
+  // Sets the URLRequestContext to use for issuing DoH probes.
+  void SetRequestContextForProbes(URLRequestContext* url_request_context);
+
   // Support for invalidating HostCaches on changes to network or DNS
   // configuration. HostCaches should register/deregister invalidators here
   // rather than attempting to listen for relevant network change signals

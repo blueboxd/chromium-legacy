@@ -21,7 +21,7 @@ class View;
 
 class Browser;
 class HoverButton;
-enum class SharingClickToCallDialogType;
+enum class SharingDialogType;
 
 class ClickToCallDialogView : public SharingDialog,
                               public views::ButtonListener,
@@ -66,7 +66,7 @@ class ClickToCallDialogView : public SharingDialog,
   FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, DevicePressed);
   FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, AppPressed);
 
-  SharingClickToCallDialogType GetDialogType() const;
+  SharingDialogType GetDialogType() const;
 
   // views::BubbleDialogDelegateView:
   void Init() override;

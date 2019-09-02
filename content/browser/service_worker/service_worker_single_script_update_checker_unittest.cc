@@ -1163,5 +1163,51 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkError) {
             blink::ServiceWorkerStatusCode::kErrorNetwork);
 }
 
+// The main script needs to request a SSL info so that the navigation handled
+// by the service worker can use the SSL info served for the main script.
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, RequestSSLInfo) {
+  auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
+  base::Optional<CheckResult> check_result;
+
+  // Load the main script. It needs a SSL info.
+  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
+      CreateSingleScriptUpdateChecker(
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
+          blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
+          std::make_unique<MockServiceWorkerResponseReader>(),
+          std::make_unique<MockServiceWorkerResponseReader>(),
+          std::make_unique<MockServiceWorkerResponseWriter>(),
+          loader_factory.get(), &check_result);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    ASSERT_EQ(1u, loader_factory->pending_requests()->size());
+    const network::TestURLLoaderFactory::PendingRequest* pending_request =
+        loader_factory->GetPendingRequest(0);
+    EXPECT_EQ(kScriptURL, pending_request->request.url);
+    EXPECT_EQ(network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
+              pending_request->options);
+  }
+
+  // Load imported script. It doesn't need SSL info.
+  checker = CreateSingleScriptUpdateChecker(
+      kImportedScriptURL, kScriptURL, GURL(kScope),
+      false /* force_bypass_cache */,
+      blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
+      std::make_unique<MockServiceWorkerResponseReader>(),
+      std::make_unique<MockServiceWorkerResponseReader>(),
+      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      &check_result);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    ASSERT_EQ(2u, loader_factory->pending_requests()->size());
+    const network::TestURLLoaderFactory::PendingRequest* pending_request =
+        loader_factory->GetPendingRequest(1);
+    EXPECT_EQ(kImportedScriptURL, pending_request->request.url);
+    EXPECT_EQ(network::mojom::kURLLoadOptionNone, pending_request->options);
+  }
+}
+
 }  // namespace
 }  // namespace content

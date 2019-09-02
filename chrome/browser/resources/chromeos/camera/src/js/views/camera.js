@@ -58,8 +58,8 @@ cca.views.Camera = function(
    * @type {cca.views.camera.Options}
    * @private
    */
-  this.options_ = new cca.views.camera.Options(
-      infoUpdater, mojoConnector, this.restart.bind(this));
+  this.options_ =
+      new cca.views.camera.Options(infoUpdater, this.restart.bind(this));
 
   /**
    * @type {HTMLElement}
@@ -277,7 +277,7 @@ cca.views.Camera.prototype.restart = function() {
  */
 cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
   let supportedModes = null;
-  const deviceOperator = this.mojoConnector_.getDeviceOperator();
+  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
   for (const mode of this.modes_.getModeCandidates()) {
     try {
       if (!deviceId) {

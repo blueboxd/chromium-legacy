@@ -86,7 +86,7 @@ class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
     DnsConfigOverrides overrides;
     overrides.dns_over_https_servers.emplace(
         {DnsConfig::DnsOverHttpsServerConfig(url.spec(), true /* use_post */)});
-    overrides.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+    overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
     overrides.use_local_ipv6 = true;
     resolver_->GetManagerForTesting()->SetDnsConfigOverrides(
         std::move(overrides));

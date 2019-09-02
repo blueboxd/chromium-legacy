@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "cc/paint/paint_canvas.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -284,24 +285,25 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidFinishLoad() override {}
   void DispatchDidChangeThemeColor() override {}
 
-  void BeginNavigation(const ResourceRequest&,
-                       network::mojom::RequestContextFrameType,
-                       Document* origin_document,
-                       DocumentLoader*,
-                       WebNavigationType,
-                       NavigationPolicy,
-                       bool,
-                       WebFrameLoadType,
-                       bool,
-                       WebTriggeringEventInfo,
-                       HTMLFormElement*,
-                       ContentSecurityPolicyDisposition,
-                       mojo::PendingRemote<mojom::blink::BlobURLToken>,
-                       base::TimeTicks,
-                       const String&,
-                       WebContentSecurityPolicyList,
-                       network::mojom::IPAddressSpace,
-                       mojom::blink::NavigationInitiatorPtr) override;
+  void BeginNavigation(
+      const ResourceRequest&,
+      network::mojom::RequestContextFrameType,
+      Document* origin_document,
+      DocumentLoader*,
+      WebNavigationType,
+      NavigationPolicy,
+      bool,
+      WebFrameLoadType,
+      bool,
+      WebTriggeringEventInfo,
+      HTMLFormElement*,
+      ContentSecurityPolicyDisposition,
+      mojo::PendingRemote<mojom::blink::BlobURLToken>,
+      base::TimeTicks,
+      const String&,
+      WebContentSecurityPolicyList,
+      network::mojom::IPAddressSpace,
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 

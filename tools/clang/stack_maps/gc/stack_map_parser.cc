@@ -89,7 +89,7 @@ SafepointTable StackmapV3Parser::Parse() {
     fn++;
   }
 
-  return SafepointTable(roots, GetFramePtr());
+  return SafepointTable(roots);
 }
 }  // namespace stackmap
 

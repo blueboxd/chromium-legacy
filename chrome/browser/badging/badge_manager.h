@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/badging/badge_manager_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -23,17 +23,19 @@ class RenderFrameHost;
 }  // namespace content
 
 namespace badging {
+class BadgeManagerDelegate;
 
 // The maximum value of badge contents before saturation occurs.
 constexpr uint64_t kMaxBadgeContent = 99u;
-
-// Determines the text to put on the badge based on some badge_content.
-std::string GetBadgeString(base::Optional<uint64_t> badge_content);
 
 // Maintains a record of badge contents and dispatches badge changes to a
 // delegate.
 class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
  public:
+  // The badge being applied to a URL. If the optional is |base::nullopt| then
+  // the badge is "flag". Otherwise the badge is a non-zero integer.
+  using BadgeValue = base::Optional<uint64_t>;
+
   explicit BadgeManager(Profile* profile);
   ~BadgeManager() override;
 
@@ -44,13 +46,16 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
       content::RenderFrameHost* frame);
 
-  // Sets the badge for |app_id| to be |content|. Note: If content is set, it
-  // must be non-zero.
-  void UpdateAppBadge(const base::Optional<std::string>& app_id,
-                      base::Optional<uint64_t> content);
+  // Returns whether there is a more specific badge for |url| than |scope|.
+  // Note: This function does not check that there is a badge for |scope|.
+  bool HasMoreSpecificBadgeForUrl(const GURL& scope, const GURL& url);
 
-  // Clears the badge for |app_id|.
-  void ClearAppBadge(const base::Optional<std::string>& app_id);
+  // Gets the most specific badge applying to |scope|. This will be
+  // base::nullopt if the scope is not badged.
+  base::Optional<BadgeValue> GetBadgeValue(const GURL& scope);
+
+  void SetBadgeForTesting(const GURL& scope, BadgeValue value);
+  void ClearBadgeForTesting(const GURL& scope);
 
  private:
   // The BindingContext of a mojo request. Allows mojo calls to be tied back to
@@ -63,18 +68,23 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
     int frame_id;
   };
 
-  // Notifies |delegate_| that a badge change was ignored.
-  void BadgeChangeIgnored();
+  // Updates the badge for |scope| to be |value|, if it is not base::nullopt.
+  // If value is |base::nullopt| then this clears the badge.
+  void UpdateBadge(const GURL& scope, base::Optional<BadgeValue> value);
 
   // blink::mojom::BadgeService:
   // Note: These are private to stop them being called outside of mojo as they
   // require a mojo binding context.
-  void SetInteger(uint64_t content) override;
-  void SetFlag() override;
-  void ClearBadge() override;
+  void SetBadge(const GURL& scope, blink::mojom::BadgeValuePtr value) override;
+  void ClearBadge(const GURL& scope) override;
 
-  // Examines |context| to determine which app, if any, should be badged.
-  base::Optional<std::string> GetAppIdToBadge(const BindingContext& context);
+  // Finds the scope URL of the most specific badge for |scope|. Returns
+  // GURL::EmptyGURL() if no match is found.
+  GURL MostSpecificBadgeForScope(const GURL& scope);
+
+  // Determines whether |context| is allowed to change the badge for |scope|.
+  bool ScopeIsValidBadgeTarget(const BindingContext& context,
+                               const GURL& scope);
 
   // All the mojo receivers for the BadgeManager. Keeps track of the
   // render_frame the binding is associated with, so as to not have to rely
@@ -85,11 +95,14 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Note: This is currently only set on Windows and MacOS.
   std::unique_ptr<BadgeManagerDelegate> delegate_;
 
-  // Maps app id to badge contents.
-  std::map<std::string, base::Optional<uint64_t>> badged_apps_;
+  // Maps scope to badge contents.
+  std::map<GURL, BadgeValue> badged_scopes_;
 
   DISALLOW_COPY_AND_ASSIGN(BadgeManager);
 };
+
+// Determines the text to put on the badge based on some badge_content.
+std::string GetBadgeString(BadgeManager::BadgeValue badge_content);
 
 }  // namespace badging
 

@@ -12,9 +12,6 @@
 // parser.
 extern const char __LLVM_StackMaps;
 
-// This is done with a non-portable asm shim which places RBP in RAX
-extern "C" uintptr_t GetFramePtr();
-
 namespace stackmap {
 
 // These structs group together fields in the stackmap section to be used by the

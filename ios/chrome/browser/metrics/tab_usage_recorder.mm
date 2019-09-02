@@ -290,9 +290,13 @@ void TabUsageRecorder::RendererTerminated(web::WebState* terminated_web_state,
   UMA_HISTOGRAM_ENUMERATION(kRendererTerminationStateHistogram,
                             static_cast<int>(web_state_state),
                             static_cast<int>(TERMINATION_TAB_STATE_COUNT));
-
   if (!web_state_visible) {
-    DCHECK(!WebStateAlreadyEvicted(terminated_web_state));
+    if (WebStateAlreadyEvicted(terminated_web_state)) {
+      // A web state may get notified multiple times that it's been evicted.
+      // To avoid double-counting, don't do any further processing if this
+      // happens.
+      return;
+    }
     evicted_web_states_[terminated_web_state] =
         EVICTED_DUE_TO_RENDERER_TERMINATION;
   }

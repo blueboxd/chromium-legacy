@@ -149,7 +149,7 @@ cca.views.camera.Modes = function(
       captureFactory: () => new cca.views.camera.Portrait(
           this.stream_, doSavePhoto, this.captureResolution_, mojoConnector),
       isSupported: async (stream) => {
-        const deviceOperator = mojoConnector.getDeviceOperator();
+        const deviceOperator = await mojoConnector.getDeviceOperator();
         if (!deviceOperator) {
           return false;
         }

@@ -1639,6 +1639,8 @@ jumbo_source_set("browser") {
     "scheduler/scoped_do_not_use_ui_default_queue_from_io.h",
     "scoped_active_url.cc",
     "scoped_active_url.h",
+    "screen_enumeration/screen_enumeration_impl.cc",
+    "screen_enumeration/screen_enumeration_impl.h",
     "screen_orientation/screen_orientation_provider.cc",
     "screen_orientation/screen_orientation_provider.h",
     "screenlock_monitor/screenlock_monitor.cc",

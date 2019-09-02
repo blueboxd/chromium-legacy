@@ -30,6 +30,7 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/proxy_server.h"
 #include "services/network/public/cpp/origin_policy.h"
@@ -156,7 +157,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       bool override_user_agent,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache);
 
@@ -547,7 +549,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
                     NavigationEntryImpl* navitation_entry,
                     std::unique_ptr<NavigationUIData> navigation_ui_data,
                     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-                    blink::mojom::NavigationInitiatorPtr navigation_initiator,
+                    mojo::PendingRemote<blink::mojom::NavigationInitiator>
+                        navigation_initiator,
                     RenderFrameHostImpl* rfh_restored_from_back_forward_cache);
 
   // NavigationURLLoaderDelegate implementation.

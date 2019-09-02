@@ -7,6 +7,7 @@
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
@@ -31,6 +32,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
+
+  map->Add<blink::mojom::ScreenEnumeration>(
+      base::BindRepeating(&ScreenEnumerationImpl::Create));
 }
 
 void PopulateBinderMapWithContext(
@@ -63,6 +67,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &DedicatedWorkerHost::BindFileSystemManager, base::Unretained(host)));
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
+  map->Add<blink::mojom::ScreenEnumeration>(
+      base::BindRepeating(&ScreenEnumerationImpl::Create));
 }
 
 void PopulateBinderMapWithContext(
@@ -86,6 +92,8 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
   // |SharedWorkerHost::broker_|.
   map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
       &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
+  map->Add<blink::mojom::ScreenEnumeration>(
+      base::BindRepeating(&ScreenEnumerationImpl::Create));
 }
 
 void PopulateBinderMapWithContext(
@@ -114,6 +122,8 @@ ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host) {
 void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
                                   service_manager::BinderMap* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  map->Add<blink::mojom::ScreenEnumeration>(
+      base::BindRepeating(&ScreenEnumerationImpl::Create));
 }
 
 void PopulateBinderMapWithContext(

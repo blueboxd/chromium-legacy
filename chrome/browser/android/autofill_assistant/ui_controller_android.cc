@@ -36,6 +36,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -57,10 +58,6 @@ using base::android::JavaRef;
 namespace autofill_assistant {
 
 namespace {
-
-// How long to leave the UI showing after AA has stopped.
-static constexpr base::TimeDelta kGracefulShutdownDelay =
-    base::TimeDelta::FromSeconds(5);
 
 std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   std::vector<float> flattened;
@@ -145,6 +142,8 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   Java_AssistantModel_setWebContents(env, GetModel(), java_web_contents);
   Java_AssistantCollectUserDataModel_setWebContents(
       env, GetCollectUserDataModel(), java_web_contents);
+  OnClientSettingsChanged(ui_delegate_->GetClientSettings());
+
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
@@ -254,16 +253,21 @@ void UiControllerAndroid::SetupForState() {
 
       // make sure user sees the error message.
       ExpandBottomSheet();
-
-      // Keep showing the current UI for a while, without getting updates from
-      // the controller, then shut down the UI portion.
-      //
-      // A controller might still get attached while the timer is running,
-      // canceling the destruction.
-      destroy_timer_ = std::make_unique<base::OneShotTimer>();
-      destroy_timer_->Start(FROM_HERE, kGracefulShutdownDelay,
-                            base::BindOnce(&UiControllerAndroid::DestroySelf,
-                                           weak_ptr_factory_.GetWeakPtr()));
+      {
+        const ClientSettings& settings = ui_delegate_->GetClientSettings();
+        if (settings.enable_graceful_shutdown) {
+          // Keep showing the current UI for a while, without getting updates
+          // from the controller, then shut down the UI portion.
+          //
+          // A controller might still get attached while the timer is running,
+          // canceling the destruction.
+          destroy_timer_ = std::make_unique<base::OneShotTimer>();
+          destroy_timer_->Start(
+              FROM_HERE, settings.graceful_shutdown_delay,
+              base::BindOnce(&UiControllerAndroid::DestroySelf,
+                             weak_ptr_factory_.GetWeakPtr()));
+        }
+      }
       Detach();
       return;
 
@@ -367,8 +371,14 @@ void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
   client_->Shutdown(reason);
 }
 
-void UiControllerAndroid::ShowSnackbar(const std::string& message,
+void UiControllerAndroid::ShowSnackbar(base::TimeDelta delay,
+                                       const std::string& message,
                                        base::OnceCallback<void()> action) {
+  if (delay.is_zero()) {
+    std::move(action).Run();
+    return;
+  }
+
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetModel();
   if (!Java_AssistantModel_getVisible(env, jmodel)) {
@@ -379,7 +389,8 @@ void UiControllerAndroid::ShowSnackbar(const std::string& message,
   SetVisible(false);
   snackbar_action_ = std::move(action);
   Java_AutofillAssistantUiController_showSnackbar(
-      env, java_object_, base::android::ConvertUTF8ToJavaString(env, message));
+      env, java_object_, static_cast<jint>(delay.InMilliseconds()),
+      base::android::ConvertUTF8ToJavaString(env, message));
 }
 
 void UiControllerAndroid::SnackbarResult(
@@ -569,7 +580,8 @@ void UiControllerAndroid::CloseOrCancel(
   }
 
   // Cancel, with a snackbar to allow UNDO.
-  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
+  ShowSnackbar(ui_delegate_->GetClientSettings().cancel_delay,
+               l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
                               std::move(trigger_context)));
@@ -636,7 +648,13 @@ void UiControllerAndroid::OnTouchableAreaChanged(
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {
-  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
+  if (!ui_delegate_) {
+    Shutdown(Metrics::DropOutReason::OVERLAY_STOP);
+    return;
+  }
+
+  ShowSnackbar(ui_delegate_->GetClientSettings().tap_shutdown_delay,
+               l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
                base::BindOnce(&UiControllerAndroid::Shutdown,
                               weak_ptr_factory_.GetWeakPtr(),
                               Metrics::DropOutReason::OVERLAY_STOP));
@@ -870,6 +888,13 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
 
     Java_AssistantFormModel_setInputs(env, GetFormModel(), jinput_list);
   }
+}
+
+void UiControllerAndroid::OnClientSettingsChanged(
+    const ClientSettings& settings) {
+  Java_AssistantOverlayModel_setTapTracking(
+      AttachCurrentThread(), GetOverlayModel(), settings.tap_count,
+      settings.tap_tracking_duration.InMilliseconds());
 }
 
 void UiControllerAndroid::OnCounterChanged(int input_index,

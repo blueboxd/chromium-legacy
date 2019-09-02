@@ -21,6 +21,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -184,14 +185,17 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
   DCHECK(!account_web_data_service_ ||
          web_data_service_thread_ ==
              account_web_data_service_->GetDBTaskRunner());
-  password_store_ = PasswordStoreFactory::GetForProfile(
+  profile_password_store_ = PasswordStoreFactory::GetForProfile(
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
+  account_password_store_ = AccountPasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
       this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
       base::CreateSequencedTaskRunner({content::BrowserThread::UI}),
       web_data_service_thread_, profile_web_data_service_,
-      account_web_data_service_, password_store_,
+      account_web_data_service_, profile_password_store_,
+      account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
 }
 
@@ -494,8 +498,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
           ->AsWeakPtr();
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::PASSWORDS: {
-      return password_store_.get()
-                 ? password_store_->GetPasswordSyncableService()
+      return profile_password_store_.get()
+                 ? profile_password_store_->GetPasswordSyncableService()
                  : nullptr;
     }
 #if defined(OS_CHROMEOS)
@@ -581,9 +585,12 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_PASSWORD: {
-      if (!password_store_.get())
+      // Note: This is only used for the directory implementation of passwords,
+      // not for USS, but only USS supports the account password store. So we
+      // can safely ignore the account store here.
+      if (!profile_password_store_.get())
         return nullptr;
-      return new PasswordModelWorker(password_store_);
+      return new PasswordModelWorker(profile_password_store_);
     }
     default:
       return nullptr;

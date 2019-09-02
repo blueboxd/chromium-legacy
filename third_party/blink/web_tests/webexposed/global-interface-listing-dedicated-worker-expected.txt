@@ -1175,6 +1175,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter content
 [Worker]     method constructor
+[Worker] interface ScreenManager
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method requestDisplays
 [Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter blockedURI
@@ -3742,6 +3746,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
+[Worker]     getter screen
 [Worker]     getter serial
 [Worker]     getter storage
 [Worker]     getter usb

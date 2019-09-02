@@ -556,6 +556,10 @@
     "dependencies": ["permission:loginScreenUi"],
     "contexts": ["blessed_extension"]
   },
+  "loginState": {
+    "dependencies": ["permission:loginState"],
+    "contexts": ["blessed_extension"]
+  },
   "webcamPrivate": {
     "dependencies": ["permission:webcamPrivate"],
     "contexts": ["blessed_extension"]

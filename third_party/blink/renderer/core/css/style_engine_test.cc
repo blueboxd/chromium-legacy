@@ -1716,7 +1716,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   div->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetStyleEngine().RecalcStyle({});
+  GetStyleEngine().RecalcStyle();
 
   // Should fast reject ".not-in-filter div::before {}" for both the div and its
   // ::before pseudo element.
@@ -1928,7 +1928,7 @@ TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
   span_outer->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
   EXPECT_TRUE(span_outer->NeedsStyleRecalc());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetStyleEngine().RecalcStyle({});
+  GetStyleEngine().RecalcStyle();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
 
   EXPECT_FALSE(span_outer->NeedsStyleRecalc());
@@ -2086,7 +2086,7 @@ TEST_F(StyleEngineTest, NeedsLayoutTreeRebuild) {
       CSSPropertyID::kDisplay, "none");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().GetStyleEngine().RecalcStyle({});
+  GetDocument().GetStyleEngine().RecalcStyle();
 
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());

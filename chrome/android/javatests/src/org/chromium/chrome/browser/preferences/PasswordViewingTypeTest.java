@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
@@ -42,13 +42,15 @@ public class PasswordViewingTypeTest {
     @Rule
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
+    @Rule
+    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
     private MainPreferences mMainPreferences;
     private ChromeBasePreference mPasswordsPref;
     private Context mContext;
     private MockSyncContentResolverDelegate mSyncContentResolverDelegate;
     private String mAuthority;
     private Account mAccount;
-    private FakeAccountManagerDelegate mAccountManager;
 
     @Before
     public void setUp() throws Exception {
@@ -67,12 +69,9 @@ public class PasswordViewingTypeTest {
     }
 
     private void setupTestAccount() {
-        mAccountManager = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
         mAccount = AccountManagerFacade.createAccountFromName("account@example.com");
         AccountHolder.Builder accountHolder = AccountHolder.builder(mAccount).alwaysAccept(true);
-        mAccountManager.addAccountHolderBlocking(accountHolder.build());
+        mAccountManagerTestRule.addAccount(accountHolder.build());
     }
 
     @After

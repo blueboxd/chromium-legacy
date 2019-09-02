@@ -16,15 +16,6 @@ namespace password_manager {
 // saved credentials or more.
 constexpr int kOnboardingCredentialsThreshold = 3;
 
-// Possible values for the |kPasswordManagerOnboardingState| pref.
-// |kShouldShow| indicates that the onboarding should be shown
-// the next time the user gets prompted to save their password.
-enum class OnboardingState {
-  kDoNotShow,
-  kShouldShow,
-  kShown,
-};
-
 // This utility class is responsible for updating the
 // |kPasswordManagerOnboardingState| pref, for later use in the triggering logic
 // for the onboarding.

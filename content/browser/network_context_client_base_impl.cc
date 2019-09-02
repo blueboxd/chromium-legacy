@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/network_context_client_base.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -89,8 +90,11 @@ void NetworkContextClientBase::OnAuthRequired(
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
     network::mojom::URLResponseHeadPtr head,
-    network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
-  std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    mojo::PendingRemote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder) {
+  mojo::Remote<network::mojom::AuthChallengeResponder>
+      auth_challenge_responder_remote(std::move(auth_challenge_responder));
+  auth_challenge_responder_remote->OnAuthCredentials(base::nullopt);
 }
 
 void NetworkContextClientBase::OnCertificateRequested(

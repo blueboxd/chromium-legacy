@@ -29,9 +29,9 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
@@ -313,7 +313,7 @@ class PasswordManagerTest : public testing::Test {
     prefs_.reset(new TestingPrefServiceSimple());
     prefs_->registry()->RegisterIntegerPref(
         prefs::kPasswordManagerOnboardingState,
-        static_cast<int>(OnboardingState::kDoNotShow));
+        static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
@@ -322,7 +322,7 @@ class PasswordManagerTest : public testing::Test {
     // Disable waiting, since most tests have nothing to do with predictions.
     // All tests that test working with prediction should explicitly turn
     // predictions on.
-    NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+    PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
   }
 
   void TearDown() override {
@@ -905,8 +905,9 @@ TEST_F(PasswordManagerTest, OnboardingSimple) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
-                     static_cast<int>(OnboardingState::kShouldShow));
+  prefs_->SetInteger(
+      prefs::kPasswordManagerOnboardingState,
+      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
 
   PasswordForm form(MakeSimpleForm());
   std::vector<PasswordForm> observed = {form};
@@ -933,8 +934,9 @@ TEST_F(PasswordManagerTest, OnboardingPasswordUpdate) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
-  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
-                     static_cast<int>(OnboardingState::kShouldShow));
+  prefs_->SetInteger(
+      prefs::kPasswordManagerOnboardingState,
+      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
 
   PasswordForm observed_form(MakeSimpleForm());
   std::vector<PasswordForm> observed_forms = {observed_form};
@@ -1586,16 +1588,16 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
 // tests below.
 
 // If kNewPasswordFormParsing is enabled, then "similar" is governed by
-// NewPasswordFormManager::DoesManage, which in turn delegates to the unique
+// PasswordFormManager::DoesManage, which in turn delegates to the unique
 // renderer ID of the forms being the same. Note, however, that such ID is only
 // unique within one renderer process. If different frames on the page are
 // rendered by different processes, two unrelated forms can end up with the same
 // ID. The test checks that nevertheless each of them gets assigned its own
-// NewPasswordFormManager and filled as expected.
+// PasswordFormManager and filled as expected.
 TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
-  // Setting task runner is required since NewPasswordFormManager uses
+  // Setting task runner is required since PasswordFormManager uses
   // PostDelayTask for making filling.
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   TestMockTimeTaskRunner::ScopedContext scoped_context_(task_runner_.get());
 
   // Two unrelated forms...
@@ -2087,16 +2089,16 @@ TEST_F(PasswordManagerTest, SetGenerationElementAndReasonForForm) {
 }
 
 TEST_F(PasswordManagerTest, UpdateFormManagers) {
-    // Seeing a form should result in creating PasswordFormManager and
-    // NewPasswordFormManager and querying PasswordStore. Calling
-    // UpdateFormManagers should result in querying the store again.
-    EXPECT_CALL(*store_, GetLogins(_, _))
-        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  // Seeing a form should result in creating PasswordFormManager and
+  // PasswordFormManager and querying PasswordStore. Calling
+  // UpdateFormManagers should result in querying the store again.
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
 
-    manager()->OnPasswordFormsParsed(&driver_, {PasswordForm()});
+  manager()->OnPasswordFormsParsed(&driver_, {PasswordForm()});
 
-    EXPECT_CALL(*store_, GetLogins(_, _));
-    manager()->UpdateFormManagers();
+  EXPECT_CALL(*store_, GetLogins(_, _));
+  manager()->UpdateFormManagers();
 }
 
 TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
@@ -2701,7 +2703,7 @@ TEST_F(PasswordManagerTest, MetricForSchemeOfSuccessfulLogins) {
 }
 
 TEST_F(PasswordManagerTest, ManualFallbackForSavingNewParser) {
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
@@ -2779,7 +2781,7 @@ TEST_F(PasswordManagerTest, NoSavePromptForNotPasswordForm) {
 // Check that when autofill predictions are received before a form is found then
 // server predictions are not ignored and used for filling.
 TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
 
@@ -2845,7 +2847,7 @@ TEST_F(PasswordManagerTest, SavingAfterUserTypingAndNavigation) {
   }
 }
 
-// Check that when a form is submitted and a NewPasswordFormManager not present,
+// Check that when a form is submitted and a PasswordFormManager not present,
 // this ends up reported in ProvisionallySaveFailure UMA and UKM.
 TEST_F(PasswordManagerTest, ProvisionallySaveFailure) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
@@ -2913,7 +2915,7 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
   const MissingFormManagerTestCase kTestCases[] = {
       {
           .description =
-              "A form is submitted and a NewPasswordFormManager not present.",
+              "A form is submitted and a PasswordFormManager not present.",
           .parsed_forms = {},
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
           // .parsed_forms is empty, so the processed form below was not
@@ -2925,7 +2927,7 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       },
       {
           .description = "Manual saving is requested and a "
-                         "NewPasswordFormManager is created.",
+                         "PasswordFormManager is created.",
           .parsed_forms = {},
           .save_signal = MissingFormManagerTestCase::Signal::Manual,
           // .parsed_forms is empty, so the processed form below was not
@@ -2944,7 +2946,7 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
       },
       {
           .description =
-              "A form is submitted and a NewPasswordFormManager present.",
+              "A form is submitted and a PasswordFormManager present.",
           .parsed_forms = {form},
           .save_signal = MissingFormManagerTestCase::Signal::Automatic,
           .processed_forms = {form},
@@ -3027,8 +3029,8 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
 }
 
 // Tests that despite there a form was not seen on a page load, new
-// |NewPasswordFormManager| is created in process of saving.
-TEST_F(PasswordManagerTest, CreateNewPasswordFormManagerOnSaving) {
+// |PasswordFormManager| is created in process of saving.
+TEST_F(PasswordManagerTest, CreatePasswordFormManagerOnSaving) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
 
@@ -3086,43 +3088,43 @@ TEST_F(PasswordManagerTest, NoSavePromptAfterStoreCalled) {
 // Check that on non-password form, saving and filling fallbacks are available
 // but no automatic filling and saving are available.
 TEST_F(PasswordManagerTest, FillingAndSavingFallbacksOnNonPasswordForm) {
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
-    EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
-        .WillRepeatedly(Return(true));
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(Return(true));
 
-    PasswordForm saved_match(MakeSimpleForm());
-    PasswordForm credit_card_form(MakeSimpleCreditCardForm());
-    credit_card_form.only_for_fallback = true;
+  PasswordForm saved_match(MakeSimpleForm());
+  PasswordForm credit_card_form(MakeSimpleCreditCardForm());
+  credit_card_form.only_for_fallback = true;
 
-    EXPECT_CALL(*store_, GetLogins(_, _))
-        .WillRepeatedly(WithArg<1>(InvokeConsumer(saved_match)));
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(saved_match)));
 
-    PasswordFormFillData form_data;
-    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
+  PasswordFormFillData form_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
 
-    manager()->OnPasswordFormsParsed(&driver_, {credit_card_form});
-    // Check that manual filling fallback available.
-    EXPECT_EQ(saved_match.username_value, form_data.username_field.value);
-    EXPECT_EQ(saved_match.password_value, form_data.password_field.value);
-    // Check that no automatic filling available.
-    uint32_t renderer_id_not_set = FormFieldData::kNotSetFormControlRendererId;
-    EXPECT_EQ(renderer_id_not_set, form_data.username_field.unique_renderer_id);
-    EXPECT_EQ(renderer_id_not_set, form_data.password_field.unique_renderer_id);
+  manager()->OnPasswordFormsParsed(&driver_, {credit_card_form});
+  // Check that manual filling fallback available.
+  EXPECT_EQ(saved_match.username_value, form_data.username_field.value);
+  EXPECT_EQ(saved_match.password_value, form_data.password_field.value);
+  // Check that no automatic filling available.
+  uint32_t renderer_id_not_set = FormFieldData::kNotSetFormControlRendererId;
+  EXPECT_EQ(renderer_id_not_set, form_data.username_field.unique_renderer_id);
+  EXPECT_EQ(renderer_id_not_set, form_data.password_field.unique_renderer_id);
 
-    // Check that saving fallback is available.
-    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-    EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
-        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
-    manager()->ShowManualFallbackForSaving(&driver_, credit_card_form);
-    ASSERT_TRUE(form_manager_to_save);
-    EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
-                FormMatches(credit_card_form));
+  // Check that saving fallback is available.
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  manager()->ShowManualFallbackForSaving(&driver_, credit_card_form);
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
+              FormMatches(credit_card_form));
 
-    // Check that no automatic save prompt is shown.
-    OnPasswordFormSubmitted(credit_card_form);
-    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
-    manager()->DidNavigateMainFrame(true);
-    manager()->OnPasswordFormsRendered(&driver_, {}, true);
+  // Check that no automatic save prompt is shown.
+  OnPasswordFormSubmitted(credit_card_form);
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  manager()->DidNavigateMainFrame(true);
+  manager()->OnPasswordFormsRendered(&driver_, {}, true);
 }
 
 #if !defined(OS_IOS)
@@ -3161,7 +3163,7 @@ TEST_F(PasswordManagerTest, StartLeakDetection) {
 
 // Check that a non-password form with SINGLE_USERNAME prediction is filled.
 TEST_F(PasswordManagerTest, FillSingleUsername) {
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
   PasswordForm saved_match(MakeSavedForm());
@@ -3202,7 +3204,7 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
 // in marking the password field as eligible for password generation.
 TEST_F(PasswordManagerTest,
        MarkServerPredictedClearTextPasswordFieldEligibleForGeneration) {
-  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(true);
+  PasswordFormManager::set_wait_for_server_predictions_for_filling(true);
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
   PasswordForm saved_match(MakeSavedForm());

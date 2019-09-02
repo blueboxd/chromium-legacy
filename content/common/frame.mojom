@@ -417,7 +417,7 @@ interface FrameHost {
       BeginNavigationParams begin_params,
       pending_remote<blink.mojom.BlobURLToken>? blob_url_token,
       associated NavigationClient? navigation_client,
-      blink.mojom.NavigationInitiator? navigation_initiator);
+      pending_remote<blink.mojom.NavigationInitiator>? navigation_initiator);
 
   // Sent when a subresource response has started.
   // |cert_status| is the bitmask of status info of the SSL certificate. (see

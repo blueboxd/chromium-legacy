@@ -26,9 +26,17 @@ std::unique_ptr<InputMethod> CreateInputMethod(
     gfx::AcceleratedWidget widget);
 
 // Makes CreateInputMethod return a MockInputMethod.
-COMPONENT_EXPORT(UI_BASE_IME_INIT) void SetUpInputMethodFactoryForTesting();
 COMPONENT_EXPORT(UI_BASE_IME_INIT)
 void SetUpInputMethodForTesting(InputMethod* input_method);
+
+class COMPONENT_EXPORT(UI_BASE_IME_INIT) ScopedTestInputMethodFactory {
+ public:
+  ScopedTestInputMethodFactory();
+  ~ScopedTestInputMethodFactory();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestInputMethodFactory);
+};
 
 }  // namespace ui;
 

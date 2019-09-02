@@ -113,6 +113,11 @@ public class ClickToCallUma {
                 .record(emptyPhoneNumber);
     }
 
+    public static void recordDialerPresent(boolean isDialerPresent) {
+        new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialerPresent")
+                .record(isDialerPresent);
+    }
+
     public static void recordMessageReceived() {
         new CachedMetrics
                 .EnumeratedHistogramSample(

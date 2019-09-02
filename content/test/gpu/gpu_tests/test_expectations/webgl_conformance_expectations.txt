@@ -8,7 +8,7 @@
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
-# tags: [ intel_lt_25.20.100.6444 mesa_lt_17.1.6 ]
+# tags: [ angle_lt_25.20.100.6444 mesa_lt_17.1.6 ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -134,8 +134,8 @@ crbug.com/angleproject/2722 [ win intel vulkan passthrough ] conformance/renderi
 # case biuDepthRange_001_to_002 first.
 # Temporarily skip these two cases now because this issue blocks
 # WEBGL_video_texture implementation.
-crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
-crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+crbug.com/907195 [ win intel opengl passthrough angle_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
+crbug.com/907195 [ win intel opengl passthrough angle_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
 
 # TODO(kbr): re-enable suppression for same test below once fixed.
 crbug.com/angleproject/2103 [ win ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Skip ]

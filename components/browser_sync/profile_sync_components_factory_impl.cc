@@ -111,7 +111,10 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
         web_data_service_on_disk,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_in_memory,
-    const scoped_refptr<password_manager::PasswordStore>& password_store,
+    const scoped_refptr<password_manager::PasswordStore>&
+        profile_password_store,
+    const scoped_refptr<password_manager::PasswordStore>&
+        account_password_store,
     sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
     : sync_client_(sync_client),
       channel_(channel),
@@ -120,7 +123,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       db_thread_(db_thread),
       web_data_service_on_disk_(web_data_service_on_disk),
       web_data_service_in_memory_(web_data_service_in_memory),
-      password_store_(password_store),
+      profile_password_store_(profile_password_store),
+      account_password_store_(account_password_store),
       bookmark_sync_service_(bookmark_sync_service) {
   DCHECK(sync_client_);
 }
@@ -279,17 +283,21 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
     if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      if (password_store_) {
-        // |password_store_| can be null in tests.
+      if (profile_password_store_) {
+        // |profile_password_store_| can be null in tests.
         controllers.push_back(
             std::make_unique<password_manager::PasswordModelTypeController>(
-                password_store_->CreateSyncControllerDelegate(), sync_service,
-                sync_client_->GetPasswordStateChangedCallback()));
+                profile_password_store_->CreateSyncControllerDelegate(),
+                account_password_store_
+                    ? account_password_store_->CreateSyncControllerDelegate()
+                    : nullptr,
+                sync_service, sync_client_->GetPasswordStateChangedCallback()));
       }
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(
           dump_stack, sync_service, sync_client_,
-          sync_client_->GetPasswordStateChangedCallback(), password_store_));
+          sync_client_->GetPasswordStateChangedCallback(),
+          profile_password_store_));
     }
   }
 

@@ -2418,7 +2418,7 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALLModified) {
             }));
 
     base::PostTask(FROM_HERE, {base::ThreadPool()},
-                   base::Bind(
+                   base::BindOnce(
                        [](scoped_refptr<AbstractPromise> p2) {
                          p2->emplace(Rejected<void>());
                        },

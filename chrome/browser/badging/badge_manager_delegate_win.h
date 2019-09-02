@@ -13,17 +13,22 @@
 
 class Profile;
 
+namespace web_app {
+class AppRegistrar;
+}
+
 namespace badging {
+
+class BadgeManager;
 
 // Windows specific implementation of the BadgeManagerDelegate.
 class BadgeManagerDelegateWin : public BadgeManagerDelegate {
  public:
-  explicit BadgeManagerDelegateWin(Profile* profile);
+  explicit BadgeManagerDelegateWin(Profile* profile,
+                                   BadgeManager* badge_manager,
+                                   web_app::AppRegistrar* registrar);
 
-  void OnBadgeSet(const std::string& app_id,
-                  base::Optional<uint64_t> contents) override;
-
-  void OnBadgeCleared(const std::string& app_id) override;
+  void OnAppBadgeUpdated(const web_app::AppId& app_id) override;
 
  private:
   // Determines if a browser is for a specific hosted app, on this profile.

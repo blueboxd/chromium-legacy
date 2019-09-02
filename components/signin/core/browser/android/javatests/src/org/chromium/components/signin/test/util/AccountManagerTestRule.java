@@ -8,7 +8,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.ProfileDataSource;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,6 +22,7 @@ import java.lang.annotation.Target;
  */
 public class AccountManagerTestRule implements TestRule {
     private FakeAccountManagerDelegate mDelegate;
+    private @FakeAccountManagerDelegate.ProfileDataSourceFlag int mProfileDataSourceFlag;
 
     /**
      * Test method annotation signaling that the account population should be blocked until {@link
@@ -29,19 +32,26 @@ public class AccountManagerTestRule implements TestRule {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface BlockGetAccounts {}
 
+    public AccountManagerTestRule() {
+        this(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
+    }
+
+    public AccountManagerTestRule(
+            @FakeAccountManagerDelegate.ProfileDataSourceFlag int profileDataSourceFlag) {
+        mProfileDataSourceFlag = profileDataSourceFlag;
+    }
+
     @Override
     public Statement apply(Statement statement, Description description) {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                final int profileDataSourceFlag =
-                        FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE;
                 final int blockGetAccountsFlag =
                         description.getAnnotation(BlockGetAccounts.class) == null
                         ? FakeAccountManagerDelegate.DISABLE_BLOCK_GET_ACCOUNTS
                         : FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS;
-                mDelegate =
-                        new FakeAccountManagerDelegate(profileDataSourceFlag, blockGetAccountsFlag);
+                mDelegate = new FakeAccountManagerDelegate(
+                        mProfileDataSourceFlag, blockGetAccountsFlag);
                 AccountManagerFacade.overrideAccountManagerFacadeForTests(mDelegate);
                 statement.evaluate();
             }
@@ -55,5 +65,19 @@ public class AccountManagerTestRule implements TestRule {
     public void unblockGetAccountsAndWaitForAccountsPopulated() {
         mDelegate.unblockGetAccounts();
         AccountManagerFacade.get().tryGetGoogleAccounts();
+    }
+
+    public void addAccount(AccountHolder accountHolder) {
+        mDelegate.addAccountHolderBlocking(accountHolder);
+    }
+
+    public void addAccount(AccountHolder accountHolder, ProfileDataSource.ProfileData profileData) {
+        mDelegate.addAccountHolderBlocking(accountHolder);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mDelegate.setProfileData(accountHolder.getAccount().name, profileData));
+    }
+
+    public void removeAccount(AccountHolder accountHolder) {
+        mDelegate.removeAccountHolderBlocking(accountHolder);
     }
 }

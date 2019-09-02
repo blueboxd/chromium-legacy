@@ -140,6 +140,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       debug_identifier_(init_params.debug_identifier),
       autofill_enable_account_wallet_storage_(
           init_params.autofill_enable_account_wallet_storage),
+      enable_passwords_account_storage_(
+          init_params.enable_passwords_account_storage),
       sync_service_url_(
           GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(), channel_)),
       crypto_(
@@ -1268,6 +1270,13 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
               switches::
                   kSyncAllowWalletDataInTransportModeWithCustomPassphrase)) {
         allowed_types.Put(AUTOFILL_WALLET_DATA);
+      }
+    }
+
+    if (enable_passwords_account_storage_ &&
+        base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      if (!GetUserSettings()->IsUsingSecondaryPassphrase()) {
+        allowed_types.Put(PASSWORDS);
       }
     }
 

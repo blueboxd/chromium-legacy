@@ -447,6 +447,14 @@ void NetworkService::ConfigureStubHostResolver(
     return;
   }
 
+  for (auto* network_context : network_contexts_) {
+    if (!network_context->IsPrimaryNetworkContext())
+      continue;
+
+    host_resolver_manager_->SetRequestContextForProbes(
+        network_context->url_request_context());
+  }
+
   net::DnsConfigOverrides overrides;
   overrides.dns_over_https_servers.emplace();
   for (const auto& doh_server : *dns_over_https_servers) {

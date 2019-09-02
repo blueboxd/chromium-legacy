@@ -480,6 +480,19 @@ const char kNavigationPreloadNetworkError[] =
     "NetworkError: The service worker navigation preload request failed with "
     "a network error.";
 
+void CheckPageIsMarkedSecure(
+    Shell* shell,
+    scoped_refptr<net::X509Certificate> expected_certificate) {
+  NavigationEntry* entry =
+      shell->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_TRUE(entry->GetSSL().initialized);
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
+  EXPECT_TRUE(expected_certificate->EqualsExcludingChain(
+      entry->GetSSL().certificate.get()));
+  EXPECT_FALSE(net::IsCertStatusError(entry->GetSSL().cert_status));
+}
+
 }  // namespace
 
 class ServiceWorkerBrowserTest : public ContentBrowserTest {
@@ -2834,35 +2847,78 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
                        ResponseFromHTTPSServiceWorkerIsMarkedAsSecure) {
   StartServerAndNavigateToSetup();
-  const char kPageUrl[] = "/service_worker/fetch_event_blob.html";
-  const char kWorkerUrl[] = "/service_worker/fetch_event_blob.js";
+  const char kPageUrl[] = "/service_worker/in-scope";
+  const char kWorkerUrl[] = "/service_worker/worker_script";
+  const char kWorkerScript[] = R"(
+      self.addEventListener('fetch', e => {
+        e.respondWith(new Response('<title>Title</title>', {
+          headers: {'Content-Type': 'text/html'}
+        }));
+      });
+      // Version: %d)";
+
+  // Register a handler which serves different script on each request. The
+  // service worker returns a page titled by "Title" via Blob.
+  int service_worker_served_count = 0;
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (request.relative_url != kWorkerUrl)
+          return nullptr;
+        auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_code(net::HTTP_OK);
+        response->set_content_type("text/javascript");
+        response->set_content(
+            base::StringPrintf(kWorkerScript, ++service_worker_served_count));
+        return response;
+      }));
   ASSERT_TRUE(https_server.Start());
 
-  scoped_refptr<WorkerActivatedObserver> observer =
-      new WorkerActivatedObserver(wrapper());
-  observer->Init();
-  blink::mojom::ServiceWorkerRegistrationOptions options(
-      https_server.GetURL(kPageUrl), blink::mojom::ScriptType::kClassic,
-      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
-  public_context()->RegisterServiceWorker(
-      https_server.GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
-  observer->Wait();
+  // 1st attempt: install a service worker and open the controlled page.
+  {
+    // Register a service worker which controls |kPageUrl|.
+    auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
+    observer->Init();
+    blink::mojom::ServiceWorkerRegistrationOptions options(
+        https_server.GetURL(kPageUrl), blink::mojom::ScriptType::kClassic,
+        blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+    public_context()->RegisterServiceWorker(
+        https_server.GetURL(kWorkerUrl), options,
+        base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
+    observer->Wait();
+    EXPECT_EQ(1, service_worker_served_count);
 
-  const base::string16 title = base::ASCIIToUTF16("Title");
-  TitleWatcher title_watcher(shell()->web_contents(), title);
-  EXPECT_TRUE(NavigateToURL(shell(), https_server.GetURL(kPageUrl)));
-  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  NavigationEntry* entry =
-      shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_TRUE(entry->GetSSL().initialized);
-  EXPECT_FALSE(!!(entry->GetSSL().content_status &
-                  SSLStatus::DISPLAYED_INSECURE_CONTENT));
-  EXPECT_TRUE(https_server.GetCertificate()->EqualsExcludingChain(
-      entry->GetSSL().certificate.get()));
-  EXPECT_FALSE(net::IsCertStatusError(entry->GetSSL().cert_status));
+    // Wait until the page is appropriately served by the service worker.
+    const base::string16 title = base::ASCIIToUTF16("Title");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    EXPECT_TRUE(NavigateToURL(shell(), https_server.GetURL(kPageUrl)));
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+    // The page should be marked as secure.
+    CheckPageIsMarkedSecure(shell(), https_server.GetCertificate());
+  }
+
+  // Navigate away from the page so that the worker has no controllee.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+
+  // 2nd attempt: update the service worker and open the controlled page again.
+  {
+    // Update the service worker.
+    auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
+    observer->Init();
+    wrapper()->UpdateRegistration(https_server.GetURL(kPageUrl));
+    observer->Wait();
+
+    // Wait until the page is appropriately served by the service worker.
+    const base::string16 title = base::ASCIIToUTF16("Title");
+    TitleWatcher title_watcher(shell()->web_contents(), title);
+    EXPECT_TRUE(NavigateToURL(shell(), https_server.GetURL(kPageUrl)));
+    EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+
+    // The page should be marked as secure.
+    CheckPageIsMarkedSecure(shell(), https_server.GetCertificate());
+  }
 
   shell()->Close();
 

@@ -2120,19 +2120,16 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
           name == html_names::kRendersubtreeAttr &&
           params.old_value != params.new_value) {
-        const bool should_be_invisible =
-            EqualIgnoringASCIICase(params.new_value, "invisible");
-        const bool should_be_invisible_activatable =
-            EqualIgnoringASCIICase(params.new_value, "invisible-activatable");
-        if (should_be_invisible || should_be_invisible_activatable) {
-          // Getting locked.
-          EnsureDisplayLockContext().SetActivatable(
-              should_be_invisible_activatable);
+        SpaceSplitString tokens(params.new_value.LowerASCII());
+        const bool should_be_activatable = tokens.Contains("activatable");
+        EnsureDisplayLockContext().SetActivatable(should_be_activatable);
+        const bool should_be_invisible = tokens.Contains("invisible");
+        if (should_be_invisible) {
           if (!GetDisplayLockContext()->IsLocked())
             GetDisplayLockContext()->StartAcquire();
         } else {
           // Getting unlocked.
-          if (EnsureDisplayLockContext().IsLocked())
+          if (GetDisplayLockContext()->IsLocked())
             GetDisplayLockContext()->StartCommit();
         }
       }

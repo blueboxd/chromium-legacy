@@ -146,7 +146,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     // Display locking. Returns a display lock context.
     [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
     // Declarative display locking.
-    [RuntimeEnabled=DisplayLocking, CEReactions, CustomElementCallbacks, Reflect, ReflectOnly=("invisible-activatable","invisible", "visible"), ReflectInvalid="visible", ReflectEmpty="visible"] attribute DOMString renderSubtree;
+    [RuntimeEnabled=DisplayLocking, CEReactions, CustomElementCallbacks, Reflect] attribute DOMString renderSubtree;
 
     // Element Timing
     [RuntimeEnabled=ElementTiming, Affects=Nothing, CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;

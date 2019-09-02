@@ -4515,6 +4515,12 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   if (IsFileUploadControl() || IsTextControl() || IsListBox())
     return;
 
+  // We don't allow custom layout and multicol on the same object. This is
+  // similar to not allowing it for flexbox, grids and tables (although those
+  // don't create LayoutBlockFlow, so we don't need to check for those here).
+  if (IsLayoutNGCustom())
+    return;
+
   LayoutMultiColumnFlowThread* flow_thread =
       LayoutMultiColumnFlowThread::CreateAnonymous(GetDocument(), StyleRef());
   AddChild(flow_thread);

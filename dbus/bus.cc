@@ -15,9 +15,9 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "dbus/exported_object.h"
@@ -171,8 +171,8 @@ Bus::Bus(const Options& options)
   dbus_threads_init_default();
   // The origin message loop is unnecessary if the client uses synchronous
   // functions only.
-  if (base::ThreadTaskRunnerHandle::IsSet())
-    origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  if (base::SequencedTaskRunnerHandle::IsSet())
+    origin_task_runner_ = base::SequencedTaskRunnerHandle::Get();
 }
 
 Bus::~Bus() {
@@ -857,7 +857,11 @@ bool Bus::HasDBusThread() {
 }
 
 void Bus::AssertOnOriginThread() {
-  CHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
+  if (origin_task_runner_) {
+    CHECK(origin_task_runner_->RunsTasksInCurrentSequence());
+  } else {
+    CHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
+  }
 }
 
 void Bus::AssertOnDBusThread() {

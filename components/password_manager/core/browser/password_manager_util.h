@@ -113,8 +113,8 @@ void RemoveUselessCredentials(
 base::StringPiece GetSignonRealmWithProtocolExcluded(
     const autofill::PasswordForm& form);
 
-// Given all non-blacklisted |matches|, finds and populates
-// |best_matches_|, |preferred_match_| and |non_best_matches_| accordingly.
+// Given all non-blacklisted |matches|, finds and populates |best_matches| and
+// |preferred_match_| accordingly.
 // For comparing credentials the following rule is used: non-psl match is better
 // than psl match, preferred match is better than non-preferred match. In case
 // of tie, an arbitrary credential from the tied ones is chosen for
@@ -122,7 +122,6 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(
 void FindBestMatches(
     std::vector<const autofill::PasswordForm*> matches,
     std::map<base::string16, const autofill::PasswordForm*>* best_matches,
-    std::vector<const autofill::PasswordForm*>* not_best_matches,
     const autofill::PasswordForm** preferred_match);
 
 // If the user submits a form, they may have used existing credentials, new

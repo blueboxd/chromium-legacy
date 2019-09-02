@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -721,6 +722,11 @@ void StyleEngine::MarkUserStyleDirty() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+void StyleEngine::MarkViewportStyleDirty() {
+  viewport_style_dirty_ = true;
+  GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
+}
+
 CSSStyleSheet* StyleEngine::CreateSheet(Element& element,
                                         const String& text,
                                         TextPosition start_position,
@@ -805,8 +811,8 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
 
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  MarkViewportStyleDirty();
+  MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
   probe::FontsUpdated(document_, nullptr, String(), nullptr);
 }
@@ -1287,9 +1293,8 @@ void StyleEngine::InitialStyleChanged() {
   // Media queries may rely on the initial font size relative lengths which may
   // have changed.
   MediaQueryAffectingValueChanged();
-
-  GetDocument().SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  MarkViewportStyleDirty();
+  MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kSettings));
 }
 
@@ -1761,19 +1766,13 @@ scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
   return initial_data_;
 }
 
-void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
+void StyleEngine::RecalcStyle() {
   DCHECK(GetDocument().documentElement());
-  DCHECK(GetDocument().ChildNeedsStyleRecalc() || change.RecalcDescendants());
-
   Element* root_element = &style_recalc_root_.RootElement();
   Element* parent = root_element->ParentOrShadowHostElement();
-  if (change.RecalcChildren()) {
-    root_element = GetDocument().documentElement();
-    parent = nullptr;
-  }
 
   SelectorFilterRootScope filter_scope(parent);
-  root_element->RecalcStyle(change);
+  root_element->RecalcStyle({});
 
   for (ContainerNode* ancestor = root_element->ParentOrShadowHostNode();
        ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
@@ -1919,6 +1918,27 @@ void StyleEngine::MarkAllElementsForStyleRecalc(
     const StyleChangeReasonForTracing& reason) {
   if (Element* root = GetDocument().documentElement())
     root->SetNeedsStyleRecalc(kSubtreeStyleChange, reason);
+}
+
+void StyleEngine::UpdateViewportStyle() {
+  if (!viewport_style_dirty_)
+    return;
+
+  viewport_style_dirty_ = false;
+
+  // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver()
+  // before calling StyleForViewport() below because apparently the
+  // StyleResolver's constructor has side effects. We should fix it. See
+  // printing/setPrinting.html, printing/width-overflow.html though they only
+  // fail on mac when accessing the resolver by what appears to be a viewport
+  // size difference.
+  scoped_refptr<ComputedStyle> viewport_style =
+      StyleResolver::StyleForViewport(GetDocument());
+  if (ComputedStyle::ComputeDifference(
+          viewport_style.get(), GetDocument().GetLayoutView()->Style()) !=
+      ComputedStyle::Difference::kEqual) {
+    GetDocument().GetLayoutView()->SetStyle(std::move(viewport_style));
+  }
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

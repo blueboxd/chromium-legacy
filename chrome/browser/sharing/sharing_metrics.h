@@ -23,11 +23,11 @@ enum class SharingVapidKeyCreationResult {
   kMaxValue = kExportPrivateKeyFailed,
 };
 
-// The types of dialogs that can be shown for Click to Call.
+// The types of dialogs that can be shown for sharing features.
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
-// "SharingClickToCallDialogType" in src/tools/metrics/histograms/enums.xml.
-enum class SharingClickToCallDialogType {
+// "SharingDialogType" in src/tools/metrics/histograms/enums.xml.
+enum class SharingDialogType {
   kDialogWithDevicesMaybeApps = 0,
   kDialogWithoutDevicesWithApp = 1,
   kEducationalDialog = 2,
@@ -86,7 +86,7 @@ void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index);
 void LogSharingMessageAckTime(base::TimeDelta time);
 
 // Logs to UMA the |type| of dialog shown for Click to Call.
-void LogClickToCallDialogShown(SharingClickToCallDialogType type);
+void LogClickToCallDialogShown(SharingDialogType type);
 
 // Logs to UMA result of sending a SharingMessage. This should not be called for
 // sending ack messages.

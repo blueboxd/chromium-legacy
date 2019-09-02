@@ -22,7 +22,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -39,6 +39,9 @@ public class OAuth2TokenServiceIntegrationTest {
     @Rule
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
+    @Rule
+    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
     private static final Account TEST_ACCOUNT1 =
             AccountManagerFacade.createAccountFromName("foo@gmail.com");
     private static final Account TEST_ACCOUNT2 =
@@ -49,18 +52,11 @@ public class OAuth2TokenServiceIntegrationTest {
             AccountHolder.builder(TEST_ACCOUNT2).alwaysAccept(true).build();
 
     private OAuth2TokenService mOAuth2TokenService;
-    private FakeAccountManagerDelegate mAccountManager;
     private ChromeSigninController mChromeSigninController;
 
     @Before
     public void setUp() {
         mapAccountNamesToIds();
-
-        // loadNativeLibraryAndInitBrowserProcess will access AccountManagerFacade, so it should
-        // be initialized beforehand.
-        mAccountManager = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
 
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
@@ -113,12 +109,12 @@ public class OAuth2TokenServiceIntegrationTest {
     }
 
     private void addAccount(AccountHolder accountHolder) {
-        mAccountManager.addAccountHolderBlocking(accountHolder);
+        mAccountManagerTestRule.addAccount(accountHolder);
         TestThreadUtils.runOnUiThreadBlocking(this::seedAccountTrackerService);
     }
 
     private void removeAccount(AccountHolder accountHolder) {
-        mAccountManager.removeAccountHolderBlocking(accountHolder);
+        mAccountManagerTestRule.removeAccount(accountHolder);
         TestThreadUtils.runOnUiThreadBlocking(this::seedAccountTrackerService);
     }
 

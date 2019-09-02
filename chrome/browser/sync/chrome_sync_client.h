@@ -77,7 +77,8 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
   // respective backend threads.
   scoped_refptr<autofill::AutofillWebDataService> profile_web_data_service_;
   scoped_refptr<autofill::AutofillWebDataService> account_web_data_service_;
-  scoped_refptr<password_manager::PasswordStore> password_store_;
+  scoped_refptr<password_manager::PasswordStore> profile_password_store_;
+  scoped_refptr<password_manager::PasswordStore> account_password_store_;
 
   // The task runner for the |web_data_service_|, if any.
   scoped_refptr<base::SequencedTaskRunner> web_data_service_thread_;

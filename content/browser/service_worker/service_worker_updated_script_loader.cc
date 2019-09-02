@@ -342,6 +342,13 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteInfo(
   auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
       info, options_, request_start_, base::TimeTicks::Now(),
       response_info->response_data_size);
+  // Don't pass SSLInfo to the client when the original request doesn't ask
+  // to send it.
+  if (response.head.ssl_info.has_value() &&
+      !(options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
+    response.head.ssl_info.reset();
+  }
+
   client_->OnReceiveResponse(std::move(response.head));
   if (!response.metadata.empty())
     client_->OnReceiveCachedMetadata(std::move(response.metadata));

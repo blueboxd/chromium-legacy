@@ -70,15 +70,12 @@ class VotesUploader {
       const autofill::PasswordForm& pending_credentials,
       const autofill::PasswordForm& form_to_upload);
 
-  // Searches for |username| in |all_possible_usernames| of |best_matches|
-  // and |not_best_matches|. If the username value is found in
-  // |all_possible_usernames| and the password value of the match is equal to
-  // |password|, the match is saved to |username_correction_vote_| and the
-  // method returns true.
+  // Searches for |username| in |all_possible_usernames| of |matches|. If the
+  // username value is found in |all_possible_usernames| and the password value
+  // of the match is equal to |password|, the match is saved to
+  // |username_correction_vote_| and the method returns true.
   bool FindCorrectedUsernameElement(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const std::vector<const autofill::PasswordForm*>& not_best_matches,
+      const std::vector<const autofill::PasswordForm*>& matches,
       const base::string16& username,
       const base::string16& password);
 

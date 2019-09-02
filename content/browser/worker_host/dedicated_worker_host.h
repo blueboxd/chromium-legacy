@@ -26,7 +26,6 @@ class Origin;
 
 namespace content {
 
-class AppCacheNavigationHandle;
 class ServiceWorkerNavigationHandle;
 class ServiceWorkerObjectHost;
 
@@ -164,7 +163,6 @@ class DedicatedWorkerHost final
   // starting or running.
   mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client_;
 
-  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   service_manager::BinderRegistry registry_;

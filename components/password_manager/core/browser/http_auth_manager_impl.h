@@ -18,7 +18,7 @@
 namespace password_manager {
 
 class PasswordManagerClient;
-class NewPasswordFormManager;
+class PasswordFormManager;
 class PasswordFormManagerForUI;
 
 // Implementation of the HttpAuthManager as used by the PasswordManagerClient.
@@ -55,7 +55,7 @@ class HttpAuthManagerImpl : public HttpAuthManager {
   // Get a Logger object and write a log message defined by the message id.
   void LogMessage(const BrowserSavePasswordProgressLogger::StringID) const;
 
-  // Passes |form| to NewPasswordFormManager that manages it for using it after
+  // Passes |form| to PasswordFormManager that manages it for using it after
   // detecting submission success for saving.
   void ProvisionallySaveForm(const autofill::PasswordForm& password_form);
 
@@ -69,7 +69,7 @@ class HttpAuthManagerImpl : public HttpAuthManager {
   HttpAuthObserver* observer_;
 
   // Single password form manager to handle the http-auth request form.
-  std::unique_ptr<NewPasswordFormManager> form_manager_;
+  std::unique_ptr<PasswordFormManager> form_manager_;
 
   // When set to true, the password form has been dismissed and |form_manager_|
   // will be cleared on next navigation.

@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -265,8 +266,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   const bool do_not_prompt_for_login_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
-  mojo::Binding<mojom::AuthChallengeResponder>
-      auth_challenge_responder_binding_;
+  mojo::Receiver<mojom::AuthChallengeResponder>
+      auth_challenge_responder_receiver_{this};
   mojo::Binding<mojom::ClientCertificateResponder>
       client_cert_responder_binding_;
   mojom::URLLoaderClientPtr url_loader_client_;

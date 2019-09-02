@@ -65,7 +65,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     @Retention(RetentionPolicy.SOURCE)
     public @interface BlockGetAccountsFlag {}
 
-    /** Disables block get accounts: {@link #getAccountInfosSync} will return immediately. */
+    /** Disables block get accounts: {@link #getAccountsSync()} will return immediately. */
     public static final int DISABLE_BLOCK_GET_ACCOUNTS = 0;
     /** Block get accounts until {@link #unblockGetAccounts()} is called. */
     public static final int ENABLE_BLOCK_GET_ACCOUNTS = 1;

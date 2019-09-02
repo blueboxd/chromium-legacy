@@ -44,6 +44,8 @@ crbug.com/591099 external/wpt/css/css-layout-api/ [ Skip ]
 
 ### external/wpt/css/css-multicol/
 crbug.com/591099 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
+crbug.com/998423 external/wpt/css/css-multicol/with-custom-layout-on-same-element-crash.https.html [ Skip ]
+crbug.com/998423 external/wpt/css/css-multicol/with-custom-layout-on-same-element.https.html [ Skip ]
 
 ### external/wpt/css/css-position/
 crbug.com/591099 external/wpt/css/css-position/position-absolute-crash-chrome-006.html [ Crash ]

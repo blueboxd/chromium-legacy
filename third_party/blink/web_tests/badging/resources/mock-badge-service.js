@@ -10,35 +10,36 @@ class MockBadgeService {
     this.interceptor_.start();
   }
 
-  init_(expectCalled) {
-    this.expectCalled_ = expectCalled;
+  init_(expectedAction) {
+    this.expectedAction = expectedAction;
     return new Promise((resolve, reject) => {
       this.reject_ = reject;
       this.resolve_ = resolve;
     });
   }
 
-  setInteger(contents) {
+  setBadge(scope, value) {
+    // Accessing number when the union is a flag will throw, so read the
+    // value in a try catch.
+    let number;
     try {
-      assert_equals(this.expectCalled_, 'setInteger');
+      number = value.number;
+    } catch (error) {
+      number = undefined;
+    }
+
+    try {
+      const action = number === undefined ? 'flag' : 'number';
+      assert_equals(this.expectedAction, action);
       this.resolve_();
     } catch (error) {
-      this.reject_(error);
+      this.reject_();
     }
   }
 
-  setFlag() {
+  clearBadge(scope) {
     try {
-      assert_equals(this.expectCalled_, 'setFlag');
-      this.resolve_();
-    } catch (error) {
-      this.reject(error);
-    }
-  }
-
-  clearBadge() {
-    try {
-      assert_equals(this.expectCalled_, 'clearBadge');
+      assert_equals(this.expectedAction, 'clear');
       this.resolve_();
     } catch (error) {
       this.reject_(error);
@@ -63,9 +64,9 @@ function callAndObserveErrors(func, expectedErrorName) {
   });
 }
 
-function badge_test(func, expectCalled, expectError) {
+function badge_test(func, expectedAction, expectError) {
   promise_test(() => {
-    let mockPromise = mockBadgeService.init_(expectCalled);
+    let mockPromise = mockBadgeService.init_(expectedAction);
     return Promise.race([callAndObserveErrors(func, expectError), mockPromise]);
   });
 }

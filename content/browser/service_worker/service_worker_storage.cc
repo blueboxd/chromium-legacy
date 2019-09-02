@@ -68,9 +68,6 @@ const base::FilePath::CharType kDatabaseName[] =
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
 
-// Taken from AppCache's in-memory cache size.
-const int kMaxServiceWorkerStorageMemDiskCacheSize = 10 * 1024 * 1024;
-
 blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
     ServiceWorkerDatabase::Status status) {
   switch (status) {
@@ -1713,9 +1710,7 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
 
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
-    int rv = disk_cache_->InitWithMemBackend(
-        kMaxServiceWorkerStorageMemDiskCacheSize,
-        net::CompletionOnceCallback());
+    int rv = disk_cache_->InitWithMemBackend(0, net::CompletionOnceCallback());
     DCHECK_EQ(net::OK, rv);
     return disk_cache_.get();
   }

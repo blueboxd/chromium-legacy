@@ -56,10 +56,6 @@
 #include "util/string/split_string.h"
 #include "util/synchronization/semaphore.h"
 
-#if defined(OS_CHROMEOS)
-#include "handler/linux/cros_crash_report_exception_handler.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <unistd.h>
 
@@ -161,9 +157,6 @@ void Usage(const base::FilePath& me) {
 #endif  // OS_LINUX || OS_ANDROID
 "      --url=URL               send crash reports to this Breakpad server URL,\n"
 "                              only if uploads are enabled for the database\n"
-#if defined(OS_CHROMEOS)
-"      --use-cros-crash-reporter\n"
-#endif  // OS_CHROMEOS
 "      --help                  display this help and exit\n"
 "      --version               output version information and exit\n",
           me.value().c_str());
@@ -195,9 +188,6 @@ struct Options {
   bool periodic_tasks;
   bool rate_limit;
   bool upload_gzip;
-#if defined(OS_CHROMEOS)
-  bool use_cros_crash_reporter;
-#endif  // OS_CHROMEOS
 };
 
 // Splits |key_value| on '=' and inserts the resulting key and value into |map|.
@@ -519,12 +509,6 @@ class ScopedStoppable {
 int HandlerMain(int argc,
                 char* argv[],
                 const UserStreamDataSources* user_stream_sources) {
-#if defined(OS_CHROMEOS)
-  if (freopen("/var/log/chrome/chrome", "a", stderr) == nullptr) {
-    PLOG(ERROR) << "Failed to redirect stderr to /var/log/chrome/chrome";
-  }
-#endif
-
   InstallCrashHandler();
   CallMetricsRecordNormalExit metrics_record_normal_exit;
 
@@ -569,9 +553,6 @@ int HandlerMain(int argc,
     kOptionTraceParentWithException,
 #endif
     kOptionURL,
-#if defined(OS_CHROMEOS)
-    kOptionUseCrosCrashReporter,
-#endif  // OS_CHROMEOS
 
     // Standard options.
     kOptionHelp = -2,
@@ -637,12 +618,6 @@ int HandlerMain(int argc,
      kOptionTraceParentWithException},
 #endif  // OS_LINUX || OS_ANDROID
     {"url", required_argument, nullptr, kOptionURL},
-#if defined(OS_CHROEMOS)
-    {"use-cros-crash-reporter",
-      no_argument,
-      nullptr,
-      kOptionUseCrosCrashReporter},
-#endif  // OS_CHROMEOS
     {"help", no_argument, nullptr, kOptionHelp},
     {"version", no_argument, nullptr, kOptionVersion},
     {nullptr, 0, nullptr, 0},
@@ -784,12 +759,6 @@ int HandlerMain(int argc,
         options.url = optarg;
         break;
       }
-#if defined(OS_CHROMEOS)
-      case kOptionUseCrosCrashReporter: {
-        options.use_cros_crash_reporter = true;
-        break;
-      }
-#endif  // OS_CHROMEOS
       case kOptionHelp: {
         Usage(me);
         MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
@@ -915,27 +884,7 @@ int HandlerMain(int argc,
     upload_thread.Get()->Start();
   }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  std::unique_ptr<ExceptionHandlerServer::Delegate> exception_handler;
-#else
-  std::unique_ptr<CrashReportExceptionHandler> exception_handler;
-#endif
-
-#if defined(OS_CHROMEOS)
-  if (options.use_cros_crash_reporter) {
-    exception_handler = std::make_unique<CrosCrashReportExceptionHandler>(
-        database.get(),
-        &options.annotations,
-        user_stream_sources);
-  } else {
-    exception_handler = std::make_unique<CrashReportExceptionHandler>(
-        database.get(),
-        static_cast<CrashReportUploadThread*>(upload_thread.Get()),
-        &options.annotations,
-        user_stream_sources);
-  }
-#else
-  exception_handler = std::make_unique<CrashReportExceptionHandler>(
+  CrashReportExceptionHandler exception_handler(
       database.get(),
       static_cast<CrashReportUploadThread*>(upload_thread.Get()),
       &options.annotations,
@@ -944,17 +893,15 @@ int HandlerMain(int argc,
       nullptr,
 #endif
       user_stream_sources);
-#endif  // OS_CHROMEOS
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+ #if defined(OS_LINUX) || defined(OS_ANDROID)
   if (options.exception_information_address) {
     ExceptionHandlerProtocol::ClientInformation info;
     info.exception_information_address = options.exception_information_address;
     info.sanitization_information_address =
         options.sanitization_information_address;
-    return exception_handler->HandleException(getppid(), geteuid(), info)
-               ? EXIT_SUCCESS
-               : ExitFailure();
+    return exception_handler.HandleException(getppid(), info) ? EXIT_SUCCESS
+                                                              : ExitFailure();
   }
 #endif  // OS_LINUX || OS_ANDROID
 
@@ -1058,7 +1005,7 @@ int HandlerMain(int argc,
 #if defined(OS_WIN)
   if (options.initial_client_data.IsValid()) {
     exception_handler_server.InitializeWithInheritedDataForInitialClient(
-        options.initial_client_data, exception_handler.get());
+        options.initial_client_data, &exception_handler);
   }
 #elif defined(OS_LINUX) || defined(OS_ANDROID)
   if (options.initial_client_fd == kInvalidFileHandle ||
@@ -1069,7 +1016,7 @@ int HandlerMain(int argc,
   }
 #endif  // OS_WIN
 
-  exception_handler_server.Run(exception_handler.get());
+  exception_handler_server.Run(&exception_handler);
 
   return EXIT_SUCCESS;
 }

@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-FAIL Dedicated worker of the cached script assert_equals: expected "Done: cached" but got "Error: Importing a non-cached script must fail."
-FAIL Dedicated worker of the fallbacked script assert_equals: expected "Done: fallbacked" but got "Error: Importing a non-cached script must fail."
-FAIL Dedicated worker of the not-in-cache script promise_test: Unhandled rejection with value: "The worker not in the AppCache must not be executed."
-PASS Shared worker of the cached script
-PASS Shared worker of the fallbacked script
-PASS Shared worker of the not-in-cache script
-Harness: the test ran to completion.
-

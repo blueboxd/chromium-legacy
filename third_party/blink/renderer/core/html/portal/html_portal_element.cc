@@ -241,8 +241,10 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
 
   // The HTMLPortalElement is bound as a persistent so that it won't get
   // garbage collected while there is a pending callback.
-  // We also pass the ownership of the PortalPtr, which guarantees that the
-  // PortalPtr stays alive until the callback is called.
+  // We also pass the ownership of the
+  // mojo::AssociatedRemote<mojom::blink::Portal>, which guarantees that the
+  // mojo::AssociatedRemote<mojom::blink::Portal> stays alive until the callback
+  // is called.
   is_activating_ = true;
   auto* raw_remote_portal = remote_portal_.get();
   raw_remote_portal->Activate(

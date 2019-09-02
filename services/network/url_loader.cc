@@ -351,7 +351,6 @@ URLLoader::URLLoader(
       keepalive_(request.keepalive),
       do_not_prompt_for_login_(request.do_not_prompt_for_login),
       binding_(this, std::move(url_loader_request)),
-      auth_challenge_responder_binding_(this),
       client_cert_responder_binding_(this),
       url_loader_client_(std::move(url_loader_client)),
       writable_handle_watcher_(FROM_HERE,
@@ -827,12 +826,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
     return;
   }
 
-  mojom::AuthChallengeResponderPtr auth_challenge_responder;
-  auto request = mojo::MakeRequest(&auth_challenge_responder);
-  DCHECK(!auth_challenge_responder_binding_.is_bound());
-  auth_challenge_responder_binding_.Bind(std::move(request));
-  auth_challenge_responder_binding_.set_connection_error_handler(
-      base::BindOnce(&URLLoader::DeleteSelf, base::Unretained(this)));
+  DCHECK(!auth_challenge_responder_receiver_.is_bound());
 
   ResourceResponseHead head;
   if (url_request->response_headers())
@@ -841,7 +835,10 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
   network_context_client_->OnAuthRequired(
       fetch_window_id_, factory_params_->process_id, render_frame_id_,
       request_id_, url_request_->url(), first_auth_attempt_, auth_info, head,
-      std::move(auth_challenge_responder));
+      auth_challenge_responder_receiver_.BindNewPipeAndPassRemote());
+
+  auth_challenge_responder_receiver_.set_disconnect_handler(
+      base::BindOnce(&URLLoader::DeleteSelf, base::Unretained(this)));
 
   first_auth_attempt_ = false;
 }
@@ -1261,7 +1258,7 @@ URLLoader* URLLoader::ForRequest(const net::URLRequest& request) {
 
 void URLLoader::OnAuthCredentials(
     const base::Optional<net::AuthCredentials>& credentials) {
-  auth_challenge_responder_binding_.Close();
+  auth_challenge_responder_receiver_.reset();
 
   if (!url_request_)
     return;

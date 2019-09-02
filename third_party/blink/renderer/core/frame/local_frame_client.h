@@ -35,6 +35,7 @@
 
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -179,7 +180,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const String& href_translate,
       WebContentSecurityPolicyList,
       network::mojom::IPAddressSpace,
-      mojom::blink::NavigationInitiatorPtr) = 0;
+      mojo::PendingRemote<mojom::blink::NavigationInitiator>) = 0;
 
   virtual void DispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
 
@@ -289,8 +290,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                   HTMLFrameOwnerElement*) = 0;
 
   // Creates a portal for the |HTMLPortalElement| and binds the other end of the
-  // |PortalRequest|. Returns a pair of a RemoteFrame and a token that
-  // identifies the portal.
+  // |mojo::PendingAssociatedReceiver<mojom::blink::Portal>|. Returns a pair of
+  // a RemoteFrame and a token that identifies the portal.
   virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,

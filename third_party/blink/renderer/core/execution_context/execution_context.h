@@ -358,8 +358,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   // Tracks which feature policies have already been parsed, so as not to count
   // them multiple times.
-  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
-      parsed_feature_policies_;
+  // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
+  Vector<bool> parsed_feature_policies_;
 
   DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
 };

@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -90,7 +91,6 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->headers.SetHeader(
       header_names::kAccessControlRequestMethod, request.method);
-  preflight_request->headers.SetHeader("Sec-Fetch-Mode", "cors");
 
   std::string request_headers = CreateAccessControlRequestHeadersHeader(
       request.headers, request.is_revalidating);
@@ -109,6 +109,13 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->headers.SetHeader(
       net::HttpRequestHeaders::kOrigin,
       (tainted ? url::Origin() : *request.request_initiator).Serialize());
+
+  // Additional headers that the algorithm in the spec does not require, but
+  // it's better that CORS preflight requests have them.
+  preflight_request->headers.SetHeader("Sec-Fetch-Mode", "cors");
+  // See also https://github.com/whatwg/fetch/issues/922 for kAcceptHeader.
+  preflight_request->headers.SetHeader(network::kAcceptHeader,
+                                       kDefaultAcceptHeader);
 
   return preflight_request;
 }

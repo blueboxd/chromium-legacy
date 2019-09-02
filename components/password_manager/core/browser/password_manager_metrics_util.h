@@ -80,6 +80,43 @@ enum class LeakDialogDismissalReason {
   kMaxValue = kClickedOk,
 };
 
+// Metrics: "PasswordManager.Onboarding.State"
+// Enum recording the state of showing the onboarding to the user. This
+// will be recorded on startup. Needs to stay in sync with the
+// PasswordManagerOnboardingState enum in enums.xml.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OnboardingState {
+  // The onboarding wasn't shown to the user.
+  kDoNotShow = 0,
+  // The onboarding wasn't shown to the user,
+  // but it should be shown the next time they are prompted to save a password.
+  kShouldShow = 1,
+  // The onboarding was shown to the user.
+  kShown = 2,
+  kMaxValue = kShown,
+};
+
+// Metrics: "PasswordManager.Onboarding.UIDismissalReason"
+// Enum recording the dismissal reason of the onboarding dialog which is shown
+// when the user is offered to save their password for the first time.
+// Needs to stay in sync with the PasswordManagerOnboardingUIDismissalReason
+// enum in enums.xml.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OnboardingUIDismissalReason {
+  // The accepting button was pressed, e.g. "Continue" or "Got it".
+  kAccepted = 0,
+  // The rejecting button was pressed, e.g. "Cancel".
+  kRejected = 1,
+  // The dialog was dismissed, e.g. by pressing the back button, or
+  // opening a new tab.
+  kDismissed = 2,
+  kMaxValue = kDismissed,
+};
+
 enum FormDeserializationStatus {
   LOGIN_DATABASE_SUCCESS,
   LOGIN_DATABASE_FAILURE,
@@ -404,6 +441,12 @@ void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason);
 // dismissed.
 void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
                                          LeakDialogDismissalReason reason);
+
+// Log the current onboarding |state| of the user.
+void LogOnboardingState(OnboardingState state);
+
+// Log the |reason| a user dismissed the onboarding UI.
+void LogOnboardingUIDismissalReason(OnboardingUIDismissalReason reason);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);

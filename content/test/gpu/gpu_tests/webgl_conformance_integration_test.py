@@ -475,6 +475,12 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           driver_vendor = driver_vendor.lower()
           driver_version = driver_version.lower()
 
+          # Extract the string of vendor from 'angle (vendor)'
+          matcher = re.compile(r'^angle \(([a-z]+)\)$')
+          match = matcher.match(driver_vendor)
+          if match:
+            driver_vendor = match.group(1)
+
           # Extract the substring before first space/dash/underscore
           matcher = re.compile(r'^([a-z\d]+)([\s\-_]+[a-z\d]+)+$')
           match = matcher.match(driver_vendor)

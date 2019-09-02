@@ -35,7 +35,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
@@ -1498,9 +1498,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SendViolationReport(
       mojom::blink::CSPViolationParamsPtr violation_params) override;
-  void BindNavigationInitiatorRequest(
-      mojom::blink::NavigationInitiatorRequest request) {
-    navigation_initiator_bindings_.AddBinding(this, std::move(request));
+  void BindNavigationInitiatorReceiver(
+      mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
+    navigation_initiator_receivers_.Add(this, std::move(receiver));
   }
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
@@ -2064,11 +2064,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // opposed to a PluginView.
   bool is_for_external_handler_ = false;
 
-  // A list of all the navigation_initiator bindings owned by this document.
+  // A list of all the navigation_initiator receivers owned by this document.
   // Used to report CSP violations that result from CSP blocking
   // navigation requests that were initiated by this document.
-  mojo::BindingSet<mojom::blink::NavigationInitiator>
-      navigation_initiator_bindings_;
+  mojo::ReceiverSet<mojom::blink::NavigationInitiator>
+      navigation_initiator_receivers_;
 
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 

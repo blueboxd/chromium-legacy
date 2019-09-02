@@ -13,6 +13,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/dns_hosts.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 
@@ -40,6 +41,10 @@ class NET_EXPORT DnsClient {
   virtual bool CanUseInsecureDnsTransactions() const = 0;
   virtual void SetInsecureEnabled(bool enabled) = 0;
 
+  // When true, DoH should not be used in AUTOMATIC mode since no DoH servers
+  // have a successful probe state.
+  virtual bool FallbackFromSecureTransactionPreferred() const = 0;
+
   // When true, insecure DNS transactions should not be used when reasonable
   // fallback alternatives, e.g. system resolution can be used instead.
   virtual bool FallbackFromInsecureTransactionPreferred() const = 0;
@@ -58,6 +63,10 @@ class NET_EXPORT DnsClient {
   virtual const DnsConfig* GetEffectiveConfig() const = 0;
   virtual const DnsHosts* GetHosts() const = 0;
 
+  // Sets the URLRequestContext to use for issuing DoH probes.
+  virtual void SetRequestContextForProbes(
+      URLRequestContext* url_request_context) = 0;
+
   // Returns null if the current config is not valid.
   virtual DnsTransactionFactory* GetTransactionFactory() = 0;
 
@@ -68,6 +77,8 @@ class NET_EXPORT DnsClient {
 
   virtual base::Optional<DnsConfig> GetSystemConfigForTesting() const = 0;
   virtual DnsConfigOverrides GetConfigOverridesForTesting() const = 0;
+
+  virtual void SetProbeSuccessForTest(unsigned index, bool success) = 0;
 
   // Creates default client.
   static std::unique_ptr<DnsClient> CreateClient(NetLog* net_log);

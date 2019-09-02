@@ -59,6 +59,7 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_isolation_key.h"
@@ -1056,6 +1057,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
   CreateCrossOriginPrefetchLoaderFactoryBundle();
 
+  const AppCacheNavigationHandle* GetAppCacheNavigationHandle() const {
+    return appcache_handle_.get();
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1322,7 +1327,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator) override;
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator) override;
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(

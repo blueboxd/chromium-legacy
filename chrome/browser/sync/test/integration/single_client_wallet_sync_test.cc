@@ -948,8 +948,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
+// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_NewWalletCardRemovesExistingCardAndProfile \
+  DISABLED_NewWalletCardRemovesExistingCardAndProfile
+#else
+#define MAYBE_NewWalletCardRemovesExistingCardAndProfile \
+  NewWalletCardRemovesExistingCardAndProfile
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       NewWalletCardRemovesExistingCardAndProfile) {
+                       MAYBE_NewWalletCardRemovesExistingCardAndProfile) {
   ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -1012,8 +1020,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
+// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_NewWalletDataRemovesExistingData \
+  DISABLED_NewWalletDataRemovesExistingData
+#else
+#define MAYBE_NewWalletDataRemovesExistingData NewWalletDataRemovesExistingData
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       NewWalletDataRemovesExistingData) {
+                       MAYBE_NewWalletDataRemovesExistingData) {
   ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -1119,8 +1134,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Tests that a server billing address id set on a card on the client is
 // overwritten when that same card is synced again.
+// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_SameWalletCard_DiscardsOldServerBillingAddressId \
+  DISABLED_SameWalletCard_DiscardsOldServerBillingAddressId
+#else
+#define MAYBE_SameWalletCard_DiscardsOldServerBillingAddressId \
+  SameWalletCard_DiscardsOldServerBillingAddressId
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       SameWalletCard_DiscardsOldServerBillingAddressId) {
+                       MAYBE_SameWalletCard_DiscardsOldServerBillingAddressId) {
   ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);

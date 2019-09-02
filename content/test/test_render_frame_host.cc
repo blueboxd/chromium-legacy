@@ -29,6 +29,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -364,10 +365,10 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
     BeginNavigation(std::move(common_params), std::move(begin_params),
                     mojo::NullRemote(), navigation_client_ptr.PassInterface(),
-                    nullptr);
+                    mojo::NullRemote());
   } else {
     BeginNavigation(std::move(common_params), std::move(begin_params),
-                    mojo::NullRemote(), nullptr, nullptr);
+                    mojo::NullRemote(), nullptr, mojo::NullRemote());
   }
 }
 

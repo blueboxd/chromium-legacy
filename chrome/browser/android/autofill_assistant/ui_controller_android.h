@@ -27,6 +27,7 @@
 #include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
+struct ClientSettings;
 
 // Starts and owns the UI elements required to display AA.
 //
@@ -101,6 +102,7 @@ class UiControllerAndroid : public ControllerObserver {
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
   void OnFormChanged(const FormProto* form) override;
+  void OnClientSettingsChanged(const ClientSettings& settings) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -191,7 +193,8 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.
-  void ShowSnackbar(const std::string& message,
+  void ShowSnackbar(base::TimeDelta delay,
+                    const std::string& message,
                     base::OnceCallback<void()> action);
 
   void OnCancel(int action_index, std::unique_ptr<TriggerContext> context);

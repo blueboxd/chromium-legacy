@@ -7,7 +7,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom.h"
 
 namespace content {
@@ -19,7 +20,7 @@ class PluginRegistryImpl : public blink::mojom::PluginRegistry {
   explicit PluginRegistryImpl(int render_process_id);
   ~PluginRegistryImpl() override;
 
-  void Bind(blink::mojom::PluginRegistryRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver);
 
   // blink::mojom::PluginRegistry
   void GetPlugins(bool refresh,
@@ -32,7 +33,7 @@ class PluginRegistryImpl : public blink::mojom::PluginRegistry {
                           const std::vector<WebPluginInfo>& all_plugins);
 
   int render_process_id_;
-  mojo::BindingSet<PluginRegistry> bindings_;
+  mojo::ReceiverSet<PluginRegistry> receivers_;
   base::TimeTicks last_plugin_refresh_time_;
   base::WeakPtrFactory<PluginRegistryImpl> weak_factory_{this};
 };

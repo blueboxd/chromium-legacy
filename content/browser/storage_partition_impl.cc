@@ -68,6 +68,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
@@ -512,7 +513,8 @@ WebContents* GetWebContents(int process_id, int routing_id) {
 class LoginHandlerDelegate {
  public:
   LoginHandlerDelegate(
-      network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+      mojo::PendingRemote<network::mojom::AuthChallengeResponder>
+          auth_challenge_responder,
       WebContents::Getter web_contents_getter,
       const net::AuthChallengeInfo& auth_info,
       bool is_request_for_main_frame,
@@ -533,7 +535,7 @@ class LoginHandlerDelegate {
         first_auth_attempt_(first_auth_attempt),
         web_contents_getter_(web_contents_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auth_challenge_responder_.set_connection_error_handler(base::BindOnce(
+    auth_challenge_responder_.set_disconnect_handler(base::BindOnce(
         &LoginHandlerDelegate::OnRequestCancelled, base::Unretained(this)));
 
     auto continue_after_inteceptor_io =
@@ -606,7 +608,8 @@ class LoginHandlerDelegate {
     delete this;
   }
 
-  network::mojom::AuthChallengeResponderPtr auth_challenge_responder_;
+  mojo::Remote<network::mojom::AuthChallengeResponder>
+      auth_challenge_responder_;
   net::AuthChallengeInfo auth_info_;
   const content::GlobalRequestID request_id_;
   const uint32_t routing_id_;
@@ -629,14 +632,17 @@ void OnAuthRequiredContinuation(
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
     network::mojom::URLResponseHeadPtr head,
-    network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+    mojo::PendingRemote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder,
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
   if (!web_contents_getter) {
     web_contents_getter =
         base::BindRepeating(GetWebContents, process_id, routing_id);
   }
   if (!web_contents_getter.Run()) {
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    mojo::Remote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder_remote(std::move(auth_challenge_responder));
+    auth_challenge_responder_remote->OnAuthCredentials(base::nullopt);
     return;
   }
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
@@ -667,18 +673,23 @@ void OnAuthRequiredContinuationForWindowId(
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
     network::mojom::URLResponseHeadPtr head,
-    network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+    mojo::PendingRemote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder,
     FrameTreeNodeIdRegistry::IsMainFrameGetter is_main_frame_getter) {
   if (!is_main_frame_getter) {
     // FrameTreeNode id may already be removed from FrameTreeNodeIdRegistry
     // due to thread hopping.
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    mojo::Remote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder_remote(std::move(auth_challenge_responder));
+    auth_challenge_responder_remote->OnAuthCredentials(base::nullopt);
     return;
   }
   base::Optional<bool> is_main_frame_opt = is_main_frame_getter.Run();
   // The frame may already be gone due to thread hopping.
   if (!is_main_frame_opt) {
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    mojo::Remote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder_remote(std::move(auth_challenge_responder));
+    auth_challenge_responder_remote->OnAuthCredentials(base::nullopt);
     return;
   }
 
@@ -1593,7 +1604,8 @@ void StoragePartitionImpl::OnAuthRequired(
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
     network::mojom::URLResponseHeadPtr head,
-    network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
+    mojo::PendingRemote<network::mojom::AuthChallengeResponder>
+        auth_challenge_responder) {
   if (window_id) {
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       OnAuthRequiredContinuationForWindowId(

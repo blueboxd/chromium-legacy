@@ -17,7 +17,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -218,7 +217,7 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
 
 void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
   DCHECK(base::FeatureList::IsEnabled(
-      net::features::kSplitCacheByNetworkIsolationKey));
+      network::features::kPrefetchMainResourceNetworkIsolationKey));
   auto& current_context = *loader_factory_receivers_.current_context();
   // If the factory has already been created, don't re-create it.
   if (current_context.cross_origin_factory)

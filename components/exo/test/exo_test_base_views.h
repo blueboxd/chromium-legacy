@@ -6,6 +6,7 @@
 #define COMPONENTS_EXO_TEST_EXO_TEST_BASE_VIEWS_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace exo {
@@ -27,6 +28,7 @@ class ExoTestBaseViews : public views::ViewsTestBase {
 
  private:
   std::unique_ptr<WMHelper> wm_helper_;
+  ui::ScopedTestInputMethodFactory scoped_test_input_method_factory_;
 };
 
 }  // namespace test

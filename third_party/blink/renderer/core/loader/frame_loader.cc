@@ -41,6 +41,7 @@
 
 #include "base/auto_reset.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
@@ -670,14 +671,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);
 
-  mojom::blink::NavigationInitiatorPtr navigation_initiator;
+  mojo::PendingRemote<mojom::blink::NavigationInitiator> navigation_initiator;
   WebContentSecurityPolicyList initiator_csp;
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
     initiator_csp = origin_document->GetContentSecurityPolicy()
                         ->ExposeForNavigationalChecks();
-    auto mojo_request = mojo::MakeRequest(&navigation_initiator);
-    origin_document->BindNavigationInitiatorRequest(std::move(mojo_request));
+    origin_document->BindNavigationInitiatorReceiver(
+        navigation_initiator.InitWithNewPipeAndPassReceiver());
   }
 
   if (origin_document && origin_document->GetContentSecurityPolicy()) {

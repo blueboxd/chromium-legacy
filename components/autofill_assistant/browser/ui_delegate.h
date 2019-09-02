@@ -19,6 +19,7 @@
 
 namespace autofill_assistant {
 class ControllerObserver;
+struct ClientSettings;
 
 // UI delegate called for script executions.
 class UiDelegate {
@@ -155,6 +156,9 @@ class UiDelegate {
 
   // Fills in the overlay colors.
   virtual void GetOverlayColors(OverlayColors* colors) const = 0;
+
+  // Gets the current Client Settings
+  virtual const ClientSettings& GetClientSettings() const = 0;
 
   // Returns the current form. May be null if there is no form to show.
   virtual const FormProto* GetForm() const = 0;

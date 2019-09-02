@@ -42,9 +42,7 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
 
   progress->SetForceReattachLayoutTree();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  StyleRecalcChange change;
-  change = change.ForceRecalcDescendants();
-  GetDocument().GetStyleEngine().RecalcStyle(change);
+  GetDocument().GetStyleEngine().RecalcStyle();
   EXPECT_TRUE(shadow_element->GetComputedStyle());
 
   scoped_refptr<ComputedStyle> style = shadow_element->StyleForLayoutObject();

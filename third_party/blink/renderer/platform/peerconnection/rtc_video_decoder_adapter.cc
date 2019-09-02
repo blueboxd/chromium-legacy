@@ -8,8 +8,6 @@
 #include <functional>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -29,8 +27,10 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_utils.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -38,6 +38,16 @@
 #include "third_party/webrtc/rtc_base/ref_count.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 #include "ui/gfx/color_space.h"
+
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<media::VideoDecoderConfig>
+    : public CrossThreadCopierPassThrough<media::VideoDecoderConfig> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -189,12 +199,14 @@ bool RTCVideoDecoderAdapter::InitializeSync(
   bool result = false;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  media::VideoDecoder::InitCB init_cb =
-      base::BindOnce(&FinishWait, &waiter, &result);
-  if (media_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
-                         base::Unretained(this), config, std::move(init_cb)))) {
+  auto init_cb =
+      CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
+                          CrossThreadUnretained(&result));
+  if (PostCrossThreadTask(
+          *media_task_runner_.get(), FROM_HERE,
+          CrossThreadBindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
+                              CrossThreadUnretained(this), config,
+                              std::move(init_cb)))) {
     waiter.Wait();
   }
   return result;
@@ -308,9 +320,10 @@ int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
     }
     pending_buffers_.push_back(std::move(buffer));
   }
-  media_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RTCVideoDecoderAdapter::DecodeOnMediaThread, weak_this_));
+  PostCrossThreadTask(
+      *media_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&RTCVideoDecoderAdapter::DecodeOnMediaThread,
+                          weak_this_));
 
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -343,7 +356,7 @@ const char* RTCVideoDecoderAdapter::ImplementationName() const {
 
 void RTCVideoDecoderAdapter::InitializeOnMediaThread(
     const media::VideoDecoderConfig& config,
-    media::VideoDecoder::InitCB init_cb) {
+    InitCB init_cb) {
   DVLOG(3) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
@@ -355,11 +368,11 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
     video_decoder_ = gpu_factories_->CreateVideoDecoder(
         media_log_.get(), kImplementation,
-        base::BindRepeating(&OnRequestOverlayInfo));
+        WTF::BindRepeating(&OnRequestOverlayInfo));
 
     if (!video_decoder_) {
-      media_task_runner_->PostTask(FROM_HERE,
-                                   base::BindOnce(std::move(init_cb), false));
+      PostCrossThreadTask(*media_task_runner_.get(), FROM_HERE,
+                          CrossThreadBindOnce(std::move(init_cb), false));
       return;
     }
   }
@@ -370,10 +383,10 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   // Encryption is not supported.
   media::CdmContext* cdm_context = nullptr;
 
-  media::VideoDecoder::OutputCB output_cb =
-      base::BindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_);
-
-  video_decoder_->Initialize(config, low_delay, cdm_context, std::move(init_cb),
+  media::VideoDecoder::OutputCB output_cb = ConvertToBaseCallback(
+      CrossThreadBindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_));
+  video_decoder_->Initialize(config, low_delay, cdm_context,
+                             ConvertToBaseOnceCallback(std::move(init_cb)),
                              output_cb, base::DoNothing());
 }
 
@@ -403,7 +416,7 @@ void RTCVideoDecoderAdapter::DecodeOnMediaThread() {
     outstanding_decode_requests_++;
     video_decoder_->Decode(
         std::move(buffer),
-        base::BindRepeating(&RTCVideoDecoderAdapter::OnDecodeDone, weak_this_));
+        WTF::BindRepeating(&RTCVideoDecoderAdapter::OnDecodeDone, weak_this_));
   }
 }
 
@@ -482,17 +495,20 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
   bool result = false;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  media::VideoDecoder::InitCB init_cb =
-      base::BindRepeating(&FinishWait, &waiter, &result);
+  auto init_cb =
+      CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
+                          CrossThreadUnretained(&result));
   FlushDoneCB flush_success_cb =
-      base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
-                     weak_this_, config, std::move(init_cb));
+      CrossThreadBindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
+                          weak_this_, config, std::move(init_cb));
   FlushDoneCB flush_fail_cb =
-      base::BindOnce(&FinishWait, &waiter, &result, false);
-  if (media_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&RTCVideoDecoderAdapter::FlushOnMediaThread,
-                                    weak_this_, std::move(flush_success_cb),
-                                    std::move(flush_fail_cb)))) {
+      CrossThreadBindOnce(&FinishWait, CrossThreadUnretained(&waiter),
+                          CrossThreadUnretained(&result), false);
+  if (PostCrossThreadTask(
+          *media_task_runner_.get(), FROM_HERE,
+          CrossThreadBindOnce(&RTCVideoDecoderAdapter::FlushOnMediaThread,
+                              weak_this_, std::move(flush_success_cb),
+                              std::move(flush_fail_cb)))) {
     waiter.Wait();
   }
   return result;
@@ -511,7 +527,7 @@ void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
   // Send EOS frame for flush.
   video_decoder_->Decode(
       media::DecoderBuffer::CreateEOSBuffer(),
-      base::BindRepeating(
+      WTF::BindRepeating(
           [](FlushDoneCB flush_success, FlushDoneCB flush_fail,
              media::DecodeStatus status) {
             if (status == media::DecodeStatus::OK)

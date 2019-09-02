@@ -1511,6 +1511,21 @@ config("default_warnings") {
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
+
+        if (llvm_force_head_revision) {
+          cflags += [
+            # TODO(thakis): Check how often this fires, then decide if we want
+            # to clean up the codebase or just disable this. Doesn't seem super
+            # useful, likely just want to disable.
+            # https://crbug.com/999871
+            "-Wno-error=c99-designator",
+
+            # TODO(https://crbug.com/999886): Clean up, enable.
+            # If roling this in, use -Wno-final-dtor-non-final-class instead
+            # of the -Wno-error form.
+            "-Wno-error=final-dtor-non-final-class",
+          ]
+        }
       }
     }
   }

@@ -963,7 +963,8 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
   // TODO(chelu): https://crbug.com/850624/. Experiment with other heuristic
   // algorithms for computing the anchor elements score.
   double score =
-      (ratio_area_scale_ * (metrics.ratio_area * 100.0)) +
+      (ratio_area_scale_ * GetLinearBucketForRatioArea(
+                               static_cast<int>(metrics.ratio_area * 100.0))) +
       (metrics.is_in_iframe ? is_in_iframe_scale_ : 0.0) +
       (metrics.contains_image ? contains_image_scale_ : 0.0) + host_score +
       (metrics.is_url_incremented_by_one ? is_url_incremented_scale_ : 0.0) +
@@ -971,7 +972,8 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
       (target_engagement_score_scale_ * target_engagement_score) +
       (area_rank_scale_ * area_rank_score) +
       (ratio_distance_root_top_scale_ *
-       (metrics.ratio_distance_root_top * 100.0));
+       GetLinearBucketForLinkLocation(
+           static_cast<int>(metrics.ratio_distance_root_top * 100.0)));
 
   if (normalize_navigation_scores_) {
     score = score / sum_link_scales_ * 100.0;
@@ -986,15 +988,24 @@ double NavigationPredictor::GetPageMetricsScore() const {
     return 0;
   } else {
     DCHECK(!viewport_size_.IsEmpty());
-    return (link_total_scale_ * number_of_anchors_) +
-           (iframe_link_total_scale_ * number_of_anchors_in_iframe_) +
-           (increment_link_total_scale_ * number_of_anchors_url_incremented_) +
-           (same_origin_link_total_scale_ * number_of_anchors_same_host_) +
-           (image_link_total_scale_ * number_of_anchors_contains_image_) +
-           (clickable_space_scale_ * total_clickable_space_) +
-           (median_link_location_scale_ * median_link_location_) +
-           (viewport_width_scale_ * viewport_size_.width()) +
-           (viewport_height_scale_ * viewport_size_.height());
+    return (link_total_scale_ *
+            GetBucketMinForPageMetrics(number_of_anchors_)) +
+           (iframe_link_total_scale_ *
+            GetBucketMinForPageMetrics(number_of_anchors_in_iframe_)) +
+           (increment_link_total_scale_ *
+            GetBucketMinForPageMetrics(number_of_anchors_url_incremented_)) +
+           (same_origin_link_total_scale_ *
+            GetBucketMinForPageMetrics(number_of_anchors_same_host_)) +
+           (image_link_total_scale_ *
+            GetBucketMinForPageMetrics(number_of_anchors_contains_image_)) +
+           (clickable_space_scale_ *
+            GetBucketMinForPageMetrics(total_clickable_space_)) +
+           (median_link_location_scale_ *
+            GetLinearBucketForLinkLocation(median_link_location_)) +
+           (viewport_width_scale_ *
+            GetBucketMinForPageMetrics(viewport_size_.width())) +
+           (viewport_height_scale_ *
+            GetBucketMinForPageMetrics(viewport_size_.height()));
   }
 }
 

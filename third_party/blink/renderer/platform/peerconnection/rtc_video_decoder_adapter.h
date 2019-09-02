@@ -19,6 +19,7 @@
 #include "media/base/video_decoder_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
@@ -80,7 +81,8 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   using CreateVideoDecoderCB =
       base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
           media::MediaLog*)>;
-  using FlushDoneCB = base::OnceCallback<void()>;
+  using InitCB = CrossThreadOnceFunction<void(bool)>;
+  using FlushDoneCB = CrossThreadOnceFunction<void()>;
 
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
@@ -89,7 +91,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
-                               media::VideoDecoder::InitCB init_cb);
+                               InitCB init_cb);
   void DecodeOnMediaThread();
   void OnDecodeDone(media::DecodeStatus status);
   void OnOutput(scoped_refptr<media::VideoFrame> frame);

@@ -409,26 +409,6 @@ class RemovePluginPrivateDataTester {
     return data_exists_for_origin;
   }
 
-  // Opens the file created for ClearKey (in kOrigin1) for writing. Caller
-  // needs to verify if the file was opened or not.
-  base::File OpenClearKeyFileForWrite() {
-    AwaitCompletionHelper await_completion;
-    base::File file;
-    storage::AsyncFileUtil* async_file_util =
-        filesystem_context_->GetAsyncFileUtil(
-            storage::kFileSystemTypePluginPrivate);
-    std::unique_ptr<storage::FileSystemOperationContext> operation_context =
-        std::make_unique<storage::FileSystemOperationContext>(
-            filesystem_context_);
-    async_file_util->CreateOrOpen(
-        std::move(operation_context), clearkey_file_,
-        base::File::FLAG_OPEN | base::File::FLAG_WRITE,
-        base::BindOnce(&RemovePluginPrivateDataTester::OnFileOpened,
-                       base::Unretained(this), &file, &await_completion));
-    await_completion.BlockUntilNotified();
-    return file;
-  }
-
  private:
   // Creates a PluginPrivateFileSystem for the |plugin_name| and |origin|
   // provided. Returns the file system ID for the created
@@ -530,14 +510,6 @@ class RemovePluginPrivateDataTester {
   void OnFileTouched(AwaitCompletionHelper* await_completion,
                      base::File::Error result) {
     EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
-    await_completion->Notify();
-  }
-
-  void OnFileOpened(base::File* file_result,
-                    AwaitCompletionHelper* await_completion,
-                    base::File file,
-                    base::OnceClosure on_close_callback) {
-    *file_result = std::move(file);
     await_completion->Notify();
   }
 
@@ -1542,38 +1514,6 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForOrigin) {
   // Only Origin1 should be deleted.
   EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
   EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
-}
-
-TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
-
-  RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
-  tester.AddPluginPrivateTestData();
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
-
-  const char test_data[] = {0, 1, 2, 3, 4, 5};
-  base::File file = tester.OpenClearKeyFileForWrite();
-  EXPECT_TRUE(file.IsValid());
-  EXPECT_EQ(static_cast<int>(base::size(test_data)),
-            file.Write(0, test_data, base::size(test_data)));
-
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearPluginPrivateData, partition, GURL(),
-                                base::Time(), base::Time::Max(), &run_loop));
-  run_loop.Run();
-
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
-
-  const char more_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  EXPECT_EQ(static_cast<int>(base::size(more_data)),
-            file.WriteAtCurrentPos(more_data, base::size(more_data)));
-
-  base::File file2 = tester.OpenClearKeyFileForWrite();
-  EXPECT_FALSE(file2.IsValid());
 }
 
 TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataAfterDeletion) {

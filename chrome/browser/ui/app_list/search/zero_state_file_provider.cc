@@ -23,16 +23,14 @@ using file_manager::file_tasks::FileTasksObserver;
 namespace app_list {
 namespace {
 
-using StringResults = std::vector<std::pair<std::string, float>>;
-using FilePathResults = std::vector<std::pair<base::FilePath, float>>;
-
 constexpr int kMaxLocalFiles = 10;
 
-// Given the output of RecurrenceRanker::RankTopN, filter out all results that
-// don't exist on disk. Returns the filtered results, with each result string
-// converted to a base::FilePath.
-FilePathResults FilterNonexistentFiles(const StringResults& ranker_results) {
-  FilePathResults results;
+// Given the output of RecurrenceRanker::RankTopN, partition files by whether
+// they exist or not on disk. Returns a pair of vectors: <valid, invalid>.
+internal::ValidAndInvalidResults ValidateFiles(
+    const std::vector<std::pair<std::string, float>>& ranker_results) {
+  internal::ScoredResults valid;
+  internal::Results invalid;
   for (const auto& path_score : ranker_results) {
     // We use FilePath::FromUTF8Unsafe to decode the filepath string. As per its
     // documentation, this is a safe use of the function because
@@ -40,9 +38,11 @@ FilePathResults FilterNonexistentFiles(const StringResults& ranker_results) {
     // filepaths are UTF8.
     const auto& path = base::FilePath::FromUTF8Unsafe(path_score.first);
     if (base::PathExists(path))
-      results.emplace_back(path, path_score.second);
+      valid.emplace_back(path, path_score.second);
+    else
+      invalid.emplace_back(path);
   }
-  return results;
+  return {valid, invalid};
 }
 
 }  // namespace
@@ -84,15 +84,20 @@ void ZeroStateFileProvider::Start(const base::string16& query) {
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::BindOnce(&FilterNonexistentFiles,
-                     files_ranker_->RankTopN(kMaxLocalFiles)),
+      base::BindOnce(&ValidateFiles, files_ranker_->RankTopN(kMaxLocalFiles)),
       base::BindOnce(&ZeroStateFileProvider::SetSearchResults,
                      weak_factory_.GetWeakPtr()));
 }
 
-void ZeroStateFileProvider::SetSearchResults(FilePathResults results) {
+void ZeroStateFileProvider::SetSearchResults(
+    const internal::ValidAndInvalidResults& results) {
+  // Delete invalid results from the model.
+  for (const auto& path : results.second)
+    files_ranker_->RemoveTarget(path.value());
+
+  // Use valid results for search results.
   SearchProvider::Results new_results;
-  for (const auto& filepath_score : results) {
+  for (const auto& filepath_score : results.first) {
     new_results.emplace_back(std::make_unique<ZeroStateFileResult>(
         filepath_score.first, filepath_score.second, profile_));
   }

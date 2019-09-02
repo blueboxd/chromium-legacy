@@ -26,7 +26,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-#include "ui/wm/core/ime_util_chromeos.h"
 
 namespace arc {
 
@@ -495,13 +494,6 @@ bool ArcImeService::GetTextFromRange(const gfx::Range& range,
     return false;
   *text = text_in_range_;
   return true;
-}
-
-void ArcImeService::EnsureCaretNotInRect(const gfx::Rect& rect_in_screen) {
-  if (focused_arc_window_ == nullptr)
-    return;
-  aura::Window* top_level_window = focused_arc_window_->GetToplevelWindow();
-  wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
 }
 
 ui::TextInputMode ArcImeService::GetTextInputMode() const {

@@ -28,6 +28,13 @@ class FileTasksNotifier;
 }  // namespace file_manager
 
 namespace app_list {
+namespace internal {
+
+using Results = std::vector<base::FilePath>;
+using ScoredResults = std::vector<std::pair<base::FilePath, float>>;
+using ValidAndInvalidResults = std::pair<ScoredResults, Results>;
+
+}  // namespace internal
 
 class RecurrenceRanker;
 
@@ -45,9 +52,10 @@ class ZeroStateFileProvider : public SearchProvider,
   void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;
 
  private:
-  // Converts |results| into ZeroStateFilesResults and sets them as this
-  // provider's results.
-  void SetSearchResults(std::vector<std::pair<base::FilePath, float>> results);
+  // Takes a pair of vectors: <valid paths, invalid paths>, and converts the
+  // valid paths to ZeroStatFilesResults and sets them as this provider's
+  // results. The invalid paths are removed from the model.
+  void SetSearchResults(const internal::ValidAndInvalidResults& results);
 
   // The reference to profile to get ZeroStateFileProvider service.
   Profile* const profile_;

@@ -38,6 +38,7 @@
 <translation id="208586643495776849">আবার চেষ্টা করুন</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
 <translation id="2148716181193084225">আজ</translation>
+<translation id="2161656808144014275">পাঠ্য</translation>
 <translation id="2168039046890040389">পৃষ্ঠা নিচে</translation>
 <translation id="2190355936436201913">(খালি)</translation>
 <translation id="2192232475740621500">কম রেজোলিউশন ব্যবহার করুন</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” খুঁজে দেখুন</translation>
 <translation id="364720409959344976">আপলোড করার জন্য ফোল্ডার বেছে নিন</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
+<translation id="3670030362669914947">নম্বর</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> জিবি/সেকেণ্ড</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> জিবি</translation>
 <translation id="3842239759367498783">আপনার মোবাইল ডিভাইস <ph name="TITLE" /> থেকে পড়ুন</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{১ মাস আগে}one{# মাস আগে}other{# মাস আগে}}</translation>
 <translation id="4289300219472526559">কথা বলা শুরু করুন</translation>
 <translation id="4316910396681052118">সব অ্যাপ</translation>
-<translation id="4467014365953759647">নম্বর পাঠানো যাচ্ছে না</translation>
 <translation id="4588090240171750605">ডান দিকে স্ক্রল করুন</translation>
 <translation id="4690510401873698237">শেল্ফ নিচে দেখানো হচ্ছে</translation>
 <translation id="4724120544754982507">বিজ্ঞপ্তি কেন্দ্র, <ph name="UNREAD_NOTIFICATION_COUNT" />টি না পড়া বিজ্ঞপ্তি</translation>
@@ -175,7 +176,6 @@
 <translation id="7319740667687257810">লঞ্চার, আংশিক দেখুন</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{১ মিনিট পূর্বে}one{# মিনিট পূর্বে}other{# মিনিট পূর্বে}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">আপনার ফোনের কানেকশন ঠিক আছে কিনা দেখে নিয়ে আবার চেষ্টা করুন</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{১ মিনিট বাকি}one{# মিনিট বাকি}other{# মিনিট বাকি}}</translation>
 <translation id="7430878839542012341">এই সার্চ কি ইতিহাস থেকে মুছে দিতে চান?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

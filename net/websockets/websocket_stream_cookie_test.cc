@@ -155,9 +155,9 @@ TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
                               base::nullopt /* server_time */);
   store->SetCanonicalCookieAsync(
       std::move(cookie), cookie_url.scheme(), CookieOptions(),
-      base::Bind(&SetCookieHelperFunction, run_loop.QuitClosure(),
-                 weak_is_called.GetWeakPtr(),
-                 weak_set_cookie_result.GetWeakPtr()));
+      base::BindOnce(&SetCookieHelperFunction, run_loop.QuitClosure(),
+                     weak_is_called.GetWeakPtr(),
+                     weak_set_cookie_result.GetWeakPtr()));
   run_loop.Run();
   ASSERT_TRUE(is_called);
   ASSERT_TRUE(set_cookie_result);

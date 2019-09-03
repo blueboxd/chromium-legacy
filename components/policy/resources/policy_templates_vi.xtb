@@ -421,11 +421,11 @@
 
       Cảnh báo: Không nên ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> cho ứng dụng kiosk vì điều này có thể khiến thiết bị không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Việc ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> có thể khiến người dùng gặp rủi ro.</translation>
 <translation id="1675002386741412210">Hỗ trợ trên:</translation>
-<translation id="1695708467571967752">Chính sách này kiểm soát việc người dùng có thể phát nội dung nghe nhìn khi thiết bị đang khóa hay không.
+<translation id="1695708467571967752">Chính sách này kiểm soát việc người dùng có thể phát nội dung đa phương tiện khi thiết bị đang khóa hay không.
 
-      Nếu bạn đặt chính sách này thành False, thì các chức năng điều khiển nội dung nghe nhìn trên màn hình khóa sẽ bị tắt.
+      Nếu bạn đặt chính sách này thành False, thì các chức năng điều khiển nội dung đa phương tiện trên màn hình khóa sẽ bị tắt.
 
-      Trong trường hợp bạn không đặt hoặc đặt chính sách này thành True, thì các chức năng điều khiển nội dung nghe nhìn sẽ hiển thị trên màn hình khóa nếu người dùng khóa thiết bị khi nội dung nghe nhìn đang phát.
+      Nếu bạn không đặt hoặc đặt chính sách này thành True, thì các chức năng điều khiển nội dung đa phương tiện sẽ hiển thị trên màn hình khóa nếu người dùng khóa thiết bị khi nội dung đa phương tiện đang phát.
       </translation>
 <translation id="1700811900332333712">Cho phép thiết bị yêu cầu chức năng Powerwash</translation>
 <translation id="1708496595873025510">Đặt giới hạn cho quá trình tìm nạp khởi đầu Biến thể</translation>
@@ -2787,15 +2787,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu được đặt thành true, hệ thống sẽ được điều chỉnh để đạt được tốc độ tải lên và tải xuống được cung cấp (theo kbit/giây).</translation>
 <translation id="591088232153082363">Pin sạc thích ứng dựa trên thói quen sử dụng pin.</translation>
 <translation id="5921713479449475707">Cho phép tài nguyên đã tải xuống tự động cập nhật qua HTTP</translation>
-<translation id="5921888683953999946">Đặt trạng thái mặc định của tính năng trợ năng con trỏ lớn trên màn hình đăng nhập.
-
-          Nếu chính sách này được đặt thành true, con trỏ lớn sẽ được bật khi màn hình đăng nhập hiển thị.
-
-          Nếu chính sách này được đặt thành false, con trỏ lớn sẽ bị tắt khi màn hình đăng nhập hiển thị.
-
-          Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt con trỏ lớn. Tuy nhiên, lựa chọn của người dùng không được duy trì mãi và trạng thái mặc định được khôi phục bất cứ khi nào màn hình đăng nhập mới được hiển thị hoặc người dùng không thực hiện thao tác nào trên màn hình đăng nhập trong một phút.
-
-          Nếu không đặt chính sách này, con trỏ lớn bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt con trỏ lớn bất kỳ lúc nào và trạng thái của con trỏ trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="5929855945144989709">Cho phép các thiết bị chạy máy ảo trên Chrome OS</translation>
 <translation id="5932767795525445337">Chính sách này cũng có thể được dùng để ghim ứng dụng Android.</translation>
 <translation id="5936622343001856595">Buộc các truy vấn trong Google Web Search được hoàn tất bằng Tìm kiếm an toàn được đặt thành hoạt động và ngăn người dùng thay đổi cài đặt này.
@@ -4004,7 +3995,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8312129124898414409">Cho phép bạn đặt liệu các trang web có được phép sử dụng tạo khóa hay không. Bạn có thể cho phép hoặc từ chối sử dụng tạo khóa đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockKeygen' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="8314214821702356835">Cho phép người dùng phát nội dung nghe nhìn khi thiết bị đang khóa</translation>
+<translation id="8314214821702356835">Cho phép người dùng phát nội dung đa phương tiện khi thiết bị đang khóa</translation>
 <translation id="8320149248919453401">Chế độ sạc pin</translation>
 <translation id="8329984337216493753">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 

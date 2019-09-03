@@ -46,10 +46,10 @@ LayoutSize LayoutVideo::DefaultSize() {
 void LayoutVideo::IntrinsicSizeChanged() {
   if (VideoElement()->ShouldDisplayPosterImage())
     LayoutMedia::IntrinsicSizeChanged();
-  UpdateIntrinsicSize();
+  UpdateIntrinsicSize(/* is_in_layout */ false);
 }
 
-void LayoutVideo::UpdateIntrinsicSize() {
+void LayoutVideo::UpdateIntrinsicSize(bool is_in_layout) {
   LayoutSize size = CalculateIntrinsicSize();
   size.Scale(StyleRef().EffectiveZoom());
 
@@ -63,8 +63,10 @@ void LayoutVideo::UpdateIntrinsicSize() {
 
   SetIntrinsicSize(size);
   SetPreferredLogicalWidthsDirty();
-  SetNeedsLayoutAndFullPaintInvalidation(
-      layout_invalidation_reason::kSizeChanged);
+  if (!is_in_layout) {
+    SetNeedsLayoutAndFullPaintInvalidation(
+        layout_invalidation_reason::kSizeChanged);
+  }
 }
 
 LayoutSize LayoutVideo::CalculateIntrinsicSize() {
@@ -114,7 +116,7 @@ void LayoutVideo::ImageChanged(WrappedImagePtr new_image,
 
   // The intrinsic size is now that of the image, but in case we already had the
   // intrinsic size of the video we call this here to restore the video size.
-  UpdateIntrinsicSize();
+  UpdateIntrinsicSize(/* is_in_layout */ false);
 }
 
 bool LayoutVideo::ShouldDisplayVideo() const {
@@ -127,7 +129,7 @@ void LayoutVideo::PaintReplaced(const PaintInfo& paint_info,
 }
 
 void LayoutVideo::UpdateLayout() {
-  UpdatePlayer();
+  UpdatePlayer(/* is_in_layout */ true);
   LayoutMedia::UpdateLayout();
 }
 
@@ -137,14 +139,14 @@ HTMLVideoElement* LayoutVideo::VideoElement() const {
 
 void LayoutVideo::UpdateFromElement() {
   LayoutMedia::UpdateFromElement();
-  UpdatePlayer();
+  UpdatePlayer(/* is_in_layout */ false);
 
   // If the DisplayMode of the video changed, then we need to paint.
   SetShouldDoFullPaintInvalidation();
 }
 
-void LayoutVideo::UpdatePlayer() {
-  UpdateIntrinsicSize();
+void LayoutVideo::UpdatePlayer(bool is_in_layout) {
+  UpdateIntrinsicSize(is_in_layout);
 
   WebMediaPlayer* media_player = MediaElement()->GetWebMediaPlayer();
   if (!media_player)

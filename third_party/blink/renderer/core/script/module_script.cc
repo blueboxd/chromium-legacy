@@ -50,7 +50,6 @@ void ModuleScript::SetParseErrorAndClearRecord(ScriptValue error) {
   DCHECK(!error.IsEmpty());
 
   record_.Clear();
-  ScriptState::Scope scope(error.GetScriptState());
   parse_error_.Set(error.GetIsolate(), error.V8Value());
 }
 
@@ -64,7 +63,6 @@ ScriptValue ModuleScript::CreateParseError() const {
 }
 
 void ModuleScript::SetErrorToRethrow(ScriptValue error) {
-  ScriptState::Scope scope(error.GetScriptState());
   error_to_rethrow_.Set(error.GetIsolate(), error.V8Value());
 }
 

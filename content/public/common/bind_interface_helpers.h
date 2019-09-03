@@ -27,6 +27,10 @@ void BindInterface(Host* host, mojo::PendingRemote<Interface>* remote) {
   auto receiver = remote->InitWithNewPipeAndPassReceiver();
   host->BindInterface(Interface::Name_, receiver.PassPipe());
 }
+template <typename Host, typename Interface>
+void BindInterface(Host* host, mojo::PendingReceiver<Interface> receiver) {
+  host->BindInterface(Interface::Name_, receiver.PassPipe());
+}
 
 }  // namespace
 

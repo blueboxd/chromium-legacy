@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Installato</translation>
 <translation id="1792959175193046959">Modifica il percorso di download predefinito in qualsiasi momento</translation>
 <translation id="1807246157184219062">Chiaro</translation>
+<translation id="1810845389119482123">Configurazione iniziale della sincronizzazione non terminata</translation>
 <translation id="1821253160463689938">Utilizza i cookie per memorizzare le tue preferenze, anche se non visiti quelle pagine</translation>
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
@@ -412,6 +413,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
 <translation id="4179980317383591987">Dati utilizzati: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Lingue</translation>
+<translation id="4183868528246477015">Cerca con Google Lens <ph name="BEGIN_NEW" />Novità<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4198423547019359126">Nessun percorso di download disponibile</translation>
 <translation id="4209895695669353772">Per ricevere contenuti suggeriti appositamente per te da Google, attiva la sincronizzazione</translation>
@@ -474,6 +476,7 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Invia un messaggio ai tuoi dispositivi</translation>
 <translation id="4698034686595694889">Visualizza offline in <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Manca una funzionalità fondamentale per l'esecuzione di Chrome; l'installazione di Chrome è incompleta oppure non è compatibile con la versione di Android installata.</translation>
 <translation id="4699172675775169585">Immagini e file memorizzati nella cache</translation>
@@ -529,6 +532,10 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5011311129201317034">Il sito <ph name="SITE" /> desidera collegarsi</translation>
 <translation id="5013696553129441713">Nessun nuovo suggerimento</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Mentre ti trovi nella VR, il sito potrebbe riuscire ad acquisire:
+  -  dati sulle tue caratteristiche fisiche, come l'altezza
+
+Prima di accedere alla VR, verifica che questo sito sia attendibile.</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5048398596102334565">Consenti ai siti di accedere ai sensori di movimento (opzione consigliata)</translation>
@@ -556,6 +563,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5224771365102442243">Con video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> richiede di eseguire la scansione per rilevare dispositivi Bluetooth nelle vicinanze. Sono stati rilevati i seguenti dispositivi:</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
+<translation id="5234764350956374838">Ignora</translation>
 <translation id="526421993248218238">Impossibile caricare la pagina</translation>
 <translation id="5271967389191913893">Non è possibile aprire i contenuti da scaricare sul dispositivo.</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
@@ -574,6 +582,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5363230136052241468">Tocca il pulsante Home per caricare la pagina Nuova scheda</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> scheda aperta, tocca per cambiare scheda}other{<ph name="OPEN_TABS_MANY" /> schede aperte, tocca per cambiare scheda}}</translation>
 <translation id="5391532827096253100">La tua connessione al sito non è sicura. Informazioni sul sito</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 altro)}other{(+ altri #)}}</translation>
 <translation id="5400569084694353794">Se utilizzi questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome.</translation>
 <translation id="5403592356182871684">Nomi</translation>
 <translation id="5403644198645076998">Consenti solo siti specifici</translation>
@@ -603,6 +612,11 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5527082711130173040">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. <ph name="BEGIN_LINK1" />Aggiorna le autorizzazioni<ph name="END_LINK1" />. L'accesso alla posizione è <ph name="BEGIN_LINK2" />disattivato su questo dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Chiedi conferma prima di consentire ai siti di leggere testo e immagini negli appunti (opzione consigliata)</translation>
 <translation id="5530766185686772672">Chiudi schede in incognito</translation>
+<translation id="5534334044554683961">Mentre ti trovi nella VR, il sito potrebbe riuscire ad acquisire:
+  -   dati sulle tue caratteristiche fisiche, come l'altezza
+  -   dati sulla struttura della stanza
+
+Prima di accedere alla VR, verifica che questo sito sia attendibile.</translation>
 <translation id="5534640966246046842">Sito copiato</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5561549206367097665">In attesa della rete…</translation>
@@ -690,7 +704,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6206551242102657620">La connessione è sicura. Informazioni sul sito</translation>
 <translation id="6210748933810148297">Non sei <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opzioni <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Sblocca per esportare le tue password</translation>
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
 
@@ -893,6 +906,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="7665369617277396874">Aggiungi account</translation>
 <translation id="766587987807204883">Qui vengono visualizzati gli articoli che potrai leggere anche offline</translation>
 <translation id="7682724950699840886">Prova i seguenti suggerimenti: assicurati di avere spazio sufficiente sul dispositivo e prova a esportare di nuovo.</translation>
+<translation id="7685301384041462804">Prima di accedere alla VR, verifica che questo sito sia attendibile.</translation>
 <translation id="7698359219371678927">Crea email in <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completamento automatico di ricerche e URL</translation>
 <translation id="7725024127233776428">Le pagine aggiunte ai preferiti saranno mostrate qui</translation>
@@ -923,6 +937,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="7886917304091689118">In esecuzione in Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Download del file.}other{Download di # file.}}</translation>
 <translation id="7929962904089429003">Apri il menu</translation>
+<translation id="7930681627240672853">Controlla la sicurezza delle password</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> è obsoleto.</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="7963646190083259054">Fornitore:</translation>
@@ -1070,6 +1085,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8993760627012879038">Apri nuova scheda in mod. di navigaz. in incognito</translation>
 <translation id="8998729206196772491">Stai per eseguire l'accesso con un account gestito da <ph name="MANAGED_DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chrome. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chrome, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="9019902583201351841">Gestito dai genitori</translation>
+<translation id="9029323097866369874">Consentire a <ph name="DOMAIN" /> di accedere alla VR?</translation>
 <translation id="9040142327097499898">Le notifiche sono consentite. La geolocalizzazione non è attiva per questo dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>
 <translation id="9050666287014529139">Passphrase</translation>

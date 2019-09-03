@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 
 namespace content {
 

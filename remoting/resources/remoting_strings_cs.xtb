@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="5254120496627797685">Pokud opustíte tuto stránku, návštěvy Vzdálené plochy Chrome bude ukončena.</translation>
 <translation id="5308380583665731573">Připojení</translation>
+<translation id="5327248766486351172">Jméno</translation>
 <translation id="533625276787323658">Není k dispozici žádné zařízení, ke kterému by bylo možné se připojit.</translation>
 <translation id="5363265567587775042">Požádejte uživatele, k jehož počítači chcete získat přístup, aby kliknul na tlačítko <ph name="SHARE" /> a dal vám přístupový kód.</translation>
 <translation id="5379087427956679853">Vzdálená plocha Chrome vám umožňuje bezpečně sdílet svůj počítač přes internet. Oba uživatelé musí mít spuštěnou aplikaci Vzdálená plocha Chrome, kterou najdete na adrese <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="7970576581263377361">Ověření selhalo. Přihlaste se do prohlížeče Chromium znovu.</translation>
 <translation id="7981525049612125370">Platnost vzdálené návštěvy vypršela.</translation>
+<translation id="8038111231936746805">(výchozí)</translation>
 <translation id="8041089156583427627">Odeslat svůj názor</translation>
 <translation id="8041721485428375115">Stažením instalačního programu hostitele Vzdálené plochy Chrome vyjadřujete souhlas se <ph name="LINK_BEGIN" />smluvními podmínkami<ph name="LINK_END" /> společnosti Google.</translation>
 <translation id="8060029310790625334">Centrum nápovědy</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mé počítače</translation>
 <translation id="811307782653349804">Přistupujte ke svému počítači odkudkoli.</translation>
 <translation id="8116630183974937060">Došlo k chybě sítě. Zkontrolujte prosím, zda je zařízení online a zkuste to znovu.</translation>
-<translation id="8123581458650016326">Povolit vzdáleným uživatelům ovládat tento počítač</translation>
 <translation id="8178433417677596899">Sdílení obrazovky mezi uživateli je ideální pro vzdálenou technickou podporu.</translation>
 <translation id="8187079423890319756">Copyright 2013 Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8196755618196986400">Abychom vás mohli kontaktovat kvůli dalším informacím, všechny zpětné vazby, které odešlete, budou obsahovat vaši e-mailovou adresu.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Zásady ochrany soukromí</translation>
 <translation id="894763922177556086">Dobrá</translation>
 <translation id="895780780740011433">Pro Windows 7 a novější</translation>
-<translation id="8963047137585288214">Abyste tento počítač mohli ovládat vzdáleně pomocí aplikace <ph name="PRODUCT_NAME" />, je potřeba provést další konfigurační krok.
-
-Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME" /> zobrazte panel nastavení zabezpečení a ochrany soukromí a poté zaškrtněte políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.
-
-Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již přítomná a zaškrtnutá, pravděpodobně bude třeba zaškrtnutí zrušit a poté ji zaškrtnout znovu.</translation>
 <translation id="897805526397249209">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a poté klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Hostitelský kontroler Vzdálené plochy Chrome</translation>
 <translation id="9016232822027372900">Přesto připojit</translation>

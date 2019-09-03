@@ -37,26 +37,32 @@ void WebAppDatabase::OpenDatabase(OnceRegistryOpenedCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebAppDatabase::WriteWebApp(const WebApp& web_app) {
+void WebAppDatabase::WriteWebApps(AppsToWrite apps,
+                                  CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
   BeginTransaction();
 
-  auto proto = CreateWebAppProto(web_app);
-  write_batch_->WriteData(proto->app_id(), proto->SerializeAsString());
+  for (auto* web_app : apps) {
+    auto proto = CreateWebAppProto(*web_app);
+    write_batch_->WriteData(proto->app_id(), proto->SerializeAsString());
+  }
 
-  CommitTransaction();
+  CommitTransaction(std::move(callback));
 }
 
-void WebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids) {
+void WebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids,
+                                   CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
   BeginTransaction();
+
   for (auto& app_id : app_ids)
     write_batch_->DeleteData(app_id);
-  CommitTransaction();
+
+  CommitTransaction(std::move(callback));
 }
 
 // static
@@ -222,10 +228,13 @@ void WebAppDatabase::OnAllDataRead(
 }
 
 void WebAppDatabase::OnDataWritten(
+    CompletionCallback callback,
     const base::Optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error)
     DLOG(ERROR) << "WebApps LevelDB write error: " << error->ToString();
+
+  std::move(callback).Run(!error);
 }
 
 // static
@@ -247,13 +256,14 @@ void WebAppDatabase::BeginTransaction() {
   write_batch_ = store_->CreateWriteBatch();
 }
 
-void WebAppDatabase::CommitTransaction() {
+void WebAppDatabase::CommitTransaction(CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(write_batch_);
 
-  store_->CommitWriteBatch(std::move(write_batch_),
-                           base::BindOnce(&WebAppDatabase::OnDataWritten,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  store_->CommitWriteBatch(
+      std::move(write_batch_),
+      base::BindOnce(&WebAppDatabase::OnDataWritten,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   write_batch_.reset();
 }
 

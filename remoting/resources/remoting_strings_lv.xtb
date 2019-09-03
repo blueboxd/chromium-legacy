@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="5254120496627797685">Aizverot šo lapu, Chrome attālās darbvirsmas sesija tiks pārtraukta.</translation>
 <translation id="5308380583665731573">Pievienošana</translation>
+<translation id="5327248766486351172">Nosaukums</translation>
 <translation id="533625276787323658">Nav neviena datora, ar kuru izveidot savienojumu.</translation>
 <translation id="5363265567587775042">Palūdziet lietotājam, kura datoru vēlaties lietot, noklikšķināt uz “<ph name="SHARE" />” un piešķirt jums piekļuves kodu.</translation>
 <translation id="5379087427956679853">Izmantojot Chrome attālo darbvirsmu, varat droši koplietot savu datoru tīmeklī. Abiem lietotājiem ir jāizmanto lietotne Chrome attālā darbvirsma, kas ir pieejama vietnē <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Ekrāna opcijas</translation>
 <translation id="7970576581263377361">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties pārlūkā Chromium.</translation>
 <translation id="7981525049612125370">Attālās sesijas termiņš ir beidzies.</translation>
+<translation id="8038111231936746805">(noklusējums)</translation>
 <translation id="8041089156583427627">Sūtīt atsauksmes</translation>
 <translation id="8041721485428375115">Lejupielādējot Chrome attālās darbvirsmas saimniekdatora instalēšanas programmu, jūs piekrītat Google <ph name="LINK_BEGIN" />pakalpojumu sniegšanas noteikumiem<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Palīdzības centrs</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mani datori</translation>
 <translation id="811307782653349804">Piekļūstiet savam datoram, atrodoties jebkurā vietā.</translation>
 <translation id="8116630183974937060">Radās tīkla kļūda. Lūdzu, pārbaudiet, vai ierīcē ir izveidots savienojumus, un mēģiniet vēlreiz.</translation>
-<translation id="8123581458650016326">Atļaujiet attālajiem lietotājiem kontrolēt šo iekārtu</translation>
 <translation id="8178433417677596899">Ekrāna koplietošana — ideāli piemērota, lai saņemtu attālo tehnisko atbalstu.</translation>
 <translation id="8187079423890319756">Autortiesības 2013 Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="8196755618196986400">Lai mēs varētu ar jums sazināties un iegūt papildu informāciju, iesniegtajās atsauksmēs tiks ietverta jūsu e-pasta adrese.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Konfidencialitātes politika</translation>
 <translation id="894763922177556086">labs</translation>
 <translation id="895780780740011433">Operētājsistēmai Windows 7 un jaunākām versijām</translation>
-<translation id="8963047137585288214">Lai varētu attālināti kontrolēt šo iekārtu, izmantojot <ph name="PRODUCT_NAME" />, ir jāveic papildu konfigurēšanas darbība.
-
-Šīs funkcionalitātes iespējošanai atlasiet “<ph name="BUTTON_NAME" />”, lai tiktu parādīta preferenču rūts “Drošība un konfidencialitāte”, un pēc tam atzīmējiet izvēles rūtiņu blakus “<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Ja pakalpojums “<ph name="SERVICE_SCRIPT_NAME" />” jau ir pievienots un atzīmēts, iespējams, jums būs jānoņem atzīme un pēc tam atkārtoti jāatzīmē šis pakalpojums.</translation>
 <translation id="897805526397249209">Lai iespējotu attālus savienojumus ar citu datoru, instalējiet Chrome saiti attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome attālās darbvirsmas saimniekdatora kontrolleris</translation>
 <translation id="9016232822027372900">Izveidot savienojumu jebkurā gadījumā</translation>

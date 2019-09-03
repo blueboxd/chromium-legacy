@@ -484,6 +484,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4372705107434148843">Stop speech</translation>
 <translation id="4373197658375206385">No previous item that isn't a link.</translation>
 <translation id="4376316291247992553">View Graphic As Braille</translation>
+<translation id="437809255587011096">Announce text styling</translation>
 <translation id="4378308539633073595">Scroll forwards</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8503360654911991865">Decrease navigation granularity</translation>
 <translation id="8504695234784218301">Grammar error end</translation>
 <translation id="8520472399088452386">Spin button</translation>
+<translation id="8534394844575788431">Formatting</translation>
 <translation id="8538744478902126321">Make a guess at the row header of the current cell</translation>
 <translation id="8540054775867439484">Wrapped to top</translation>
 <translation id="8542271685829952264">To explore all ChromeVox commands and shortcuts, press Search + Full Stop, then use the Arrow keys to navigate the menus, and Enter to activate a command. Return here by pressing Search+O then T.</translation>
@@ -1200,6 +1202,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Announces a brief description of the current position</translation>
+<translation id="9151249085738989067">Automatically switch ChromeVox voice based on language</translation>
 <translation id="9153606228985488238">Pitch <ph name="PERCENT" /> percent</translation>
 <translation id="9160096769946561184">Go to end of the current column</translation>
 <translation id="9173115498289768110">Volume <ph name="PERCENT" /> percent</translation>

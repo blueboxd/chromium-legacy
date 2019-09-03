@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Terpasang</translation>
 <translation id="1792959175193046959">Ubah lokasi download default kapan saja</translation>
 <translation id="1807246157184219062">Terang</translation>
+<translation id="1810845389119482123">Penyiapan sinkronisasi awal belum selesai</translation>
 <translation id="1821253160463689938">Menggunakan cookie untuk mengingat preferensi, meski Anda tidak membuka halaman tersebut</translation>
 <translation id="1829244130665387512">Cari di halaman</translation>
 <translation id="1853692000353488670">Tab samaran baru</translation>
@@ -412,6 +413,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memerinc
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> digunakan</translation>
 <translation id="4181841719683918333">Bahasa</translation>
+<translation id="4183868528246477015">Telusuri dgn Google Lens <ph name="BEGIN_NEW" />Baru<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4198423547019359126">Tidak tersedia lokasi download</translation>
 <translation id="4209895695669353772">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, aktifkan sinkronisasi</translation>
@@ -474,6 +476,7 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke layar Utama</translation>
 <translation id="4684427112815847243">Sinkronkan semua</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}}</translation>
+<translation id="4696983787092045100">Kirim pesan teks ke Perangkat Anda</translation>
 <translation id="4698034686595694889">Lihat secara offline di <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Fungsi penting yang diperlukan untuk menjalankan Chrome tidak ada; bisa jadi karena pemasangan Chrome Anda tidak lengkap, atau tidak kompatibel dengan versi Android ini.</translation>
 <translation id="4699172675775169585">Gambar dan file dalam cache</translation>
@@ -529,6 +532,10 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5011311129201317034"><ph name="SITE" /> ingin terhubung</translation>
 <translation id="5013696553129441713">Tidak ada saran baru</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Ketika Anda berada di VR, situs ini mungkin dapat mengetahui tentang:
+  -  ciri fisik Anda, seperti tinggi badan
+
+Pastikan Anda memercayai situs ini sebelum masuk ke VR.</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5048398596102334565">Mengizinkan situs mengakses sensor gerakan (disarankan)</translation>
@@ -556,6 +563,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5224771365102442243">Dengan video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> ingin memindai perangkat Bluetooth di sekitar. Perangkat berikut telah ditemukan:</translation>
 <translation id="5233638681132016545">Tab baru</translation>
+<translation id="5234764350956374838">Tutup</translation>
 <translation id="526421993248218238">Tidak dapat memuat halaman ini</translation>
 <translation id="5271967389191913893">Perangkat tidak dapat membuka konten untuk didownload.</translation>
 <translation id="528192093759286357">Tarik dari atas dan ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
@@ -574,6 +582,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5363230136052241468">Ketuk tombol beranda untuk memuat halaman tab baru</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab terbuka, ketuk untuk beralih tab}other{<ph name="OPEN_TABS_MANY" /> tab terbuka, ketuk untuk beralih tab}}</translation>
 <translation id="5391532827096253100">Sambungan ke situs ini tidak aman. Informasi situs</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 lainnya)}other{(+ # lainnya)}}</translation>
 <translation id="5400569084694353794">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403592356182871684">Nama</translation>
 <translation id="5403644198645076998">Hanya izinkan situs tertentu</translation>
@@ -603,6 +612,11 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK1" />Perbarui izin<ph name="END_LINK1" />. Akses lokasi juga <ph name="BEGIN_LINK2" />dinonaktifkan untuk perangkat ini<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Tanya sebelum mengizinkan situs membaca teks dan gambar dari papan klip (disarankan)</translation>
 <translation id="5530766185686772672">Tutup tab samaran</translation>
+<translation id="5534334044554683961">Ketika Anda berada di VR, situs ini mungkin dapat mengetahui tentang:
+  -   ciri fisik Anda, seperti tinggi badan
+  -   tata letak ruangan Anda
+
+Pastikan Anda memercayai situs ini sebelum masuk ke VR.</translation>
 <translation id="5534640966246046842">Situs disalin</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5561549206367097665">Menunggu jaringan…</translation>
@@ -690,7 +704,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opsi <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Buka kunci untuk mengekspor sandi</translation>
 <translation id="6232535412751077445">Jika “Jangan Lacak” diaktifkan, permintaan akan disertakan bersama traffic penjelajahan Anda. Dampaknya tergantung pada apakah situs web menanggapi permintaan itu, dan bagaimana permintaan itu diinterpretasikan.
 
@@ -893,6 +906,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="7665369617277396874">Tambahkan akun</translation>
 <translation id="766587987807204883">Artikel ditampilkan di sini, yang dapat Anda baca bahkan saat offline</translation>
 <translation id="7682724950699840886">Coba tips berikut ini: pastikan ruang di perangkat Anda mencukupi, lalu coba ekspor lagi.</translation>
+<translation id="7685301384041462804">Pastikan Anda memercayai situs ini sebelum masuk ke VR.</translation>
 <translation id="7698359219371678927">Buat email di <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Lengkapi otomatis penelusuran dan URL</translation>
 <translation id="7725024127233776428">Halaman yang Anda bookmark muncul di sini</translation>
@@ -923,6 +937,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="7886917304091689118">Berjalan di Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Mendownload file.}other{Mendownload # file.}}</translation>
 <translation id="7929962904089429003">Membuka menu</translation>
+<translation id="7930681627240672853">Periksa keamanan sandi</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> sudah usang.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="7963646190083259054">Vendor:</translation>
@@ -1070,6 +1085,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8993760627012879038">Membuka tab baru dalam Mode samaran</translation>
 <translation id="8998729206196772491">Anda akan login dengan akun yang dikelola oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kontrol data Chrome kepada administratornya. Data akan terikat dengan akun ini secara permanen. Bila Anda logout dari Chrome, data akan dihapus dari perangkat ini, tetapi data tetap tersimpan di Akun Google.</translation>
 <translation id="9019902583201351841">Dikelola oleh orang tua Anda</translation>
+<translation id="9029323097866369874">Izinkan <ph name="DOMAIN" /> memasuki VR?</translation>
 <translation id="9040142327097499898">Notifikasi diizinkan. Lokasi dinonaktifkan untuk perangkat ini.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Video}}</translation>
 <translation id="9050666287014529139">Frasa sandi</translation>

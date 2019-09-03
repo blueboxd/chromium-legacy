@@ -484,6 +484,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4372705107434148843">Apturēt runas izvadi</translation>
 <translation id="4373197658375206385">Nav neviena iepriekšējā vienuma, kas nav saite.</translation>
 <translation id="4376316291247992553">Skatīt grafiku Braila rakstā</translation>
+<translation id="437809255587011096">Paziņot teksta stilu</translation>
 <translation id="4378308539633073595">Ritināt uz priekšu</translation>
 <translation id="4384583879834880242">Jautājumi un atbildes</translation>
 <translation id="4391478986194775161">satura informācija</translation>
@@ -1121,6 +1122,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="8503360654911991865">Samazināt navigācijas precizitāti</translation>
 <translation id="8504695234784218301">Beidzas teksts ar gramatikas kļūdām</translation>
 <translation id="8520472399088452386">Skaitītājpoga</translation>
+<translation id="8534394844575788431">Formatēšana</translation>
 <translation id="8538744478902126321">Izdarīt minējumu par pašreizējās šūnas rindas virsrakstu</translation>
 <translation id="8540054775867439484">Doties uz sākumu</translation>
 <translation id="8542271685829952264">Lai izpētītu visas ChromeVox komandas un īsinājumtaustiņus, nospiediet Search + punkta taustiņu, pēc tam pārlūkojiet izvēlnes, izmantojot bulttaustiņus, un aktivizējiet komandu, nospiežot Enter. Lai atgrieztos šeit, nospiediet Search + o, pēc tam — t.</translation>
@@ -1200,6 +1202,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="9149560530563164529">sadaļa</translation>
 <translation id="9150735707954472829">Cilne</translation>
 <translation id="9151211641321628915">Sniedz īsu aprakstu par pašreizējo pozīciju</translation>
+<translation id="9151249085738989067">Automātiski pārslēgt ChromeVox balsi atkarībā no valodas</translation>
 <translation id="9153606228985488238">Augstums: <ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">Pāriet uz pašreizējās slejas beigām</translation>
 <translation id="9173115498289768110">Skaļums: <ph name="PERCENT" />%</translation>

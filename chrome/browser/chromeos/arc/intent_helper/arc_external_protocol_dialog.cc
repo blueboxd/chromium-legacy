@@ -359,7 +359,7 @@ void OnIntentPickerClosed(int render_process_host_id,
                           bool safe_to_bypass_ui,
                           std::vector<mojom::IntentHandlerInfoPtr> handlers,
                           const std::string& selected_app_package,
-                          apps::mojom::AppType app_type,
+                          apps::PickerEntryType entry_type,
                           apps::IntentPickerCloseReason reason,
                           bool should_persist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -402,7 +402,7 @@ void OnIntentPickerClosed(int render_process_host_id,
     case apps::IntentPickerCloseReason::OPEN_APP:
       // Only ARC apps are offered in the external protocol intent picker, so if
       // the user decided to open in app the type must be ARC.
-      DCHECK_EQ(apps::mojom::AppType::kArc, app_type);
+      DCHECK_EQ(apps::PickerEntryType::kArc, entry_type);
       DCHECK(arc_service_manager);
 
       if (should_persist) {
@@ -464,7 +464,7 @@ void OnIntentPickerClosed(int render_process_host_id,
   RecordUmaDialogAction(url_scheme, protocol_accepted, should_persist);
 
   chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-      selected_app_package, app_type, reason, apps::Source::kExternalProtocol,
+      selected_app_package, entry_type, reason, apps::Source::kExternalProtocol,
       should_persist);
 }
 
@@ -485,7 +485,7 @@ void OnAppIconsReceived(
     const ArcIntentHelperBridge::ActivityName activity(handler->package_name,
                                                        handler->activity_name);
     const auto it = icons->find(activity);
-    app_info.emplace_back(apps::mojom::AppType::kArc,
+    app_info.emplace_back(apps::PickerEntryType::kArc,
                           it != icons->end() ? it->second.icon16 : gfx::Image(),
                           handler->package_name, handler->name);
   }
@@ -547,7 +547,7 @@ void OnUrlHandlerList(int render_process_host_id,
                 handlers.size(), &result, safe_to_bypass_ui)) {
     if (result == GetActionResult::HANDLE_URL_IN_ARC) {
       chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-          std::string(), apps::mojom::AppType::kArc,
+          std::string(), apps::PickerEntryType::kArc,
           apps::IntentPickerCloseReason::PREFERRED_APP_FOUND,
           apps::Source::kExternalProtocol,
           /*should_persist=*/false);

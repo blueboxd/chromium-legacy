@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -74,6 +75,17 @@ class WebAppRegistrarTest : public WebAppTest {
 
     database().TakeOpenDatabaseCallback().Run(std::move(registry));
     return app_ids;
+  }
+
+  std::unique_ptr<WebApp> CreateWebApp(const GURL& launch_url) {
+    const AppId app_id = GenerateAppIdFromURL(launch_url);
+
+    auto web_app = std::make_unique<WebApp>(app_id);
+
+    web_app->SetName("Name");
+    web_app->SetLaunchUrl(launch_url);
+    web_app->SetLaunchContainer(LaunchContainer::kWindow);
+    return web_app;
   }
 
   void DestroySubsystems() {
@@ -208,7 +220,10 @@ TEST_F(WebAppRegistrarTest, AbstractWebAppDatabase) {
   const AppId app_id = GenerateAppIdFromURL(GURL("https://example.com/path"));
   auto web_app = std::make_unique<WebApp>(app_id);
   registrar().RegisterApp(std::move(web_app));
-  EXPECT_EQ(app_id, database().write_web_app_id());
+
+  EXPECT_EQ(1UL, database().write_web_app_ids().size());
+  EXPECT_EQ(app_id, database().write_web_app_ids()[0]);
+
   EXPECT_EQ(101UL, registrar().registry_for_testing().size());
 
   // Remove 1 app after Init.
@@ -308,6 +323,23 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(app3_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre("3"));
+}
+
+TEST_F(WebAppRegistrarTest, DatabaseWriteAndDeleteAppsFail) {
+  auto app = CreateWebApp(GURL("https://example.com/path"));
+  auto app_id = app->app_id();
+
+  database().SetNextWriteWebAppsResult(false);
+  registrar().RegisterApp(std::move(app));
+
+  // nothing crashes, the production database impl would DLOG an error.
+  EXPECT_FALSE(registrar().is_empty());
+
+  database().SetNextDeleteWebAppsResult(false);
+  registrar().UnregisterApp(app_id);
+
+  // nothing crashes, the production database impl would DLOG an error.
+  EXPECT_TRUE(registrar().is_empty());
 }
 
 }  // namespace web_app

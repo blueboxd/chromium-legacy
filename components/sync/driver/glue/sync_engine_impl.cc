@@ -156,7 +156,11 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoShutdown, backend_, reason));
-  backend_ = nullptr;
+
+  // Ensure that |backend_| destroyed inside Sync sequence, not inside current
+  // one.
+  sync_task_runner_->ReleaseSoon(FROM_HERE, std::move(backend_));
+  DCHECK(!backend_);
   registrar_ = nullptr;
 }
 

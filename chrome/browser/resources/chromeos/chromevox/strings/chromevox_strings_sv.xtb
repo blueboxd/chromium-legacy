@@ -484,6 +484,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4372705107434148843">Stoppa tal</translation>
 <translation id="4373197658375206385">Det finns inget föregående objekt som inte är en länk.</translation>
 <translation id="4376316291247992553">Visa bild som punktskrift</translation>
+<translation id="437809255587011096">Läs upp textformat</translation>
 <translation id="4378308539633073595">Rulla framåt</translation>
 <translation id="4384583879834880242">Frågor och svar</translation>
 <translation id="4391478986194775161">innehållsinformation</translation>
@@ -1121,6 +1122,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8503360654911991865">Minska navigeringens granularitet</translation>
 <translation id="8504695234784218301">Grammatikfel slutar</translation>
 <translation id="8520472399088452386">Snurrknapp</translation>
+<translation id="8534394844575788431">Formatering</translation>
 <translation id="8538744478902126321">Gissa radrubrik för den aktuella cellen</translation>
 <translation id="8540054775867439484">Till början</translation>
 <translation id="8542271685829952264">Tryck på söktangenten + punkt för att utforska kommandon och kortkommandon i ChromeVox. Du navigerar i menyerna med piltangenterna och aktiverar ett kommando med Retur-tangenten. Tryck på söktangenten + O + T när du vill återvända hit.</translation>
@@ -1200,6 +1202,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="9149560530563164529">avsnitt</translation>
 <translation id="9150735707954472829">Flik</translation>
 <translation id="9151211641321628915">Ger en kort beskrivning av den aktuella positionen</translation>
+<translation id="9151249085738989067">Byt ChromeVox-röst automatiskt beroende på språk</translation>
 <translation id="9153606228985488238">Tonhöjd: <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Flytta till slutet av den aktuella kolumnen</translation>
 <translation id="9173115498289768110">Volym: <ph name="PERCENT" /> procent</translation>

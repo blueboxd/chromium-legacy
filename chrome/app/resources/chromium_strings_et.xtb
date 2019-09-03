@@ -141,6 +141,8 @@
 <translation id="6096348254544841612">Kohandage ja juhtige Chromiumi. Saadaval on värskendus.</translation>
 <translation id="6120345080069858279">Chromium salvestab selle parooli teie Google'i kontole. Te ei pea seda meeles pidama.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> on ohtlik, mistõttu Chromium blokeeris selle.</translation>
+<translation id="6173098285107411678">Kui sellel lehel ei kuvata seadet, vaadake oma <ph name="LINK_BEGIN" />
+    Chromiumi brauseri seadeid<ph name="LINK_END" /></translation>
 <translation id="6212496753309875659">Arvutis on juba Chromiumi uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium ja proovige uuesti.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium käivitatakse kohe uuesti}=1{Chromium käivitatakse uuesti 1 sekundi pärast}other{Chromium käivitatakse uuesti # sekundi pärast}}</translation>
 <translation id="6248213926982192922">Määra Chromium vaikebrauseriks</translation>

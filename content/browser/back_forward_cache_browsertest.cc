@@ -1031,7 +1031,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Disable the BackForwardCache.
-  web_contents()->GetController().back_forward_cache().DisableForTesting();
+  web_contents()->GetController().back_forward_cache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Navigate to a page that would normally be cacheable.
   NavigateToURL(shell(),
@@ -1486,7 +1487,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // │browser│                     │renderer│
 // └───────┘                     └────────┘
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       SchedulerTrackedFeaturesUpdatedWhileStoring) {
+                       DISABLED_SchedulerTrackedFeaturesUpdatedWhileStoring) {
   net::test_server::ControllableHttpResponse send_beacon_request(
       embedded_test_server(), "/beacon");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1783,6 +1784,37 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_FALSE(deleted.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
+  constexpr char kKeepalivePath[] = "/keepalive";
+
+  net::test_server::ControllableHttpResponse keepalive(embedded_test_server(),
+                                                       kKeepalivePath);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_ping(embedded_test_server()->GetURL("a.com", kKeepalivePath));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  EXPECT_TRUE(
+      ExecJs(shell(), JsReplace(R"(navigator.sendBeacon($1, "");)", url_ping)));
+
+  // 2) Navigate to B.
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // Ensure that the keepalive request is sent.
+  keepalive.WaitForRequest();
+  // Don't actually send the response.
+
+  // Page A should be in the cache.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 }
 
 }  // namespace content

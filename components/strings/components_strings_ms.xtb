@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Variasi baris perintah</translation>
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cuba kosongkan kuki anda<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Ciri yang Ditamatkan</translation>
 <translation id="1320233736580025032">Prc1 (Sampul Surat)</translation>
 <translation id="132301787627749051">Cari imej papan keratan</translation>
 <translation id="1323433172918577554">Tunjukkan Lagi</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Helaian Google</translation>
 <translation id="1527263332363067270">Menunggu sambungan...</translation>
 <translation id="1529521330346880926">10x15 (Sampul Surat)</translation>
+<translation id="1530707389502320859">Tapak yang baru sahaja anda cuba lawati kelihatan seperti tapak palsu. Penyerang kadangkala meniru tapak dengan melakukan perubahan kecil yang sukar untuk dikesan pada URL.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Halaman ini menyatakan</translation>
 <translation id="153384715582417236">Itu sahaja buat masa ini</translation>
@@ -346,6 +348,9 @@
 <translation id="2721148159707890343">Permintaan berjaya</translation>
 <translation id="2728127805433021124">Sijil pelayan ditandatangani menggunakan algoritma tandatangan yang lemah.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Jalankan Diagnostik Sambungan<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Mendayakan ciri ini mungkin akan menyebabkan anda kehilangan data penyemak imbas atau
+    menjejaskan keselamatan atau privasi anda. Ciri yang didayakan digunakan untuk semua
+    pengguna penyemak imbas ini.</translation>
 <translation id="2735043616039983645">Lebih daripada satu sumber yang mempunyai nilai yang bercanggah terdapat dalam dasar ini!</translation>
 <translation id="2738330467931008676">Pilih Alamat Pengambilan</translation>
 <translation id="2740531572673183784">Ok</translation>
@@ -389,6 +394,7 @@
 <translation id="2985306909656435243">Jika didayakan, Chromium akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="2985398929374701810">Masukkan alamat yang sah</translation>
 <translation id="2986368408720340940">Kaedah pengambilan ini tidak tersedia. Cuba kaedah lain.</translation>
+<translation id="2987034854559945715">Tiada ciri yang sepadan</translation>
 <translation id="2991174974383378012">Berkongsi dengan Tapak Web</translation>
 <translation id="2991571918955627853">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan HSTS. Ralat dan serangan rangkaian biasanya sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="3005723025932146533">Paparkan salinan disimpan</translation>
@@ -512,6 +518,7 @@
 <translation id="3678529606614285348">Buka halaman dalam tetingkap Inkognito baharu (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Laporan ranap sistem dirakam pada <ph name="CRASH_TIME" />, dimuat naik pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Maklumat sijil</translation>
+<translation id="3701427423622901115">Tetap semula diakui.</translation>
 <translation id="3704162925118123524">Rangkaian yang anda gunakan mungkin memerlukan anda untuk melawat halaman log masuknya.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Memuatkan...</translation>
@@ -684,6 +691,7 @@
 <translation id="4594403342090139922">&amp;Buat asal Pemadaman</translation>
 <translation id="4597348597567598915">Saiz 8</translation>
 <translation id="4600854749408232102">C6/C5 (Sampul Surat)</translation>
+<translation id="464342062220857295">Ciri carian</translation>
 <translation id="4646534391647090355">Bawa saya ke sana sekarang</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mengandungi ralat. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda.</translation>
@@ -800,6 +808,7 @@
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5252000469029418751">C7 (Sampul Surat)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Ciri yang diguna pakai di seluruh sistem hanya boleh ditetapkan oleh pemilik: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Amaran: Dasar ini tidak digabungkan seperti yang dinyatakan dalam dasar PolicyDictionaryMultipleSourceMergeList kerana dasar ini bukan sebahagian daripada dasar kamus yang boleh digabungkan.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">End</translation>
@@ -836,6 +845,8 @@
 <translation id="5457113250005438886">Tidak sah</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lagi}other{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lagi}}</translation>
 <translation id="5470861586879999274">&amp;Buat semula edit</translation>
+<translation id="5473728911100096288">Dengan mendayakan ciri ini, anda akan menggunakan ciri yang ditamatkan
+    yang akan hilang dalam versi akan datang.</translation>
 <translation id="5478437291406423475">B6/C4 (Sampul Surat)</translation>
 <translation id="5481076368049295676">Kandungan ini mungkin cuba memasang perisian berbahaya pada peranti anda yang mencuri atau memadamkan maklumat anda. <ph name="BEGIN_LINK" />Tunjukkan juga<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Tambahkan alamat yang sah</translation>
@@ -894,6 +905,7 @@
 <translation id="5763042198335101085">Masukkan alamat e-mel yang sah</translation>
 <translation id="5765072501007116331">Pilih alamat untuk melihat kaedah dan syarat penghantaran</translation>
 <translation id="5778550464785688721">Kawalan penuh peranti MIDI</translation>
+<translation id="5781136890105823427">Percubaan didayakan</translation>
 <translation id="578305955206182703">Kuning jingga</translation>
 <translation id="57838592816432529">Redam</translation>
 <translation id="5784606427469807560">Terdapat masalah mengesahkan kad anda. Semak sambungan Internet anda dan cuba lagi.</translation>
@@ -1059,6 +1071,7 @@
 <translation id="6738516213925468394">Data anda disulitkan dengan <ph name="BEGIN_LINK" />ungkapan laluan segerak<ph name="END_LINK" /> anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="674375294223700098">Ralat sijil pelayan tidak diketahui.</translation>
 <translation id="6744009308914054259">Sementara menunggu sambungan, anda boleh melawati Muat turun untuk membaca artikel luar talian.</translation>
+<translation id="6747611005629681221">Amaran: Ciri ditamatkan di hadapan!</translation>
 <translation id="6753269504797312559">Nilai dasar</translation>
 <translation id="6757797048963528358">Peranti anda tidak aktif.</translation>
 <translation id="6768213884286397650">Hagaki (Poskad)</translation>
@@ -1422,6 +1435,7 @@ Butiran tambahan:
 <translation id="8738058698779197622">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Ini kerana sijil yang digunakan oleh tapak web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Chromium tidak boleh mengesahkan sijil-sijil ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak ditemui. Masalah sedang didiagnosis.</translation>
 <translation id="874846938927089722">Kad Kredit dan Prabayar yang Diterima</translation>
+<translation id="874918643257405732">Tanda tab ini</translation>
 <translation id="8759274551635299824">Kad ini telah tamat tempoh</translation>
 <translation id="8761567432415473239">Penyemakan Imbas Selamat Google baru-baru ini <ph name="BEGIN_LINK" />menemui atur cara berbahaya<ph name="END_LINK" /> pada <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Peranti USB</translation>

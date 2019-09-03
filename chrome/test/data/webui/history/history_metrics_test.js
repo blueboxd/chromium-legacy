@@ -83,11 +83,21 @@ suite('Metrics', function() {
   });
 
   test('history-list', function() {
+    // Create a history entry that is between 7 and 8 days in the past. For the
+    // purposes of the tested functionality, we consider a day to be a 24 hour
+    // period, with no regard to DST shifts.
+    const weekAgo =
+        new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000 - 1);
+    // Convert the date to ISO8601 format, i.e. YYYY-MM-DD. We can take
+    // advantage of the fact that the Belgian locale uses exactly this format.
+    const weekAgoISO = weekAgo.toLocaleString(
+        'be', {year: 'numeric', month: '2-digit', day: '2-digit'});
+
     const historyEntry =
-        createHistoryEntry('2015-01-01', 'http://www.google.com');
+        createHistoryEntry(weekAgoISO, 'http://www.google.com');
     historyEntry.starred = true;
     app.historyResult(createHistoryInfo(), [
-      createHistoryEntry('2015-01-01', 'http://www.example.com'), historyEntry
+      createHistoryEntry(weekAgoISO, 'http://www.example.com'), historyEntry
     ]);
 
     return test_util.flushTasks()
@@ -100,13 +110,19 @@ suite('Metrics', function() {
           assertEquals(1, histogramMap['HistoryPage.ClickPosition'][1]);
           assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][1]);
 
+          // The "age in days" histogram should record 8 days, since the history
+          // entry was created between 7 and 8 days ago and we round the
+          // recorded value up.
+          assertEquals(1, histogramMap['HistoryPage.ClickAgeInDays'][8]);
+          assertEquals(1, histogramMap['HistoryPage.ClickAgeInDaysSubset'][8]);
+
           app.fire('change-query', {search: 'goog'});
           assertEquals(1, actionMap['Search']);
           app.set('queryState_.incremental', true);
           app.historyResult(createHistoryInfo('goog'), [
-            createHistoryEntry('2015-01-01', 'http://www.google.com'),
-            createHistoryEntry('2015-01-01', 'http://www.google.com'),
-            createHistoryEntry('2015-01-01', 'http://www.google.com')
+            createHistoryEntry(weekAgoISO, 'http://www.google.com'),
+            createHistoryEntry(weekAgoISO, 'http://www.google.com'),
+            createHistoryEntry(weekAgoISO, 'http://www.google.com')
           ]);
           return test_util.flushTasks();
         })

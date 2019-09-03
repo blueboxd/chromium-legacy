@@ -2300,6 +2300,7 @@ static_library("test_support") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc:test_support",
+    "//ui/platform_window/common",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
     "//chromeos/audio",

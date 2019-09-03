@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">Заустављање говора</translation>
 <translation id="4373197658375206385">Нема претходне ставке која није линк.</translation>
 <translation id="4376316291247992553">Прикажи графику као Брајеву азбуку</translation>
+<translation id="437809255587011096">Стил текста објављивања</translation>
 <translation id="4378308539633073595">Помера унапред</translation>
 <translation id="4384583879834880242">Питања и одговори</translation>
 <translation id="4391478986194775161">информације о садржају</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">Смањивање грануларности навигације</translation>
 <translation id="8504695234784218301">Крај граматичке грешке</translation>
 <translation id="8520472399088452386">Дугме за промену вредности</translation>
+<translation id="8534394844575788431">Форматирање</translation>
 <translation id="8538744478902126321">Предвиђање наслова реда актуелне ћелије</translation>
 <translation id="8540054775867439484">Пребачено на врх</translation>
 <translation id="8542271685829952264">Да бисте истражили све ChromeVox команде и пречице, притисните тастер за претрагу + тастер са тачком, па се крећите кроз меније помоћу тастера са стрелицама и притисните Enter да бисте активирали команду. Вратите се овде тако што ћете притиснути тастер за претрагу + o, па онда t.</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">одељак</translation>
 <translation id="9150735707954472829">Картица</translation>
 <translation id="9151211641321628915">Објављује кратак опис актуелног положаја</translation>
+<translation id="9151249085738989067">Аутоматски промени ChromeVox глас на основу језика</translation>
 <translation id="9153606228985488238">Регистар у процентима: <ph name="PERCENT" /></translation>
 <translation id="9160096769946561184">Прелазак на крај актуелне колоне</translation>
 <translation id="9173115498289768110">Јачина звука у процентима: <ph name="PERCENT" /></translation>

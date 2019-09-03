@@ -556,6 +556,7 @@
 <translation id="5224771365102442243">動画あり</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> が近くの Bluetooth デバイスのスキャンを求めています。検出済みのデバイスは次のとおりです。</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
+<translation id="5234764350956374838">閉じる</translation>
 <translation id="526421993248218238">ページを読み込めません</translation>
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="528192093759286357">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
@@ -690,7 +691,6 @@
 <translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6206551242102657620">接続は保護されています。サイト情報</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ではありませんか？</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> のオプション</translation>
 <translation id="6221633008163990886">ロックを解除してパスワードをエクスポート</translation>
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
 

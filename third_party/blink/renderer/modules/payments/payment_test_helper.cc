@@ -248,10 +248,9 @@ v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectNoCall() {
   return mock_functions_.back()->Bind();
 }
 
-ACTION_P(SaveValueIn, captor) {
-  *captor = ToCoreString(arg0.V8Value()
-                             ->ToString(arg0.GetScriptState()->GetContext())
-                             .ToLocalChecked());
+ACTION_P2(SaveValueIn, script_state, captor) {
+  *captor = ToCoreString(
+      arg0.V8Value()->ToString(script_state->GetContext()).ToLocalChecked());
 }
 
 PaymentRequestMockFunctionScope::MockFunction::MockFunction(
@@ -266,7 +265,8 @@ PaymentRequestMockFunctionScope::MockFunction::MockFunction(
     : ScriptFunction(script_state), value_(captor) {
   ON_CALL(*this, Call(testing::_))
       .WillByDefault(
-          testing::DoAll(SaveValueIn(value_), testing::ReturnArg<0>()));
+          testing::DoAll(SaveValueIn(WrapPersistent(script_state), value_),
+                         testing::ReturnArg<0>()));
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::MockFunction::Bind() {

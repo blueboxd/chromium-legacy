@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de l'escriptori remot de Chrome finalitzarà.</translation>
 <translation id="5308380583665731573">Connecta</translation>
+<translation id="5327248766486351172">Nom</translation>
 <translation id="533625276787323658">No hi ha cap ordinador per connectar-s'hi</translation>
 <translation id="5363265567587775042">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a <ph name="SHARE" /> i que us faciliti el codi d'accés.</translation>
 <translation id="5379087427956679853">L'escriptori remot de Chrome us permet compartir el vostre ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació d'escriptori remot de Chrome, que podeu trobar a la pàgina <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="7970576581263377361">L'autenticació ha fallat. Torneu a iniciar la sessió a Chromium.</translation>
 <translation id="7981525049612125370">La sessió remota ha caducat.</translation>
+<translation id="8038111231936746805">(predeterminada)</translation>
 <translation id="8041089156583427627">Envia suggeriments</translation>
 <translation id="8041721485428375115">En baixar l'instal·lador de l'amfitrió d'Escriptori remot de Chrome accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="8060029310790625334">Centre d'ajuda</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Els meus ordinadors</translation>
 <translation id="811307782653349804">Accediu al vostre ordinador des de qualsevol lloc.</translation>
 <translation id="8116630183974937060">S'ha produït un error de xarxa. Comproveu que el dispositiu estigui en línia i torneu-ho a provar.</translation>
-<translation id="8123581458650016326">Permet que els usuaris remots controlin aquest ordinador</translation>
 <translation id="8178433417677596899">Compartició de pantalla entre usuaris, una opció perfecta per a l'assistència tècnica remota.</translation>
 <translation id="8187079423890319756">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8196755618196986400">La vostra adreça electrònica s'inclourà en tots els suggeriments que envieu perquè us puguem escriure i proporcionar-vos més informació.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Política de privadesa</translation>
 <translation id="894763922177556086">Bona</translation>
 <translation id="895780780740011433">Per a Windows 7 i versions posteriors</translation>
-<translation id="8963047137585288214">Per poder controlar aquest ordinador de manera remota amb <ph name="PRODUCT_NAME" />, primer has de dur a terme un pas addicional de configuració.
-
-Per activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> perquè es mostri el tauler de preferències Seguretat i privadesa. Tot seguit, marca la casella que hi ha al costat de <ph name="SERVICE_SCRIPT_NAME" />.
-
-Si es mostra <ph name="SERVICE_SCRIPT_NAME" /> i s'ha marcat la casella corresponent, pot ser que hagis de desmarcar-la i tornar-la a marcar.</translation>
 <translation id="897805526397249209">Per activar les connexions remotes a un altre ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Controlador de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="9016232822027372900">Connecta't de totes maneres</translation>

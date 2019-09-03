@@ -94,6 +94,8 @@ class TestPasswordStore : public PasswordStore {
       PrimaryKeyToFormMap* key_to_form_map) override;
   PasswordStoreChangeList RemoveLoginByPrimaryKeySync(int primary_key) override;
   PasswordStoreSync::MetadataStore* GetMetadataStore() override;
+  bool IsAccountStore() const override;
+  bool DeleteAndRecreateDatabaseFile() override;
 
  private:
   PasswordMap stored_passwords_;

@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Instalēts</translation>
 <translation id="1792959175193046959">Noklusējuma lejupielādes vietu var mainīt jebkurā laikā.</translation>
 <translation id="1807246157184219062">Gaišs</translation>
+<translation id="1810845389119482123">Sākotnējā sinhronizācijas iestatīšana nav pabeigta</translation>
 <translation id="1821253160463689938">Izmanto sīkfailus, lai iegaumētu jūsu preferences, pat ja neapmeklējāt šīs lapas</translation>
 <translation id="1829244130665387512">Atrast lapā</translation>
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
@@ -412,6 +413,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4179980317383591987">Izmantots: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Valodas</translation>
+<translation id="4183868528246477015">Meklēšana ar Google Lens <ph name="BEGIN_NEW" />Jauns<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="4198423547019359126">Nav pieejamu lejupielādes atrašanās vietu.</translation>
 <translation id="4209895695669353772">Lai saņemtu Google ieteikto personalizēto saturu, ieslēdziet sinhronizāciju.</translation>
@@ -474,6 +476,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4665282149850138822">Vietne <ph name="NAME" /> tika pievienota sākuma ekrānam.</translation>
 <translation id="4684427112815847243">Sinhronizēt visu</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}zero{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Sūtīt īsziņu uz manām ierīcēm</translation>
 <translation id="4698034686595694889">Skatīšana bezsaistē lietotnē <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Trūkst būtiskas funkcionalitātes, kas nepieciešama pārlūka Chrome palaišanai. Vai nu jūsu pārlūka Chrome instalācija ir nepilnīga, vai arī pārlūks nav saderīgs ar Android versiju.</translation>
 <translation id="4699172675775169585">Kešatmiņā ievietotie attēli un faili</translation>
@@ -529,6 +532,10 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5011311129201317034"><ph name="SITE" /> vēlas izveidot savienojumu</translation>
 <translation id="5013696553129441713">Nav jaunu ieteikumu</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Ja ir aktivizēts VR režīms, vietne var iegūt šādus datus:
+  – jūsu fiziskās īpašības, piemēram, augumu.
+
+Aktivizējiet VR režīmu tikai tad, ja esat pārliecināts, ka šī vietne ir uzticama.</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5040262127954254034">Konfidencialitāte</translation>
 <translation id="5048398596102334565">Atļaut vietnēm piekļūt kustību sensoriem (ieteicams)</translation>
@@ -556,6 +563,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5224771365102442243">Ar video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> vēlas meklēt tuvumā esošas Bluetooth ierīces. Ir atrastas šīs ierīces:</translation>
 <translation id="5233638681132016545">Jauna cilne</translation>
+<translation id="5234764350956374838">Noraidīt</translation>
 <translation id="526421993248218238">Šo lapu nevar ielādēt</translation>
 <translation id="5271967389191913893">Ierīcē nevar atvērt lejupielādējamo saturu.</translation>
 <translation id="528192093759286357">Lai izietu no pilnekrāna režīma, velciet no augšas un pieskarieties pogai Atpakaļ.</translation>
@@ -574,6 +582,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5363230136052241468">Lai ielādētu jaunas cilnes lapu, pieskarieties pogai Sākums</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> atvērta cilne. Pieskarieties, lai pārslēgtu cilnes.}zero{<ph name="OPEN_TABS_MANY" /> atvērtu ciļņu. Pieskarieties, lai pārslēgtu cilnes.}one{<ph name="OPEN_TABS_MANY" /> atvērta cilne. Pieskarieties, lai pārslēgtu cilnes.}other{<ph name="OPEN_TABS_MANY" /> atvērtas cilnes. Pieskarieties, lai pārslēgtu cilnes.}}</translation>
 <translation id="5391532827096253100">Savienojums ar šo vietni nav drošs. Vietnes informācija</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(un vēl 1)}zero{(un vēl #)}one{(un vēl #)}other{(un vēl #)}}</translation>
 <translation id="5400569084694353794">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Nosaukumi</translation>
 <translation id="5403644198645076998">Atļaut apmeklēt tikai konkrētas vietnes</translation>
@@ -603,6 +612,11 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5527082711130173040">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietas datiem. <ph name="BEGIN_LINK1" />Atjauniniet atļaujas<ph name="END_LINK1" />. Piekļuve atrašanās vietas datiem ir arī <ph name="BEGIN_LINK2" />izslēgta šai ierīcei<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Vaicāt, pirms atļaut vietnēm lasīt tekstu un attēlus no starpliktuves (ieteicams)</translation>
 <translation id="5530766185686772672">Aizvērt inkognito cilnes</translation>
+<translation id="5534334044554683961">Ja ir aktivizēts VR režīms, vietne var iegūt šādus datus:
+  – jūsu fiziskās īpašības, piemēram, augumu;
+  – telpas izkārtojumu.
+
+Aktivizējiet VR režīmu tikai tad, ja esat pārliecināts, ka šī vietne ir uzticama.</translation>
 <translation id="5534640966246046842">Vietne ir nokopēta.</translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5561549206367097665">Tiek gaidīts savienojums ar tīklu…</translation>
@@ -690,7 +704,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6196640612572343990">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="6206551242102657620">Savienojums ir drošs. Vietnes informācija</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> nav mana e-pasta adrese</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: iespējas</translation>
 <translation id="6221633008163990886">Atbloķējiet, lai eksportētu paroles.</translation>
 <translation id="6232535412751077445">Iespējojot funkciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
 
@@ -893,6 +906,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7665369617277396874">Pievienot kontu</translation>
 <translation id="766587987807204883">Šeit tiek rādīti raksti, kurus varat lasīt arī bezsaistē</translation>
 <translation id="7682724950699840886">Ņemiet vērā šos ieteikumus: atbrīvojiet ierīcē vietu un mēģiniet eksportēt vēlreiz.</translation>
+<translation id="7685301384041462804">Aktivizējiet VR režīmu tikai tad, ja esat pārliecināts, ka šī vietne ir uzticama.</translation>
 <translation id="7698359219371678927">Izveidojiet e-pasta ziņojumu lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="7704317875155739195">Automātiski pabeigt meklēšanas vaicājumus un vietrāžus URL</translation>
 <translation id="7725024127233776428">Šeit tiek rādītas ar grāmatzīmēm atzīmētās lapas</translation>
@@ -923,6 +937,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7886917304091689118">Atvērta pārlūkā Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Notiek faila lejupielāde.}zero{Notiek # failu lejupielāde.}one{Notiek # faila lejupielāde.}other{Notiek # failu lejupielāde.}}</translation>
 <translation id="7929962904089429003">Atvērt izvēlni</translation>
+<translation id="7930681627240672853">Paroļu drošības pārbaude</translation>
 <translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
@@ -1070,6 +1085,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8993760627012879038">Atvērt jaunu cilni inkognito režīmā</translation>
 <translation id="8998729206196772491">Jūs pierakstāties kontā, kas tiek pārvaldīts domēnā <ph name="MANAGED_DOMAIN" />, un sniedzat tā administratoram kontroli pār saviem Chrome datiem. Jūsu dati tiks neatgriezeniski saistīti ar šo kontu. Izrakstoties no pārlūka Chrome, jūsu dati tiks dzēsti no šīs ierīces, taču tie tiks saglabāti jūsu Google kontā.</translation>
 <translation id="9019902583201351841">Pārvalda jūsu vecāki</translation>
+<translation id="9029323097866369874">Vai atļaut <ph name="DOMAIN" /> aktivizēt VR režīmu?</translation>
 <translation id="9040142327097499898">Paziņojumi ir atļauti. Atrašanās vietas noteikšana šai ierīcei ir izslēgta.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videoklips}zero{# videoklipi}one{# videoklips}other{# videoklipi}}</translation>
 <translation id="9050666287014529139">Ieejas frāze</translation>

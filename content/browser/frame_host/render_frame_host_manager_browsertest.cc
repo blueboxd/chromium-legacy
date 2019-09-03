@@ -227,11 +227,12 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  void DisableBackForwardCache() const {
+  void DisableBackForwardCache(
+      BackForwardCache::DisableForTestingReason reason) const {
     return static_cast<WebContentsImpl*>(shell()->web_contents())
         ->GetController()
         .back_forward_cache()
-        .DisableForTesting();
+        .DisableForTesting(reason);
   }
 
   void StartServer() {
@@ -3804,7 +3805,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
 
   // Disable the back-forward cache so that documents are always deleted when
   // navigating.
-  DisableBackForwardCache();
+  DisableBackForwardCache(BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -5524,10 +5525,8 @@ class RenderFrameHostManagerUnloadBrowserTest
 // broken with site isolation if the iframe was in its own process.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
                        SubframeTerminationPing_SendBeacon) {
-  // If the BackForwardCache is enabled, unload handlers won't be run for cached
-  // pages (this is by design). Since this test scenario involves an unload
-  // handler, the test only makes sense with BackForwardCache disabled.
-  DisableBackForwardCache();
+  // See BackForwardCache::DisableForTestingReason for explanation.
+  DisableBackForwardCache(BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -5559,10 +5558,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
 // site isolation if the iframe was in its own process.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
                        SubframeTerminationPing_Image) {
-  // If the BackForwardCache is enabled, unload handlers won't be run for cached
-  // pages (this is by design). Since this test scenario involves an unload
-  // handler, the test only makes sense with BackForwardCache disabled.
-  DisableBackForwardCache();
+  // See BackForwardCache::DisableForTestingReason for explanation.
+  DisableBackForwardCache(BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -5635,10 +5632,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
 // iframe's process eventually exits.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
                        SubframeProcessGoesAwayAfterUnloadTimeout) {
-  // If the BackForwardCache is enabled, unload handlers won't be run for cached
-  // pages (this is by design). Since this test scenario involves an unload
-  // handler, the test only makes sense with BackForwardCache disabled.
-  DisableBackForwardCache();
+  // See BackForwardCache::DisableForTestingReason for explanation.
+  DisableBackForwardCache(BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));

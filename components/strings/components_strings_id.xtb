@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Variasi baris perintah</translation>
 <translation id="129553762522093515">Baru saja ditutup</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Coba hapus cookie Anda<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Fitur yang Tidak Digunakan Lagi</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
 <translation id="132301787627749051">Telusuri gambar papan klip</translation>
 <translation id="1323433172918577554">Tampilkan Lebih Banyak</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google Spreadsheet</translation>
 <translation id="1527263332363067270">Menunggu sambungan internet...</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
+<translation id="1530707389502320859">Situs yang baru saja Anda coba kunjungi terlihat palsu. Penyerang terkadang meniru situs dengan membuat perubahan kecil dan sulit terlihat pada URL situs.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Halaman ini menyatakan</translation>
 <translation id="153384715582417236">Itu saja untuk sekarang</translation>
@@ -192,8 +194,8 @@
 <translation id="187918866476621466">Buka halaman awal</translation>
 <translation id="1883255238294161206">Ciutkan daftar</translation>
 <translation id="1898423065542865115">Pemfilteran</translation>
-<translation id="1914326953223720820">Layanan Unzip</translation>
-<translation id="1915697529809968049">Menggunakan Touch ID dan bukan CVC?</translation>
+<translation id="1914326953223720820">Layanan Ekstraksi File</translation>
+<translation id="1915697529809968049">Gunakan Touch ID dan bukan CVC?</translation>
 <translation id="1916770123977586577">Untuk menerapkan setelan yang telah diupdate pada situs ini, muat ulang halaman ini</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919367280705858090">Mendapatkan bantuan terkait pesan error tertentu</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Jalankan Diagnostik Konektivitas<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Jika mengaktifkan fitur ini, Anda dapat kehilangan data penjelajahan atau
+    membahayakan keamanan atau privasi Anda. Fitur yang diaktifkan berlaku bagi semua
+    pengguna browser ini.</translation>
 <translation id="2735043616039983645">Ada beberapa sumber dengan nilai yang bertentangan untuk kebijakan ini!</translation>
 <translation id="2738330467931008676">Pilih Alamat Pengambilan</translation>
 <translation id="2740531572673183784">Oke</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">Jika diaktifkan, Chromium akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="2985398929374701810">Masukkan alamat yang valid</translation>
 <translation id="2986368408720340940">Metode pengambilan tidak tersedia. Coba metode lain.</translation>
+<translation id="2987034854559945715">Tidak ada fitur yang cocok</translation>
 <translation id="2991174974383378012">Berbagi dengan Situs Web</translation>
 <translation id="2991571918955627853">Anda tidak dapat mengunjungi <ph name="SITE" /> sekarang karena situs menggunakan HSTS. Error jaringan dan serangan biasanya bersifat sementara, sehingga halaman ini mungkin akan berfungsi nanti.</translation>
 <translation id="3005723025932146533">Tampilkan salinan yang disimpan</translation>
@@ -517,6 +523,7 @@
 <translation id="3678529606614285348">Buka halaman dalam Jendela samaran baru (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Laporan kerusakan direkam pada <ph name="CRASH_TIME" />, diupload pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
+<translation id="3701427423622901115">Setel ulang dikonfirmasi.</translation>
 <translation id="3704162925118123524">Jaringan yang digunakan mungkin mewajibkan Anda mengunjungi halaman masuk jaringan.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Memuat...</translation>
@@ -689,6 +696,7 @@
 <translation id="4594403342090139922">&amp;Urungkan Penghapusan</translation>
 <translation id="4597348597567598915">Ukuran 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="464342062220857295">Fitur penelusuran</translation>
 <translation id="4646534391647090355">Buka Download sekarang</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berisi kesalahan. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
@@ -805,6 +813,7 @@
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Fitur yang berlaku bagi sistem secara luas hanya dapat disetel oleh pemilik: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Peringatan: Kebijakan ini tidak digabung sebagaimana yang ditetapkan dalam kebijakan PolicyDictionaryMultipleSourceMergeList karena bukan merupakan bagian dari kebijakan kamus yang dapat digabung.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Berakhir</translation>
@@ -841,6 +850,8 @@
 <translation id="5457113250005438886">Tidak valid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}other{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}}</translation>
 <translation id="5470861586879999274">&amp;Ulangi pengeditan</translation>
+<translation id="5473728911100096288">Dengan mengaktifkan fitur ini, Anda akan menggunakan fitur yang tidak digunakan lagi
+    yang tidak tersedia dalam versi mendatang.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Konten ini mungkin mencoba menginstal software berbahaya yang mencuri atau menghapus informasi Anda di perangkat. <ph name="BEGIN_LINK" />Tetap tampilkan<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Tambahkan alamat yang valid</translation>
@@ -899,6 +910,7 @@
 <translation id="5763042198335101085">Masukkan alamat email yang valid</translation>
 <translation id="5765072501007116331">Untuk melihat persyaratan dan metode pengiriman, pilih alamat</translation>
 <translation id="5778550464785688721">Kontrol penuh perangkat MIDI</translation>
+<translation id="5781136890105823427">Eksperimen diaktifkan</translation>
 <translation id="578305955206182703">Oranye kekuningan</translation>
 <translation id="57838592816432529">Bisukan</translation>
 <translation id="5784606427469807560">Terjadi masalah saat mengonfirmasi kartu. Periksa sambungan internet Anda dan coba lagi.</translation>
@@ -1064,6 +1076,7 @@
 <translation id="6738516213925468394">Data Anda dienkripsi dengan <ph name="BEGIN_LINK" />frasa sandi sinkronisasi<ph name="END_LINK" /> pada tanggal <ph name="TIME" />. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="674375294223700098">Kesalahan sertifikat server tidak dikenal.</translation>
 <translation id="6744009308914054259">Sambil menunggu koneksi, Anda dapat mengunjungi Hasil Download untuk membaca artikel secara offline.</translation>
+<translation id="6747611005629681221">Peringatan: Anda akan mengakses fitur yang tidak digunakan lagi!</translation>
 <translation id="6753269504797312559">Nilai kebijakan</translation>
 <translation id="6757797048963528358">Perangkat Anda sedang dalam mode tidur.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1425,6 +1438,7 @@
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak dapat ditemukan. Mendiagnosis masalah.</translation>
 <translation id="874846938927089722">Kartu Kredit dan Prabayar yang Diterima</translation>
+<translation id="874918643257405732">Bookmark tab ini</translation>
 <translation id="8759274551635299824">Kartu sudah tidak aktif</translation>
 <translation id="8761567432415473239">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />menemukan program berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Perangkat USB</translation>

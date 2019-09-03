@@ -263,6 +263,7 @@
 <translation id="4747097190499141774">密码加密不包括 Google Pay 中的付款方式和地址。只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">在网页中查找…</translation>
 <translation id="4751645464639803239">打开新的无痕式标签页</translation>
+<translation id="4758977202923349869">将信用卡放到此框内</translation>
 <translation id="4802417911091824046">密码加密不包括 Google Pay 中的付款方式和地址。
 
 要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@
 <translation id="5728700505257787410">很抱歉，登录您的帐号时出现问题。</translation>
 <translation id="5737974891429562743">帐号登录详细信息已过期，请进行更新以开始同步。</translation>
 <translation id="5738887413654608789">这样可让您找到与目前周遭环境相关的网页。</translation>
+<translation id="5803566855766646066">确定要舍弃这张新信用卡吗？</translation>
 <translation id="5816228676161003208">这样，您就可以使用语音更快速地进行搜索。</translation>
 <translation id="5846482154967366008">搜索引擎</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
@@ -414,7 +416,7 @@
 <translation id="681368974849482173">书签已创建</translation>
 <translation id="6851516051005285358">请求切换到桌面版网站</translation>
 <translation id="6858855187367714033">已扫描</translation>
-<translation id="6859944681507688231">要扫描二维码或信用卡，请从设置中允许该应用使用相机。</translation>
+<translation id="6859944681507688231">要扫描二维码或信用卡，请在设置中允许该应用使用相机。</translation>
 <translation id="6873263987691478642">拆分视图</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6903907808598579934">开启同步功能</translation>

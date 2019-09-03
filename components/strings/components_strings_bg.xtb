@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Варианти във формат за командния ред</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Оттеглени функции</translation>
 <translation id="1320233736580025032">Prc1 (плик)</translation>
 <translation id="132301787627749051">Търсене на изображението от буферната памет</translation>
 <translation id="1323433172918577554">Показване на още</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google Таблици</translation>
 <translation id="1527263332363067270">Изчаква се връзка…</translation>
 <translation id="1529521330346880926">10 x 15 (плик)</translation>
+<translation id="1530707389502320859">Сайтът, който току-що се опитахте да отворите, изглежда фалшив. Понякога атакуващите имитират сайтове, като правят незначителни, труднозабележими промени в URL адреса</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Тази страница изпраща съобщение</translation>
 <translation id="153384715582417236">Това е всичко засега</translation>
@@ -353,6 +355,7 @@
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Стартирайте диагностика на свързаността<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Активирането на тези функции може да доведе до загуба на данни на браузъра или компрометиране на сигурността или поверителността ви. Активираните функции се прилагат за всички потребители на този браузър.</translation>
 <translation id="2735043616039983645">За това правило има повече от един източник с несъвместими стойности.</translation>
 <translation id="2738330467931008676">Избиране на адрес за вземане</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -396,6 +399,7 @@
 <translation id="2985306909656435243">Ако настройката е активирана, Chromium ще съхранява на това устройство копие на картата ви с цел по-бързо попълване на формуляри.</translation>
 <translation id="2985398929374701810">Въведете валиден адрес</translation>
 <translation id="2986368408720340940">Този начин на вземане не се поддържа. Опитайте с друг.</translation>
+<translation id="2987034854559945715">Няма съответстващи функции</translation>
 <translation id="2991174974383378012">Споделяне с уебсайтове</translation>
 <translation id="2991571918955627853">В момента не можете да посетите <ph name="SITE" />, тъй като уебсайтът използва HSTS. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="3005723025932146533">Показване на запазено копие</translation>
@@ -518,6 +522,7 @@
 <translation id="3678529606614285348">Отворете страницата в нов прозорец в режим „инкогнито“ (Ctrl-Shift-N).</translation>
 <translation id="3679803492151881375">Сигналът за срив е записан в/ъв <ph name="CRASH_TIME" /> и качен в/ъв <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Информация за сертификата</translation>
+<translation id="3701427423622901115">Нулирането е потвърдено.</translation>
 <translation id="3704162925118123524">Използваната от вас мрежа може да изисква да посетите страницата й за вход.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> „<ph name="TITLE" />“ <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Зарежда се...</translation>
@@ -690,6 +695,7 @@
 <translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
 <translation id="4597348597567598915">Размер 8</translation>
 <translation id="4600854749408232102">C6/C5 (плик)</translation>
+<translation id="464342062220857295">Функции за търсене</translation>
 <translation id="4646534391647090355">Към изтеглянията</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност съдържа грешки. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
@@ -806,6 +812,7 @@
 <translation id="5251803541071282808">Облак</translation>
 <translation id="5252000469029418751">C7 (плик)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Функциите, които се прилагат за цялата система, могат да бъдат зададени само от собственика: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="5273658854610202413">Предупреждение: Това правило не бе обединено според посоченото в правилото PolicyDictionaryMultipleSourceMergeList, тъй като не е част от правилата речници с възможност за обединяване.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Край</translation>
@@ -842,6 +849,7 @@
 <translation id="5457113250005438886">Невалидно</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
+<translation id="5473728911100096288">Напът сте да активирате функции, които няма да са достъпни в бъдещите версии, понеже са оттеглени.</translation>
 <translation id="5478437291406423475">B6/C4 (плик)</translation>
 <translation id="5481076368049295676">Въпросното съдържание може да се опита да инсталира опасен софтуер на устройството ви, който да открадне или изтрие информацията ви. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Добавяне на валиден адрес</translation>
@@ -900,6 +908,7 @@
 <translation id="5763042198335101085">Въведете валиден имейл адрес</translation>
 <translation id="5765072501007116331">За да видите начините на бърза доставка и изискванията, изберете адрес</translation>
 <translation id="5778550464785688721">Пълен контрол над MIDI устройства</translation>
+<translation id="5781136890105823427">Експериментът е активиран</translation>
 <translation id="578305955206182703">кехлибарено</translation>
 <translation id="57838592816432529">Заглушаване</translation>
 <translation id="5784606427469807560">При потвърждаването на картата ви възникна проблем. Проверете връзката си с интернет и опитайте отново.</translation>
@@ -1065,6 +1074,7 @@
 <translation id="6738516213925468394">На <ph name="TIME" /> данните ви бяха шифровани с <ph name="BEGIN_LINK" />пропуска ви за синхронизиране<ph name="END_LINK" />. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="674375294223700098">Неизвестна грешка в сертификата на сървъра.</translation>
 <translation id="6744009308914054259">Докато чакате да се установи връзка, можете да посетите страницата „Изтегляния“, за да четете офлайн статии.</translation>
+<translation id="6747611005629681221">Предупреждение: оттеглени функции на хоризонта!</translation>
 <translation id="6753269504797312559">Стойност за правилото</translation>
 <translation id="6757797048963528358">Устройството ви премина в спящ режим.</translation>
 <translation id="6768213884286397650">Hagaki (пощенска картичка)</translation>
@@ -1430,6 +1440,7 @@
 <translation id="8738058698779197622">За установяване на сигурна връзка е необходимо часовникът ви да е верен. Това е така, защото сертификатите, с които уебсайтовете се идентифицират, са валидни само за конкретни периоди от време. Тъй като часовникът на устройството ви не е верен, Chromium не може да потвърди тези сертификати.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS адресът&lt;/abbr&gt; на <ph name="HOST_NAME" /> не можа да бъде намерен. Проблемът се диагностицира.</translation>
 <translation id="874846938927089722">Приемани кредитни и предплатени карти</translation>
+<translation id="874918643257405732">Запазване на отметка към този раздел</translation>
 <translation id="8759274551635299824">Тази карта е изтекла</translation>
 <translation id="8761567432415473239">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри опасни програми<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB устройство</translation>

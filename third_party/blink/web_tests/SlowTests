@@ -324,6 +324,9 @@ crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worke
 crbug.com/869800 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-aborted.html [ Slow ]
 crbug.com/869800 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-simple.html [ Slow ]
 crbug.com/869800 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-synconworker.html [ Slow ]
+crbug.com/869800 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-aborted.html [ Slow ]
+crbug.com/869800 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-simple.html [ Slow ]
+crbug.com/869800 virtual/blink-cors/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-synconworker.html [ Slow ]
 
 ### Slow only on Mac10.13
 crbug.com/869662 [ Mac10.13 ] virtual/threaded/fast/scrolling/overflow-scrollability.html [ Slow ]

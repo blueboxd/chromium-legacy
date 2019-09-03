@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="5254120496627797685">Jeśli opuścisz tę stronę, sesja Pulpitu zdalnego Chrome zostanie zakończona.</translation>
 <translation id="5308380583665731573">Połącz</translation>
+<translation id="5327248766486351172">Nazwa</translation>
 <translation id="533625276787323658">Brak komputerów zdalnych</translation>
 <translation id="5363265567587775042">Poproś użytkownika, z którego komputera chcesz korzystać, by kliknął „<ph name="SHARE" />” i udostępnił Ci kod dostępu.</translation>
 <translation id="5379087427956679853">Pulpit zdalny Chrome pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Pulpit zdalny Chrome, którą można znaleźć na <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opcje ekranu</translation>
 <translation id="7970576581263377361">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Chromium.</translation>
 <translation id="7981525049612125370">Sesja zdalna wygasła.</translation>
+<translation id="8038111231936746805">(domyślnie)</translation>
 <translation id="8041089156583427627">Prześlij opinię</translation>
 <translation id="8041721485428375115">Pobierając instalatora hosta Pulpitu zdalnego Chrome, akceptujesz <ph name="LINK_BEGIN" />Warunki korzystania z usług<ph name="LINK_END" /> Google.</translation>
 <translation id="8060029310790625334">Centrum pomocy</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Moje komputery</translation>
 <translation id="811307782653349804">Dostęp do własnego komputera z dowolnego miejsca.</translation>
 <translation id="8116630183974937060">Wystąpił błąd sieci. Sprawdź, czy urządzenie jest online, i spróbuj jeszcze raz.</translation>
-<translation id="8123581458650016326">Zezwól użytkownikom zdalnym na sterowanie tym komputerem</translation>
 <translation id="8178433417677596899">Dzielenie się ekranem z innym użytkownikiem – doskonałe do zdalnej pomocy technicznej.</translation>
 <translation id="8187079423890319756">Copyright 2013 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8196755618196986400">Aby umożliwić nam skontaktowanie się z Tobą w sprawie dodatkowych informacji, Twój adres e-mail zostanie dołączony do każdego zgłoszenia, które prześlesz.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Polityka prywatności</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Windows 7 lub nowszy</translation>
-<translation id="8963047137585288214">Aby móc sterować tym komputerem zdalnie za pomocą usługi <ph name="PRODUCT_NAME" />, musisz wykonać jeszcze jedną czynność konfiguracyjną.
-
-Aby włączyć tę funkcję, kliknij „<ph name="BUTTON_NAME" />”. Wyświetli się panel ustawień Bezpieczeństwo i prywatność. Zaznacz w nim opcję „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest widoczna i zaznaczona, być może trzeba ją odznaczyć, a potem zaznaczyć ponownie.</translation>
 <translation id="897805526397249209">Aby umożliwić zdalne połączenia z innym komputerem, zainstaluj na nim Chromoting i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Kontroler hosta Pulpitu zdalnego Chrome</translation>
 <translation id="9016232822027372900">Połącz mimo to</translation>

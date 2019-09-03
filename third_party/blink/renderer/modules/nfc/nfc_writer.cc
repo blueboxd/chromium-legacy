@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

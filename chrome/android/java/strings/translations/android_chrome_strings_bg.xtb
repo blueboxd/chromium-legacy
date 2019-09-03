@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Инсталиран</translation>
 <translation id="1792959175193046959">Променете стандартното местоположение за изтегляне по всяко време</translation>
 <translation id="1807246157184219062">Светло</translation>
+<translation id="1810845389119482123">Първоначалното настройване на синхронизирането не завърши</translation>
 <translation id="1821253160463689938">Използва „бисквитки“ за запомняне на предпочитанията ви дори ако не посещавате тези страници</translation>
 <translation id="1829244130665387512">Търсене в страницата</translation>
 <translation id="1853692000353488670">Нов раздел „инкогнито“</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
 <translation id="4179980317383591987">Използвани: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Езици</translation>
+<translation id="4183868528246477015">Търсене с Google Обектив <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="4198423547019359126">Няма местоположения за изтегляне</translation>
 <translation id="4209895695669353772">Включете синхронизирането, за да получавате персонализирано съдържание, предлагано от Google</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
 <translation id="4684427112815847243">Синхронизиране на всичко</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Изпращане на текст до устройствата ви</translation>
 <translation id="4698034686595694889">Офлайн преглед в <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Липсва необходима критична функционалност, за да се изпълнява Chrome. Инсталацията ви на браузъра не е завършена или не е съвместима с тази версия на Android.</translation>
 <translation id="4699172675775169585">Кеширани изображения и файлове</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> иска да се свърже</translation>
 <translation id="5013696553129441713">Няма нови предложения</translation>
 <translation id="5016205925109358554">Серифен</translation>
+<translation id="5033865233969348410">Когато стартирате VR, този сайт може да научи за:
+  – физическите ви черти, напр. височина.
+
+Проверете дали имате доверие на този сайт, преди да стартирате VR.</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5040262127954254034">Поверителност</translation>
 <translation id="5048398596102334565">Разрешаване на достъпа на сайтовете до сензорите за движение (препоръчително)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">С видеоклип</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> иска да сканира за устройства с Bluetooth в близост. Намерени са следните:</translation>
 <translation id="5233638681132016545">Нов раздел</translation>
+<translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="526421993248218238">Тази страница не може да се зареди</translation>
 <translation id="5271967389191913893">Устройството не може да отвори съдържанието за изтегляне.</translation>
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">Докоснете бутона „Начало“, за да се зареди нов раздел</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и още 1)}other{(и още #)}}</translation>
 <translation id="5400569084694353794">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешаване само на конкретни сайтове</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK1" />Актуализирайте разрешенията<ph name="END_LINK1" />. Също така услугите за местоположение са <ph name="BEGIN_LINK2" />изключени за това устройство<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Извеждане на запитване, преди да се разреши на сайтовете да четат текста и изображенията от буферната памет (препоръчително)</translation>
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
+<translation id="5534334044554683961">Когато стартирате VR, този сайт може да научи за:
+  – физическите ви черти, като височина;
+  – плана на стаята ви.
+
+Проверете дали имате доверие на този сайт, преди да стартирате VR.</translation>
 <translation id="5534640966246046842">Сайтът е копиран</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5561549206367097665">Изчаква се връзка с мрежата…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">Блокиране на „бисквитките“ на трети страни</translation>
 <translation id="6206551242102657620">Връзката е защитена. Информация за сайта</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Отключете, за да експортирате паролите си</translation>
 <translation id="6232535412751077445">Активирането на „Do Not Track“ означава, че с трафика ви на сърфиране ще се подава заявка. Ефектите зависят от това, дали уебсайтът ще отговори на нея и как ще я изтълкува.
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">Добавяне на профил</translation>
 <translation id="766587987807204883">Тук се показват статии, които можете да четете дори когато сте офлайн</translation>
 <translation id="7682724950699840886">Изпробвайте следните съвети: Уверете се, че има достатъчно място на устройството ви. Опитайте отново да експортирате.</translation>
+<translation id="7685301384041462804">Проверете дали имате доверие на този сайт, преди да стартирате VR.</translation>
 <translation id="7698359219371678927">Създайте имейл в <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматично довършване на заявки за търсене и URL адреси</translation>
 <translation id="7725024127233776428">Запазените от вас отметки към страници се показват тук</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">Изпълнява се в Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Изтегля се файл.}other{Изтеглят се # файла.}}</translation>
 <translation id="7929962904089429003">Отваряне на менюто</translation>
+<translation id="7930681627240672853">Проверка на безопасността на паролата</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="7963646190083259054">Доставчик:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">Отваряне на нов раздел в режим „инкогнито“</translation>
 <translation id="8998729206196772491">Влизате с профил, управляван от <ph name="MANAGED_DOMAIN" />, и предоставяте на администратора му контрол върху данните си в Chrome. Те ще се свържат за постоянно с този профил. При излизане от профила в браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
 <translation id="9019902583201351841">Управлява се от родителите ви</translation>
+<translation id="9029323097866369874">Да се разреши ли на <ph name="DOMAIN" /> да стартира VR?</translation>
 <translation id="9040142327097499898">Известията са разрешени. Местоположението е изключено за това устройство.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеоклип}other{# видеоклипа}}</translation>
 <translation id="9050666287014529139">Парола</translation>

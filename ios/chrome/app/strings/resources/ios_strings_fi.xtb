@@ -263,6 +263,7 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="4747097190499141774">Google Payn maksutapoja tai osoitteita ei salata tunnuslauseella. Salattua dataa voidaan lukea vain tunnuslauseesi avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, synkronointi täytyy nollata. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Hae sivulta…</translation>
 <translation id="4751645464639803239">Uusi incognito-välilehti</translation>
+<translation id="4758977202923349869">Aseta credit-kortti tähän kehykseen.</translation>
 <translation id="4802417911091824046">Google Payn maksutapoja tai osoitteita ei salata tunnuslauseella.
 
 Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
@@ -328,6 +329,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="5728700505257787410">Tiliin kirjautuminen epäonnistui.</translation>
 <translation id="5737974891429562743">Tilin kirjautumistiedot ovat vanhentuneet. Aloita synkronointi päivittämällä.</translation>
 <translation id="5738887413654608789">Tämän avulla voit löytää sinua ympäröiviin asioihin liittyviä verkkosivuja.</translation>
+<translation id="5803566855766646066">Haluatko varmasti hylätä tämän uuden kortin?</translation>
 <translation id="5816228676161003208">Tämän avulla voit hakea tietoja nopeammin puhumalla.</translation>
 <translation id="5846482154967366008">Hakukone</translation>
 <translation id="5854790677617711513">Yli 30 päivää vanhat</translation>

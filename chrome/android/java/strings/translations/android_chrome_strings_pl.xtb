@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Zainstalowano</translation>
 <translation id="1792959175193046959">W dowolnej chwili możesz zmienić domyślną lokalizację pobierania</translation>
 <translation id="1807246157184219062">Jasny</translation>
+<translation id="1810845389119482123">Nie dokończono wstępnego konfigurowania synchronizacji</translation>
 <translation id="1821253160463689938">Twoje ustawienia będą zapisywane w plikach cookie, nawet jeśli nie odwiedzisz tych stron</translation>
 <translation id="1829244130665387512">Znajdź na stronie</translation>
 <translation id="1853692000353488670">Nowa karta incognito</translation>
@@ -412,6 +413,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4179980317383591987">Wykorzystano <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Języki</translation>
+<translation id="4183868528246477015">Szukaj z Obiektywem Google <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="4198423547019359126">Brak dostępnych miejsc zapisu pobieranych plików</translation>
 <translation id="4209895695669353772">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, włącz synchronizację</translation>
@@ -474,6 +476,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Wyślij tekst na swoje urządzenia</translation>
 <translation id="4698034686595694889">Zobacz offline w <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Brak ważnych funkcji wymaganych do uruchomienia Chrome. Instalacja Chrome jest niekompletna lub niezgodna z tą wersją Androida.</translation>
 <translation id="4699172675775169585">Obrazy i pliki zapisane w pamięci podręcznej</translation>
@@ -529,6 +532,10 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5011311129201317034"><ph name="SITE" /> chce się połączyć</translation>
 <translation id="5013696553129441713">Brak nowych sugestii</translation>
 <translation id="5016205925109358554">Szeryfowa</translation>
+<translation id="5033865233969348410">Gdy używasz VR, ta strona może poznać te informacje:
+  –  Twoje cechy fizyczne, np. wzrost.
+
+Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5040262127954254034">Prywatność</translation>
 <translation id="5048398596102334565">Zezwalaj stronom na dostęp do czujników ruchu (zalecane)</translation>
@@ -556,6 +563,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5224771365102442243">Z wideo</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> chce wyszukać urządzenia Bluetooth w pobliżu. Znaleziono te urządzenia:</translation>
 <translation id="5233638681132016545">Nowa karta</translation>
+<translation id="5234764350956374838">Zamknij</translation>
 <translation id="526421993248218238">Nie udało się wczytać tej strony</translation>
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
@@ -574,6 +582,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5363230136052241468">Kliknij przycisk strony głównej, by załadować stronę nowej karty</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otwarta karta. Kliknij, by przełączyć się między kartami}few{<ph name="OPEN_TABS_MANY" /> otwarte karty. Kliknij, by przełączyć się między kartami}many{<ph name="OPEN_TABS_MANY" /> otwartych kart. Kliknij, by przełączyć się między kartami}other{<ph name="OPEN_TABS_MANY" /> otwartej karty. Kliknij, by przełączyć się między kartami}}</translation>
 <translation id="5391532827096253100">Twoje połączenie z tą witryną nie jest bezpieczne. Informacje o witrynie</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(i jeszcze 1)}few{(i jeszcze #)}many{(i jeszcze #)}other{(i jeszcze #)}}</translation>
 <translation id="5400569084694353794">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Nazwy</translation>
 <translation id="5403644198645076998">Pozwól na otwieranie tylko wybranych stron</translation>
@@ -603,6 +612,11 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5527082711130173040">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK1" />Zwiększ uprawnienia<ph name="END_LINK1" />. Dostęp do lokalizacji jest <ph name="BEGIN_LINK2" />wyłączony na tym urządzeniu<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Pytaj, czy zezwolić stronom na odczytywanie tekstu i obrazów ze schowka (zalecane)</translation>
 <translation id="5530766185686772672">Zamknij karty incognito</translation>
+<translation id="5534334044554683961">Gdy używasz VR, ta strona może poznać te informacje:
+  –   Twoje cechy fizyczne, np wzrost;
+  –   układ Twojego pokoju.
+
+Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.</translation>
 <translation id="5534640966246046842">Strona została skopiowana</translation>
 <translation id="5556459405103347317">Odśwież</translation>
 <translation id="5561549206367097665">Czekam na sieć…</translation>
@@ -690,7 +704,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6196640612572343990">Blokuj pliki cookie innych firm</translation>
 <translation id="6206551242102657620">Połączenie jest bezpieczne. Informacje o witrynie</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – opcje</translation>
 <translation id="6221633008163990886">Odblokuj, by wyeksportować hasła</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
@@ -893,6 +906,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7665369617277396874">Dodaj konto</translation>
 <translation id="766587987807204883">Tutaj pojawiają się artykuły, które możesz czytać, nawet gdy jesteś offline</translation>
 <translation id="7682724950699840886">Skorzystaj z tych wskazówek: upewnij się, że masz wystarczająco dużo miejsca na urządzeniu, i ponownie spróbuj wyeksportować hasła.</translation>
+<translation id="7685301384041462804">Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.</translation>
 <translation id="7698359219371678927">Utwórz e-maila w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>
 <translation id="7725024127233776428">Tutaj pojawią się strony, które dodasz do zakładek</translation>
@@ -923,6 +937,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7886917304091689118">Otwarta w Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Pobieram plik.}few{Pobieram # pliki.}many{Pobieram # plików.}other{Pobieram # pliku.}}</translation>
 <translation id="7929962904089429003">Otwórz menu</translation>
+<translation id="7930681627240672853">Sprawdź bezpieczeństwo haseł</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
@@ -1070,6 +1085,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="9019902583201351841">Zarządzany przez Twoich rodziców</translation>
+<translation id="9029323097866369874">Zezwolić domenie <ph name="DOMAIN" /> na uruchamianie VR?</translation>
 <translation id="9040142327097499898">Powiadomienia są włączone. Lokalizacja jest wyłączona na tym urządzeniu.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# film}few{# filmy}many{# filmów}other{# filmu}}</translation>
 <translation id="9050666287014529139">Hasło</translation>

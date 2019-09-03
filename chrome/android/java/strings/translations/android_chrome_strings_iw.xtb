@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">מותקן</translation>
 <translation id="1792959175193046959">אפשר תמיד לשנות את מיקום ההורדות</translation>
 <translation id="1807246157184219062">בהיר</translation>
+<translation id="1810845389119482123">ההגדרה הראשונית של הסנכרון לא הושלמה</translation>
 <translation id="1821253160463689938">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
 <translation id="1829244130665387512">חיפוש בדף</translation>
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4179980317383591987">נעשה שימוש ב-<ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">שפות</translation>
+<translation id="4183868528246477015">‏חיפוש בעזרת Google Lens <ph name="BEGIN_NEW" />חדש<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">פתיחה בכרטיסייה חדשה</translation>
 <translation id="4198423547019359126">אין מיקומים זמינים להורדה</translation>
 <translation id="4209895695669353772">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להפעיל את הסנכרון</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822">האתר <ph name="NAME" /> נוסף למסך דף הבית שלך</translation>
 <translation id="4684427112815847243">סנכרון הכל</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספת}two{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספות}many{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספות}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> נוספות}}</translation>
+<translation id="4696983787092045100">שליחת הטקסט למכשירים שלך</translation>
 <translation id="4698034686595694889">הצגה לא מקוונת ב-<ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">‏חסרה פונקציונליות קריטית הנדרשת להפעלת Chrome. התקנת Chrome אינה מלאה, או שאינה תואמת לגרסה הזו של Android.</translation>
 <translation id="4699172675775169585">תמונות וקבצים במטמון</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> מבקש להתחבר אל</translation>
 <translation id="5013696553129441713">אין הצעות חדשות</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
+  -  התכונות הפיזיות שלך, כמו הגובה
+
+חשוב לוודא תחילה שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5039804452771397117">זה בסדר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">כולל סרטון</translation>
 <translation id="5230560987958996918">‏<ph name="SITE" /> מבקש לבצע סריקה כדי לאתר מכשירי Bluetooth בקרבת מקום. המכשירים הבאים נמצאו:</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
+<translation id="5234764350956374838">סגור</translation>
 <translation id="526421993248218238">לא ניתן לטעון את הדף</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
 <translation id="528192093759286357">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">כדי לטעון את דף הכרטיסייה החדשה, צריך להקיש על הלחצן הראשי</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת (<ph name="OPEN_TABS_ONE" />), יש להקיש כדי להחליף כרטיסיות}two{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}many{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}other{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}}</translation>
 <translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(ועוד 1)}two{(ועוד #)}many{(ועוד #)}other{(ועוד #)}}</translation>
 <translation id="5400569084694353794">‏השימוש באפליקציה זו מהוות את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="5403592356182871684">שמות</translation>
 <translation id="5403644198645076998">גישה רק לאתרים ספציפיים</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">יש לבקש הרשאה לפני מתן גישה לאתרים אל טקסט ותמונות מלוח העריכה (מומלץ)</translation>
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
+<translation id="5534334044554683961">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
+  -   התכונות הפיזיות שלך, כמו הגובה
+  -   הצורה שבה החדר שלך מסודר
+
+חשוב לוודא תחילה שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5534640966246046842">האתר הועתק</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5561549206367097665">ממתין לרשת…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
 <translation id="6210748933810148297">אינך <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">אפשרויות בשביל <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">יש לבטל את הנעילה כדי לייצא סיסמאות</translation>
 <translation id="6232535412751077445">‏אם תופעל התכונה 'לא לעקוב (DNT), בקשה זו תיכלל בתנועת הגלישה שלך. השפעת הבקשה תלויה באופן הפעולה של כל אתר – אם הוא מגיב לבקשה או לא, וכיצד הוא מפרש אותה.
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">חשבון חדש</translation>
 <translation id="766587987807204883">כאן יוצגו מאמרים, ואפשר לקרוא אותם גם במצב לא מקוון</translation>
 <translation id="7682724950699840886">אפשר לנסות את הטיפים הבאים: צריך לוודא שיש מספיק מקום פנוי במכשיר ואז לנסות לייצא שוב.</translation>
+<translation id="7685301384041462804">‏חשוב לוודא תחילה שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="7725024127233776428">הדפים שהוספת לסימניות מופיעים כאן</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">‏פועל ב-Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{מתבצעת הורדה של הקובץ.}two{מתבצעת הורדה של # קבצים.}many{מתבצעת הורדה של # קבצים.}other{מתבצעת הורדה של # קבצים.}}</translation>
 <translation id="7929962904089429003">פתח את התפריט</translation>
+<translation id="7930681627240672853">בדיקת אבטחה של הסיסמאות</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> אינו מעודכן.</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7963646190083259054">ספק:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
+<translation id="9029323097866369874">‏לאפשר ל-<ph name="DOMAIN" /> להפעיל VR?</translation>
 <translation id="9040142327097499898">יש הרשאה להצגת הודעות. המיקום כבוי בשביל המכשיר הזה.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{סרטון אחד (#)}two{# סרטונים}many{# סרטונים}other{# סרטונים}}</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>

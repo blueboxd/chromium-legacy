@@ -483,6 +483,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4372705107434148843">Zastaviť reč</translation>
 <translation id="4373197658375206385">Žiadna predchádzajúca položka, ktorá nie je odkazom</translation>
 <translation id="4376316291247992553">Zobraziť obrázok na braillovej obrazovke</translation>
+<translation id="437809255587011096">Oznamovať štýl textu</translation>
 <translation id="4378308539633073595">Posunúť vpred</translation>
 <translation id="4384583879834880242">Otázky a odpovede</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8503360654911991865">Znížiť podrobnosť navigácie</translation>
 <translation id="8504695234784218301">Koniec gramatickej chyby</translation>
 <translation id="8520472399088452386">Tlačidlo otáčania</translation>
+<translation id="8534394844575788431">Formátovanie</translation>
 <translation id="8538744478902126321">Vykonať odhad v hlavičke riadka aktuálnej bunky</translation>
 <translation id="8540054775867439484">Skok na začiatok</translation>
 <translation id="8542271685829952264">Ak chcete preskúmať všetky príkazy a skratky čítačky ChromeVox, stlačte kombináciu klávesov Hľadať + Bodka, následne prechádzajte ponukami pomocou klávesov so šípkami a požadovaný príkaz aktivujte klávesom Enter. Na túto obrazovku sa vrátite po stlačení kombinácie klávesov Hľadať+o s následným stlačením klávesa t.</translation>
@@ -1199,6 +1201,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9151211641321628915">Oznamuje stručný popis aktuálnej pozície</translation>
+<translation id="9151249085738989067">Automaticky prepínať hlas čítačky ChromeVox podľa jazyka</translation>
 <translation id="9153606228985488238">Výška: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Prejsť na koniec aktuálneho stĺpca</translation>
 <translation id="9173115498289768110">Hlasitosť: <ph name="PERCENT" /> %</translation>

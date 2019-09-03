@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Installiert</translation>
 <translation id="1792959175193046959">Sie können den Standard-Downloadpfad jederzeit ändern</translation>
 <translation id="1807246157184219062">Hell</translation>
+<translation id="1810845389119482123">Erste Einrichtung der Synchronisierung nicht abgeschlossen</translation>
 <translation id="1821253160463689938">Zum Speichern Ihrer Einstellungen werden Cookies verwendet, auch wenn Sie diese Seiten nicht besuchen</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
@@ -412,6 +413,7 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> verwendet</translation>
 <translation id="4181841719683918333">Sprachen</translation>
+<translation id="4183868528246477015">Mit Google Lens suchen <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4198423547019359126">Keine verfügbaren Speicherorte für Downloads</translation>
 <translation id="4209895695669353772">Aktivieren Sie die Synchronisierung, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten</translation>
@@ -474,6 +476,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}}</translation>
+<translation id="4696983787092045100">SMS an meine Geräte senden</translation>
 <translation id="4698034686595694889">Offline in <ph name="APP_NAME" /> ansehen</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
@@ -529,6 +532,10 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5011311129201317034"><ph name="SITE" /> möchte eine Verbindung herstellen</translation>
 <translation id="5013696553129441713">Keine neuen Vorschläge</translation>
 <translation id="5016205925109358554">Serifenschrift</translation>
+<translation id="5033865233969348410">Während Sie sich im VR-Modus befinden, erhält die Website möglicherweise bestimmte Informationen über Sie. Dazu gehören:
+– physische Merkmale wie Ihre Größe
+
+Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
 <translation id="5048398596102334565">Websites den Zugriff auf Bewegungssensoren erlauben (empfohlen)</translation>
@@ -556,6 +563,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5224771365102442243">Mit Video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> möchte nach Bluetooth-Geräten in der Nähe suchen. Die folgenden Geräte wurden gefunden:</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
+<translation id="5234764350956374838">Schließen</translation>
 <translation id="526421993248218238">Fehler beim Laden der Seite</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
@@ -574,6 +582,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5363230136052241468">Tippen Sie auf die Schaltfläche "Startseite", um die "Neuer Tab"-Seite zu laden</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geöffneter Tab, zum Wechseln der Tabs tippen}other{<ph name="OPEN_TABS_MANY" /> geöffnete Tabs, zum Wechseln der Tabs tippen}}</translation>
 <translation id="5391532827096253100">Die Verbindung zu dieser Website ist nicht sicher. Websiteinformationen</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 weitere)}other{(+ # weitere)}}</translation>
 <translation id="5400569084694353794">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="5403592356182871684">Namen</translation>
 <translation id="5403644198645076998">Nur bestimmte Websites zulassen</translation>
@@ -603,6 +612,11 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5527082711130173040">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK1" />Berechtigungen aktualisieren.<ph name="END_LINK1" /> Außerdem ist der Standortzugriff <ph name="BEGIN_LINK2" />für dieses Gerät deaktiviert<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Nachfragen, bevor einer Website erlaubt wird, Texte und Bilder aus der Zwischenablage abzurufen (empfohlen)</translation>
 <translation id="5530766185686772672">Inkognito-Tabs schließen</translation>
+<translation id="5534334044554683961">Während Sie sich im VR-Modus befinden, erhält die Website möglicherweise bestimmte Informationen über Sie. Dazu gehören:
+– physische Merkmale wie Ihre Größe und
+– der Grundriss Ihres Zimmers
+
+Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translation>
 <translation id="5534640966246046842">Website kopiert</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5561549206367097665">Warten auf Netzwerk…</translation>
@@ -690,7 +704,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
 <translation id="6206551242102657620">Die Verbindung ist sicher. Websiteinformationen</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ist nicht Ihre E-Mail-Adresse?</translation>
-<translation id="6216432067784365534">Optionen für <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Zum Exportieren Ihrer Passwörter entsperren</translation>
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
 
@@ -893,13 +906,14 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7665369617277396874">Konto hinzufügen</translation>
 <translation id="766587987807204883">Artikel erscheinen hier und können auch gelesen werden, wenn Sie offline sind</translation>
 <translation id="7682724950699840886">Probieren Sie folgende Tipps aus: Sorgen Sie dafür, dass auf Ihrem Gerät ausreichend Speicherplatz vorhanden ist, und wiederholen Sie den Export.</translation>
+<translation id="7685301384041462804">Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translation>
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
 <translation id="7725024127233776428">Seiten, die Sie als Lesezeichen speichern, werden hier angezeigt</translation>
 <translation id="773466115871691567">Seiten auf <ph name="SOURCE_LANGUAGE" /> immer übersetzen</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">Chrome sendet die URLs einiger von Ihnen besuchter Seiten, bestimmte Systeminformationen und einige Seiteninhalte an Google, um gefährliche Apps und Websites zu erkennen</translation>
-<translation id="7757787379047923882">SMS geteilt von <ph name="DEVICE_NAME" /></translation>
+<translation id="7757787379047923882">Text geteilt von <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-Karte <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="7769602470925380267">Akzeptieren und abmelden</translation>
@@ -923,6 +937,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7886917304091689118">Wird in Chrome ausgeführt</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Datei wird heruntergeladen.}other{# Dateien werden heruntergeladen.}}</translation>
 <translation id="7929962904089429003">Menü öffnen</translation>
+<translation id="7930681627240672853">Passwortsicherheit überprüfen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ist veraltet.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
@@ -1070,6 +1085,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8993760627012879038">Neuen Tab im Inkognitomodus öffnen</translation>
 <translation id="8998729206196772491">Sie melden sich mit einem von <ph name="MANAGED_DOMAIN" /> verwalteten Konto an und geben dem Administrator der Domain Kontrolle über Ihre Chrome-Daten. Die Daten werden diesem Konto dauerhaft zugeordnet. Wenn Sie sich von Chrome abmelden, werden Ihre Daten auf dem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="9019902583201351841">Von deinen Eltern verwaltet</translation>
+<translation id="9029323097866369874"><ph name="DOMAIN" /> erlauben, VR zu starten?</translation>
 <translation id="9040142327097499898">Benachrichtigungen sind erlaubt. Der Standortzugriff ist für dieses Gerät deaktiviert.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>
 <translation id="9050666287014529139">Passphrase</translation>

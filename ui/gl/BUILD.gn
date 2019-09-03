@@ -474,6 +474,10 @@ jumbo_static_library("test_support") {
     "//ui/base",
   ]
 
+  if (is_linux) {
+    deps += [ "//ui/platform_window/common" ]
+  }
+
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/platform_window/x11" ]

@@ -14,7 +14,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/usb.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -121,8 +121,8 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
 
   // Connection to |device_manager_instance_|.
   mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
-  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
-      client_binding_;
+  mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
+      client_receiver_{this};
 
   base::ObserverList<Observer> observer_list_;
 

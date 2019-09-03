@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">Следующий трек</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Отключенные устройства</translation>
+<translation id="4505050298327493054">Активный рабочий стол.</translation>
 <translation id="4513946894732546136">Отзыв</translation>
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
 <translation id="453661520163887813">До полной зарядки <ph name="TIME" /></translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">Инициализация...</translation>
 <translation id="8142441511840089262">Двойное нажатие кнопкой мыши</translation>
 <translation id="8142699993796781067">Частные сети</translation>
+<translation id="8152092012181020186">Нажмите Ctrl + W, чтобы закрыть вкладку.</translation>
 <translation id="8167567890448493835">Используемый язык: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Настройки языков и ввода…</translation>
 <translation id="8192202700944119416">Уведомления скрыты</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">Что у меня запланировано?</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="98515147261107953">Альбомная</translation>
+<translation id="990277280839877440">Окно <ph name="WINDOW_TITILE" /> закрыто.</translation>
 </translationbundle>

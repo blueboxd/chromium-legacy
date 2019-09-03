@@ -484,6 +484,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4372705107434148843">Parar voz</translation>
 <translation id="4373197658375206385">Nenhum link anterior que não seja um link.</translation>
 <translation id="4376316291247992553">Ver gráfico como Braille</translation>
+<translation id="437809255587011096">Anunciar estilo de texto</translation>
 <translation id="4378308539633073595">Rolar para a frente</translation>
 <translation id="4384583879834880242">Perguntas e respostas</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8503360654911991865">Diminuir granularidade da navegação</translation>
 <translation id="8504695234784218301">Fim do erro de gramática</translation>
 <translation id="8520472399088452386">Botão de rotação</translation>
+<translation id="8534394844575788431">Formatação</translation>
 <translation id="8538744478902126321">Fazer estimativa do cabeçalho da linha da célula atual</translation>
 <translation id="8540054775867439484">Retornar para o topo</translation>
 <translation id="8542271685829952264">Para explorar todos os comandos e atalhos do ChromeVox, pressione a tecla de pesquisa + ponto final. Depois, use as teclas de seta para navegar pelos menus e Enter para ativar um comando. Para retornar a este local, pressione a tecla de pesquisa+o e depois a tecla t.</translation>
@@ -1200,6 +1202,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Guia</translation>
 <translation id="9151211641321628915">Anuncia uma breve descrição da situação atual</translation>
+<translation id="9151249085738989067">Trocar a voz do ChromeVox automaticamente de acordo com o idioma</translation>
 <translation id="9153606228985488238">Tom <ph name="PERCENT" /> por cento</translation>
 <translation id="9160096769946561184">Ir para o fim da coluna atual</translation>
 <translation id="9173115498289768110">Volume <ph name="PERCENT" /> por cento</translation>

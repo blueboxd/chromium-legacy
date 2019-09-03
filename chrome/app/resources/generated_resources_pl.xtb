@@ -140,6 +140,7 @@
 <translation id="119092896208640858">Aby wyczyścić dane przeglądania tylko z tego urządzenia, zachowując je na swoim koncie Google, <ph name="BEGIN_LINK" />wyloguj się<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Rozpocznij sesję zarządzaną</translation>
 <translation id="1195447618553298278">Nieznany błąd.</translation>
+<translation id="1195558154361252544">Powiadomienia są automatycznie blokowane w przypadku wszystkich stron, chyba że na nie zezwolisz</translation>
 <translation id="1197088940767939838">Pomarańczowy</translation>
 <translation id="1197979282329025000">Podczas pobierania informacji o możliwościach drukarki <ph name="PRINTER_NAME" /> wystąpił błąd. Nie można zarejestrować tej drukarki w usłudze <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Wyczyść wszystko</translation>
@@ -205,6 +206,7 @@
 <translation id="1297175357211070620">Urządzenie docelowe</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> wymaga zweryfikowania tożsamości Twojego urządzenia przez Google, by ustalić, czy jest ono uprawnione do zaawansowanego odtwarzania treści chronionych.</translation>
 <translation id="1300806585489372370">Aby zmienić to ustawienie, najpierw <ph name="BEGIN_LINK" />włącz identyfikatory<ph name="END_LINK" /></translation>
+<translation id="1301135395320604080">Strona <ph name="ORIGIN" /> może edytować te pliki</translation>
 <translation id="1302227299132585524">Zezwól na kod JavaScript z Apple Events</translation>
 <translation id="1303101771013849280">Plik HTML z zakładkami</translation>
 <translation id="1303671224831497365">Nie znaleziono urządzeń Bluetooth</translation>
@@ -320,6 +322,7 @@
 <translation id="1476607407192946488">&amp;Ustawienia języka</translation>
 <translation id="1478340334823509079">Szczegóły: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Instalacja nie została włączona</translation>
+<translation id="1482626744466814421">Dodaj tę kartę do zakładek...</translation>
 <translation id="1483493594462132177">Wyślij</translation>
 <translation id="1484979925941077974">Strona używa Bluetootha</translation>
 <translation id="1485015260175968628">Może teraz:</translation>
@@ -747,6 +750,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2120297377148151361">Aktywność i interakcje</translation>
 <translation id="2121825465123208577">Zmień rozmiar</translation>
 <translation id="2122305276694332719">Automatyczne łączenie się z ukrytą siecią pozwala innym widzieć Twoje urządzenie wraz z niektórymi ustawieniami sieci. Nie zalecamy korzystania z tej funkcji.</translation>
+<translation id="2123766928840368256">Wybierz inny plik</translation>
 <translation id="2124930039827422115">{1,plural, =1{Ocena <ph name="AVERAGE_RATING" /> od jednego użytkownika.}few{Ocena <ph name="AVERAGE_RATING" /> od # użytkowników.}many{Ocena <ph name="AVERAGE_RATING" /> od # użytkowników.}other{Ocena <ph name="AVERAGE_RATING" /> od # użytkownika.}}</translation>
 <translation id="2126167708562367080">Synchronizację wyłączył administrator.</translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
@@ -894,6 +898,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2318923050469484167">Bieżąca sesja incognito (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Nagłówki i stopki</translation>
 <translation id="2322318151094136999">Pytaj, gdy strona chce uzyskać dostęp do portów szeregowych (zalecane)</translation>
+<translation id="2325002827435400643">Wyłącz w przypadku tej strony</translation>
 <translation id="2325444234681128157">Zapamiętaj hasło</translation>
 <translation id="2326931316514688470">P&amp;rzeładuj aplikację</translation>
 <translation id="2327492829706409234">Włącz aplikację</translation>
@@ -919,6 +924,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Notatki na ekranie blokady są automatycznie zapisywane w aplikacji <ph name="LOCK_SCREEN_APP_NAME" />. Ostatnia notatka pozostanie na ekranie blokady.</translation>
 <translation id="2353297238722298836">Zezwolono na dostęp do kamery i mikrofonu</translation>
+<translation id="2355241457888955">Wyślij tekst na swoje urządzenia</translation>
 <translation id="2356070529366658676">Pytaj</translation>
 <translation id="2359345697448000899">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Narzędzia.</translation>
 <translation id="2359808026110333948">Dalej</translation>
@@ -1047,6 +1053,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2534460670861217804">Serwer proxy HTTPS</translation>
 <translation id="253557089021624350">Liczba elementów wymuszających aktywność</translation>
 <translation id="2535799430745250929">Brak sieci komórkowej</translation>
+<translation id="2537395079978992874">Strona <ph name="ORIGIN" /> może wyświetlać i edytować te pliki i foldery</translation>
 <translation id="2538361623464451692">Synchronizacja wyłączona</translation>
 <translation id="2540449034743108469">Naciśnij „Start”, by rozpocząć nasłuchiwanie działań rozszerzenia</translation>
 <translation id="2541002089857695151">Zoptymalizować przesyłanie pełnoekranowe?</translation>
@@ -1255,6 +1262,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2836635946302913370">Możliwość logowania przy użyciu tej nazwy użytkownika została wyłączona przez administratora.</translation>
 <translation id="283669119850230892">Aby korzystać z sieci <ph name="NETWORK_ID" />, zakończ poniższe połączenie z internetem.</translation>
 <translation id="2838379631617906747">Instaluję</translation>
+<translation id="2839032553903800133">Powiadomienia blokowane</translation>
 <translation id="2841013758207633010">Godzina</translation>
 <translation id="2841837950101800123">Dostawca</translation>
 <translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
@@ -1726,11 +1734,13 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3571734092741541777">Konfiguruj</translation>
 <translation id="3574210789297084292">zaloguj się</translation>
 <translation id="3574917942258583917">Zamknąć tryb incognito mimo to?</translation>
+<translation id="3575121482199441727">Zezwalaj tej stronie</translation>
 <translation id="3576324189521867626">Zainstalowano</translation>
 <translation id="3578594933904494462">Treść tej karty jest udostępniana.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce udostępnić drukarkę &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; należącej do Ciebie grupie: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Jeśli się na to zgodzisz, wszyscy członkowie grupy będą mogli na niej drukować.</translation>
 <translation id="357889014807611375">Wi-Fi z pomiarem użycia danych</translation>
 <translation id="3584169441612580296">Odczyt i zmiana zdjęć, muzyki oraz innych multimediów na komputerze</translation>
+<translation id="3586806079541226322">Nie można otworzyć tego pliku</translation>
 <translation id="3586931643579894722">Ukryj szczegóły</translation>
 <translation id="3587482841069643663">Wszystkie</translation>
 <translation id="358796204584394954">Aby sparować, wpisz ten kod na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
@@ -1821,6 +1831,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3699920817649120894">Wyłączyć synchronizację i personalizację?</translation>
 <translation id="3700888195348409686">Wyświetlasz prezentację (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Strony startowe zostały zmienione i zawierają <ph name="URL" />.</translation>
+<translation id="3703699162703116302">Bilet odświeżony</translation>
 <translation id="370415077757856453">JavaScript zablokowany</translation>
 <translation id="3704331259350077894">Zaprzestanie działania</translation>
 <translation id="3705722231355495246">-</translation>
@@ -1883,6 +1894,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3778208826288864398">Klucz bezpieczeństwa jest zablokowany z powodu wprowadzenia nieprawidłowego kodu PIN zbyt wiele razy. Musisz zresetować klucz bezpieczeństwa.</translation>
 <translation id="3778740492972734840">&amp;Narzędzia dla deweloperów</translation>
 <translation id="3778868487658107119">Zadawaj mu pytania i wydawaj polecenia. To Twój osobisty asystent, zawsze gotowy do pomocy.</translation>
+<translation id="3780211714699334884">Strona <ph name="ORIGIN" /> będzie mogła edytować pliki w folderze <ph name="FOLDERNAME" /> do chwili zamknięcia tej karty.</translation>
 <translation id="378312418865624974">Odczyt unikalnego identyfikatora tego komputera</translation>
 <translation id="3785308913036335955">Pokaż skrót do aplikacji</translation>
 <translation id="3785727820640310185">Zapisano hasła do tej strony</translation>
@@ -1902,6 +1914,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="38089336910894858">Wyświetl ostrzeżenie przed zamknięciem za pomocą ⌘Q</translation>
 <translation id="3809272675881623365">Królik</translation>
 <translation id="3809280248639369696">Księżycowy promień</translation>
+<translation id="3810593934879994994">Strona <ph name="ORIGIN" /> może przeglądać pliki w tych folderach</translation>
 <translation id="3810973564298564668">Zarządzaj</translation>
 <translation id="381202950560906753">Dodaj kolejny</translation>
 <translation id="3812525830114410218">Zły certyfikat</translation>
@@ -1933,6 +1946,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3842552989725514455">Czcionka szeryfowa</translation>
 <translation id="3846116211488856547">Pobierz narzędzia do tworzenia stron internetowych, aplikacji na Androida itp. Instalacja Linuksa spowoduje pobranie <ph name="DOWNLOAD_SIZE" /> danych.</translation>
 <translation id="385051799172605136">Wstecz</translation>
+<translation id="3850914401008572843">Strona <ph name="ORIGIN" /> nie może otworzyć tego folderu, ponieważ zawiera on pliki systemowe</translation>
 <translation id="3851428669031642514">Wczytaj niezabezpieczone skrypty</translation>
 <translation id="3854599674806204102">Wybierz jedną z opcji</translation>
 <translation id="3855441664322950881">Umieść rozszerzenie w pakiecie</translation>
@@ -1982,11 +1996,13 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3919145445993746351">Aby korzystać z rozszerzeń na wszystkich swoich komputerach, włącz synchronizację</translation>
 <translation id="3920504717067627103">Zasady certyfikatu</translation>
 <translation id="392089482157167418">Włącz ChromeVox (potwierdzenia głosowe)</translation>
+<translation id="3923676227229836009">Ta strona ma zezwolenie na przeglądanie plików</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
 <translation id="3925842537050977900">Odepnij od półki</translation>
 <translation id="3926002189479431949">Telefon z funkcją Smart Lock został zmieniony</translation>
 <translation id="3927932062596804919">Odmawiaj</translation>
+<translation id="3928570707778085600">Zapisać zmiany w: <ph name="FILE_OR_FOLDER_NAME" />?</translation>
 <translation id="3930737994424905957">Szukam urządzeń</translation>
 <translation id="3930968231047618417">Kolor tła</translation>
 <translation id="3933283459331715412">Przywróć usunięte hasło użytkownika <ph name="USERNAME" /></translation>
@@ -2004,6 +2020,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3943582379552582368">&amp;Wstecz</translation>
 <translation id="3943857333388298514">Wklej</translation>
 <translation id="3948116654032448504">&amp;Szukaj obrazu w <ph name="SEARCH_ENGINE" /></translation>
+<translation id="3948507072814225786">Strona <ph name="ORIGIN" /> może edytować pliki w tych folderach</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Zaimportowane z IE</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
@@ -2225,6 +2242,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4296575653627536209">Dodaj nadzorowanego użytkownika</translation>
 <translation id="4297219207642690536">Uruchom ponownie i zresetuj</translation>
 <translation id="4297322094678649474">Zmień języki</translation>
+<translation id="4301671483919369635">Ta strona ma zezwolenie na edytowanie plików</translation>
 <translation id="4303079906735388947">Ustaw nowy kod PIN klucza bezpieczeństwa</translation>
 <translation id="4306119971288449206">Aplikacje muszą być udostępniane z parametrem content-type „<ph name="CONTENT_TYPE" />”</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (aktywne <ph name="NUM_KILOBYTES_LIVE" /> KB)</translation>
@@ -2280,6 +2298,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4394049700291259645">Wyłącz</translation>
 <translation id="4400367121200150367">Tutaj będą wyświetlane strony, które nigdy nie zapisują haseł</translation>
 <translation id="4400632832271803360">Przytrzymaj klawisz programu uruchamiającego, by zmienić działanie klawiszy z górnego rzędu</translation>
+<translation id="4400963414856942668">Aby dodać kartę do zakładek, możesz kliknąć gwiazdkę</translation>
 <translation id="4403775189117163360">Wybierz inny folder</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">Pomo&amp;c</translation>
@@ -2317,6 +2336,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4459169140545916303">Aktywność: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dni temu</translation>
 <translation id="4462159676511157176">Własne serwery nazw</translation>
 <translation id="4469477701382819144">Blokowane na stronach, które wyświetlają uciążliwe lub wprowadzające w błąd reklamy</translation>
+<translation id="4469762931504673593">Strona <ph name="ORIGIN" /> może edytować pliki w folderze <ph name="FOLDERNAME" /></translation>
 <translation id="4470957202018033307">Ustawienia pamięci zewnętrznej</translation>
 <translation id="447252321002412580">Pomóż w ulepszaniu funkcji i działania Chrome</translation>
 <translation id="4474155171896946103">Dodaj wszystkie karty do zakładek...</translation>
@@ -2375,6 +2395,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4559617833001311418">Ta witryna ma dostęp do czujników ruchu lub oświetlenia.</translation>
 <translation id="4561098487691395071">Możesz też wybrać plik PPD dla drukarki</translation>
 <translation id="4562155214028662640">Dodaj odcisk palca</translation>
+<translation id="4562494484721939086">Brak usługi</translation>
 <translation id="4563880231729913339">Palec 3</translation>
 <translation id="4565377596337484307">Ukryj hasło</translation>
 <translation id="456717285308019641">Język strony do przetłumaczenia</translation>
@@ -2460,6 +2481,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Konfiguracją drukarek zajmuje się administrator.</translation>
 <translation id="4694604912444486114">Małpa</translation>
+<translation id="4696983787092045100">Wyślij tekst na swoje urządzenia</translation>
 <translation id="4697551882387947560">Po zakończeniu sesji przeglądania</translation>
 <translation id="4699172675775169585">Obrazy i pliki zapisane w pamięci podręcznej</translation>
 <translation id="4699357559218762027">(automatyczne uruchamianie)</translation>
@@ -2477,6 +2499,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4722920479021006856">Aplikacja <ph name="APP_NAME" /> udostępnia Twój ekran.</translation>
 <translation id="4724450788351008910">Zmiana przynależności</translation>
 <translation id="4725511304875193254">Corgi</translation>
+<translation id="4725851834065990915">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.</translation>
 <translation id="4726710629007580002">Podczas próby zainstalowania tego rozszerzenia zostały zgłoszone ostrzeżenia:</translation>
 <translation id="4727847987444062305">Zarządzana sesja gościa</translation>
 <translation id="4728558894243024398">Platforma</translation>
@@ -2677,6 +2700,10 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5029568752722684782">Usuń kopię</translation>
 <translation id="5030338702439866405">Wystawiony przez</translation>
 <translation id="5033266061063942743">Kształty geometryczne</translation>
+<translation id="5033865233969348410">Gdy używasz VR, ta strona może poznać te informacje:
+  –  Twoje cechy fizyczne, np. wzrost.
+
+Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> chce korzystać z kamery i mikrofonu</translation>
 <translation id="5036662165765606524">Nie zezwalaj żadnym witrynom na automatyczne pobieranie wielu plików</translation>
 <translation id="5037676449506322593">Wybierz wszystko</translation>
@@ -2695,6 +2722,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5062930723426326933">Logowanie nieudane. Połącz się z internetem i spróbuj ponownie.</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
+<translation id="5067000372742249459">Wyślij tekst na: <ph name="DEVICE_NAME" /></translation>
 <translation id="5067399438976153555">Zawsze włączony</translation>
 <translation id="5067867186035333991">Pytaj, gdy witryna <ph name="HOST" /> chce mieć dostęp do mikrofonu</translation>
 <translation id="5068918910148307423">Nie zezwalaj niedawno zamkniętym stronom na dokończenie wysyłania i odbierania danych</translation>
@@ -2797,7 +2825,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5235050375939235066">Odinstalować aplikację?</translation>
 <translation id="5235750401727657667">Zmiana strony, która wyświetla się, gdy otwierasz nową kartę</translation>
 <translation id="5238278114306905396">Aplikacja „<ph name="EXTENSION_NAME" />” została automatycznie usunięta.</translation>
-<translation id="5238713938047984284">Zapisuj swoje hasła</translation>
 <translation id="5241128660650683457">Odczyt wszystkich Twoich danych na odwiedzanych stronach internetowych</translation>
 <translation id="5242724311594467048">Włączyć rozszerzenie „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="5243522832766285132">Spróbuj ponownie za kilka chwil</translation>
@@ -2903,6 +2930,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5390100381392048184">Zezwalaj na odtwarzanie dźwięku na stronach internetowych</translation>
 <translation id="5390677308841849479">Ciemnoczerwono-pomarańczowy</translation>
 <translation id="5390743329570580756">Wyślij do:</translation>
+<translation id="5397361543868847016">{COUNT,plural, =0{Ta strona nie używa plików cookie do śledzenia między stronami}=1{Chrome blokuje pliki cookie z 1 strony}few{Chrome blokuje pliki cookie z # stron}many{Chrome blokuje pliki cookie z # stron}other{Chrome blokuje pliki cookie z # strony}}</translation>
 <translation id="5397794290049113714">Ty</translation>
 <translation id="5398572795982417028">Odwołanie do strony spoza zakresu, limit to <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Reklamy zostały zablokowane</translation>
@@ -3004,6 +3032,11 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5532223876348815659">Globalne</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> prosi o pozwolenie na:</translation>
 <translation id="5534304873398226603">Odrzuć zdjęcie lub film</translation>
+<translation id="5534334044554683961">Gdy używasz VR, ta strona może poznać te informacje:
+  –   Twoje cechy fizyczne, np wzrost;
+  –   układ Twojego pokoju.
+
+Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.</translation>
 <translation id="5535941515421698170">Usuń też swoje dane z tego urządzenia</translation>
 <translation id="5539221284352502426">Podane hasło zostało odrzucone przez serwer. Możliwe, że jest ono za krótkie, musi zawierać cyfry lub symbole albo musi się różnić od poprzednich haseł.</translation>
 <translation id="5541694225089836610">Administrator wyłączył to działanie</translation>
@@ -3300,6 +3333,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="595959584676692139">Aby użyć tego rozszerzenia, załaduj ponownie stronę</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> w szczycie)</translation>
 <translation id="5965661248935608907">Kontroluje także to, jaka strona wyświetla się po kliknięciu przycisku strony głównej lub wyszukiwaniu w omniboksie.</translation>
+<translation id="5969419185858894314">Strona <ph name="ORIGIN" /> może przeglądać pliki w folderze <ph name="FOLDERNAME" /></translation>
 <translation id="5971037678316050792">Kontrolowanie stanu adaptera Bluetooth i parowania</translation>
 <translation id="5972017421290582825">Zarządzaj ustawieniami MIDI...</translation>
 <translation id="597235323114979258">Zobacz więcej lokalizacji docelowych</translation>
@@ -3422,7 +3456,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6129691635767514872">Wybrane dane zostały usunięte z Chrome i synchronizowanych urządzeń. Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w innych usługach Google, mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Komentarz do certyfikatu firmy Netscape</translation>
 <translation id="6129953537138746214">Spacja</translation>
-<translation id="6130024555057767093">Zablokowane są powiadomienia ze wszystkich stron internetowych oprócz tych, na które zezwalasz.</translation>
 <translation id="6136114942382973861">Zamknij pasek pobranych plików</translation>
 <translation id="6137767437444130246">Certyfikat użytkownika</translation>
 <translation id="6138680304137685902">Podpis X9.62 ECDSA z SHA-384</translation>
@@ -3489,6 +3522,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6232017090690406397">Bateria</translation>
 <translation id="6232116551750539448">Połączenie z <ph name="NAME" /> zostało utracone</translation>
 <translation id="6233154960150021497">Domyślnie używaj głosu zamiast klawiatury</translation>
+<translation id="6234474535228214774">Oczekiwanie na instalację</translation>
 <translation id="6237816943013845465">Pozwala zmienić rozdzielczość ekranu</translation>
 <translation id="6238923052227198598">Wyświetlaj najnowszą notatkę na ekranie blokady</translation>
 <translation id="6239558157302047471">Załaduj ponownie &amp;ramkę</translation>
@@ -3859,6 +3893,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6812349420832218321">Przeglądarki <ph name="PRODUCT_NAME" /> nie możesz uruchamiać jako użytkownik root.</translation>
 <translation id="6812841287760418429">Zachowaj zmiany</translation>
 <translation id="6817174620439930047">Pytaj, gdy strona chce użyć komunikatów systemowych, by uzyskać dostęp do urządzeń MIDI (zalecane)</translation>
+<translation id="6819440013020405090">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca sprawdzenie zapisanych haseł i zmianę hasła w witrynie <ph name="ORIGIN" />.</translation>
 <translation id="682123305478866682">Przesyłaj pulpit</translation>
 <translation id="6823506025919456619">Aby móc wyświetlać swoje urządzenia, musisz zalogować się w Chrome</translation>
 <translation id="6824564591481349393">Kopiuj adres &amp;e-mail</translation>
@@ -3866,6 +3901,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6825184156888454064">Sortuj według nazwy</translation>
 <translation id="6826872289184051766">Zweryfikuj przez USB</translation>
 <translation id="6828153365543658583">Ogranicz logowanie do następujących użytkowników:</translation>
+<translation id="6828182567531805778">Aby synchronizować dane, wpisz hasło</translation>
 <translation id="682871081149631693">QuickFix</translation>
 <translation id="6828860976882136098">Nie można skonfigurować automatycznych aktualizacji dla wszystkich użytkowników (błąd wykonania procesu wstępnego: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="6829250331733125857">Uzyskaj pomoc związaną z urządzeniem <ph name="DEVICE_TYPE" />.</translation>
@@ -3957,6 +3993,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6970480684834282392">Typ uruchamiania</translation>
 <translation id="6970856801391541997">Drukuj wybrane strony</translation>
 <translation id="6972180789171089114">Audio/wideo</translation>
+<translation id="6972553992270299730">Strona <ph name="ORIGIN" /> nie może otwierać plików w tym folderze, ponieważ zawiera on pliki systemowe</translation>
 <translation id="6972754398087986839">Rozpocznij</translation>
 <translation id="6974609594866392343">Tryb demo offline</translation>
 <translation id="6977381486153291903">Wersja oprogramowania</translation>
@@ -4000,6 +4037,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7025190659207909717">Zarządzanie komórkową usługą transmisji danych</translation>
 <translation id="7027891519253193555">Język tej strony to nie <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Hasła</translation>
+<translation id="703001695939087067">Jesteś w trybie przeglądu okien. Aby zmienić okno, naciśnij TAB.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – podłączono port szeregowy</translation>
 <translation id="7031962166228839643">Czekaj, moduł TPM jest przygotowywany (może to potrwać kilka minut)...</translation>
 <translation id="7037509989619051237">Tekst do sprawdzenia mowy</translation>
@@ -4039,6 +4077,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7081952801286122383">Korzystasz z trybu incognito</translation>
 <translation id="7082772857801260480">Nie wszystkie funkcje tej stacji dokującej są obsługiwane</translation>
 <translation id="708278670402572152">Rozłącz, by włączyć skanowanie</translation>
+<translation id="70850504851191913">Zgłoszono naruszenie bezpieczeństwa danych</translation>
 <translation id="7085389578340536476">Zezwolić Chrome na nagrywanie dźwięku?</translation>
 <translation id="7088434364990739311">Nie udało się uruchomić sprawdzania aktualizacji (kod błędu <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – otwieraj i pakuj pliki ZIP w aplikacji Pliki.</translation>
@@ -4098,6 +4137,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7168109975831002660">Minimalny rozmiar czcionki</translation>
 <translation id="7170041865419449892">Poza zasięgiem</translation>
 <translation id="7171559745792467651">Instalowanie aplikacji z innych urządzeń</translation>
+<translation id="7174199383876220879">Nowość! Sterowanie muzyką, filmami i inne funkcje.</translation>
 <translation id="7175037578838465313">Skonfiguruj: <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Załadowane z:</translation>
 <translation id="7180611975245234373">Odśwież</translation>
@@ -4300,7 +4340,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="747459581954555080">Przywróć wszystkie</translation>
 <translation id="7475671414023905704">Adres URL utraconego hasła firmy Netscape</translation>
 <translation id="7476454130948140105">Poziom naładowania baterii (<ph name="BATTERY_PERCENT" />%) jest za niski, by zainstalować aktualizację</translation>
-<translation id="7477793887173910789">Steruj filmami, muzyką, i innymi multimediami</translation>
+<translation id="7477793887173910789">Steruj filmami, muzyką i innymi multimediami</translation>
 <translation id="7478485216301680444">Nie można zainstalować aplikacji kiosku.</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="748138892655239008">Podstawowe ograniczenia certyfikatu</translation>
@@ -4333,7 +4373,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7529411698175791732">Sprawdź połączenie z internetem. Jeśli problem nie ustąpi, wyloguj się i zaloguj ponownie.</translation>
 <translation id="7530016656428373557">Szybkość rozładowywania w watach</translation>
 <translation id="7531779363494549572">Otwórz Ustawienia &gt; Aplikacje i powiadomienia &gt; Powiadomienia.</translation>
-<translation id="7536220825385726660">Zezwól aplikacjom ze Sklepu Play na dostęp do dysków zewnętrznych</translation>
 <translation id="7539856059004947393">Klucz bezpieczeństwa Bluetooth</translation>
 <translation id="7540972813190816353">Podczas sprawdzania dostępności aktualizacji wystąpił błąd: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Włącz funkcje debugowania na urządzeniu <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4368,6 +4407,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7586498138629385861">Przeglądarka będzie działać, dopóki są uruchomione aplikacje Chrome.</translation>
 <translation id="7589461650300748890">Nie tak szybko. Zachowaj ostrożność.</translation>
 <translation id="7591957897535945411">Strona została przetłumaczona.</translation>
+<translation id="7593653750169415785">Automatycznie zablokowane z powodu kilkukrotnego odrzucenia przez Ciebie powiadomień</translation>
 <translation id="7595453277607160340">Aby używać aplikacji na Androida i mieć pewność, że <ph name="DEVICE_TYPE" /> działa prawidłowo, zaloguj się ponownie i zainstaluj aktualizację.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (kod błędu: <ph name="ERROR_CODE" />).</translation>
 <translation id="7598466960084663009">Uruchom ponownie komputer</translation>
@@ -4430,6 +4470,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7684559058815332124">Wejdź na stronę logowania na portalu przechwytującym</translation>
 <translation id="7685049629764448582">Pamięć JavaScript</translation>
 <translation id="7685087414635069102">Wymagany kod PIN</translation>
+<translation id="7685301384041462804">Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Potwierdź nowe hasło</translation>
 <translation id="7690378713476594306">Wybierz z listy</translation>
@@ -4590,6 +4631,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7887334752153342268">Duplikuj</translation>
 <translation id="7887864092952184874">Sparowano mysz Bluetooth</translation>
 <translation id="7889565820482017512">Rozmiar wyświetlacza</translation>
+<translation id="7892963120252479610">Strona <ph name="ORIGIN" /> będzie mogła przeglądać pliki w folderze <ph name="FOLDERNAME" /> do chwili zamknięcia tej karty</translation>
 <translation id="7893008570150657497">Dostęp do zdjęć, muzyki i innych multimediów na komputerze</translation>
 <translation id="7893153962594818789">Bluetooth jest wyłączony na urządzeniu <ph name="DEVICE_TYPE" />. Wpisz hasło i włącz Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (domyślna)</translation>
@@ -4780,6 +4822,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8152091997436726702">Upłynął limit czasu rejestracji drukarki. Aby ją zarejestrować, musisz potwierdzić na niej rejestrację.</translation>
 <translation id="8154790740888707867">Brak pliku</translation>
 <translation id="815491593104042026">Ups, uwierzytelnianie nie powiodło się, bo zostało skonfigurowane do używania niezabezpieczonego URL-a (<ph name="BLOCKED_URL" />). Skontaktuj się z administratorem.</translation>
+<translation id="8157704005178149728">Konfiguruję nadzorowanie…</translation>
 <translation id="816055135686411707">Błąd podczas ustawiania zaufania do certyfikatu</translation>
 <translation id="816095449251911490"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" />, <ph name="TIME_REMAINING" /></translation>
 <translation id="8168435359814927499">Treści</translation>
@@ -4884,12 +4927,14 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8294431847097064396">Źródło</translation>
 <translation id="8297006494302853456">Słaby</translation>
 <translation id="8299319456683969623">Jesteś teraz w trybie offline.</translation>
+<translation id="8300011035382349091">Edytuj zakładkę w przypadku tej karty</translation>
 <translation id="8300374739238450534">Ciemnogranatowy</translation>
 <translation id="8300849813060516376">Dostarczanie OTASP nie powiodło się</translation>
 <translation id="8308179586020895837">Pytaj, gdy witryna <ph name="HOST" /> chce mieć dostęp do kamery</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="8309458809024885768">Certyfikat już istnieje</translation>
 <translation id="8314381333424235892">Brakujące lub odinstalowane rozszerzenie</translation>
+<translation id="831440797644402910">Nie można otworzyć tego folderu</translation>
 <translation id="8316618172731049784">Wyślij na: <ph name="DEVICE_NAME" /></translation>
 <translation id="8317671367883557781">Dodaj połączenie sieciowe</translation>
 <translation id="8319414634934645341">Rozszerzone użycie klucza</translation>
@@ -4921,8 +4966,10 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8371695176452482769">Mów teraz</translation>
 <translation id="8371925839118813971">{NUM_TABS,plural, =1{Wycisz stronę}few{Wycisz strony}many{Wycisz strony}other{Wycisz strony}}</translation>
 <translation id="8372369524088641025">Błędny klucz WEP</translation>
+<translation id="8372477600026034341">Dodatkowe hosty</translation>
 <translation id="8378714024927312812">Zarządzane przez Twoją organizację</translation>
 <translation id="8379878387931047019">To urządzenie nie obsługuje typu klucza bezpieczeństwa, o który prosi ta witryna</translation>
+<translation id="8379991678458444070">Dodaj tę stronę do zakładek, by szybko na nią wrócić</translation>
 <translation id="8382913212082956454">Kopiuj adres &amp;e-mail</translation>
 <translation id="8386091599636877289">Nie znaleziono zasady.</translation>
 <translation id="8386903983509584791">Skanowanie ukończone</translation>
@@ -5275,8 +5322,10 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8885197664446363138">Smart Lock jest niedostępny</translation>
 <translation id="8888253246822647887">Aplikacja otworzy się po zakończeniu uaktualnienia. Może to potrwać kilka minut.</translation>
 <translation id="8888432776533519951">Kolor:</translation>
+<translation id="8889651696183044030">Strona <ph name="ORIGIN" /> może edytować te pliki i foldery</translation>
 <translation id="8890516388109605451">Źródła</translation>
 <translation id="8892168913673237979">Wszystko gotowe.</translation>
+<translation id="8892226765772586656">Strona <ph name="ORIGIN" /> będzie mogła edytować plik <ph name="FILENAME" /> do chwili zamknięcia tej karty</translation>
 <translation id="8893801527741465188">Odinstalowano</translation>
 <translation id="8893928184421379330">Niestety, nie można rozpoznać urządzenia <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Lista zakładek</translation>
@@ -5339,6 +5388,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8978154919215542464">Włączono synchronizację wszystkich danych</translation>
 <translation id="897939795688207351">Na <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – awaria</translation>
+<translation id="8983632908660087688">Strona <ph name="ORIGIN" /> może edytować plik <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Aktywność <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dzień temu</translation>
 <translation id="8986362086234534611">Zapomnij</translation>
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
@@ -5365,11 +5415,13 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9021662811137657072">Wykryto wirusa</translation>
 <translation id="9022847679183471841">Tego konta na tym komputerze używa już <ph name="AVATAR_NAME" />.</translation>
 <translation id="9023009238991294202">Inni użytkownicy tego urządzenia mogą używać tej sieci.</translation>
+<translation id="9023015617655685412">Dodaj tę kartę do zakładek...</translation>
 <translation id="9024127637873500333">&amp;Otwórz w nowej karcie</translation>
 <translation id="9024158959543687197">Błąd podczas podłączania udziału. Sprawdź URL udziału plików i spróbuj ponownie.</translation>
 <translation id="9026731007018893674">pobrane</translation>
 <translation id="9026852570893462412">Może to potrwać kilka minut. Pobieram maszynę wirtualną.</translation>
 <translation id="9027459031423301635">Otwórz link w nowej &amp;karcie</translation>
+<translation id="9029323097866369874">Zezwolić domenie <ph name="DOMAIN" /> na uruchamianie VR?</translation>
 <translation id="9030515284705930323">Twoja organizacja nie włączyła Sklepu Google Play dla Twojego konta. Aby uzyskać więcej informacji, skontaktuj się z administratorem.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Wklej</translation>

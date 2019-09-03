@@ -63,7 +63,7 @@
 <translation id="1820355135508821526"><ph name="FEATURE_NAME" /> wurde durch eine Richtlinie deaktiviert, die auf dieses Gerät angewendet wird. Bitten Sie Ihren Administrator, die erforderlichen Änderungen vorzunehmen.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
-<translation id="1838895407229022812">Das Nachtlicht ist ausgeschaltet.</translation>
+<translation id="1838895407229022812">Nachtlicht ist ausgeschaltet.</translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">Nächster Titel</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Entkoppelte Geräte</translation>
+<translation id="4505050298327493054">Aktiver Arbeitsbereich.</translation>
 <translation id="4513946894732546136">Google Feedback</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Vollständig geladen in <ph name="TIME" /> h</translation>
@@ -311,7 +312,7 @@
 <translation id="574392208103952083">Mittel</translation>
 <translation id="5744083938413354016">Antippen und Ziehen</translation>
 <translation id="5750765938512549687">Bluetooth ist deaktiviert</translation>
-<translation id="576453121877257266">Das Nachtlicht ist eingeschaltet.</translation>
+<translation id="576453121877257266">Nachtlicht ist eingeschaltet.</translation>
 <translation id="5777841717266010279">Bildschirmfreigabe beenden?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="ROUTE_TITLE" /> auf <ph name="RECEIVER_NAME" /> beenden</translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">Initialisierung…</translation>
 <translation id="8142441511840089262">Doppelklick</translation>
 <translation id="8142699993796781067">Privates Netzwerk</translation>
+<translation id="8152092012181020186">Drücken Sie zum Schließen Strg + W.</translation>
 <translation id="8167567890448493835">"<ph name="LOCALE_NAME" />" wird verwendet</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
 <translation id="8192202700944119416">Benachrichtigungen sind ausgeblendet.</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">Welche Termine stehen an?</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="98515147261107953">Querformat</translation>
+<translation id="990277280839877440">Fenster "<ph name="WINDOW_TITILE" />" geschlossen.</translation>
 </translationbundle>

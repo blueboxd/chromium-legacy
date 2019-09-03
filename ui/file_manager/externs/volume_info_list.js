@@ -9,7 +9,7 @@
 class VolumeInfoList {
   constructor() {
     /** @const {number} */
-    VolumeInfoList.prototype.length;
+    this.length;
   }
 
   /**

@@ -483,6 +483,7 @@
 <translation id="4372705107434148843">Спиране на говора</translation>
 <translation id="4373197658375206385">Няма предишен елемент, който не е връзка.</translation>
 <translation id="4376316291247992553">Преглед на графиката като брайлов текст</translation>
+<translation id="437809255587011096">Съобщаване на оформлението на текста</translation>
 <translation id="4378308539633073595">Превъртане напред</translation>
 <translation id="4384583879834880242">Въпроси и отговори</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@
 <translation id="8503360654911991865">По-малко подробна навигация</translation>
 <translation id="8504695234784218301">Край на граматичната грешка</translation>
 <translation id="8520472399088452386">Брояч</translation>
+<translation id="8534394844575788431">Форматиране</translation>
 <translation id="8538744478902126321">Предположение за заглавката на реда за текущата клетка</translation>
 <translation id="8540054775867439484">Пренасяне в началото</translation>
 <translation id="8542271685829952264">За да разгледате всички команди и комбинации за ChromeVox, натиснете „търсене“ + клавиша за точка, след което използвайте клавишите със стрелки, за да се придвижвате в менютата, и Enter, за да активирате дадена команда. Върнете се тук, като натиснете „търсене“ + О и след това t.</translation>
@@ -1199,6 +1201,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Раздел</translation>
 <translation id="9151211641321628915">Съобщава кратко описание на текущата позиция</translation>
+<translation id="9151249085738989067">Автоматично превключване на гласа на ChromeVox според езика</translation>
 <translation id="9153606228985488238">Височина: <ph name="PERCENT" /> процента</translation>
 <translation id="9160096769946561184">Към края на текущата графа</translation>
 <translation id="9173115498289768110">Сила на звука: <ph name="PERCENT" /> процента</translation>

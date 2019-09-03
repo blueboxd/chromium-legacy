@@ -348,16 +348,8 @@ void AppShimController::CreateCommandDispatcherForWidget(uint64_t widget_id) {
   }
 }
 
-void AppShimController::Hide() {
-  [NSApp hide:nil];
-}
-
 void AppShimController::SetBadgeLabel(const std::string& badge_label) {
   NSApp.dockTile.badgeLabel = base::SysUTF8ToNSString(badge_label);
-}
-
-void AppShimController::UnhideWithoutActivation() {
-  [NSApp unhideWithoutActivation];
 }
 
 void AppShimController::SetUserAttention(

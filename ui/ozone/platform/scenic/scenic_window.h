@@ -22,11 +22,11 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
 class ScenicWindowManager;
-class PlatformWindowDelegate;
 
 class COMPONENT_EXPORT(OZONE) ScenicWindow
     : public PlatformWindow,

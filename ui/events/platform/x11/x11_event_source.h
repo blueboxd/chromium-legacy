@@ -160,8 +160,8 @@ class EVENTS_EXPORT X11EventSource {
 
   // State necessary for UpdateLastSeenServerTime
   bool dummy_initialized_;
-  XWindow dummy_window_;
-  XAtom dummy_atom_;
+  ::XWindow dummy_window_;
+  ::XAtom dummy_atom_;
   std::unique_ptr<XScopedEventSelector> dummy_window_events_;
 
   // Keeps track of whether this source should continue to dispatch all the

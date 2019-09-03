@@ -227,7 +227,7 @@ void CSSParserContext::CountDeprecation(WebFeature feature) const {
 
 void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {
   if (IsUseCounterRecordingEnabled() && IsUseCounterEnabledForMode(mode)) {
-    document_->CountUse(property, UseCounterHelper::CSSPropertyType::kDefault);
+    document_->CountProperty(property);
   }
 }
 

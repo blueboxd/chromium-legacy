@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5254120496627797685">이 페이지를 닫으면 Chrome 원격 데스크톱 세션이 종료됩니다.</translation>
 <translation id="5308380583665731573">연결</translation>
+<translation id="5327248766486351172">이름</translation>
 <translation id="533625276787323658">연결 대상이 없습니다.</translation>
 <translation id="5363265567587775042">액세스하려는 컴퓨터의 사용자에게 '<ph name="SHARE" />'를 클릭하여 액세스 코드를 달라고 요청하세요.</translation>
 <translation id="5379087427956679853">Chrome 원격 데스크톱을 사용하면 웹에서 내 컴퓨터를 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL" /> 페이지에 있는 Chrome 원격 데스크톱 앱을 실행해야 합니다.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">화면 옵션</translation>
 <translation id="7970576581263377361">인증에 실패했습니다. Chromium에 다시 로그인하세요.</translation>
 <translation id="7981525049612125370">원격 세션이 만료되었습니다.</translation>
+<translation id="8038111231936746805">(기본값)</translation>
 <translation id="8041089156583427627">의견 보내기</translation>
 <translation id="8041721485428375115">Chrome 원격 데스크톱 호스트 설치 프로그램을 다운로드하면 Google <ph name="LINK_BEGIN" />서비스 약관<ph name="LINK_END" />에 동의하게 됩니다.</translation>
 <translation id="8060029310790625334">고객센터</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">내 컴퓨터</translation>
 <translation id="811307782653349804">어디서든 내 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="8116630183974937060">네트워크 오류가 발생했습니다. 기기가 온라인 상태인지 확인하고 다시 시도하세요.</translation>
-<translation id="8123581458650016326">원격 사용자가 이 기기를 제어하도록 허용</translation>
 <translation id="8178433417677596899">사용자 간 화면 공유가 가능하며 원격 기술 지원에 적합합니다.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="8196755618196986400">Google이 더 자세한 내용을 확인하기 위해 연락할 수 있도록, 제출한 의견에 사용자의 이메일 주소를 포함해주시기 바랍니다.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">개인정보처리방침</translation>
 <translation id="894763922177556086">좋음</translation>
 <translation id="895780780740011433">Windows 7 이상용</translation>
-<translation id="8963047137585288214"><ph name="PRODUCT_NAME" />을(를) 사용하여 기기를 원격으로 제어하려면 추가 구성 단계를 완료해야 합니다.
-
-이 기능을 사용하려면 ‘<ph name="BUTTON_NAME" />’ 버튼을 선택하여 보안 및 개인정보 보호 환경설정 창을 열고 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆의 체크박스를 선택하세요.
-
-‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 표시 및 선택되어 있다면 이를 선택 해제하고 다시 선택해야 할 수도 있습니다.</translation>
 <translation id="897805526397249209">다른 컴퓨터에 원격 연결을 사용하려면 그 컴퓨터에 Chromoting을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="8998327464021325874">Chrome 원격 데스크톱 호스트 컨트롤러</translation>
 <translation id="9016232822027372900">연결하기</translation>

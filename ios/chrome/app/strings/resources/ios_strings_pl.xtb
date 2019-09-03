@@ -263,6 +263,7 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="4747097190499141774">Szyfrowanie hasłem nie obejmuje form płatności ani adresów w Google Pay. Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, konieczne będzie zresetowanie synchronizacji. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Znajdź na stronie…</translation>
 <translation id="4751645464639803239">Nowa karta incognito</translation>
+<translation id="4758977202923349869">Umieść kartę kredytową w tej ramce</translation>
 <translation id="4802417911091824046">Szyfrowanie hasłem nie obejmuje form płatności ani adresów w Google Pay.
 
 Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />.</translation>
@@ -328,6 +329,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5728700505257787410">Niestety, wystąpił problem z zalogowaniem się na konto.</translation>
 <translation id="5737974891429562743">Dane logowania na konto są nieaktualne. Zaktualizuj je, by rozpocząć synchronizację.</translation>
 <translation id="5738887413654608789">Pozwoli Ci to odkrywać strony internetowe dotyczące rzeczy z Twojego otoczenia.</translation>
+<translation id="5803566855766646066">Czy na pewno chcesz zamknąć tę nową kartę?</translation>
 <translation id="5816228676161003208">Umożliwia szybsze wyszukiwanie głosowe.</translation>
 <translation id="5846482154967366008">Wyszukiwarka</translation>
 <translation id="5854790677617711513">Sprzed ponad 30 dni</translation>

@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5254120496627797685">Wenn Sie diese Seite verlassen, wird Ihre Chrome Remote Desktop-Sitzung beendet.</translation>
 <translation id="5308380583665731573">Verbinden</translation>
+<translation id="5327248766486351172">Name</translation>
 <translation id="533625276787323658">Es gibt keine Verbindungsziele</translation>
 <translation id="5363265567587775042">Bitten Sie den Nutzer, auf dessen Computer Sie zugreifen möchten, auf "<ph name="SHARE" />" zu klicken und Ihnen den Zugriffscode zu geben.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chrome Remote Desktop App ausführen. Diese App finden Sie unter <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Optionen</translation>
 <translation id="7970576581263377361">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chromium an.</translation>
 <translation id="7981525049612125370">Die Remote-Sitzung ist abgelaufen.</translation>
+<translation id="8038111231936746805">(Standard)</translation>
 <translation id="8041089156583427627">Feedback geben</translation>
 <translation id="8041721485428375115">Indem Sie das Chrome Remote Desktop Host-Installationsprogramm herunterladen, erklären Sie sich mit den <ph name="LINK_BEGIN" />Nutzungsbedingungen von Google<ph name="LINK_END" /> einverstanden.</translation>
 <translation id="8060029310790625334">Hilfe</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Meine Computer</translation>
 <translation id="811307782653349804">Greifen Sie von überall aus auf Ihren Computer zu.</translation>
 <translation id="8116630183974937060">Ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie, ob das Gerät online ist, und versuchen Sie es erneut.</translation>
-<translation id="8123581458650016326">Zulassen, dass Remote-Nutzer auf dieses Gerät zugreifen können</translation>
 <translation id="8178433417677596899">Die Bildschirmfreigabe für Nutzer eignet sich besonders für technischen Support per Remotezugriff.</translation>
 <translation id="8187079423890319756">Copyright 2013 Die Chromium-Autoren. Alle Rechte vorbehalten</translation>
 <translation id="8196755618196986400">Damit wir für weitere Informationen mit Ihnen Kontakt aufnehmen können, wird bei jedem von Ihnen gesendeten Feedback Ihre E-Mail-Adresse mitgesendet.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Datenschutzerklärung</translation>
 <translation id="894763922177556086">Gut</translation>
 <translation id="895780780740011433">Für Windows 7 und höher</translation>
-<translation id="8963047137585288214">Bevor Sie auf dieses Gerät über <ph name="PRODUCT_NAME" /> remote zugreifen können, ist ein zusätzlicher Konfigurationsschritt erforderlich.
-
-Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME" />" aus. Daraufhin öffnet sich das Sicherheits- und Datenschutzfenster. Klicken Sie dort das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
-
-Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits vorhanden und ausgewählt ist, müssen Sie möglicherweise das Kästchen zweimal anklicken, um das Häkchen zu entfernen und wieder einzufügen.</translation>
 <translation id="897805526397249209">Um Remote-Verbindungen zu einem anderen Computer zu ermöglichen, installieren Sie Chromoting auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">Trotzdem verbinden</translation>

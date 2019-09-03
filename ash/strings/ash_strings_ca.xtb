@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">Pista següent</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositius desvinculats</translation>
+<translation id="4505050298327493054">Escriptori actiu.</translation>
 <translation id="4513946894732546136">Comentaris</translation>
 <translation id="4527045527269911712">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> per completar la càrrega</translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">S'està inicialitzant…</translation>
 <translation id="8142441511840089262">Fes doble clic</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>
+<translation id="8152092012181020186">Prem Ctrl+W per tancar.</translation>
 <translation id="8167567890448493835">S'està utilitzant <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Personalitza idiomes i introducció de text...</translation>
 <translation id="8192202700944119416">S'han amagat les notificacions.</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">Què tinc programat al calendari?</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
 <translation id="98515147261107953">Horitzontal</translation>
+<translation id="990277280839877440">La finestra <ph name="WINDOW_TITILE" /> s'ha tancat.</translation>
 </translationbundle>

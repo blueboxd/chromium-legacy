@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Käsurea variatsioonid</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Kustutage küpsisefailid<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Katkestatud toega funktsioonid</translation>
 <translation id="1320233736580025032">Prc1 (ümbrik)</translation>
 <translation id="132301787627749051">Lõikelaua kujutise otsimine</translation>
 <translation id="1323433172918577554">Kuva rohkem</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google'i arvutustabelid</translation>
 <translation id="1527263332363067270">Ühenduse ootamine …</translation>
 <translation id="1529521330346880926">10x15 (ümbrik)</translation>
+<translation id="1530707389502320859">Sait, mida üritasite külastada, näib olevat võltsitud. Ründajad imiteerivad mõnikord saite, tehes URL-is väikeseid raskestimärgatavaid muudatusi.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Leht ütleb</translation>
 <translation id="153384715582417236">See on praeguseks kõik</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">Taotlus õnnestus</translation>
 <translation id="2728127805433021124">Serveri sertifikaat on allkirjastatud nõrga allkirjaalgoritmiga.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Ühenduvusdiagnostika käitamine<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Nende funktsioonide lubamisel võivad sirvimisandmed kaotsi minna või
+     teie turvalisus või privaatsus võib ohtu sattuda. Lubatud funktsioonid on
+     saadaval kõigile selle brauseri kasutajatele.</translation>
 <translation id="2735043616039983645">Selle reegli puhul on leitud rohkem kui üks vastuoluliste väärtustega allikas.</translation>
 <translation id="2738330467931008676">Valige kättesaamisaadress</translation>
 <translation id="2740531572673183784">Ok</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">Kui see on lubatud, salvestab Chromium teie kaardi koopia vormide kiiremaks täitmiseks sellesse seadmesse.</translation>
 <translation id="2985398929374701810">Sisestage kehtiv aadress</translation>
 <translation id="2986368408720340940">See kättesaamisviis pole saadaval. Proovige mõnda teist kättesaamisviisi.</translation>
+<translation id="2987034854559945715">Sobivaid funktsioone ei leitud</translation>
 <translation id="2991174974383378012">Veebisaitidega jagamine</translation>
 <translation id="2991571918955627853">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait kasutab HSTS-i. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="3005723025932146533">Kuva salvestatud koopia</translation>
@@ -518,6 +524,7 @@
 <translation id="3678529606614285348">Avage leht uues inkognito aknas (Ctrl + tõstuklahv + N)</translation>
 <translation id="3679803492151881375">Krahhiaruanne jäädvustati ajal <ph name="CRASH_TIME" />, see laaditi üles ajal <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Sertifikaadi andmed</translation>
+<translation id="3701427423622901115">Lähtestamine kinnitati.</translation>
 <translation id="3704162925118123524">Võrk, mida kasutate, võib nõuda sisselogimislehe külastamist.</translation>
 <translation id="3704609568417268905"><ph name="TIME" />, <ph name="BOOKMARKED" />, <ph name="TITLE" />, <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Laadimine...</translation>
@@ -690,6 +697,7 @@
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
 <translation id="4597348597567598915">Suurus 8</translation>
 <translation id="4600854749408232102">C6/C5 (ümbrik)</translation>
+<translation id="464342062220857295">Otsingufunktsioonid</translation>
 <translation id="4646534391647090355">Vii mind kohe sinna</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat sisaldab vigu. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -806,6 +814,7 @@
 <translation id="5251803541071282808">Pilv</translation>
 <translation id="5252000469029418751">C7 (ümbrik)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Kogu süsteemis kehtivaid funktsioone saab määrata ainult omanik: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Hoiatus! Seda reeglit ei liidetud reeglis PolicyDictionaryMultipleSourceMergeList määratud viisil, kuna see ei ole osa sõnastiku reeglitest, mida saab liita.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Lõpeta</translation>
@@ -842,6 +851,8 @@
 <translation id="5457113250005438886">Kehtetu</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Muuda uuesti</translation>
+<translation id="5473728911100096288">Kui lubate need funktsioonid, kasutate katkestatud toega funktsioone,
+    mis eemaldatakse tulevastest versioonidest.</translation>
 <translation id="5478437291406423475">B6/C4 (ümbrik)</translation>
 <translation id="5481076368049295676">See sisu võib üritada installida teie seadmesse ohtlikku tarkvara, mis varastab või kustutab teie teavet. <ph name="BEGIN_LINK" />Kuva ikkagi<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Sisestage sobiv aadress</translation>
@@ -900,6 +911,7 @@
 <translation id="5763042198335101085">Sisestage kehtiv e-posti aadress</translation>
 <translation id="5765072501007116331">Kohaletoimetamisviiside ja nõuete nägemiseks valige aadress</translation>
 <translation id="5778550464785688721">MIDI-seadmete täielik juhtimine</translation>
+<translation id="5781136890105823427">Katse on lubatud</translation>
 <translation id="578305955206182703">Merevaigukollane</translation>
 <translation id="57838592816432529">Vaigista</translation>
 <translation id="5784606427469807560">Kaardi kinnitamisel tekkis probleem. Kontrollige Interneti-ühendust ja proovige uuesti.</translation>
@@ -1065,6 +1077,7 @@
 <translation id="6738516213925468394">Teie andmed krüpteeriti teie <ph name="BEGIN_LINK" />sünkroonimisparooliga<ph name="END_LINK" /> kuupäeval <ph name="TIME" />. Sisestage see sünkroonimise alustamiseks.</translation>
 <translation id="674375294223700098">Serveri sertifikaadi tundmatu viga.</translation>
 <translation id="6744009308914054259">Ühenduse loomise ajal võite avada jaotise Allalaadimised ja lugeda võrguühenduseta artikleid.</translation>
+<translation id="6747611005629681221">Hoiatus: katkestatud toega funktsioonid!</translation>
 <translation id="6753269504797312559">Reegli väärtus</translation>
 <translation id="6757797048963528358">Teie seade lülitus unerežiimile.</translation>
 <translation id="6768213884286397650">Hagaki (postkaart)</translation>
@@ -1430,6 +1443,7 @@ Lisateave:
 <translation id="8738058698779197622">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud. See on nii, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chromium neid sertifikaate kinnitada.</translation>
 <translation id="8740359287975076522">Hosti <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-aadressi&lt;/abbr&gt; ei leitud. Probleemi diagnoositakse.</translation>
 <translation id="874846938927089722">Aktsepteeritavad ettemakstud ja krediitkaardid</translation>
+<translation id="874918643257405732">Lisa vaheleht järjehoidjatesse</translation>
 <translation id="8759274551635299824">See kaart on aegunud</translation>
 <translation id="8761567432415473239">Google'i ohutu sirvimine <ph name="BEGIN_LINK" />tuvastas hiljuti kahjulikud programmid<ph name="END_LINK" /> saidil <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-seade</translation>

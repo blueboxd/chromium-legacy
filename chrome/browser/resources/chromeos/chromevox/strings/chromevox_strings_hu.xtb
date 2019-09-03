@@ -484,6 +484,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4372705107434148843">Beszéd leállítása</translation>
 <translation id="4373197658375206385">Nincs előző elem, amely ne lenne link.</translation>
 <translation id="4376316291247992553">Kép megtekintése Braille-formátumban</translation>
+<translation id="437809255587011096">Bejelentés szövegének stílusa</translation>
 <translation id="4378308539633073595">Görgetés előre</translation>
 <translation id="4384583879834880242">Kérdések és válaszok</translation>
 <translation id="4391478986194775161">tartalominformáció</translation>
@@ -1121,6 +1122,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8503360654911991865">Navigáció részletezettségének csökkentése</translation>
 <translation id="8504695234784218301">Nyelvtani hiba vége</translation>
 <translation id="8520472399088452386">Léptetőnyíl</translation>
+<translation id="8534394844575788431">Formázás</translation>
 <translation id="8538744478902126321">Aktuális cella sorfejlécének tippelése</translation>
 <translation id="8540054775867439484">A tetejére kerül</translation>
 <translation id="8542271685829952264">A ChromeVox összes parancsának és billentyűparancsának felfedezéséhez nyomja le a Keresés + „pont” billentyűkombinációt, majd a nyílbillentyűk segítségével navigáljon a menük között, végül az Enter billentyűvel aktiválja a parancsot. Ha vissza szeretne ide térni, nyomja le a Keresés+O, majd a T gombot.</translation>
@@ -1200,6 +1202,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="9149560530563164529">szakasz</translation>
 <translation id="9150735707954472829">Lap</translation>
 <translation id="9151211641321628915">Röviden elmondja, hogy mi az aktuális pozíció</translation>
+<translation id="9151249085738989067">A ChromeVox hangjának automatikus átváltása a nyelv alapján</translation>
 <translation id="9153606228985488238">Hangmagasság: <ph name="PERCENT" /> százalék</translation>
 <translation id="9160096769946561184">Ugrás az aktuális oszlop végére</translation>
 <translation id="9173115498289768110">Hangerő: <ph name="PERCENT" /> százalék</translation>

@@ -128,6 +128,11 @@ class PasswordStoreTest : public testing::Test {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
+  scoped_refptr<PasswordStoreDefault> CreatePasswordStore() {
+    return new PasswordStoreDefault(std::make_unique<LoginDatabase>(
+        test_login_db_file_path(), /*is_account_store=*/false));
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
   base::test::TaskEnvironment task_environment_;
@@ -146,8 +151,7 @@ base::Optional<PasswordHashData> GetPasswordFromPref(
 }
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
@@ -241,8 +245,7 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
   // This test isn't relevant for USS code path.
   if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords))
     return;
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   StartSyncFlareMock mock;
   store->Init(
       base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)),
@@ -277,8 +280,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
        L"", true, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> old_form(
@@ -329,8 +331,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
        L"", true, 1};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> test_form(
@@ -381,8 +382,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
        L"", true, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -481,8 +481,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
           false,
       }};
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -649,8 +648,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
     SCOPED_TRACE(testing::Message("test_remove_and_add_login: ")
                  << test_remove_and_add_login);
 
-    scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-        std::make_unique<LoginDatabase>(test_login_db_file_path())));
+    scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
     store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                       base::Closure());
@@ -747,8 +745,7 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
       {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
        L"", L"", nullptr, L"", true, 1}};
 
-  auto store = base::MakeRefCounted<PasswordStoreDefault>(
-      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -798,8 +795,7 @@ TEST_F(PasswordStoreTest, GetLogisByPassword) {
       {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
        L"", L"", nullptr, tested_password, true, 1}};
 
-  auto store = base::MakeRefCounted<PasswordStoreDefault>(
-      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -854,8 +850,7 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
       {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
        L"", L"", nullptr, L"", true, 1}};
 
-  auto store = base::MakeRefCounted<PasswordStoreDefault>(
-      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -911,8 +906,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
       {PasswordForm::Scheme::kHtml, "https://facebook.com",
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   for (const auto& test_credentials : kTestCredentials) {
@@ -951,8 +945,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 }
 
 TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
@@ -1091,8 +1084,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
 }
 
 TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   std::unique_ptr<MockPasswordStoreSigninNotifier> notifier =
       std::make_unique<MockPasswordStoreSigninNotifier>();
@@ -1109,8 +1101,7 @@ TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
 }
 
 TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
@@ -1144,8 +1135,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
 }
 
 TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,

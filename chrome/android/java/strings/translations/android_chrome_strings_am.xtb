@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">የተጫነ</translation>
 <translation id="1792959175193046959">በማንኛውም ጊዜ ነባሪውን የማውረጃ ቦታ ይቀይሩ</translation>
 <translation id="1807246157184219062">ብርሃን</translation>
+<translation id="1810845389119482123">የመጀመሪያ የስምረት ማዋቀር አልተጠናቀቀም</translation>
 <translation id="1821253160463689938">የእርስዎን ምርጫዎች ለማስታወስ ኩኪዎችን ይጠቀማል፣ እነዚያን ገጾች ባይጎበኙም እንኳ</translation>
 <translation id="1829244130665387512">በዚህ ገጽ ውስጥ የተገኘ</translation>
 <translation id="1853692000353488670">አዲስ ማንነት የማያሳውቅ ትር</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ጥቅም ላይ ውሏል</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
+<translation id="4183868528246477015">በGoogle Lens ይፈልጉ <ph name="BEGIN_NEW" />አዲስ<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="4198423547019359126">ምንም የማውረጃ አካባቢዎች የሉም</translation>
 <translation id="4209895695669353772">በGoogle የተጠቆመ ግላዊነት የተላበሰ ይዘትን ስምረትን ማብራት ለማግኘት</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822"><ph name="NAME" /> ወደ እርስዎ መነሻ ገፅ ታክሏል</translation>
 <translation id="4684427112815847243">ሁሉንም ያመሳስሉ</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}}</translation>
+<translation id="4696983787092045100">ጽሑፍ ወደ መሣሪያዎችዎ ይላኩ</translation>
 <translation id="4698034686595694889">በ<ph name="APP_NAME" /> ውስጥ ከመስመር ውጭ ይመልከቱ</translation>
 <translation id="4698413471314543145">Chromeን ለማሄድ የሚያስፈልግ አንድ መሠረታዊ ተግበር ይጎድላል፤ ወይም Chrome ጭነትዎ ያልተሟላ ነው ወይም ከዚህ የAndroid ስሪት ጋር ተኳሃኝ አይደለም።</translation>
 <translation id="4699172675775169585">የተሸጎጡ ምስሎች እና ፋይሎች</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> መገናኘት ይፈልጋል</translation>
 <translation id="5013696553129441713">ምንም አዲስ የአስተያየት ጥቆማዎች የሉም</translation>
 <translation id="5016205925109358554">ሰሪፍ</translation>
+<translation id="5033865233969348410">በቪአር ውስጥ ሳሉ ይህ ጣቢያ ስለእነዚህ ሊያውቅ ይችላል፦
+  -  እንደ ቁመት ያለ የእርስዎ አካላዊ ባህሪያት
+
+ወደ ቪአር ከመግባትዎ በፊት ይህን ጣቢያ የሚያምኑት መሆንዎን ያረጋግጡ።</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5040262127954254034">ግላዊነት</translation>
 <translation id="5048398596102334565">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዲደርሱባቸው ይፍቀዱ (የሚመከር)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">ከቪዲዮ ጋር</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> በአቅራቢያ የብሉቱዝ መሣሪያዎች ካሉ መቃኘት ይፈልጋል። የሚከተሉት መሣሪያዎች ተገኝተዋል፦</translation>
 <translation id="5233638681132016545">አዲስ ትር</translation>
+<translation id="5234764350956374838">አሰናብት</translation>
 <translation id="526421993248218238">ይህን ገጽ መጫን አልተቻለም</translation>
 <translation id="5271967389191913893">መሣሪያ የሚወርደውን ይዘት መክፈት አይችልም።</translation>
 <translation id="528192093759286357">ከሙሉ ማያ ገጽ ለመውጣት ከላይ ይጎትቱ እና የተመለስ አዝራሩን ይንኩ።</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">አዲሱን የትር ገጽ ለመጫን መነሻ አዝራሩን መታ ያድርጉ</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ትርን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}one{<ph name="OPEN_TABS_MANY" /> ትሮችን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}other{<ph name="OPEN_TABS_MANY" /> ትሮችን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}}</translation>
 <translation id="5391532827096253100">ወደዚህ ጣቢያ ያልዎት ግንኙነት ደህንነቱ የተጠበቀ አይደለም። የጣቢያ መረጃ</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ተጨማሪ)}one{(+ # ተጨማሪ)}other{(+ # ተጨማሪ)}}</translation>
 <translation id="5400569084694353794">ይህን መተግበሪያ በመጠቀምዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
 <translation id="5403592356182871684">ስሞች</translation>
 <translation id="5403644198645076998">የተወሰኑ ጣቢያዎችን ብቻ ፍቀድ</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">Chrome መሣሪያዎችን መቃኘት እንዲችል የአካባቢ መዳረሻ ያስፈልገዋል። <ph name="BEGIN_LINK1" />ፈቃዶችን ያዘምኑ<ph name="END_LINK1" />። የአካባቢ መዳረሻ እንዲሁም <ph name="BEGIN_LINK2" />ለዚህ መዳረሻ ጠፍቷል<ph name="END_LINK2" />።</translation>
 <translation id="5527111080432883924">ጣቢያዎች ከቅንጥብ ሰሌዳ ጽሑፍ እና ምስሎችን እንዲያነብቡ ከመፍቀድ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="5530766185686772672">ማንነት የማያሳውቁ ትሮችን ዝጋ</translation>
+<translation id="5534334044554683961">በቪአር ውስጥ ሳሉ ይህ ጣቢያ ስለእነዚህ ሊያውቅ ይችላል፦
+  -  እንደ ቁመት ያለ የእርስዎ አካላዊ ባህሪያት
+  -  የክፍልዎ አቀማመጥ
+
+ወደ ቪአር ከመግባትዎ በፊት ይህን ጣቢያ የሚያምኑት መሆንዎን ያረጋግጡ።</translation>
 <translation id="5534640966246046842">ጣቢያ ተቀድቷል</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
 <translation id="5561549206367097665">አውታረ መረብን በመጠበቅ ላይ…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">የሦስተኛ ወገን ኩኪዎችን አግድ</translation>
 <translation id="6206551242102657620">ግንኙነት ደህንነቱ የተጠበቀ ነው። የጣቢያ መረጃ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> አይደለም?</translation>
-<translation id="6216432067784365534">የ<ph name="NAME_OF_LIST_ITEM" /> አማራጮች</translation>
 <translation id="6221633008163990886">የይለፍ ቃላትዎን ወደ ውጭ ለመላክ ይክፈቱ</translation>
 <translation id="6232535412751077445">«አትከታተል»ን ማንቃት ማለት አንድ ጥያቄ በአሰሳ ትራፊክዎ ላይ ይካተታል ማለት ነው። ማንኛውም ውጤት አንድ ድር ጣቢያ ለጥያቄው ምላሽ ከሰጠና ጥያቄውን በሚተረጎምበት መንገድ ላይ የሚወሰን ነው።
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">መለያ ያክሉ</translation>
 <translation id="766587987807204883">እርስዎ ከመስመር ውጭ ሆነውም እንኳ ሊያነብቧቸው የሚችሏቸውን ጽሑፎች እዚህ ይመጣሉ</translation>
 <translation id="7682724950699840886">የሚከተሉትን ጠቃሚ ምክሮች ይሞክሩ፦ በእርስዎ መሣሪያ ላይ በቂ ባዶ ቦታ መኖሩን ያረጋግጡ፣ ወይም እንደገና ወደ ውጭ ለመላክ ይሞክሩ።</translation>
+<translation id="7685301384041462804">ወደ ቪአር ከመግባትዎ በፊት ይህን ጣቢያ የሚያምኑ መሆንዎን ያረጋግጡ።</translation>
 <translation id="7698359219371678927">በ<ph name="APP_NAME" /> ውስጥ ኢሜይል ይፍጠሩ</translation>
 <translation id="7704317875155739195">ፍለጋዎችን እና ዩአርኤልዎችን በራስ-አጠናቅቅ</translation>
 <translation id="7725024127233776428">እርስዎ ዕልባት ያደረጉባቸው ገጾች እዚህ ላይ ብቅ ይላሉ</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">በChrome ውስጥ በማሄድ ላይ</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ፋይልን በማውረድ ላይ።}one{# ፋይሎች በማውረድ ላይ።}other{# ፋይሎች በማውረድ ላይ።}}</translation>
 <translation id="7929962904089429003">ምናሌውን ክፈት</translation>
+<translation id="7930681627240672853">የይለፍ ቃል ደህንነትን ይፈትሹ</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ጊዜው ያለፈበት ነው።</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
 <translation id="7963646190083259054">አቅራቢ፦</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">አዲስ ትር በማንነት የማያሳውቅ ሁነታ ውስጥ ክፈት</translation>
 <translation id="8998729206196772491">በ<ph name="MANAGED_DOMAIN" /> ወደሚተዳደር መለያ እየገቡና ሙሉውን የChrome ውሂብዎ ቁጥጥር ለአስተዳዳሪው እየሰጡ ነው። የእርስዎ ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር ይተሳሰራል። ከChrome ዘግቶ መውጣት ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
 <translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>
+<translation id="9029323097866369874"><ph name="DOMAIN" /> ወደ ቪአር እንዲገባ ይፈቀድለት?</translation>
 <translation id="9040142327097499898">ማሳወቂያዎች ይፈቀዳሉ። አካባቢ ለዚህ መሣሪያ ጠፍቷል።</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ቪዲዮ}one{# ቪዲዮዎች}other{# ቪዲዮዎች}}</translation>
 <translation id="9050666287014529139">የይለፍ ሐረግ</translation>

@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Повторите попытку.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д.}one{# д.}few{# д.}many{# д.}other{# д.}}</translation>
 <translation id="2148716181193084225">Сегодня</translation>
+<translation id="2161656808144014275">Текст</translation>
 <translation id="2168039046890040389">Вверх</translation>
 <translation id="2190355936436201913">(пусто)</translation>
 <translation id="2192232475740621500">Показывать меньше окон</translation>
@@ -74,7 +75,7 @@
 <translation id="3234408098842461169">Стрелка вниз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}</translation>
 <translation id="3295886253693811851">Позвонить:</translation>
-<translation id="335581015389089642">Озвучить</translation>
+<translation id="335581015389089642">Озвучивание</translation>
 <translation id="3443810440409579745">Вкладка получена.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="348799646910989694">Временное хранилище автоматически скрыто</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Выберите папку для загрузки</translation>
 <translation id="3660179305079774227">Стрелка вверх</translation>
+<translation id="3670030362669914947">Номер</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ГБ/с</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
 <translation id="3842239759367498783">Продолжить чтение с мобильного устройства "<ph name="TITLE" />"</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{месяц назад}one{# месяц назад}few{# месяца назад}many{# месяцев назад}other{# месяца назад}}</translation>
 <translation id="4289300219472526559">Начать голосовой ввод</translation>
 <translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
-<translation id="4467014365953759647">Не удается отправить номер</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4690510401873698237">Временное хранилище размещено в нижней части экрана</translation>
 <translation id="4724120544754982507">Центр уведомлений. Непрочитанных: <ph name="UNREAD_NOTIFICATION_COUNT" />.</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
 <translation id="5613020302032141669">Стрелка влево</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин.}one{# мин.}few{# мин.}many{# мин.}other{# мин.}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Последние действия: сегодня}=1{Последние действия: 1 день назад}one{Последние действия: # день назад}few{Последние действия: # дня назад}many{Последние действия: # дней назад}other{Последние действия: # дня назад}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 день }one{# день }few{# дня }many{# дней }other{# дня }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{через 1 г.}one{через # г.}few{через # г.}many{через # л.}other{через # г.}}</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Панель запуска, частичный список приложений</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 мин. назад}one{# мин. назад}few{# мин. назад}many{# мин. назад}other{# мин. назад}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Проверьте подключение к мобильной сети и повторите попытку.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Осталась 1 минута}one{Осталась # минута}few{Осталось # минуты}many{Осталось # минут}other{Осталось # минуты}}</translation>
 <translation id="7430878839542012341">Удалить этот запрос из истории поиска?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>

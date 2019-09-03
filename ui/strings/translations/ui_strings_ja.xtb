@@ -38,6 +38,7 @@
 <translation id="208586643495776849">もう一度お試しください</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1日}other{#日}}</translation>
 <translation id="2148716181193084225">今日</translation>
+<translation id="2161656808144014275">テキスト</translation>
 <translation id="2168039046890040389">前のページへ</translation>
 <translation id="2190355936436201913">(なし)</translation>
 <translation id="2192232475740621500">表示間隔を広くする</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">「<ph name="LOOKUP_STRING" />」を検索</translation>
 <translation id="364720409959344976">アップロードするフォルダを選択</translation>
 <translation id="3660179305079774227">上矢印キー</translation>
+<translation id="3670030362669914947">番号</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/秒</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">モバイル デバイスで読む: <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 か月前}other{# か月前}}</translation>
 <translation id="4289300219472526559">読み上げを開始</translation>
 <translation id="4316910396681052118">すべてのアプリ</translation>
-<translation id="4467014365953759647">番号を送信できません</translation>
 <translation id="4588090240171750605">右にスクロール</translation>
 <translation id="4690510401873698237">シェルフは一番下にあります</translation>
 <translation id="4724120544754982507">通知センター: <ph name="UNREAD_NOTIFICATION_COUNT" /> 件の未読通知</translation>
@@ -175,7 +176,6 @@
 <translation id="7319740667687257810">ランチャー、一部のみ表示</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分前}other{# 分前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">スマートフォンの接続を確認し、もう一度お試しください</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
 <translation id="7430878839542012341">この検索キーワードを履歴から削除しますか？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

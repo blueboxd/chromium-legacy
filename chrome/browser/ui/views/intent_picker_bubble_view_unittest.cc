@@ -64,13 +64,13 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
     anchor_view_ = std::make_unique<views::View>();
 
     // Pushing a couple of fake apps just to check they are created on the UI.
-    app_info_.emplace_back(apps::mojom::AppType::kArc, gfx::Image(),
+    app_info_.emplace_back(apps::PickerEntryType::kArc, gfx::Image(),
                            "package_1", "dank app 1");
-    app_info_.emplace_back(apps::mojom::AppType::kArc, gfx::Image(),
+    app_info_.emplace_back(apps::PickerEntryType::kArc, gfx::Image(),
                            "package_2", "dank_app_2");
     // Also adding the corresponding Chrome's package name on ARC, even if this
     // is given to the picker UI as input it should be ignored.
-    app_info_.emplace_back(apps::mojom::AppType::kArc, gfx::Image(),
+    app_info_.emplace_back(apps::PickerEntryType::kArc, gfx::Image(),
                            kArcIntentHelperPackageName, "legit_chrome");
 
     if (use_icons)
@@ -109,7 +109,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
 
   // Dummy method to be called upon bubble closing.
   void OnBubbleClosed(const std::string& selected_app_package,
-                      apps::mojom::AppType app_type,
+                      apps::PickerEntryType entry_type,
                       apps::IntentPickerCloseReason close_reason,
                       bool should_persist) {}
 

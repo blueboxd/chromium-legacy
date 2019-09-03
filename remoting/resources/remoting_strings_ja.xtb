@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
 <translation id="5308380583665731573">接続</translation>
+<translation id="5327248766486351172">名前</translation>
 <translation id="533625276787323658">接続先がありません</translation>
 <translation id="5363265567587775042">接続先のパソコンのユーザーに、[<ph name="SHARE" />] をクリックしてアクセスコードを付与してもらってください。</translation>
 <translation id="5379087427956679853">Chrome リモート デスクトップを使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chrome リモート デスクトップ アプリを実行している必要があります。このアプリは <ph name="URL" /> から入手できます。</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">画面のオプション</translation>
 <translation id="7970576581263377361">認証できませんでした。Chromium にもう一度ログインしてください。</translation>
 <translation id="7981525049612125370">リモート セッションが時間切れとなりました。</translation>
+<translation id="8038111231936746805">（デフォルト）</translation>
 <translation id="8041089156583427627">フィードバックを送信</translation>
 <translation id="8041721485428375115">Chrome リモート デスクトップ ホスト インストーラをダウンロードすると、Google の<ph name="LINK_BEGIN" />利用規約<ph name="LINK_END" />に同意したことになります。</translation>
 <translation id="8060029310790625334">ヘルプセンター</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">マイ コンピュータ</translation>
 <translation id="811307782653349804">どこからでも自分のパソコンにアクセスできます。</translation>
 <translation id="8116630183974937060">ネットワーク エラーが発生しました。デバイスがインターネットに接続されているか確認して、もう一度お試しください。</translation>
-<translation id="8123581458650016326">リモート ユーザーがこのパソコンを管理できるようにする</translation>
 <translation id="8178433417677596899">リモート テクニカル サポートに最適な、ユーザー同士の画面共有。</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="8196755618196986400">後で詳しい情報をお知らせするために、送信いただくフィードバックにはお客様のメールアドレスが記載されますのでご了承ください。</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">プライバシー ポリシー</translation>
 <translation id="894763922177556086">良い</translation>
 <translation id="895780780740011433">Windows 版（7 以上）</translation>
-<translation id="8963047137585288214"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定が必要です。
-
-この機能を有効にするには、[<ph name="BUTTON_NAME" />] を選択して [セキュリティとプライバシー] 設定パネルを開き、「<ph name="SERVICE_SCRIPT_NAME" />」の横にあるチェックボックスをオンにします。
-
-「<ph name="SERVICE_SCRIPT_NAME" />」がすでに追加されてチェックボックスがオンになっている場合は、念のためチェックボックスをオフにしてオンにし直してください。</translation>
 <translation id="897805526397249209">別のパソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="8998327464021325874">Chrome リモート デスクトップ ホスト コントローラ</translation>
 <translation id="9016232822027372900">このまま接続する</translation>

@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">וריאציות של שורת פקודה</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="129863573139666797">‏<ph name="BEGIN_LINK" />נסה לנקות את קובצי ה-Cookie<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">תכונות שהוצאו משימוש</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)‎</translation>
 <translation id="132301787627749051">חיפוש תמונה בלוח</translation>
 <translation id="1323433172918577554">הצגת פריטים נוספים</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">תיכף נתחבר…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)‎</translation>
+<translation id="1530707389502320859">‏האתר שניסית לבקר בו, נראה כמו אתר מזויף. תוקפים שמחקים אתרים לפעמים משתמשים בכתובת ה-URL של האתר המקורי ועושים בה שינויים קלים ביותר כדי שיהיה קשה להבחין בהבדל.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">הדף הזה אומר</translation>
 <translation id="153384715582417236">זה הכול בינתיים</translation>
@@ -345,6 +347,9 @@
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />מפעיל את אבחון הקישוריות<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">הפעלת התכונות האלה עלולה לגרום לאובדן נתוני גלישה או
+    לפגיעה באבטחה או בפרטיות שלך. התכונות המופעלות משפיעות על כל מי
+    שמשתמש בדפדפן הזה.</translation>
 <translation id="2735043616039983645">קיים יותר ממקור אחד עם ערכים סותרים עבור המדיניות הזו!</translation>
 <translation id="2738330467931008676">בחירת כתובת לאיסוף</translation>
 <translation id="2740531572673183784">אישור</translation>
@@ -388,6 +393,7 @@
 <translation id="2985306909656435243">‏אם האפשרות תופעל, Chromium יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="2985398929374701810">עליך להזין כתובת חוקית</translation>
 <translation id="2986368408720340940">שיטת האיסוף הזו אינה זמינה. עליך לבחור שיטה אחרת.</translation>
+<translation id="2987034854559945715">אין תכונות תואמות</translation>
 <translation id="2991174974383378012">שיתוף עם אתרים</translation>
 <translation id="2991571918955627853">‏נכון לעכשיו אי אפשר לבקר באתר <ph name="SITE" /> מאחר שנעשה בו שימוש ב-HSTS. שגיאות רשת ומתקפות הן בדרך כלל זמניות, כך שהדף הזה יחזור כנראה לפעול מאוחר יותר.</translation>
 <translation id="3005723025932146533">הצג עותק שמור</translation>
@@ -510,6 +516,7 @@
 <translation id="3678529606614285348">‏פתח את הדף בחלון חדש של גלישה בסתר (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">דוח קריסה תועד ב-<ph name="CRASH_TIME" />, הועלה ב-<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">פרטי אישור</translation>
+<translation id="3701427423622901115">האיפוס אושר.</translation>
 <translation id="3704162925118123524">ייתכן שתוצג דרישה להיכנס לדף ההתחברות של הרשת שבה אתה משתמש.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">טוען...</translation>
@@ -682,6 +689,7 @@
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
 <translation id="4597348597567598915">גודל 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)‎</translation>
+<translation id="464342062220857295">תכונות חיפוש</translation>
 <translation id="4646534391647090355">אני רוצה לעבור לשם עכשיו</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
@@ -802,6 +810,7 @@ Del</translation>
 <translation id="5251803541071282808">ענן</translation>
 <translation id="5252000469029418751">C7 (Envelope)‎</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">רק הבעלים יכול להגדיר תכונות שחלות על כל המערכת: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">‏אזהרה: המדיניות הזו לא עברה מיזוג בהתאם למדיניות PolicyDictionaryMultipleSourceMergeList, מאחר שהיא לא חלק מכללי מדיניות המילון שניתן למזג.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">סיום</translation>
@@ -838,6 +847,8 @@ Del</translation>
 <translation id="5457113250005438886">לא חוקי</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}two{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;ביצוע מחדש של עריכה</translation>
+<translation id="5473728911100096288">אם בוחרים להפעיל את התכונות האלו ולהשתמש בהן, חשוב לדעת שאלו
+    תכונות שהוצאו משימוש. הן לא יופיעו בגרסאות עתידיות.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)‎</translation>
 <translation id="5481076368049295676">ייתכן שהתוכן הזה מכיל אמצעים שינסו להתקין תוכנה מסוכנת, שגונבת או מוחקת את המידע שלך. <ph name="BEGIN_LINK" />הצג בכל זאת<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">הוספה של כתובת חוקית</translation>
@@ -897,6 +908,7 @@ Del</translation>
 <translation id="5763042198335101085">עליך להזין כתובת אימייל חוקית</translation>
 <translation id="5765072501007116331">עליך לבחור כתובת כדי לראות שיטות מסירה ודרישות</translation>
 <translation id="5778550464785688721">‏שליטה מלאה במכשירי MIDI</translation>
+<translation id="5781136890105823427">הניסוי מופעל</translation>
 <translation id="578305955206182703">ענבר</translation>
 <translation id="57838592816432529">השתקה</translation>
 <translation id="5784606427469807560">הייתה בעיה באישור הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
@@ -1062,6 +1074,7 @@ Del</translation>
 <translation id="6738516213925468394">הנתונים שלך הוצפנו באמצעות<ph name="BEGIN_LINK" />ביטוי סיסמה לסנכרון<ph name="END_LINK" /> בתאריך <ph name="TIME" />. צריך להזין אותו כדי להתחיל את הסנכרון.</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6744009308914054259">בזמן ההמתנה לחיבור אפשר לעבור אל 'הורדות' כדי לקרוא מאמרים לא מקוונים.</translation>
+<translation id="6747611005629681221">אזהרה: יש כאן תכונות שהוצאו משימוש!</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6757797048963528358">המכשיר עבר למצב שינה.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)‎</translation>
@@ -1425,6 +1438,7 @@ Del</translation>
 <translation id="8738058698779197622">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Chromium לא יכול לאמת את האישורים האלו.</translation>
 <translation id="8740359287975076522">‏לא ניתן היה למצוא את &lt;abbr id="dnsDefinition"&gt;כתובת ה-DNS&lt;/abbr&gt; של <ph name="HOST_NAME" />. מאבחן את הבעיה.</translation>
 <translation id="874846938927089722">כרטיסי אשראי וכרטיסים משולמים מראש שהסוחר מקבל</translation>
+<translation id="874918643257405732">הוספת הכרטיסייה לסימניות</translation>
 <translation id="8759274551635299824">פג תוקפו של הכרטיס</translation>
 <translation id="8761567432415473239">‏גלישה בטוחה של Google <ph name="BEGIN_LINK" />איתרה לאחרונה תוכניות מזיקות<ph name="END_LINK" /> באתר <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">‏התקן USB</translation>

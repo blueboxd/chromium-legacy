@@ -18,7 +18,8 @@ ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* script_state,
   // construct multiple streams).
   DCHECK(!controller_);
 
-  controller_ = ReadableStreamDefaultControllerInterface::Create(js_controller);
+  controller_ = ReadableStreamDefaultControllerInterface::Create(script_state,
+                                                                 js_controller);
 
   return Start(script_state);
 }

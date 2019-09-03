@@ -35,7 +35,7 @@
 <translation id="1351937230027495976">மெனுவைச் சுருக்கு</translation>
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1419738280318246476">அறிவிப்பில் வந்த செயலைச் செய்வதற்கு, சாதனத்தைத் திறங்கள்</translation>
-<translation id="1420408895951708260">நைட் லைட்டை நிலைமாற்றும். <ph name="STATE_TEXT" /></translation>
+<translation id="1420408895951708260">நைட் லைட்டை ஆன்/ஆஃப் செய்யும். <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">ஆம்</translation>
 <translation id="1455242230282523554">மொழி அமைப்புகளைக் காட்டும்</translation>
 <translation id="1460620680449458626">ஒலி முடக்கப்பட்டுள்ளது.</translation>
@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">அடுத்த டிராக்</translation>
 <translation id="4479639480957787382">ஈத்தர்நெட்</translation>
 <translation id="4481530544597605423">இணைக்காத சாதனங்கள்</translation>
+<translation id="4505050298327493054">செயல்பாட்டு டெஸ்க்.</translation>
 <translation id="4513946894732546136">கருத்து</translation>
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ஆகும் 100% சார்ஜாக</translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">துவக்குகிறது...</translation>
 <translation id="8142441511840089262">இரு கிளிக்</translation>
 <translation id="8142699993796781067">தனிப்பட்ட நெட்வொர்க்</translation>
+<translation id="8152092012181020186">மூடுவதற்கு Ctrl + W விசைகளை அழுத்தவும்.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ஐப் பயன்படுத்துகிறது</translation>
 <translation id="8190698733819146287">மொழிகள் மற்றும்  உள்ளீடைத் தனிப்பயனாக்கு...</translation>
 <translation id="8192202700944119416">அறிவிப்புகள் மறைக்கப்பட்டுள்ளன.</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">எனது கேலெண்டரில் என்ன உள்ளது?</translation>
 <translation id="945522503751344254">பின்னூட்டம் அனுப்புக</translation>
 <translation id="98515147261107953">லேண்ட்ஸ்கேப்</translation>
+<translation id="990277280839877440"><ph name="WINDOW_TITILE" /> சாளரம் மூடப்பட்டது.</translation>
 </translationbundle>

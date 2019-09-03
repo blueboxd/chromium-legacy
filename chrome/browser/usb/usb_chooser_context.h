@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -125,8 +125,8 @@ class UsbChooserContext : public ChooserContextBase,
 
   // Connection to |device_manager_instance_|.
   mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
-  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
-      client_binding_;
+  mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
+      client_receiver_{this};
   base::ObserverList<DeviceObserver> device_observer_list_;
 
   base::WeakPtrFactory<UsbChooserContext> weak_factory_{this};

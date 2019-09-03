@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">إيقاف النطق</translation>
 <translation id="4373197658375206385">ليس هناك عنصر سابق بخلاف الروابط.</translation>
 <translation id="4376316291247992553">عرض الرسم بطريقة برايل</translation>
+<translation id="437809255587011096">الإعلان عن نمط النص</translation>
 <translation id="4378308539633073595">التمرير للأمام</translation>
 <translation id="4384583879834880242">سين وجيم</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">خفض دقة التنقل</translation>
 <translation id="8504695234784218301">نهاية الخطأ النحوي</translation>
 <translation id="8520472399088452386">زر الدوران</translation>
+<translation id="8534394844575788431">التنسيق</translation>
 <translation id="8538744478902126321">إجراء تخمين في عنوان الصف للخلية الحالية</translation>
 <translation id="8540054775867439484">التفاف إلى أعلى</translation>
 <translation id="8542271685829952264">‏لاستكشاف جميع أوامر ChromeVox واختصاراته، اضغط على "Search + Period"، ثم استخدم مفاتيح الأسهم للتنقل خلال القوائم، ومفتاح Enter لتفعيل أحد الأوامر. ويمكنك العودة هنا من خلال الضغط على "Search+o" ثم "t".</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">علامة تبويب</translation>
 <translation id="9151211641321628915">الإعلان عن وصف موجز للموضع الحالي</translation>
+<translation id="9151249085738989067">‏تبديل مستوى صوت ChromeVox تلقائيًا بناءً على اللغة</translation>
 <translation id="9153606228985488238">درجة صوت بنسبة <ph name="PERCENT" /> في المائة</translation>
 <translation id="9160096769946561184">الانتقال إلى نهاية العمود الحالي</translation>
 <translation id="9173115498289768110">مستوى الصوت بنسبة <ph name="PERCENT" /> في المائة</translation>

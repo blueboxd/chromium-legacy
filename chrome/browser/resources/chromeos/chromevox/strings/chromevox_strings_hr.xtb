@@ -484,6 +484,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4372705107434148843">Zaustavljanje govora</translation>
 <translation id="4373197658375206385">Nema prethodne stavke koja nije veza.</translation>
 <translation id="4376316291247992553">Prikazivanje slike kao uzorka ispisanog brajicom</translation>
+<translation id="437809255587011096">Najavi stiliziranje teksta</translation>
 <translation id="4378308539633073595">Pomicanje unaprijed</translation>
 <translation id="4384583879834880242">Pitanja i odgovori</translation>
 <translation id="4391478986194775161">sdržjinfo</translation>
@@ -1121,6 +1122,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="8503360654911991865">Smanji razinu pojedinosti navigacije</translation>
 <translation id="8504695234784218301">Kraj gramatičke pogreške</translation>
 <translation id="8520472399088452386">Okretni gumb</translation>
+<translation id="8534394844575788431">Formatiranje</translation>
 <translation id="8538744478902126321">Pokušaj utvrđivanja zaglavlja retka trenutačne ćelije</translation>
 <translation id="8540054775867439484">Prelomljeno na vrh</translation>
 <translation id="8542271685829952264">Da biste istražili sve naredbe i prečace ChromeVoxa, pritisnite tipku za pretraživanje i točku, a zatim se pomičite izbornicima pomoću tipki sa strelicama. Željenu naredbu aktivirajte tipkom Enter. Pritisnite tipku za pretraživanje i "o" pa "t" da biste se vratili na ovo mjesto.</translation>
@@ -1200,6 +1202,7 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="9149560530563164529">odjljk</translation>
 <translation id="9150735707954472829">Kartica</translation>
 <translation id="9151211641321628915">Najavljuje kratak opis trenutačnog položaja</translation>
+<translation id="9151249085738989067">Automatski prebaci ChromeVoxov glas na temelju jezika</translation>
 <translation id="9153606228985488238">Visina glasa: <ph name="PERCENT" /> posto</translation>
 <translation id="9160096769946561184">Prelazak na kraj trenutačnog stupca</translation>
 <translation id="9173115498289768110">Glasnoća <ph name="PERCENT" /> posto</translation>

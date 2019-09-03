@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">ಮಾತು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="4373197658375206385">ಹಿಂದಿನ ಯಾವುದೇ ಐಟಂ ಲಿಂಕ್ ಆಗಿಲ್ಲ</translation>
 <translation id="4376316291247992553">ಗ್ರಾಫಿಕ್ ಅನ್ನು ಬ್ರೈಲ್‌ನಂತೆ ವೀಕ್ಷಿಸಿ</translation>
+<translation id="437809255587011096">ಪಠ್ಯ ಶೈಲಿಯನ್ನು ಪ್ರಸಾರ ಮಾಡಿ</translation>
 <translation id="4378308539633073595">ಮುಂದಕ್ಕೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ</translation>
 <translation id="4384583879834880242">ಪ್ರಶ್ನೋತ್ತರ</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8503360654911991865">ನ್ಯಾವಿಗೇಶನ್ ರಚನೆಯನ್ನು ಇಳಿಸಿ</translation>
 <translation id="8504695234784218301">ವ್ಯಾಕರಣದ ದೋ‍ಷ ಮುಕ್ತಾಯ</translation>
 <translation id="8520472399088452386">ಸ್ಪಿನ್ ಬಟನ್</translation>
+<translation id="8534394844575788431">ಫಾರ್ಮ್ಯಾಟಿಂಗ್</translation>
 <translation id="8538744478902126321">ಪ್ರಸ್ತುತ ಸೆಲ್‌ನಲ್ಲಿರುವ ಶಿರೋನಾಮೆಯ ಬಗ್ಗೆ ಊಹೆ ಮಾಡಿ</translation>
 <translation id="8540054775867439484">ಮೇಲಕ್ಕೆ ಆವರಿಸಲಾಗಿದೆ</translation>
 <translation id="8542271685829952264">ಎಲ್ಲಾ ChromeVox ಆದೇಶಗಳು ಮತ್ತು ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಲು, ಹುಡುಕಾಟ + ವಿರಾಮ ಚಿಹ್ನೆಯನ್ನು ಒತ್ತಿ, ನಂತರ ಮೆನುಗಳನ್ನು ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಬಾಣದ ಕೀಲಿಗಳು ಮತ್ತು ಕಮಾಂಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು Enter ಅನ್ನು ಬಳಸಿ. ಹುಡುಕಾಟ+o ನಂತರ t ಒತ್ತುವ ಮೂಲಕ ಇಲ್ಲಿಗೆ ಹಿಂತಿರುಗಿ.</translation>
@@ -1200,6 +1202,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">ಟ್ಯಾಬ್</translation>
 <translation id="9151211641321628915">ಪ್ರಸ್ತುತ ಸ್ಥಾನದ ಸಂಕ್ಷಿಪ್ತ ವಿವರಣೆಯ ಪ್ರಕಟಣೆ</translation>
+<translation id="9151249085738989067">ಭಾಷೆಯ ಆಧಾರದ ಮೇಲೆ ChromeVox ಧ್ವನಿಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬದಲಾಯಿಸಿ</translation>
 <translation id="9153606228985488238">ಪಿಚ್‌ <ph name="PERCENT" /> ಶೇಕಡಾ ಹೊಂದಿದೆ</translation>
 <translation id="9160096769946561184">ಪ್ರಸ್ತುತ ಕಾಲಮ್‌ನ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="9173115498289768110">ಶೇಕಡಾ <ph name="PERCENT" /> ವಾಲ್ಯೂಮ್‌</translation>

@@ -181,7 +181,7 @@ v8::Local<v8::Promise> ScriptPromise::InternalResolver::V8Promise() const {
 ScriptPromise ScriptPromise::InternalResolver::Promise() const {
   if (resolver_.IsEmpty())
     return ScriptPromise();
-  return ScriptPromise(resolver_.GetScriptState(), V8Promise());
+  return ScriptPromise(script_state_, V8Promise());
 }
 
 void ScriptPromise::InternalResolver::Resolve(v8::Local<v8::Value> value) {

@@ -83,7 +83,7 @@ void UsbDeviceManager::Observer::OnDeviceRemoved(
 void UsbDeviceManager::Observer::OnDeviceManagerConnectionError() {}
 
 UsbDeviceManager::UsbDeviceManager(content::BrowserContext* browser_context)
-    : browser_context_(browser_context), client_binding_(this) {
+    : browser_context_(browser_context) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     event_router->RegisterObserver(this, usb::OnDeviceAdded::kEventName);
@@ -272,12 +272,11 @@ void UsbDeviceManager::SetUpDeviceManagerConnection() {
                      base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_binding_);
-  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  DCHECK(!client_receiver_.is_bound());
   device_manager_->EnumerateDevicesAndSetClient(
-      std::move(client), base::BindOnce(&UsbDeviceManager::InitDeviceList,
-                                        weak_factory_.GetWeakPtr()));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&UsbDeviceManager::InitDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UsbDeviceManager::InitDeviceList(
@@ -302,7 +301,7 @@ void UsbDeviceManager::InitDeviceList(
 
 void UsbDeviceManager::OnDeviceManagerConnectionError() {
   device_manager_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   devices_.clear();
   is_initialized_ = false;
 

@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Tafadhali jaribu tena</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{Siku 1}other{Siku #}}</translation>
 <translation id="2148716181193084225">Leo</translation>
+<translation id="2161656808144014275">Maandishi</translation>
 <translation id="2168039046890040389">Ukurasa mmoja juu</translation>
 <translation id="2190355936436201913">(tupu)</translation>
 <translation id="2192232475740621500">Tumia uzito wa chini</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Angalia “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Chagua Folda ya Kupakia</translation>
 <translation id="3660179305079774227">Mshale Juu</translation>
+<translation id="3670030362669914947">Nambari</translation>
 <translation id="3740362395218339114">GB/s <ph name="QUANTITY" /></translation>
 <translation id="3757388668994797779">GB <ph name="QUANTITY" /></translation>
 <translation id="3842239759367498783">Endelea kusoma kwenye kifaa chako cha mkononi <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Mwezi 1 uliopita}other{Miezi # iliyopita}}</translation>
 <translation id="4289300219472526559">Anza Kuzungumza</translation>
 <translation id="4316910396681052118">PROGRAMU ZOTE</translation>
-<translation id="4467014365953759647">Imeshindwa kutuma nambari</translation>
 <translation id="4588090240171750605">Sogeza Kulia</translation>
 <translation id="4690510401873698237">Rafu iko upande wa chini</translation>
 <translation id="4724120544754982507">Kituo cha Arifa, arifa <ph name="UNREAD_NOTIFICATION_COUNT" /> ambazo hujasoma</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Mshale Kushoto</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{Dakika 1}other{Dakika #}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Kimetumika leo}=1{Kilitumika siku 1 iliyopita}other{Kilitumika ziku # zilizopita}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{Siku 1 na }other{Siku # na }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{mwaka 1}other{miaka #}}</translation>
 <translation id="5895138241574237353">Zzima na uwashe</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Kifungua programu, mwonekano mdogo</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Angalia muunganisho wa simu yako kisha ujaribu tena.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
 <translation id="7430878839542012341">Ungependa kufuta utafutaji huu kwenye historia yako?</translation>
 <translation id="7460907917090416791">TB <ph name="QUANTITY" /></translation>

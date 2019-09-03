@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"

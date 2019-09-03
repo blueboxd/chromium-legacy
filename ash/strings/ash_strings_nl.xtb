@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">Volgend nummer</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Ontkoppelde apparaten</translation>
+<translation id="4505050298327493054">Actief bureaublad.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tot volledig opgeladen</translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">Starten...</translation>
 <translation id="8142441511840089262">Dubbelklik</translation>
 <translation id="8142699993796781067">Privénetwerk</translation>
+<translation id="8152092012181020186">Druk op Ctrl + W om af te sluiten.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> in gebruik</translation>
 <translation id="8190698733819146287">Talen en invoer aanpassen...</translation>
 <translation id="8192202700944119416">Meldingen zijn verborgen.</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">Wat staat er in mijn agenda?</translation>
 <translation id="945522503751344254">Feedback verzenden</translation>
 <translation id="98515147261107953">Liggend</translation>
+<translation id="990277280839877440">Venster <ph name="WINDOW_TITILE" /> gesloten.</translation>
 </translationbundle>

@@ -163,14 +163,6 @@ gfx::Insets ShellNativeAppWindow::GetFrameInsets() const {
   return gfx::Insets();
 }
 
-void ShellNativeAppWindow::ShowWithApp() {
-  NOTIMPLEMENTED();
-}
-
-void ShellNativeAppWindow::HideWithApp() {
-  NOTIMPLEMENTED();
-}
-
 void ShellNativeAppWindow::SetContentSizeConstraints(
     const gfx::Size& min_size,
     const gfx::Size& max_size) {

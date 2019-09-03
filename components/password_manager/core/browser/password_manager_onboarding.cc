@@ -60,10 +60,6 @@ void StartOnboardingStateUpdate(
 void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
                            PrefService* prefs,
                            base::TimeDelta delay) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerOnboardingAndroid)) {
-    return;
-  }
   if (prefs->GetInteger(prefs::kPasswordManagerOnboardingState) ==
       static_cast<int>(OnboardingState::kShown)) {
     return;
@@ -73,17 +69,25 @@ void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
       delay);
 }
 
-bool ShouldShowOnboarding(PrefService* prefs, bool is_password_update) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerOnboardingAndroid)) {
+bool ShouldShowOnboarding(PrefService* prefs,
+                          PasswordUpdateBool is_password_update,
+                          BlacklistedBool is_blacklisted) {
+  if (is_blacklisted) {
     return false;
   }
   if (is_password_update) {
     return false;
   }
-  return prefs->GetInteger(
-             password_manager::prefs::kPasswordManagerOnboardingState) ==
-         static_cast<int>(OnboardingState::kShouldShow);
+  if (prefs->GetInteger(
+          password_manager::prefs::kPasswordManagerOnboardingState) ==
+      static_cast<int>(OnboardingState::kShouldShow)) {
+    // It is very important that the feature is checked last when we are certain
+    // that the onboarding needs to be shown. Otherwise, experiment data will be
+    // polluted.
+    return base::FeatureList::IsEnabled(
+        password_manager::features::kPasswordManagerOnboardingAndroid);
+  }
+  return false;
 }
 
 }  // namespace password_manager

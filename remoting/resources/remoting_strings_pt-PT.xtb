@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="5254120496627797685">Se sair desta página, terminará a sessão do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="5308380583665731573">Ligar</translation>
+<translation id="5327248766486351172">Nome</translation>
 <translation id="533625276787323658">Não há computadores aos quais estabelecer ligação</translation>
 <translation id="5363265567587775042">Solicite ao utilizador a cujo computador pretende aceder para clicar em "<ph name="SHARE" />" e dar-lhe o código de acesso.</translation>
 <translation id="5379087427956679853">O Ambiente de Trabalho Remoto do Chrome permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Ambiente de Trabalho Remoto do Chrome, que pode ser encontrada em <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opções de ecrã</translation>
 <translation id="7970576581263377361">Falha na autenticação. Inicie sessão novamente no Chromium.</translation>
 <translation id="7981525049612125370">A sessão remota expirou.</translation>
+<translation id="8038111231936746805">(predefinição)</translation>
 <translation id="8041089156583427627">Enviar comentários</translation>
 <translation id="8041721485428375115">Ao transferir o instalador do anfitrião do Ambiente de Trabalho Remoto do Chrome, aceita os <ph name="LINK_BEGIN" />Termos de Utilização<ph name="LINK_END" /> do Google.</translation>
 <translation id="8060029310790625334">Centro de Ajuda</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Os Meus Computadores</translation>
 <translation id="811307782653349804">Aceda ao seu computador a partir de qualquer lugar.</translation>
 <translation id="8116630183974937060">Ocorreu um erro de rede. Verifique se o dispositivo está online e tente novamente.</translation>
-<translation id="8123581458650016326">Permitir que utilizadores remotos controlem esta máquina</translation>
 <translation id="8178433417677596899">Partilha de ecrã entre utilizadores, ideal para suporte técnico remoto.</translation>
 <translation id="8187079423890319756">Copyright 2013 Os Autores do Chromium. Todos os Direitos Reservados.</translation>
 <translation id="8196755618196986400">Para que o(a) possamos contactar para mais informações, o seu endereço de email é incluído em quaisquer comentários que enviar.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Política de Privacidade</translation>
 <translation id="894763922177556086">Boa</translation>
 <translation id="895780780740011433">Para Windows 7 e superior</translation>
-<translation id="8963047137585288214">É necessário um passo de configuração adicional para poder controlar remotamente esta máquina com o <ph name="PRODUCT_NAME" />.
-
-De modo a ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apresentar o painel de preferências de Segurança e privacidade e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se o "<ph name="SERVICE_SCRIPT_NAME" />" já estiver presente e selecionado, pode ter de o desselecionar e, em seguida, voltar a selecioná-lo.</translation>
 <translation id="897805526397249209">Para ativar as ligações remotas a outro computador, instale o Chromoting aí e clique em “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controlador do Anfitrião do Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="9016232822027372900">Estabelecer ligação mesmo assim</translation>

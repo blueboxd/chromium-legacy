@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Instalado</translation>
 <translation id="1792959175193046959">Altere a localização de transferência predefinida em qualquer altura.</translation>
 <translation id="1807246157184219062">Claro</translation>
+<translation id="1810845389119482123">A configuração da sincronização inicial não está concluída</translation>
 <translation id="1821253160463689938">Utiliza cookies para memorizar as suas preferências, mesmo que não visite essas páginas.</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
 <translation id="1853692000353488670">Novo separador anónimo</translation>
@@ -412,6 +413,7 @@ Para ajustar o termo de pesquisa, mantenha-o premido para selecionar. Para refin
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> utilizado(s)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
+<translation id="4183868528246477015">Pesquise com Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4198423547019359126">Não existem localizações de transferência disponíveis.</translation>
 <translation id="4209895695669353772">Para obter conteúdo personalizado sugerido pelo Google, ative a sincronização.</translation>
@@ -474,6 +476,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Envie uma mensagem de texto para os seus dispositivos</translation>
 <translation id="4698034686595694889">Ver offline no <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Uma funcionalidade crítica, necessária para executar o Chrome, está em falta. A instalação do Chrome pode estar incompleta ou não ser compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e ficheiros em cache</translation>
@@ -529,6 +532,10 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5011311129201317034"><ph name="SITE" /> pretende estabelecer ligação</translation>
 <translation id="5013696553129441713">Não existem novas sugestões.</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Enquanto estiver na RV, este site consegue saber:
+  -  as suas caraterísticas físicas, como o peso.
+
+Certifique-se de que confia neste site antes de entrar na RV.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5048398596102334565">Permitir que os sites acedam aos sensores de movimentos (recomendado)</translation>
@@ -556,6 +563,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5224771365102442243">Com vídeo</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> pretende procurar dispositivos Bluetooth próximos. Foram encontrados os seguintes dispositivos:</translation>
 <translation id="5233638681132016545">Novo separador</translation>
+<translation id="5234764350956374838">Ignorar</translation>
 <translation id="526421993248218238">Não é possível carregar esta página.</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão de retrocesso para sair do ecrã inteiro.</translation>
@@ -574,6 +582,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5363230136052241468">Toque no botão página inicial para carregar a página novo separador.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> separador aberto, toque para alternar entre separadores}other{<ph name="OPEN_TABS_MANY" /> separadores abertos, toque para alternar entre separadores}}</translation>
 <translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(mais 1)}other{(mais #)}}</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="5403592356182871684">Nomes</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
@@ -603,6 +612,11 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5527082711130173040">O Chrome precisa de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as autorizações<ph name="END_LINK1" />. O acesso à localização também está <ph name="BEGIN_LINK2" />desativado para este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Perguntar antes de autorizar os sites a ler texto e imagens da área de transferência (recomendado).</translation>
 <translation id="5530766185686772672">Fechar sep. de naveg. anón.</translation>
+<translation id="5534334044554683961">Enquanto estiver na RV, este site consegue saber:
+  -   as suas caraterísticas físicas, com a altura;
+  -   a disposição do seu quarto.
+
+Certifique-se de que confia neste site antes de entrar na RV.</translation>
 <translation id="5534640966246046842">Site copiado</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5561549206367097665">A aguardar pela rede...</translation>
@@ -690,7 +704,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6206551242102657620">A ligação é segura. Informações do site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> não é o seu email?</translation>
-<translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueie para exportar as palavras-passe.</translation>
 <translation id="6232535412751077445">A ativação da funcionalidade "Não Monitorizar" significa que é incluído um pedido no seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
 
@@ -893,6 +906,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="766587987807204883">Os artigos são apresentados aqui e pode lê-los mesmo quando está offline.</translation>
 <translation id="7682724950699840886">Experimente as seguintes sugestões: certifique-se de que existe espaço suficiente no dispositivo e tente exportar novamente.</translation>
+<translation id="7685301384041462804">Certifique-se de que este site é de confiança antes de entrar na RV.</translation>
 <translation id="7698359219371678927">Criar email no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Pesquisas de preenchimento automático e URLs</translation>
 <translation id="7725024127233776428">As páginas que adiciona aos marcadores aparecem aqui.</translation>
@@ -923,6 +937,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="7886917304091689118">Em execução no Chrome.</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{A transferir o ficheiro…}other{A transferir # ficheiros…}}</translation>
 <translation id="7929962904089429003">Abrir o menu</translation>
+<translation id="7930681627240672853">Verifique a segurança da palavra-passe</translation>
 <translation id="7942131818088350342">O <ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
@@ -1070,6 +1085,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8993760627012879038">Abrir novo separador no modo de navegação anónima</translation>
 <translation id="8998729206196772491">Está a iniciar sessão com uma conta gerida por <ph name="MANAGED_DOMAIN" /> e a conceder ao respetivo gestor o controlo dos seus dados do Chrome. Os dados ficarão permanentemente associados a esta conta. Terminar sessão no Chrome elimina os seus dados deste dispositivo, embora permaneçam armazenados na Conta Google.</translation>
 <translation id="9019902583201351841">Gerido pelos teus pais</translation>
+<translation id="9029323097866369874">Pretende permitir que <ph name="DOMAIN" /> entre na RV?</translation>
 <translation id="9040142327097499898">As notificações são permitidas. A localização está desativada para este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}other{# vídeos}}</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>

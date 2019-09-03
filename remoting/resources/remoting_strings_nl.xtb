@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5254120496627797685">Als je deze pagina verlaat, wordt je Chrome Remote Desktop-sessie beëindigd.</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
+<translation id="5327248766486351172">Naam</translation>
 <translation id="533625276787323658">Er is geen computer om verbinding mee te maken</translation>
 <translation id="5363265567587775042">Vraag de gebruiker tot wiens computer je toegang wilt hebben, op <ph name="SHARE" /> te klikken en je de toegangscode te geven.</translation>
 <translation id="5379087427956679853">Met Chrome Remote Desktop kun je je computer beveiligd delen via internet. Beide gebruikers moeten hiervoor de app Chrome Remote Desktop uitvoeren, die beschikbaar is op <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Schermopties</translation>
 <translation id="7970576581263377361">Verificatie mislukt. Log opnieuw in bij Chromium.</translation>
 <translation id="7981525049612125370">De externe sessie is verlopen.</translation>
+<translation id="8038111231936746805">(standaard)</translation>
 <translation id="8041089156583427627">Feedback verzenden</translation>
 <translation id="8041721485428375115">Door het installatieprogramma voor de Chrome Remote Desktop-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
 <translation id="8060029310790625334">Helpcentrum</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mijn computers</translation>
 <translation id="811307782653349804">Krijg overal toegang tot je eigen computer.</translation>
 <translation id="8116630183974937060">Er is een netwerkfout opgetreden. Controleer of je apparaat online is en probeer het opnieuw.</translation>
-<translation id="8123581458650016326">Externe gebruikers toestaan om deze machine te beheren</translation>
 <translation id="8178433417677596899">Schermen delen tussen gebruikers, perfect voor externe ondersteuning.</translation>
 <translation id="8187079423890319756">Copyright 2013 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8196755618196986400">Je e-mailadres wordt opgenomen in alle feedback die je verzendt zodat we contact met je kunnen opnemen voor meer informatie.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Privacybeleid</translation>
 <translation id="894763922177556086">Goed</translation>
 <translation id="895780780740011433">Voor Windows 7 en hoger</translation>
-<translation id="8963047137585288214">Er is een aanvullende configuratiestap vereist voordat je dit apparaat extern kunt beheren met <ph name="PRODUCT_NAME" />.
-
-Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAME" />' om het deelvenster met beveiligings- en privacyvoorkeuren weer te geven en vink je vervolgens het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.
-
-Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je dit item mogelijk uitvinken en opnieuw aanvinken.</translation>
 <translation id="897805526397249209">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chromoting en klik je op '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">Controller voor Chrome Remote Desktop-host</translation>
 <translation id="9016232822027372900">Toch verbinding maken</translation>

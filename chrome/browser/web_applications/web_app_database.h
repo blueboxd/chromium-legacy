@@ -34,8 +34,9 @@ class WebAppDatabase : public AbstractWebAppDatabase {
 
   // AbstractWebAppDatabase:
   void OpenDatabase(OnceRegistryOpenedCallback callback) override;
-  void WriteWebApp(const WebApp& web_app) override;
-  void DeleteWebApps(std::vector<AppId> app_ids) override;
+  void WriteWebApps(AppsToWrite apps, CompletionCallback callback) override;
+  void DeleteWebApps(std::vector<AppId> app_ids,
+                     CompletionCallback callback) override;
 
   // Exposed for testing.
   static std::unique_ptr<WebAppProto> CreateWebAppProto(const WebApp& web_app);
@@ -56,13 +57,14 @@ class WebAppDatabase : public AbstractWebAppDatabase {
       const base::Optional<syncer::ModelError>& error,
       std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records);
 
-  void OnDataWritten(const base::Optional<syncer::ModelError>& error);
+  void OnDataWritten(CompletionCallback callback,
+                     const base::Optional<syncer::ModelError>& error);
 
   static std::unique_ptr<WebApp> ParseWebApp(const AppId& app_id,
                                              const std::string& value);
 
   void BeginTransaction();
-  void CommitTransaction();
+  void CommitTransaction(CompletionCallback callback);
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch_;

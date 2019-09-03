@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Instalado</translation>
 <translation id="1792959175193046959">Altere o local padrão de download a qualquer momento</translation>
 <translation id="1807246157184219062">Claro</translation>
+<translation id="1810845389119482123">Configuração de sincronização inicial não concluída</translation>
 <translation id="1821253160463689938">Utiliza cookies para lembrar suas preferências, mesmo se você não acessar essas páginas</translation>
 <translation id="1829244130665387512">Encontrar na página</translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
@@ -412,6 +413,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> usado(s)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
+<translation id="4183868528246477015">Pesquisar com Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4198423547019359126">Não há locais de download disponíveis</translation>
 <translation id="4209895695669353772">Para receber conteúdo personalizado sugerido pelo Google, ative a sincronização</translation>
@@ -475,6 +477,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Enviar texto para seus dispositivos</translation>
 <translation id="4698034686595694889">Ver off-line no app <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Um recurso importante e necessário para a execução do Google Chrome está ausente. Isso acontece porque a instalação do Google Chrome não foi concluída ou porque ele não é compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e arquivos armazenados em cache</translation>
@@ -530,6 +533,10 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5011311129201317034"><ph name="SITE" /> deseja se conectar</translation>
 <translation id="5013696553129441713">Nenhuma nova sugestão</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Enquanto você estiver em RV, o site poderá receber dados sobre:
+  -  suas características físicas, como altura
+
+Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5048398596102334565">Permitir o acesso de sites aos seus sensores de movimento (recomendado)</translation>
@@ -557,6 +564,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5224771365102442243">Com vídeo</translation>
 <translation id="5230560987958996918">Solicitação de <ph name="SITE" /> para procurar dispositivos Bluetooth próximos. Os seguintes dispositivos foram encontrados:</translation>
 <translation id="5233638681132016545">Nova guia</translation>
+<translation id="5234764350956374838">Dispensar</translation>
 <translation id="526421993248218238">Não foi possível carregar a página</translation>
 <translation id="5271967389191913893">Não é possível abrir no dispositivo o conteúdo a ser transferido por download.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão "Voltar" para sair da tela cheia.</translation>
@@ -575,6 +583,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5363230136052241468">Toque no botão home para carregar a nova guia</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> guia aberta, toque para alternar}one{<ph name="OPEN_TABS_MANY" /> guia aberta, toque para alternar}other{<ph name="OPEN_TABS_MANY" /> guias abertas, toque para alternar}}</translation>
 <translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(mais 1)}one{(mais #)}other{(mais #)}}</translation>
 <translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Nomes</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
@@ -604,6 +613,11 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5527082711130173040">O Chrome precisa ter acesso ao local para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as permissões<ph name="END_LINK1" />. O acesso ao local também está <ph name="BEGIN_LINK2" />desativado neste dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Perguntar antes de permitir que sites leiam textos e imagens da área de transferência (recomendado)</translation>
 <translation id="5530766185686772672">Fechar guias anônimas</translation>
+<translation id="5534334044554683961">Enquanto você estiver em RV, este site poderá receber dados sobre:
+  -   suas características físicas, como altura
+  -   o layout da sua sala
+
+Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5534640966246046842">Site copiado</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5561549206367097665">Aguardando a rede…</translation>
@@ -691,7 +705,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6206551242102657620">A conexão é segura. Informações do site</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueie para exportar suas senhas</translation>
 <translation id="6232535412751077445">Ao ativar o recurso "Não rastrear" uma solicitação é incluída no tráfego de navegação. O resultado depende da resposta de um site à solicitação e de como a solicitação é interpretada.
 
@@ -894,6 +907,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="766587987807204883">Os artigos são exibidos aqui e podem ser lidos até quando você está off-line</translation>
 <translation id="7682724950699840886">Experimente as seguintes dicas: verifique se há espaço suficiente no dispositivo e tente exportar novamente.</translation>
+<translation id="7685301384041462804">Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="7698359219371678927">Criar e-mail no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Preencher automaticamente pesquisas e URLs</translation>
 <translation id="7725024127233776428">As páginas favoritadas são exibidas aqui</translation>
@@ -924,6 +938,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7886917304091689118">Executando no Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Fazendo o download do arquivo.}one{Fazendo o download de # arquivo.}other{Fazendo o download de # arquivos.}}</translation>
 <translation id="7929962904089429003">Abrir o menu</translation>
+<translation id="7930681627240672853">Verificar segurança da senha</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
@@ -1071,6 +1086,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
+<translation id="9029323097866369874">Permitir que <ph name="DOMAIN" /> entre na RV?</translation>
 <translation id="9040142327097499898">As notificações são permitidas. A localização está desativada neste dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}one{# vídeo}other{# vídeos}}</translation>
 <translation id="9050666287014529139">Senha</translation>

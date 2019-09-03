@@ -169,6 +169,10 @@ class WebAppDatabaseTest : public testing::Test {
   }
 
  protected:
+  WebAppDatabase& database() { return *database_; }
+  WebAppRegistrar& registrar() { return *registrar_; }
+
+ private:
   // Must be created before TestWebAppDatabaseFactory.
   base::test::TaskEnvironment task_environment_;
 
@@ -179,34 +183,79 @@ class WebAppDatabaseTest : public testing::Test {
 
 TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
   InitRegistrar();
-  EXPECT_TRUE(registrar_->is_empty());
+  EXPECT_TRUE(registrar().is_empty());
 
   const int num_apps = 100;
   const std::string base_url = "https://example.com/path";
 
   auto app = CreateWebApp(base_url, 0);
   auto app_id = app->app_id();
-  registrar_->RegisterApp(std::move(app));
+  registrar().RegisterApp(std::move(app));
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
   for (int i = 1; i <= num_apps; ++i) {
     auto extra_app = CreateWebApp(base_url, i);
-    registrar_->RegisterApp(std::move(extra_app));
+    registrar().RegisterApp(std::move(extra_app));
   }
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
-  registrar_->UnregisterApp(app_id);
+  registrar().UnregisterApp(app_id);
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
-  registrar_->UnregisterAll();
+  registrar().UnregisterAll();
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
+  InitRegistrar();
+  EXPECT_TRUE(registrar().is_empty());
+
+  const int num_apps = 10;
+  const std::string base_url = "https://example.com/path";
+
+  Registry registry;
+  WebAppDatabase::AppsToWrite apps_to_write;
+  std::vector<AppId> apps_to_delete;
+
+  for (int i = 0; i < num_apps; ++i) {
+    auto app = CreateWebApp(base_url, i);
+    apps_to_write.insert(app.get());
+    apps_to_delete.push_back(app->app_id());
+    registry.emplace(app->app_id(), std::move(app));
+  }
+
+  {
+    base::RunLoop run_loop;
+    database().WriteWebApps(std::move(apps_to_write),
+                            base::BindLambdaForTesting([&](bool success) {
+                              EXPECT_TRUE(success);
+                              run_loop.Quit();
+                            }));
+    run_loop.Run();
+
+    Registry registry_written = ReadRegistry();
+    EXPECT_TRUE(IsRegistryEqual(registry_written, registry));
+  }
+
+  {
+    base::RunLoop run_loop;
+    database().DeleteWebApps(std::move(apps_to_delete),
+                             base::BindLambdaForTesting([&](bool success) {
+                               EXPECT_TRUE(success);
+                               run_loop.Quit();
+                             }));
+    run_loop.Run();
+
+    Registry registry_deleted = ReadRegistry();
+    EXPECT_TRUE(registry_deleted.empty());
+  }
 }
 
 TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
   Registry registry = WriteWebApps("https://example.com/path", 100);
 
   InitRegistrar();
-  EXPECT_TRUE(IsRegistryEqual(registrar_->registry_for_testing(), registry));
+  EXPECT_TRUE(IsRegistryEqual(registrar().registry_for_testing(), registry));
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
@@ -229,7 +278,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_TRUE(app->icons().empty());
-  registrar_->RegisterApp(std::move(app));
+  registrar().RegisterApp(std::move(app));
 
   Registry registry = ReadRegistry();
   EXPECT_EQ(1UL, registry.size());
@@ -268,7 +317,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   }
   app->SetIcons(std::move(icons));
 
-  registrar_->RegisterApp(std::move(app));
+  registrar().RegisterApp(std::move(app));
 
   Registry registry = ReadRegistry();
   EXPECT_EQ(1UL, registry.size());

@@ -370,9 +370,8 @@ ChannelState WebSocketChannel::StartClosingHandshake(
   // This use of base::Unretained() is safe because we stop the timer in the
   // destructor.
   close_timer_.Start(
-      FROM_HERE,
-      closing_handshake_timeout_,
-      base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
+      FROM_HERE, closing_handshake_timeout_,
+      base::BindOnce(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
 
   // Javascript actually only permits 1000 and 3000-4999, but the implementation
   // itself may produce different codes. The length of |reason| is also checked
@@ -522,9 +521,8 @@ ChannelState WebSocketChannel::WriteFrames() {
     // WebSocketStream and destroying it cancels all callbacks.
     result = stream_->WriteFrames(
         data_being_sent_->frames(),
-        base::Bind(base::IgnoreResult(&WebSocketChannel::OnWriteDone),
-                   base::Unretained(this),
-                   false));
+        base::BindOnce(base::IgnoreResult(&WebSocketChannel::OnWriteDone),
+                       base::Unretained(this), false));
     if (result != ERR_IO_PENDING) {
       if (OnWriteDone(true, result) == CHANNEL_DELETED)
         return CHANNEL_DELETED;
@@ -602,8 +600,8 @@ ChannelState WebSocketChannel::ReadFrames() {
     // destroyed.
     const int result = stream_->ReadFrames(
         &read_frames_,
-        base::Bind(base::IgnoreResult(&WebSocketChannel::OnReadDone),
-                   base::Unretained(this), false));
+        base::BindOnce(base::IgnoreResult(&WebSocketChannel::OnReadDone),
+                       base::Unretained(this), false));
     if (result == ERR_IO_PENDING) {
       is_reading_ = true;
       return CHANNEL_ALIVE;
@@ -846,9 +844,9 @@ ChannelState WebSocketChannel::HandleCloseFrame(uint16_t code,
       close_timer_.Stop();
       // This use of base::Unretained() is safe because we stop the timer
       // in the destructor.
-      close_timer_.Start(
-          FROM_HERE, underlying_connection_close_timeout_,
-          base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
+      close_timer_.Start(FROM_HERE, underlying_connection_close_timeout_,
+                         base::BindOnce(&WebSocketChannel::CloseTimeout,
+                                        base::Unretained(this)));
 
       // From RFC6455 section 7.1.5: "Each endpoint
       // will see the status code sent by the other end as _The WebSocket
@@ -880,7 +878,7 @@ ChannelState WebSocketChannel::RespondToClosingHandshake() {
   // in the destructor.
   close_timer_.Start(
       FROM_HERE, underlying_connection_close_timeout_,
-      base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
+      base::BindOnce(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
 
   event_interface_->OnClosingHandshake();
   return CHANNEL_ALIVE;

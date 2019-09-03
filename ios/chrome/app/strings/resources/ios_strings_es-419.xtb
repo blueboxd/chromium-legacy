@@ -263,6 +263,7 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="4747097190499141774">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay. Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Buscar en la página…</translation>
 <translation id="4751645464639803239">Nueva pestaña de incógnito</translation>
+<translation id="4758977202923349869">Coloca la tarjeta de crédito en este marco</translation>
 <translation id="4802417911091824046">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay.
 
 Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5728700505257787410">Se produjo un error al acceder a tu cuenta.</translation>
 <translation id="5737974891429562743">Los detalles de acceso de la cuenta están desactualizados. Actualízalos para comenzar la sincronización.</translation>
 <translation id="5738887413654608789">Esta capacidad te permite descubrir páginas web relevantes en función de tu entorno.</translation>
+<translation id="5803566855766646066">¿Confirmas que quieres descartar esta tarjeta nueva?</translation>
 <translation id="5816228676161003208">Te permite realizar búsquedas más rápidas con tu voz.</translation>
 <translation id="5846482154967366008">Motor de búsqueda</translation>
 <translation id="5854790677617711513">Hace más de 30 días</translation>

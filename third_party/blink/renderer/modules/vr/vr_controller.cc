@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -105,11 +106,10 @@ void VRController::SetListeningForActivate(bool listening) {
 
   listening_for_activate_ = listening;
 
-  if (listening) {
+  if (listening)
     service_->SetListeningForActivate(display_->GetDisplayClient());
-  } else {
-    service_->SetListeningForActivate(nullptr);
-  }
+  else
+    service_->SetListeningForActivate(mojo::NullRemote());
 }
 
 void VRController::OnDeviceChanged() {

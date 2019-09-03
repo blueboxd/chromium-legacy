@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
@@ -28,10 +29,15 @@ class AbstractWebAppDatabase {
   // Open existing or create new DB. Read all data and return it via callback.
   virtual void OpenDatabase(OnceRegistryOpenedCallback callback) = 0;
 
+  using CompletionCallback = base::OnceCallback<void(bool success)>;
+
+  using AppsToWrite = base::flat_set<const WebApp*>;
+
   // |OpenDatabase| must have been called and completed before using any other
   // methods. Otherwise, it fails with DCHECK.
-  virtual void WriteWebApp(const WebApp& web_app) = 0;
-  virtual void DeleteWebApps(std::vector<AppId> app_ids) = 0;
+  virtual void WriteWebApps(AppsToWrite apps, CompletionCallback callback) = 0;
+  virtual void DeleteWebApps(std::vector<AppId> app_ids,
+                             CompletionCallback callback) = 0;
 };
 
 }  // namespace web_app

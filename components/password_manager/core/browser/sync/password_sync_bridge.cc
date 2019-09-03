@@ -749,6 +749,25 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
   if (delete_metadata_change_list) {
     password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+
+    // If this is the account store, also delete the actual data.
+    if (password_store_sync_->IsAccountStore()) {
+      base::AutoReset<bool> processing_changes(
+          &is_processing_remote_sync_changes_, true);
+
+      PasswordStoreChangeList password_store_changes;
+      PrimaryKeyToFormMap logins;
+      FormRetrievalResult result = password_store_sync_->ReadAllLogins(&logins);
+      if (result == FormRetrievalResult::kSuccess) {
+        for (const auto& primary_key_and_form : logins) {
+          password_store_changes.emplace_back(PasswordStoreChange::REMOVE,
+                                              *primary_key_and_form.second,
+                                              primary_key_and_form.first);
+        }
+      }
+      password_store_sync_->DeleteAndRecreateDatabaseFile();
+      password_store_sync_->NotifyLoginsChanged(password_store_changes);
+    }
   }
 }
 

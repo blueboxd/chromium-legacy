@@ -63,23 +63,23 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
     IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url,
     const std::string& launch_name,
-    apps::mojom::AppType app_type,
+    apps::PickerEntryType entry_type,
     apps::IntentPickerCloseReason close_reason,
     bool should_persist) {
   const bool should_launch_app =
       close_reason == apps::IntentPickerCloseReason::OPEN_APP;
-  switch (app_type) {
-    case apps::mojom::AppType::kArc:
+  switch (entry_type) {
+    case apps::PickerEntryType::kArc:
       if (arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
               url, launch_name, should_launch_app, should_persist)) {
         CloseOrGoBack(web_contents);
       } else {
         close_reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
       }
-      RecordUma(launch_name, app_type, close_reason, apps::Source::kHttpOrHttps,
-                should_persist);
+      RecordUma(launch_name, entry_type, close_reason,
+                apps::Source::kHttpOrHttps, should_persist);
       return;
-    case apps::mojom::AppType::kUnknown:
+    case apps::PickerEntryType::kUnknown:
       // TODO(crbug.com/826982): This workaround can be removed when preferences
       // are no longer persisted within the ARC container, it was necessary
       // since chrome browser is neither a PWA or ARC app.
@@ -91,31 +91,28 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       }
       // Fall through to super class method to increment counter.
       break;
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kExtension:
+    case apps::PickerEntryType::kWeb:
       break;
   }
   apps::AppsNavigationThrottle::OnIntentPickerClosed(
-      web_contents, ui_auto_display_service, url, launch_name, app_type,
+      web_contents, ui_auto_display_service, url, launch_name, entry_type,
       close_reason, should_persist);
 }
 
 // static
 void ChromeOsAppsNavigationThrottle::RecordUma(
     const std::string& selected_app_package,
-    apps::mojom::AppType app_type,
+    apps::PickerEntryType entry_type,
     apps::IntentPickerCloseReason close_reason,
     apps::Source source,
     bool should_persist) {
-  if (app_type == apps::mojom::AppType::kArc &&
+  if (entry_type == apps::PickerEntryType::kArc &&
       (close_reason == apps::IntentPickerCloseReason::PREFERRED_APP_FOUND ||
        close_reason == apps::IntentPickerCloseReason::OPEN_APP)) {
     UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
                               arc::UserInteractionType::APP_STARTED_FROM_LINK);
   }
-  apps::AppsNavigationThrottle::RecordUma(selected_app_package, app_type,
+  apps::AppsNavigationThrottle::RecordUma(selected_app_package, entry_type,
                                           close_reason, source, should_persist);
 }
 

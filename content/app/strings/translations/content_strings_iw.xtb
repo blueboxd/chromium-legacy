@@ -73,7 +73,7 @@
 <translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM" /> או שווה לו.</translation>
 <translation id="3486220673238053218">הגדרה</translation>
 <translation id="3557673793733683882">כותרת <ph name="HEADING_LEVEL" /></translation>
-<translation id="3670698553867754311">בוחר השבועות</translation>
+<translation id="3670698553867754311">בורר השבועות</translation>
 <translation id="3685101356851116974">תמונה ללא תיאור</translation>
 <translation id="3706100364254443312">מעבר</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -219,7 +219,7 @@
 <translation id="811583516810654505">התיאור עוד מעט מוכן…</translation>
 <translation id="8117451130807776954">השבוע</translation>
 <translation id="8199524924445686405">yyyy</translation>
-<translation id="8208673686607688524">בוחר תאריך ושעה מקומיים</translation>
+<translation id="8208673686607688524">בורר תאריך ושעה מקומיים</translation>
 <translation id="8261464734335370856">איות שגוי</translation>
 <translation id="8284326494547611709">כתוביות</translation>
 <translation id="835897206747267392">ערך לא חוקי.</translation>

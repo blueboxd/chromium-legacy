@@ -583,6 +583,10 @@ jumbo_static_library("test_support") {
       "//ui/accelerated_widget_mac",
     ]
   }
+
+  if (is_linux) {
+    deps += [ "//ui/platform_window/common" ]
+  }
 }
 
 # browsertest_support can be used by targets that run content_shell based

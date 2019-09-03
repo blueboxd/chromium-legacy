@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -27,10 +28,20 @@ class SelectionControllerTest : public EditingTestBase {
     return GetFrame().GetEventHandler().GetSelectionController();
   }
 
+  HitTestResult HitTestResultAtLocation(const HitTestLocation& location) {
+    return GetFrame().GetEventHandler().HitTestResultAtLocation(location);
+  }
+
   static PositionWithAffinity GetPositionFromHitTestResult(
       const HitTestResult& hit_test_result) {
     return hit_test_result.InnerNode()->GetLayoutObject()->PositionForPoint(
         hit_test_result.LocalPoint());
+  }
+
+  PositionWithAffinity GetPositionAtLocation(const IntPoint& point) {
+    HitTestLocation location(point);
+    HitTestResult result = HitTestResultAtLocation(location);
+    return GetPositionFromHitTestResult(result);
   }
 
   VisibleSelection VisibleSelectionInDOMTree() const {
@@ -78,6 +89,18 @@ void SelectionControllerTest::SetNonDirectionalSelectionIfNeeded(
           SetSelectionOptions::Builder().SetGranularity(granularity).Build(),
           SelectionController::kDoNotAdjustEndpoints);
 }
+
+class ParameterizedSelectionControllerTest
+    : public SelectionControllerTest,
+      public testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest {
+ public:
+  ParameterizedSelectionControllerTest() : ScopedLayoutNGForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(SelectionControllerTest,
+                         ParameterizedSelectionControllerTest,
+                         testing::Bool());
 
 TEST_F(SelectionControllerTest, setNonDirectionalSelectionIfNeeded) {
   const char* body_content = "<span id=top>top</span><span id=host></span>";
@@ -290,6 +313,51 @@ TEST_F(SelectionControllerTest,
       SelectInputEventType::kTouch));
   EXPECT_EQ("<pre>ab:^\nc|d</pre>", GetSelectionTextFromBody())
       << "selection isn't changed";
+}
+
+TEST_P(ParameterizedSelectionControllerTest, Scroll) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0;
+      font-size: 50px;
+      line-height: 1;
+    }
+    #scroller {
+      width: 400px;
+      height: 5em;
+      overflow: scroll;
+    }
+    </style>
+    <div id="scroller">
+      <span>line1</span><br>
+      <span>line2</span><br>
+      <span>line3</span><br>
+      <span>line4</span><br>
+      <span>line5</span><br>
+      <span>line6</span><br>
+      <span>line7</span><br>
+      <span>line8</span><br>
+      <span>line9</span><br>
+    </div>
+  )HTML");
+
+  // Scroll #scroller by 2 lines. "line3" should be at the top.
+  Element* scroller = GetElementById("scroller");
+  scroller->setScrollTop(100);
+
+  // Hit-test on the first visible line. This should be "line3".
+  PositionWithAffinity line3 = GetPositionAtLocation(IntPoint(5, 5));
+  EXPECT_EQ(line3.AnchorNode()->textContent(), "line3");
+
+  // Then hit-test beyond the end of the first visible line. This should snap to
+  // the end of the "line3".
+  //
+  // +------------
+  // |line3   x <-- Click here
+  // |line4
+  PositionWithAffinity line3_end = GetPositionAtLocation(IntPoint(300, 5));
+  EXPECT_EQ(line3_end.AnchorNode()->textContent(), "line3");
 }
 
 }  // namespace blink

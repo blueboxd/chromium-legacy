@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Logout</translation>
 <translation id="5254120496627797685">Dengan meninggalkan halaman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
+<translation id="5327248766486351172">Nama</translation>
 <translation id="533625276787323658">Perangkat sambungan belum disiapkan</translation>
 <translation id="5363265567587775042">Minta pengguna yang menggunakan komputer yang ingin Anda akses untuk mengeklik “<ph name="SHARE" />” dan memberikan kode akses kepada Anda.</translation>
 <translation id="5379087427956679853">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan aplikasi Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opsi layar</translation>
 <translation id="7970576581263377361">Autentikasi gagal. Login ke Chromium lagi.</translation>
 <translation id="7981525049612125370">Sesi jarak jauh telah berakhir.</translation>
+<translation id="8038111231936746805">(default)</translation>
 <translation id="8041089156583427627">Kirim Masukan</translation>
 <translation id="8041721485428375115">Dengan mendownload Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="8060029310790625334">Pusat Bantuan</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Komputer Saya</translation>
 <translation id="811307782653349804">Akses komputer Anda dari mana saja.</translation>
 <translation id="8116630183974937060">Terjadi kesalahan jaringan. Periksa bahwa perangkat Anda online dan coba lagi.</translation>
-<translation id="8123581458650016326">Izinkan pengguna jarak jauh untuk mengontrol mesin ini</translation>
 <translation id="8178433417677596899">Berbagi layar pengguna ke pengguna, cocok untuk dukungan teknis jarak jauh.</translation>
 <translation id="8187079423890319756">Hak Cipta 2013 Pengarang Chromium. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="8196755618196986400">Guna mengizinkan kami menghubungi Anda untuk informasi lebih lanjut, alamat email Anda akan disertakan dalam masukan apa pun yang Anda kirimkan.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Kebijakan Privasi</translation>
 <translation id="894763922177556086">Baik</translation>
 <translation id="895780780740011433">Untuk Windows 7 dan lebih tinggi</translation>
-<translation id="8963047137585288214">Langkah konfigurasi tambahan diperlukan sebelum Anda dapat mengontrol perangkat ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />.
-
-Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, kemudian centang kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin perlu menghapus centangnya, lalu mencentangnya kembali.</translation>
 <translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, instal Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Pengontrol Host Chrome Desktop Jarak Jauh</translation>
 <translation id="9016232822027372900">Tetap sambungkan</translation>

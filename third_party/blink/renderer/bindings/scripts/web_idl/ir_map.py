@@ -185,3 +185,22 @@ class IRMap(object):
             if kind in irs_per_phase:
                 return irs_per_phase[kind]
         return dict()
+
+    def irs_of_kind(self, kind):
+        """Returns a flattened list of IRs of the given kind."""
+        if IRMap.IR.Kind.does_support_multiple_defs(kind):
+            accumulated = []
+            for irs in self.find_by_kind(kind).itervalues():
+                accumulated.extend(irs)
+            return accumulated
+        else:
+            return self.find_by_kind(kind).itervalues()
+
+    def irs_of_kinds(self, *kinds):
+        """
+        Returns a flattened and concatenated list of IRs of all given kinds.
+        """
+        accumulated = []
+        for kind in kinds:
+            accumulated.extend(self.irs_of_kind(kind))
+        return accumulated

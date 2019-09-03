@@ -22,9 +22,14 @@
 #include "components/sync/nigori/nigori_local_change_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 
+namespace sync_pb {
+class NigoriLocalData;
+}  // namespace sync_pb
+
 namespace syncer {
 
 class Encryptor;
+class NigoriStorage;
 
 // USS implementation of SyncEncryptionHandler.
 // This class holds the current Nigori state and processes incoming changes and
@@ -40,6 +45,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
  public:
   // |encryptor| must be not null and must outlive this object.
   NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
+                       std::unique_ptr<NigoriStorage> storage,
                        const Encryptor* encryptor,
                        const std::string& packed_explicit_passphrase_key);
   ~NigoriSyncBridgeImpl() override;
@@ -100,9 +106,13 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // just won't be updated.
   void MaybeNotifyBootstrapTokenUpdated() const;
 
+  // Serializes state of the bridge and sync metadata into the proto.
+  sync_pb::NigoriLocalData SerializeAsNigoriLocalData() const;
+
   const Encryptor* const encryptor_;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
+  const std::unique_ptr<NigoriStorage> storage_;
 
   // Stores serialized sync_pb::NigoriKey derived from explicit passphrase and
   // loaded from the prefs. Empty if prefs doesn't contain this key or in case

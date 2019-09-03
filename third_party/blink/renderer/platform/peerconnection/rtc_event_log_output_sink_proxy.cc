@@ -2,13 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-#include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 
-namespace content {
+#include "base/logging.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_factory.h"
+
+namespace blink {
+
+std::unique_ptr<webrtc::RtcEventLogOutput> CreateRtcEventLogOutputSinkProxy(
+    RtcEventLogOutputSink* sink) {
+  return std::make_unique<RtcEventLogOutputSinkProxy>(sink);
+}
 
 RtcEventLogOutputSinkProxy::RtcEventLogOutputSinkProxy(
-    blink::RtcEventLogOutputSink* sink)
+    RtcEventLogOutputSink* sink)
     : sink_(sink) {
   CHECK(sink_);
 }
@@ -24,4 +32,4 @@ bool RtcEventLogOutputSinkProxy::Write(const std::string& output) {
   return true;
 }
 
-}  // namespace content
+}  // namespace blink

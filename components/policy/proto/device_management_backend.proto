@@ -2602,7 +2602,10 @@ message DeviceManagementRequest {
   // Request from device to upload RSU lookup key.
   optional RsuLookupKeyUploadRequest rsu_lookup_key_upload_request = 31;
 
-  // Next id: 32.
+  // Request from device for SAML IdP URL address.
+  optional PublicSamlUserRequest public_saml_user_request = 32;
+
+  // Next id: 33.
 }
 
 // Response from server to device.
@@ -2721,5 +2724,8 @@ message DeviceManagementResponse {
   // Response to RSU lookup key upload request.
   optional RsuLookupKeyUploadResponse rsu_lookup_key_upload_response = 30;
 
-  // Next id: 31.
+  // Response to public SAML session user request.
+  optional PublicSamlUserResponse public_saml_user_response = 31;
+
+  // Next id: 32.
 }

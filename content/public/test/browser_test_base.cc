@@ -64,11 +64,14 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/trace_startup.h"
-#include "ui/base/platform_window_defaults.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+
+#if defined(OS_LINUX)
+#include "ui/platform_window/common/platform_window_defaults.h"  // nogncheck
+#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/task_scheduler/post_task_android.h"
@@ -173,7 +176,9 @@ BrowserTestBase::BrowserTestBase()
       enable_pixel_output_(false),
       use_software_compositing_(false),
       set_up_called_(false) {
+#if defined(OS_LINUX)
   ui::test::EnableTestConfigForPlatformWindows();
+#endif
 
 #if defined(OS_POSIX)
   handle_sigterm_ = true;

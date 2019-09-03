@@ -170,10 +170,6 @@ EmbeddedWorkerInstanceClientImpl::BuildStartData(
   start_data.devtools_worker_token = params.devtools_worker_token;
   start_data.v8_cache_options =
       static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
-  start_data.pause_after_download_mode =
-      params.pause_after_download
-          ? blink::WebEmbeddedWorkerStartData::kPauseAfterDownload
-          : blink::WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
   start_data.privacy_preferences = blink::PrivacyPreferences(
       params.renderer_preferences->enable_do_not_track,
       params.renderer_preferences->enable_referrers);

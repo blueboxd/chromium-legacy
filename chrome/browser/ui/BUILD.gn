@@ -2479,6 +2479,7 @@ jumbo_split_static_library("ui") {
         "views/frame/browser_desktop_window_tree_host_platform.h",
         "views/frame/native_browser_frame_factory_ozone.cc",
       ]
+      deps += [ "//ui/platform_window" ]
     }
     if (use_gtk) {
       # This is the only component that can interact with gtk.

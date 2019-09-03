@@ -22,7 +22,7 @@
 <translation id="1086953900555227778">Index-5x8</translation>
 <translation id="1088860948719068836">카드 명의 추가</translation>
 <translation id="1089439967362294234">비밀번호 변경</translation>
-<translation id="1096545575934602868">입력란에 항목이 <ph name="MAX_ITEMS_LIMIT" />개 이상 있으면 안 됩니다. 추가되는 모든 항목은 삭제됩니다.</translation>
+<translation id="1096545575934602868">입력란에 항목이 <ph name="MAX_ITEMS_LIMIT" />개 넘게 있으면 안 됩니다. 추가되는 모든 항목은 삭제됩니다.</translation>
 <translation id="109743633954054152">Chrome 설정에서 비밀번호를 관리하세요.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
 <translation id="1107591249535594099">선택하면 Chrome에서 양식을 더 빠르게 입력할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>

@@ -45,7 +45,6 @@ class OneShotBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
                  const std::vector<std::string>& expected_tags);
   bool GetTags(const std::vector<std::string>& expected_tags);
   bool GetTagsFromServiceWorker(const std::vector<std::string>& expected_tags);
-  bool CompleteDelayedSyncEvent();
   bool RejectDelayedSyncEvent();
 
  private:
@@ -130,12 +129,6 @@ bool OneShotBackgroundSyncBrowserTest::GetTagsFromServiceWorker(
   EXPECT_TRUE(script_result == "ok - getTags sent to SW");
 
   return MatchTags(PopConsoleString(), expected_tags);
-}
-
-bool OneShotBackgroundSyncBrowserTest::CompleteDelayedSyncEvent() {
-  std::string script_result;
-  EXPECT_TRUE(RunScript("completeDelayedSyncEvent()", &script_result));
-  return script_result == BuildExpectedResult("delay", "completing");
 }
 
 bool OneShotBackgroundSyncBrowserTest::RejectDelayedSyncEvent() {

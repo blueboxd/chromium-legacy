@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Varijacije naredbenog retka</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Izbrišite kolačiće<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Ukinute značajke</translation>
 <translation id="1320233736580025032">Prc1 (omotnica)</translation>
 <translation id="132301787627749051">Traženje slike u međuspremniku</translation>
 <translation id="1323433172918577554">Više</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google tablice</translation>
 <translation id="1527263332363067270">Čekanje na uspostavu veze…</translation>
 <translation id="1529521330346880926">10x15 (omotnica)</translation>
+<translation id="1530707389502320859">Web-lokacija koju ste upravo pokušali posjetiti izgleda lažno. Napadači ponekad oponašaju web-lokacije sitnim izmjenama URL-a.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Na ovoj se stranici navodi sljedeće</translation>
 <translation id="153384715582417236">To je zasad sve</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">Zahtjev je uspio</translation>
 <translation id="2728127805433021124">Certifikat poslužitelja potpisan je slabim algoritmom potpisa.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />pokrenuti Dijagnostiku povezivosti<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Omogućivanjem tih značajki mogli biste izgubiti podatke preglednika ili
+    ugroziti svoju sigurnost ili privatnost. Omogućene značajke primjenjuju se na sve
+    korisnike ovog preglednika.</translation>
 <translation id="2735043616039983645">Za to je pravilo prisutno više izvora sa sukobljenim vrijednostima!</translation>
 <translation id="2738330467931008676">Odaberite adresu preuzimanja</translation>
 <translation id="2740531572673183784">U redu</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">Ako je to omogućeno, Chromium će pohraniti kopiju vaše kartice na uređaj radi bržeg ispunjavanja obrazaca.</translation>
 <translation id="2985398929374701810">Unesite važeću adresu</translation>
 <translation id="2986368408720340940">Taj način preuzimanja nije dostupan. Pokušajte s nekim drugim načinom.</translation>
+<translation id="2987034854559945715">Nema podudarnih značajki</translation>
 <translation id="2991174974383378012">Dijeljenje s web-lokacijama</translation>
 <translation id="2991571918955627853">Trenutačno ne možete otvoriti <ph name="SITE" /> jer web-lokacija upotrebljava HSTS. Mrežne pogreške i napadi obično su privremeni, tako da će stranica kasnije vjerojatno funkcionirati.</translation>
 <translation id="3005723025932146533">Prikaži spremljenu kopiju</translation>
@@ -517,6 +523,7 @@
 <translation id="3678529606614285348">Otvorite stranicu u novom anonimnom prozoru (Ctrl – Shift – N)</translation>
 <translation id="3679803492151881375">Izvješće o rušenju programa generirano u <ph name="CRASH_TIME" />, preneseno u <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Podaci o certifikatu</translation>
+<translation id="3701427423622901115">Poništavanje je potvrđeno.</translation>
 <translation id="3704162925118123524">Mreža koju upotrebljavate može zahtijevati posjet stranici za prijavu.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Učitavanje...</translation>
@@ -689,6 +696,7 @@
 <translation id="4594403342090139922">&amp;Poništi brisanje</translation>
 <translation id="4597348597567598915">Veličina 8</translation>
 <translation id="4600854749408232102">C6/C5 (omotnica)</translation>
+<translation id="464342062220857295">Značajke pretraživanja</translation>
 <translation id="4646534391647090355">Otvori odmah</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat sadrži pogreške. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
@@ -805,6 +813,7 @@
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5252000469029418751">C7 (omotnica)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Značajke koje se primjenjuju na razini sustava može postaviti samo vlasnik: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Upozorenje: pravilo nije spojeno prema uputama u pravilu PolicyDictionaryMultipleSourceMergeList jer ne pripada pravilima rječnika koja se mogu spajati.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Završi</translation>
@@ -841,6 +850,8 @@
 <translation id="5457113250005438886">Nije važeće</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Ponovi uređivanje</translation>
+<translation id="5473728911100096288">Omogućavanjem ovih značajki upotrebljavat ćete obustavljene značajke
+    koje će nestati u budućim verzijama.</translation>
 <translation id="5478437291406423475">B6/C4 (omotnica)</translation>
 <translation id="5481076368049295676">Ovaj sadržaj može pokušati na vaš uređaj instalirati opasan softver koji krade ili briše podatke. <ph name="BEGIN_LINK" />Ipak prikaži<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Dodajte važeću adresu</translation>
@@ -899,6 +910,7 @@
 <translation id="5763042198335101085">Unesite važeću e-adresu</translation>
 <translation id="5765072501007116331">Odaberite adresu za prikaz načina dostave i zahtjeva za dostavu.</translation>
 <translation id="5778550464785688721">Potpuni nadzor nad MIDI uređajima</translation>
+<translation id="5781136890105823427">Eksperiment omogućen</translation>
 <translation id="578305955206182703">Jantarna</translation>
 <translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5784606427469807560">Pojavio se problem prilikom potvrđivanja kartice. Provjerite internetsku vezu i pokušajte ponovo.</translation>
@@ -1064,6 +1076,7 @@
 <translation id="6738516213925468394">Vaši su podaci kriptirani vašom <ph name="BEGIN_LINK" />šifrom za sinkronizaciju<ph name="END_LINK" /> <ph name="TIME" />. Unesite je da biste pokrenuli sinkronizaciju.</translation>
 <translation id="674375294223700098">Nepoznata pogreška certifikata poslužitelja</translation>
 <translation id="6744009308914054259">Dok čekate vezu, možete otvoriti Preuzimanja i čitati offline članke.</translation>
+<translation id="6747611005629681221">Upozorenje: obustavljene značajke u nastavku!</translation>
 <translation id="6753269504797312559">Vrijednost pravila</translation>
 <translation id="6757797048963528358">Uređaj je u stanju mirovanja.</translation>
 <translation id="6768213884286397650">Hagaki (dopisnica)</translation>
@@ -1430,6 +1443,7 @@ Dodatne pojedinosti:
 <translation id="8738058698779197622">Za uspostavu sigurne veze sat mora biti točno postavljen. To je zato što certifikati koje web-lokacije upotrebljavaju za međusobnu identifikaciju vrijede samo određeno vrijeme. Budući da sat na vašem uređaju nije točan, Chromium ne može potvrditi te certifikate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS adresa&lt;/abbr&gt; hosta <ph name="HOST_NAME" /> nije pronađena. U tijeku je dijagnosticiranje problema.</translation>
 <translation id="874846938927089722">Prihvaćene kreditne i pretplatne kartice</translation>
+<translation id="874918643257405732">Označi ovu karticu</translation>
 <translation id="8759274551635299824">Ta je kartica istekla</translation>
 <translation id="8761567432415473239">Googleovo Sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />pronašlo štetne programe<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB uređaj</translation>

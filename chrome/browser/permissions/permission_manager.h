@@ -126,6 +126,9 @@ class PermissionManager : public KeyedService,
       const PermissionOverrides& overrides) override;
   void ResetPermissionOverridesForDevTools() override;
 
+  // KeyedService implementation
+  void Shutdown() override;
+
  private:
   friend class PermissionManagerTest;
   friend class GeolocationPermissionContextTests;
@@ -137,9 +140,6 @@ class PermissionManager : public KeyedService,
 
   struct Subscription;
   using SubscriptionsMap = base::IDMap<std::unique_ptr<Subscription>>;
-
-  // KeyedService implementation
-  void Shutdown() override;
 
   PermissionContextBase* GetPermissionContext(ContentSettingsType type);
 
@@ -181,6 +181,8 @@ class PermissionManager : public KeyedService,
       base::flat_map<ContentSettingsType, ContentSetting>;
   std::map<url::Origin, ContentSettingsTypeOverrides>
       devtools_permission_overrides_;
+
+  bool is_shutting_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionManager);
 };

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 
 namespace content {
@@ -38,7 +39,7 @@ class LeakDetector {
   void OnLeakDetectionComplete(blink::mojom::LeakDetectionResultPtr result);
   void OnLeakDetectorIsGone();
 
-  blink::mojom::LeakDetectorPtr leak_detector_;
+  mojo::Remote<blink::mojom::LeakDetector> leak_detector_;
   blink::mojom::LeakDetectionResultPtr previous_result_;
   ReportCallback callback_;
   base::WeakPtrFactory<LeakDetector> weak_factory_{this};

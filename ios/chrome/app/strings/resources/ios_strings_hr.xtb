@@ -263,6 +263,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="4747097190499141774">Enkripcija šifrom ne uključuje podatke o načinima plaćanja i adresama s Google Paya. Samo osoba koja ima vašu šifru može čitati vaše kriptirane podatke. Šifra se ne šalje Googleu niti se na njemu pohranjuje. Ako zaboravite šifru ili želite promijeniti tu postavku, morate poništiti sinkronizaciju. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Traži na stranici...</translation>
 <translation id="4751645464639803239">Nova anonimna kartica</translation>
+<translation id="4758977202923349869">Postavite kreditnu karticu u ovaj okvir</translation>
 <translation id="4802417911091824046">Enkripcija šifrom ne uključuje načine plaćanja i adrese s Google Paya.
 
 Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5728700505257787410">Došlo je do problema prilikom prijave na vaš račun.</translation>
 <translation id="5737974891429562743">Pojedinosti prijave na račun su zastarjele. Ažurirajte ih da biste pokrenuli sinkronizaciju.</translation>
 <translation id="5738887413654608789">To vam omogućuje da otkrijete relevantne web-stranice na temelju svojeg okruženja.</translation>
+<translation id="5803566855766646066">Jeste li sigurni da želite odbaciti ovu novu karticu?</translation>
 <translation id="5816228676161003208">To vam omogućuje brže pretraživanje uz upotrebu glasa.</translation>
 <translation id="5846482154967366008">Tražilica</translation>
 <translation id="5854790677617711513">Starije od 30 dana</translation>

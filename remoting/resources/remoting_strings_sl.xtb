@@ -167,6 +167,7 @@
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5254120496627797685">Če zapustite to stran, se bo seja Oddaljenega namizja za Chrome končala.</translation>
 <translation id="5308380583665731573">Povezovanje</translation>
+<translation id="5327248766486351172">Ime</translation>
 <translation id="533625276787323658">Ni naprav za povezovanje</translation>
 <translation id="5363265567587775042">Uporabnika, do čigar računalnika želite dostopati, prosite, da klikne »<ph name="SHARE" />« in vam da kodo za dostop.</translation>
 <translation id="5379087427956679853">Oddaljeno namizje za Chrome omogoča varno skupno rabo računalnika v spletu. Oba uporabnika morata uporabljati aplikacijo Oddaljeno namizje za Chrome, ki je na voljo na <ph name="URL" />.</translation>
@@ -264,6 +265,7 @@
 <translation id="7948001860594368197">Možnosti zaslona</translation>
 <translation id="7970576581263377361">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Chromium.</translation>
 <translation id="7981525049612125370">Oddaljena seja je potekla.</translation>
+<translation id="8038111231936746805">(privzeto)</translation>
 <translation id="8041089156583427627">Pošlji povratne informacije</translation>
 <translation id="8041721485428375115">Če prenesete namestitveni program za gostitelja za oddaljeno namizje za Chrome, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Če želite uporabljati Oddaljeno namizje za Chrome, morate v napravo dodati Google Račun.</translation>
@@ -271,7 +273,6 @@
 <translation id="809687642899217504">Moji računalniki</translation>
 <translation id="811307782653349804">Do računalnika lahko dostopate od kjer koli.</translation>
 <translation id="8116630183974937060">Omrežna napaka. Preverite, ali je naprava dosegljiva in poskusite znova.</translation>
-<translation id="8123581458650016326">Oddaljenim uporabnikom dovoli upravljanje tega računalnika</translation>
 <translation id="8178433417677596899">Skupna raba zaslona je odlična rešitev za oddaljeno tehnično pomoč.</translation>
 <translation id="8187079423890319756">Copyright 2013 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8196755618196986400">V povratnih informacijah, ki nam jih pošljete, bo vključen vaš e-poštni naslov, da se lahko obrnemo na vas glede dodatnih informacij.</translation>
@@ -297,11 +298,6 @@
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Za Windows 7 in novejši</translation>
-<translation id="8963047137585288214">Preden lahko ta računalnik na daljavo upravljate z izdelkom <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
-
-Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost, ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.
-
-Če je možnost »<ph name="SERVICE_SCRIPT_NAME" />« že na voljo in označena, jo morate morda počistiti in nato znova označiti.</translation>
 <translation id="897805526397249209">Če želite omogočiti oddaljene povezave z drugim računalnikom, vanj namestite Oddaljeno povezovanje s Chromom in kliknite »<ph name="BUTTON_NAME" />«.</translation>
 <translation id="8998327464021325874">Krmilnik gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="9016232822027372900">Vseeno vzpostavi povezavo</translation>

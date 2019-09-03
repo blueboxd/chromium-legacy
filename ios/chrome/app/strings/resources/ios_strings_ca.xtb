@@ -263,6 +263,7 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="4747097190499141774">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay. Només els usuaris que sàpiguen la teva frase de contrasenya poden llegir les dades que encriptes. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblides o vols canviar aquesta opció, has de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Cerca a la pàgina...</translation>
 <translation id="4751645464639803239">Pestanya d'incògnit nova</translation>
+<translation id="4758977202923349869">Situa la targeta de crèdit dins d'aquest marc</translation>
 <translation id="4802417911091824046">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay.
 
 Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronització<ph name="END_LINK" />.</translation>
@@ -328,6 +329,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5728700505257787410">S'ha produït un problema en iniciar la sessió al vostre compte.</translation>
 <translation id="5737974891429562743">Actualitza les dades d'inici de sessió del compte per iniciar la sincronització.</translation>
 <translation id="5738887413654608789">Això et permet detectar pàgines web rellevants del teu entorn.</translation>
+<translation id="5803566855766646066">Confirmes que vols descartar aquesta targeta nova?</translation>
 <translation id="5816228676161003208">Això et permet fer cerques més de pressa amb la veu.</translation>
 <translation id="5846482154967366008">Motor de cerca</translation>
 <translation id="5854790677617711513">Anterior a 30 dies</translation>

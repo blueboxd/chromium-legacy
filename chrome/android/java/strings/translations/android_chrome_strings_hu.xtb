@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Telepítve</translation>
 <translation id="1792959175193046959">Az alapértelmezett letöltési helyet bármikor módosíthatja</translation>
 <translation id="1807246157184219062">Világos</translation>
+<translation id="1810845389119482123">A szinkronizálás kezdeti beállítása nem fejeződött be</translation>
 <translation id="1821253160463689938">Cookie-kat használ a preferenciák megjegyzésére még akkor is, ha Ön nem keresi fel az adott oldalakat</translation>
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
 <translation id="1853692000353488670">Új inkognitólap</translation>
@@ -412,6 +413,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> felhasználva</translation>
 <translation id="4181841719683918333">Nyelvek</translation>
+<translation id="4183868528246477015">Keresés a Google Lensszel <ph name="BEGIN_NEW" />Új<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="4198423547019359126">Nem áll rendelkezésre letöltési hely</translation>
 <translation id="4209895695669353772">A Google által javasolt, személyre szabott tartalmak fogadásához kapcsolja be a szinkronizálást</translation>
@@ -474,6 +476,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4665282149850138822">A(z) <ph name="NAME" /> felkerült a kezdőképernyőre</translation>
 <translation id="4684427112815847243">Az összes szinkronizálása</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">SMS küldése az eszközeire</translation>
 <translation id="4698034686595694889">Megtekintés offline állapotban itt: <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">A Chrome futtatásához szükséges kritikus funkció hiányzik: vagy nem fejezte be a Chrome telepítését, vagy a Chrome nem kompatibilis az Android ezen verziójával.</translation>
 <translation id="4699172675775169585">A gyorsítótárban szereplő képek és fájlok</translation>
@@ -529,6 +532,10 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5011311129201317034">A(z) <ph name="SITE" /> csatlakozni szeretne</translation>
 <translation id="5013696553129441713">Nincsenek új javaslatok</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Amíg VR-módban van, a webhely megtudhat Önről bizonyos információkat:
+  –  fizikai jellemzőit, például a magasságát.
+
+A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
 <translation id="5048398596102334565">A mozgásérzékelőkhöz való hozzáférés engedélyezése a webhelyek számára (ajánlott)</translation>
@@ -556,6 +563,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5224771365102442243">Videóval</translation>
 <translation id="5230560987958996918">A(z) <ph name="SITE" /> szeretné megkeresni a közeli Bluetooth-eszközöket. A következő eszközöket találta:</translation>
 <translation id="5233638681132016545">Új lap</translation>
+<translation id="5234764350956374838">Elvetés</translation>
 <translation id="526421993248218238">Nem lehet betölteni az oldalt</translation>
 <translation id="5271967389191913893">Az eszköz nem tudja megnyitni a letölteni kívánt tartalmat.</translation>
 <translation id="528192093759286357">A teljes képernyős megjelenítésből való kilépéshez húzza le felülről, majd koppintson a vissza gombra.</translation>
@@ -574,6 +582,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5363230136052241468">Koppintson a Kezdőképernyő gombra az új lap oldal betöltéséhez</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> megnyitott lap. A lapok között koppintással válthat.}other{<ph name="OPEN_TABS_MANY" /> megnyitott lap. A lapok között koppintással válthat.}}</translation>
 <translation id="5391532827096253100">Kapcsolata a webhellyel nem biztonságos. Webhelyadatok</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 további)}other{(+ # további)}}</translation>
 <translation id="5400569084694353794">Az alkalmazás használatával Ön elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és az <ph name="BEGIN_LINK2" />Adatvédelmi közleményt<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Nevek</translation>
 <translation id="5403644198645076998">Csak bizonyos webhelyek engedélyezése</translation>
@@ -603,6 +612,11 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5527082711130173040">A Chrome-nak hozzá kell férnie a tartózkodási helyhez, hogy eszközöket kereshessen. <ph name="BEGIN_LINK1" />Frissítse az engedélyeket<ph name="END_LINK1" />. A helyadatokhoz való hozzáférés is <ph name="BEGIN_LINK2" />ki van kapcsolva ezen az eszközön<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Kérdezzen rá, mielőtt engedélyezi a webhelyeknek, hogy megtekintsék a vágólapon található szövegeket és képeket (ajánlott)</translation>
 <translation id="5530766185686772672">Inkognitólapok bezárása</translation>
+<translation id="5534334044554683961">Amíg VR-módban van, a webhely megtudhat Önről bizonyos információkat:
+  –   fizikai jellemzőit, például a magasságát;
+  –   a szobája berendezését.
+
+A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.</translation>
 <translation id="5534640966246046842">Webhely vágólapra másolva</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5561549206367097665">Várakozás a hálózatra…</translation>
@@ -690,7 +704,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="6196640612572343990">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="6206551242102657620">A kapcsolat biztonságos. Webhelyadatok</translation>
 <translation id="6210748933810148297">Nem <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – lehetőségek</translation>
 <translation id="6221633008163990886">A zárolás feloldásával exportálhatja a jelszavait</translation>
 <translation id="6232535412751077445">A „Nincs nyomon követés” engedélyezése azt jelenti, hogy a böngészési forgalommal együtt kérelmet is küld a rendszer. Ennek hatása attól függ, hogy a webhely reagál-e a kérelemre, és hogyan értelmezi azt.
 
@@ -893,6 +906,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
 <translation id="766587987807204883">Itt jelennek meg a cikkek, amelyeket offline állapotban is olvashat</translation>
 <translation id="7682724950699840886">Próbálkozzon a következő tippekkel: Győződjön meg arról, hogy elegendő tárhely áll rendelkezésre az eszközön, majd próbálja újra az exportálást.</translation>
+<translation id="7685301384041462804">A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.</translation>
 <translation id="7698359219371678927">E-mail létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="7704317875155739195">Keresések és URL-címek automatikus kiegészítése</translation>
 <translation id="7725024127233776428">Itt jelennek meg a könyvjelzőként mentett oldalak</translation>
@@ -923,6 +937,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7886917304091689118">Fut a Chrome-ban</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Fájl letöltése…}other{# fájl letöltése…}}</translation>
 <translation id="7929962904089429003">A menü megnyitása</translation>
+<translation id="7930681627240672853">Jelszavak biztonságának ellenőrzése</translation>
 <translation id="7942131818088350342">A(z) <ph name="PRODUCT_NAME" /> elavult.</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
@@ -1070,6 +1085,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8993760627012879038">Új lap megnyitása inkognitómódban</translation>
 <translation id="8998729206196772491">Egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="9019902583201351841">Szülők által kezelt</translation>
+<translation id="9029323097866369874">Engedélyezi a(z) <ph name="DOMAIN" /> számára a VR-mód aktiválását?</translation>
 <translation id="9040142327097499898">Az értesítések engedélyezve vannak. A helyhozzáférés ki van kapcsolva az eszköznél.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videó}other{# videó}}</translation>
 <translation id="9050666287014529139">Összetett jelszó</translation>

@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
+<translation id="5327248766486351172">Pangalan</translation>
 <translation id="533625276787323658">Walang mapagkokonektahan</translation>
 <translation id="5363265567587775042">Hilingin sa user na may-ari ng computer na gusto mong i-access na i-click ang “<ph name="SHARE" />” at ibigay sa iyo ang access code.</translation>
 <translation id="5379087427956679853">Binibigyang-daan ka ng Remote na Desktop ng Chrome na ligtas na maibahagi ang iyong computer sa Web. Dapat na nagpapatakbo ang parehong user ng app ng Remote na Desktop ng Chrome, na matatagpuan sa <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
 <translation id="7970576581263377361">Hindi naisagawa ang pagpapatotoo. Mangyaring muling mag-sign in sa Chromium.</translation>
 <translation id="7981525049612125370">Nag-expire na ang remote na session.</translation>
+<translation id="8038111231936746805">(default)</translation>
 <translation id="8041089156583427627">Magpadala ng Feedback</translation>
 <translation id="8041721485428375115">Sa pamamagitan ng pagda-download ng Host Installer ng Remote na Desktop ng Chrome, sumasang-ayon ka sa <ph name="LINK_BEGIN" />Mga Tuntunin ng Serbisyo<ph name="LINK_END" /> ng Google.</translation>
 <translation id="8060029310790625334">Help Center</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Aking Mga Computer</translation>
 <translation id="811307782653349804">I-access ang sarili mong computer mula saanman.</translation>
 <translation id="8116630183974937060">May nangyaring error sa network. Pakitiyak na on-line ang iyong device at subukang muli.</translation>
-<translation id="8123581458650016326">Payagan ang malalayong user na kontrolin ang machine na ito</translation>
 <translation id="8178433417677596899">Pagbabahagi ng screen na user-sa-user, mainam para sa malayuang suportang panteknikal.</translation>
 <translation id="8187079423890319756">Copyright 2013 Ang Mga May-akda ng Chromium. Nakalaan ang Lahat ng Karapatan.</translation>
 <translation id="8196755618196986400">Upang mabigyang-daan kaming makipag-ugnayan sa iyo para sa karagdagang impormasyon, isasama ang iyong email address sa anumang feedback na iyong isusumite.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
 <translation id="894763922177556086">Malakas</translation>
 <translation id="895780780740011433">Para sa Windows 7 at mas bago</translation>
-<translation id="8963047137585288214">May karagdagang hakbang sa configuration na kinakailangan bago mo makontrol nang malayuan ang computer na ito gamit ang <ph name="PRODUCT_NAME" />.
-
-Para i-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' para ipakita ang pane ng mga kagustuhan sa Seguridad at Privacy, pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
-
-Kung mayroon nang '<ph name="SERVICE_SCRIPT_NAME" />' at may nakalagay nang check, puwedeng kailangan mo itong i-uncheck at pagkatapos ay muling lagyan ng check.</translation>
 <translation id="897805526397249209">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Chromoting doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controller ng Host ng Remote na Desktop ng Chrome</translation>
 <translation id="9016232822027372900">Kumonekta pa rin</translation>

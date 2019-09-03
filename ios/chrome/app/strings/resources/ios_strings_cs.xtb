@@ -263,6 +263,7 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="4747097190499141774">Šifrování pomocí heslové fráze se nevztahuje na platební metody a adresy ze služby Google Pay. Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslovou frázi. Heslová fráze se neodesílá do Googlu a není na Googlu uložena. Pokud ji zapomenete nebo toto nastavení budete chtít změnit, bude nutné synchronizaci resetovat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Hledat na stránce...</translation>
 <translation id="4751645464639803239">Nová anonymní karta</translation>
+<translation id="4758977202923349869">Umístěte kreditní kartu do tohoto rámečku</translation>
 <translation id="4802417911091824046">Šifrování pomocí heslové fráze se nevztahuje na platební metody a adresy ze služby Google Pay.
 
 Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
@@ -328,6 +329,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5728700505257787410">Litujeme, při přihlašování k vašemu účtu se vyskytl problém.</translation>
 <translation id="5737974891429562743">Přihlašovací údaje k účtu jsou zastaralé. Chcete-li zahájit synchronizaci, aktualizujte je.</translation>
 <translation id="5738887413654608789">Umožňuje vám objevovat relevantní webové stránky na základě vašeho okolí.</translation>
+<translation id="5803566855766646066">Opravdu tuto novou kartu chcete zahodit?</translation>
 <translation id="5816228676161003208">Toto umožňuje vyhledávat rychleji hlasem.</translation>
 <translation id="5846482154967366008">Vyhledávač</translation>
 <translation id="5854790677617711513">Starší než 30 dnů</translation>

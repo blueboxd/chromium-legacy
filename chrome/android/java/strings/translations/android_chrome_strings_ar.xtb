@@ -46,7 +46,7 @@
 <translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
-<translation id="129382876167171263">يتم عرض الملفات التي تحفظها المواقع الإلكترونية هنا.</translation>
+<translation id="129382876167171263">تظهر هنا الملفات التي تحفظها المواقع الإلكترونية</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - تم الإرسال من <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">دمج علامات التبويب</translation>
@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">تم التثبيت</translation>
 <translation id="1792959175193046959">تغيير موقع التنزيل التلقائي في أي وقت</translation>
 <translation id="1807246157184219062">فاتح</translation>
+<translation id="1810845389119482123">عدم انتهاء إعداد المزامنة الأولية</translation>
 <translation id="1821253160463689938">يستخدم ملفات تعريف الارتباط لتذكّر الإعدادات المُفضّلة حتى إذا لم تزُر تلك الصفحات.</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4179980317383591987">تم استخدام <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">اللغات</translation>
+<translation id="4183868528246477015">‏البحث "بعدسة Google" <ph name="BEGIN_NEW" />جديد<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">الفتح في علامة تبويب جديدة</translation>
 <translation id="4198423547019359126">ما من مواقع تنزيل متاحة</translation>
 <translation id="4209895695669353772">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تفعيل المزامنة.</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 وخيار إضافي واحد (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />)}zero{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار إضافي}two{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 وخياران إضافيان (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />)}few{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات إضافية}many{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا إضافيًا}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار إضافي}}</translation>
+<translation id="4696983787092045100">إرسال النص إلى أجهزتك</translation>
 <translation id="4698034686595694889">العرض بلا اتصال بالإنترنت في تطبيق <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">‏هناك وظائف مفقودة تعد ذات أهمية كبيرة لتشغيل Chrome؛ إما أن يكون الإصدار الذي تستخدمه من Chrome غير مكتمل، أو ليس متوافقًا مع هذا الإصدار من Android.</translation>
 <translation id="4699172675775169585">الصور والملفات المخزنة مؤقتًا</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034">يريد <ph name="SITE" /> الاتصال</translation>
 <translation id="5013696553129441713">ما من اقتراحات جديدة</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">‏عندما تكون في VR، قد يتمكن هذا الموقع الإلكتروني من معرفة:
+  -  سماتك البدنية، مثل الطول
+
+يُرجى التأكد من أنك تثق بهذا الموقع قبل الدخول إلى VR.</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
 <translation id="5048398596102334565">السماح لمواقع الويب بالوصول إلى مستشعرات الحركة (مُقترَح)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">يتضمن فيديو</translation>
 <translation id="5230560987958996918">يريد <ph name="SITE" /> البحث عن أجهزة البلوتوث المجاورة. وتم العثور على الأجهزة التالية:</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
+<translation id="5234764350956374838">رفض</translation>
 <translation id="526421993248218238">يتعذَّر تحميل هذه الصفحة</translation>
 <translation id="5271967389191913893">لا يمكن للجهاز فتح المحتوى لتنزيله</translation>
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">انقر على زر "الشاشة الرئيسية" لتحميل صفحة علامة التبويب الجديدة</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}zero{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}two{علامتا تبويب مفتوحتان<ph name="OPEN_TABS_MANY" />، يُرجى النقر لتبديل علامات التبويب}few{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}many{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}other{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}}</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات موقع الويب</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(أكثر من هاتف/عنوان بريد إلكتروني واحد آخر)}zero{(أكثر من # هاتف/عنوان بريد إلكتروني آخر)}two{(أكثر من هاتفَين/عنوانَي بريد إلكتروني (#) آخرين)}few{(أكثر من # هواتف/عناوين بريد إلكتروني أخرى)}many{(أكثر من # هاتفًا/عنوان بريد إلكتروني آخر)}other{(أكثر من # هاتف/عنوان بريد إلكتروني آخر)}}</translation>
 <translation id="5400569084694353794">باستخدام هذا التطبيق، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">الأسماء</translation>
 <translation id="5403644198645076998">السماح بمواقع ويب معيّنة فقط</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. <ph name="BEGIN_LINK1" />تحديث الأذونات<ph name="END_LINK1" />. الوصول إلى الموقع <ph name="BEGIN_LINK2" />غير مفعّل لهذا الجهاز<ph name="END_LINK2" /> أيضًا.</translation>
 <translation id="5527111080432883924">السؤال أولاً قبل السماح لمواقع الويب بقراءة النصوص والصور من الحافظة (موصى به)</translation>
 <translation id="5530766185686772672">إغلاق علامات تبويب التصفح المتخفي</translation>
+<translation id="5534334044554683961">‏عندما تكون في VR، قد يتمكن هذا الموقع الإلكتروني من معرفة:
+  -   سماتك البدنية، مثل الطول
+  -   تنسيق غرفتك
+
+يُرجى التأكد من أنك تثق بهذا الموقع قبل الدخول إلى VR.</translation>
 <translation id="5534640966246046842">تم نسخ الموقع</translation>
 <translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5561549206367097665">في انتظار الشبكة...</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
 <translation id="6206551242102657620">يُعدُّ اتصالك آمنًا. معلومات موقع الويب</translation>
 <translation id="6210748933810148297">ليس <ph name="EMAIL" />؟</translation>
-<translation id="6216432067784365534">خيارات <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">إلغاء القفل لتصدير كلمات المرور</translation>
 <translation id="6232535412751077445">إن تفعيل ميزة "عدم التعقب" يعني أنه سيتم تضمين طلب في حركة بيانات التصفّح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وعلى كيفية تفسير الطلب.
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">إضافة حساب</translation>
 <translation id="766587987807204883">تظهر المقالات هنا، ويمكنك الاطّلاع عليها حتى عندما لا يكون الجهاز متّصلًا بالإنترنت.</translation>
 <translation id="7682724950699840886">يمكنك تجربة النصائح التالية: تأكد من توفر مساحة كافية على جهازك وحاول التصدير مرة أخرى.</translation>
+<translation id="7685301384041462804">‏تأكّد من أنك تثق في هذا الموقع الإلكتروني قبل الدخول إلى VR.</translation>
 <translation id="7698359219371678927">إنشاء بريد إلكتروني في <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">‏الإكمال التلقائي لعناوين URL وعمليات البحث</translation>
 <translation id="7725024127233776428">يتم عرض الصفحات التي يتم وضع إشارة عليها هنا.</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">‏قيد التشغيل في Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{جارٍ تنزيل ملف واحد.}zero{جارٍ تنزيل # ملف}two{جارٍ تنزيل ملفين (#).}few{جارٍ تنزيل # ملفات.}many{جارٍ تنزيل # ملفًا.}other{جارٍ تنزيل # ملف.}}</translation>
 <translation id="7929962904089429003">فتح القائمة</translation>
+<translation id="7930681627240672853">التحقق من أمان كلمة المرور</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">فتح علامة تبويب جديدة في وضع التصفّح المتخفّي</translation>
 <translation id="8998729206196772491">‏يتم تسجيل دخولك باستخدام حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" /> ومنح مشرفه الحق في التحكم في بياناتك على Chrome. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chrome إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
+<translation id="9029323097866369874">‏هل تريد السماح للنطاق <ph name="DOMAIN" /> بإدخال VR؟</translation>
 <translation id="9040142327097499898">الإشعارات مسموح بها. وتحديد الموقع الجغرافي متوقف لهذا الجهاز.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{فيديو واحد (#)}zero{# فيديو}two{فيديوهان (#)}few{# فيديوهات}many{# فيديو}other{# فيديو}}</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>

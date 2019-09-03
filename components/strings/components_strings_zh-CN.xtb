@@ -22,7 +22,7 @@
 <translation id="1086953900555227778">Index-5x8</translation>
 <translation id="1088860948719068836">添加持卡人姓名</translation>
 <translation id="1089439967362294234">更改密码</translation>
-<translation id="1096545575934602868">此字段最多仅能包含 <ph name="MAX_ITEMS_LIMIT" /> 个条目。条目上限已满后加入的所有条目会被舍弃。</translation>
+<translation id="1096545575934602868">此字段最多仅能包含 <ph name="MAX_ITEMS_LIMIT" /> 个条目，超出的条目会被舍弃。</translation>
 <translation id="109743633954054152">在 Chrome 设置中管理密码</translation>
 <translation id="1103523840287552314">一律翻译<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">选中后，Chrome 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">命令行变体</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">已被弃用的功能</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
 <translation id="132301787627749051">搜索剪贴板上的图片</translation>
 <translation id="1323433172918577554">展开</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Google 表格</translation>
 <translation id="1527263332363067270">正在等待建立连接…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
+<translation id="1530707389502320859">您刚才尝试访问的网站貌似虚假网站。攻击者有时会通过对网址进行难以发现的细微更改来仿冒网站。</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">此网页显示</translation>
 <translation id="153384715582417236">暂无新内容</translation>
@@ -191,7 +193,7 @@
 <translation id="1883255238294161206">收起列表</translation>
 <translation id="1898423065542865115">过滤</translation>
 <translation id="1914326953223720820">解压缩服务</translation>
-<translation id="1915697529809968049">要改为使用 Touch ID 而不使用银行卡验证码 (CVC) 吗？</translation>
+<translation id="1915697529809968049">要改用 Touch ID 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
 <translation id="1919345977826869612">广告</translation>
 <translation id="1919367280705858090">了解如何解决特定错误消息指出的错误</translation>
@@ -345,6 +347,7 @@
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />运行网络连接诊断<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">启用这些功能可能会致使您丢失浏览数据，或者致使您的安全或隐私受到威胁。此操作会为该浏览器的所有用户启用这些功能。</translation>
 <translation id="2735043616039983645">此政策存在多个具有冲突值的来源！</translation>
 <translation id="2738330467931008676">选择取货地址</translation>
 <translation id="2740531572673183784">确定</translation>
@@ -388,6 +391,7 @@
 <translation id="2985306909656435243">启用后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="2985398929374701810">请输入有效的送货地址</translation>
 <translation id="2986368408720340940">该取货方式不可用。请另选一种方式。</translation>
+<translation id="2987034854559945715">找不到任何相符的功能</translation>
 <translation id="2991174974383378012">与网站分享</translation>
 <translation id="2991571918955627853">您目前无法访问 <ph name="SITE" />，因为此网站使用了 HSTS。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="3005723025932146533">显示已保存的版本</translation>
@@ -506,6 +510,7 @@
 <translation id="3678529606614285348">在新的无痕式窗口中打开网页 (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">崩溃报告的获取时间：<ph name="CRASH_TIME" />；上传时间：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">证书信息</translation>
+<translation id="3701427423622901115">已确认要重置。</translation>
 <translation id="3704162925118123524">您正在使用的网络可能会要求您访问其登录页面。</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> - <ph name="BOOKMARKED" /> - <ph name="TITLE" /> - <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">正在加载...</translation>
@@ -522,7 +527,7 @@
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击者可能会诱骗您做一些危险的事情，例如安装软件或泄露您的个人信息（如密码、电话号码或信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
-<translation id="3760561303380396507">要改为使用 Windows Hello 而不使用银行卡验证码 (CVC) 吗？</translation>
+<translation id="3760561303380396507">要改用 Windows Hello 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="3761718714832595332">隐藏状态</translation>
 <translation id="3765032636089507299">安全浏览页面正在构建中。</translation>
 <translation id="3778403066972421603">要将此卡的信息保存到您的 Google 帐号中和此设备上吗？</translation>
@@ -545,7 +550,7 @@
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
-<translation id="3939773374150895049">要改为使用 WebAuthn 而不使用银行卡验证码 (CVC) 吗？</translation>
+<translation id="3939773374150895049">要改用 WebAuthn 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="3946209740501886391">在该网站上一律询问</translation>
 <translation id="3949571496842715403">此服务器无法证实它就是 <ph name="DOMAIN" /> - 它的安全证书没有指定主题备用名称。这可能是因为某项配置有误或某个攻击者拦截了您的连接。</translation>
 <translation id="3949601375789751990">您的浏览记录会显示在此处</translation>
@@ -678,6 +683,7 @@
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4597348597567598915">大小：8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="464342062220857295">搜索功能</translation>
 <translation id="4646534391647090355">立即前往</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -794,6 +800,7 @@
 <translation id="5251803541071282808">云端</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">在整个系统范围内应用的功能只能由所有者设定：<ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">警告：系统未按照 PolicyDictionaryMultipleSourceMergeList 政策中指定的方式合并此政策，因为此政策不是可合并的字典政策的一部分。</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">结束</translation>
@@ -830,6 +837,7 @@
 <translation id="5457113250005438886">无效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}other{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}}</translation>
 <translation id="5470861586879999274">恢复修改(&amp;R)</translation>
+<translation id="5473728911100096288">启用这些功能即表示您将使用已被弃用的功能。后续版本将不再包含这些功能。</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">此内容可能会试图在您的设备上安装危险的软件来窃取或删除您的信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">添加有效地址</translation>
@@ -888,6 +896,7 @@
 <translation id="5763042198335101085">请输入有效的电子邮件地址</translation>
 <translation id="5765072501007116331">要查看递送方式和要求，请选择相应地址</translation>
 <translation id="5778550464785688721">完全控制 MIDI 设备</translation>
+<translation id="5781136890105823427">已启用实验</translation>
 <translation id="578305955206182703">琥珀色</translation>
 <translation id="57838592816432529">静音</translation>
 <translation id="5784606427469807560">确认您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
@@ -1052,6 +1061,7 @@
 <translation id="6738516213925468394">您的数据已于 <ph name="TIME" />使用您的<ph name="BEGIN_LINK" />同步密码<ph name="END_LINK" />加密。输入该密码即可开始同步。</translation>
 <translation id="674375294223700098">未知的服务器证书错误。</translation>
 <translation id="6744009308914054259">在等待连接时，您可以前往“下载内容”页面阅读离线文章。</translation>
+<translation id="6747611005629681221">警告：您所要使用的功能已被弃用！</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的设备已进入休眠模式。</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1415,6 +1425,7 @@
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="874846938927089722">接受的信用卡和预付卡</translation>
+<translation id="874918643257405732">为此标签页添加书签</translation>
 <translation id="8759274551635299824">此信用卡已失效</translation>
 <translation id="8761567432415473239">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />发现了有害程序<ph name="END_LINK" />。</translation>
 <translation id="8763927697961133303">USB 设备</translation>

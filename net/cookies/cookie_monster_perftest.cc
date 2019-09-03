@@ -7,12 +7,12 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
@@ -32,10 +32,11 @@ const char kGoogleURL[] = "http://www.foo.com";
 
 class CookieMonsterTest : public testing::Test {
  public:
-  CookieMonsterTest() : message_loop_(new base::MessageLoopForIO()) {}
+  CookieMonsterTest() {}
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 };
 
 class CookieTestCallback {

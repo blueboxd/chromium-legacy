@@ -38,6 +38,7 @@
 <translation id="208586643495776849">لطفاً دوباره امتحان کنید</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="2148716181193084225">امروز</translation>
+<translation id="2161656808144014275">نوشتار</translation>
 <translation id="2168039046890040389">صفحه بالا</translation>
 <translation id="2190355936436201913">(خالی)</translation>
 <translation id="2192232475740621500">استفاده از تراکم پایین</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">جستجوی «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="364720409959344976">انتخاب پوشه برای بارگذاری</translation>
 <translation id="3660179305079774227">پیکان بالا</translation>
+<translation id="3670030362669914947">عدد</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> گیگابایت/ثانیه</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> گیگابایت</translation>
 <translation id="3842239759367498783">ادامه خواندن در دستگاه همراه <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{۱ ماه قبل}one{# ماه قبل}other{# ماه قبل}}</translation>
 <translation id="4289300219472526559">شروع صحبت</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
-<translation id="4467014365953759647">شماره ارسال نمی‌شود</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
 <translation id="4690510401873698237">قفسه در پایین است</translation>
 <translation id="4724120544754982507">مرکز اعلان، <ph name="UNREAD_NOTIFICATION_COUNT" /> اعلان خوانده‌نشده</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">پیکان چپ</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{آخرین فعالیت: امروز}=1{آخرین فعالیت: ۱ روز قبل}one{آخرین فعالیت: # روز قبل}other{آخرین فعالیت: # روز قبل}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{۱ روز و }one{# روز و }other{# روز و }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{تا ۱ سال دیگر}one{تا # سال دیگر}other{تا # سال دیگر}}</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">راه‌انداز، نمای جزئی</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">اتصال تلفنتان را بررسی کنید و دوباره امتحان کنید</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
 <translation id="7430878839542012341">این جستجو از سابقه‌تان حذف شود؟</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ترابایت</translation>

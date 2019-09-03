@@ -263,6 +263,7 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="4747097190499141774">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay. Soltanto chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google né memorizzata. Se dimentichi la passphrase o vuoi modificare questa impostazione, dovrai reimpostare la sincronizzazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Trova nella pagina...</translation>
 <translation id="4751645464639803239">Nuova scheda in incognito</translation>
+<translation id="4758977202923349869">Posiziona la carta di credito all'interno di quest'area</translation>
 <translation id="4802417911091824046">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay.
 
 Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
@@ -328,6 +329,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5728700505257787410">Spiacenti, problema durante l'accesso all'account.</translation>
 <translation id="5737974891429562743">I dati di accesso dell'account sono obsoleti. Aggiorna per avviare la sincronizzazione.</translation>
 <translation id="5738887413654608789">Puoi trovare pagine web pertinenti basate sui dintorni.</translation>
+<translation id="5803566855766646066">Vuoi eliminare questa nuova carta?</translation>
 <translation id="5816228676161003208">In questo modo puoi eseguire ricerche più veloci con la voce.</translation>
 <translation id="5846482154967366008">Motore di ricerca</translation>
 <translation id="5854790677617711513">Oltre 30 giorni fa</translation>

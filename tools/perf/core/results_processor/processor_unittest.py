@@ -140,6 +140,15 @@ class TestProcessOptions(ProcessOptionsTestCase):
     self.assertEqual(options.output_formats, ['new-format'])
     self.assertEqual(options.legacy_output_formats, ['old-format'])
 
+  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  def testNoDuplicateOutputFormats(self):
+    self.legacy_formats = ['old-format']
+    options = self.ParseArgs(
+        ['--output-format', 'new-format', '--output-format', 'old-format',
+         '--output-format', 'new-format', '--output-format', 'old-format'])
+    self.assertEqual(options.output_formats, ['new-format'])
+    self.assertEqual(options.legacy_output_formats, ['old-format'])
+
 
 class StandaloneTestProcessOptions(ProcessOptionsTestCase):
   def setUp(self):

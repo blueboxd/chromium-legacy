@@ -65,8 +65,6 @@ class TestShimClient : public chrome::mojom::AppShim {
   void CreateRemoteCocoaApplication(
       remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
-  void Hide() override {}
-  void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
 
@@ -130,18 +128,12 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
   // chrome::mojom::AppShimHost.
   void FocusApp(apps::AppShimFocusType focus_type,
                 const std::vector<base::FilePath>& files) override {}
-  void SetAppHidden(bool hidden) override {}
-  void QuitApp() override {
-    ++quit_count_;
-    runner_->Quit();
-  }
 
   std::unique_ptr<base::RunLoop> runner_;
   mojo::Binding<chrome::mojom::AppShimHost> binding_;
   chrome::mojom::AppShimPtr app_shim_ptr_;
 
   int launch_count_ = 0;
-  int quit_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimListenerBrowserTest);
 };
@@ -151,13 +143,6 @@ void AppShimListenerBrowserTest::RunAndExitGracefully() {
   EXPECT_EQ(0, launch_count_);
   runner_->Run();  // Will stop in OnShimProcessConnected().
   EXPECT_EQ(1, launch_count_);
-
-  runner_ = std::make_unique<base::RunLoop>();
-  test_client_->host()->QuitApp();
-  EXPECT_EQ(0, quit_count_);
-  runner_->Run();  // Will stop in QuitApp().
-  EXPECT_EQ(1, quit_count_);
-
   test_client_.reset();
 }
 

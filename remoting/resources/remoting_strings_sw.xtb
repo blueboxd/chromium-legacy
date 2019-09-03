@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="5254120496627797685">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Eneo-kazi la Mbali la Chrome.</translation>
 <translation id="5308380583665731573">Unganisha</translation>
+<translation id="5327248766486351172">Jina</translation>
 <translation id="533625276787323658">Hakuna kompyuta ya kuunganishwa</translation>
 <translation id="5363265567587775042">Mwombe mtumiaji wa kompyuta unayotaka kufikia abofye “<ph name="SHARE" />” na akupe nambari ya kuthibitisha ya idhini ya kufikia.</translation>
 <translation id="5379087427956679853">Eneo-kazi la Mbali la Chrome hukuruhusu kushiriki kompyuta yako kwa usalama kwenye Wavuti. Watumiaji wote wawili lazima wawe na programu ya Eneo-kazi la Mbali la Chrome, inayoweza kupatikana katika <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Chaguo za skrini</translation>
 <translation id="7970576581263377361">Uidhinishaji haujafaulu. Tafadhali ingia kwenye Chromium tena.</translation>
 <translation id="7981525049612125370">Kipindi cha mbali kimekwisha muda.</translation>
+<translation id="8038111231936746805">(chaguomsingi)</translation>
 <translation id="8041089156583427627">Tuma Maoni</translation>
 <translation id="8041721485428375115">Kwa kupakua Kisakinishaji cha Seva Pangishi ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali, unakubaliana na <ph name="LINK_BEGIN" />Sheria na Masharti ya Google<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Kituo cha Usaidizi</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Kompyuta Zangu</translation>
 <translation id="811307782653349804">Fikia kompyuta yako mwenyewe kutoka mahali popote.</translation>
 <translation id="8116630183974937060">Hitilafu ya mtandao imetokea. Tafadhali hakikisha kwamba kifaa chako kipo mtandoani na ujaribu tena.</translation>
-<translation id="8123581458650016326">Ruhusu watumiaji wa mbali wadhibiti mashine hii</translation>
 <translation id="8178433417677596899">Kushiriki skrini kwa mtumiaji hadi mtumiaji, ni bora kwa msaada wa kiufundi wa mbali.</translation>
 <translation id="8187079423890319756">Hakimiliki 2013 Waandishi wa Chromium. Haki Zote zimehifadhiwa.</translation>
 <translation id="8196755618196986400">Ili kuturuhusu kuwasiliana nawe kwa maelezo zaidi, anwani yako ya barua pepe itajumuishwa katika maoni yoyote unayowasilisha.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Sera ya Faragha</translation>
 <translation id="894763922177556086">Mzuri</translation>
 <translation id="895780780740011433">Kwa Windows 7 na matoleo ya baadaye</translation>
-<translation id="8963047137585288214">Hatua ya ziada ya kuweka mipangilio inahitajika kabla ya kudhibiti mashine hii kutoka mbali ukitumia <ph name="PRODUCT_NAME" />.
-
-Ili uwashe utendaji huu, chagua '<ph name="BUTTON_NAME" />' uonyeshe kidirisha cha mapendeleo ya Usalama na Faragha, kisha uteue kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari ipo na imechaguliwa, huenda utahitaji kubatilisha uteuzi kisha uichague upya.</translation>
 <translation id="897805526397249209">Ili uwashe miunganisho ya mbali kwenye kompyuta tofauti, sakinisha Chromoting hapo na ubofye “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Kidhibiti cha Seva Pangishi ya Kompyuta ya Mbali ya Chrome</translation>
 <translation id="9016232822027372900">Hata hivyo unganisha</translation>

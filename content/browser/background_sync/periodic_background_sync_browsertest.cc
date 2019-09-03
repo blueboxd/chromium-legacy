@@ -213,4 +213,77 @@ IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
   EXPECT_TRUE(HasTag("foo"));
 }
 
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest, MultipleEventsFired) {
+  SetTestClock(&clock_);
+
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));
+
+  EXPECT_TRUE(Register("foo", /* min_interval_ms= */ 10));
+
+  clock_.Advance(kMinGapBetweenPeriodicSyncEvents);
+  EXPECT_TRUE(PopConsole("foo fired"));
+  EXPECT_TRUE(HasTag("foo"));
+
+  clock_.Advance(kMinGapBetweenPeriodicSyncEvents);
+  EXPECT_TRUE(PopConsole("foo fired"));
+  EXPECT_TRUE(HasTag("foo"));
+  EXPECT_TRUE(Unregister("foo"));
+}
+
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
+                       MultipleMinIntervalsAndTags) {
+  SetTestClock(&clock_);
+
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));
+
+  EXPECT_TRUE(Register("foo", /* min_interval_ms= */ 10));
+  EXPECT_TRUE(Register("foo", /* min_interval_ms= */ 200));
+  EXPECT_TRUE(HasTag("foo"));
+
+  EXPECT_TRUE(Register("bar", /* min_interval_ms= */ 50));
+  EXPECT_TRUE(HasTag("bar"));
+
+  clock_.Advance(kMinGapBetweenPeriodicSyncEvents);
+
+  // Ordering is important here.
+  EXPECT_TRUE(PopConsole("bar fired"));
+  EXPECT_TRUE(PopConsole("foo fired"));
+
+  EXPECT_TRUE(Unregister("foo"));
+  EXPECT_FALSE(HasTag("foo"));
+  EXPECT_TRUE(HasTag("bar"));
+
+  clock_.Advance(kMinGapBetweenPeriodicSyncEvents);
+  EXPECT_TRUE(PopConsole("bar fired"));
+  EXPECT_TRUE(Unregister("bar"));
+}
+
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest, WaitUntil) {
+  SetTestClock(&clock_);
+
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));
+
+  background_sync_test_util::SetOnline(web_contents(), false);
+
+  EXPECT_TRUE(Register("delay", /* min_interval_ms= */ 10));
+  ASSERT_TRUE(HasTag("delay"));
+
+  clock_.Advance(kMinGapBetweenPeriodicSyncEvents);
+  background_sync_test_util::SetOnline(web_contents(), true);
+  base::RunLoop().RunUntilIdle();
+
+  int num_periodicsync_events_fired = GetNumPeriodicSyncEvents();
+
+  // Complete the task.
+  EXPECT_TRUE(CompleteDelayedSyncEvent());
+  EXPECT_TRUE(PopConsole("ok - delay completed"));
+  EXPECT_EQ(GetNumPeriodicSyncEvents(), num_periodicsync_events_fired + 1);
+
+  EXPECT_TRUE(HasTag("delay"));
+  EXPECT_TRUE(Unregister("delay"));
+}
+
 }  // namespace content

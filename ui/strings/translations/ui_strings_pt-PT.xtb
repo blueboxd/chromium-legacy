@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Tente novamente</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Hoje</translation>
+<translation id="2161656808144014275">Texto</translation>
 <translation id="2168039046890040389">Página para cima</translation>
 <translation id="2190355936436201913">(vazio)</translation>
 <translation id="2192232475740621500">Utilizar densidade baixa</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Procurar "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Selecionar Pasta a Carregar</translation>
 <translation id="3660179305079774227">Seta para cima</translation>
+<translation id="3670030362669914947">Número</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Continuar a ler no dispositivo móvel <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Há 1 mês}other{Há # meses}}</translation>
 <translation id="4289300219472526559">Comece a Falar</translation>
 <translation id="4316910396681052118">TODAS AS APLICAÇÕES</translation>
-<translation id="4467014365953759647">Não é possível enviar o número</translation>
 <translation id="4588090240171750605">Deslocar-se para a direita</translation>
 <translation id="4690510401873698237">Prateleira na parte inferior</translation>
 <translation id="4724120544754982507">Centro de notificações, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificações não lidas</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Retrocesso</translation>
 <translation id="5613020302032141669">Seta para a esquerda</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Ativo hoje}=1{Ativo há 1 dia}other{Ativo há # dias}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dia e  }other{# dias e  }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{em 1 a.}other{em # a.}}</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Iniciador, vista parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Há 1 min}other{Há # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Verifique a ligação do telemóvel e tente novamente.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Falta 1 minuto}other{Faltam # minutos}}</translation>
 <translation id="7430878839542012341">Pretende eliminar esta pesquisa do seu histórico?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

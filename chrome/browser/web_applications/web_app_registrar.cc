@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "chrome/browser/web_applications/abstract_web_app_database.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -30,7 +31,8 @@ void WebAppRegistrar::RegisterApp(std::unique_ptr<WebApp> web_app) {
   DCHECK(!app_id.empty());
   DCHECK(!GetAppById(app_id));
 
-  database_->WriteWebApp(*web_app);
+  // TODO(loyso): Expose CompletionCallback as RegisterApp argument.
+  database_->WriteWebApps({web_app.get()}, base::DoNothing());
 
   registry_.emplace(app_id, std::move(web_app));
 }
@@ -40,7 +42,8 @@ std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
 
   DCHECK(!app_id.empty());
 
-  database_->DeleteWebApps({app_id});
+  // TODO(loyso): Expose CompletionCallback as UnregisterApp argument.
+  database_->DeleteWebApps({app_id}, base::DoNothing());
 
   auto kv = registry_.find(app_id);
   DCHECK(kv != registry_.end());
@@ -58,7 +61,8 @@ const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
 void WebAppRegistrar::UnregisterAll() {
   CountMutation();
 
-  database_->DeleteWebApps(GetAppIds());
+  // TODO(loyso): Expose CompletionCallback as UnregisterAll argument.
+  database_->DeleteWebApps(GetAppIds(), base::DoNothing());
   registry_.clear();
 }
 

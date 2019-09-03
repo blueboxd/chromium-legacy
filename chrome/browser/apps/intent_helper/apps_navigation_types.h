@@ -67,9 +67,16 @@ enum class Source {
   kMaxValue = kExternalProtocol
 };
 
+// The type of an entry in the intent picker for the user to choose from.
+enum class PickerEntryType {
+  kUnknown = 0,
+  kArc,
+  kWeb,
+};
+
 // Represents the data required to display an app in a picker to the user.
 struct IntentPickerAppInfo {
-  IntentPickerAppInfo(apps::mojom::AppType type,
+  IntentPickerAppInfo(PickerEntryType type,
                       const gfx::Image& icon,
                       const std::string& launch_name,
                       const std::string& display_name);
@@ -79,7 +86,7 @@ struct IntentPickerAppInfo {
   IntentPickerAppInfo& operator=(IntentPickerAppInfo&& other);
 
   // The type of app that this object represents.
-  apps::mojom::AppType type;
+  PickerEntryType type;
 
   // The icon to be displayed for this app in the picker.
   gfx::Image icon;
@@ -114,7 +121,7 @@ using GetAppsCallback =
 // values of the launch name, app type, and persistence boolean are all ignored.
 using IntentPickerResponse =
     base::OnceCallback<void(const std::string& launch_name,
-                            apps::mojom::AppType app_type,
+                            apps::PickerEntryType entry_type,
                             apps::IntentPickerCloseReason close_reason,
                             bool should_persist)>;
 

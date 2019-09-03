@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">Διακοπή ομιλίας</translation>
 <translation id="4373197658375206385">Δεν υπάρχει προηγούμενο στοιχείο που δεν αποτελεί σύνδεσμο.</translation>
 <translation id="4376316291247992553">Προβολή γραφικού ως Braille</translation>
+<translation id="437809255587011096">Ανακοίνωση μορφοποίησης κειμένου</translation>
 <translation id="4378308539633073595">Κύλιση προς τα εμπρός</translation>
 <translation id="4384583879834880242">Ερωτήσεις και απαντήσεις</translation>
 <translation id="4391478986194775161">πληροφορίες περιεχομένου</translation>
@@ -1122,6 +1123,7 @@
 <translation id="8503360654911991865">Μείωση ευαισθησίας πλοήγησης</translation>
 <translation id="8504695234784218301">Τέλος γραμματικού σφάλματος</translation>
 <translation id="8520472399088452386">Κουμπί περιστροφής</translation>
+<translation id="8534394844575788431">Μορφοποίηση</translation>
 <translation id="8538744478902126321">Κάντε μια εκτίμηση για την κεφαλίδα της σειράς του τρέχοντος κελιού</translation>
 <translation id="8540054775867439484">Ενσωμάτωση στο επάνω μέρος</translation>
 <translation id="8542271685829952264">Για να εξερευνήσετε όλες τις εντολές και συντομεύσεις του ChromeVox, πατήστε Search + Τελεία και έπειτα χρησιμοποιήστε τα πλήκτρα με τα βέλη για να πλοηγηθείτε στα μενού και το πλήκτρο Enter για να ενεργοποιήσετε μια εντολή. Επιστρέψτε εδώ πατώντας Search+o και έπειτα t.</translation>
@@ -1201,6 +1203,7 @@
 <translation id="9149560530563164529">ενότητα</translation>
 <translation id="9150735707954472829">Καρτέλα</translation>
 <translation id="9151211641321628915">Παρέχει μια σύντομη περιγραφή της τρέχουσας τοποθεσίας</translation>
+<translation id="9151249085738989067">Αυτόματη εναλλαγή φωνής ChromeVox με βάση τη γλώσσα</translation>
 <translation id="9153606228985488238">Τόνος <ph name="PERCENT" /> τοις εκατό</translation>
 <translation id="9160096769946561184">Μετάβαση στο τέλος της τρέχουσας στήλης</translation>
 <translation id="9173115498289768110">Ένταση <ph name="PERCENT" /> τοις εκατό</translation>

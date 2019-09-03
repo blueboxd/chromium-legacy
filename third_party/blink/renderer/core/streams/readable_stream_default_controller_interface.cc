@@ -19,8 +19,9 @@ namespace {
 class ReadableStreamDefaultControllerWrapper final
     : public ReadableStreamDefaultControllerInterface {
  public:
-  explicit ReadableStreamDefaultControllerWrapper(ScriptValue controller)
-      : ReadableStreamDefaultControllerInterface(controller.GetScriptState()),
+  explicit ReadableStreamDefaultControllerWrapper(ScriptState* script_state,
+                                                  ScriptValue controller)
+      : ReadableStreamDefaultControllerInterface(script_state),
         js_controller_(controller.GetIsolate(), controller.V8Value()) {
     js_controller_.SetPhantom();
   }
@@ -114,8 +115,9 @@ class ReadableStreamDefaultControllerWrapper final
 class ReadableStreamDefaultControllerNative final
     : public ReadableStreamDefaultControllerInterface {
  public:
-  explicit ReadableStreamDefaultControllerNative(ScriptValue controller)
-      : ReadableStreamDefaultControllerInterface(controller.GetScriptState()) {
+  explicit ReadableStreamDefaultControllerNative(ScriptState* script_state,
+                                                 ScriptValue controller)
+      : ReadableStreamDefaultControllerInterface(script_state) {
     DCHECK(RuntimeEnabledFeatures::StreamsNativeEnabled());
 
     v8::Local<v8::Object> controller_object =
@@ -185,14 +187,15 @@ class ReadableStreamDefaultControllerNative final
 }  // namespace
 
 ReadableStreamDefaultControllerInterface*
-ReadableStreamDefaultControllerInterface::Create(ScriptValue controller) {
+ReadableStreamDefaultControllerInterface::Create(ScriptState* script_state,
+                                                 ScriptValue controller) {
   if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
     return MakeGarbageCollected<ReadableStreamDefaultControllerNative>(
-        controller);
+        script_state, controller);
   }
 
   return MakeGarbageCollected<ReadableStreamDefaultControllerWrapper>(
-      controller);
+      script_state, controller);
 }
 
 ReadableStreamDefaultControllerInterface::

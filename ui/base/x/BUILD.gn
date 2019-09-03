@@ -47,5 +47,6 @@ jumbo_component("x") {
     "//ui/events/x:x",
     "//ui/gfx",
     "//ui/gfx/x",
+    "//ui/platform_window/common",
   ]
 }

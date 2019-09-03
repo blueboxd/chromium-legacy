@@ -333,9 +333,6 @@ bool ChromePasswordManagerClient::ShowOnboarding(
   if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
     return false;
 #if defined(OS_ANDROID)
-  if (form_to_save->IsBlacklisted()) {
-    return false;
-  }
   // This class will delete itself after the dialog is dismissed.
   (new OnboardingDialogView(this, std::move(form_to_save)))->Show();
   return true;

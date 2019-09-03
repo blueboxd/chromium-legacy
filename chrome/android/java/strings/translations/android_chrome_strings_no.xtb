@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Installert</translation>
 <translation id="1792959175193046959">Endre standard nedlastingssted når som helst</translation>
 <translation id="1807246157184219062">Lys</translation>
+<translation id="1810845389119482123">Det innledende synkroniseringsoppsettet er ikke fullført</translation>
 <translation id="1821253160463689938">Bruker informasjonskapsler til å huske preferansene dine, selv om du ikke går til de sidene</translation>
 <translation id="1829244130665387512">Finn på side</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
@@ -412,6 +413,7 @@ Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du 
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> brukt</translation>
 <translation id="4181841719683918333">Språk</translation>
+<translation id="4183868528246477015">Søk med Google Lens <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="4198423547019359126">Ingen tilgjengelige nedlastingssteder</translation>
 <translation id="4209895695669353772">For å få forslag om personlig tilpasset innhold fra Google, slå på synkronisering</translation>
@@ -474,6 +476,7 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4665282149850138822"><ph name="NAME" /> ble lagt til på startskjermen</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}}</translation>
+<translation id="4696983787092045100">Send tekst til enhetene dine</translation>
 <translation id="4698034686595694889">Se uten nett i <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">En avgjørende funksjon som kreves for å kjøre Chrome, mangler. Chrome-installasjonen er enten ufullstendig eller ikke kompatibel med denne versjonen av Android.</translation>
 <translation id="4699172675775169585">Bufrede bilder og filer</translation>
@@ -529,6 +532,10 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5011311129201317034"><ph name="SITE" /> vil koble til</translation>
 <translation id="5013696553129441713">Ingen nye forslag</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Når du er i VR, kan dette nettstedet finne ut
+    - fysiske kjennetegn, som hvor høy du er
+
+    Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
 <translation id="5048398596102334565">Gi nettsteder tilgang til bevegelsessensorer (anbefalt)</translation>
@@ -556,6 +563,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5224771365102442243">Med video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> vil søke etter Bluetooth-enheter i nærheten. Fant disse enhetene:</translation>
 <translation id="5233638681132016545">Ny fane</translation>
+<translation id="5234764350956374838">Lukk</translation>
 <translation id="526421993248218238">Kan ikke laste inn denne siden</translation>
 <translation id="5271967389191913893">Enheten kan ikke åpne innholdet som skal lastes ned.</translation>
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
@@ -574,6 +582,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5363230136052241468">Trykk på hjemknappen for å laste inn en ny fane</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åpen fane – trykk for å bytte fane}other{<ph name="OPEN_TABS_MANY" /> åpne faner – trykk for å bytte fane}}</translation>
 <translation id="5391532827096253100">Tilkoblingen din til dette nettstedet er ikke sikker. Informasjon om nettstedet</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 til)}other{(+ # til)}}</translation>
 <translation id="5400569084694353794">Ved å bruke dette programmet samtykker du i Chromes <ph name="BEGIN_LINK1" />vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />merknad om personvern<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Navn</translation>
 <translation id="5403644198645076998">Tillat bare visse nettsteder</translation>
@@ -603,6 +612,11 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5527082711130173040">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK1" />Oppdater tillatelsene<ph name="END_LINK1" />. Posisjonstilgang er også <ph name="BEGIN_LINK2" />slått av for denne enheten<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Spør før nettsteder får tilgang til tekst og bilder fra utklipptavlen (anbefalt)</translation>
 <translation id="5530766185686772672">Lukk inkognitofaner</translation>
+<translation id="5534334044554683961">Når du er i VR, kan dette nettstedet finne ut
+    - fysiske kjennetegn, som hvor høy du er
+    - hvordan rommet ditt ser ut
+
+    Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="5534640966246046842">Nettstedet er kopiert</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5561549206367097665">Venter på nettverket …</translation>
@@ -690,7 +704,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6206551242102657620">Tilkoblingen er sikker. Informasjon om nettstedet</translation>
 <translation id="6210748933810148297">Ikke <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Alternativer for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Lås opp for å eksportere passordene dine</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
 
@@ -893,6 +906,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7665369617277396874">Legg til konto</translation>
 <translation id="766587987807204883">Her vises artikler, som du kan lese selv om du er uten nett</translation>
 <translation id="7682724950699840886">Prøv dette: Sørg for at det er nok plass på enheten, og prøv å eksportere på nytt.</translation>
+<translation id="7685301384041462804">Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="7698359219371678927">Opprett en e-post i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autofullfør søk og nettadresser</translation>
 <translation id="7725024127233776428">Sider du setter som bokmerker, vises her</translation>
@@ -923,6 +937,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7886917304091689118">Kjører i Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Laster ned filen.}other{Laster ned # filer.}}</translation>
 <translation id="7929962904089429003">Åpne menyen</translation>
+<translation id="7930681627240672853">Sjekk passordtrygghet</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er utdatert.</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
@@ -1070,6 +1085,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8993760627012879038">Åpne en ny fane i inkognitomodus</translation>
 <translation id="8998729206196772491">Du logger på med en konto som administreres av <ph name="MANAGED_DOMAIN" />, og du gir administratoren for dette domenet kontroll over Chrome-dataene dine. Dataene dine blir permanent knyttet til denne kontoen. Når du logger av Chrome, slettes dataene dine fra denne enheten, men de fortsetter å være lagret i Google-kontoen din.</translation>
 <translation id="9019902583201351841">Administrert av foreldrene dine</translation>
+<translation id="9029323097866369874">Vil du tillate <ph name="DOMAIN" /> å gå inn i VR?</translation>
 <translation id="9040142327097499898">Varsler er tillatt. Posisjon er slått av for denne enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videoer}}</translation>
 <translation id="9050666287014529139">Passordfrase</translation>

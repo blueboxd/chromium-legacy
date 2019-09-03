@@ -6,13 +6,13 @@
 #define GPU_IPC_COMMON_ANDROID_SCOPED_SURFACE_REQUEST_CONDUIT_H_
 
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/common/android/texture_owner.h"
 
 namespace base {
 class UnguessableToken;
 }
 
 namespace gpu {
+class TextureOwner;
 
 // Allows the forwarding of TextureOwners from the GPU or the browser process
 // to fulfill requests registered by the ScopedSurfaceRequestManager.

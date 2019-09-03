@@ -263,6 +263,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="4747097190499141774">Šifriranje gesla ne vključuje plačilnih sredstev in naslovov iz Googla Pay. Vaše šifrirane podatke lahko bere samo oseba z vašim geslom. Geslo ni poslano Googlu in ni shranjeno v Googlu. Če ga pozabite ali želite spremeniti to nastavitev, boste morali sinhronizacijo ponastaviti. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Poišči na strani</translation>
 <translation id="4751645464639803239">Nov zavihek brez beleženja zgodovine</translation>
+<translation id="4758977202923349869">Kreditno kartico postavite v ta okvir</translation>
 <translation id="4802417911091824046">Šifriranje gesla ne vključuje plačilnih sredstev in naslovov iz Googla Pay.
 
 Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5728700505257787410">Žal je bila pri prijavi v račun težava.</translation>
 <translation id="5737974891429562743">Account sign-in details are out of date. Update to start sync.</translation>
 <translation id="5738887413654608789">To vam omogoča odkrivanje pomembnih spletnih strani glede na vašo okolico.</translation>
+<translation id="5803566855766646066">Ali ste prepričani, da želite zavreči to novo kartico?</translation>
 <translation id="5816228676161003208">S tem je mogoče hitreje iskati z glasom.</translation>
 <translation id="5846482154967366008">Iskalnik</translation>
 <translation id="5854790677617711513">Starejše od 30 dni</translation>

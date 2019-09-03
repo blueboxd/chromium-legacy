@@ -7991,7 +7991,7 @@
       'tags': [],
       'desc': ''' The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive (currently only "cellular").
 
-      The recognized connection type identifiers are "ethernet", "wifi", and "cellular".''',
+      The recognized connection type identifiers are <ph name="CONNECTION_TYPE_ETHERNET_NAME">"ethernet"</ph>, <ph name="CONNECTION_TYPE_WIFI_NAME">"wifi"</ph>, and <ph name="CONNECTION_TYPE_CELLULAR_NAME">"cellular"</ph>.''',
     },
     {
       'name': 'DeviceUpdateHttpDownloadsEnabled',
@@ -16371,7 +16371,7 @@
 
           Peak Shift is power saving policy that minimizes alternating current usage during the peak usage times during the day. For each weekday a start and end time to run in power Peak Shift mode can be set. During these times the system will run from the battery even if the alternating current is attached as long as the battery stays above the threshold specified. After the end time specified the system will run from alternating current if attached but will not charge the battery. The system will again function normally using alternating current and recharging the battery after the specified Charge Start time.
 
-          If this policy is set to true, and DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig are set, then power peak shift will always be enabled if supported on the device.
+          If this policy is set to true, and <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME">DevicePowerPeakShiftBatteryThreshold</ph>, <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME">DevicePowerPeakShiftDayConfig</ph> are set, then power peak shift will always be enabled if supported on the device.
 
           If this policy is set to false, power peak shift will always be disabled.
 
@@ -16400,7 +16400,7 @@
       'tags': [],
       'desc': '''Set power peak shift battery threshold in percent.
 
-          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
+          This policy is only used if <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME">DevicePowerPeakShiftEnabled</ph> is set to true.
 
           If this policy is not configured or left unset, power peak shift will always be disabled.'''
     },
@@ -16470,7 +16470,7 @@
       'tags': [],
       'desc': '''Set power peak shift day config.
 
-          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
+          This policy is only used if <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME">DevicePowerPeakShiftEnabled</ph> is set to true.
 
           If this policy is not configured or left unset, power peak shift will always be disabled.
 
@@ -16662,7 +16662,7 @@
 
           Advanced Battery Charging Mode allows the user to maximize the battery health. In Advanced Charging Mode the system will use standard charging algorithm and other techniques during non-work hours to maximize battery health. During work hours, an express charge is used. This express charge allows the battery to be charged faster; therefore, the battery is at full charge sooner. For each day the time in which the system will be most heavily used is specified by the start time and the duration.
 
-          If this policy is set to true, and DeviceAdvancedBatteryChargeModeDayConfig is set, then advanced battery charge mode will always be enabled if supported on the device.
+          If this policy is set to true, and <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME">DeviceAdvancedBatteryChargeModeDayConfig</ph> is set, then advanced battery charge mode will always be enabled if supported on the device.
 
           If this policy is set to false, advanced battery charge mode will always be disabled.
 
@@ -16727,7 +16727,7 @@
       'tags': [],
       'desc': '''Set advanced battery charge mode day config.
 
-          This policy is only used if DeviceAdvancedBatteryChargeModeEnabled is set to true.
+          This policy is only used if <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME">DeviceAdvancedBatteryChargeModeEnabled</ph> is set to true.
 
           If this policy is not configured or left unset, advanced battery charge mode will always be disabled.
 
@@ -16784,7 +16784,7 @@
 
           Dynamically control battery charging to minimize battery wear-out due to battery stress and extend battery life.
 
-          If custom battery charge mode is selected then DeviceBatteryChargeCustomStartCharging and DeviceBatteryChargeCustomStopCharging must be specified.
+          If custom battery charge mode is selected then <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME">DeviceBatteryChargeCustomStartCharging</ph> and <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME">DeviceBatteryChargeCustomStopCharging</ph> must be specified.
 
           If this policy is set then battery charge mode will be applied if supported on the device.
 
@@ -16815,11 +16815,11 @@
 
           Battery starts charging when it depletes the battery charge custom start charging value.
 
-          DeviceBatteryChargeCustomStartCharging must be at least five percentage points bellow DeviceBatteryChargeCustomStopCharging.
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME">DeviceBatteryChargeCustomStartCharging</ph> must be at least five percentage points below <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME">DeviceBatteryChargeCustomStopCharging</ph>.
 
-          This policy is only used if DeviceBatteryChargeMode is set to custom.
+          This policy is only used if <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME">DeviceBatteryChargeMode</ph> is set to <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME">"custom"</ph>.
 
-          If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
+          If this policy is not configured or left unset, the <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME">"standard"</ph> battery charge mode will be applied.'''
     },
     {
       'name': 'DeviceBatteryChargeCustomStopCharging',
@@ -16844,11 +16844,11 @@
 
           Battery stops charging when it reaches the battery charge custom stop charging value.
 
-          DeviceBatteryChargeCustomStartCharging must be at least five percentage points bellow DeviceBatteryChargeCustomStopCharging.
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME">DeviceBatteryChargeCustomStartCharging</ph> must be at least five percentage points below <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME">DeviceBatteryChargeCustomStopCharging</ph>.
 
-          This policy is only used if DeviceBatteryChargeMode is set to custom.
+          This policy is only used if <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME">DeviceBatteryChargeMode</ph> is set to <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME">"custom"</ph>.
 
-          If this policy is not configured or left unset, the standard battery charge mode will be applied.'''
+          If this policy is not configured or left unset, the <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME">"standard"</ph> battery charge mode will be applied.'''
     },
     {
       'name': 'DeviceScheduledUpdateCheck',

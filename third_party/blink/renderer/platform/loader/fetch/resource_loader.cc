@@ -162,6 +162,18 @@ bool CanHandleDataURLRequestLocally(const ResourceRequest& request) {
   return true;
 }
 
+bool RequestContextObserveResponse(mojom::RequestContextType type) {
+  switch (type) {
+    case mojom::RequestContextType::PING:
+    case mojom::RequestContextType::BEACON:
+    case mojom::RequestContextType::CSP_REPORT:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 // CodeCacheRequest handles the requests to fetch data from code cache.
@@ -369,10 +381,17 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
   DCHECK(resource_);
   DCHECK(fetcher_);
 
-  if (FrameScheduler* frame_scheduler = fetcher->GetFrameScheduler()) {
-    feature_handle_for_scheduler_ = frame_scheduler->RegisterFeature(
-        SchedulingPolicy::Feature::kOutstandingNetworkRequest,
-        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+  // Some requests should not block the page from entering the BackForwardCache.
+  // If they are keepalive request && their responses are not observable to web
+  // content, we can have them survive without breaking web content when the
+  // page is put into BackForwardCache.
+  auto request = resource_->GetResourceRequest();
+  if (!RequestContextObserveResponse(request.GetRequestContext())) {
+    if (FrameScheduler* frame_scheduler = fetcher->GetFrameScheduler()) {
+      feature_handle_for_scheduler_ = frame_scheduler->RegisterFeature(
+          SchedulingPolicy::Feature::kOutstandingNetworkRequest,
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+    }
   }
 
   resource_->SetLoader(this);

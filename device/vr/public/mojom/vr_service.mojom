@@ -426,7 +426,7 @@ interface VRService {
 
   // WebVR 1.1 functionality compatibility method. To stop listening pass a null
   // client.
-  SetListeningForActivate(VRDisplayClient? client);
+  SetListeningForActivate(pending_remote<VRDisplayClient>? client);
 
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.

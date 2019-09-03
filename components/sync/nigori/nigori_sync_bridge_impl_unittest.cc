@@ -10,6 +10,7 @@
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
+#include "components/sync/nigori/nigori_storage.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -229,6 +230,15 @@ class MockObserver : public SyncEncryptionHandler::Observer {
                void(const SyncEncryptionHandler::NigoriState&));
 };
 
+class MockNigoriStorage : public NigoriStorage {
+ public:
+  MockNigoriStorage() = default;
+  ~MockNigoriStorage() override = default;
+
+  MOCK_METHOD1(StoreData, void(const sync_pb::NigoriLocalData&));
+  MOCK_METHOD0(RestoreData, base::Optional<sync_pb::NigoriLocalData>());
+};
+
 class NigoriSyncBridgeImplTest : public testing::Test {
  protected:
   NigoriSyncBridgeImplTest() {
@@ -236,7 +246,8 @@ class NigoriSyncBridgeImplTest : public testing::Test {
         std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
     processor_ = processor.get();
     bridge_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(processor), &encryptor_,
+        std::move(processor),
+        std::make_unique<testing::NiceMock<MockNigoriStorage>>(), &encryptor_,
         /*packed_explicit_passphrase_key=*/std::string());
     bridge_->AddObserver(&observer_);
   }
@@ -585,7 +596,8 @@ TEST(NigoriSyncBridgeImplTestWithPackedExplicitPassphrase,
   auto processor =
       std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
   auto bridge = std::make_unique<NigoriSyncBridgeImpl>(
-      std::move(processor), &encryptor,
+      std::move(processor),
+      std::make_unique<testing::NiceMock<MockNigoriStorage>>(), &encryptor,
       PackKeyAsExplicitPassphrase(kKeyParams, encryptor));
   testing::NiceMock<MockObserver> observer;
   bridge->AddObserver(&observer);

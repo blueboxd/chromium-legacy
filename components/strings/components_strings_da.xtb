@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Variationer i kommandolinjer</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Prøv at rydde dine cookies<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Udfasede funktioner</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
 <translation id="132301787627749051">Søg efter billede i udklipsholderen</translation>
 <translation id="1323433172918577554">Se flere</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Venter på forbindelse…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
+<translation id="1530707389502320859">Det website, du netop forsøgte at gå til, ser falsk ud. Svindlere efterligner nogle gange websites ved at lave små ændringer af webadressen, som er svære at se.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Denne side siger</translation>
 <translation id="153384715582417236">Det var det hele indtil videre</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Køre Diagnosticering af forbindelse<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Hvis du aktiverer disse funktioner, kan du miste browserdata eller
+    kompromittere din sikkerhed eller dit privatliv. Aktiverede funktioner gælder for alle
+    brugere i denne browser.</translation>
 <translation id="2735043616039983645">Der er mere end én kilde med modstridende værdier for denne politik.</translation>
 <translation id="2738330467931008676">Vælg afhentningsadresse</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">Hvis denne indstilling er slået til, gemmer Chromium en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="2985398929374701810">Angiv en gyldig adresse</translation>
 <translation id="2986368408720340940">Denne afhentningsmetode er ikke tilgængelig. Prøv en anden metode.</translation>
+<translation id="2987034854559945715">Der er ingen matchende funktioner</translation>
 <translation id="2991174974383378012">Deling med websites</translation>
 <translation id="2991571918955627853">Du kan ikke besøge <ph name="SITE" /> lige nu, da websitet bruger HSTS. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere senere.</translation>
 <translation id="3005723025932146533">Vis gemt kopi</translation>
@@ -518,6 +524,7 @@
 <translation id="3678529606614285348">Åbn siden i et nyt inkognitovindue (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Nedbrud registreret <ph name="CRASH_TIME" />, uploadet <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certifikatoplysninger</translation>
+<translation id="3701427423622901115">Nulstillingen blev anerkendt.</translation>
 <translation id="3704162925118123524">Det netværk, du bruger, kan kræve, at du går til netværkets loginside.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Indlæser...</translation>
@@ -690,6 +697,7 @@
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
 <translation id="4597348597567598915">Størrelse 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="464342062220857295">Søgefunktioner</translation>
 <translation id="4646534391647090355">Før mig dertil nu</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
@@ -806,6 +814,7 @@
 <translation id="5251803541071282808">Skyen</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Funktioner, der gælder for hele systemet, kan kun angives af ejeren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="5273658854610202413">Advarsel! Denne politik blev ikke flettet som angivet i politikken PolicyDictionaryMultipleSourceMergeList, da den ikke er en del af de ordbogspolitikker, der kan flettes.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Afslut</translation>
@@ -842,6 +851,8 @@
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}one{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andre}}</translation>
 <translation id="5470861586879999274">&amp;Annuller fortryd redigering</translation>
+<translation id="5473728911100096288">Hvis du aktiverer disse funktioner, får du adgang til udfasede funktioner,
+    der ikke vil være tilgængelige i fremtidige versioner.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Dette indhold forsøger muligvis at installere farlig software på din enhed, der kan stjæle eller slette dine oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Tilføj gyldig adresse</translation>
@@ -900,6 +911,7 @@
 <translation id="5763042198335101085">Angiv en gyldig mailadresse</translation>
 <translation id="5765072501007116331">Vælg en adresse for at se leveringsmetoder og -krav</translation>
 <translation id="5778550464785688721">Fuld kontrol over MIDI</translation>
+<translation id="5781136890105823427">Eksperimentet er aktiveret</translation>
 <translation id="578305955206182703">Ravgul</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
 <translation id="5784606427469807560">Der opstod et problem under bekræftelsen af dit kort. Kontrollér, at du har forbindelse til internettet, og prøv igen.</translation>
@@ -1065,6 +1077,7 @@
 <translation id="6738516213925468394">Dine data blev krypteret med din <ph name="BEGIN_LINK" />adgangssætning til synkronisering<ph name="END_LINK" /> <ph name="TIME" />. Indtast adgangssætningen for at starte synkroniseringen.</translation>
 <translation id="674375294223700098">Ukendt fejl i servercertifikatet.</translation>
 <translation id="6744009308914054259">Mens du venter på en forbindelse, kan du gå til Downloads for at læse artikler offline.</translation>
+<translation id="6747611005629681221">Advarsel! Udfasede funktioner forude.</translation>
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1431,6 +1444,7 @@ Yderligere oplysninger:
 <translation id="8738058698779197622">For at kunne oprette en sikker forbindelse skal dit ur være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chromium ikke bekræfte disse certifikater.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; for <ph name="HOST_NAME" /> blev ikke fundet. Diagnosticerer problemet.</translation>
 <translation id="874846938927089722">Accepterede kreditkort og forudbetalte kort</translation>
+<translation id="874918643257405732">Tilføj denne fane som bogmærke</translation>
 <translation id="8759274551635299824">Kortet er udløbet</translation>
 <translation id="8761567432415473239">Beskyttet browsing i Google har for nylig <ph name="BEGIN_LINK" />fundet skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhed</translation>

@@ -208,8 +208,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/peer_connection_tracker.h",
     "media/webrtc/rtc_certificate_generator.cc",
     "media/webrtc/rtc_certificate_generator.h",
-    "media/webrtc/rtc_event_log_output_sink_proxy.cc",
-    "media/webrtc/rtc_event_log_output_sink_proxy.h",
     "media/webrtc/rtc_peer_connection_handler.cc",
     "media/webrtc/rtc_peer_connection_handler.h",
     "media/webrtc/rtc_rtp_receiver.cc",

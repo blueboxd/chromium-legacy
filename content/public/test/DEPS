@@ -16,6 +16,7 @@ include_rules = [
   "+ui/ozone/public",
   "+ui/views/test",
   "+v8/include/v8.h",
+  "+ui/platform_window/common/platform_window_defaults.h",
 ]
 
 # Ensure we don't leak internal content headers through public headers.

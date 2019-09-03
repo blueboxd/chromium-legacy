@@ -132,17 +132,17 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     IntentPickerAutoDisplayService* ui_auto_display_service,
     const GURL& url,
     const std::string& launch_name,
-    apps::mojom::AppType app_type,
+    PickerEntryType entry_type,
     IntentPickerCloseReason close_reason,
     bool should_persist) {
   const bool should_launch_app =
       close_reason == IntentPickerCloseReason::OPEN_APP;
-  switch (app_type) {
-    case apps::mojom::AppType::kWeb:
+  switch (entry_type) {
+    case PickerEntryType::kWeb:
       if (should_launch_app)
         web_app::ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
       break;
-    case apps::mojom::AppType::kUnknown:
+    case PickerEntryType::kUnknown:
       // We reach here if the picker was closed without an app being chosen,
       // e.g. due to the tab being closed. Keep count of this scenario so we can
       // stop the UI from showing after 2+ dismissals.
@@ -151,23 +151,21 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
           ui_auto_display_service->IncrementCounter(url);
       }
       break;
-    case apps::mojom::AppType::kArc:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kExtension:
+    case PickerEntryType::kArc:
       NOTREACHED();
   }
-  RecordUma(launch_name, app_type, close_reason, Source::kHttpOrHttps,
+  RecordUma(launch_name, entry_type, close_reason, Source::kHttpOrHttps,
             should_persist);
 }
 
 // static
 void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
-                                       apps::mojom::AppType app_type,
+                                       PickerEntryType entry_type,
                                        IntentPickerCloseReason close_reason,
                                        Source source,
                                        bool should_persist) {
-  PickerAction action = GetPickerAction(app_type, close_reason, should_persist);
+  PickerAction action =
+      GetPickerAction(entry_type, close_reason, should_persist);
   Platform platform = GetDestinationPlatform(selected_app_package, action);
 
   // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
@@ -322,7 +320,7 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
 
     // Prefer the web and place apps of type PWA before apps of type ARC.
     // TODO(crbug.com/824598): deterministically sort this list.
-    apps.emplace(apps.begin(), apps::mojom::AppType::kWeb,
+    apps.emplace(apps.begin(), PickerEntryType::kWeb,
                  menu_manager->GetIconForExtension(extension->id()),
                  extension->id(), extension->name());
   }
@@ -343,7 +341,7 @@ bool AppsNavigationThrottle::ContainsOnlyPwas(
     const std::vector<apps::IntentPickerAppInfo>& apps) {
   return std::all_of(apps.begin(), apps.end(),
                      [](const apps::IntentPickerAppInfo& app_info) {
-                       return app_info.type == apps::mojom::AppType::kWeb;
+                       return app_info.type == PickerEntryType::kWeb;
                      });
 }
 
@@ -422,7 +420,7 @@ bool AppsNavigationThrottle::navigate_from_link() {
 
 // static
 AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
-    apps::mojom::AppType app_type,
+    PickerEntryType entry_type,
     IntentPickerCloseReason close_reason,
     bool should_persist) {
   switch (close_reason) {
@@ -438,18 +436,14 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
       return should_persist ? PickerAction::CHROME_PREFERRED_PRESSED
                             : PickerAction::CHROME_PRESSED;
     case IntentPickerCloseReason::OPEN_APP:
-      switch (app_type) {
-        case apps::mojom::AppType::kUnknown:
+      switch (entry_type) {
+        case PickerEntryType::kUnknown:
           return PickerAction::INVALID;
-        case apps::mojom::AppType::kArc:
+        case PickerEntryType::kArc:
           return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
                                 : PickerAction::ARC_APP_PRESSED;
-        case apps::mojom::AppType::kWeb:
+        case PickerEntryType::kWeb:
           return PickerAction::PWA_APP_PRESSED;
-        case apps::mojom::AppType::kBuiltIn:
-        case apps::mojom::AppType::kCrostini:
-        case apps::mojom::AppType::kExtension:
-          NOTREACHED();
       }
   }
 

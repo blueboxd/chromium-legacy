@@ -125,7 +125,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
         browser_interface_broker)
     : worker_context_client_(client),
       content_settings_client_(std::move(content_settings_client)),
-      pause_after_download_state_(kDontPauseAfterDownload),
       cache_storage_remote_(std::move(cache_storage_remote)),
       interface_provider_info_(std::move(interface_provider_info)),
       browser_interface_broker_(std::move(browser_interface_broker)) {
@@ -159,7 +158,6 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     const WebEmbeddedWorkerStartData& data,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
-  DCHECK_EQ(pause_after_download_state_, kDontPauseAfterDownload);
   worker_start_data_ = data;
 
   // TODO(mkwst): This really needs to be piped through from the requesting
@@ -177,10 +175,6 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   if (SecurityOrigin::Create(script_url)->IsLocalhost())
     worker_start_data_.address_space = network::mojom::IPAddressSpace::kLocal;
 
-  if (data.pause_after_download_mode ==
-      WebEmbeddedWorkerStartData::kPauseAfterDownload)
-    pause_after_download_state_ = kDoPauseAfterDownload;
-
   devtools_worker_token_ = data.devtools_worker_token;
   wait_for_debugger_mode_ = worker_start_data_.wait_for_debugger_mode;
   StartWorkerThread(std::move(initiator_thread_task_runner));
@@ -192,10 +186,9 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   asked_to_terminate_ = true;
   if (!worker_thread_) {
     // The worker thread has not been created yet if the worker is asked to
-    // terminate during waiting for debugger or paused after download.
-    DCHECK(worker_start_data_.wait_for_debugger_mode ==
-               WebEmbeddedWorkerStartData::kWaitForDebugger ||
-           pause_after_download_state_ == kIsPausedAfterDownload);
+    // terminate during waiting for debugger.
+    DCHECK_EQ(WebEmbeddedWorkerStartData::kWaitForDebugger,
+              worker_start_data_.wait_for_debugger_mode);
     // This deletes 'this'.
     worker_context_client_->WorkerContextFailedToStartOnInitiatorThread();
     return;

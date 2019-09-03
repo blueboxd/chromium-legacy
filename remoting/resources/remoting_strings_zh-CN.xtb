@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">退出</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
 <translation id="5308380583665731573">连接</translation>
+<translation id="5327248766486351172">名称</translation>
 <translation id="533625276787323658">没有可连接到的计算机</translation>
 <translation id="5363265567587775042">请让您想访问其计算机的用户点击“<ph name="SHARE" />”，然后向您提供访问代码。</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL" />）。</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
 <translation id="7981525049612125370">远程会话已过期。</translation>
+<translation id="8038111231936746805">（默认）</translation>
 <translation id="8041089156583427627">发送反馈</translation>
 <translation id="8041721485428375115">下载 Chrome 远程桌面主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
 <translation id="8060029310790625334">帮助中心</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">我的计算机</translation>
 <translation id="811307782653349804">从任何地方访问您自己的计算机。</translation>
 <translation id="8116630183974937060">发生网络错误。请确保您的设备已连接到网络，然后重试。</translation>
-<translation id="8123581458650016326">允许远程用户控制此机器</translation>
 <translation id="8178433417677596899">用户对用户的屏幕共享功能，尤其适用于远程技术支持。</translation>
 <translation id="8187079423890319756">版权所有2013 The Chromium Authors。保留所有权利。</translation>
 <translation id="8196755618196986400">为了便于我们与您联系（以便了解更多信息），您的电子邮件地址将包含在您提交的所有反馈中。</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">隐私权政策</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="895780780740011433">适用于 Windows 7 及更高版本</translation>
-<translation id="8963047137585288214">要使用 <ph name="PRODUCT_NAME" />远程控制此机器，您必须执行一个额外的配置步骤。
-
-要启用此功能，请选择“<ph name="BUTTON_NAME" />”以显示“安全性与隐私”偏好设置窗格，然后勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的方框。
-
-如果“<ph name="SERVICE_SCRIPT_NAME" />”已经显示并被勾选，您可能需要先取消勾选，然后再重新勾选。</translation>
 <translation id="897805526397249209">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="8998327464021325874">Chrome 远程桌面主机控制器</translation>
 <translation id="9016232822027372900">仍然连接</translation>

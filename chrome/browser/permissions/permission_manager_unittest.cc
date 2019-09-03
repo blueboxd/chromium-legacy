@@ -301,6 +301,32 @@ TEST_F(PermissionManagerTest, SubscriptionDestroyedCleanlyWithoutUnsubscribe) {
                  base::Unretained(this)));
 }
 
+TEST_F(PermissionManagerTest, SubscribeUnsubscribeAfterShutdown) {
+  int subscription_id =
+      GetPermissionControllerDelegate()->SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, main_rfh(), url(),
+          base::Bind(&PermissionManagerTest::OnPermissionChange,
+                     base::Unretained(this)));
+
+  // Simulate Keyed Services shutdown pass. Note: Shutdown will be called second
+  // time during profile destruction. This is ok for now: Shutdown is
+  // reenterant.
+  GetPermissionControllerDelegate()->Shutdown();
+
+  GetPermissionControllerDelegate()->UnsubscribePermissionStatusChange(
+      subscription_id);
+
+  // Check that subscribe/unsubscribe after shutdown don't crash.
+  int subscription2_id =
+      GetPermissionControllerDelegate()->SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, main_rfh(), url(),
+          base::Bind(&PermissionManagerTest::OnPermissionChange,
+                     base::Unretained(this)));
+
+  GetPermissionControllerDelegate()->UnsubscribePermissionStatusChange(
+      subscription2_id);
+}
+
 TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
   int subscription_id =
       GetPermissionControllerDelegate()->SubscribePermissionStatusChange(

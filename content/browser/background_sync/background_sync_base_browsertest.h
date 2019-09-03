@@ -60,6 +60,8 @@ class BackgroundSyncBaseBrowserTest : public ContentBrowserTest {
   // (assertion failure) if the tag isn't registered.
   bool RegistrationPending(const std::string& tag);
 
+  bool CompleteDelayedSyncEvent();
+
   void SetTestClock(base::SimpleTestClock* clock);
 
   void ClearStoragePartitionData();

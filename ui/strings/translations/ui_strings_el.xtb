@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Προσπαθήστε ξανά</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1ημ.}other{#ημ.}}</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
+<translation id="2161656808144014275">Κείμενο</translation>
 <translation id="2168039046890040389">Προηγούμενη σελίδα</translation>
 <translation id="2190355936436201913">(κενό)</translation>
 <translation id="2192232475740621500">Χρήση χαμηλής πυκνότητας</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Αναζήτηση "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Επιλέξτε φάκελο για μεταφόρτωση</translation>
 <translation id="3660179305079774227">Πάνω βέλος</translation>
+<translation id="3670030362669914947">Αριθμός</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Συνέχεια ανάγνωσης από την κινητή συσκευή σας <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Πριν από 1 μήνα}other{Πριν από # μήνες}}</translation>
 <translation id="4289300219472526559">Έναρξη ομιλίας</translation>
 <translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
-<translation id="4467014365953759647">Δεν είναι δυνατή η αποστολή του αριθμού</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
 <translation id="4690510401873698237">Ράφι στο κάτω μέρος</translation>
 <translation id="4724120544754982507">Κέντρο ειδοποιήσεων, <ph name="UNREAD_NOTIFICATION_COUNT" /> μη αναγνωσμένες ειδοποιήσεις</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Πλήκτρο Backspace</translation>
 <translation id="5613020302032141669">Αριστερό βέλος</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Ενεργή σήμερα}=1{Ενεργή 1 ημέρα πριν}other{Ενεργή # ημέρες πριν}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ημέρα και }other{# ημέρες και }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{σε 1 ε.}other{σε # ε.}}</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Εφαρμογή εκκίνησης, μερική προβολή</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Πριν από 1 λεπτό}other{Πριν από # λεπτά}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Ελέγξτε τη σύνδεση του τηλεφώνου σας και δοκιμάστε ξανά</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Απομένει 1 λεπτό}other{Απομένουν # λεπτά}}</translation>
 <translation id="7430878839542012341">Να διαγραφεί αυτή η αναζήτηση από το ιστορικό σας;</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

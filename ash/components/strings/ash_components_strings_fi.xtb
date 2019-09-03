@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1036550831858290950">Tallenna nykyinen välilehti kirjanmerkiksi</translation>
 <translation id="104962181688258143">Avaa Tiedostot-sovellus</translation>
 <translation id="1098295134904615027">Aktivoi oikealla oleva virtuaalityöpöytä</translation>
 <translation id="1122869341872663659">Näytetään <ph name="N" /> hakutulosta kyselylle <ph name="QUERY" /></translation>

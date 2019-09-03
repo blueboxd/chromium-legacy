@@ -154,7 +154,8 @@ class ReusingTextShaper final {
       return Reshape(start_item, start_offset, end_offset);
 
     const Vector<const ShapeResult*> reusable_shape_results =
-        CollectReusableShapeResults(start_offset, end_offset);
+        CollectReusableShapeResults(start_offset, end_offset,
+                                    start_item.Direction());
     if (reusable_shape_results.IsEmpty())
       return Reshape(start_item, start_offset, end_offset);
 
@@ -193,8 +194,10 @@ class ReusingTextShaper final {
                            target);
   }
 
-  Vector<const ShapeResult*> CollectReusableShapeResults(unsigned start_offset,
-                                                         unsigned end_offset) {
+  Vector<const ShapeResult*> CollectReusableShapeResults(
+      unsigned start_offset,
+      unsigned end_offset,
+      TextDirection direction) {
     DCHECK_LT(start_offset, end_offset);
     Vector<const ShapeResult*> shape_results;
     if (!reusable_items_)
@@ -210,7 +213,7 @@ class ReusingTextShaper final {
         break;
       if (item->EndOffset() < start_offset)
         continue;
-      if (!item->TextShapeResult())
+      if (!item->TextShapeResult() || item->Direction() != direction)
         continue;
       shape_results.push_back(item->TextShapeResult());
     }

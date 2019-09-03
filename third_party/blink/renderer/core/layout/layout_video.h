@@ -58,7 +58,7 @@ class LayoutVideo final : public LayoutMedia {
   void UpdateFromElement() override;
 
   LayoutSize CalculateIntrinsicSize();
-  void UpdateIntrinsicSize();
+  void UpdateIntrinsicSize(bool is_in_layout);
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
@@ -79,7 +79,7 @@ class LayoutVideo final : public LayoutMedia {
 
   CompositingReasons AdditionalCompositingReasons() const override;
 
-  void UpdatePlayer();
+  void UpdatePlayer(bool is_in_layout);
 
   LayoutSize cached_image_size_;
 };

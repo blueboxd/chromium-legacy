@@ -546,8 +546,13 @@ void VRServiceImpl::ExitPresent() {
 }
 
 void VRServiceImpl::SetListeningForActivate(
-    device::mojom::VRDisplayClientPtr display_client) {
-  display_client_ = std::move(display_client);
+    mojo::PendingRemote<device::mojom::VRDisplayClient> display_client) {
+  // TODO(crbug.com/999745): Remove the check if the condition to check if
+  // |display_client| is nullptr is not required.
+  if (display_client)
+    display_client_.Bind(std::move(display_client));
+  else
+    display_client_.reset();
   BrowserXRRuntime* immersive_runtime = runtime_manager_->GetImmersiveRuntime();
   if (immersive_runtime && display_client_) {
     immersive_runtime->UpdateListeningForActivate(this);

@@ -18,7 +18,7 @@
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
-#include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
+#include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
 
 namespace media {
@@ -352,7 +352,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
         std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     avd_.reset(new VP8Decoder(
-        std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+        std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     avd_.reset(new VP9Decoder(
         std::make_unique<V4L2VP9Accelerator>(this, device_.get())));

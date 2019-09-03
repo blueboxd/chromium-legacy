@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
+<translation id="5327248766486351172">ชื่อ</translation>
 <translation id="533625276787323658">ไม่มีปลายทางให้เชื่อมต่อ</translation>
 <translation id="5363265567587775042">ขอให้ผู้ใช้ที่เป็นเจ้าของคอมพิวเตอร์ที่คุณต้องการใช้งานคลิก “<ph name="SHARE" />” และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop อนุญาตให้คุณแชร์คอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL" /></translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">ตัวเลือกหน้าจอ</translation>
 <translation id="7970576581263377361">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromium อีกครั้ง</translation>
 <translation id="7981525049612125370">เซสชันระยะไกลหมดอายุลงแล้ว</translation>
+<translation id="8038111231936746805">(ค่าเริ่มต้น)</translation>
 <translation id="8041089156583427627">ส่งความคิดเห็น</translation>
 <translation id="8041721485428375115">การดาวน์โหลด Chrome Remote Desktop Host Installer หมายถึงคุณยอมรับ<ph name="LINK_BEGIN" />ข้อกำหนดในการให้บริการ<ph name="LINK_END" />ของ Google</translation>
 <translation id="8060029310790625334">ศูนย์ช่วยเหลือ</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">คอมพิวเตอร์ของฉัน</translation>
 <translation id="811307782653349804">เข้าถึงคอมพิวเตอร์ของคุณเองจากที่ใดก็ได้</translation>
 <translation id="8116630183974937060">เกิดข้อผิดพลาดในเครือข่าย โปรดตรวจสอบว่าอุปกรณ์ของคุณออนไลน์อยู่และลองอีกครั้ง</translation>
-<translation id="8123581458650016326">อนุญาตให้ผู้ใช้ระยะไกลควบคุมคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="8178433417677596899">การแชร์หน้าจอระหว่างผู้ใช้กับผู้ใช้ เหมาะสำหรับการสนับสนุนทางเทคนิคจากระยะไกล</translation>
 <translation id="8187079423890319756">ลิขสิทธิ์ 2013 The Chromium Authors สงวนลิขสิทธิ์</translation>
 <translation id="8196755618196986400">หากต้องการอนุญาตให้เราติดต่อคุณสำหรับข้อมูลเพิ่มเติม จะมีการใส่ที่อยู่อีเมลของคุณในความคิดเห็นทั้งหมดที่คุณส่งมา</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">นโยบายความเป็นส่วนตัว</translation>
 <translation id="894763922177556086">ดี</translation>
 <translation id="895780780740011433">สำหรับ Windows 7 ขึ้นไป</translation>
-<translation id="8963047137585288214">คุณต้องทำขั้นตอนการกำหนดค่าเพิ่มเติมก่อนที่จะใช้ <ph name="PRODUCT_NAME" /> ควบคุมคอมพิวเตอร์เครื่องนี้จากระยะไกลได้
-
-หากต้องการเปิดใช้ฟังก์ชันการทำงานนี้ ให้เลือก "<ph name="BUTTON_NAME" />" เพื่อแสดงแผงค่ากำหนดความปลอดภัยและความเป็นส่วนตัว จากนั้นเลือกช่องถัดจาก "<ph name="SERVICE_SCRIPT_NAME" />"
-
-หาก "<ph name="SERVICE_SCRIPT_NAME" />" แสดงอยู่และเลือกไว้แล้ว คุณอาจต้องยกเลิกการเลือกก่อนแล้วจึงเลือกใหม่</translation>
 <translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก "<ph name="BUTTON_NAME" />"</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">ยังต้องการเชื่อมต่อ</translation>

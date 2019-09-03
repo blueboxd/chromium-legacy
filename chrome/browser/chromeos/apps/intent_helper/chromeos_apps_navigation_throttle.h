@@ -45,7 +45,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
   // Called when the intent picker is closed for |url|, in |web_contents|, with
   // |launch_name| as the (possibly empty) action to be triggered based on
-  // |app_type|. |close_reason| gives the reason for the picker being closed,
+  // |entry_type|. |close_reason| gives the reason for the picker being closed,
   // and |should_persist| is true if the user indicated they wish to remember
   // the choice made. |ui_auto_display_service| keeps track of whether or not
   // the user dismissed the ui without engaging with it.
@@ -54,12 +54,12 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url,
       const std::string& launch_name,
-      apps::mojom::AppType app_type,
+      apps::PickerEntryType entry_type,
       apps::IntentPickerCloseReason close_reason,
       bool should_persist);
 
   static void RecordUma(const std::string& selected_app_package,
-                        apps::mojom::AppType app_type,
+                        apps::PickerEntryType entry_type,
                         apps::IntentPickerCloseReason close_reason,
                         apps::Source source,
                         bool should_persist);

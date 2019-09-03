@@ -484,6 +484,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4372705107434148843">Stop tale</translation>
 <translation id="4373197658375206385">Ingen tidligere elementer, der ikke er links.</translation>
 <translation id="4376316291247992553">Se grafik som braille</translation>
+<translation id="437809255587011096">Oplæs styling af tekst</translation>
 <translation id="4378308539633073595">Rul fremad</translation>
 <translation id="4384583879834880242">Spørgsmål og svar</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8503360654911991865">Mindsk detaljegraden for navigation</translation>
 <translation id="8504695234784218301">Slut på grammatisk fejl</translation>
 <translation id="8520472399088452386">Skalafelt</translation>
+<translation id="8534394844575788431">Formatering</translation>
 <translation id="8538744478902126321">Giv et bud på rækkeoverskriften for den aktuelle celle</translation>
 <translation id="8540054775867439484">Ombrudt til toppen</translation>
 <translation id="8542271685829952264">Du kan udforske alle ChromeVox-kommandoer og -genveje ved at trykke på søgetasten+punktum. Brug derefter piletasterne til at navigere i menuerne og Enter til at aktivere en kommando. Vend tilbage hertil ved at trykke på søgetasten+O og derefter T.</translation>
@@ -1200,6 +1202,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Fane</translation>
 <translation id="9151211641321628915">Angiver en kort beskrivelse af den aktuelle position</translation>
+<translation id="9151249085738989067">Skift automatisk ChromeVox-stemme på baggrund af sprog</translation>
 <translation id="9153606228985488238">Toneleje <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Gå til slutningen af ​​den aktuelle kolonne</translation>
 <translation id="9173115498289768110">Lydstyrke <ph name="PERCENT" /> procent</translation>

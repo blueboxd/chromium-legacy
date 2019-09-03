@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/animation_event.h"
 #include "third_party/blink/renderer/core/events/transition_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -143,8 +144,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 
   for (const CSSProperty* property : specified_properties_for_use_counter) {
     DCHECK(isValidCSSPropertyID(property->PropertyID()));
-    element_for_scoping->GetDocument().CountUse(
-        property->PropertyID(), UseCounterHelper::CSSPropertyType::kAnimation);
+    element_for_scoping->GetDocument().CountAnimatedProperty(
+        property->PropertyID());
   }
 
   // Merge duplicate keyframes.
@@ -604,9 +605,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     running_transition.animation = animation;
     transitions_.Set(property, running_transition);
     DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
-    element->GetDocument().CountUse(
-        property.GetCSSProperty().PropertyID(),
-        UseCounterHelper::CSSPropertyType::kAnimation);
+    element->GetDocument().CountAnimatedProperty(
+        property.GetCSSProperty().PropertyID());
   }
   ClearPendingUpdate();
 }

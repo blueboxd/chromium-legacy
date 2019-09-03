@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
+<translation id="5327248766486351172">Nimi</translation>
 <translation id="533625276787323658">Ühegi seadmega ei saa ühendust luua</translation>
 <translation id="5363265567587775042">Paluge kasutajal, kelle arvutile soovite juurde pääseda, klõpsata nupul „<ph name="SHARE" />” ja anda teile juurdepääsukood.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop võimaldab arvutit turvaliselt veebi kaudu jagada. Mõlema kasutaja arvutis peab töötama rakendus Chrome Remote Desktop, mille leiate aadressilt <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Ekraani valikud</translation>
 <translation id="7970576581263377361">Autentimine ebaõnnestus. Logige uuesti Chromiumi sisse.</translation>
 <translation id="7981525049612125370">Kaugseanss on aegunud.</translation>
+<translation id="8038111231936746805">(vaikimisi)</translation>
 <translation id="8041089156583427627">Saada tagasiside</translation>
 <translation id="8041721485428375115">Chrome Remote Desktopi hosti installiprogrammi allalaadimisel nõustute Google'i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Abikeskus</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Minu arvutid</translation>
 <translation id="811307782653349804">Kasutage oma arvutit ükskõik kus.</translation>
 <translation id="8116630183974937060">Ilmnes võrguviga. Kontrollige, kas seade on võrgus, ja proovige uuesti.</translation>
-<translation id="8123581458650016326">Kaugkasutajatel seadme juhtimise lubamine</translation>
 <translation id="8178433417677596899">Ekraani jagamine kasutajalt kasutajale, sobib täiuslikult kaugühenduse abil tehnilise toe pakkumiseks.</translation>
 <translation id="8187079423890319756">Autoriõigus 2013 The Chromium Authors. Kõik õigused kaitstud.</translation>
 <translation id="8196755618196986400">Selleks et saaksime teiega lisateabe saamiseks ühendust võtta, tuleb teie e-posti aadress alati lisada saadetud tagasisidele.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>
 <translation id="894763922177556086">Hea</translation>
 <translation id="895780780740011433">Windows 7-le ja uuematele versioonidele</translation>
-<translation id="8963047137585288214">Enne kui saate seadet teenusega <ph name="PRODUCT_NAME" /> kaugjuhtida, on vaja teha veel üks seadistustoiming.
-
-Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada turva- ja privaatsuseelistuste paan, seejärel märkige ruut „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb teil võib-olla märge eemaldada ja valik uuesti märkida.</translation>
 <translation id="897805526397249209">Muu arvutiga kaugühenduste lubamiseks installige sellesse rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktopi hosti kontroller</translation>
 <translation id="9016232822027372900">Ühenda siiski</translation>

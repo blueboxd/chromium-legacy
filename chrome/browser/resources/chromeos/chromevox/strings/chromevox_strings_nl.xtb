@@ -483,6 +483,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4372705107434148843">Spraak stoppen</translation>
 <translation id="4373197658375206385">Geen vorig item dat geen link is.</translation>
 <translation id="4376316291247992553">Afbeelding als braille weergeven</translation>
+<translation id="437809255587011096">Stijl van aankondigingstekst</translation>
 <translation id="4378308539633073595">Vooruit scrollen</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1119,6 +1120,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8503360654911991865">Detailniveau van navigatie verkleinen</translation>
 <translation id="8504695234784218301">Einde van grammaticafout</translation>
 <translation id="8520472399088452386">Draaiknop</translation>
+<translation id="8534394844575788431">Opmaak</translation>
 <translation id="8538744478902126321">Schat de kop van de rij van de huidige cel</translation>
 <translation id="8540054775867439484">Omloop naar boven</translation>
 <translation id="8542271685829952264">Als je alle ChromeVox-opdrachten en -sneltoetsen wilt bekijken, druk je op Zoeken + punt. Vervolgens gebruik je de pijltoetsen om door de menu's te navigeren en druk je op Enter om een opdracht te activeren. Je kunt terugkeren door op Zoeken + o en vervolgens op t te drukken.</translation>
@@ -1198,6 +1200,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tabblad</translation>
 <translation id="9151211641321628915">Geeft een korte beschrijving van de huidige positie</translation>
+<translation id="9151249085738989067">ChromeVox-stem automatisch wijzigen op basis van taal</translation>
 <translation id="9153606228985488238">Toonhoogte <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Naar het einde van de huidige kolom gaan</translation>
 <translation id="9173115498289768110">Volume <ph name="PERCENT" /> procent</translation>

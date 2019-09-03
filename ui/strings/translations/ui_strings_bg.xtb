@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Моля, опитайте отново</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д.}other{# д.}}</translation>
 <translation id="2148716181193084225">Днес</translation>
+<translation id="2161656808144014275">Текст</translation>
 <translation id="2168039046890040389">Страница нагоре</translation>
 <translation id="2190355936436201913">(празно)</translation>
 <translation id="2192232475740621500">Използване на ниска плътност</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Търсене на „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Избиране на папка за качване</translation>
 <translation id="3660179305079774227">Стрелка нагоре</translation>
+<translation id="3670030362669914947">Номер</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ГБ/сек</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
 <translation id="3842239759367498783">Продължете четенето от мобилното си устройство <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Преди 1 месец}other{Преди # месеца}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">ВСИЧКИ ПРИЛОЖЕНИЯ</translation>
-<translation id="4467014365953759647">Номерът не може да бъде изпратен</translation>
 <translation id="4588090240171750605">Превъртане надясно</translation>
 <translation id="4690510401873698237">Лавицата е най-долу</translation>
 <translation id="4724120544754982507">Център за известия, <ph name="UNREAD_NOTIFICATION_COUNT" /> непрочетени</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Стрелка наляво</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Активно днес}=1{Активно преди 1 ден}other{Активно преди # дни}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ден и }other{# дни и }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{след 1 г.}other{след # г.}}</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Стартов панел, частичен изглед</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Преди 1 мин}other{Преди # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Проверете връзката на телефона си и опитайте отново</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Остава 1 минута}other{Остават # минути}}</translation>
 <translation id="7430878839542012341">Да се изтрие ли това търсене от историята ви?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>

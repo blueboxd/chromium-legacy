@@ -11,9 +11,10 @@ import "mojo/public/mojom/base/file.mojom";
 
 interface UsbDeviceManager {
   // Retrieves information about all devices available to the DeviceManager
-  // implementation and set client for device added/removed events.
-  EnumerateDevicesAndSetClient(associated UsbDeviceManagerClient client)
-      => (array<UsbDeviceInfo> results);
+  // implementation and set client for device added/*removed events.
+  EnumerateDevicesAndSetClient(
+      pending_associated_remote<UsbDeviceManagerClient> client)
+          => (array<UsbDeviceInfo> results);
 
   // Retrieves devices information filtered by |options| to the DeviceManager
   // implementation.
@@ -42,5 +43,5 @@ interface UsbDeviceManager {
 
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.
-  SetClient(associated UsbDeviceManagerClient client);
+  SetClient(pending_associated_remote<UsbDeviceManagerClient> client);
 };

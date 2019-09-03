@@ -334,7 +334,7 @@
 <translation id="3323447499041942178">Текстовое поле</translation>
 <translation id="3324983252691184275">Малиновый</translation>
 <translation id="3338224621010291843">Ползунок <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="335581015389089642">Озвучить</translation>
+<translation id="335581015389089642">Озвучивание</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{знак плюс}one{# знак плюс}few{# знака плюс}many{# знаков плюс}other{# plus signs}}</translation>
 <translation id="338583716107319301">Разделитель</translation>
@@ -409,7 +409,7 @@
 <translation id="3930383913623796990">Весенне-зеленый</translation>
 <translation id="3930498801443296724">Цитата в виде врезки</translation>
 <translation id="3936394396199829062">Розово-лавандовый</translation>
-<translation id="3941269780691800708">Произносить текст под мышью</translation>
+<translation id="3941269780691800708">Произносить текст под указателем мыши</translation>
 <translation id="394953087167197343">Опечатка:</translation>
 <translation id="3962990492275676168">Читать с текущего места</translation>
 <translation id="3970951409746498040">Песочно-коричневый</translation>
@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">Отключить озвучивание</translation>
 <translation id="4373197658375206385">Предыдущего элемента, не являющегося ссылкой, нет.</translation>
 <translation id="4376316291247992553">Преобразовать графические элементы в шрифт Брайля</translation>
+<translation id="437809255587011096">Озвучивать стиль текста</translation>
 <translation id="4378308539633073595">Прокрутить вперед.</translation>
 <translation id="4384583879834880242">Вопросы и ответы</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">Уменьшить точность навигации</translation>
 <translation id="8504695234784218301">Конец грамматической ошибки</translation>
 <translation id="8520472399088452386">Счетчик</translation>
+<translation id="8534394844575788431">Форматирование</translation>
 <translation id="8538744478902126321">Определить тип данных в заголовке строки текущей ячейки</translation>
 <translation id="8540054775867439484">Смещение вверх</translation>
 <translation id="8542271685829952264">Чтобы открыть список всех команд и быстрых клавиш ChromeVox, нажмите SEARCH + Ю. Перемещайтесь по меню с помощью клавиш со стрелками. Чтобы выбрать команду, нажмите ВВОД. Чтобы вернуться сюда, нажмите SEARCH + Щ, затем Е.</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Вкладка</translation>
 <translation id="9151211641321628915">Озвучить краткое описание текущего элемента</translation>
+<translation id="9151249085738989067">Автоматически переключать язык ChromeVox в зависимости от языковых настроек</translation>
 <translation id="9153606228985488238">Высота звука: <ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">Перейти к концу текущего столбца</translation>
 <translation id="9173115498289768110">Громкость: <ph name="PERCENT" />%</translation>

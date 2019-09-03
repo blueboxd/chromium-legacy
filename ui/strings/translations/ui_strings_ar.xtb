@@ -38,6 +38,7 @@
 <translation id="208586643495776849">يُرجى إعادة المحاولة</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{يوم واحد}zero{# يوم}two{يومان (#)}few{# أيام}many{# يومًا}other{# يوم}}</translation>
 <translation id="2148716181193084225">اليوم</translation>
+<translation id="2161656808144014275">نص</translation>
 <translation id="2168039046890040389">صفحة  إلى أعلى</translation>
 <translation id="2190355936436201913">(فارغ)</translation>
 <translation id="2192232475740621500">استخدام كثافة منخفضة</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">البحث عن "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">حدد مجلدًا للتحميل</translation>
 <translation id="3660179305079774227">مفتاح سهم إلى أعلى</translation>
+<translation id="3670030362669914947">رقم</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> غيغابايت/ثانية</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> غيغابايت</translation>
 <translation id="3842239759367498783">متابعة القراءة من جهازك الجوّال <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{قبل شهر واحد}zero{قبل # شهر}two{قبل شهرين (#)}few{قبل # أشهر}many{قبل # شهرًا}other{قبل # شهر}}</translation>
 <translation id="4289300219472526559">بدء التحدث</translation>
 <translation id="4316910396681052118">جميع التطبيقات</translation>
-<translation id="4467014365953759647">يتعذّر إرسال الرقم.</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
 <translation id="4690510401873698237">الرف في الجزء السفلي</translation>
 <translation id="4724120544754982507">مركز الإشعارات، <ph name="UNREAD_NOTIFICATION_COUNT" /> من الإشعارات غير المقروءة</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">مفتاح سهم إلى اليسار</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{نشط اليوم}=1{نشط قبل يوم واحد}two{نشط قبل يومين (#)}few{نشط قبل # أيام}many{نشط قبل # يومًا}other{نشط قبل # يوم}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{يوم واحد و }zero{# من الأيام و }two{يومان (#) و }few{# أيام و }many{# يومًا و }other{# من الأيام و }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{خلال عام واحد}zero{خلال # عام}two{خلال عامين (#)}few{خلال # أعوام}many{خلال # عامًا}other{خلال # عام}}</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">‏Launcher، عرض جزئي</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{قبل دقيقة واحدة}zero{قبل # من الدقاق}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # من الدقائق}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">يُرجى التحقّق من اتصال هاتفك ثم إعادة المحاولة.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{يتبقى دقيقة واحدة}zero{يتبقى # من الدقائق}two{يتبقى دقيقتان (#)}few{يتبقى # دقائق}many{يتبقى # دقيقة}other{يتبقى # من الدقائق}}</translation>
 <translation id="7430878839542012341">هل تريد حذف هذا البحث من السجل؟</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> تيرابايت</translation>

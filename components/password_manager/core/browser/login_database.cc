@@ -651,8 +651,9 @@ PasswordForm GetFormForRemoval(const sql::Statement& statement) {
 
 }  // namespace
 
-LoginDatabase::LoginDatabase(const base::FilePath& db_path)
-    : db_path_(db_path) {}
+LoginDatabase::LoginDatabase(const base::FilePath& db_path,
+                             bool is_account_store)
+    : db_path_(db_path), is_account_store_(is_account_store) {}
 
 LoginDatabase::~LoginDatabase() {
 }

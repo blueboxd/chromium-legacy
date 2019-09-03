@@ -483,6 +483,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4372705107434148843">Zastavit řeč</translation>
 <translation id="4373197658375206385">Žádná předchozí položka, která není odkaz.</translation>
 <translation id="4376316291247992553">Zobrazit grafiku na hmatovém displeji</translation>
+<translation id="437809255587011096">Oznamovat styl textu</translation>
 <translation id="4378308539633073595">Posunout vpřed</translation>
 <translation id="4384583879834880242">Dotazy</translation>
 <translation id="4391478986194775161">info o obsahu</translation>
@@ -1120,6 +1121,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8503360654911991865">Snížit rozlišovací schopnost navigace</translation>
 <translation id="8504695234784218301">Konec gramatické chyby</translation>
 <translation id="8520472399088452386">Číselník</translation>
+<translation id="8534394844575788431">Formátování</translation>
 <translation id="8538744478902126321">Odhadnout záhlaví řádku aktuální buňky</translation>
 <translation id="8540054775867439484">Skok na začátek</translation>
 <translation id="8542271685829952264">Chcete-li prozkoumat všechny příkazy a klávesové zkratky nástroje ChromeVox, stiskněte Hledat + Tečka a poté nabídky procházejte pomocí kláves se šipkami. Příkaz aktivujete stisknutím klávesy Enter. Sem se vrátíte tak, že stisknete klávesy Hledat+o a poté klávesu t.</translation>
@@ -1199,6 +1201,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="9149560530563164529">oddíl</translation>
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9151211641321628915">Oznamuje stručný popis současné pozice</translation>
+<translation id="9151249085738989067">Automaticky přepínat hlas čtečky ChromeVox podle jazyka</translation>
 <translation id="9153606228985488238">Výška <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Přejít na konec aktuálního sloupce</translation>
 <translation id="9173115498289768110">Hlasitost <ph name="PERCENT" /> procent</translation>

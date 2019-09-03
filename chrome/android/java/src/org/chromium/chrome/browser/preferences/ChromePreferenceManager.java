@@ -393,6 +393,13 @@ public class ChromePreferenceManager {
     public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
 
     /**
+     * Whether or not we should directly open the dialer when a click to call notification is
+     * received. Default value is false.
+     */
+    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY =
+            "click_to_call_open_dialer_directly";
+
+    /**
      * Key to cache whether immersive ui mode is enabled.
      */
     public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";

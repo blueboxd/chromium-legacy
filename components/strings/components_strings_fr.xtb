@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Variations de ligne de commande</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Essayez de supprimer les cookies.<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Fonctionnalités obsolètes</translation>
 <translation id="1320233736580025032">Prc1 (enveloppe)</translation>
 <translation id="132301787627749051">Rechercher l'image du presse-papier</translation>
 <translation id="1323433172918577554">Afficher plus</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">En attente de connexion…</translation>
 <translation id="1529521330346880926">10x15 (enveloppe)</translation>
+<translation id="1530707389502320859">Le site auquel vous tentez d'accéder semble être fictif. Les pirates tentent parfois d'imiter des sites Web en modifiant légèrement l'URL utilisée.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Cette page indique</translation>
 <translation id="153384715582417236">C'est tout !</translation>
@@ -345,6 +347,7 @@
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Exécuter les diagnostics de connectivité<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">En activant ces fonctionnalités, vous risquez de perdre les données de navigation, ou de compromettre votre sécurité ou votre vie privée. Les fonctionnalités activées s'appliquent à tous les utilisateurs de ce navigateur.</translation>
 <translation id="2735043616039983645">Il existe plusieurs sources avec des valeurs en conflit pour cette règle.</translation>
 <translation id="2738330467931008676">Sélectionner une adresse d'enlèvement</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -388,6 +391,7 @@
 <translation id="2985306909656435243">Si cette option est activée, Chromium enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="2985398929374701810">Saisissez une adresse valide</translation>
 <translation id="2986368408720340940">Mode d'enlèvement non disponible. Choisissez-en un autre.</translation>
+<translation id="2987034854559945715">Aucune fonctionnalité correspondante</translation>
 <translation id="2991174974383378012">Partage avec les sites Web</translation>
 <translation id="2991571918955627853">Le site <ph name="SITE" /> est actuellement inaccessible, car il utilise la technologie HSTS. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
 <translation id="3005723025932146533">Afficher la copie enregistrée</translation>
@@ -510,6 +514,7 @@
 <translation id="3678529606614285348">Ouvrir la page dans une nouvelle fenêtre de navigation privée (Ctrl+Maj+N)</translation>
 <translation id="3679803492151881375">Rapport d'erreur enregistré le <ph name="CRASH_TIME" /> et importé le <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informations relatives au certificat</translation>
+<translation id="3701427423622901115">Réinitialisation acceptée.</translation>
 <translation id="3704162925118123524">Pour utiliser ce réseau, il est possible que vous deviez vous rendre sur la page de connexion correspondante.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Chargement en cours...</translation>
@@ -682,6 +687,7 @@
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4597348597567598915">Taille 8</translation>
 <translation id="4600854749408232102">C6/C5 (enveloppe)</translation>
+<translation id="464342062220857295">Fonctionnalités de recherche</translation>
 <translation id="4646534391647090355">Accéder</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
@@ -798,6 +804,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (enveloppe)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Seul le propriétaire suivant peut définir les fonctionnalités qui s'appliquent à tout le système : <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Avertissement : Cette règle n'a pas été fusionnée comme indiqué dans la règle PolicyDictionaryMultipleSourceMergeList, car elle ne fait pas partie des règles de dictionnaire fusionnables.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Fin</translation>
@@ -834,6 +841,7 @@
 <translation id="5457113250005438886">Non valide</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> autre}one{<ph name="CONTACT_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> autre}other{<ph name="CONTACT_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> autres}}</translation>
 <translation id="5470861586879999274">&amp;Rétablir la modification</translation>
+<translation id="5473728911100096288">En activant ces fonctionnalités, vous utiliserez des fonctionnalités obsolètes qui seront retirées des versions ultérieures.</translation>
 <translation id="5478437291406423475">B6/C4 (enveloppe)</translation>
 <translation id="5481076368049295676">Ce contenu peut essayer d'installer un logiciel dangereux sur votre appareil pour dérober ou supprimer vos informations. <ph name="BEGIN_LINK" />Je souhaite y accéder malgré tout.<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Ajouter une adresse valide</translation>
@@ -892,6 +900,7 @@
 <translation id="5763042198335101085">Saisissez une adresse e-mail valide</translation>
 <translation id="5765072501007116331">Sélectionnez une adresse pour consulter les modes et conditions de livraison disponibles</translation>
 <translation id="5778550464785688721">Contrôle total des appareils MIDI</translation>
+<translation id="5781136890105823427">Expérience activée</translation>
 <translation id="578305955206182703">Ambre</translation>
 <translation id="57838592816432529">Couper le son</translation>
 <translation id="5784606427469807560">Un problème est survenu lors de la validation de votre carte. Vérifiez votre connexion Internet, puis réessayez.</translation>
@@ -1057,6 +1066,7 @@
 <translation id="6738516213925468394">Vos données ont été chiffrées avec votre <ph name="BEGIN_LINK" />phrase secrète de synchronisation<ph name="END_LINK" /> le <ph name="TIME" />. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="674375294223700098">Erreur inconnue liée au certificat du serveur.</translation>
 <translation id="6744009308914054259">En attendant d'avoir une connexion, vous pouvez consulter les téléchargements pour lire des articles hors connexion.</translation>
+<translation id="6747611005629681221">Attention : Fonctionnalités obsolètes sur cette page !</translation>
 <translation id="6753269504797312559">Valeur de la règle</translation>
 <translation id="6757797048963528358">Votre appareil s'est mis en veille.</translation>
 <translation id="6768213884286397650">Hagaki (carte postale)</translation>
@@ -1419,6 +1429,7 @@ Informations supplémentaires :
 <translation id="8738058698779197622">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chromium n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="8740359287975076522">L'&lt;abbr id="dnsDefinition"&gt;adresse DNS&lt;/abbr&gt; de <ph name="HOST_NAME" /> est introuvable. Identification du problème…</translation>
 <translation id="874846938927089722">Cartes de crédit et cartes prépayées acceptées</translation>
+<translation id="874918643257405732">Ajouter cet onglet aux favoris</translation>
 <translation id="8759274551635299824">Carte arrivée à expiration</translation>
 <translation id="8761567432415473239">La fonctionnalité de navigation sécurisée a récemment permis de <ph name="BEGIN_LINK" />détecter des programmes dangereux<ph name="END_LINK" /> sur le site <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Périphérique USB</translation>

@@ -218,8 +218,6 @@ jumbo_component("base") {
     "nine_image_painter_factory.h",
     "page_transition_types.cc",
     "page_transition_types.h",
-    "platform_window_defaults.cc",
-    "platform_window_defaults.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",

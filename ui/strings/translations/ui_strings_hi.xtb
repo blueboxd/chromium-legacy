@@ -38,6 +38,7 @@
 <translation id="208586643495776849">कृपया दोबारा कोशिश करें</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1d}one{#d}other{#d}}</translation>
 <translation id="2148716181193084225">आज</translation>
+<translation id="2161656808144014275">लेख संदेश</translation>
 <translation id="2168039046890040389">पेज ऊपर</translation>
 <translation id="2190355936436201913">(खाली)</translation>
 <translation id="2192232475740621500">कम सघनता का इस्तेमाल करें</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” को खोजें</translation>
 <translation id="364720409959344976">अपलोड करने के लिए फ़ोल्‍डर चुनें</translation>
 <translation id="3660179305079774227">ऊपर तीर</translation>
+<translation id="3670030362669914947">कार्ड नंबर</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> जीबी/सेकंड</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> जीबी</translation>
 <translation id="3842239759367498783">अपने मोबाइल डिवाइस से <ph name="TITLE" /> पढ़ना जारी रखें</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 माह पहले}one{# माह पहले}other{# माह पहले}}</translation>
 <translation id="4289300219472526559">बोलना प्रारंभ करें</translation>
 <translation id="4316910396681052118">सभी ऐप्लिकेशन</translation>
-<translation id="4467014365953759647">फ़ोन नंबर नहीं भेजा जा सकता</translation>
 <translation id="4588090240171750605">दाएं स्क्रोल करें</translation>
 <translation id="4690510401873698237">शेल्फ़, स्क्रीन पर सबसे नीचे है</translation>
 <translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> नहीं पढ़ी गई सूचनाएं</translation>
@@ -175,7 +176,6 @@
 <translation id="7319740667687257810">लॉन्चर, आंशिक व्यू</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">अपने फ़ोन के कनेक्शन की जाँच करें और फिर कोशिश करें</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
 <translation id="7430878839542012341">अपने इतिहास से यह खोज मिटाना चाहते हैं?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">ติดตั้งแล้ว</translation>
 <translation id="1792959175193046959">เปลี่ยนตำแหน่งเริ่มต้นในการดาวน์โหลดได้ทุกเมื่อ</translation>
 <translation id="1807246157184219062">สว่าง</translation>
+<translation id="1810845389119482123">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ</translation>
 <translation id="1821253160463689938">ใช้คุกกี้เพื่อให้จดจำค่ากำหนดของคุณ แม้ว่าคุณไม่ได้เข้าชมหน้าเว็บเหล่านั้น</translation>
 <translation id="1829244130665387512">ค้นหาในหน้าเว็บ</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4179980317383591987">ใช้ไปแล้ว <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">ภาษา</translation>
+<translation id="4183868528246477015">ค้นหาด้วย Google Lens <ph name="BEGIN_NEW" />ใหม่<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
 <translation id="4209895695669353772">เปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822">เพิ่ม <ph name="NAME" /> ลงในหน้าแรกแล้ว</translation>
 <translation id="4684427112815847243">ซิงค์ทุกอย่าง</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ตัวเลือก}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ตัวเลือก}}</translation>
+<translation id="4696983787092045100">ส่งข้อความไปยังอุปกรณ์ของคุณ</translation>
 <translation id="4698034686595694889">ดูแบบออฟไลน์ใน <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">ฟังก์ชันที่จำเป็นต่อการเรียกใช้ Chrome ขาดหายไป อาจเป็นเพราะการติดตั้ง Chrome ของคุณไม่สมบูรณ์หรือไม่สามารถทำงานร่วมกับ Android เวอร์ชันนี้ได้</translation>
 <translation id="4699172675775169585">รูปภาพและไฟล์ในแคช</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> ต้องการเชื่อมต่อ</translation>
 <translation id="5013696553129441713">ไม่มีคำแนะนำใหม่</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">ขณะอยู่ในโหมด VR เว็บไซต์นี้อาจดูข้อมูลต่อไปนี้ได้
+  -  รูปร่างของคุณ เช่น ความสูง
+
+โปรดตรวจสอบว่าเว็บไซต์นี้เชื่อถือได้ก่อนเข้าสู่โหมด VR</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5048398596102334565">อนุญาตให้เว็บไซต์เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว (แนะนำ)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">มีวิดีโอ</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> ต้องการสแกนหาอุปกรณ์บลูทูธที่อยู่ใกล้เคียงและได้พบอุปกรณ์ต่อไปนี้</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
+<translation id="5234764350956374838">ปิด</translation>
 <translation id="526421993248218238">โหลดหน้านี้ไม่ได้</translation>
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
 <translation id="528192093759286357">ลากจากด้านบน แล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
@@ -563,7 +571,7 @@
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
 <translation id="5304593522240415983">ต้องกรอกข้อมูลในช่องนี้</translation>
-<translation id="5307446750509046227">ล้างข้อมูลเว็บไซต์</translation>
+<translation id="5307446750509046227">ล้างพื้นที่เก็บข้อมูลเว็บไซต์</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5313967007315987356">เพิ่มเว็บไซต์</translation>
 <translation id="5317780077021120954">บันทึก</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">แตะปุ่มหน้าแรกเพื่อโหลดหน้าแท็บใหม่</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{เปิดแท็บไว้ <ph name="OPEN_TABS_ONE" /> แท็บ แตะเพื่อเปลี่ยนแท็บ}other{เปิดแท็บไว้ <ph name="OPEN_TABS_MANY" /> แท็บ แตะเพื่อเปลี่ยนแท็บ}}</translation>
 <translation id="5391532827096253100">การเชื่อมต่อกับเว็บไซต์นี้ไม่ปลอดภัย ข้อมูลเว็บไซต์</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(อีก 1 รายการ)}other{(อีก # รายการ)}}</translation>
 <translation id="5400569084694353794">การใช้แอปพลิเคชันนี้แสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="5403592356182871684">ชื่อ</translation>
 <translation id="5403644198645076998">อนุญาตเฉพาะบางไซต์</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK1" />อัปเดตสิทธิ์<ph name="END_LINK1" /> การเข้าถึงตำแหน่ง<ph name="BEGIN_LINK2" />สำหรับอุปกรณ์เครื่องนี้ยังปิดอยู่<ph name="END_LINK2" /></translation>
 <translation id="5527111080432883924">ถามก่อนอนุญาตให้เว็บไซต์อ่านข้อความและดูรูปภาพจากคลิปบอร์ด (แนะนำ)</translation>
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
+<translation id="5534334044554683961">ขณะอยู่ในโหมด VR เว็บไซต์นี้อาจดูข้อมูลต่อไปนี้ได้
+  -   รูปร่างของคุณ เช่น ความสูง
+  -   แปลนห้องของคุณ
+
+โปรดตรวจสอบว่าเว็บไซต์นี้เชื่อถือได้ก่อนเข้าสู่โหมด VR</translation>
 <translation id="5534640966246046842">คัดลอกไซต์แล้ว</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5561549206367097665">กำลังรอเครือข่าย…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">บล็อกคุกกี้ของบุคคลที่สาม</translation>
 <translation id="6206551242102657620">การเชื่อมต่อปลอดภัย ข้อมูลเว็บไซต์</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
-<translation id="6216432067784365534">ตัวเลือกสำหรับ<ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">ปลดล็อกเพื่อส่งออกรหัสผ่าน</translation>
 <translation id="6232535412751077445">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
 <translation id="766587987807204883">บทความจะแสดงที่นี่ ซึ่งคุณจะอ่านได้แม้ในขณะออฟไลน์</translation>
 <translation id="7682724950699840886">ลองทำตามเคล็ดลับต่อไปนี้ ตรวจสอบว่าอุปกรณ์มีพื้นที่ว่างเพียงพอ จากนั้นพยายามส่งออกอีกครั้ง</translation>
+<translation id="7685301384041462804">โปรดตรวจสอบว่าเว็บไซต์นี้เชื่อถือได้ก่อนเข้าสู่โหมด VR</translation>
 <translation id="7698359219371678927">สร้างอีเมลใน <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
 <translation id="7725024127233776428">หน้าที่คุณบุ๊กมาร์กไว้จะปรากฏที่นี่</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">กำลังทำงานใน Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{กำลังดาวน์โหลดไฟล์}other{กำลังดาวน์โหลด # ไฟล์}}</translation>
 <translation id="7929962904089429003">เปิดเมนู</translation>
+<translation id="7930681627240672853">ตรวจสอบความปลอดภัยของรหัสผ่าน</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">เปิดแท็บใหม่ในโหมดไม่ระบุตัวตน</translation>
 <translation id="8998729206196772491">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการโดย <ph name="MANAGED_DOMAIN" /> และทำให้ผู้ดูแลระบบของโดเมนควบคุมข้อมูล Chrome ของคุณได้ ข้อมูลดังกล่าวจะโยงกับบัญชีนี้อย่างถาวร การออกจากระบบ Chrome จะลบข้อมูลของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังจัดเก็บอยู่ในบัญชี Google</translation>
 <translation id="9019902583201351841">มีการจัดการโดยผู้ปกครอง</translation>
+<translation id="9029323097866369874">อนุญาตให้ <ph name="DOMAIN" /> เข้าสู่โหมด VR ไหม</translation>
 <translation id="9040142327097499898">อนุญาตให้แสดงการแจ้งเตือน ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{วิดีโอ # รายการ}other{วิดีโอ # รายการ}}</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>

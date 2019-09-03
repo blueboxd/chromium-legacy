@@ -19,37 +19,6 @@
 # Document expects javascript to run again from the beginning.
 -WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
 
-# See https://crbug.com/989922.
--DumpAccessibilityEventsTest.AccessibilityEventsTbodyFocus/linux
--DumpAccessibilityEventsTest.AccessibilityEventsTfootFocus/linux
--DumpAccessibilityEventsTest.AccessibilityEventsTheadFocus/linux
--DumpAccessibilityTreeTest.AccessibilityAriaCell/linux
--DumpAccessibilityTreeTest.AccessibilityAriaColAttr/linux
--DumpAccessibilityTreeTest.AccessibilityAriaColumnHeader/linux
--DumpAccessibilityTreeTest.AccessibilityAriaGrid/linux
--DumpAccessibilityTreeTest.AccessibilityAriaGridCell/linux
--DumpAccessibilityTreeTest.AccessibilityAriaIllegalVal/linux
--DumpAccessibilityTreeTest.AccessibilityAriaLevel/linux
--DumpAccessibilityTreeTest.AccessibilityAriaRow/linux
--DumpAccessibilityTreeTest.AccessibilityAriaRowAttr/linux
--DumpAccessibilityTreeTest.AccessibilityAriaRowHeader/linux
--DumpAccessibilityTreeTest.AccessibilityAriaRowText/linux
--DumpAccessibilityTreeTest.AccessibilityAriaSortOnAriaGrid/linux
--DumpAccessibilityTreeTest.AccessibilityAriaSortOnHtmlTable/linux
--DumpAccessibilityTreeTest.AccessibilityAriaTable/linux
--DumpAccessibilityTreeTest.AccessibilityAriaTreeGrid/linux
--DumpAccessibilityTreeTest.AccessibilityCaption/linux
--DumpAccessibilityTreeTest.AccessibilityCol/linux
--DumpAccessibilityTreeTest.AccessibilityColgroup/linux
--DumpAccessibilityTreeTest.AccessibilityContenteditableDescendants/linux
--DumpAccessibilityTreeTest.AccessibilityContenteditableDescendantsWithSelection/linux
--DumpAccessibilityTreeTest.AccessibilityTableFocusableSections/linux
--DumpAccessibilityTreeTest.AccessibilityTableSimple/linux
--DumpAccessibilityTreeTest.AccessibilityTableSpans/linux
--DumpAccessibilityTreeTest.AccessibilityTableTbodyTfoot/linux
--DumpAccessibilityTreeTest.AccessibilityTableThColHeader/linux
--DumpAccessibilityTreeTest.AccessibilityTableThRowHeader/linux
-
 # Histogram not recorded. It will probably be fixed by https://crbug.com/976697.
 -NavigationHandleImplBrowserTest.StartToCommitMetrics
 

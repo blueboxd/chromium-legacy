@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5254120496627797685">Ako napustite ovu stranicu, završit će vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
 <translation id="5308380583665731573">Povežite se</translation>
+<translation id="5327248766486351172">Naziv</translation>
 <translation id="533625276787323658">Nema dostupnih računala za povezivanje</translation>
 <translation id="5363265567587775042">Zamolite korisnika čijem računalu želite pristupiti da klikne "<ph name="SHARE" />" i da vam pristupni kôd.</translation>
 <translation id="5379087427956679853">Udaljena radna površina Chrome omogućuje vam da svoje računalo sigurno dijelite putem weba. Na računalima oba korisnika mora biti pokrenuta aplikacija Udaljena radna površina Chrome koju možete pronaći na web-lokaciji <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="7970576581263377361">Autentifikacija nije uspjela. Prijavite se ponovo na Chromium.</translation>
 <translation id="7981525049612125370">Daljinska je sesija istekla.</translation>
+<translation id="8038111231936746805">(zadano)</translation>
 <translation id="8041089156583427627">Slanje povratnih informacija</translation>
 <translation id="8041721485428375115">Preuzimanjem programa za instalaciju hosta Udaljene radne površine Chrome prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Centar za pomoć</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Moja računala</translation>
 <translation id="811307782653349804">Pristupite svojem računalu s bilo kojeg mjesta.</translation>
 <translation id="8116630183974937060">Došlo je pogreške mreže. Provjerite je li uređaj povezan s mrežom i pokušajte ponovo.</translation>
-<translation id="8123581458650016326">Dopusti udaljenim korisnicima da upravljaju ovim računalom</translation>
 <translation id="8178433417677596899">Dijeljenje zaslona između korisnika savršeno je za daljinsku tehničku podršku.</translation>
 <translation id="8187079423890319756">Autorska prava 2013. Autori Chromiuma. Sva prava pridržana.</translation>
 <translation id="8196755618196986400">Da bi smo vam mogli poslati daljnje informacije, u povratnim informacijama koje pošaljete bit će vaša e-adresa.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Pravila o privatnosti</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Za Windows 7 i novije verzije</translation>
-<translation id="8963047137585288214">Da biste mogli daljinski upravljati ovim računalom putem usluge <ph name="PRODUCT_NAME" />, morate izvršiti još jedan korak u konfiguraciji.
-
-Da biste omogućili tu funkciju, odaberite "<ph name="BUTTON_NAME" />" kako bi se prikazalo okno s postavkama za sigurnost i privatnost, a zatim potvrdite okvir opcije "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i potvrđena je, možda ćete je trebati poništiti pa ponovo potvrditi.</translation>
 <translation id="897805526397249209">Da biste omogućili daljinsko povezivanje s drugim računalom, instalirajte na njega Chromoting i kliknite "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Kontroler Udaljene radne površine Chrome</translation>
 <translation id="9016232822027372900">Svejedno poveži</translation>

@@ -2797,7 +2797,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5235050375939235066">Gỡ cài đặt ứng dụng?</translation>
 <translation id="5235750401727657667">Thay thế trang bạn sẽ nhìn thấy khi mở tab mới</translation>
 <translation id="5238278114306905396">Ứng dụng "<ph name="EXTENSION_NAME" />" đã được tự động xóa.</translation>
-<translation id="5238713938047984284">Lưu mật khẩu của bạn</translation>
 <translation id="5241128660650683457">Đọc tất cả dữ liệu của bạn trên các trang web bạn truy cập</translation>
 <translation id="5242724311594467048">Cho phép "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Vui lòng thử lại sau giây lát</translation>
@@ -3422,7 +3421,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6129691635767514872">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị được đồng bộ hóa. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Nhận xét về Chứng chỉ Netscape</translation>
 <translation id="6129953537138746214">Dấu cách</translation>
-<translation id="6130024555057767093">Hiện đã chặn thông báo đối với mọi trang web, ngoại trừ các trang web bạn cho phép riêng.</translation>
 <translation id="6136114942382973861">Đóng thanh tệp đã tải xuống</translation>
 <translation id="6137767437444130246">Chứng chỉ người dùng</translation>
 <translation id="6138680304137685902">Chữ ký X9.62 ECDSA với SHA-384</translation>
@@ -4333,7 +4331,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7529411698175791732">Kiểm tra kết nối Internet. Nếu sự cố vẫn tiếp diễn, hãy thử đăng xuất và đăng nhập lại.</translation>
 <translation id="7530016656428373557">Tốc độ phóng điện tính bằng Watt</translation>
 <translation id="7531779363494549572">Chuyển đến Cài đặt &gt; Ứng dụng và thông báo &gt; Thông báo.</translation>
-<translation id="7536220825385726660">Cho phép các ứng dụng trên Cửa hàng Play truy cập vào các ổ đĩa bên ngoài</translation>
 <translation id="7539856059004947393">Khóa bảo mật Bluetooth</translation>
 <translation id="7540972813190816353">Đã xảy ra lỗi khi kiểm tra cập nhật: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Bật tính năng gỡ lỗi trên thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> này</translation>

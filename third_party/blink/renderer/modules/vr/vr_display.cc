@@ -106,17 +106,16 @@ class VRDisplayFrameRequestCallback
 SessionClientBinding::SessionClientBinding(
     VRDisplay* display,
     SessionClientBinding::SessionBindingType immersive,
-    device::mojom::blink::XRSessionClientRequest request)
+    mojo::PendingReceiver<device::mojom::blink::XRSessionClient> receiver)
     : display_(display),
       is_immersive_(immersive ==
                     SessionClientBinding::SessionBindingType::kImmersive),
-      client_binding_(this, std::move(request)) {}
+      client_receiver_(this, std::move(receiver)) {}
 
 SessionClientBinding::~SessionClientBinding() = default;
 
 void SessionClientBinding::Close() {
-  DCHECK(client_binding_);
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 void SessionClientBinding::OnChanged(
     device::mojom::blink::VRDisplayInfoPtr ptr) {
@@ -138,8 +137,7 @@ void SessionClientBinding::Trace(blink::Visitor* visitor) {
 VRDisplay::VRDisplay(NavigatorVR* navigator_vr)
     : ContextLifecycleStateObserver(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
-      capabilities_(MakeGarbageCollected<VRDisplayCapabilities>()),
-      display_client_binding_(this) {}
+      capabilities_(MakeGarbageCollected<VRDisplayCapabilities>()) {}
 
 VRDisplay::~VRDisplay() = default;
 
@@ -871,15 +869,11 @@ Document* VRDisplay::GetDocument() {
   return navigator_vr_->GetDocument();
 }
 
-device::mojom::blink::VRDisplayClientPtr VRDisplay::GetDisplayClient() {
-  display_client_binding_.Close();
-  device::mojom::blink::VRDisplayClientPtr client;
+mojo::PendingRemote<device::mojom::blink::VRDisplayClient>
+VRDisplay::GetDisplayClient() {
   // See https://bit.ly/2S0zRAS for task types.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  display_client_binding_.Bind(mojo::MakeRequest(&client, task_runner),
-                               task_runner);
-  return client;
+  return display_client_receiver_.BindNewPipeAndPassRemote(
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
 void VRDisplay::OnPresentChange() {

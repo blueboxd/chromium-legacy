@@ -141,6 +141,7 @@
 <translation id="6096348254544841612">Chromium anpassen und Einstellungen festlegen. Ein Update ist verfügbar.</translation>
 <translation id="6120345080069858279">Chromium speichert dieses Passwort in Ihrem Google-Konto. Sie müssen es sich also nicht merken.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chromium blockiert.</translation>
+<translation id="6173098285107411678">Wenn Sie eine Einstellung nicht auf dieser Seite finden können, sehen Sie in den <ph name="LINK_BEGIN" />Browsereinstellungen von Chromium<ph name="LINK_END" /> nach</translation>
 <translation id="6212496753309875659">Auf diesem Computer befindet sich bereits eine neuere Version von Chromium. Falls die Software nicht funktioniert, deinstallieren Sie Chromium bitte und versuchen Sie es erneut.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium wird jetzt neu gestartet}=1{Chromium wird in einer Sekunde neu gestartet}other{Chromium wird in # Sekunden neu gestartet}}</translation>
 <translation id="6248213926982192922">Chromium als Standardbrowser verwenden</translation>

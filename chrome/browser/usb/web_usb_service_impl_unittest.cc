@@ -19,7 +19,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
@@ -37,7 +37,6 @@ using device::mojom::UsbDeviceClient;
 using device::mojom::UsbDeviceInfo;
 using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
-using device::mojom::UsbDeviceManagerClientAssociatedPtrInfo;
 
 namespace {
 
@@ -101,13 +100,13 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
 
 class MockDeviceManagerClient : public UsbDeviceManagerClient {
  public:
-  MockDeviceManagerClient() : binding_(this) {}
+  MockDeviceManagerClient() = default;
   ~MockDeviceManagerClient() override = default;
 
-  UsbDeviceManagerClientAssociatedPtrInfo CreateInterfacePtrAndBind() {
-    UsbDeviceManagerClientAssociatedPtrInfo client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    binding_.set_connection_error_handler(base::BindRepeating(
+  mojo::PendingAssociatedRemote<UsbDeviceManagerClient>
+  CreateInterfacePtrAndBind() {
+    auto client = receiver_.BindNewEndpointAndPassRemote();
+    receiver_.set_disconnect_handler(base::BindRepeating(
         &MockDeviceManagerClient::OnConnectionError, base::Unretained(this)));
     return client;
   }
@@ -124,12 +123,12 @@ class MockDeviceManagerClient : public UsbDeviceManagerClient {
 
   MOCK_METHOD0(ConnectionError, void());
   void OnConnectionError() {
-    binding_.Close();
+    receiver_.reset();
     ConnectionError();
   }
 
  private:
-  mojo::AssociatedBinding<UsbDeviceManagerClient> binding_;
+  mojo::AssociatedReceiver<UsbDeviceManagerClient> receiver_{this};
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,

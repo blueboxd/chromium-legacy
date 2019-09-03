@@ -282,7 +282,6 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     host_aa_ = host_aa_unique_->GetWeakPtr();
     host_ab_ = host_ab_unique_->GetWeakPtr();
     host_bb_ = host_bb_unique_->GetWeakPtr();
-    host_aa_duplicate_ = host_aa_duplicate_unique_->GetWeakPtr();
 
     base::FilePath extension_path("/fake/path");
     extension_a_ = extensions::ExtensionBuilder("Fake Name")
@@ -330,15 +329,7 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     host_bb_unique_.reset();
     host_aa_duplicate_unique_.reset();
     delegate_->SetHostForCreate(nullptr);
-
-    if (host_aa_)
-      handler_->OnShimProcessDisconnected(host_aa_.get());
-    if (host_ab_)
-      handler_->OnShimProcessDisconnected(host_ab_.get());
-    if (host_bb_)
-      handler_->OnShimProcessDisconnected(host_bb_.get());
-    if (host_aa_duplicate_)
-      handler_->OnShimProcessDisconnected(host_aa_duplicate_.get());
+    handler_.reset();
 
     // Delete the bootstraps via their weak pointers if they haven't been
     // deleted yet. Note that this must be done after the profiles and hosts
@@ -395,11 +386,6 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     handler_->OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, no_files);
   }
 
-  // Simulates a hide (or unhide) request coming from a running app shim.
-  void ShimSetHidden(TestHost* host, bool hidden) {
-    handler_->OnShimSetHidden(host, hidden);
-  }
-
   content::BrowserTaskEnvironment task_environment_;
   MockDelegate* delegate_;
   std::unique_ptr<TestingExtensionAppShimHandler> handler_;
@@ -431,7 +417,6 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   base::WeakPtr<TestHost> host_aa_;
   base::WeakPtr<TestHost> host_ab_;
   base::WeakPtr<TestHost> host_bb_;
-  base::WeakPtr<TestHost> host_aa_duplicate_;
 
   scoped_refptr<const Extension> extension_a_;
   scoped_refptr<const Extension> extension_b_;
@@ -507,18 +492,12 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   DoShimLaunch(bootstrap_aa_duplicate_, std::move(host_aa_duplicate_unique_),
                APP_SHIM_LAUNCH_NORMAL, some_file);
   EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_duplicate_result_);
-
-  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
-  handler_->OnShimProcessDisconnected(host_aa_duplicate_.get());
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Normal close.
   handler_->OnShimProcessDisconnected(host_aa_.get());
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
-
-  // Closing the second host afterward does nothing.
-  handler_->OnShimProcessDisconnected(host_aa_duplicate_.get());
-  EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_EQ(host_aa_.get(), nullptr);
 }
 
 TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
@@ -538,7 +517,7 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  // Return no app windows for OnShimFocus and OnShimQuit.
+  // Return no app windows for OnShimFocus.
   AppWindowList app_window_list;
   EXPECT_CALL(*delegate_, GetWindows(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(app_window_list));
@@ -558,18 +537,14 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
               LaunchApp(&profile_a_, extension_a_.get(), some_file));
   handler_->OnShimFocus(host_aa_.get(), APP_SHIM_FOCUS_REOPEN, some_file);
 
-  // Quit just closes all the windows. This tests that it doesn't terminate,
-  // but we expect closing all windows triggers a OnAppDeactivated from
-  // AppLifetimeMonitor.
-  handler_->OnShimQuit(host_aa_.get());
+  // Process disconnect will cause the host to be deleted.
+  handler_->OnShimProcessDisconnected(host_aa_.get());
+  EXPECT_EQ(nullptr, host_aa_.get());
 
-  // Closing all windows closes the shim and checks if Chrome should be
-  // terminated.
+  // OnAppDeactivated should trigger a MaybeTerminate call.
   EXPECT_CALL(*delegate_, MaybeTerminate())
       .WillOnce(Return());
-  EXPECT_NE(nullptr, host_aa_.get());
   handler_->OnAppDeactivated(&profile_a_, kTestAppIdA);
-  EXPECT_EQ(nullptr, host_aa_.get());
 }
 
 TEST_F(ExtensionAppShimHandlerTest, FailToLaunch) {
@@ -752,16 +727,6 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
   // get the window list.
   ShimNormalFocus(host_aa_.get());
   EXPECT_EQ(nullptr, host_aa_.get());
-
-  // Do the same for SetHidden on host_bb.
-  LaunchAndActivate(bootstrap_bb_, std::move(host_bb_unique_), &profile_b_);
-  ShimSetHidden(host_bb_.get(), true);
-  EXPECT_NE(nullptr, host_bb_.get());
-
-  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_b_, kTestAppIdB))
-      .WillRepeatedly(Return(nullptr));
-  ShimSetHidden(host_bb_.get(), true);
-  EXPECT_EQ(nullptr, host_bb_.get());
 }
 
 TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {

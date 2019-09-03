@@ -2029,6 +2029,13 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
     DCHECK(!is_full_layout || !LineBoxes()->First());
     for (LayoutBox* atomic_inline_child : atomic_inline_children) {
       atomic_inline_child->LayoutIfNeeded();
+#if DCHECK_IS_ON()
+      // |LayoutIfNeeded| should not mark itself and its ancestors to
+      // |NeedsLayout|.
+      for (const LayoutObject* parent = atomic_inline_child;
+           parent && parent != this; parent = parent->Parent())
+        DCHECK(!parent->NeedsLayout());
+#endif
     }
 
     LayoutRunsAndFloats(layout_state);

@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5254120496627797685">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
+<translation id="5327248766486351172">Navn</translation>
 <translation id="533625276787323658">Der er intet at oprette forbindelse til</translation>
 <translation id="5363265567587775042">Bed den bruger, hvis computer du ønsker at få adgang til, om at klikke på "<ph name="SHARE" />" for at give dig adgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Fjernskrivebord får du mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chrome Fjernskrivebord, som kan findes på <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>
 <translation id="7970576581263377361">Godkendelse mislykkedes. Log ind på Chromium igen.</translation>
 <translation id="7981525049612125370">Fjernsessionen er udløbet.</translation>
+<translation id="8038111231936746805">(standard)</translation>
 <translation id="8041089156583427627">Send feedback</translation>
 <translation id="8041721485428375115">Når du downloader installationsprogrammet til host for Chrome Fjernskrivebord, accepterer du automatisk Google <ph name="LINK_BEGIN" />Servicevilkår<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Hjælp</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mine computere</translation>
 <translation id="811307782653349804">Få adgang til din egen computer, uanset hvor du er.</translation>
 <translation id="8116630183974937060">Der opstod en netværksfejl. Kontrollér, at din enhed er online, og prøv igen.</translation>
-<translation id="8123581458650016326">Giv eksterne brugere tilladelse til at styre denne maskine</translation>
 <translation id="8178433417677596899">Skærmdeling med funktionen bruger-til-bruger – perfekt til ekstern teknisk support.</translation>
 <translation id="8187079423890319756">Copyright 2013 Udviklerne af Chromium. Alle rettigheder forbeholdes.</translation>
 <translation id="8196755618196986400">Din mailadresse medtages i din feedback, så vi kan kontakte dig i tilfælde af, at vi har brug for yderligere oplysninger.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Privatlivspolitik</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="895780780740011433">Til Windows 7 og nyere</translation>
-<translation id="8963047137585288214">Der kræves et ekstra konfigurationstrin, før du kan fjernstyre denne maskine via <ph name="PRODUCT_NAME" />.
-
-Du kan aktivere funktionen ved at vælge "<ph name="BUTTON_NAME" />", så ruden med præferencer for Sikkerhed og privatliv vises. Markér derefter afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er til stede og markeret, skal du muligvis fjerne markeringen og derefter markere det igen.</translation>
 <translation id="897805526397249209">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chromoting på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Administration af host for Chrome Fjernskrivebord</translation>
 <translation id="9016232822027372900">Opret forbindelse alligevel</translation>

@@ -26,6 +26,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/platform_window/common/platform_window_defaults.h"
 
 namespace ui {
 
@@ -104,11 +105,9 @@ XWindow::Configuration::Configuration(const Configuration&) = default;
 
 XWindow::Configuration::~Configuration() = default;
 
-XWindow::XWindow(Delegate* delegate)
-    : delegate_(delegate),
-      xdisplay_(gfx::GetXDisplay()),
+XWindow::XWindow()
+    : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)) {
-  DCHECK(delegate_);
   DCHECK(xdisplay_);
   DCHECK_NE(x_root_window_, x11::None);
 }
@@ -152,6 +151,21 @@ void XWindow::Init(const Configuration& config) {
   // An in-activatable window should not interact with the system wm.
   if (!activatable_)
     swa.override_redirect = x11::True;
+
+#if !defined(USE_X11)
+  // It seems like there is a difference how tests are instantiated in case of
+  // non-Ozone X11 and Ozone. See more details in
+  // EnableTestConfigForPlatformWindows. The reason why this must be here is
+  // that we removed X11WindowBase in favor of the XWindow. The X11WindowBase
+  // was only used with PlatformWindow, which meant non-Ozone X11 did not use it
+  // and set override_redirect based only on |activatable_| variable or
+  // WindowType. But now as XWindow is subclassed by X11Window, which is also a
+  // PlatformWindow, and non-Ozone X11 uses it, we have to add this workaround
+  // here. Otherwise, tests for non-Ozone X11 fail.
+  // TODO(msisov): figure out usage of this for non-Ozone X11.
+  if (UseTestConfigForPlatformWindows())
+    swa.override_redirect = true;
+#endif
 
   override_redirect_ = swa.override_redirect == x11::True;
   if (override_redirect_)
@@ -197,8 +211,7 @@ void XWindow::Init(const Configuration& config) {
                            bounds_in_pixels_.height(),
                            0,  // border width
                            depth, InputOutput, visual, attribute_mask, &swa);
-
-  delegate_->OnXWindowCreated();
+  OnXWindowCreated();
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
 
@@ -753,7 +766,7 @@ void XWindow::OnWorkspaceUpdated() {
     workspace_ = base::nullopt;
 
   if (workspace_ != old_workspace)
-    delegate_->OnXWindowWorkspaceChanged();
+    OnXWindowWorkspaceChanged();
 }
 
 void XWindow::SetAlwaysOnTop(bool always_on_top) {
@@ -782,21 +795,22 @@ void XWindow::FlashFrame(bool flash_frame) {
 }
 
 void XWindow::UpdateMinAndMaxSize() {
-  gfx::Size minimum_in_pixels = delegate_->GetMinimumSizeForXWindow();
-  gfx::Size maximum_in_pixels = delegate_->GetMaximumSizeForXWindow();
-  if (min_size_in_pixels_ == minimum_in_pixels &&
-      max_size_in_pixels_ == maximum_in_pixels)
+  base::Optional<gfx::Size> minimum_in_pixels = GetMinimumSizeForXWindow();
+  base::Optional<gfx::Size> maximum_in_pixels = GetMaximumSizeForXWindow();
+  if ((!minimum_in_pixels ||
+       min_size_in_pixels_ == minimum_in_pixels.value()) &&
+      (!maximum_in_pixels || max_size_in_pixels_ == maximum_in_pixels.value()))
     return;
 
-  min_size_in_pixels_ = minimum_in_pixels;
-  max_size_in_pixels_ = maximum_in_pixels;
+  min_size_in_pixels_ = minimum_in_pixels.value();
+  max_size_in_pixels_ = maximum_in_pixels.value();
 
   XSizeHints hints;
   hints.flags = 0;
   long supplied_return;
   XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
 
-  if (minimum_in_pixels.IsEmpty()) {
+  if (min_size_in_pixels_.IsEmpty()) {
     hints.flags &= ~PMinSize;
   } else {
     hints.flags |= PMinSize;
@@ -804,7 +818,7 @@ void XWindow::UpdateMinAndMaxSize() {
     hints.min_height = min_size_in_pixels_.height();
   }
 
-  if (maximum_in_pixels.IsEmpty()) {
+  if (max_size_in_pixels_.IsEmpty()) {
     hints.flags &= ~PMaxSize;
   } else {
     hints.flags |= PMaxSize;
@@ -824,19 +838,19 @@ void XWindow::BeforeActivationStateChanged() {
 
 void XWindow::AfterActivationStateChanged() {
   if (had_pointer_grab_ && !has_pointer_grab_)
-    delegate_->OnXWindowLostPointerGrab();
+    OnXWindowLostPointerGrab();
 
   bool had_pointer_capture = had_pointer_ || had_pointer_grab_;
   bool has_pointer_capture = has_pointer_ || has_pointer_grab_;
   if (had_pointer_capture && !has_pointer_capture)
-    delegate_->OnXWindowLostCapture();
+    OnXWindowLostCapture();
 
   bool is_active = IsActive();
   if (!was_active_ && is_active)
     FlashFrame(false);
 
   if (was_active_ != is_active)
-    delegate_->OnXWindowIsActiveChanged(is_active);
+    OnXWindowIsActiveChanged(is_active);
 }
 
 void XWindow::SetUseNativeFrame(bool use_native_frame) {
@@ -1036,7 +1050,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
     gfx::Point window_origin = gfx::Point() + (root_point - window_point);
     if (bounds_in_pixels_.origin() != window_origin) {
       bounds_in_pixels_.set_origin(window_origin);
-      delegate_->OnXWindowMoved(window_origin);
+      OnXWindowBoundsChanged(bounds_in_pixels_);
     }
   }
 
@@ -1045,11 +1059,16 @@ void XWindow::ProcessEvent(XEvent* xev) {
   switch (xev->type) {
     case EnterNotify:
     case LeaveNotify: {
+#if defined(USE_X11)
       // Ignore EventNotify and LeaveNotify events from children of |xwindow_|.
       // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
       if (xev->xcrossing.detail != NotifyInferior) {
-        delegate_->OnXWindowChildCrossingEvent(xev);
-      } else {
+        DCHECK(xev);
+        ui::MouseEvent mouse_event(xev);
+        OnXWindowEvent(&mouse_event);
+      } else
+#endif
+      {
         bool is_enter = xev->type == EnterNotify;
         OnCrossingEvent(is_enter, xev->xcrossing.focus, xev->xcrossing.mode,
                         xev->xcrossing.detail);
@@ -1059,13 +1078,13 @@ void XWindow::ProcessEvent(XEvent* xev) {
     case Expose: {
       gfx::Rect damage_rect_in_pixels(xev->xexpose.x, xev->xexpose.y,
                                       xev->xexpose.width, xev->xexpose.height);
-      delegate_->OnXWindowDamageEvent(damage_rect_in_pixels);
+      OnXWindowDamageEvent(damage_rect_in_pixels);
       break;
     }
 #if !defined(USE_OZONE)
     case KeyPress:
     case KeyRelease:
-      delegate_->OnXWindowRawKeyEvent(xev);
+      OnXWindowRawKeyEvent(xev);
       break;
     case ButtonPress:
     case ButtonRelease: {
@@ -1073,13 +1092,13 @@ void XWindow::ProcessEvent(XEvent* xev) {
       switch (event_type) {
         case ui::ET_MOUSEWHEEL: {
           ui::MouseWheelEvent mouseev(xev);
-          delegate_->OnXWindowMouseEvent(&mouseev);
+          OnXWindowEvent(&mouseev);
           break;
         }
         case ui::ET_MOUSE_PRESSED:
         case ui::ET_MOUSE_RELEASED: {
           ui::MouseEvent mouseev(xev);
-          delegate_->OnXWindowMouseEvent(&mouseev);
+          OnXWindowEvent(&mouseev);
           break;
         }
         case ui::ET_UNKNOWN:
@@ -1137,7 +1156,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_RELEASED: {
           ui::TouchEvent touchev(xev);
-          delegate_->OnXWindowTouchEvent(&touchev);
+          OnXWindowEvent(&touchev);
           break;
         }
         case ui::ET_MOUSE_MOVED:
@@ -1162,12 +1181,12 @@ void XWindow::ProcessEvent(XEvent* xev) {
           // DT_CMT_SCROLL_ data. See more discussion in
           // https://crrev.com/c/853953
           if (mouseev.type() != ui::ET_UNKNOWN)
-            delegate_->OnXWindowMouseEvent(&mouseev);
+            OnXWindowEvent(&mouseev);
           break;
         }
         case ui::ET_MOUSEWHEEL: {
           ui::MouseWheelEvent mouseev(xev);
-          delegate_->OnXWindowMouseEvent(&mouseev);
+          OnXWindowEvent(&mouseev);
           break;
         }
         case ui::ET_SCROLL_FLING_START:
@@ -1179,13 +1198,13 @@ void XWindow::ProcessEvent(XEvent* xev) {
           // event and we need delta to determine which element to scroll on
           // phaseBegan.
           if (scrollev.x_offset() != 0.0 || scrollev.y_offset() != 0.0)
-            delegate_->OnXWindowScrollEvent(&scrollev);
+            OnXWindowEvent(&scrollev);
           break;
         }
         case ui::ET_KEY_PRESSED:
         case ui::ET_KEY_RELEASED: {
           ui::KeyEvent key_event(xev);
-          delegate_->OnXWindowKeyEvent(&key_event);
+          OnXWindowEvent(&key_event);
           break;
         }
         case ui::ET_UNKNOWN:
@@ -1211,7 +1230,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       has_pointer_grab_ = false;
       has_pointer_focus_ = false;
       has_window_focus_ = false;
-      delegate_->OnXWindowUnmapped();
+      OnXWindowUnmapped();
       break;
     }
     case ClientMessage: {
@@ -1220,7 +1239,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
         Atom protocol = static_cast<Atom>(xev->xclient.data.l[0]);
         if (protocol == gfx::GetAtom("WM_DELETE_WINDOW")) {
           // We have received a close message from the window manager.
-          delegate_->OnXWindowCloseRequested();
+          OnXWindowCloseRequested();
         } else if (protocol == gfx::GetAtom("_NET_WM_PING")) {
           XEvent reply_event = *xev;
           reply_event.xclient.window = x_root_window_;
@@ -1235,7 +1254,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
           pending_counter_value_is_extended_ = xev->xclient.data.l[4] != 0;
         }
       } else {
-        delegate_->OnXWindowDragDropEvent(xev);
+        OnXWindowDragDropEvent(xev);
       }
       break;
     }
@@ -1274,7 +1293,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       }
 
       ui::MouseEvent mouseev(xev);
-      delegate_->OnXWindowMouseEvent(&mouseev);
+      OnXWindowEvent(&mouseev);
       break;
     }
 #endif
@@ -1290,7 +1309,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       break;
     }
     case SelectionNotify: {
-      delegate_->OnXWindowSelectionEvent(xev);
+      OnXWindowSelectionEvent(xev);
       break;
     }
   }
@@ -1314,7 +1333,7 @@ void XWindow::UpdateWMUserTime(XEvent* xev) {
 
 void XWindow::OnWindowMapped() {
   window_mapped_in_server_ = true;
-  delegate_->OnXWindowMapped();
+  OnXWindowMapped();
   // Some WMs only respect maximize hints after the window has been mapped.
   // Check whether we need to re-do a maximization.
   if (should_maximize_after_map_) {
@@ -1353,11 +1372,10 @@ void XWindow::OnConfigureEvent(XEvent* xev) {
   previous_bounds_in_pixels_ = bounds_in_pixels_;
   bounds_in_pixels_ = bounds_in_pixels;
 
-  if (origin_changed)
-    delegate_->OnXWindowMoved(bounds_in_pixels_.origin());
-
   if (size_changed)
-    delegate_->OnXWindowSizeChanged(bounds_in_pixels_.size());
+    DispatchResize();
+  else if (origin_changed)
+    OnXWindowBoundsChanged(bounds_in_pixels_);
 }
 
 void XWindow::SetWMSpecState(bool enabled, XAtom state1, XAtom state2) {
@@ -1403,8 +1421,7 @@ void XWindow::UpdateWindowProperties(
 
   is_always_on_top_ = ui::HasWMSpecProperty(
       window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
-
-  delegate_->OnXWindowStateChanged();
+  OnXWindowStateChanged();
 }
 
 void XWindow::OnFrameExtentsUpdated() {
@@ -1448,7 +1465,7 @@ void XWindow::DispatchResize() {
     // compositor.
     delayed_resize_task_.Reset(base::BindOnce(&XWindow::DelayedResize,
                                               weak_factory_.GetWeakPtr(),
-                                              bounds_in_pixels_.size()));
+                                              bounds_in_pixels_));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, delayed_resize_task_.callback());
     return;
@@ -1465,10 +1482,10 @@ void XWindow::DispatchResize() {
   // If _NET_WM_SYNC_REQUEST is used to synchronize with compositor during
   // resizing, the compositor will not resize the window, until last resize is
   // handled, so we don't need accumulate resize events.
-  DelayedResize(bounds_in_pixels_.size());
+  DelayedResize(bounds_in_pixels_);
 }
 
-void XWindow::DelayedResize(const gfx::Size& size_in_pixels) {
+void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
   if (configure_counter_value_is_extended_ &&
       (current_counter_value_ % 2) == 0) {
     // Increase the |extended_update_counter_|, so the compositor will know we
@@ -1478,7 +1495,7 @@ void XWindow::DelayedResize(const gfx::Size& size_in_pixels) {
     SyncSetCounter(xdisplay_, extended_update_counter_,
                    ++current_counter_value_);
   }
-  delegate_->OnXWindowSizeChanged(size_in_pixels);
+  OnXWindowBoundsChanged(bounds_in_pixels);
   CancelResize();
 }
 
@@ -1523,45 +1540,6 @@ void XWindow::UnconfineCursor() {
   pointer_barriers_.fill(x11::None);
 
   has_pointer_barriers_ = false;
-}
-
-// Empty/stub implementation of XWindow::Delegate methods, which are considered
-// optional for ui::XWindow users, making it possible to handle only events of
-// interest.
-void XWindow::Delegate::OnXWindowMapped() {}
-
-void XWindow::Delegate::OnXWindowUnmapped() {}
-
-void XWindow::Delegate::OnXWindowMoved(const gfx::Point&) {}
-
-void XWindow::Delegate::OnXWindowWorkspaceChanged() {}
-
-void XWindow::Delegate::OnXWindowLostPointerGrab() {}
-
-void XWindow::Delegate::OnXWindowLostCapture() {}
-
-void XWindow::Delegate::OnXWindowKeyEvent(ui::KeyEvent*) {}
-
-void XWindow::Delegate::OnXWindowMouseEvent(ui::MouseEvent*) {}
-
-void XWindow::Delegate::OnXWindowTouchEvent(ui::TouchEvent*) {}
-
-void XWindow::Delegate::OnXWindowScrollEvent(ui::ScrollEvent*) {}
-
-void XWindow::Delegate::OnXWindowSelectionEvent(XEvent*) {}
-
-void XWindow::Delegate::OnXWindowDragDropEvent(XEvent*) {}
-
-void XWindow::Delegate::OnXWindowChildCrossingEvent(XEvent*) {}
-
-void XWindow::Delegate::OnXWindowRawKeyEvent(XEvent*) {}
-
-gfx::Size XWindow::Delegate::GetMinimumSizeForXWindow() {
-  return gfx::Size();
-}
-
-gfx::Size XWindow::Delegate::GetMaximumSizeForXWindow() {
-  return gfx::Size();
 }
 
 }  // namespace ui

@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Komentorivin muunnelmat</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Tyhjennä evästeet.<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Käytöstä poistetut ominaisuudet</translation>
 <translation id="1320233736580025032">Prc1 (kirjekuori)</translation>
 <translation id="132301787627749051">Hae leikepöytäkuvaa</translation>
 <translation id="1323433172918577554">Näytä lisää</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Odotetaan yhteyttä…</translation>
 <translation id="1529521330346880926">10x15 (kirjekuori)</translation>
+<translation id="1530707389502320859">Sivusto, jolle yritit juuri siirtyä, ei vaikuta aidolta. Hyökkääjät jäljittelevät joskus sivustoja tekemällä URL-osoitteeseen pieniä muutoksia, joita on vaikea havaita.</translation>
 <translation id="1531205177818805254">Johto</translation>
 <translation id="1532118530259321453">Viesti tältä sivulta</translation>
 <translation id="153384715582417236">Siinä kaikki toistaiseksi</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="2728127805433021124">Palvelimen varmenne on allekirjoitettu heikolla allekirjoitusalgoritmilla.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />yhteysdiagnostiikkaa<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Jos otat nämä ominaisuudet käyttöön, voit menettää selaustietoja tai
+    vaarantaa tietosuojasi tai yksityisyytesi. Ominaisuuksien käyttöönotto koskee kaikkia
+    selaimen käyttäjiä.</translation>
 <translation id="2735043616039983645">Käytännölle on useita lähteitä, joiden arvot ovat ristiriidassa.</translation>
 <translation id="2738330467931008676">Valitse noutopaikan osoite</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">Jos tämä on käytössä, Chromium tallentaa kortin kopion tälle laitteelle nopeuttaakseen lomakkeiden täyttöä.</translation>
 <translation id="2985398929374701810">Anna kelvollinen osoite.</translation>
 <translation id="2986368408720340940">Tämä noutotapa ei ole käytettävissä. Kokeile toista tapaa.</translation>
+<translation id="2987034854559945715">Ei hakua vastaavia ominaisuuksia</translation>
 <translation id="2991174974383378012">Jakaminen verkkosivustojen kanssa</translation>
 <translation id="2991571918955627853"><ph name="SITE" /> ei ole juuri nyt käytettävissä, koska se käyttää HSTS:ää. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu luultavasti toimii myöhemmin.</translation>
 <translation id="3005723025932146533">Näytä tallennettu kopio</translation>
@@ -519,6 +525,7 @@
 <translation id="3678529606614285348">Avaa sivu uudessa incognito-ikkunassa (Ctrl + Vaihto + N).</translation>
 <translation id="3679803492151881375">Kaatumisraportti tallennettu <ph name="CRASH_TIME" />, lähetetty <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Varmenteen tiedot</translation>
+<translation id="3701427423622901115">Palautus hyväksyttiin.</translation>
 <translation id="3704162925118123524">Käyttämäsi verkko saattaa edellyttää kirjautumista.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Ladataan...</translation>
@@ -691,6 +698,7 @@
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
 <translation id="4597348597567598915">Koko 8</translation>
 <translation id="4600854749408232102">C6/C5 (kirjekuori)</translation>
+<translation id="464342062220857295">Hakutoiminnot</translation>
 <translation id="4646534391647090355">Siirry nyt</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne sisältää virheitä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
@@ -807,6 +815,7 @@
 <translation id="5251803541071282808">Pilvi</translation>
 <translation id="5252000469029418751">C7 (kirjekuori)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Koko järjestelmään vaikuttavat ominaisuudet voi tehdä vain omistaja: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Varoitus: tätä käytäntöä ei yhdistetty PolicyDictionaryMultipleSourceMergeList-käytännössä kuvatulla tavalla, sillä se ei kuulu yhdistettävissä oleviin sanakirjakäytäntöihin.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Loppu</translation>
@@ -843,6 +852,8 @@
 <translation id="5457113250005438886">Virheellinen</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> toinen}other{<ph name="CONTACT_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> muuta}}</translation>
 <translation id="5470861586879999274">&amp;Toista muokkaus</translation>
+<translation id="5473728911100096288">Jos otat nämä ominaisuudet käyttöön, käytät käytöstä poistettuja ominaisuuksia,
+    jotka eivät näy tulevissa versioissa.</translation>
 <translation id="5478437291406423475">B6/C4 (kirjekuori)</translation>
 <translation id="5481076368049295676">Tämä sisältö saattaa yrittää asentaa vaarallisia ohjelmistoja laitteellesi tai varastaa tai poistaa tietojasi. <ph name="BEGIN_LINK" />Näytä silti<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Lisää kelvollinen osoite</translation>
@@ -901,6 +912,7 @@
 <translation id="5763042198335101085">Anna voimassa oleva sähköpostiosoite.</translation>
 <translation id="5765072501007116331">Valitse osoite, niin näet toimitustavat ja vaatimukset.</translation>
 <translation id="5778550464785688721">MIDI-laitteiden täysi käyttöoikeus</translation>
+<translation id="5781136890105823427">Kokeilu käytössä</translation>
 <translation id="578305955206182703">Kullanruskea</translation>
 <translation id="57838592816432529">Mykistä</translation>
 <translation id="5784606427469807560">Korttia vahvistettaessa tapahtui virhe. Tarkista internetyhteys ja yritä uudelleen.</translation>
@@ -1066,6 +1078,7 @@
 <translation id="6738516213925468394">Datasi salattiin <ph name="BEGIN_LINK" />synkronoinnin tunnuslauseella<ph name="END_LINK" /> <ph name="TIME" />. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="674375294223700098">Tuntematon palvelimen varmennevirhe.</translation>
 <translation id="6744009308914054259">Voit lukea artikkeleita offline-tilassa Lataukset-kohdassa, kun odotat yhteyden muodostamista.</translation>
+<translation id="6747611005629681221">Varoitus: Käytöstä poistettuja ominaisuuksia</translation>
 <translation id="6753269504797312559">Käytännön arvo</translation>
 <translation id="6757797048963528358">Laitteesi siirtyi virransäästötilaan.</translation>
 <translation id="6768213884286397650">Hagaki (postikortti)</translation>
@@ -1432,6 +1445,7 @@ Lisätietoja:
 <translation id="8738058698779197622">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä ajanjaksoina. Chromium ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="8740359287975076522">Sivuston <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-osoitetta&lt;/abbr&gt; ei löydy. Ongelmaa diagnosoidaan.</translation>
 <translation id="874846938927089722">Hyväksytyt luotto- ja prepaid-kortit</translation>
+<translation id="874918643257405732">Aseta tämä välilehti kirjanmerkiksi</translation>
 <translation id="8759274551635299824">Tämä kortti on vanhentunut.</translation>
 <translation id="8761567432415473239">Google-selaussuoja <ph name="BEGIN_LINK" />löysi hiljattain haitallisia ohjelmia<ph name="END_LINK" /> sivustolta <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-laite</translation>

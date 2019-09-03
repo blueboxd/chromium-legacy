@@ -46,7 +46,7 @@
 <translation id="1283039547216852943">Dotaknite se za razširitev</translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
-<translation id="129382876167171263">Datoteke, ki jih shranijo spletna mesto, so prikazane tukaj</translation>
+<translation id="129382876167171263">Datoteke, ki jih shranijo spletna mesta, so prikazane tukaj</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – poslano iz naprave <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Združi zavihke</translation>
@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Nameščeno</translation>
 <translation id="1792959175193046959">Kadar koli lahko spremenite privzeto mesto za prenose</translation>
 <translation id="1807246157184219062">Svetlo</translation>
+<translation id="1810845389119482123">Začetna nastavitev sinhronizacije se ni dokončala</translation>
 <translation id="1821253160463689938">Uporablja piškotke, da si zapomni vaše nastavitve, tudi če teh strani ne obiskujete</translation>
 <translation id="1829244130665387512">Poiščite na strani</translation>
 <translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">Storitev ni na voljo; poskusite znova pozneje.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> prenesenih podatkov</translation>
 <translation id="4181841719683918333">Jeziki</translation>
+<translation id="4183868528246477015">Iskanje z Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="4198423547019359126">Ni razpoložljivih mest za prenos</translation>
 <translation id="4209895695669353772">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, vklopite sinhronizacijo</translation>
@@ -474,6 +476,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4665282149850138822">Spletno mesto <ph name="NAME" /> je bilo dodano na začetni zaslon</translation>
 <translation id="4684427112815847243">Sinhroniziraj vse</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">Pošiljanje besedila v vaše naprave</translation>
 <translation id="4698034686595694889">Ogled brez povezave v aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Ni funkcije, ki je nujno potrebna za izvajanje Chroma. Namestitev Chroma je nepopolna ali ni združljiva s to različico Androida.</translation>
 <translation id="4699172675775169585">Predpomnjene slike in datoteke</translation>
@@ -529,6 +532,10 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5011311129201317034"><ph name="SITE" /> se želite povezati</translation>
 <translation id="5013696553129441713">Ni novih predlogov</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Med uporabo VR lahko to spletno mesto o vas izve to:
+  –  vaše fizične lastnosti, kot je telesna višina
+
+Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5040262127954254034">Zasebnost</translation>
 <translation id="5048398596102334565">Spletnim mestom dovoli dostop do tipal gibanja (priporočeno)</translation>
@@ -556,6 +563,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5224771365102442243">Z videoposnetkom</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> želi iskati naprave Bluetooth v bližini. Najdene so bile te naprave:</translation>
 <translation id="5233638681132016545">Nov zavihek</translation>
+<translation id="5234764350956374838">Opusti</translation>
 <translation id="526421993248218238">Te strani ni mogoče naložiti</translation>
 <translation id="5271967389191913893">Naprava ne more odpreti vsebine za prenos.</translation>
 <translation id="528192093759286357">Povlecite z vrha in se dotaknite gumba za nazaj, če želite zapreti celozaslonski način.</translation>
@@ -574,6 +582,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5363230136052241468">Dotaknite se gumba za začetni zaslon, če želite naložiti nov zavihek s povezavami</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> odprt zavihek, dotaknite se, če želite preklopiti med zavihki}one{<ph name="OPEN_TABS_MANY" /> odprt zavihek, dotaknite se, če želite preklopiti med zavihki}two{<ph name="OPEN_TABS_MANY" /> odprta zavihka, dotaknite se, če želite preklopiti med zavihki}few{<ph name="OPEN_TABS_MANY" /> odprti zavihki, dotaknite se, če želite preklopiti med zavihki}other{<ph name="OPEN_TABS_MANY" /> odprtih zavihkov, dotaknite se, če želite preklopiti med zavihki}}</translation>
 <translation id="5391532827096253100">Povezava s tem spletnim mestom ni varna. Podatki o spletnem mestu.</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(in še 1)}one{(in še #)}two{(in še #)}few{(in še #)}other{(in še #)}}</translation>
 <translation id="5400569084694353794">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
 <translation id="5403592356182871684">Imena</translation>
 <translation id="5403644198645076998">Dovoli samo nekatera spletna mesta</translation>
@@ -603,6 +612,11 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5527082711130173040">Chrome za iskanje naprav potrebuje dostop do lokacije. <ph name="BEGIN_LINK1" />Posodobite dovoljenja<ph name="END_LINK1" />. Dostop do lokacije je prav tako <ph name="BEGIN_LINK2" />izklopljen za to napravo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Prikaži poziv, preden se spletnim mestom dovoli branje besedila in slik v odložišču (priporočeno)</translation>
 <translation id="5530766185686772672">Zapri zavih. brez bel. zgo.</translation>
+<translation id="5534334044554683961">Med uporabo VR lahko to spletno mesto o vas izve to:
+  –   vaše fizične lastnosti, kot je telesna višina
+  –   postavitev vaše sobe
+
+Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translation>
 <translation id="5534640966246046842">Spletno mesto kopirano</translation>
 <translation id="5556459405103347317">Znova naloži</translation>
 <translation id="5561549206367097665">Čakanje na omrežje …</translation>
@@ -690,7 +704,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="6206551242102657620">Povezava je varna. Podatki o spletnem mestu.</translation>
 <translation id="6210748933810148297">Niste <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Možnosti za <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Odklenite, če želite izvoziti gesla</translation>
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
 
@@ -893,6 +906,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="766587987807204883">Članki so prikazani tukaj in lahko jih berete, tudi ko nimate povezave</translation>
 <translation id="7682724950699840886">Poskusite ta nasveta: poskrbite, da je v napravi dovolj prostora, ali poskusite znova izvoziti.</translation>
+<translation id="7685301384041462804">Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translation>
 <translation id="7698359219371678927">Ustvarite e-poštno sporočilo v aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Samodejno dokončanje iskanj in URL-jev</translation>
 <translation id="7725024127233776428">Strani, ki jih dodate med zaznamke, so prikazane tukaj</translation>
@@ -923,6 +937,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="7886917304091689118">Izvaja se v Chromu</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Prenos datoteke.}one{Prenos # datoteke.}two{Prenos # datotek.}few{Prenos # datotek.}other{Prenos # datotek.}}</translation>
 <translation id="7929962904089429003">Odpiranje menija</translation>
+<translation id="7930681627240672853">Preverjanje varnosti gesla</translation>
 <translation id="7942131818088350342">Izdelek <ph name="PRODUCT_NAME" /> je zastarel.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
@@ -1070,6 +1085,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8993760627012879038">Odpiranje novega zavihka brez beleženja zgodovine</translation>
 <translation id="8998729206196772491">Prijavljate se z računom, ki ga upravlja <ph name="MANAGED_DOMAIN" />, in nadzor nad podatki v Chromu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chroma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
+<translation id="9029323097866369874">Dovolite spletnemu mestu <ph name="DOMAIN" />, da zažene VR?</translation>
 <translation id="9040142327097499898">Obvestila so dovoljena. Lokacija je izklopljena za to napravo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videoposnetek}one{# videoposnetek}two{# videoposnetka}few{# videoposnetki}other{# videoposnetkov}}</translation>
 <translation id="9050666287014529139">Geslo</translation>

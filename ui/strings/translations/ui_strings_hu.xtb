@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Próbálkozzon újra</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 n}other{# n}}</translation>
 <translation id="2148716181193084225">Ma</translation>
+<translation id="2161656808144014275">Szöveg</translation>
 <translation id="2168039046890040389">Oldal fel</translation>
 <translation id="2190355936436201913">(üres)</translation>
 <translation id="2192232475740621500">Alacsony sűrűség használata</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">A(z) „<ph name="LOOKUP_STRING" />” keresése</translation>
 <translation id="364720409959344976">Mappa kiválasztása a feltöltéshez</translation>
 <translation id="3660179305079774227">Felfelé nyíl</translation>
+<translation id="3670030362669914947">Szám</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783"><ph name="TITLE" /> olvasásának folytatása a mobileszközön</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 hónapja}other{# hónapja}}</translation>
 <translation id="4289300219472526559">Beszéd megkezdése</translation>
 <translation id="4316910396681052118">MINDEN ALKALMAZÁS</translation>
-<translation id="4467014365953759647">Nem sikerült a szám elküldése</translation>
 <translation id="4588090240171750605">Görgetés jobbra</translation>
 <translation id="4690510401873698237">A polc alul található</translation>
 <translation id="4724120544754982507">Értesítési központ, <ph name="UNREAD_NOTIFICATION_COUNT" /> olvasatlan értesítés</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Bal nyíl</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 perc}other{# perc}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Ma volt aktív}=1{1 napja volt aktív}other{# napja volt aktív}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 nap és }other{# nap és }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 év múlva}other{# év múlva}}</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Indító, részleges nézet</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 perce}other{# perce}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Ellenőrizze a telefon kapcsolatát, és próbálja újra</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 perc van hátra}other{# perc van hátra}}</translation>
 <translation id="7430878839542012341">Törli ezt a keresést az előzmények közül?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

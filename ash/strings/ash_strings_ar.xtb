@@ -63,7 +63,7 @@
 <translation id="1820355135508821526">أدت السياسة السارية على هذا الجهاز إلى إيقاف <ph name="FEATURE_NAME" />. يُرجى التحدث مع مشرفك لطلب تغييرات.</translation>
 <translation id="1823873187264960516">الإيثرنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">المساعد (جارٍ التحميل...)</translation>
-<translation id="1838895407229022812">الإضاءة الليلية غير مفعّلة.</translation>
+<translation id="1838895407229022812">"الإضاءة الليلية" غير مفعّلة.</translation>
 <translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
 <translation id="1864454756846565995">‏جهاز USB-C (المنفذ الخلفي)</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">المقطع الصوتي التالي</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
 <translation id="4481530544597605423">الأجهزة التي تم إلغاء إقرانها</translation>
+<translation id="4505050298327493054">مكتب نشط</translation>
 <translation id="4513946894732546136">تعليقات</translation>
 <translation id="4527045527269911712">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> حتى اكتمال الشحن</translation>
@@ -311,7 +312,7 @@
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5744083938413354016">السحب بعد النقر</translation>
 <translation id="5750765938512549687">تم إيقاف البلوتوث</translation>
-<translation id="576453121877257266">الإضاءة الليلية مفعّلة.</translation>
+<translation id="576453121877257266">ميزة "الإضاءة الليلية" مفعّلة.</translation>
 <translation id="5777841717266010279">هل ترغب في إيقاف مشاركة الشاشة؟</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
 <translation id="5837036133683224804">إيقاف <ph name="ROUTE_TITLE" /> في <ph name="RECEIVER_NAME" /></translation>
@@ -477,6 +478,7 @@
 <translation id="813913629614996137">جارٍ التهيئة...</translation>
 <translation id="8142441511840089262">النقر مرّتين</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
+<translation id="8152092012181020186">‏يُرجى الضغط على Ctrl + W للإغلاق.</translation>
 <translation id="8167567890448493835">استخدام <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">تخصيص اللغات والإدخال...</translation>
 <translation id="8192202700944119416">يتم إخفاء الإشعارات.</translation>
@@ -558,4 +560,5 @@
 <translation id="938963181863597773">ماذا يتضمّن تقويمي؟</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="98515147261107953">أفقي</translation>
+<translation id="990277280839877440">تم إغلاق النافذة <ph name="WINDOW_TITILE" />.</translation>
 </translationbundle>

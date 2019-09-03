@@ -1791,6 +1791,18 @@ Unknown properties are collapsed to zero. -->
   </int>
 </enum>
 
+<enum name="AndroidWebViewProxySchemeFilterType">
+  <int value="0" label="HTTP"/>
+  <int value="1" label="HTTPS"/>
+  <int value="2" label="ALL"/>
+</enum>
+
+<enum name="AndroidWebViewProxyUrlType">
+  <int value="0" label="HTTP"/>
+  <int value="1" label="HTTPS"/>
+  <int value="2" label="DIRECT"/>
+</enum>
+
 <enum name="AndroidWebViewSslErrorType">
   <int value="0" label="SSL_NOTYETVALID">The certificate is not yet valid.</int>
   <int value="1" label="SSL_EXPIRED">The certificate has expired.</int>
@@ -19020,6 +19032,7 @@ Called by update_net_error_codes.py.-->
   <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
   <int value="440"
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
+  <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20462,6 +20475,8 @@ Called by update_net_error_codes.py.-->
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
   <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
   <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
+  <int value="1379" label="LOGINSTATE_GETPROFILETYPE"/>
+  <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -21004,6 +21019,7 @@ Called by update_net_error_codes.py.-->
   <int value="219" label="kTransientBackground"/>
   <int value="220" label="kLogin"/>
   <int value="221" label="kLoginScreenStorage"/>
+  <int value="222" label="kLoginState"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

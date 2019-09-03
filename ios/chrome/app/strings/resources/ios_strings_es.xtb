@@ -263,6 +263,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="4747097190499141774">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay. Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. La frase de contraseña no se envía a Google, que tampoco la guarda. Si la olvidas o quieres cambiar esta opción, debes restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Buscar en la página...</translation>
 <translation id="4751645464639803239">Nueva pestaña de incógnito</translation>
+<translation id="4758977202923349869">Coloca la tarjeta de crédito dentro del marco</translation>
 <translation id="4802417911091824046">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay.
 
 Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
@@ -328,6 +329,7 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="5728700505257787410">Error al iniciar sesión en tu cuenta</translation>
 <translation id="5737974891429562743">Información de inicio de sesión de la cuenta obsoleta. Actualízala para iniciar la sincronización.</translation>
 <translation id="5738887413654608789">Esto te permite descubrir páginas web relevantes según lo que te rodea.</translation>
+<translation id="5803566855766646066">¿Seguro que quieres descartar esta nueva tarjeta?</translation>
 <translation id="5816228676161003208">Esto te permite hacer búsquedas más rápido con tu voz.</translation>
 <translation id="5846482154967366008">Buscador</translation>
 <translation id="5854790677617711513">Más de 30 días</translation>

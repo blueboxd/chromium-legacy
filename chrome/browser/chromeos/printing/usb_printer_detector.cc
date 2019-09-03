@@ -31,7 +31,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -68,11 +68,10 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
                        weak_factory_.GetWeakPtr()));
 
     // Listen for added/removed device events.
-    device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-    client_binding_.Bind(mojo::MakeRequest(&client));
     device_manager_->EnumerateDevicesAndSetClient(
-        std::move(client), base::BindOnce(&UsbPrinterDetectorImpl::OnGetDevices,
-                                          weak_factory_.GetWeakPtr()));
+        client_receiver_.BindNewEndpointAndPassRemote(),
+        base::BindOnce(&UsbPrinterDetectorImpl::OnGetDevices,
+                       weak_factory_.GetWeakPtr()));
   }
 
   ~UsbPrinterDetectorImpl() override {
@@ -109,7 +108,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   void OnDeviceManagerConnectionError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     device_manager_.reset();
-    client_binding_.Close();
+    client_receiver_.reset();
     printers_.clear();
   }
 
@@ -184,8 +183,8 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   OnPrintersFoundCallback on_printers_found_callback_;
 
   mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
-  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
-      client_binding_{this};
+  mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
+      client_receiver_{this};
   base::WeakPtrFactory<UsbPrinterDetectorImpl> weak_factory_{this};
 };
 

@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Asennettu</translation>
 <translation id="1792959175193046959">Muuta oletuslataussijaintia milloin tahansa</translation>
 <translation id="1807246157184219062">Vaalea</translation>
+<translation id="1810845389119482123">Synkronoinnin alkumääritys ei valmis</translation>
 <translation id="1821253160463689938">Käyttää evästeitä asetustesi muistamiseen, vaikka et kävisi kyseisillä sivuilla</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
@@ -412,6 +413,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> käytetty</translation>
 <translation id="4181841719683918333">Kielet</translation>
+<translation id="4183868528246477015">Hae Google Lensillä <ph name="BEGIN_NEW" />Uusi<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Avaa uudelle välilehdelle</translation>
 <translation id="4198423547019359126">Tallennussijainteja ei ole saatavilla</translation>
 <translation id="4209895695669353772">Ota synkronointi käyttöön, niin näet Googlen suosittelemaa yksilöllistä sisältöä</translation>
@@ -474,6 +476,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4665282149850138822"><ph name="NAME" /> lisättiin aloitusnäytölle.</translation>
 <translation id="4684427112815847243">Synkronoi kaikki</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> muu}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> muuta}}</translation>
+<translation id="4696983787092045100">Lähetä teksti laitteillesi</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> voi näyttää sisältöä offline-tilassa</translation>
 <translation id="4698413471314543145">Chromen suorittamiseen tarvittava kriittinen toiminto puuttuu. Joko Chromea ei ole asennettu loppuun tai selain ei sovi yhteen tämän Android-version kanssa.</translation>
 <translation id="4699172675775169585">Välimuistissa olevat kuvat ja tiedostot</translation>
@@ -529,6 +532,10 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5011311129201317034"><ph name="SITE" /> haluaa muodostaa yhteyden</translation>
 <translation id="5013696553129441713">Ei uusia ehdotuksia</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Kun olet VR-tilassa, sivusto voi saada tietää
+  –  fyysisiä piirteitäsi, kuten pituutesi.
+
+Varmista, että sivusto on luotettava, ennen kuin siirryt VR-tilaan.</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
 <translation id="5048398596102334565">Anna sivustojen käyttää liiketunnistimien lukemia (suositus)</translation>
@@ -556,6 +563,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5224771365102442243">Video sivulla</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> haluaa etsiä lähellä olevia Bluetooth-laitteita. Seuraavat laitteet löydettiin:</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
+<translation id="5234764350956374838">Piilota</translation>
 <translation id="526421993248218238">Sivun lataaminen epäonnistui</translation>
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
 <translation id="528192093759286357">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
@@ -574,6 +582,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5363230136052241468">Napauta aloitusnäyttöpainiketta ladataksesi uusi välilehti ‑sivun.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> avoin välilehti, vaihda välilehteä napauttamalla}other{<ph name="OPEN_TABS_MANY" /> avointa välilehteä, vaihda välilehteä napauttamalla}}</translation>
 <translation id="5391532827096253100">Sivustolle muodostamasi yhteys ei ole turvallinen. Sivuston tiedot</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 muu)}other{(+ # muuta)}}</translation>
 <translation id="5400569084694353794">Käyttämällä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Nimet</translation>
 <translation id="5403644198645076998">Salli vain tietyt sivustot</translation>
@@ -603,6 +612,11 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5527082711130173040">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. <ph name="BEGIN_LINK1" />Päivitä käyttöoikeudet<ph name="END_LINK1" />. Sijaintitiedot on lisäksi <ph name="BEGIN_LINK2" />poistettu käytöstä tällä laitteella<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Pyydä lupaa, kun sivustot yrittävät lukea tekstiä ja kuvia leikepöydältä (suositus)</translation>
 <translation id="5530766185686772672">Sulje incognito-välilehdet</translation>
+<translation id="5534334044554683961">Kun olet VR-tilassa, sivusto voi saada tietää
+  –  fyysisiä piirteitäsi, kuten pituutesi
+  –  huoneesi asettelun.
+
+Varmista, että sivusto on luotettava, ennen kuin siirryt VR-tilaan.</translation>
 <translation id="5534640966246046842">Sivusto kopioitu</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5561549206367097665">Odotetaan verkkoyhteyttä…</translation>
@@ -690,7 +704,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6196640612572343990">Estä kolmannen osapuolen evästeet</translation>
 <translation id="6206551242102657620">Yhteys on turvallinen. Sivuston tiedot</translation>
 <translation id="6210748933810148297">Etkö ole <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Vaihtoehdot: <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Avaa lukitus viedäksesi salasanoja.</translation>
 <translation id="6232535412751077445">Do Not Track -toiminnon käyttöönotto tarkoittaa sitä, että selausliikenteeseesi sisällytetään pyyntö. Sen vaikutus riippuu siitä, vastaako verkkosivusto pyyntöön ja miten pyyntöä tulkitaan.
 
@@ -893,6 +906,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="7665369617277396874">Lisää tili</translation>
 <translation id="766587987807204883">Tässä näet artikkelit, jotka voit lukea myös offline-tilassa</translation>
 <translation id="7682724950699840886">Kokeile seuraavia keinoja: varmista, että laitteellasi on tarpeeksi tilaa, yritä viedä uudelleen.</translation>
+<translation id="7685301384041462804">Varmista, että sivusto on luotettava, ennen kuin siirryt VR-tilaan.</translation>
 <translation id="7698359219371678927">Luo sähköposti sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Täydennä automaattisesti hakuja ja URL-osoitteita</translation>
 <translation id="7725024127233776428">Kirjanmerkeiksi lisätyt sivut näkyvät tässä</translation>
@@ -923,6 +937,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="7886917304091689118">Käynnissä Chromessa</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Ladataan tiedostoa}other{Ladataan # tiedostoa}}</translation>
 <translation id="7929962904089429003">Avaa valikko</translation>
+<translation id="7930681627240672853">Salasanojen turvallisuuden tarkistaminen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> on vanhentunut.</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="7963646190083259054">Toimittaja:</translation>
@@ -1070,6 +1085,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="8993760627012879038">Avaa uusi välilehti incognito-tilassa</translation>
 <translation id="8998729206196772491">Olet kirjautumassa sisään verkkotunnuksen <ph name="MANAGED_DOMAIN" /> hallinnoimalla tilillä ja antamassa sen järjestelmänvalvojalle oikeuden hallita Chrome-tietojasi. Tietosi liitetään pysyvästi tähän tiliin. Chromesta uloskirjautuminen poistaa tietosi tältä laitteelta, mutta ne säilyvät Google-tililläsi.</translation>
 <translation id="9019902583201351841">Vanhempiesi hallinnoima</translation>
+<translation id="9029323097866369874">Saako <ph name="DOMAIN" /> siirtyä VR-tilaan?</translation>
 <translation id="9040142327097499898">Ilmoitukset sallitaan. Sijainti on poissa käytöstä tällä laitteella.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videota}}</translation>
 <translation id="9050666287014529139">Tunnuslause</translation>

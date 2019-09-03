@@ -263,6 +263,7 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="4747097190499141774">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz. Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola, Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Sayfada Bul...</translation>
 <translation id="4751645464639803239">Yeni Gizli Sekme</translation>
+<translation id="4758977202923349869">Kredi Kartını bu çerçeveye yerleştirin</translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="5728700505257787410">Maalesef hesabınızda oturum açmayla ilgili bir sorun oldu.</translation>
 <translation id="5737974891429562743">Hesap oturum açma ayrıntıları eski. Senkronizasyonu başlatmak için güncelleyin.</translation>
 <translation id="5738887413654608789">Bu işlem çevrenizdeki öğelere dayalı olarak ilgili web sayfalarını keşfetmenize olanak sağlar.</translation>
+<translation id="5803566855766646066">Bu yeni kartı silmek istediğinizden emin misiniz?</translation>
 <translation id="5816228676161003208">Böylece, sesinizi kullanarak daha hızlı arama yapabilirsiniz.</translation>
 <translation id="5846482154967366008">Arama Motoru</translation>
 <translation id="5854790677617711513">30 günden daha eski</translation>
@@ -356,7 +358,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">İptal etmek için hafifçe vurun.</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
-<translation id="6119050551270742952">Geçerli Web sayfası Gizli Mod'da</translation>
+<translation id="6119050551270742952">Geçerli Web sayfası Gizli modda</translation>
 <translation id="6122191549521593678">Çevrimiçi</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
 <translation id="6136914049981179737">Sn. önce</translation>

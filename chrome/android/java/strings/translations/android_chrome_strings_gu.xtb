@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">ઇન્સ્ટોલ કરેલું</translation>
 <translation id="1792959175193046959">ડિફૉલ્ટ ડાઉનલોડ સ્થાનને કોઈપણ સમયે બદલો</translation>
 <translation id="1807246157184219062">આછું</translation>
+<translation id="1810845389119482123">સિંકનું પ્રારંભિક સેટઅપ પૂર્ણ થયું નથી</translation>
 <translation id="1821253160463689938">તમારી પસંદગીઓ યાદ રાખવા માટે કુકીનો ઉપયોગ કરે છે, પછી ભલે તમે તે પેજની મુલાકાત ન પણ લો</translation>
 <translation id="1829244130665387512">આ પૃષ્ઠમાં શોધો</translation>
 <translation id="1853692000353488670">નવી છુપી ટેબ</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">સેવા ઉપલબ્ધ નથી; પછી ફરીથી પ્રયાસ કરો</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ડેટા વપરાયો</translation>
 <translation id="4181841719683918333">ભાષાઓ</translation>
+<translation id="4183868528246477015">Google લેન્સ વડે શોધો <ph name="BEGIN_NEW" />નવું<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">નવા ટૅબમાં ખોલો</translation>
 <translation id="4198423547019359126">કોઈ ડાઉનલોડ સ્થાનો ઉપલબ્ધ નથી</translation>
 <translation id="4209895695669353772">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ કન્ટેન્ટ મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822"><ph name="NAME" /> ને તમારા હોમ સ્ક્રીન પર ઉમેરવામાં આવ્યું હતું</translation>
 <translation id="4684427112815847243">દરેક વસ્તુ સમન્વયિત કરો</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
+<translation id="4696983787092045100">તમારા ડિવાઇસ પર ટેક્સ્ટ મોકલો</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" />માં ઑફલાઇન જુઓ</translation>
 <translation id="4698413471314543145">Chrome ચલાવવા માટે જરૂરી કાર્ય ખૂટે છે; અથવા તમારું Chrome ઇન્સ્ટૉલેશન અધૂરું છે, અથવા Androidના આ વર્ઝન સાથે બંધબેસતું નથી.</translation>
 <translation id="4699172675775169585">કેશ કરેલ છબીઓ અને ફાઇલો</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" />, કનેક્ટ કરવા માગે છે</translation>
 <translation id="5013696553129441713">કોઈ નવા સૂચનો નથી</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">તમે VR મોડમાં હો, ત્યારે આ સાઇટ આ વિશેની જાણકારી મેળવી શકે:
+  -  તમારી શારીરિક લાક્ષણિકતાઓ, જેમ કે ઊંચાઈ
+
+VR મોડમાં દાખલ થતા પહેલા ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ કરો છો.</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5040262127954254034">ગોપનીયતા</translation>
 <translation id="5048398596102334565">સાઇટને મોશન સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલ)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">વીડિયો દ્વારા</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> નજીકના બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરવા માગે છે. નીચે મુજબના ડિવાઇસ મળ્યા છે:</translation>
 <translation id="5233638681132016545">નવું ટૅબ</translation>
+<translation id="5234764350956374838">કાઢી નાખો</translation>
 <translation id="526421993248218238">આ પેજ લોડ કરી શકાતું નથી</translation>
 <translation id="5271967389191913893">ડિવાઇસ, ડાઉનલોડ કરવાની કન્ટેન્ટ ખોલી શકતું નથી.</translation>
 <translation id="528192093759286357">પૂર્ણસ્ક્રીનથી બહાર નીકળવા માટે ઉપરથી ખેંચો અને પાછળ બટનને ટચ કરો.</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">નવું ટૅબ પેજ લોડ કરવા માટે હોમ બટનને ટૅપ કરો</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
 <translation id="5391532827096253100">આ સાઇટ સાથેનું તમારું કનેક્શન સુરક્ષિત નથી. સાઇટની માહિતી</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ વધુ 1)}one{(+ વધુ #)}other{(+ વધુ #)}}</translation>
 <translation id="5400569084694353794">આ એપ્લિકેશનનો ઉપયોગ કરીને, તમે Chrome ની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> સાથે સંમત છો.</translation>
 <translation id="5403592356182871684">નામ</translation>
 <translation id="5403644198645076998">ફક્ત અમુક સાઇટની મંજૂરી આપો</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">ઉપકરણો માટે સ્કેન કરવા Chrome ને સ્થાન ઍક્સેસની જરૂર છે. <ph name="BEGIN_LINK1" />પરવાનગીઓ અપડેટ કરો<ph name="END_LINK1" />. સ્થાન ઍક્સેસ પણ <ph name="BEGIN_LINK2" />આ ઉપકરણ માટે બંધ કરેલ છે<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">સાઇટને ક્લિપબોર્ડ પરની ટેક્સ્ટ અને છબીઓને વાંચવાની મંજૂરી આપતાં પહેલાં પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="5530766185686772672">છુપા ટેબ્સ બંધ કરો</translation>
+<translation id="5534334044554683961">તમે VR મોડમાં હો, ત્યારે આ સાઇટ આ વિશેની જાણકારી મેળવી શકે:
+  -   તમારી શારીરિક લાક્ષણિકતાઓ, જેમ કે ઊંચાઈ
+  -   તમારા રૂમનું લેઆઉટ
+
+VR મોડમાં દાખલ થતા પહેલા ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ કરો છો.</translation>
 <translation id="5534640966246046842">સાઇટ કૉપિ કરી</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5561549206367097665">નેટવર્કની રાહ જોઈ રહ્યાં છે…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">તૃતીય પક્ષની કુકીઝ અવરોધિત કરો</translation>
 <translation id="6206551242102657620">કનેક્શન સુરક્ષિત છે. સાઇટની માહિતી</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> નથી?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />ના વિકલ્પો</translation>
 <translation id="6221633008163990886">તમારા બધા પાસવર્ડને નિકાસ કરવા માટે અનલૉક કરો</translation>
 <translation id="6232535412751077445">'ટ્રૅક કરશો નહીં’ ને સક્ષમ કરવાનો અર્થ છે કે તમારા બ્રાઉઝિંગ ટ્રાફિકમાં વિનંતી શામેલ કરવામાં આવશે. કોઈ વેબસાઇટ, વિનંતી પર પ્રતિસાદ કરે છે કે નહીં અને વિનંતીનું અર્થઘટન કેવી રીતે કર્યું તેના પર કોઈ પણ અસર આધારિત હોય છે.
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">એકાઉન્ટ ઉમેરો</translation>
 <translation id="766587987807204883">લેખો અહીં દેખાય છે, જે તમે ઑફલાઇન હો ત્યારે પણ વાંચી શકો છો</translation>
 <translation id="7682724950699840886">નીચેની ટિપ અજમાવી જુઓ: ખાતરી કરો કે તમારા ઉપકરણ પર પૂરતી સ્પેસ છે, ફરીથી નિકાસ કરવાનો પ્રયાસ કરો.</translation>
+<translation id="7685301384041462804">VR મોડમાં દાખલ થતા પહેલાં ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ કરો છો.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> માં ઇમેઇલ બનાવો</translation>
 <translation id="7704317875155739195">શોધ અને URLsને આપમેળે પૂર્ણ કરો</translation>
 <translation id="7725024127233776428">બુકમાર્ક કરેલા પેજ અહીં દેખાય છે</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">Chromeમાં ચાલી રહ્યું છે</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ફાઇલ ડાઉનલોડ કરી રહ્યાં છીએ.}one{# ફાઇલ ડાઉનલોડ કરી રહ્યાં છે.}other{# ફાઇલ ડાઉનલોડ કરી રહ્યાં છે.}}</translation>
 <translation id="7929962904089429003">મેનૂ ખોલો</translation>
+<translation id="7930681627240672853">પાસવર્ડ સુરક્ષા ચેક કરો</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> જૂનું થઈ ગયું છે.</translation>
 <translation id="7947953824732555851">સ્વીકારો અને સાઇન ઇન કરો</translation>
 <translation id="7963646190083259054">વિક્રેતા:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">છુપા મોડમાં એક નવું ટૅબ ખોલો</translation>
 <translation id="8998729206196772491">તમે <ph name="MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાં સાઇન ઇન કરી રહ્યાં છો અને તમારા Chrome ડેટા પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો ડેટા આ એકાઉન્ટ સાથે કાયમીરૂપે જોડાયેલું રહેશે. Chromeમાંથી સાઇન આઉટ કરવું આ ડિવાઇસ પરથી તમારો ડેટા ડિલીટ કરશે, પરંતુ એ તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
 <translation id="9019902583201351841">તમારા માતાપિતા દ્વારા સંચાલિત</translation>
+<translation id="9029323097866369874"><ph name="DOMAIN" />ને VR મોડમાં દાખલ થવાની મંજૂરી આપીએ?</translation>
 <translation id="9040142327097499898">નોટિફિકેશનની મંજૂરી છે. આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# વીડિયો}one{# વીડિયો}other{# વીડિયો}}</translation>
 <translation id="9050666287014529139">પાસફ્રેઝ</translation>

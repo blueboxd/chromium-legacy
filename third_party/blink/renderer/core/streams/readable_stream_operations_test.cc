@@ -57,21 +57,20 @@ class Iteration final : public GarbageCollectedFinalized<Iteration> {
  public:
   Iteration() : is_set_(false), is_done_(false), is_valid_(true) {}
 
-  void Set(ScriptValue v) {
+  void Set(ScriptState* script_state, ScriptValue v) {
     DCHECK(!v.IsEmpty());
     is_set_ = true;
-    v8::TryCatch block(v.GetScriptState()->GetIsolate());
+    v8::TryCatch block(script_state->GetIsolate());
     v8::Local<v8::Value> value;
     v8::Local<v8::Value> item = v.V8Value();
     if (!item->IsObject() ||
-        !V8UnpackIteratorResult(v.GetScriptState(), item.As<v8::Object>(),
-                                &is_done_)
+        !V8UnpackIteratorResult(script_state, item.As<v8::Object>(), &is_done_)
              .ToLocal(&value)) {
       is_valid_ = false;
       return;
     }
     value_ = ToCoreString(
-        value->ToString(v.GetScriptState()->GetContext()).ToLocalChecked());
+        value->ToString(script_state->GetContext()).ToLocalChecked());
   }
 
   bool IsSet() const { return is_set_; }
@@ -107,7 +106,7 @@ class ReaderFunction : public ScriptFunction {
 
  private:
   ScriptValue Call(ScriptValue value) override {
-    iteration_->Set(value);
+    iteration_->Set(GetScriptState(), value);
     return value;
   }
 

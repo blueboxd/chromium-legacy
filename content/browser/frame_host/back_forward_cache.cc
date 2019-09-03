@@ -237,7 +237,7 @@ void BackForwardCache::Flush() {
   render_frame_hosts_.clear();
 }
 
-void BackForwardCache::DisableForTesting() {
+void BackForwardCache::DisableForTesting(DisableForTestingReason reason) {
   is_disabled_for_testing_ = true;
 
   // This could happen if a test populated some pages in the cache, then

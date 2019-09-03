@@ -181,8 +181,8 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
         kHandshakeTimeoutIntervalInSeconds));
     timer_ = std::move(timer);
     timer_->Start(FROM_HERE, timeout,
-                  base::Bind(&WebSocketStreamRequestImpl::OnTimeout,
-                             base::Unretained(this)));
+                  base::BindOnce(&WebSocketStreamRequestImpl::OnTimeout,
+                                 base::Unretained(this)));
     url_request_->Start();
   }
 

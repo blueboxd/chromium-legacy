@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Esci</translation>
 <translation id="5254120496627797685">Se esci da questa pagina, la sessione Chrome Remote Desktop verrà terminata.</translation>
 <translation id="5308380583665731573">Connessione</translation>
+<translation id="5327248766486351172">Nome</translation>
 <translation id="533625276787323658">Non ci sono computer a cui connettersi</translation>
 <translation id="5363265567587775042">Chiedi al proprietario del computer a cui vuoi accedere di fare clic su "<ph name="SHARE" />" e fornirti il codice di accesso.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chrome Remote Desktop, reperibile all'indirizzo <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opzioni schermo</translation>
 <translation id="7970576581263377361">Autenticazione non riuscita. Accedi di nuovo a Chromium.</translation>
 <translation id="7981525049612125370">La sessione remota è scaduta.</translation>
+<translation id="8038111231936746805">(predefinita)</translation>
 <translation id="8041089156583427627">Invia feedback</translation>
 <translation id="8041721485428375115">Se scarichi il programma di installazione di Chrome Remote Desktop Host, accetti i <ph name="LINK_BEGIN" />Termini di servizio<ph name="LINK_END" /> di Google.</translation>
 <translation id="8060029310790625334">Centro assistenza</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">I miei computer</translation>
 <translation id="811307782653349804">Accedi al tuo computer ovunque tu sia.</translation>
 <translation id="8116630183974937060">Si è verificato un errore di rete. Controlla che il dispositivo sia online e riprova.</translation>
-<translation id="8123581458650016326">Consenti agli utenti remoti di controllare questo computer</translation>
 <translation id="8178433417677596899">Condivisione dello schermo tra utenti, perfetta per l'assistenza tecnica da remoto.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="8196755618196986400">Per poterti contattare qualora ci servissero ulteriori informazioni, il tuo indirizzo email verrà incluso in ogni feedback da te inviato.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Norme sulla privacy</translation>
 <translation id="894763922177556086">Buona</translation>
 <translation id="895780780740011433">Per Windows 7 e versioni successive</translation>
-<translation id="8963047137585288214">Prima che tu possa controllare questo computer da remoto con <ph name="PRODUCT_NAME" />, è richiesto un passaggio di configurazione aggiuntivo.
-
-Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per visualizzare il riquadro delle preferenze di sicurezza e privacy, poi seleziona la casella accanto a "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se l'opzione "<ph name="SERVICE_SCRIPT_NAME" />" è già presente e selezionata, potresti doverla deselezionare e riselezionare.</translation>
 <translation id="897805526397249209">Per attivare connessioni remote su un altro computer, installa Chromoting sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Controller host Chrome Remote Desktop</translation>
 <translation id="9016232822027372900">Connetti comunque</translation>

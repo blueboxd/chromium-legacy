@@ -54,15 +54,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
     virtual void OnShimFocus(AppShimHost* host,
                              apps::AppShimFocusType focus_type,
                              const std::vector<base::FilePath>& files) = 0;
-
-    // Invoked by the shim host when the shim process is hidden or shown. This
-    // is used only for non-RemoteCocoa.
-    virtual void OnShimSetHidden(AppShimHost* host, bool hidden) = 0;
-
-    // Invoked by the shim host when the shim process receives a quit event.
-    // This is used only for non-RemoteCocoa and could potentially be merged
-    // with OnShimProcessDisconnected.
-    virtual void OnShimQuit(AppShimHost* host) = 0;
   };
 
   AppShimHost(Client* client,
@@ -85,18 +76,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Invoked when the app shim has launched and connected to the browser.
   virtual void OnBootstrapConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap);
-
-  // TODO(ccameron): The following three function should directly call the
-  // AppShim mojo interface (they only don't due to tests that could be changed
-  // to mock the AppShim mojo interface).
-  // Invoked when the app should be hidden.
-  void OnAppHide();
-  // Invoked when a window becomes visible while the app is hidden. Ensures
-  // the shim's "Hide/Show" state is updated correctly and the app can be
-  // re-hidden.
-  virtual void OnAppUnhideWithoutActivation();
-  // Invoked when the app is requesting user attention.
-  void OnAppRequestUserAttention(apps::AppShimAttentionType type);
 
   // Functions to allow the handler to determine which app this host corresponds
   // to.
@@ -126,8 +105,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // chrome::mojom::AppShimHost.
   void FocusApp(apps::AppShimFocusType focus_type,
                 const std::vector<base::FilePath>& files) override;
-  void SetAppHidden(bool hidden) override;
-  void QuitApp() override;
 
   // Weak, owns |this|.
   Client* const client_;

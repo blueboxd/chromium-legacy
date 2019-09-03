@@ -484,6 +484,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4372705107434148843">Hentikan pertuturan</translation>
 <translation id="4373197658375206385">Tiada item terdahulu yang bukan pautan.</translation>
 <translation id="4376316291247992553">Lihat Grafik Sebagai Braille</translation>
+<translation id="437809255587011096">Umumkan penggayaan teks</translation>
 <translation id="4378308539633073595">Tatal ke hadapan</translation>
 <translation id="4384583879834880242">Soal Jawab</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8503360654911991865">Kurangkan kebutiran navigasi</translation>
 <translation id="8504695234784218301">Kesilapan tatabahasa tamat</translation>
 <translation id="8520472399088452386">Butang putar</translation>
+<translation id="8534394844575788431">Memformat</translation>
 <translation id="8538744478902126321">Buat tekaan pada pengepala baris sel semasa</translation>
 <translation id="8540054775867439484">Dibalut ke atas</translation>
 <translation id="8542271685829952264">Untuk menerokai semua perintah dan pintasan ChromeVox, tekan Carian + Titik, kemudian gunakan kekunci Anak panah untuk menavigasi menu dan Enter untuk mengaktifkan perintah. Kembali ke sini dengan menekan Carian+o kemudian t.</translation>
@@ -1200,6 +1202,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Mengumumkan penerangan ringkas tentang kedudukan semasa</translation>
+<translation id="9151249085738989067">Ubah suara ChromeVox berdasarkan bahasa secara automatik</translation>
 <translation id="9153606228985488238">Nada <ph name="PERCENT" /> peratus</translation>
 <translation id="9160096769946561184">Pergi ke penghujung lajur semasa</translation>
 <translation id="9173115498289768110">Kelantangan <ph name="PERCENT" /> peratus</translation>

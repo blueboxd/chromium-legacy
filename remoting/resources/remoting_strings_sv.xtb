@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
 <translation id="5308380583665731573">Ansluta</translation>
+<translation id="5327248766486351172">Namn</translation>
 <translation id="533625276787323658">Det finns inget att ansluta till</translation>
 <translation id="5363265567587775042">Be användaren vars dator du vill använda att klicka på <ph name="SHARE" /> och ge dig åtkomstkoden.</translation>
 <translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Skärmalternativ</translation>
 <translation id="7970576581263377361">Autentiseringen misslyckades. Logga in i Chromium igen.</translation>
 <translation id="7981525049612125370">Fjärrsessionen har avslutats.</translation>
+<translation id="8038111231936746805">(standard)</translation>
 <translation id="8041089156583427627">Skicka feedback</translation>
 <translation id="8041721485428375115">När du laddar ned installationsprogrammet för fjärranslutningsvärden Chrome Remote Desktop godkänner du Googles <ph name="LINK_BEGIN" />användarvillkor<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Hjälpcenter</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mina datorer</translation>
 <translation id="811307782653349804">Få åtkomst till din egen dator var du än är.</translation>
 <translation id="8116630183974937060">Ett nätverksfel inträffade. Kontrollera att enheten är online och försök igen.</translation>
-<translation id="8123581458650016326">Tillåt fjärranvändare att styra den här datorn</translation>
 <translation id="8178433417677596899">Skärmdelning mellan användare är perfekt för fjärrstyrd teknisk support.</translation>
 <translation id="8187079423890319756">Upphovsrätt 2013 The Chromium Authors. Med ensamrätt.</translation>
 <translation id="8196755618196986400">Din e-postadress skickas tillsammans med din feedback så att vi kan kontakta dig om vi behöver mer information.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Sekretesspolicy</translation>
 <translation id="894763922177556086">Bra</translation>
 <translation id="895780780740011433">För Windows 7 eller senare</translation>
-<translation id="8963047137585288214">Ett konfigureringssteg återstår innan du kan fjärrstyra den här datorn med <ph name="PRODUCT_NAME" />.
-
-Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekretess med <ph name="BUTTON_NAME" /> och markera kryssrutan <ph name="SERVICE_SCRIPT_NAME" />.
-
-Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats kan du behöva avmarkera det och markera det på nytt.</translation>
 <translation id="897805526397249209">Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">Anslut ändå</translation>

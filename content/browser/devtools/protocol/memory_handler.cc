@@ -111,8 +111,8 @@ void MemoryHandler::PrepareForLeakDetection(
   }
 
   leak_detection_callback_ = std::move(callback);
-  BindInterface(process, &leak_detector_);
-  leak_detector_.set_connection_error_handler(base::BindOnce(
+  BindInterface(process, leak_detector_.BindNewPipeAndPassReceiver());
+  leak_detector_.set_disconnect_handler(base::BindOnce(
       &MemoryHandler::OnLeakDetectorIsGone, base::Unretained(this)));
   leak_detector_->PerformLeakDetection(base::BindOnce(
       &MemoryHandler::OnLeakDetectionComplete, weak_factory_.GetWeakPtr()));

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_animated_arrow_container_element.h"
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
@@ -54,9 +54,10 @@ class SessionClientBinding
     kNonImmersive = 1,
   };
 
-  SessionClientBinding(VRDisplay* display,
-                       SessionBindingType immersive,
-                       device::mojom::blink::XRSessionClientRequest request);
+  SessionClientBinding(
+      VRDisplay* display,
+      SessionBindingType immersive,
+      mojo::PendingReceiver<device::mojom::blink::XRSessionClient> receiver);
   ~SessionClientBinding() override;
   void Close();
 
@@ -72,7 +73,7 @@ class SessionClientBinding
   // VRDisplay is destroyed, so is the SessionClientBinding.
   Member<VRDisplay> display_;
   bool is_immersive_;
-  mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
+  mojo::Receiver<device::mojom::blink::XRSessionClient> client_receiver_;
 };
 
 enum VREye { kVREyeNone, kVREyeLeft, kVREyeRight };
@@ -127,7 +128,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   void submitFrame();
 
   Document* GetDocument();
-  device::mojom::blink::VRDisplayClientPtr GetDisplayClient();
+  mojo::PendingRemote<device::mojom::blink::VRDisplayClient> GetDisplayClient();
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;
@@ -267,7 +268,8 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   Member<SessionClientBinding> non_immersive_client_binding_;
   Member<SessionClientBinding> immersive_client_binding_;
-  mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
+  mojo::Receiver<device::mojom::blink::VRDisplayClient>
+      display_client_receiver_{this};
   device::mojom::blink::XRFrameDataProviderPtr vr_presentation_data_provider_;
   device::mojom::blink::XRPresentationProviderPtr vr_presentation_provider_;
 

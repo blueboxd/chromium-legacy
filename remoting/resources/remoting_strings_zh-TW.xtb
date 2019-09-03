@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">登出</translation>
 <translation id="5254120496627797685">如果離開這個頁面，你的 Chrome 遠端桌面工作階段也會結束。</translation>
 <translation id="5308380583665731573">連線</translation>
+<translation id="5327248766486351172">名稱</translation>
 <translation id="533625276787323658">沒有可供連線的電腦</translation>
 <translation id="5363265567587775042">請您要存取的電腦的使用者點選 [<ph name="SHARE" />]，並提供存取碼給您。</translation>
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓你透過網路與他人共用自己的電腦。你和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL" /> 安裝。</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
 <translation id="7981525049612125370">遠端工作階段已逾時。</translation>
+<translation id="8038111231936746805">(預設)</translation>
 <translation id="8041089156583427627">提供意見</translation>
 <translation id="8041721485428375115">下載 Chrome 遠端桌面主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
 <translation id="8060029310790625334">說明中心</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">我的電腦</translation>
 <translation id="811307782653349804">無論你人在哪裡，都能存取自己的電腦。</translation>
 <translation id="8116630183974937060">發生網路錯誤。請確認你的裝置已連線至網路，然後再試一次。</translation>
-<translation id="8123581458650016326">允許遠端使用者控制這部電腦</translation>
 <translation id="8178433417677596899">讓兩端的使用者都能看到同一個螢幕畫面，是遠端技術支援作業的利器。</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. 保留所有權利。</translation>
 <translation id="8196755618196986400">如果您允許我們要求您提供更進一步的資訊，凡是您提交的意見回饋都會包含您的電子郵件地址。</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">隱私權政策</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="895780780740011433">適用於 Windows 7 以上版本</translation>
-<translation id="8963047137585288214">你必須先完成一項額外的設定步驟，才能使用 <ph name="PRODUCT_NAME" />從遠端控制這部電腦。
-
-如要啟用這項功能，請先選取 [<ph name="BUTTON_NAME" />] 以開啟「安全性和隱私權」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
-
-如果現有的 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="897805526397249209">如要為其他電腦啟用遠端連線，請在你想要連線的電腦上安裝 Chromoting，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
 <translation id="8998327464021325874">Chrome 遠端桌面主機控制器</translation>
 <translation id="9016232822027372900">繼續連線</translation>

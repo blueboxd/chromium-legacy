@@ -106,13 +106,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
 
   bool asked_to_terminate_ = false;
 
-  // TODO(bashi): Remove. This is no longer used.
-  enum {
-    kDontPauseAfterDownload,
-    kDoPauseAfterDownload,
-    kIsPausedAfterDownload
-  } pause_after_download_state_;
-
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token_;

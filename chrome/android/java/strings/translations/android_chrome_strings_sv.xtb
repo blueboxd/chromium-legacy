@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Installerat</translation>
 <translation id="1792959175193046959">Ändra standardplats för nedladdningar när som helst</translation>
 <translation id="1807246157184219062">Ljus</translation>
+<translation id="1810845389119482123">Konfigurationen av synkronisering har inte slutförts</translation>
 <translation id="1821253160463689938">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
@@ -412,6 +413,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> har använts</translation>
 <translation id="4181841719683918333">Språk</translation>
+<translation id="4183868528246477015">Sök med Google Lens <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4198423547019359126">Det fins inga tillgängliga nedladdningsplatser</translation>
 <translation id="4209895695669353772">Aktivera synkronisering om du vill få förslag på anpassat innehåll från Google</translation>
@@ -474,6 +476,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}}</translation>
+<translation id="4696983787092045100">Skicka texten till dina enheter</translation>
 <translation id="4698034686595694889">Visa offline i <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Det saknas viktiga funktioner i din version som krävs för att Chrome ska kunna köras. Antingen har installationen av Chrome inte slutförts eller så är Chrome och den här versionen av Android inte kompatibla.</translation>
 <translation id="4699172675775169585">Cachade bilder och filer</translation>
@@ -529,6 +532,10 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5011311129201317034"><ph name="SITE" /> vill ansluta</translation>
 <translation id="5013696553129441713">Inga nya förslag</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Webbplatsen kan ta reda på mer om följande om dig när VR är aktiverat:
+  – dina fysiska egenskaper, som längd
+
+Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
 <translation id="5048398596102334565">Tillåt webbplatser att använda enhetens rörelsesensorer (rekommenderas)</translation>
@@ -556,6 +563,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5224771365102442243">Med video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> vill söka efter Bluetooth-enheter i närheten. Följande enheter har hittats:</translation>
 <translation id="5233638681132016545">Ny flik</translation>
+<translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="526421993248218238">Det går inte att läsa in den här sidan</translation>
 <translation id="5271967389191913893">Innehållet som skulle laddas ned gick inte att öppna på enheten.</translation>
 <translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen för att lämna helskärmsläget.</translation>
@@ -574,6 +582,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5363230136052241468">Tryck på hemknappen om du vill läsa in sidan Ny flik</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> flik öppen, tryck här om du vill byta flik}other{<ph name="OPEN_TABS_MANY" /> flikar öppna, tryck här om du vill byta flik}}</translation>
 <translation id="5391532827096253100">Anslutningen till webbplatsen är inte säker. Webbplatsinformation</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 till)}other{(+ # till)}}</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="5403592356182871684">Namn</translation>
 <translation id="5403644198645076998">Tillåt endast vissa webbplatser</translation>
@@ -603,6 +612,11 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5527082711130173040">Chrome behöver tillgång till platsinformation för att kunna söka efter enheter. <ph name="BEGIN_LINK1" />Uppdatera behörigheter<ph name="END_LINK1" />. Platsåtkomst är dessutom <ph name="BEGIN_LINK2" />inaktiverat för enheten<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Fråga innan en webbplats ges läsbehörighet till text och bilder i Urklipp (rekommenderas)</translation>
 <translation id="5530766185686772672">Stäng inkognitoflikar</translation>
+<translation id="5534334044554683961">Webbplatsen kan ta reda på mer om följande om dig när VR är aktiverat:
+  – dina fysiska egenskaper, som längd
+  –   formen på ditt rum
+
+Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5534640966246046842">Webbplatsen har kopierats</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5561549206367097665">Väntar på nätverket …</translation>
@@ -690,7 +704,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6196640612572343990">Blockera cookies från tredje part</translation>
 <translation id="6206551242102657620">Anslutningen är säker. Webbplatsinformation</translation>
 <translation id="6210748933810148297">Inte <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Alternativ för <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Lås upp om du vill exportera dina lösenord</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
@@ -893,6 +906,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7665369617277396874">Lägg till konto</translation>
 <translation id="766587987807204883">Artiklar som du kan läsa även när du är offline visas här</translation>
 <translation id="7682724950699840886">Testa följande: kontrollera att det finns tillräckligt mycket utrymme på enheten, gör om exporten.</translation>
+<translation id="7685301384041462804">Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7698359219371678927">Skapa ett e-postmeddelande i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>
 <translation id="7725024127233776428">Sidor som infogats som bokmärke visas här</translation>
@@ -923,6 +937,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7886917304091689118">Körs i Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{En fil laddas ned.}other{# filer laddas ned.}}</translation>
 <translation id="7929962904089429003">Öppna menyn</translation>
+<translation id="7930681627240672853">Kontrollera om lösenordet är säkert</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
@@ -1070,6 +1085,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
+<translation id="9029323097866369874">Vill du tillåta att <ph name="DOMAIN" /> aktiverar VR?</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>
 <translation id="9050666287014529139">Lösenfras</translation>

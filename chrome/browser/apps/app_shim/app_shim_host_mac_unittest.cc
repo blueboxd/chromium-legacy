@@ -53,8 +53,6 @@ class TestingAppShim : public chrome::mojom::AppShim {
   void CreateRemoteCocoaApplication(
       remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
-  void Hide() override {}
-  void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
 
@@ -165,15 +163,12 @@ class AppShimHostTest : public testing::Test,
                    const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
-  void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
-  void OnShimQuit(AppShimHost* host) override { ++quit_count_; }
 
   apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
   int launch_count_ = 0;
   int launch_now_count_ = 0;
   int close_count_ = 0;
   int focus_count_ = 0;
-  int quit_count_ = 0;
 
  private:
   void SetUp() override {
@@ -212,10 +207,6 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
                           std::vector<base::FilePath>());
   RunUntilIdle();
   EXPECT_EQ(1, focus_count_);
-
-  GetMojoHost()->QuitApp();
-  RunUntilIdle();
-  EXPECT_EQ(1, quit_count_);
 
   SimulateDisconnect();
   RunUntilIdle();

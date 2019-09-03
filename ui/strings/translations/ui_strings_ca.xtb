@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Torna-ho a provar</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Avui</translation>
+<translation id="2161656808144014275">Text</translation>
 <translation id="2168039046890040389">Re Pàg</translation>
 <translation id="2190355936436201913">(buit)</translation>
 <translation id="2192232475740621500">Utilitza una densitat baixa</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Selecció d'una carpeta per penjar</translation>
 <translation id="3660179305079774227">Fletxa amunt</translation>
+<translation id="3670030362669914947">Número</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Continua la lectura des del dispositiu mòbil <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Fa 1 mes}other{Fa # mesos}}</translation>
 <translation id="4289300219472526559">Comença a parlar</translation>
 <translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
-<translation id="4467014365953759647">No es pot enviar el número</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
 <translation id="4690510401873698237">El prestatge és a la part inferior</translation>
 <translation id="4724120544754982507">Centre de notificacions, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificacions no llegides</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Retrocés</translation>
 <translation id="5613020302032141669">Fletxa esquerra</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Actiu avui}=1{Actiu fa 1 dia}other{Actiu fa # dies}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dia i }other{# dies i }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{d'aquí a 1 a}other{d'aquí a # a}}</translation>
 <translation id="5895138241574237353">Reinicia</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Comprova la connexió del telèfon i torna-ho a provar</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>
 <translation id="7430878839542012341">Vols suprimir aquesta cerca de l'historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

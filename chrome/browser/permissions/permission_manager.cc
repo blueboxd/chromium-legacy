@@ -363,6 +363,8 @@ PermissionManager::~PermissionManager() {
 }
 
 void PermissionManager::Shutdown() {
+  is_shutting_down_ = true;
+
   if (!subscriptions_.IsEmpty()) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->RemoveObserver(this);
@@ -629,6 +631,9 @@ int PermissionManager::SubscribePermissionStatusChange(
     const GURL& requesting_origin,
     base::RepeatingCallback<void(PermissionStatus)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (is_shutting_down_)
+    return 0;
+
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 
@@ -667,6 +672,9 @@ int PermissionManager::SubscribePermissionStatusChange(
 
 void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (is_shutting_down_)
+    return;
+
   // Whether |subscription_id| is known will be checked by the Remove() call.
   subscriptions_.Remove(subscription_id);
 

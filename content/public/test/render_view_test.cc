@@ -39,6 +39,7 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
@@ -463,8 +464,8 @@ void RenderViewTest::TearDown() {
   // Run the loop so the release task from the renderwidget executes.
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::LeakDetectorPtr leak_detector;
-  BindInterface(&binder_registry_, &leak_detector);
+  mojo::Remote<blink::mojom::LeakDetector> leak_detector;
+  BindInterface(&binder_registry_, leak_detector.BindNewPipeAndPassReceiver());
 
   // Close the main |view_| as well as any other windows that might have been
   // opened by the test.

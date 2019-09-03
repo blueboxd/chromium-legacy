@@ -60,8 +60,6 @@ class ShellNativeAppWindow : public NativeAppWindow {
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
   gfx::Insets GetFrameInsets() const override;
-  void ShowWithApp() override;
-  void HideWithApp() override;
   void SetContentSizeConstraints(const gfx::Size& min_size,
                                  const gfx::Size& max_size) override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;

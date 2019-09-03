@@ -484,6 +484,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4372705107434148843">Lopeta puhe</translation>
 <translation id="4373197658375206385">Ei edellisiä kohteita, jotka eivät ole linkkejä.</translation>
 <translation id="4376316291247992553">Näytä kuva pistekirjoituksena.</translation>
+<translation id="437809255587011096">Ilmoita tekstin tyyli</translation>
 <translation id="4378308539633073595">Vieritä eteenpäin</translation>
 <translation id="4384583879834880242">K &amp; V</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8503360654911991865">Vähennä siirtymisen rakeisuutta</translation>
 <translation id="8504695234784218301">Kielioppivirheen loppu</translation>
 <translation id="8520472399088452386">Pyörityspainike</translation>
+<translation id="8534394844575788431">Muotoilu</translation>
 <translation id="8538744478902126321">Arvioi nykyisen solun rivin otsikossa</translation>
 <translation id="8540054775867439484">Sijoitettu yläreunaan</translation>
 <translation id="8542271685829952264">Katsele kaikkia ChromeVoxin komentoja ja pikanäppäimiä painamalla hakunäppäintä ja pistettä. Voit siirtyä valikoissa nuolilla ja aktivoida komennon painamalla Enter. Palaa tänne painamalla Haku + O ja sitten T.</translation>
@@ -1200,6 +1202,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Välilehti</translation>
 <translation id="9151211641321628915">Ilmoittaa nykyisen aseman lyhyen kuvauksen</translation>
+<translation id="9151249085738989067">Vaihda ChromeVox-ääni automaattisesti kielen perusteella</translation>
 <translation id="9153606228985488238">Äänenkorkeus <ph name="PERCENT" /> prosenttia</translation>
 <translation id="9160096769946561184">Siirry nykyisen sarakkeen loppuun</translation>
 <translation id="9173115498289768110">Äänenvoimakkuus <ph name="PERCENT" /> prosenttia.</translation>

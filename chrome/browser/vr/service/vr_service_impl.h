@@ -96,7 +96,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   content::WebContents* GetWebContents();
 
   void SetListeningForActivate(
-      device::mojom::VRDisplayClientPtr display_client) override;
+      mojo::PendingRemote<device::mojom::VRDisplayClient> display_client)
+      override;
 
  private:
   // content::WebContentsObserver implementation
@@ -159,7 +160,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   std::vector<base::OnceCallback<void()>> pending_requests_;
 
   // This is required for WebVR 1.1 backwards compatibility.
-  device::mojom::VRDisplayClientPtr display_client_;
+  mojo::Remote<device::mojom::VRDisplayClient> display_client_;
 
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;

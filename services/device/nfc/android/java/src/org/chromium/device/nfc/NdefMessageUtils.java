@@ -28,6 +28,7 @@ public final class NdefMessageUtils {
     private static final String AUTHOR_RECORD_TYPE = "A";
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
+    private static final String OCTET_STREAM_MIME = "application/octet-stream";
     private static final String CHARSET_UTF8 = ";charset=UTF-8";
     private static final String CHARSET_UTF16 = ";charset=UTF-16";
 
@@ -144,6 +145,8 @@ public final class NdefMessageUtils {
                 return createURLRecord(ndefRecord.toUri());
             case android.nfc.NdefRecord.TNF_WELL_KNOWN:
                 return createWellKnownRecord(ndefRecord);
+            case android.nfc.NdefRecord.TNF_UNKNOWN:
+                return createUnKnownRecord(ndefRecord.getPayload());
         }
         return null;
     }
@@ -233,5 +236,16 @@ public final class NdefMessageUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Constructs unknown known type NdefRecord
+     */
+    private static NdefRecord createUnKnownRecord(byte[] payload) {
+        NdefRecord nfcRecord = new NdefRecord();
+        nfcRecord.recordType = NdefRecordType.OPAQUE_RECORD;
+        nfcRecord.mediaType = OCTET_STREAM_MIME;
+        nfcRecord.data = payload;
+        return nfcRecord;
     }
 }

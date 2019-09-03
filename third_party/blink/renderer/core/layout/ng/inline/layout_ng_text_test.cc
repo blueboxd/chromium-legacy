@@ -113,6 +113,18 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteCollapseWhiteSpaceEnd) {
             GetItemsAsString(*text.GetLayoutObject()));
 }
 
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<p id=target dir=rtl>0 234</p>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(2, 2, ASSERT_NO_EXCEPTION);  // remove "23"
+
+  EXPECT_EQ("*{'0 4', ShapeResult=0+3}\n",
+            GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetInsert) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;

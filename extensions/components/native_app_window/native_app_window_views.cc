@@ -416,12 +416,6 @@ gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   return window_bounds.InsetsFrom(client_bounds);
 }
 
-void NativeAppWindowViews::HideWithApp() {
-}
-
-void NativeAppWindowViews::ShowWithApp() {
-}
-
 gfx::Size NativeAppWindowViews::GetContentMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }

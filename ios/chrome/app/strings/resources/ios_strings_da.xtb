@@ -263,6 +263,7 @@ Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for
 <translation id="4747097190499141774">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Find på siden...</translation>
 <translation id="4751645464639803239">Ny inkognitofane</translation>
+<translation id="4758977202923349869">Placer betalingskortet i dette felt</translation>
 <translation id="4802417911091824046">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
 
 Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5728700505257787410">Der var et problem med at logge ind på din konto.</translation>
 <translation id="5737974891429562743">Loginoplysningerne for kontoen er forældede. Opdater dem for at påbegynde synkroniseringen.</translation>
 <translation id="5738887413654608789">Dette giver dig mulighed for at opdage relevante websider baseret på dine omgivelser.</translation>
+<translation id="5803566855766646066">Er du sikker på, at du vil kassere dette nye kort?</translation>
 <translation id="5816228676161003208">Dette gør søgning ved hjælp af din stemme hurtigere.</translation>
 <translation id="5846482154967366008">Søgemaskine</translation>
 <translation id="5854790677617711513">Ældre end 30 dage</translation>

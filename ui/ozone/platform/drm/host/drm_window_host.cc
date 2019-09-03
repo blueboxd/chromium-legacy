@@ -17,7 +17,6 @@
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
-#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 

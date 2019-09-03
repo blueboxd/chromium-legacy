@@ -483,6 +483,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4372705107434148843">Interrompi i comandi vocali</translation>
 <translation id="4373197658375206385">Nessun elemento precedente che non sia un link.</translation>
 <translation id="4376316291247992553">Visualizza immagini in formato braille</translation>
+<translation id="437809255587011096">Annuncia lo stile del testo</translation>
 <translation id="4378308539633073595">Scorri in avanti</translation>
 <translation id="4384583879834880242">Domande e risposte</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8503360654911991865">Riduci livello di dettaglio navigazione</translation>
 <translation id="8504695234784218301">Fine dell'errore grammaticale</translation>
 <translation id="8520472399088452386">Pulsante di selezione</translation>
+<translation id="8534394844575788431">Formattazione</translation>
 <translation id="8538744478902126321">Fai un'ipotesi per l'intestazione di riga della cella corrente</translation>
 <translation id="8540054775867439484">Ricomincia dall'inizio</translation>
 <translation id="8542271685829952264">Per conoscere tutti i comandi e le scorciatoie di ChromeVox, premi il tasto per la ricerca + Punto, quindi utilizza i tasti freccia per spostarti tra i menu e INVIO per attivare un comando. Torna qui premendo tasto per la ricerca + O, poi T.</translation>
@@ -1199,6 +1201,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Scheda</translation>
 <translation id="9151211641321628915">Fornisce una breve descrizione della posizione corrente</translation>
+<translation id="9151249085738989067">Cambia automaticamente la voce di ChromeVox in base alla lingua</translation>
 <translation id="9153606228985488238">Tono: <ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">Vai alla fine della colonna corrente</translation>
 <translation id="9173115498289768110">Volume: <ph name="PERCENT" />%</translation>

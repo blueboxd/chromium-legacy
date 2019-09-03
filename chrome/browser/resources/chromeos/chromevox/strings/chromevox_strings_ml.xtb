@@ -483,6 +483,7 @@
 <translation id="4372705107434148843">സംഭാഷണം അവസാനിപ്പിക്കുക</translation>
 <translation id="4373197658375206385">ഒരു ലിങ്ക് അല്ലാത്ത മുൻ ഇനം ഒന്നുമില്ല.</translation>
 <translation id="4376316291247992553">ഗ്രാഫിക്കിനെ ബ്രെയ്‌ലിയായി കാണുക</translation>
+<translation id="437809255587011096">പ്രഖ്യാപന ടെക്‌സ്‌റ്റ് ഭംഗിയാക്കൽ</translation>
 <translation id="4378308539633073595">മുമ്പിലേക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
 <translation id="4384583879834880242">ചോദ്യോത്തരം</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8503360654911991865">നാവിഗേഷൻ ഗ്രാനുലാരിറ്റി കുറയ്ക്കുക</translation>
 <translation id="8504695234784218301">വ്യാകരണ പിശക് അവസാനിക്കുന്നു</translation>
 <translation id="8520472399088452386">സ്‌പിൻ ബട്ടൺ</translation>
+<translation id="8534394844575788431">ഫോർമാറ്റിംഗ്</translation>
 <translation id="8538744478902126321">നിലവിലുള്ള സെല്ലിന്റെ വരി ശീർഷകത്തിൽ ഒരു ഊഹം നടത്തുക</translation>
 <translation id="8540054775867439484">മുകളിലേയ്‌ക്ക് റാപ്പുചെ‌യ്‌തു</translation>
 <translation id="8542271685829952264">എല്ലാ ChromeVox കമാൻഡുകളും കുറുക്കുവഴികളും അടുത്തറിയാൻ തിരയൽ + പീരിയഡ് അമർത്തുക, തുടർന്ന് മെനുകളിലേക്ക് പോകാൻ അമ്പടയാള കീകളും ഒരു കമാൻഡ് സജീവമാക്കാൻ എന്ററും ഉപയോഗിക്കുക. തിരയൽ+o അമർത്തിയശേഷം t അമർത്തി, ഇവിടേക്ക് മടങ്ങുക.</translation>
@@ -1199,6 +1201,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">ടാബ്</translation>
 <translation id="9151211641321628915">നിലവിലുള്ള അവസ്ഥയുടെ ഒരു സംക്ഷിപ്‌ത വിവരണം അറിയിക്കുന്നു</translation>
+<translation id="9151249085738989067">ഭാഷ അടിസ്ഥാനമാക്കി ChromeVox ശബ്‌ദം സ്വയമേവ സ്വിച്ച് ചെയ്യുക</translation>
 <translation id="9153606228985488238"><ph name="PERCENT" /> ശതമാനം ആവൃത്തി</translation>
 <translation id="9160096769946561184">നിലവിലെ നിരയുടെ അവസാനം പോകുക</translation>
 <translation id="9173115498289768110"><ph name="PERCENT" /> ശതമാനം ശബ്‌ദം</translation>

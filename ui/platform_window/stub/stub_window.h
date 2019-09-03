@@ -9,11 +9,10 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/stub/stub_window_export.h"
 
 namespace ui {
-
-class PlatformWindowDelegate;
 
 // StubWindow is useful for tests, as well as implementations that only care
 // about bounds.

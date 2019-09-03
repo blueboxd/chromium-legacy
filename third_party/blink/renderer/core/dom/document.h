@@ -37,23 +37,21 @@
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
-#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_notifier.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_notifier.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
@@ -65,12 +63,10 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
-#include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -108,6 +104,7 @@ class V0CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMWindow;
 class DocumentFragment;
+class DocumentInit;
 class DocumentLoader;
 class DocumentLoadTiming;
 class DocumentMarkerController;
@@ -198,6 +195,8 @@ class VisitedLinkState;
 class WebComputedAXTree;
 class WebMouseEvent;
 class WorkletAnimationController;
+enum ContentSecurityPolicyDisposition : uint8_t;
+enum class CSSPropertyID;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -272,8 +271,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://dom.spec.whatwg.org/#dom-document-document
   static Document* Create(Document&);
 
-  explicit Document(const DocumentInit& = DocumentInit::Create(),
-                    DocumentClassFlags = kDefaultDocumentClass);
+  // Construct a Document instance with the default DocumentInit and
+  // kDefaultDocumentClass.
+  Document();
+  explicit Document(const DocumentInit& init,
+                    DocumentClassFlags flags = kDefaultDocumentClass);
   ~Document() override;
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
@@ -1569,8 +1571,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
-  void CountUse(CSSPropertyID property_id,
-                UseCounterHelper::CSSPropertyType) const;
+  void CountProperty(CSSPropertyID property_id) const;
+  void CountAnimatedProperty(CSSPropertyID property_id) const;
   // Count |feature| only when this document is associated with a cross-origin
   // iframe.
   void CountUseOnlyInCrossOriginIframe(mojom::WebFeature feature) const;
@@ -1579,8 +1581,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsUseCounted(mojom::WebFeature) const;
   // Return whether the property was previously counted for this document.
   // NOTE: only for use in testing.
-  bool IsUseCounted(CSSPropertyID property,
-                    UseCounterHelper::CSSPropertyType) const;
+  bool IsPropertyCounted(CSSPropertyID property) const;
+  // Return whether the animated property was previously counted for this
+  // document.
+  // NOTE: only for use in testing.
+  bool IsAnimatedPropertyCounted(CSSPropertyID property) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
   void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
 

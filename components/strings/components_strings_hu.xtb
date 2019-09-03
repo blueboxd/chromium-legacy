@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Parancssorváltozatok</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Próbálkozzon a cookie-k törlésével<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Elavult funkciók</translation>
 <translation id="1320233736580025032">Prc1 (boríték)</translation>
 <translation id="132301787627749051">Vágólapon lévő kép keresése</translation>
 <translation id="1323433172918577554">Több</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google Táblázatok</translation>
 <translation id="1527263332363067270">Várakozás a kapcsolódásra…</translation>
 <translation id="1529521330346880926">10x15 (boríték)</translation>
+<translation id="1530707389502320859">Az éppen felkeresni kívánt webhely hamisnak tűnik. A támadók néha úgy próbálnak meg webhelyeket utánozni, hogy apró, alig észrevehető változtatásokkal rendelkező URL-címeket használnak.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Az oldal közlendője</translation>
 <translation id="153384715582417236">Egyelőre ennyi</translation>
@@ -353,6 +355,7 @@
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kapcsolódási diagnosztika futtatása<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Ha engedélyezi ezeket a funkciókat, előfordulhat, hogy elvesznek a böngészési adatok, illetve veszélyeztetheti biztonságát és személyes adatait. Az engedélyezett funkciók a böngésző minden felhasználójára vonatkoznak.</translation>
 <translation id="2735043616039983645">Több, egymással ütköző értékekkel rendelkező forrás található ennél a házirendnél.</translation>
 <translation id="2738330467931008676">Átvételi cím kiválasztása</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -396,6 +399,7 @@
 <translation id="2985306909656435243">Ha engedélyezi, a Chromium megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
 <translation id="2985398929374701810">Érvényes címet adjon meg</translation>
 <translation id="2986368408720340940">Ez az átvételi mód nem áll rendelkezésre. Próbálkozzon másik móddal.</translation>
+<translation id="2987034854559945715">Nem található ilyen funkció</translation>
 <translation id="2991174974383378012">Megosztás webhelyekkel</translation>
 <translation id="2991571918955627853">A(z) <ph name="SITE" /> webhelyet pillanatnyilag nem tudja felkeresni, mert a webhely HSTS-t használ. A hálózati hibák és támadások rendszerint átmenetiek, ezért az említett oldal működése később valószínűleg helyreáll.</translation>
 <translation id="3005723025932146533">Mentett másolat megjelenítése</translation>
@@ -516,6 +520,7 @@
 <translation id="3678529606614285348">Oldal megnyitása új inkognitóablakban (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">A hibajelentés elkészítésének ideje: <ph name="CRASH_TIME" />; a feltöltés ideje: <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Tanúsítvány adatai</translation>
+<translation id="3701427423622901115">Visszaállítás elfogadva.</translation>
 <translation id="3704162925118123524">Előfordulhat, hogy az Ön által használt hálózat megköveteli a bejelentkezési oldalán történő bejelentkezést.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Betöltés...</translation>
@@ -688,6 +693,7 @@
 <translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
 <translation id="4597348597567598915">Méret: 8</translation>
 <translation id="4600854749408232102">C6/C5 (boríték)</translation>
+<translation id="464342062220857295">Funkciók keresése</translation>
 <translation id="4646534391647090355">Megnézem most</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa hibákat tartalmaz. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
@@ -804,6 +810,7 @@
 <translation id="5251803541071282808">Felhő</translation>
 <translation id="5252000469029418751">C7 (boríték)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Rendszerszinten érvényes funkciókat csak a tulajdonos (<ph name="OWNER_EMAIL" />) állíthat be</translation>
 <translation id="5273658854610202413">Figyelem: Ezt a házirendet nem egyesítette a rendszer a PolicyDictionaryMultipleSourceMergeList házirend előírásainak megfelelően, mert nem része az egyesíthető szótárházirendeknek.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Befejezés</translation>
@@ -840,6 +847,7 @@
 <translation id="5457113250005438886">Érvénytelen</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> és további <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> és további <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Szerkesztés újra</translation>
+<translation id="5473728911100096288">Olyan elavult funkciók engedélyezésére készül, amelyek a későbbi verziókban már nem fognak szerepelni.</translation>
 <translation id="5478437291406423475">B6/C4 (boríték)</translation>
 <translation id="5481076368049295676">Lehet, hogy ez a tartalom megpróbál olyan veszélyes szoftvert telepíteni az eszközre, amely ellophatja vagy törölheti az Ön adatait. <ph name="BEGIN_LINK" />Megjelenítés mindenképpen<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">Érvényes címet adjon meg</translation>
@@ -898,6 +906,7 @@
 <translation id="5763042198335101085">Érvényes e-mail-címet adjon meg</translation>
 <translation id="5765072501007116331">A kézbesítési módok és követelmények megtekintéséhez válassza ki a címet</translation>
 <translation id="5778550464785688721">MIDI eszközök – teljes hozzáférés</translation>
+<translation id="5781136890105823427">Kísérlet engedélyezve</translation>
 <translation id="578305955206182703">Borostyánsárga</translation>
 <translation id="57838592816432529">Némítás</translation>
 <translation id="5784606427469807560">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, majd próbálkozzon újra.</translation>
@@ -1063,6 +1072,7 @@
 <translation id="6738516213925468394">Adatai titkosítva lettek <ph name="BEGIN_LINK" />összetett szinkronizálási jelszavával<ph name="END_LINK" /> a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="674375294223700098">Ismeretlen szervertanúsítvány-hiba.</translation>
 <translation id="6744009308914054259">Miközben kapcsolatra vár, a Letöltések között elolvashatja az offline cikkeket.</translation>
+<translation id="6747611005629681221">Figyelem: Elavult funkciók következnek!</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
 <translation id="6757797048963528358">Eszköze alvó üzemmódba váltott.</translation>
 <translation id="6768213884286397650">Hagaki (képeslap)</translation>
@@ -1429,6 +1439,7 @@ További részletek:
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8740359287975076522">A(z) <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-címe&lt;/abbr&gt; nem található. A probléma diagnosztizálása folyamatban van.</translation>
 <translation id="874846938927089722">Elfogadott hitel- és feltöltőkártyák</translation>
+<translation id="874918643257405732">Lap hozzáadása a könyvjelzőkhöz</translation>
 <translation id="8759274551635299824">A kártya lejárt</translation>
 <translation id="8761567432415473239">A Google Biztonságos Böngészés nemrég <ph name="BEGIN_LINK" />ártalmas programokat talált<ph name="END_LINK" /> a következő webhelyen: <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-eszköz</translation>

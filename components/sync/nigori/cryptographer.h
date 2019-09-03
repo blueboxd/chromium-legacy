@@ -10,10 +10,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/nigori/nigori_key_bag.h"
 #include "components/sync/protocol/encryption.pb.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 
 namespace sync_pb {
 class NigoriKeyBag;
@@ -34,6 +36,18 @@ struct KeyParams {
 
   KeyDerivationParams derivation_params;
   std::string password;
+};
+
+struct CryptographerDataWithPendingKeys {
+  CryptographerDataWithPendingKeys();
+  CryptographerDataWithPendingKeys(CryptographerDataWithPendingKeys&& other);
+  ~CryptographerDataWithPendingKeys();
+
+  sync_pb::CryptographerData cryptographer_data;
+  base::Optional<sync_pb::EncryptedData> pending_keys;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CryptographerDataWithPendingKeys);
 };
 
 // This class manages the Nigori objects used to encrypt and decrypt sensitive
@@ -57,6 +71,9 @@ class Cryptographer {
   ~Cryptographer();
 
   void CopyFrom(const Cryptographer& other);
+
+  // Serialization.
+  CryptographerDataWithPendingKeys ToCryptographerDataWithPendingKeys() const;
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).

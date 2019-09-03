@@ -316,8 +316,12 @@ PositionWithAffinity LayoutNGBlockFlowMixin<Base>::PositionForPoint(
   if (!PaintFragment())
     return Base::CreatePositionWithAffinity(0);
 
+  // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+  // contents offset.
+  PhysicalOffset point_in_contents = point;
+  Base::OffsetForContents(point_in_contents);
   const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(point);
+      PaintFragment()->PositionForPoint(point_in_contents);
   if (ng_position.IsNotNull())
     return ng_position;
   return Base::CreatePositionWithAffinity(0);

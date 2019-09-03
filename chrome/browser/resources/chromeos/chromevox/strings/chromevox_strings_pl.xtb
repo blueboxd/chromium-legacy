@@ -484,6 +484,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4372705107434148843">Zakończ mowę</translation>
 <translation id="4373197658375206385">Brak poprzedniego elementu niebędącego linkiem.</translation>
 <translation id="4376316291247992553">Wyświetl grafikę w systemie brajlowskim</translation>
+<translation id="437809255587011096">Powiadom o nadaniu stylu tekstowi</translation>
 <translation id="4378308539633073595">Przewiń do przodu</translation>
 <translation id="4384583879834880242">Pytania i odpowiedzi</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8503360654911991865">Zmniejsz dokładność nawigacji</translation>
 <translation id="8504695234784218301">Koniec błędu gramatycznego</translation>
 <translation id="8520472399088452386">Przycisk przewijany</translation>
+<translation id="8534394844575788431">Formatowanie</translation>
 <translation id="8538744478902126321">Odgadnij nagłówek wiersza bieżącej komórki.</translation>
 <translation id="8540054775867439484">Zawijanie do góry</translation>
 <translation id="8542271685829952264">Aby poznać wszystkie polecenia i skróty ChromeVoxa, naciśnij klawisz wyszukiwania + kropkę, a następnie użyj klawiszy strzałek do nawigowania po menu. Aby aktywować polecenie, naciśnij Enter. Aby tu wrócić, naciśnij klawisz wyszukiwania + O, a następnie T.</translation>
@@ -1200,6 +1202,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9151211641321628915">Przedstawia skrócony opis aktualnej pozycji</translation>
+<translation id="9151249085738989067">Automatycznie zmieniaj głos ChromeVoxa na podstawie wykrytego języka</translation>
 <translation id="9153606228985488238">Ton: <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Przejdź na koniec bieżącej kolumny</translation>
 <translation id="9173115498289768110">Głośność: <ph name="PERCENT" /> procent</translation>

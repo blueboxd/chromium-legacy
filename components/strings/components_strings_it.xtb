@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Variazioni nella riga di comando</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Prova a cancellare i cookie<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Funzionalità obsolete</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
 <translation id="132301787627749051">Cerca immagine negli appunti</translation>
 <translation id="1323433172918577554">Espandi</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Fogli Google</translation>
 <translation id="1527263332363067270">In attesa di connessione…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
+<translation id="1530707389502320859">Il sito che stai provando a visitare risulta contraffatto. A volte i malintenzionati imitano i siti modificando leggermente e in modo poco evidente l'URL.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Questa pagina dice</translation>
 <translation id="153384715582417236">Per il momento è tutto</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Se attivi queste funzioni, potresti perdere i dati del browser
+    compromettere la sicurezza o la privacy. Le funzioni attivate vengono applicate per tutti
+    gli utenti di questo browser.</translation>
 <translation id="2735043616039983645">È presente più di un'origine con valori in conflitto per questo criterio.</translation>
 <translation id="2738330467931008676">Scegli l'indirizzo di ritiro</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">Se questa opzione viene attivata, Chromium memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="2985398929374701810">Inserisci un indirizzo valido</translation>
 <translation id="2986368408720340940">Questo metodo di ritiro non è disponibile. Prova un metodo diverso.</translation>
+<translation id="2987034854559945715">Nessuna funzionalità corrispondente</translation>
 <translation id="2991174974383378012">Condivisione con i siti web</translation>
 <translation id="2991571918955627853">Al momento non puoi visitare il sito web <ph name="SITE" /> perché utilizza HSTS. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="3005723025932146533">Mostra copia salvata</translation>
@@ -515,6 +521,7 @@
 <translation id="3678529606614285348">Apri la pagina in un'altra finestra di navigazione in incognito (CTRL-MAIUSC-N)</translation>
 <translation id="3679803492151881375">Rapporto sugli arresti anomali generato in data <ph name="CRASH_TIME" />, caricato in data <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informazioni certificato</translation>
+<translation id="3701427423622901115">Reimpostazione confermata.</translation>
 <translation id="3704162925118123524">La rete che stai utilizzando può richiedere di visitare la relativa pagina di accesso.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Caricamento in corso...</translation>
@@ -687,6 +694,7 @@
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
 <translation id="4597348597567598915">Dimensione 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="464342062220857295">Funzionalità di ricerca</translation>
 <translation id="4646534391647090355">Vai subito</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza contiene errori. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
@@ -803,6 +811,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Le funzionalità che vengono applicate a livello di sistema possono essere impostate solo dal proprietario: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Avviso: questo criterio non è stato unito come specificato nel criterio PolicyDictionaryMultipleSourceMergeList perché non fa parte dei criteri del dizionario che possono essere uniti.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Fine</translation>
@@ -839,6 +848,8 @@
 <translation id="5457113250005438886">Non validi</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> altro}other{<ph name="CONTACT_PREVIEW" /> e altri <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">&amp;Ripeti modifica</translation>
+<translation id="5473728911100096288">Se attivi queste funzionalità, userai funzionalità obsolete
+    che non saranno più disponibili nelle versioni future.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Questi contenuti potrebbero cercare di installare sul tuo dispositivo software pericoloso che si impossessa delle tue informazioni o le elimina. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Aggiungi un indirizzo valido</translation>
@@ -897,6 +908,7 @@
 <translation id="5763042198335101085">Inserisci un indirizzo email valido</translation>
 <translation id="5765072501007116331">Seleziona un indirizzo per conoscere i requisiti e i metodi di consegna</translation>
 <translation id="5778550464785688721">Controllo completo di dispositivi MIDI</translation>
+<translation id="5781136890105823427">Esperimento attivato</translation>
 <translation id="578305955206182703">Ambra</translation>
 <translation id="57838592816432529">Disattiva audio</translation>
 <translation id="5784606427469807560">Si è verificato un problema durante la conferma della carta. Controlla la connessione Internet e riprova.</translation>
@@ -1061,6 +1073,7 @@
 <translation id="6738516213925468394">I tuoi dati sono stati criptati con la tua <ph name="BEGIN_LINK" />passphrase di sincronizzazione<ph name="END_LINK" /> in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
 <translation id="6744009308914054259">In attesa di una connessione, puoi visitare la pagina Download per leggere gli articoli offline.</translation>
+<translation id="6747611005629681221">Avviso: seguono funzionalità obsolete.</translation>
 <translation id="6753269504797312559">Valore criterio</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1426,6 +1439,7 @@ Ulteriori dettagli:
 <translation id="8738058698779197622">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo è sbagliato, pertanto Chromium non può verificare i certificati.</translation>
 <translation id="8740359287975076522">Impossibile trovare l'&lt;abbr id="dnsDefinition"&gt;indirizzo DNS&lt;/abbr&gt; di <ph name="HOST_NAME" />. Stiamo analizzando il problema.</translation>
 <translation id="874846938927089722">Carte di credito e prepagate accettate</translation>
+<translation id="874918643257405732">Aggiungi questa scheda ai preferiti</translation>
 <translation id="8759274551635299824">La carta è scaduta</translation>
 <translation id="8761567432415473239">La funzione Navigazione sicura di Google <ph name="BEGIN_LINK" />ha trovato di recente programmi dannosi<ph name="END_LINK" /> su <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>

@@ -19,6 +19,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"

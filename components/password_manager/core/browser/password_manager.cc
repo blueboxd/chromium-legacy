@@ -873,7 +873,10 @@ void PasswordManager::OnLoginSuccessful() {
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
     bool update_password = submitted_manager->IsPasswordUpdate();
-    if (ShouldShowOnboarding(client_->GetPrefs(), update_password)) {
+    bool is_blacklisted = submitted_manager->IsBlacklisted();
+    if (ShouldShowOnboarding(client_->GetPrefs(),
+                             PasswordUpdateBool(update_password),
+                             BlacklistedBool(is_blacklisted))) {
       if (client_->ShowOnboarding(MoveOwnedSubmittedManager())) {
         if (logger)
           logger->LogMessage(Logger::STRING_SHOW_ONBOARDING);

@@ -15,11 +15,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
-#include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/version_updater/version_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -75,7 +75,8 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
         GetOobeUI()->GetView<UpdateScreenHandler>(), error_screen_,
         base::BindRepeating(&UpdateScreenTest::HandleScreenExit,
                             base::Unretained(this)));
-    update_screen_->set_tick_clock_for_testing(&tick_clock_);
+    version_updater_ = update_screen_->GetVersionUpdaterForTesting();
+    version_updater_->set_tick_clock_for_testing(&tick_clock_);
 
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
   }
@@ -103,6 +104,8 @@ class UpdateScreenTest : public MixinBasedInProcessBrowserTest {
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
   std::unique_ptr<UpdateScreen> update_screen_;
+  // Version updater - owned by |update_screen_|.
+  VersionUpdater* version_updater_ = nullptr;
   // Error screen - owned by OobeUI.
   ErrorScreen* error_screen_ = nullptr;
 
@@ -358,8 +361,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());
 
   // Simulate the situation where reboot does not happen in time.
-  ASSERT_TRUE(update_screen_->GetRebootTimerForTesting()->IsRunning());
-  update_screen_->GetRebootTimerForTesting()->FireNow();
+  ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
+  version_updater_->GetRebootTimerForTesting()->FireNow();
 
   test::OobeJS().ExpectHiddenPath({"oobe-update-md", "updating-progress"});
   test::OobeJS().ExpectEQ("$('oobe-update-md').$$('#updating-progress').value",
@@ -389,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
   // GetLastStatus() will be called via ExitUpdate() called from
   // UpdateStatusChanged().
   fake_update_engine_client_->set_default_status(status);
-  update_screen_->UpdateStatusChanged(status);
+  version_updater_->UpdateStatusChangedForTesting(status);
 
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
@@ -606,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
       {"oobe-update-md", "checking-for-updates-dialog"});
 
   status.status = UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  update_screen_->UpdateStatusChanged(status);
+  version_updater_->UpdateStatusChangedForTesting(status);
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, fake_update_engine_client_->reboot_after_update_call_count());

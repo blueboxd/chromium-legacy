@@ -6,7 +6,7 @@
 
 namespace apps {
 
-IntentPickerAppInfo::IntentPickerAppInfo(apps::mojom::AppType type,
+IntentPickerAppInfo::IntentPickerAppInfo(PickerEntryType type,
                                          const gfx::Image& icon,
                                          const std::string& launch_name,
                                          const std::string& display_name)

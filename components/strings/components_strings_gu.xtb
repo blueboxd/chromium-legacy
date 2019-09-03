@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">આદેશ વાક્યમાં વિવિધતા</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />તમારી કૂકીઝને સાફ કરવાનો પ્રયાસ કરો<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">નાપસંદ કરેલી સુવિધાઓ</translation>
 <translation id="1320233736580025032">Prc1 (એન્વલપ)</translation>
 <translation id="132301787627749051">ક્લિપબોર્ડ છબી શોધો</translation>
 <translation id="1323433172918577554">વધુ બતાવો</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google શીટ</translation>
 <translation id="1527263332363067270">કનેક્શનની રાહ જોઈ રહ્યાં છીએ...</translation>
 <translation id="1529521330346880926">10x15 (એન્વલપ)</translation>
+<translation id="1530707389502320859">તમે હમણાં જે સાઇટની મુલાકાત લેવાનો પ્રયાસ કર્યો તે બનાવટી હોય એવું લાગે છે. હુમલાખોરો URLમાં સરળતાથી ન જોઈ શકાય એવા મામૂલી ફેરફારો કરીને કેટલીક વખત સાઇટની નકલ કરે છે.</translation>
 <translation id="1531205177818805254">એક્સેક</translation>
 <translation id="1532118530259321453">આ પેજ કહે છે કે</translation>
 <translation id="153384715582417236">હમણાં માટે બસ આટલું પૂરતું છે</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા સહી ઍલ્ગોરિધમનો ઉપયોગ કરીને સહીિત કરેલું છે.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />કનેક્ટિવિટી ડાયગ્નોસ્ટિક્સ ચલાવી રહ્યાં છે<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">આ સુવિધાઓ ચાલુ કરવાથી, તમે બ્રાઉઝરનો ડેટા ગુમાવશો અથવા
+    તમારી સુરક્ષા કે પ્રાઇવસી સાથે સમાધાન કરશો. ચાલુ કરેલી સુવિધાઓ આ બ્રાઉઝરના બધા
+    વપરાશકર્તાઓ માટે લાગુ છે.</translation>
 <translation id="2735043616039983645">આ નીતિ માટે વિરોધાભાસ મૂલ્ય ધરાવતા એકથી વધુ સૉર્સ ઉપલબ્ધ છે!</translation>
 <translation id="2738330467931008676">પિકઅપ માટેનું સરનામું પસંદ કરો</translation>
 <translation id="2740531572673183784">બરાબર, સમજાઇ ગયું</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">જો સક્ષમ કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chromium આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહિત કરશે.</translation>
 <translation id="2985398929374701810">એક માન્ય સરનામું દાખલ કરો</translation>
 <translation id="2986368408720340940">આ પિકઅપ પદ્ધતિ ઉપલબ્ધ નથી. કોઈ ભિન્ન પદ્ધતિ અજમાવો.</translation>
+<translation id="2987034854559945715">કોઈ મેળ ખાતી સુવિધા નથી</translation>
 <translation id="2991174974383378012">વેબસાઇટ્સ સાથે શેર કરવું</translation>
 <translation id="2991571918955627853">તમે હમણાં <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે તે વેબસાઇટ HSTSનો ઉપયોગ કરે છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
 <translation id="3005723025932146533">સાચવેલી કૉપિ બતાવો</translation>
@@ -517,6 +523,7 @@
 <translation id="3678529606614285348">એક નવી છુપી વિંડોમાં પેજ ખોલો (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> એ ક્રૅશ રિપોર્ટ કૅપ્ચર કરી અને <ph name="UPLOAD_TIME" /> એ અપલોડ કર્યો હતો</translation>
 <translation id="3681007416295224113">પ્રમાણપત્ર માહિતી</translation>
+<translation id="3701427423622901115">રીસેટ કરવાનું સ્વીકાર્યું હતું.</translation>
 <translation id="3704162925118123524">તમે ઉપયોગમાં લઈ રહ્યાં છો તે નેટવર્ક માટે, તમારે તેના લોગિન પૃષ્ઠની મુલાકાત લેવાની જરૂર હોઈ શકે છે.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
@@ -689,6 +696,7 @@
 <translation id="4594403342090139922">&amp;ડિલીટ રદ કરો</translation>
 <translation id="4597348597567598915">કદ 8</translation>
 <translation id="4600854749408232102">C6/C5 (એન્વલપ)</translation>
+<translation id="464342062220857295">શોધ સુવિધાઓ</translation>
 <translation id="4646534391647090355">મને હવે ડાઉનલોડ હોમ પર લઈ જાઓ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેના સુરક્ષા પ્રમાણપત્રમાં ભૂલો છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
@@ -805,6 +813,7 @@
 <translation id="5251803541071282808">મેઘ</translation>
 <translation id="5252000469029418751">C7 (એન્વલપ)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">સુવિધાઓ કે જે સિસ્ટમ-વ્યાપી લાગુ છે તે ફક્ત માલિક દ્વારા જ સેટ કરી શકાય છે: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">ચેતવણી: આ નીતિને ઉલ્લેખ કર્યા મુજબ PolicyDictionaryMultipleSourceMergeList નીતિમાં મર્જ કરવામાં આવી ન હતી, કારણ કે તે મર્જ કરી શકાય તેવી શબ્દકોશ નીતિઓનો ભાગ નથી.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">સમાપ્ત</translation>
@@ -841,6 +850,8 @@
 <translation id="5457113250005438886">અમાન્ય</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}one{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}other{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}}</translation>
 <translation id="5470861586879999274">&amp;ફરી ફેરફાર કરો</translation>
+<translation id="5473728911100096288">આ સુવિધાઓ ચાલુ કરવાથી, તમે એવી નાપસંદ કરેલી સુવિધાનો
+    ઉપયોગ કરશો કે જે ભાવિ વર્ઝનમાં દેખાશે નહીં.</translation>
 <translation id="5478437291406423475">B6/C4 (એન્વલપ)</translation>
 <translation id="5481076368049295676">આ કન્ટેન્ટ કદાચ તમારા ડિવાઇસ પર જોખમકારક સૉફ્ટવેર ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરી શકે છે કે જે તમારી માહિતીની ચોરી કરે અથવા કાઢી નાખે છે. <ph name="BEGIN_LINK" />છતાં પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">માન્ય સરનામું ઉમેરો</translation>
@@ -899,6 +910,7 @@
 <translation id="5763042198335101085">એક માન્ય ઇમેઇલ ઍડ્રેસ ઉમેરો</translation>
 <translation id="5765072501007116331">વિતરણ પદ્ધતિઓ અને આવશ્યકતાઓ જોવા માટે, એક સરનામું પસંદ કરો</translation>
 <translation id="5778550464785688721">MIDI ઉપકરણોનું પૂર્ણ નિયંત્રણ</translation>
+<translation id="5781136890105823427">પ્રયોગ ચાલુ કર્યો</translation>
 <translation id="578305955206182703">પીળાશ પડતો નારંગી</translation>
 <translation id="57838592816432529">અવાજ બંધ કરો</translation>
 <translation id="5784606427469807560">તમારા કાર્ડની પુષ્ટિ કરવામાં એક સમસ્યા આવી હતી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો અને ફરીથી પ્રયાસ કરો.</translation>
@@ -1064,6 +1076,7 @@
 <translation id="6738516213925468394">તમારો ડેટા <ph name="TIME" />ના રોજ તમારા <ph name="BEGIN_LINK" />સિંક પાસફ્રેઝ<ph name="END_LINK" /> સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો હતો. સિંક શરૂ કરવા માટે એ દાખલ કરો.</translation>
 <translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6744009308914054259">કનેક્શન માટે રાહ જોતી વખતે, ઑફલાઇન લેખ વાંચવા માટે તમે ડાઉનલોડની મુલાકાત લઈ શકો.</translation>
+<translation id="6747611005629681221">ચેતવણી: આગળ નાપસંદ કરેલી સુવિધાઓ છે!</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
 <translation id="6757797048963528358">તમારું ઉપકરણ નિષ્ક્રિય થઈ ગયું હતું.</translation>
 <translation id="6768213884286397650">Hagaki (પોસ્ટકાર્ડ)</translation>
@@ -1429,6 +1442,7 @@
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
 <translation id="874846938927089722">સ્વીકૃત ક્રેડિટ અને પ્રિપેઇડ કાર્ડ</translation>
+<translation id="874918643257405732">આ ટૅબને બુકમાર્ક કરો</translation>
 <translation id="8759274551635299824">આ કાર્ડની સમયસીમા સમાપ્ત થઈ ગઈ છે</translation>
 <translation id="8761567432415473239">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />હાનિકારક પ્રોગ્રામ્સ મળ્યાં<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ઉપકરણ</translation>

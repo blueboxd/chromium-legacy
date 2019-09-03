@@ -19,6 +19,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerInterface
           ReadableStreamDefaultControllerInterface> {
  public:
   static ReadableStreamDefaultControllerInterface* Create(
+      ScriptState* script_state,
       ScriptValue controller);
 
   virtual ~ReadableStreamDefaultControllerInterface();

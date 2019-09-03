@@ -251,6 +251,10 @@ jumbo_static_library("test_support") {
     }
     sources += [ "test/ui_controls_factory_ozone.cc" ]
   }
+
+  if (is_linux) {
+    deps += [ "//ui/platform_window/common" ]
+  }
 }
 
 executable("aura_demo") {

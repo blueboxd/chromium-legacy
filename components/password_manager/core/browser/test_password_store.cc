@@ -252,4 +252,13 @@ PasswordStoreSync::MetadataStore* TestPasswordStore::GetMetadataStore() {
   return nullptr;
 }
 
+bool TestPasswordStore::IsAccountStore() const {
+  return false;
+}
+
+bool TestPasswordStore::DeleteAndRecreateDatabaseFile() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace password_manager

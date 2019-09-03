@@ -263,6 +263,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="4747097190499141774">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras. Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenfrasen skickas inte till och sparas inte av Google. Om du glömmer lösenfrasen måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Hitta på sidan …</translation>
 <translation id="4751645464639803239">Ny inkognitoflik</translation>
+<translation id="4758977202923349869">Passa in kreditkortet i den här rutan</translation>
 <translation id="4802417911091824046">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras.
 
 <ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
@@ -328,6 +329,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5728700505257787410">Det gick inte att logga in på ditt konto.</translation>
 <translation id="5737974891429562743">Inloggningsuppgifterna för kontot är inte aktuella. Starta synkroniseringen genom att uppdatera.</translation>
 <translation id="5738887413654608789">Detta gör det möjligt att upptäcka relevanta webbsidor utifrån din omgivning.</translation>
+<translation id="5803566855766646066">Vill du slänga det här nya kortet?</translation>
 <translation id="5816228676161003208">Det här gör att du kan söka snabbare med hjälp av rösten.</translation>
 <translation id="5846482154967366008">Sökmotor</translation>
 <translation id="5854790677617711513">Äldre än 30 dagar</translation>

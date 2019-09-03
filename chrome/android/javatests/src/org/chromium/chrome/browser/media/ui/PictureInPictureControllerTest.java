@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -73,6 +74,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testFullscreenVideoDetected() throws Throwable {
         enterFullscreen();
     }
@@ -81,6 +83,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testFullscreenVideoDetectedOnlyWhenPlaying() throws Throwable {
         enterFullscreen();
 
@@ -93,6 +96,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testEnterPip() throws Throwable {
         enterFullscreen();
         triggerAutoPiP();
@@ -104,6 +108,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testExitPipOnNavigation() throws Throwable {
         testExitOn(() -> JavaScriptUtils.executeJavaScript(getWebContents(),
                 "window.location.href = 'https://www.example.com/';"));
@@ -113,6 +118,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testExitOnLeaveFullscreen() throws Throwable {
         testExitOn(() -> DOMUtils.exitFullscreen(getWebContents()));
     }
@@ -121,6 +127,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testExitOnCloseTab() throws Throwable {
         // We want 2 Tabs so we can close the first without any special behaviour.
         mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PATH));
@@ -132,6 +139,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testExitOnCrash() throws Throwable {
         testExitOn(() -> WebContentsUtils.simulateRendererKilled(getWebContents(), false));
     }
@@ -140,6 +148,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testExitOnNewForegroundTab() throws Throwable {
         testExitOn(new Runnable() {
             @Override
@@ -157,6 +166,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testNoExitOnIframeNavigation() throws Throwable {
         // Add a TabObserver so we know when the iFrame navigation has occurred before we check that
         // we are still in PiP.
@@ -180,6 +190,7 @@ public class PictureInPictureControllerTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @DisabledTest(message = "https://crbug.com/1000183")
     public void testReenterPip() throws Throwable {
         enterFullscreen();
         triggerAutoPiP();

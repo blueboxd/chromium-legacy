@@ -201,11 +201,11 @@ class IdlCompiler(object):
             self._ir_map.add(new_interface)
 
     def _group_overloaded_functions(self):
-        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
+        old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
 
         self._ir_map.move_to_new_phase()
 
-        for old_interface in old_interfaces.itervalues():
+        for old_interface in old_interfaces:
             assert not old_interface.operation_groups
             new_interface = make_copy(old_interface)
 
@@ -250,37 +250,27 @@ class IdlCompiler(object):
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""
-        interface_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
-        for ir in interface_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE):
             self._db.register(DatabaseBody.Kind.INTERFACE, Interface(ir))
 
-        interface_mixin_irs = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.INTERFACE_MIXIN)
-        for ir in interface_mixin_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE_MIXIN):
             self._db.register(DatabaseBody.Kind.INTERFACE_MIXIN, Interface(ir))
 
-        dictionary_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.DICTIONARY)
-        for ir in dictionary_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.DICTIONARY):
             self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))
 
-        callback_interface_irs = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.CALLBACK_INTERFACE)
-        for ir in callback_interface_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.CALLBACK_INTERFACE):
             self._db.register(DatabaseBody.Kind.CALLBACK_INTERFACE,
                               CallbackInterface(ir))
 
-        callback_function_irs = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.CALLBACK_FUNCTION)
-        for ir in callback_function_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.CALLBACK_FUNCTION):
             self._db.register(DatabaseBody.Kind.CALLBACK_FUNCTION,
                               CallbackFunction(ir))
 
-        enum_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.ENUMERATION)
-        for ir in enum_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.ENUMERATION):
             self._db.register(DatabaseBody.Kind.ENUMERATION, Enumeration(ir))
 
-        typedef_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.TYPEDEF)
-        for ir in typedef_irs.itervalues():
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.TYPEDEF):
             self._db.register(DatabaseBody.Kind.TYPEDEF, Typedef(ir))
 
     def _resolve_references_to_idl_def(self):

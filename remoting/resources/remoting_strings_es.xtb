@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="5254120496627797685">Si abandonas esta página, finalizará tu sesión en Escritorio Remoto de Chrome.</translation>
 <translation id="5308380583665731573">Conectar</translation>
+<translation id="5327248766486351172">Nombre</translation>
 <translation id="533625276787323658">No hay ningún ordenador al que conectarse</translation>
 <translation id="5363265567587775042">Pregunta al usuario el ordenador al que se quiere acceder para hacer clic en <ph name="SHARE" /> y proporcionar el código de acceso.</translation>
 <translation id="5379087427956679853">Escritorio Remoto de Chrome permite compartir de forma segura tu ordenador a través de Internet. Ambos usuarios deben estar ejecutando la aplicación Escritorio Remoto de Chrome, que está disponible en la página <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="7970576581263377361">Error de autenticación. Vuelve a iniciar sesión en Chromium.</translation>
 <translation id="7981525049612125370">La sesión remota ha caducado.</translation>
+<translation id="8038111231936746805">(acción predeterminada)</translation>
 <translation id="8041089156583427627">Enviar</translation>
 <translation id="8041721485428375115">Al descargar el programa de instalación del host de Escritorio Remoto de Chrome, aceptas las <ph name="LINK_BEGIN" />Condiciones de Servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="8060029310790625334">Centro de Ayuda</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mis ordenadores</translation>
 <translation id="811307782653349804">Posibilidad de acceso a tu ordenador desde cualquier lugar</translation>
 <translation id="8116630183974937060">Se ha producido un error de red. Comprueba que tu dispositivo esté conectado y vuelve a intentarlo.</translation>
-<translation id="8123581458650016326">Permitir a usuarios remotos controlar este equipo</translation>
 <translation id="8178433417677596899">Pantalla compartida entre usuarios, opción perfecta para la asistencia técnica remota</translation>
 <translation id="8187079423890319756">Copyright 2013 Los creadores de Chromium. Todos los derechos reservados.</translation>
 <translation id="8196755618196986400">Para que podamos ponernos en contacto contigo para obtener más información, tu dirección de correo electrónico se incluirá en cualquier comentario que envíes.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Política de Privacidad</translation>
 <translation id="894763922177556086">Buena</translation>
 <translation id="895780780740011433">Para Windows 7 y versiones superiores</translation>
-<translation id="8963047137585288214">Para controlar este equipo de forma remota con <ph name="PRODUCT_NAME" />, es necesario realizar otro paso de configuración.
-
-Para habilitar esta función, selecciona "<ph name="BUTTON_NAME" />" para mostrar el panel de preferencias Privacidad y seguridad y, a continuación, marca la casilla situada junto a "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Si "<ph name="SERVICE_SCRIPT_NAME" />" ya aparecía y estaba marcado, es posible que tengas que desmarcarlo y marcarlo de nuevo.</translation>
 <translation id="897805526397249209">Para habilitar conexiones remotas con otro ordenador, instala Chromoting en él y haz clic en <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Controlador de host de Escritorio Remoto de Chrome</translation>
 <translation id="9016232822027372900">Conectar de todos modos</translation>

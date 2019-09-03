@@ -484,6 +484,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4372705107434148843">Kõne lõpetam</translation>
 <translation id="4373197658375206385">Kõik eelmised üksused on lingid.</translation>
 <translation id="4376316291247992553">Graafika kuvatakse punktkirjas</translation>
+<translation id="437809255587011096">Loe teksti stiil ette</translation>
 <translation id="4378308539633073595">Edasikerimine</translation>
 <translation id="4384583879834880242">Küsimused ja vastused</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="8503360654911991865">Vähenda navigatsiooni detailsust</translation>
 <translation id="8504695234784218301">Grammatikavea lõpp</translation>
 <translation id="8520472399088452386">Pöördnupp</translation>
+<translation id="8534394844575788431">Vormindamine</translation>
 <translation id="8538744478902126321">Tee praeguse lahtri rea päise kohta oletus</translation>
 <translation id="8540054775867439484">Pakitud lehe ülaossa</translation>
 <translation id="8542271685829952264">Kõigi ChromeVoxi käskude ning otseteede avastamiseks vajutage otsinguklahvi ja punktiklahvi. Seejärel kasutage menüüdes navigeerimiseks nooleklahve ja käsu aktiveerimiseks sisestusklahvi. Siia naasmiseks vajutage klahvikombinatsiooni Otsing + O ja seejärel T.</translation>
@@ -1200,6 +1202,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Vahekaart</translation>
 <translation id="9151211641321628915">Esitab praeguse asukoha lühikirjelduse</translation>
+<translation id="9151249085738989067">Vaheta automaatselt ChromeVoxi häält keele alusel</translation>
 <translation id="9153606228985488238">Helikõrgus: <ph name="PERCENT" /> protsenti</translation>
 <translation id="9160096769946561184">Mine praeguse veeru lõppu</translation>
 <translation id="9173115498289768110">Helitugevus: <ph name="PERCENT" /> protsenti</translation>

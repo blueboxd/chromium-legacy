@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Установлено</translation>
 <translation id="1792959175193046959">Вы можете в любой момент изменить расположение скачиваемых файлов по умолчанию.</translation>
 <translation id="1807246157184219062">Светлый</translation>
+<translation id="1810845389119482123">Синхронизация не настроена</translation>
 <translation id="1821253160463689938">Использовать файлы cookie, чтобы запомнить ваши предпочтения, даже если вы не открываете эти страницы</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="4179980317383591987">Использовано: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Языки</translation>
+<translation id="4183868528246477015">Найти через Google Объектив <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198423547019359126">Нет доступных мест для скачивания</translation>
 <translation id="4209895695669353772">Чтобы мы могли рекомендовать вам интересный контент, включите синхронизацию.</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способ доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способ доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способа доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способа доставки}}</translation>
+<translation id="4696983787092045100">Отправить сообщения на свои устройства</translation>
 <translation id="4698034686595694889">Есть контент, доступный для офлайн-просмотра в <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Отсутствует функция, необходимая для работы Chrome. Возможно, установка не была завершена или вы используете несовместимую версию Android.</translation>
 <translation id="4699172675775169585">Изображения и другие файлы, сохраненные в кеше</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034">Сайт <ph name="SITE" /> запрашивает подключение</translation>
 <translation id="5013696553129441713">Новых рекомендаций нет</translation>
 <translation id="5016205925109358554">С засечками</translation>
+<translation id="5033865233969348410">В режиме виртуальной реальности этот сайт может определять:
+   – ваши внешние черты, например рост.
+
+Предоставляйте доступ только тем сайтам, которым вы доверяете.</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
 <translation id="5048398596102334565">Предоставить сайтам доступ к датчикам движения (рекомендуется)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">Есть видео</translation>
 <translation id="5230560987958996918">Сайт <ph name="SITE" /> ищет устройства Bluetooth поблизости. Обнаружены следующие устройства:</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
+<translation id="5234764350956374838">Закрыть</translation>
 <translation id="526421993248218238">Не удалось загрузить страницу</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">Нажмите кнопку главного экрана, чтобы открыть страницу быстрого доступа</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Открыта <ph name="OPEN_TABS_ONE" /> вкладка. Нажмите для переключения.}one{Открыта <ph name="OPEN_TABS_MANY" /> вкладка. Нажмите для переключения.}few{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}many{Открыто <ph name="OPEN_TABS_MANY" /> вкладок. Нажмите для переключения.}other{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}}</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и ещё 1)}one{(и ещё #)}few{(и ещё #)}many{(и ещё #)}other{(и ещё #)}}</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешить доступ только к определенным сайтам</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK2" />Включите доступ<ph name="END_LINK2" /> и <ph name="BEGIN_LINK1" />обновите разрешения<ph name="END_LINK1" />.</translation>
 <translation id="5527111080432883924">Запрашивать мое разрешение на доступ сайтов к тексту и изображениям, скопированным в буфер обмена (рекомендуется)</translation>
 <translation id="5530766185686772672">Закрыть вкладки инкогнито</translation>
+<translation id="5534334044554683961">В режиме виртуальной реальности этот сайт может определять:
+   – ваши внешние черты, например рост;
+   – планировку вашей комнаты.
+
+Предоставляйте доступ только тем сайтам, которым вы доверяете.</translation>
 <translation id="5534640966246046842">Адрес сайта скопирован</translation>
 <translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5561549206367097665">Поиск сети…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> не ваш аккаунт?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6221633008163990886">Чтобы экспортировать пароли, разблокируйте экран</translation>
 <translation id="6232535412751077445">Если вы запретите отслеживание, в запросы браузера будет включена специальная команда. Сайты могут интерпретировать ее и отвечать на нее по-разному.
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">Добавить аккаунт</translation>
 <translation id="766587987807204883">Здесь появляются статьи, которые можно читать даже в офлайн-режиме.</translation>
 <translation id="7682724950699840886">Убедитесь, что на вашем устройстве достаточно свободного места. Затем снова попробуйте экспортировать пароли.</translation>
+<translation id="7685301384041462804">Прежде чем войти в виртуальную реальность, убедитесь, что этот сайт безопасен.</translation>
 <translation id="7698359219371678927">Написать письмо в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
 <translation id="7725024127233776428">Здесь будут страницы, которые вы добавляете в закладки.</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">Выполняется в Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Скачивание 1 файла…}one{Скачивание # файла…}few{Скачивание # файлов…}many{Скачивание # файлов…}other{Скачивание # файла…}}</translation>
 <translation id="7929962904089429003">Открыть меню</translation>
+<translation id="7930681627240672853">Проверка безопасности паролей</translation>
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">Открыть новое окно в режиме инкогнито</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
+<translation id="9029323097866369874">Разрешить сайту <ph name="DOMAIN" /> входить в виртуальную реальность?</translation>
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеофайл}one{# видеофайл}few{# видеофайла}many{# видеофайлов}other{# видеофайла}}</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>

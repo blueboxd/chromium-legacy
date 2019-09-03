@@ -131,7 +131,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser || !BrowserView::GetBrowserViewForBrowser(browser)) {
     std::move(intent_picker_cb)
-        .Run(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
+        .Run(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
              apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER, false);
     return nullptr;
   }
@@ -208,7 +208,7 @@ bool IntentPickerBubbleView::Cancel() {
 #endif
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
-  RunCallback(launch_name, apps::mojom::AppType::kUnknown,
+  RunCallback(launch_name, apps::PickerEntryType::kUnknown,
               apps::IntentPickerCloseReason::STAY_IN_CHROME, should_persist);
   return true;
 }
@@ -216,7 +216,7 @@ bool IntentPickerBubbleView::Cancel() {
 bool IntentPickerBubbleView::Close() {
   // Whenever closing the bubble without pressing |Just once| or |Always| we
   // need to report back that the user didn't select anything.
-  RunCallback(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
+  RunCallback(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
               apps::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
   return true;
 }
@@ -267,7 +267,7 @@ IntentPickerBubbleView::~IntentPickerBubbleView() {
 // If the widget gets closed without an app being selected we still need to use
 // the callback so the caller can Resume the navigation.
 void IntentPickerBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  RunCallback(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
+  RunCallback(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
               apps::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
 }
 
@@ -403,13 +403,13 @@ bool IntentPickerBubbleView::HasCandidates() const {
 
 void IntentPickerBubbleView::RunCallback(
     const std::string& launch_name,
-    apps::mojom::AppType app_type,
+    apps::PickerEntryType entry_type,
     apps::IntentPickerCloseReason close_reason,
     bool should_persist) {
   if (!intent_picker_cb_.is_null()) {
     // Calling Run() will make |intent_picker_cb_| null.
     std::move(intent_picker_cb_)
-        .Run(launch_name, app_type, close_reason, should_persist);
+        .Run(launch_name, entry_type, close_reason, should_persist);
   }
 
   intent_picker_bubble_ = nullptr;
@@ -451,7 +451,7 @@ void IntentPickerBubbleView::UpdateCheckboxState() {
   // TODO(crbug.com/826982): allow PWAs to have their decision persisted when
   // there is a central Chrome OS apps registry to store persistence.
   const bool should_enable =
-      app_info_[selected_app_tag_].type != apps::mojom::AppType::kWeb;
+      app_info_[selected_app_tag_].type != apps::PickerEntryType::kWeb;
 
   // Reset the checkbox state to the default unchecked if becomes disabled.
   if (!should_enable)

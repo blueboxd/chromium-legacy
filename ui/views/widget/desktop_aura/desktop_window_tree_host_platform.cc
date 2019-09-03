@@ -26,62 +26,6 @@
 
 namespace views {
 
-namespace {
-
-ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
-    const Widget::InitParams& params) {
-  ui::PlatformWindowInitProperties properties;
-
-  switch (params.type) {
-    case Widget::InitParams::TYPE_WINDOW:
-      properties.type = ui::PlatformWindowType::kWindow;
-      break;
-
-    case Widget::InitParams::TYPE_MENU:
-      properties.type = ui::PlatformWindowType::kMenu;
-      break;
-
-    case Widget::InitParams::TYPE_TOOLTIP:
-      properties.type = ui::PlatformWindowType::kTooltip;
-      break;
-
-    default:
-      properties.type = ui::PlatformWindowType::kPopup;
-      break;
-  }
-
-  properties.bounds = params.bounds;
-  properties.activatable =
-      params.activatable == Widget::InitParams::ACTIVATABLE_YES;
-  properties.force_show_in_taskbar = params.force_show_in_taskbar;
-  properties.keep_on_top =
-      params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal;
-  properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
-  properties.remove_standard_frame = params.remove_standard_frame;
-  properties.workspace = params.workspace;
-  properties.wm_class_name = params.wm_class_name;
-  properties.wm_class_class = params.wm_class_class;
-  properties.wm_role_name = params.wm_role_name;
-
-  if (params.parent && params.parent->GetHost())
-    properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
-
-  switch (params.opacity) {
-    case Widget::InitParams::WindowOpacity::INFER_OPACITY:
-      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
-      break;
-    case Widget::InitParams::WindowOpacity::OPAQUE_WINDOW:
-      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
-      break;
-    case Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW:
-      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
-      break;
-  }
-
-  return properties;
-}
-
-}  // namespace
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostPlatform:
 
@@ -92,9 +36,13 @@ DesktopWindowTreeHostPlatform::DesktopWindowTreeHostPlatform(
       desktop_native_widget_aura_(desktop_native_widget_aura) {}
 
 DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
+// TODO(msisov): Once destruction goes from DWTHX11 to DWTHPlatform, remove this
+// guard.
+#if !defined(USE_X11)
   DCHECK(got_on_closed_);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
+#endif
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
@@ -138,6 +86,18 @@ void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
 
 void DesktopWindowTreeHostPlatform::OnActiveWindowChanged(bool active) {}
 
+base::Optional<gfx::Size>
+DesktopWindowTreeHostPlatform::GetMinimumSizeForWindow() {
+  return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMinimumSize()))
+      .size();
+}
+
+base::Optional<gfx::Size>
+DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
+  return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMaximumSize()))
+      .size();
+}
+
 std::unique_ptr<corewm::Tooltip>
 DesktopWindowTreeHostPlatform::CreateTooltip() {
   return std::make_unique<corewm::TooltipAura>();
@@ -146,6 +106,7 @@ DesktopWindowTreeHostPlatform::CreateTooltip() {
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostPlatform::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
+#if !defined(USE_X11)
   ui::WmDragHandler* drag_handler = ui::GetWmDragHandler(*(platform_window()));
   std::unique_ptr<DesktopDragDropClientOzone> drag_drop_client =
       std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
@@ -154,6 +115,11 @@ DesktopWindowTreeHostPlatform::CreateDragDropClient(
   // drop action.
   SetWmDropHandler(platform_window(), drag_drop_client.get());
   return std::move(drag_drop_client);
+#else
+  // TODO(https://crbug.com/990756): Move the X11 initialization of dnd here.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
+#endif
 }
 
 void DesktopWindowTreeHostPlatform::Close() {
@@ -571,6 +537,72 @@ void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
+ui::PlatformWindowInitProperties
+DesktopWindowTreeHostPlatform::ConvertWidgetInitParamsToInitProperties(
+    const Widget::InitParams& params) {
+  ui::PlatformWindowInitProperties properties;
+
+  switch (params.type) {
+    case Widget::InitParams::TYPE_WINDOW:
+      properties.type = ui::PlatformWindowType::kWindow;
+      break;
+
+    case Widget::InitParams::TYPE_MENU:
+      properties.type = ui::PlatformWindowType::kMenu;
+      break;
+
+    case Widget::InitParams::TYPE_TOOLTIP:
+      properties.type = ui::PlatformWindowType::kTooltip;
+      break;
+
+    case Widget::InitParams::TYPE_DRAG:
+      properties.type = ui::PlatformWindowType::kDrag;
+      break;
+
+    case Widget::InitParams::TYPE_BUBBLE:
+      properties.type = ui::PlatformWindowType::kBubble;
+      break;
+
+    default:
+      properties.type = ui::PlatformWindowType::kPopup;
+      break;
+  }
+
+  properties.bounds = params.bounds;
+  properties.activatable =
+      params.activatable == Widget::InitParams::ACTIVATABLE_YES;
+  properties.force_show_in_taskbar = params.force_show_in_taskbar;
+  properties.keep_on_top =
+      params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal;
+  properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
+  properties.remove_standard_frame = params.remove_standard_frame;
+  properties.workspace = params.workspace;
+  properties.wm_class_name = params.wm_class_name;
+  properties.wm_class_class = params.wm_class_class;
+  properties.wm_role_name = params.wm_role_name;
+
+  if (params.parent && params.parent->GetHost())
+    properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
+
+  switch (params.opacity) {
+    case Widget::InitParams::WindowOpacity::INFER_OPACITY:
+      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
+      break;
+    case Widget::InitParams::WindowOpacity::OPAQUE_WINDOW:
+      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
+      break;
+    case Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW:
+      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
+      break;
+  }
+
+  return properties;
+}
+
+aura::Window* DesktopWindowTreeHostPlatform::content_window() {
+  return desktop_native_widget_aura_->content_window();
+}
+
 void DesktopWindowTreeHostPlatform::Relayout() {
   Widget* widget = native_widget_delegate_->AsWidget();
   NonClientView* non_client_view = widget->non_client_view();
@@ -612,6 +644,11 @@ gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHost:
 
+// As DWTHX11 subclasses DWTHPlatform now (during transition period. see
+// https://crbug.com/990756), we need to guard this factory method.
+// TODO(msisov): remove this guard once DWTHX11 is finally merged into
+// DWTHPlatform.
+#if !defined(USE_X11)
 // static
 DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
@@ -619,5 +656,6 @@ DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
   return new DesktopWindowTreeHostPlatform(native_widget_delegate,
                                            desktop_native_widget_aura);
 }
+#endif
 
 }  // namespace views

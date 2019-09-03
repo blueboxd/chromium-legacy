@@ -398,7 +398,7 @@
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3041612393474885105">証明書情報</translation>
-<translation id="3057676462092457419">DnsOverHttps モード <ph name="SECURE_DNS_MODE_SECURE" /> は未サポートです。モードは <ph name="SECURE_DNS_MODE_OFF" /> に設定されました。</translation>
+<translation id="3057676462092457419">DnsOverHttps モード <ph name="SECURE_DNS_MODE_SECURE" /> はまだサポートされていません。モードは <ph name="SECURE_DNS_MODE_OFF" /> に設定されました。</translation>
 <translation id="3060227939791841287">C9（封筒）</translation>
 <translation id="3061707000357573562">サービスへのパッチの適用</translation>
 <translation id="3064966200440839136">外部アプリケーションを経由したお支払いの処理に進むため、シークレット モードを解除します。続行しますか？</translation>

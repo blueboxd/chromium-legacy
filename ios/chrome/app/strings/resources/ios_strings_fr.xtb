@@ -263,6 +263,7 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="4747097190499141774">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay. Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète n'est pas envoyée à Google et Google ne la stocke pas. Si vous l'oubliez ou si vous souhaitez modifier ce paramètre, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Rechercher dans la page…</translation>
 <translation id="4751645464639803239">Nouvel onglet de navigation privée</translation>
+<translation id="4758977202923349869">Positionnez la carte de crédit dans ce cadre</translation>
 <translation id="4802417911091824046">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay.
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5728700505257787410">Désolé, problème lors de la connexion à votre compte.</translation>
 <translation id="5737974891429562743">Informations de connexion au compte obsolètes. Mettez-les à jour pour lancer la synchronisation.</translation>
 <translation id="5738887413654608789">Vous permet de découvrir les pages Web pertinentes en fonction de votre environnement.</translation>
+<translation id="5803566855766646066">Voulez-vous vraiment supprimer cette nouvelle carte ?</translation>
 <translation id="5816228676161003208">Cela vous permet d'effectuer des recherches plus rapidement en utilisant la recherche vocale.</translation>
 <translation id="5846482154967366008">Moteur de recherche</translation>
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>

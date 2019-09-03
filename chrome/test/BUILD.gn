@@ -2004,6 +2004,8 @@ if (!is_android) {
         "../browser/chromeos/extensions/login_screen/login_screen_apitest_base.cc",
         "../browser/chromeos/extensions/login_screen/login_screen_apitest_base.h",
         "../browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_ui_apitest.cc",
+        "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
+        "../browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/login_screen/storage_apitest.cc",
         "../browser/chromeos/extensions/users_private/users_private_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_apitest.cc",

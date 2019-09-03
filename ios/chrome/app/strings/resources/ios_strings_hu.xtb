@@ -263,6 +263,7 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="4747097190499141774">Az összetett jelszavas titkosítás nem tartalmazza a Google Payben megadott fizetési módokat és címeket. Titkosított adatait csak az olvashatja el, aki rendelkezik az Ön összetett jelszavával. Az összetett jelszót a Google nem kapja meg, és nem is tárolja. Ha elfelejtette összetett jelszavát, vagy módosítaná ezt a beállítást, alaphelyzetbe kell állítania a szinkronizálást. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4749030437873592350">Keresés az oldalon...</translation>
 <translation id="4751645464639803239">Új inkognitólap</translation>
+<translation id="4758977202923349869">Igazítsa a hitelkártyát ehhez a kerethez</translation>
 <translation id="4802417911091824046">Az összetett jelszavas titkosítás nem tartalmazza a Google Payben megadott fizetési módokat és címeket.
 
 A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szinkronizálást<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="5728700505257787410">A fiókjába történő bejelentkezés során hiba történt.</translation>
 <translation id="5737974891429562743">A fiók bejelentkezési adatai elavultak. Frissítsen a szinkronizálás megkezdéséhez.</translation>
 <translation id="5738887413654608789">Lehetővé teszi a felhasználó számára, hogy közvetlen környezete alapján fedezzen fel releváns weboldalakat.</translation>
+<translation id="5803566855766646066">Biztosan elveti ezt az új kártyát?</translation>
 <translation id="5816228676161003208">Lehetővé teszi a gyorsabb keresést a hangalapú keresés használatával.</translation>
 <translation id="5846482154967366008">Keresőmotor</translation>
 <translation id="5854790677617711513">30 napnál régebbi</translation>

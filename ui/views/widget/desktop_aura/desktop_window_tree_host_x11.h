@@ -20,14 +20,14 @@
 #include "base/observer_list.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/x/x11_window.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
+#include "ui/platform_window/x11/x11_window.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
 namespace gfx {
 class ImageSkia;
@@ -39,8 +39,8 @@ class KeyboardHook;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
-class ScrollEvent;
-}
+class X11Window;
+}  // namespace ui
 
 namespace views {
 class DesktopDragDropClientAuraX11;
@@ -50,11 +50,9 @@ class X11DesktopWindowMoveClient;
 class WindowEventFilter;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11
-    : public DesktopWindowTreeHost,
-      public aura::WindowTreeHost,
-      public ui::PlatformEventDispatcher,
+    : public DesktopWindowTreeHostPlatform,
       public ui::WmMoveResizeHandler,
-      public ui::XWindow::Delegate {
+      public ui::XEventDelegate {
  public:
   DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -195,30 +193,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // Overridden from ui::XWindow::Delegate
-  void OnXWindowCreated() override;
-  void OnXWindowMapped() override;
-  void OnXWindowUnmapped() override;
-  void OnXWindowStateChanged() override;
-  void OnXWindowWorkspaceChanged() override;
-  void OnXWindowKeyEvent(ui::KeyEvent* key_event) override;
-  void OnXWindowMouseEvent(ui::MouseEvent* mouseev) override;
-  void OnXWindowTouchEvent(ui::TouchEvent* touch_event) override;
-  void OnXWindowScrollEvent(ui::ScrollEvent* scroll_event) override;
-  void OnXWindowSelectionEvent(XEvent* xev) override;
-  void OnXWindowDragDropEvent(XEvent* xev) override;
-  void OnXWindowChildCrossingEvent(XEvent* xev) override;
-  void OnXWindowRawKeyEvent(XEvent* xev) override;
-  void OnXWindowSizeChanged(const gfx::Size& size) override;
-  void OnXWindowCloseRequested() override;
-  void OnXWindowMoved(const gfx::Point& window_origin) override;
-  void OnXWindowDamageEvent(const gfx::Rect& damage_rect) override;
-  void OnXWindowLostPointerGrab() override;
-  void OnXWindowLostCapture() override;
-  void OnXWindowIsActiveChanged(bool active) override;
-  gfx::Size GetMinimumSizeForXWindow() override;
-  gfx::Size GetMaximumSizeForXWindow() override;
-
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
@@ -270,10 +244,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Relayout the widget's client and non-client views.
   void Relayout();
 
-  // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
-  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
-
   void DelayedChangeFrameType(Widget::FrameType new_type);
 
   gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
@@ -285,11 +255,30 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
   void SetVisible(bool visible);
 
-  // Accessor for DesktopNativeWidgetAura::content_window().
-  aura::Window* content_window();
-
   // Callback for a swapbuffer after resize.
   void OnCompleteSwapWithNewSize(const gfx::Size& size);
+
+  // PlatformWindowDelegate overrides:
+  //
+  // DWTHX11 temporarily overrides the PlatformWindowDelegate methods instead of
+  // underlying DWTHPlatform and WTHPlatform. Eventually, these will be removed
+  // from here as we progress in https://crbug.com/990756.
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
+  void DispatchEvent(ui::Event* event) override;
+  void OnClosed() override;
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
+  void OnAcceleratedWidgetDestroyed() override;
+  void OnActivationChanged(bool active) override;
+  void OnXWindowMapped() override;
+  void OnXWindowUnmapped() override;
+  void OnLostMouseGrab() override;
+  void OnWorkspaceChanged() override;
+
+  // Overridden from ui::XEventDelegate.
+  void OnXWindowSelectionEvent(XEvent* xev) override;
+  void OnXWindowDragDropEvent(XEvent* xev) override;
+  void OnXWindowRawKeyEvent(XEvent* xev) override;
 
   // The bounds of our window before we were maximized.
   gfx::Rect restored_bounds_in_pixels_;
@@ -305,12 +294,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   std::unique_ptr<WindowEventFilter> non_client_event_filter_;
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
-
-  // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
-  //             instead of providing this route back to Widget.
-  internal::NativeWidgetDelegate* native_widget_delegate_;
-
-  DesktopNativeWidgetAura* desktop_native_widget_aura_;
 
   // We can optionally have a parent which can order us to close, or own
   // children who we're responsible for closing when we CloseNow().
@@ -340,7 +323,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   std::unique_ptr<CompositorObserver> compositor_observer_;
 
-  std::unique_ptr<ui::XWindow> x11_window_;
+  std::unique_ptr<ui::X11Window> x11_window_;
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};

@@ -261,6 +261,14 @@ PasswordStoreSync::MetadataStore* PasswordStoreDefault::GetMetadataStore() {
   return login_db_.get();
 }
 
+bool PasswordStoreDefault::IsAccountStore() const {
+  return login_db_->is_account_store();
+}
+
+bool PasswordStoreDefault::DeleteAndRecreateDatabaseFile() {
+  return login_db_->DeleteAndRecreateDatabaseFile();
+}
+
 void PasswordStoreDefault::ResetLoginDB() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   login_db_.reset();

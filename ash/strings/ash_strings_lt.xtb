@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">Kitas takelis</translation>
 <translation id="4479639480957787382">Eternetas</translation>
 <translation id="4481530544597605423">Atsieti įrenginiai</translation>
+<translation id="4505050298327493054">Aktyvus darbalaukis.</translation>
 <translation id="4513946894732546136">Atsiliepimai</translation>
 <translation id="4527045527269911712">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti.</translation>
 <translation id="453661520163887813">Liko <ph name="TIME" />, kol bus visiškai įkrautas</translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8142441511840089262">Dukart spustelėti</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>
+<translation id="8152092012181020186">Paspauskite „Ctrl“ + W, kad uždarytumėte.</translation>
 <translation id="8167567890448493835">Naudojama: <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
 <translation id="8192202700944119416">Pranešimai yra paslėpti.</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">„What's on my calendar?“ (Kas mano kalendoriuje?)</translation>
 <translation id="945522503751344254">Siųsti atsiliepimą</translation>
 <translation id="98515147261107953">Gulsčias</translation>
+<translation id="990277280839877440">Langas „<ph name="WINDOW_TITILE" />“ uždarytas.</translation>
 </translationbundle>

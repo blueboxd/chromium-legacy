@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">命令列變化版本</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />試試看清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">已淘汰的功能</translation>
 <translation id="1320233736580025032">Prc1 (信封)</translation>
 <translation id="132301787627749051">搜尋剪貼簿圖片</translation>
 <translation id="1323433172918577554">顯示完整清單</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google 試算表</translation>
 <translation id="1527263332363067270">正在等待連線…</translation>
 <translation id="1529521330346880926">10x15 (信封)</translation>
+<translation id="1530707389502320859">你剛才嘗試造訪的網站可能是假網站。攻擊者有時會在網址中加入難以辨識的細微變更來仿冒網站。</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">這個網頁顯示</translation>
 <translation id="153384715582417236">暫無內容</translation>
@@ -353,6 +355,9 @@
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2728127805433021124">伺服器憑證是以防護力較弱的簽章演算法進行簽署。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />執行連線診斷<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">啟用這些功能可能會造成瀏覽器資料遺失，或導致你的
+    安全性或隱私權面臨威脅。這個瀏覽器的所有使用者都會套用
+    你所啟用的功能。</translation>
 <translation id="2735043616039983645">這項政策有多個來源，且來源的值發生衝突！</translation>
 <translation id="2738330467931008676">選擇取件地址</translation>
 <translation id="2740531572673183784">確定</translation>
@@ -396,6 +401,7 @@
 <translation id="2985306909656435243">啟用後，Chromium 會將您的信用卡資料儲存在這個裝置上，以加快表單填寫速度。</translation>
 <translation id="2985398929374701810">請輸入有效的地址</translation>
 <translation id="2986368408720340940">不支援所選的取件方式，請改選其他方式。</translation>
+<translation id="2987034854559945715">找不到相符的功能</translation>
 <translation id="2991174974383378012">與網站分享</translation>
 <translation id="2991571918955627853">目前無法造訪 <ph name="SITE" />，因為這個網站使用 HSTS。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。</translation>
 <translation id="3005723025932146533">顯示儲存的複本</translation>
@@ -518,6 +524,7 @@
 <translation id="3678529606614285348">在新的無痕式視窗中開啟網頁 (Ctrl + Shift + N 鍵)</translation>
 <translation id="3679803492151881375">當機報告擷取時間：<ph name="CRASH_TIME" />，報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">憑證資訊</translation>
+<translation id="3701427423622901115">已確認重設。</translation>
 <translation id="3704162925118123524">您可能需要造訪目前所使用網路的登入網頁。</translation>
 <translation id="3704609568417268905"><ph name="TIME" />，<ph name="BOOKMARKED" />，<ph name="TITLE" />，<ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">載入中…</translation>
@@ -690,6 +697,7 @@
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="4597348597567598915">粗細：8</translation>
 <translation id="4600854749408232102">C6/C5 (信封)</translation>
+<translation id="464342062220857295">搜尋功能</translation>
 <translation id="4646534391647090355">立即前往下載中心</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="467662567472608290">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證含有錯誤。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
@@ -806,6 +814,7 @@
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5252000469029418751">C7 (信封)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">這些功能會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">警告：這項政策並非可合併的字典政策，因此未依照 PolicyDictionaryMultipleSourceMergeList 政策中指定的方式進行合併。</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">結束</translation>
@@ -842,6 +851,7 @@
 <translation id="5457113250005438886">無效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{「<ph name="CONTACT_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 項聯絡資訊}other{「<ph name="CONTACT_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 項聯絡資訊}}</translation>
 <translation id="5470861586879999274">重做編輯(&amp;R)</translation>
+<translation id="5473728911100096288">你啟用的這些功能已遭到淘汰，Chrome 將在日後發布的版本中予以移除。</translation>
 <translation id="5478437291406423475">B6/C4 (信封)</translation>
 <translation id="5481076368049295676">這項內容可能會試圖在你的裝置上安裝危險軟體，藉此竊取或刪除你的資訊。<ph name="BEGIN_LINK" />仍要顯示<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">新增有效的地址</translation>
@@ -900,6 +910,7 @@
 <translation id="5763042198335101085">請輸入有效的電子郵件地址</translation>
 <translation id="5765072501007116331">如要查看快遞方式和相關規定，請選取一個地址</translation>
 <translation id="5778550464785688721">MIDI 裝置完整控制</translation>
+<translation id="5781136890105823427">實驗已啟用</translation>
 <translation id="578305955206182703">琥珀色</translation>
 <translation id="57838592816432529">靜音</translation>
 <translation id="5784606427469807560">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
@@ -1065,6 +1076,7 @@
 <translation id="6738516213925468394">你在 <ph name="TIME" />已使用<ph name="BEGIN_LINK" />同步通關密語<ph name="END_LINK" />將資料加密。如要開始同步處理資料，請輸入通關密語。</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
 <translation id="6744009308914054259">等待連線的同時，你可以前往「下載」頁面閱讀離線文章。</translation>
+<translation id="6747611005629681221">警告：這是已淘汰的功能！</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的裝置已進入睡眠模式。</translation>
 <translation id="6768213884286397650">Hagaki (明信片)</translation>
@@ -1430,6 +1442,7 @@
 <translation id="8738058698779197622">你必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於你裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
 <translation id="874846938927089722">接受的信用卡和預付卡</translation>
+<translation id="874918643257405732">把此分頁加入書籤</translation>
 <translation id="8759274551635299824">這張信用卡已過期</translation>
 <translation id="8761567432415473239">Google 安全瀏覽最近在「<ph name="SITE" />」<ph name="BEGIN_LINK" />發現了有害程式<ph name="END_LINK" />。</translation>
 <translation id="8763927697961133303">USB 裝置</translation>

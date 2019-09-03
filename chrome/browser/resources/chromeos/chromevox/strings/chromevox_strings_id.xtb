@@ -484,6 +484,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4372705107434148843">Hentikan ucapan</translation>
 <translation id="4373197658375206385">Tidak ada item sebelumnya yang bukan link.</translation>
 <translation id="4376316291247992553">Melihat Grafik Sebagai Braille</translation>
+<translation id="437809255587011096">Umumkan gaya teks</translation>
 <translation id="4378308539633073595">Scrolling maju</translation>
 <translation id="4384583879834880242">Tanya Jawab</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1039,6 +1040,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8503360654911991865">Menurunkan granularitas navigasi</translation>
 <translation id="8504695234784218301">Akhir teks dengan kesalahan tata bahasa</translation>
 <translation id="8520472399088452386">Tombol putar</translation>
+<translation id="8534394844575788431">Format</translation>
 <translation id="8538744478902126321">Menerka di judul baris sel saat ini</translation>
 <translation id="8540054775867439484">Terbungkus ke atas</translation>
 <translation id="8542271685829952264">Untuk menjelajahi semua perintah dan pintasan ChromeVox, tekan Penelusuran + Titik, lalu gunakan tombol Panah untuk menavigasi menu, dan tekan Enter untuk mengaktifkan perintah. Kembali ke sini dengan mengklik Penelusuran+o lalu t.</translation>
@@ -1118,6 +1120,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Mengumumkan deskripsi singkat dari posisi saat ini</translation>
+<translation id="9151249085738989067">Otomatis alihkan suara ChromeVox berdasarkan bahasa</translation>
 <translation id="9153606228985488238">Tinggi nada <ph name="PERCENT" /> persen</translation>
 <translation id="9160096769946561184">Berpindah ke akhir kolom saat ini</translation>
 <translation id="9173115498289768110">Volume <ph name="PERCENT" /> persen</translation>

@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Installé dans</translation>
 <translation id="1792959175193046959">Modifier à tout moment l'emplacement de téléchargement par défaut</translation>
 <translation id="1807246157184219062">Clair</translation>
+<translation id="1810845389119482123">Configuration de la synchronisation initiale non terminée</translation>
 <translation id="1821253160463689938">Utilise des cookies pour mémoriser vos préférences, même si vous n'accédez pas à ces pages</translation>
 <translation id="1829244130665387512">Recherchez sur la page</translation>
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
@@ -412,6 +413,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> utilisé(s)</translation>
 <translation id="4181841719683918333">Langues</translation>
+<translation id="4183868528246477015">Rechercher avec Google Lens <ph name="BEGIN_NEW" />Nouveau<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="4198423547019359126">Aucun emplacement de téléchargements disponible</translation>
 <translation id="4209895695669353772">Activez la synchronisation pour obtenir des suggestions de contenu personnalisées de la part de Google</translation>
@@ -474,6 +476,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> de plus}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> de plus}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> de plus}}</translation>
+<translation id="4696983787092045100">Envoyer le texte à vos appareils</translation>
 <translation id="4698034686595694889">Afficher hors connexion dans <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Une fonctionnalité essentielle à l'exécution de Google Chrome est manquante. Soit vous n'avez pas terminé d'installer Google Chrome, soit la version installée n'est pas compatible avec cette version d'Android.</translation>
 <translation id="4699172675775169585">Images et fichiers en cache</translation>
@@ -529,6 +532,10 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5011311129201317034"><ph name="SITE" /> tente de se connecter</translation>
 <translation id="5013696553129441713">Aucune nouvelle suggestion</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Lorsque vous utilisez le mode RV, le site peut retenir les informations suivantes :
+  – vos caractéristiques physiques, telles que votre taille
+
+N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvement (recommandé)</translation>
@@ -556,6 +563,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5224771365102442243">Avec vidéo</translation>
 <translation id="5230560987958996918">Le site <ph name="SITE" /> souhaite rechercher les appareils Bluetooth à proximité. Les appareils suivants ont été détectés :</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
+<translation id="5234764350956374838">Ignorer</translation>
 <translation id="526421993248218238">Impossible de charger cette page</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
@@ -574,6 +582,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5363230136052241468">Appuyez sur le bouton d'accueil pour charger la page "Nouvel onglet"</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> onglet ouvert, appuyez pour changer d'onglet}one{<ph name="OPEN_TABS_MANY" /> onglet ouvert, appuyez pour changer d'onglet}other{<ph name="OPEN_TABS_MANY" /> onglets ouverts, appuyez pour changer d'onglet}}</translation>
 <translation id="5391532827096253100">Votre connexion à ce site n'est pas sécurisée. Informations sur le site</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 autre)}one{(+ # autre)}other{(+ # autres)}}</translation>
 <translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403592356182871684">Noms</translation>
 <translation id="5403644198645076998">N'autoriser que certains sites</translation>
@@ -603,6 +612,11 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Demander avant d'autoriser les sites à accéder en lecture au texte et aux images du presse-papiers (recommandé)</translation>
 <translation id="5530766185686772672">Fermer onglets navig. privée</translation>
+<translation id="5534334044554683961">Lorsque vous utilisez le mode RV, le site peut retenir les informations suivantes :
+  – Vos caractéristiques physiques, telles que votre taille
+  – La disposition de la salle
+
+N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5534640966246046842">Site copié</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5561549206367097665">En attente de connexion au réseau…</translation>
@@ -690,7 +704,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6196640612572343990">Bloquer les cookies tiers</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> n'est pas votre adresse e-mail ?</translation>
-<translation id="6216432067784365534">Options pour <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Déverrouiller pour exporter vos mots de passe</translation>
 <translation id="6232535412751077445">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
@@ -893,6 +906,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7665369617277396874">Ajouter un compte</translation>
 <translation id="766587987807204883">Les articles sont affichés ici (vous pouvez les lire même lorsque vous êtes hors connexion)</translation>
 <translation id="7682724950699840886">Essayez l'astuce suivante°: assurez-vous de disposer de suffisamment d'espace sur votre appareil, puis tentez à nouveau d'exporter les mots de passe.</translation>
+<translation id="7685301384041462804">N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="7698359219371678927">Créer un e-mail dans <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Saisir semi-automatiquement les recherches et les URL</translation>
 <translation id="7725024127233776428">Les pages que vous ajoutez aux favoris sont répertoriées ici</translation>
@@ -923,6 +937,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7886917304091689118">En cours d'exécution dans Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Téléchargement du fichier…}one{Téléchargement de # fichier…}other{Téléchargement de # fichiers…}}</translation>
 <translation id="7929962904089429003">Ouvrir le menu</translation>
+<translation id="7930681627240672853">Vérifier le niveau de sécurité du mot de passe</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> est obsolète.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
@@ -1070,6 +1085,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode navigation privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
+<translation id="9029323097866369874">Autoriser le site <ph name="DOMAIN" /> à activer la RV ?</translation>
 <translation id="9040142327097499898">Les notifications sont autorisées. La localisation est désactivée pour cet appareil.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>

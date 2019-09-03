@@ -22,7 +22,7 @@
 <translation id="1086953900555227778">Index-5x8</translation>
 <translation id="1088860948719068836">Укажите имя владельца карты</translation>
 <translation id="1089439967362294234">Сменить пароль</translation>
-<translation id="1096545575934602868">Максимальное число записей в этом поле: <ph name="MAX_ITEMS_LIMIT" />. Записи, превышающие это число, не будут сохранены.</translation>
+<translation id="1096545575934602868">Максимальное число записей в этом поле: <ph name="MAX_ITEMS_LIMIT" />. Остальные записи не будут сохранены.</translation>
 <translation id="109743633954054152">Открыть настройки паролей в Chrome</translation>
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Если флажок установлен, Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Модификации для командной строки</translation>
 <translation id="129553762522093515">Недавно закрытые</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Удалите файлы cookie<ph name="END_LINK" />.</translation>
+<translation id="1307966114820526988">Устаревшие функции</translation>
 <translation id="1320233736580025032">Prc1 (конверт)</translation>
 <translation id="132301787627749051">Поиск по изображению из буфера обмена</translation>
 <translation id="1323433172918577554">Развернуть</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Google Таблицы</translation>
 <translation id="1527263332363067270">Ожидание подключения…</translation>
 <translation id="1529521330346880926">10x15 (конверт)</translation>
+<translation id="1530707389502320859">Сайт, на который вы пытались перейти, похож на подделку. Иногда злоумышленники создают копии сайтов и вносят небольшие изменения в их адрес, которые сложно заметить сразу.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Подтвердите действие</translation>
 <translation id="153384715582417236">Пока это всё</translation>
@@ -345,6 +347,7 @@
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Выполните диагностику подключения<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Используя эти функции, вы можете потерять данные браузера, а также подвергаете риску свою безопасность и конфиденциальность. Если включить их, они будут действовать для всех пользователей браузера.</translation>
 <translation id="2735043616039983645">Для этого правила существует более одного источника с конфликтующими значениями.</translation>
 <translation id="2738330467931008676">Выбрать адрес получения</translation>
 <translation id="2740531572673183784">ОК</translation>
@@ -388,6 +391,7 @@
 <translation id="2985306909656435243">Если функция включена, Chromium будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="2985398929374701810">Укажите действительный адрес.</translation>
 <translation id="2986368408720340940">Этот способ выдачи недоступен. Выберите другой.</translation>
+<translation id="2987034854559945715">Совпадений не найдено.</translation>
 <translation id="2991174974383378012">Доступ веб-сайтов</translation>
 <translation id="2991571918955627853">Веб-сайт <ph name="SITE" /> использует механизм HSTS. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="3005723025932146533">Открыть сохраненную копию</translation>
@@ -509,6 +513,7 @@
 <translation id="3678529606614285348">Открыть страницу в новом окне в режиме инкогнито (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" />: отчет о сбоях сохранен. <ph name="UPLOAD_TIME" />: отчет о сбоях загружен.</translation>
 <translation id="3681007416295224113">Данные сертификата</translation>
+<translation id="3701427423622901115">Сброс подтвержден.</translation>
 <translation id="3704162925118123524">Возможно, вам нужно перейти на страницу входа используемой сети.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Загрузка...</translation>
@@ -681,6 +686,7 @@
 <translation id="4594403342090139922">&amp;Отменить удаление</translation>
 <translation id="4597348597567598915">Размер: 8</translation>
 <translation id="4600854749408232102">C6/C5 (конверт)</translation>
+<translation id="464342062220857295">Функции поиска</translation>
 <translation id="4646534391647090355">Перейти сейчас</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности содержит ошибки. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
@@ -797,6 +803,7 @@
 <translation id="5251803541071282808">Облако</translation>
 <translation id="5252000469029418751">C7 (конверт)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Системные функции может устанавливать только владелец (<ph name="OWNER_EMAIL" />).</translation>
 <translation id="5273658854610202413">Внимание! Это правило не объединено в соответствии с правилом PolicyDictionaryMultipleSourceMergeList, так как оно не относится к словарю.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Завершить</translation>
@@ -833,6 +840,7 @@
 <translation id="5457113250005438886">Недопустимые данные</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакт}one{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакт}few{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакта}many{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактов}other{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контакта}}</translation>
 <translation id="5470861586879999274">&amp;Повторить изменения</translation>
+<translation id="5473728911100096288">После включения вы получите доступ к устаревшим функциям, которые будут недоступны в будущих версиях.</translation>
 <translation id="5478437291406423475">B6/C4 (конверт)</translation>
 <translation id="5481076368049295676">Посещение этой страницы может привести к установке вредоносной программы, которая похищает или удаляет данные. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Введите действительный адрес</translation>
@@ -891,6 +899,7 @@
 <translation id="5763042198335101085">Укажите действительный адрес электронной почты.</translation>
 <translation id="5765072501007116331">Выберите адрес, чтобы посмотреть способы и условия доставки.</translation>
 <translation id="5778550464785688721">Полный контроль над MIDI-устройствами</translation>
+<translation id="5781136890105823427">Эксперимент включен</translation>
 <translation id="578305955206182703">Янтарный</translation>
 <translation id="57838592816432529">Отключить звук</translation>
 <translation id="5784606427469807560">Не удалось подтвердить данные карты. Проверьте подключение к Интернету и повторите попытку.</translation>
@@ -1056,6 +1065,7 @@
 <translation id="6738516213925468394">Данные были зашифрованы <ph name="TIME" /> с помощью <ph name="BEGIN_LINK" />кодовой фразы<ph name="END_LINK" />. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="674375294223700098">Неизвестная ошибка сертификата сервера.</translation>
 <translation id="6744009308914054259">В ожидании подключения вы можете открыть скачанные файлы и почитать статьи офлайн.</translation>
+<translation id="6747611005629681221">Внимание! Устаревшие функции.</translation>
 <translation id="6753269504797312559">Значение правила</translation>
 <translation id="6757797048963528358">Устройство находится в спящем режиме.</translation>
 <translation id="6768213884286397650">Hagaki (открытка)</translation>
@@ -1418,6 +1428,7 @@
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="8740359287975076522">Не удается найти &lt;abbr id="dnsDefinition"&gt;DNS-адрес&lt;/abbr&gt; сайта <ph name="HOST_NAME" />. Выполняется диагностика.</translation>
 <translation id="874846938927089722">Кредитные карты и карты предоплаты, которые принимаются к оплате</translation>
+<translation id="874918643257405732">Добавить страницу в закладки</translation>
 <translation id="8759274551635299824">Срок действия карты истек.</translation>
 <translation id="8761567432415473239">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB-устройство</translation>

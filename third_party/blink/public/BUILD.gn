@@ -158,6 +158,7 @@ source_set("blink_headers") {
     "platform/modules/mediastream/webrtc_uma_histograms.h",
     "platform/modules/peerconnection/audio_codec_factory.h",
     "platform/modules/peerconnection/rtc_event_log_output_sink.h",
+    "platform/modules/peerconnection/rtc_event_log_output_sink_proxy_factory.h",
     "platform/modules/peerconnection/rtc_video_decoder_factory.h",
     "platform/modules/peerconnection/two_keys_adapter_map.h",
     "platform/modules/peerconnection/web_rtc_video_encoder_factory.h",

@@ -130,8 +130,7 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile,
                          CONTENT_SETTINGS_TYPE_USB_GUARD,
                          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
-      is_incognito_(profile->IsOffTheRecord()),
-      client_binding_(this) {
+      is_incognito_(profile->IsOffTheRecord()) {
   usb_policy_allowed_devices_.reset(new UsbPolicyAllowedDevices(
       profile->GetPrefs(), g_browser_process->local_state()));
 }
@@ -194,12 +193,11 @@ void UsbChooserContext::SetUpDeviceManagerConnection() {
                      base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_binding_);
-  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  DCHECK(!client_receiver_.is_bound());
   device_manager_->EnumerateDevicesAndSetClient(
-      std::move(client), base::BindOnce(&UsbChooserContext::InitDeviceList,
-                                        weak_factory_.GetWeakPtr()));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&UsbChooserContext::InitDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 #if defined(OS_ANDROID)
@@ -584,7 +582,7 @@ void UsbChooserContext::OnDeviceRemoved(
 
 void UsbChooserContext::OnDeviceManagerConnectionError() {
   device_manager_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   devices_.clear();
   is_initialized_ = false;
 

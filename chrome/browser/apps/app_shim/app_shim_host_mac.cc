@@ -151,34 +151,6 @@ void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
   client_->OnShimFocus(this, focus_type, files);
 }
 
-void AppShimHost::SetAppHidden(bool hidden) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnShimSetHidden(this, hidden);
-}
-
-void AppShimHost::QuitApp() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->OnShimQuit(this);
-}
-
-void AppShimHost::OnAppHide() {
-  if (uses_remote_views_)
-    return;
-  app_shim_->Hide();
-}
-
-void AppShimHost::OnAppUnhideWithoutActivation() {
-  if (uses_remote_views_)
-    return;
-  app_shim_->UnhideWithoutActivation();
-}
-
-void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
-  if (uses_remote_views_)
-    return;
-  app_shim_->SetUserAttention(type);
-}
-
 base::FilePath AppShimHost::GetProfilePath() const {
   return profile_path_;
 }

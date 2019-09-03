@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -181,8 +181,8 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
 
   mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
-  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
-      client_binding_;
+  mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
+      client_receiver_{this};
 
   std::vector<device::mojom::UsbDeviceFilterPtr> guest_os_classes_blocked_;
   std::vector<device::mojom::UsbDeviceFilterPtr>

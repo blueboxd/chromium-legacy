@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Geïnstalleerd</translation>
 <translation id="1792959175193046959">Je kunt op elk gewenst moment de standaard downloadlocatie wijzigen</translation>
 <translation id="1807246157184219062">Licht</translation>
+<translation id="1810845389119482123">Eerste synchronisatieconfiguratie niet voltooid</translation>
 <translation id="1821253160463689938">Maakt gebruik van cookies om je voorkeuren te onthouden, zelfs als je deze pagina's niet bezoekt</translation>
 <translation id="1829244130665387512">Zoeken op pagina</translation>
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
@@ -412,6 +413,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> gebruikt</translation>
 <translation id="4181841719683918333">Talen</translation>
+<translation id="4183868528246477015">Zoeken met Google Lens <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="4198423547019359126">Geen beschikbare downloadlocaties</translation>
 <translation id="4209895695669353772">Schakel synchronisatie in om suggesties voor gepersonaliseerde content van Google te ontvangen</translation>
@@ -474,6 +476,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
 <translation id="4684427112815847243">Alles synchroniseren</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andere}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andere}}</translation>
+<translation id="4696983787092045100">Tekst naar je apparaten verzenden</translation>
 <translation id="4698034686595694889">Offline bekijken in <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Er ontbreekt essentiële functionaliteit voor het uitvoeren van Chrome. Je Chrome-installatie is onvolledig of niet compatibel met deze versie van Android.</translation>
 <translation id="4699172675775169585">Gecachte afbeeldingen en bestanden</translation>
@@ -529,6 +532,10 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5011311129201317034"><ph name="SITE" /> wil verbinding maken</translation>
 <translation id="5013696553129441713">Geen nieuwe suggesties</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">De site kan mogelijk informatie over je verzamelen wanneer VR actief is, zoals:
+  -  je fysieke kenmerken, zoals je lengte
+
+Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5048398596102334565">Sites toegang geven tot bewegingssensoren (aanbevolen)</translation>
@@ -556,6 +563,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5224771365102442243">Met video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> wil scannen naar Bluetooth-apparaten in de buurt. De volgende apparaten zijn gevonden:</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
+<translation id="5234764350956374838">Sluiten</translation>
 <translation id="526421993248218238">Kan deze pagina niet laden</translation>
 <translation id="5271967389191913893">Het apparaat kan de content niet openen die moet worden gedownload.</translation>
 <translation id="528192093759286357">Sleep vanaf de bovenkant en tik op de knop Terug om het volledige scherm te sluiten.</translation>
@@ -574,6 +582,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5363230136052241468">Tik op de startknop om de nieuwe tabbladpagina te laden</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geopend tabblad, tik om tussen tabbladen te schakelen}other{<ph name="OPEN_TABS_MANY" /> geopende tabbladen, tik om tussen tabbladen te schakelen}}</translation>
 <translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(en nog 1)}other{(en nog #)}}</translation>
 <translation id="5400569084694353794">Als je deze app gebruikt, ga je akkoord met de <ph name="BEGIN_LINK1" />servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />privacybeleid<ph name="END_LINK2" /> van Chrome.</translation>
 <translation id="5403592356182871684">Namen</translation>
 <translation id="5403644198645076998">Alleen bepaalde sites toestaan</translation>
@@ -603,6 +612,11 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5527082711130173040">Chrome heeft locatietoegang nodig om naar apparaten te scannen. <ph name="BEGIN_LINK1" />Rechten updaten<ph name="END_LINK1" />. Locatietoegang is ook <ph name="BEGIN_LINK2" />uitgeschakeld voor dit apparaat<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Vragen voordat sites toestemming krijgen om tekst en afbeeldingen vanaf het klembord te lezen (aanbevolen)</translation>
 <translation id="5530766185686772672">Incognitotabbladen sluiten</translation>
+<translation id="5534334044554683961">De site kan mogelijk informatie over je verzamelen wanneer VR actief is, zoals:
+  -   je fysieke kenmerken, zoals je lengte
+  -   de indeling van je kamer
+
+Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5534640966246046842">Site gekopieerd</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5561549206367097665">Wachten op netwerk…</translation>
@@ -690,7 +704,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6196640612572343990">Indirecte cookies blokkeren</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Ontgrendel het apparaat om je wachtwoorden te exporteren</translation>
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
@@ -893,6 +906,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7665369617277396874">Account toevoegen</translation>
 <translation id="766587987807204883">Hier worden artikelen weergegeven die je zelfs kunt lezen wanneer je offline bent</translation>
 <translation id="7682724950699840886">Probeer de volgende tips: zorg dat er voldoende ruimte op je apparaat beschikbaar is, probeer opnieuw te exporteren.</translation>
+<translation id="7685301384041462804">Controleer of je deze site vertrouwt voordat je VR activeert.</translation>
 <translation id="7698359219371678927">E-mail in <ph name="APP_NAME" /> maken</translation>
 <translation id="7704317875155739195">Zoekopdrachten en URL's automatisch aanvullen</translation>
 <translation id="7725024127233776428">Pagina's waaraan je een bladwijzer toevoegt, worden hier weergegeven</translation>
@@ -923,6 +937,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7886917304091689118">Actief in Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Bestand downloaden.}other{# bestanden downloaden.}}</translation>
 <translation id="7929962904089429003">Het menu openen</translation>
+<translation id="7930681627240672853">Wachtwoordveiligheid controleren</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7963646190083259054">Leverancier:</translation>
@@ -1070,6 +1085,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8993760627012879038">Een nieuw venster openen in de incognitomodus</translation>
 <translation id="8998729206196772491">Je logt in met een account dat wordt beheerd door <ph name="MANAGED_DOMAIN" /> waarmee je de eigenaar beheer geeft over je Chrome-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chrome, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
 <translation id="9019902583201351841">Beheerd door je ouders</translation>
+<translation id="9029323097866369874"><ph name="DOMAIN" /> toestaan om VR te activeren?</translation>
 <translation id="9040142327097499898">Meldingen zijn toegestaan. Locatie is uitgeschakeld voor dit apparaat.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video's}}</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>

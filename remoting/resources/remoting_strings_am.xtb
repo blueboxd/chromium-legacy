@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="5254120496627797685">ከዚህ ገጽ መውጣት የChrome ርቀት ዴስክቶፕ ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
 <translation id="5308380583665731573">ይገናኙ</translation>
+<translation id="5327248766486351172">ስም</translation>
 <translation id="533625276787323658">ምንም የሚገናኙት ነገር የለም</translation>
 <translation id="5363265567587775042">«<ph name="SHARE" />» ጠቅ ለማድረግ ለመድረስ የሚፈልጉትን ኮምፒዩተር ተጠቃሚ ይጠይቁ እና የመድረሻ ኮድ ይሰጡዎታል።</translation>
 <translation id="5379087427956679853">Chrome የርቀት ዴስክቶፕ ኮምፒውተርዎን ደህንነቱ በተጠበቀ መልኩ ድሩ ላይ እንዲያጋሩት ያስችልዎታል። ሁለቱም ተጠቃሚዎች የChrome ርቀት ዴስክቶፕ መተግበሪያውን ማሄድ አለባቸው፣ እሱም <ph name="URL" /> ላይ ሊገኝ ይችላል።</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">የማያ ገጽ አማራጮች</translation>
 <translation id="7970576581263377361">ማረጋገጥ አልተሳካም። እባክዎ እንደገና ወደ Chromium ይግቡ።</translation>
 <translation id="7981525049612125370">የርቀት ክፍለጊዜውን ጊዜው አልፎበታል።</translation>
+<translation id="8038111231936746805">(ነባሪ)</translation>
 <translation id="8041089156583427627">ግብረ መልስ ላክ</translation>
 <translation id="8041721485428375115">የChrome የርቀት ዴስክቶፕ አስተናጋጅ ጫኚውን በማውረድዎ በGoogle <ph name="LINK_BEGIN" />የአገልግሎት ውል<ph name="LINK_END" />ይስማማሉ።</translation>
 <translation id="8060029310790625334">የእገዛ ማዕከል</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">የእኔ ኮምፒውተሮች</translation>
 <translation id="811307782653349804">የእራስዎን ኮምፒውተር ከማንኛውም ቦታ ይድረሱበት።</translation>
 <translation id="8116630183974937060">አንድ የአውታረ መረብ ስህተት ተከስቷል። እባክዎ የእርስዎ መሣሪያ መስመር ላይ መሆኑን ያረጋግጡና እንደገና ይሞክሩ።</translation>
-<translation id="8123581458650016326">ይህንን ማሽን በርቀት ያሉ ተጠቃሚዎች እንዲቆጣጠሩ ፍቀድ</translation>
 <translation id="8178433417677596899">የተጠቃሚ-ለተጠቃሚ ማያ ገጽ ማጋራት፣ ለርቀት ቴክኒካዊ ድጋፍ ምርጥ የሆነ።</translation>
 <translation id="8187079423890319756">የቅጂ መብት 2013 የChromium አዘጋጆች። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="8196755618196986400">ለተጨማሪ መረጃ እርስዎን እንድናነጋግር ለማስቻል የኢሜይል አድራሻዎ በሚያቀርቡት ማንኛውም ግብረመልስ ውስጥ ይካተታል።</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">የግላዊነት መመሪያ</translation>
 <translation id="894763922177556086">ጥሩ</translation>
 <translation id="895780780740011433">ለWindows 7 እና ከዚያ በላይ</translation>
-<translation id="8963047137585288214"><ph name="PRODUCT_NAME" />ን በመጠቀም ይህን ማሽን በርቀት መቆጣጠር ከመቻልዎ በፊት ተጨማሪ የውቅረት ደረጃ ያስፈልጋል።
-
-ይህን ተግባር ለማንቃት የደህንነት እና የግላዊነት ምርጫዎች መቃንን ለማሳየት «<ph name="BUTTON_NAME" />» ን ይምረጡ፣ ከዚያ ከ«<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ያለውን ሳጥን ላይ ምልክት ያድርጉ።
-
-«<ph name="SERVICE_SCRIPT_NAME" />» አስቀድሞ ያለ እና ምልክት የተደረገበት ከሆነ ምልክቱን አንስተው እንደገና ማድረግ ሊኖርብዎት ይችላል።</translation>
 <translation id="897805526397249209">ከአንድ ሌላ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chromotingን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
 <translation id="8998327464021325874">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ምርጫዎች መቆጣጠሪያ</translation>
 <translation id="9016232822027372900">ለማንኛውም ተገናኝ</translation>

@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="5254120496627797685">Vaihtamalla sivua päätät Chrome-etäkäyttökerran.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
+<translation id="5327248766486351172">Nimi</translation>
 <translation id="533625276787323658">Et ole määrittänyt etätietokoneita.</translation>
 <translation id="5363265567587775042">Ota yhteyttä käyttäjään, jonka tietokonetta haluat käyttää. Pyydä häntä klikkaamaan <ph name="SHARE" /> ja antamaan käyttökoodi sinulle.</translation>
 <translation id="5379087427956679853">Chrome-etäkäyttösovelluksen avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL" /> löytyvää Chrome-etäkäyttösovellusta.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Ruudun asetukset</translation>
 <translation id="7970576581263377361">Todennus epäonnistui. Kirjaudu Chromiumiin uudelleen.</translation>
 <translation id="7981525049612125370">Etäistunto on vanhentunut.</translation>
+<translation id="8038111231936746805">(oletus)</translation>
 <translation id="8041089156583427627">Lähetä palautetta</translation>
 <translation id="8041721485428375115">Lataamalla Chrome-etäkäytön isännän asennusohjelman hyväksyt Googlen <ph name="LINK_BEGIN" />käyttöehdot<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Ohjekeskus</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Omat tietokoneet</translation>
 <translation id="811307782653349804">Käytä tietokonettasi mistä haluat.</translation>
 <translation id="8116630183974937060">Tapahtui verkkovirhe. Tarkista, että laite on yhdistetty verkkoon, ja yritä uudelleen.</translation>
-<translation id="8123581458650016326">Anna käyttäjien etähallita tätä konetta</translation>
 <translation id="8178433417677596899">Ruudun jakaminen käyttäjien välillä sopii hyvin teknisen etätuen antamiseen.</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="8196755618196986400">Jotta voimme kysyä sinulta lisätietoja, sähköpostiosoitteesi liitetään kaikkeen lähettämääsi palautteeseen.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Tietosuojakäytäntö</translation>
 <translation id="894763922177556086">Hyvä</translation>
 <translation id="895780780740011433">Windows 7 ja uudemmat</translation>
-<translation id="8963047137585288214">Sinun on suoritettava lisämääritysvaihe ennen kuin tämän koneen <ph name="PRODUCT_NAME" /> ‑etäkäyttö on mahdollista.
-
-Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin tietosuoja- ja yksityisyysvalinnat avataan, ja valitsemalla ruutu <ph name="SERVICE_SCRIPT_NAME" />.
-
-Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo lisätty ja valittu, sinun on ehkä poistettava valinta ja valittava se sitten uudelleen.</translation>
 <translation id="897805526397249209">Ota etäyhteys käyttöön asentamalla toiselle tietokoneelle Chromoting ja valitsemalla <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome-etäkäytön isännän hallinta</translation>
 <translation id="9016232822027372900">Yhdistä silti</translation>

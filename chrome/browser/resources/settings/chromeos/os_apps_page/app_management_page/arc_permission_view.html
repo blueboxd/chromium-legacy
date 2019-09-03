@@ -28,12 +28,12 @@
       <div id="permissions-card"
         class="permission-card-row"
         hidden$="[[!isArcSupported_]]">
-        <div class="subpermission-list">
-          <div id="subpermission-expand-row"
-            class="subpermission-row separated-row"
-            hidden$="[[!isArcSupported_]]">
-            <div class="header-text">$i18n{permissions}</div>
-          </div>
+        <div id="subpermission-expand-row"
+          class="permission-section-header"
+          hidden$="[[!isArcSupported_]]">
+          <div class="header-text">$i18n{permissions}</div>
+        </div>
+        <div class="indented-permission-block">
           <app-management-permission-item class="subpermission-row"
             icon="app-management:location"
             permission-label="$i18n{location}"

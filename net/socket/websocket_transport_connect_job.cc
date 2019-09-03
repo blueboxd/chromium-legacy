@@ -199,8 +199,8 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
               FROM_HERE,
               base::TimeDelta::FromMilliseconds(
                   TransportConnectJob::kIPv6FallbackTimerInMs),
-              base::Bind(&WebSocketTransportConnectJob::StartIPv4JobAsync,
-                         base::Unretained(this)));
+              base::BindOnce(&WebSocketTransportConnectJob::StartIPv4JobAsync,
+                             base::Unretained(this)));
         }
         return result;
 

@@ -8,7 +8,7 @@
 <translation id="1014370462248694370">Balayer l'écran vers la droite avec deux doigts</translation>
 <translation id="1022586497894531524">Est-ce la première fois que vous utilisez les commentaires audio de ChromeVox ? Ce tutoriel rapide explique les bases pour commencer à utiliser ChromeVox.</translation>
 <translation id="1023866615269196768">Cellule fractionnée</translation>
-<translation id="1025074108959230262">Mode permanent désactivé</translation>
+<translation id="1025074108959230262">Mode persistant désactivé</translation>
 <translation id="1031961866430398710">puis</translation>
 <translation id="1038643060055067718">Lignes :</translation>
 <translation id="1038795173450935438">Pour passer à l'élément suivant sur une page, appuyez sur la touche de recherche + la flèche vers la droite, et pour revenir directement à l'élément précédent, appuyez sur la touche de recherche + la flèche vers la gauche. Pour passer à la ligne suivante, appuyez sur la touche de recherche + la flèche vers le bas, et pour revenir à la ligne précédente, appuyez sur la touche de recherche + la flèche vers le haut. Si vous atteignez un élément sur lequel vous souhaitez cliquer, appuyez sur la touche de recherche + la barre d'espace.</translation>
@@ -484,6 +484,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4372705107434148843">Arrêter la diffusion vocale</translation>
 <translation id="4373197658375206385">Aucun élément précédent autre qu'un lien</translation>
 <translation id="4376316291247992553">Consulter une image en braille</translation>
+<translation id="437809255587011096">Annoncer le style du texte</translation>
 <translation id="4378308539633073595">Faire défiler vers l'avant</translation>
 <translation id="4384583879834880242">Questions/Réponses</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -613,7 +614,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="5304943142864553931"><ph name="TITLE" />, onglet</translation>
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5310788376443009632">Éléments supprimés :</translation>
-<translation id="5320727453979144100">Mode permanent activé</translation>
+<translation id="5320727453979144100">Mode persistant activé</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgule}one{# virgule}other{# virgules}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, zone de texte</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, lien</translation>
@@ -1121,6 +1122,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8503360654911991865">Diminuer la granularité de la navigation</translation>
 <translation id="8504695234784218301">Fin de l'erreur grammaticale</translation>
 <translation id="8520472399088452386">Bouton Toupie</translation>
+<translation id="8534394844575788431">Formatage</translation>
 <translation id="8538744478902126321">Tenter de détecter l'en-tête de ligne de la cellule actuelle</translation>
 <translation id="8540054775867439484">Revenir au début</translation>
 <translation id="8542271685829952264">Pour découvrir l'ensemble des commandes et des raccourcis ChromeVox, appuyez sur la touche de recherche+point, puis utilisez les touches fléchées pour parcourir les menus, et la touche Entrée pour activer une commande. Pour revenir ici, appuyez sur la touche de recherche+o, puis sur t.</translation>
@@ -1200,6 +1202,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Onglet</translation>
 <translation id="9151211641321628915">Énonce une brève description de la position actuelle.</translation>
+<translation id="9151249085738989067">Changer automatiquement de voix ChromeVox en fonction de la langue</translation>
 <translation id="9153606228985488238">Timbre de voix : <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Accéder à la fin de la colonne actuelle</translation>
 <translation id="9173115498289768110">Volume : <ph name="PERCENT" /> %</translation>

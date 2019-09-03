@@ -221,12 +221,11 @@ void ArcUsbHostBridge::OnConnectionReady() {
       base::BindOnce(&ArcUsbHostBridge::Disconnect, base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_binding_);
-  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  DCHECK(!client_receiver_.is_bound());
   usb_manager_->EnumerateDevicesAndSetClient(
-      std::move(client), base::BindOnce(&ArcUsbHostBridge::InitDeviceList,
-                                        weak_factory_.GetWeakPtr()));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&ArcUsbHostBridge::InitDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ArcUsbHostBridge::OnConnectionClosed() {
@@ -327,7 +326,7 @@ void ArcUsbHostBridge::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
 
   usb_manager_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   devices_.clear();
 }
 

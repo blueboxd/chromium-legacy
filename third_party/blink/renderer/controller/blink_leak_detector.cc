@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -33,9 +33,10 @@ BlinkLeakDetector::BlinkLeakDetector()
 BlinkLeakDetector::~BlinkLeakDetector() = default;
 
 // static
-void BlinkLeakDetector::Create(mojom::blink::LeakDetectorRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<BlinkLeakDetector>(),
-                          std::move(request));
+void BlinkLeakDetector::Create(
+    mojo::PendingReceiver<mojom::blink::LeakDetector> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<BlinkLeakDetector>(),
+                              std::move(receiver));
 }
 
 void BlinkLeakDetector::PerformLeakDetection(

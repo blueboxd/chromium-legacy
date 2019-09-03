@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Command-line variations</translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Deprecated Features</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
 <translation id="132301787627749051">Search for clipboard image</translation>
 <translation id="1323433172918577554">Show More</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Waiting for connection…</translation>
 <translation id="1529521330346880926">10x15 (Envelope)</translation>
+<translation id="1530707389502320859">The site that you just tried to visit looks fake. Attackers sometimes mimic sites by making small, hard-to-see changes to the URL.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">This page says</translation>
 <translation id="153384715582417236">That’s all for now</translation>
@@ -345,6 +347,9 @@
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Running Connectivity Diagnostics<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">By enabling these features, you could lose browser data or
+    compromise your security or privacy. Enabled features apply to all
+    users of this browser.</translation>
 <translation id="2735043616039983645">More than one source with conflicting values is present for this policy!</translation>
 <translation id="2738330467931008676">Choose pickup address</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -388,6 +393,7 @@
 <translation id="2985306909656435243">If enabled, Chromium will store a copy of your card on this device for faster form filling.</translation>
 <translation id="2985398929374701810">Enter a valid address</translation>
 <translation id="2986368408720340940">This pickup method isn’t available. Try a different method.</translation>
+<translation id="2987034854559945715">No matching features</translation>
 <translation id="2991174974383378012">Sharing with Websites</translation>
 <translation id="2991571918955627853">You cannot visit <ph name="SITE" /> right now because the website uses HSTS. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="3005723025932146533">Show saved copy</translation>
@@ -510,6 +516,7 @@
 <translation id="3678529606614285348">Open page in a new Incognito window (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Crash report captured on <ph name="CRASH_TIME" />, uploaded on <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Certificate information</translation>
+<translation id="3701427423622901115">Reset acknowledged.</translation>
 <translation id="3704162925118123524">The network that you are using may require you to visit its log-in page.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Loading...</translation>
@@ -682,6 +689,7 @@
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4597348597567598915">Size 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="464342062220857295">Search features</translation>
 <translation id="4646534391647090355">Take me there now</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -798,6 +806,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Features that apply system-wide can only be set by the owner: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Warning: This policy was not merged as specified in PolicyDictionaryMultipleSourceMergeList policy because it is not part of the dictionary policies that can be merged.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">End</translation>
@@ -834,6 +843,8 @@
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}}</translation>
 <translation id="5470861586879999274">&amp;Redo edit</translation>
+<translation id="5473728911100096288">By enabling these features, you will be using deprecated features
+    that will disappear in future versions.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">This content might try to install dangerous software on your device that steals or deletes your information. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Add valid address</translation>
@@ -892,6 +903,7 @@
 <translation id="5763042198335101085">Enter a valid email address</translation>
 <translation id="5765072501007116331">To see delivery methods and requirements, select an address</translation>
 <translation id="5778550464785688721">MIDI devices full control</translation>
+<translation id="5781136890105823427">Experiment enabled</translation>
 <translation id="578305955206182703">Amber</translation>
 <translation id="57838592816432529">Mute</translation>
 <translation id="5784606427469807560">There was a problem confirming your card. Check your Internet connection and try again.</translation>
@@ -1057,6 +1069,7 @@
 <translation id="6738516213925468394">Your data was encrypted with your <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" /> on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="674375294223700098">Unknown server certificate error.</translation>
 <translation id="6744009308914054259">While waiting for a connection, you can visit Downloads to read offline articles.</translation>
+<translation id="6747611005629681221">Warning: Deprecated features ahead!</translation>
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6757797048963528358">Your device went to sleep.</translation>
 <translation id="6768213884286397650">Hagaki (Postcard)</translation>
@@ -1419,6 +1432,7 @@ Additional details:
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
 <translation id="874846938927089722">Accepted Credit and Prepaid Cards</translation>
+<translation id="874918643257405732">Bookmark this tab</translation>
 <translation id="8759274551635299824">This card has expired</translation>
 <translation id="8761567432415473239">Google Safe Browsing recently <ph name="BEGIN_LINK" />found harmful programs<ph name="END_LINK" /> on <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB device</translation>

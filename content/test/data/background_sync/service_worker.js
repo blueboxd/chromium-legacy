@@ -24,6 +24,7 @@ this.onmessage = (event) => {
         return;
       }
 
+      periodicSyncEventCount++;
       resolveCallback();
       sendMessageToClients('sync', 'ok - delay completed');
       return;

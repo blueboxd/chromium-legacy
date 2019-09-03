@@ -263,6 +263,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="4747097190499141774">Kryptering av passordfraser inkluderer ikke betalingsmåter og adresser fra Google Pay. Bare personer som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret. Hvis du glemmer den, må du tilbakestille synkroniseringen. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Finn på siden</translation>
 <translation id="4751645464639803239">Ny inkognitofane</translation>
+<translation id="4758977202923349869">Plasser kredittkortet inni denne rammen</translation>
 <translation id="4802417911091824046">Kryptering av passordfraser inkluderer ikke betalingsmåter og adresser fra Google Pay.
 
 For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5728700505257787410">Det oppsto et problem ved pålogging til kontoen din.</translation>
 <translation id="5737974891429562743">Påloggingsdetaljene for kontoen er utdatert. Oppdater for å starte synkroniseringen.</translation>
 <translation id="5738887413654608789">Med denne kan du oppdage relevante nettsider basert på omgivelsene dine.</translation>
+<translation id="5803566855766646066">Er du sikker på at du vil forkaste dette nye kortet?</translation>
 <translation id="5816228676161003208">Dette gjør at du kan søke raskere ved å bruke stemmen.</translation>
 <translation id="5846482154967366008">Søkemotor</translation>
 <translation id="5854790677617711513">Eldre enn 30 dager</translation>

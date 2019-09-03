@@ -13,7 +13,7 @@ namespace syncer {
 
 class Encryptor;
 
-class NigoriStorageImpl : NigoriStorage {
+class NigoriStorageImpl : public NigoriStorage {
  public:
   // |encryptor| must be not null and must outlive this object.
   NigoriStorageImpl(const base::FilePath& path, const Encryptor* encryptor);

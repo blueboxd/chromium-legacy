@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "components/sync/base/fake_encryptor.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +15,10 @@ namespace syncer {
 
 namespace {
 
-using ::testing::_;
+using testing::_;
+using testing::Eq;
+using testing::Ne;
+using testing::SizeIs;
 
 }  // namespace
 
@@ -299,6 +303,29 @@ TEST_F(CryptographerTest, GetKeysThenInstall) {
   // all the keys after key installation.
   EXPECT_TRUE(another_cryptographer.CanDecrypt(encrypted_k1));
   EXPECT_TRUE(another_cryptographer.CanDecrypt(encrypted_k2));
+}
+
+TEST_F(CryptographerTest, ShouldConvertToCryptographerDataWithPendingKeys) {
+  const KeyParams kKeyParams = {KeyDerivationParams::CreateForPbkdf2(),
+                                "password1"};
+  ASSERT_TRUE(cryptographer_.AddKey(kKeyParams));
+
+  CryptographerDataWithPendingKeys serialized =
+      cryptographer_.ToCryptographerDataWithPendingKeys();
+  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(), SizeIs(1));
+
+  std::string expected_key_name;
+  Nigori::CreateByDerivation(kKeyParams.derivation_params, kKeyParams.password)
+      ->Permute(Nigori::Password, kNigoriKeyName, &expected_key_name);
+  EXPECT_THAT(serialized.cryptographer_data.default_key_name(),
+              Eq(expected_key_name));
+  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).name(),
+              Eq(expected_key_name));
+  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).user_key(),
+              Ne(""));
+  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).encryption_key(),
+              Ne(""));
+  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).mac_key(), Ne(""));
 }
 
 }  // namespace syncer

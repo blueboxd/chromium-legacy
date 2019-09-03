@@ -263,6 +263,7 @@
 <translation id="4747097190499141774">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。只有知道你通關密語的人，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果你忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">在網頁中尋找...</translation>
 <translation id="4751645464639803239">新無痕式分頁</translation>
+<translation id="4758977202923349869">請將信用卡置於此方框內</translation>
 <translation id="4802417911091824046">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。
 
 如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@
 <translation id="5728700505257787410">很抱歉，登入您的帳戶時發生問題。</translation>
 <translation id="5737974891429562743">帳戶登入詳細資訊過舊。請先更新，再開始進行同步處理。</translation>
 <translation id="5738887413654608789">可讓你找到與目前周遭環境相關的網頁。</translation>
+<translation id="5803566855766646066">確定要捨棄這張新的信用卡嗎？</translation>
 <translation id="5816228676161003208">可讓你使用語音搜尋功能，查詢資訊更方便。</translation>
 <translation id="5846482154967366008">搜尋引擎</translation>
 <translation id="5854790677617711513">超過 30 天前</translation>

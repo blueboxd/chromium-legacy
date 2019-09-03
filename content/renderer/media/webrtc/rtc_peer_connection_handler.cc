@@ -31,13 +31,13 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_factory.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
@@ -1933,8 +1933,7 @@ void RTCPeerConnectionHandler::StartEventLog(int output_period_ms) {
   // or find a way to be able to use it.
   // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
-      std::make_unique<RtcEventLogOutputSinkProxy>(
-          peer_connection_observer_.get()),
+      blink::CreateRtcEventLogOutputSinkProxy(peer_connection_observer_.get()),
       output_period_ms);
 }
 

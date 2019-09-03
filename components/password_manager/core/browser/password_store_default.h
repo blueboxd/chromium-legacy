@@ -90,10 +90,8 @@ class PasswordStoreDefault : public PasswordStore {
       PrimaryKeyToFormMap* key_to_form_map) override;
   PasswordStoreChangeList RemoveLoginByPrimaryKeySync(int primary_key) override;
   PasswordStoreSync::MetadataStore* GetMetadataStore() override;
-
-  inline bool DeleteAndRecreateDatabaseFile() {
-    return login_db_->DeleteAndRecreateDatabaseFile();
-  }
+  bool IsAccountStore() const override;
+  bool DeleteAndRecreateDatabaseFile() override;
 
  private:
   // Resets |login_db_| on the background sequence.

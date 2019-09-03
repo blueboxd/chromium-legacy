@@ -67,6 +67,12 @@ bool BackgroundSyncBaseBrowserTest::RegistrationPending(
   return is_pending;
 }
 
+bool BackgroundSyncBaseBrowserTest::CompleteDelayedSyncEvent() {
+  std::string script_result;
+  EXPECT_TRUE(RunScript("completeDelayedSyncEvent()", &script_result));
+  return script_result == BuildExpectedResult("delay", "completing");
+}
+
 void BackgroundSyncBaseBrowserTest::RegistrationPendingCallback(
     base::OnceClosure quit,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,

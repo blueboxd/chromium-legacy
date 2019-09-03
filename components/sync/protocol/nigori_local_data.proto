@@ -79,13 +79,13 @@ message NigoriModel {
 
   // The list of encrypted UserEncryptableTypes, represented by their specifics
   // field number.
-  repeated int32 encrypted_types_specifics_field_numbers = 9;
+  repeated int32 encrypted_types_specifics_field_number = 9;
 
   // Keystore keys are used to decrypt keystore-based Nigori. Should be
   // persisted in order to not ask the keystore server for them during every
   // browser startup. Due to backward compatibility requirements keys are
   // always Base64 encoded.
-  repeated string keystore_keys = 10;
+  repeated string keystore_key = 10;
 }
 
 // Sync proto to store Nigori data in storage. Proto should be encrypted with

@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5254120496627797685">Thoát khỏi trang này sẽ kết thúc phiên Chrome Remote Desktop của bạn.</translation>
 <translation id="5308380583665731573">Kết nối</translation>
+<translation id="5327248766486351172">Tên</translation>
 <translation id="533625276787323658">Không có máy tính nào để kết nối</translation>
 <translation id="5363265567587775042">Yêu cầu người dùng có máy tính bạn muốn truy cập nhấp vào “<ph name="SHARE" />” và cung cấp cho bạn mã truy cập.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop cho phép bạn chia sẻ máy tính của mình một cách an toàn qua Web. Cả hai người dùng đều phải chạy ứng dụng Chrome Remote Desktop mà bạn có thể tìm thấy tại <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
 <translation id="7970576581263377361">Xác thực bị lỗi. Vui lòng đăng nhập lại vào Chromium.</translation>
 <translation id="7981525049612125370">Phiên từ xa đã hết hạn.</translation>
+<translation id="8038111231936746805">(mặc định)</translation>
 <translation id="8041089156583427627">Gửi phản hồi</translation>
 <translation id="8041721485428375115">Khi tải xuống Trình cài đặt máy chủ Chrome Remote Desktop, bạn đồng ý với <ph name="LINK_BEGIN" />Điều khoản dịch vụ<ph name="LINK_END" /> của Google.</translation>
 <translation id="8060029310790625334">Trung tâm trợ giúp</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Máy tính của tôi</translation>
 <translation id="811307782653349804">Truy cập vào máy tính của chính bạn ở mọi nơi.</translation>
 <translation id="8116630183974937060">Đã xảy ra lỗi mạng. Hãy kiểm tra xem thiết bị của bạn có trực tuyến hay không và thử lại.</translation>
-<translation id="8123581458650016326">Cho phép người dùng từ xa điều khiển máy này</translation>
 <translation id="8178433417677596899">Chia sẻ màn hình giữa người dùng, hoàn hảo để hỗ trợ kỹ thuật từ xa.</translation>
 <translation id="8187079423890319756">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8196755618196986400">Để cho phép chúng tôi liên hệ với bạn để biết thêm thông tin, địa chỉ email của bạn sẽ được bao gồm trong mọi phản hồi mà bạn gửi.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Chính sách quyền riêng tư</translation>
 <translation id="894763922177556086">Tốt</translation>
 <translation id="895780780740011433">Dành cho Windows 7 trở lên</translation>
-<translation id="8963047137585288214">Bạn cần thực hiện một bước cấu hình bổ sung để có thể điều khiển máy này từ xa bằng <ph name="PRODUCT_NAME" />.
-
-Để bật chức năng này, hãy chọn '<ph name="BUTTON_NAME" />' để hiển thị ngăn tùy chọn Bảo mật và quyền riêng tư. Sau đó, chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Nếu '<ph name="SERVICE_SCRIPT_NAME" />' đã tồn tại và được chọn, thì bạn có thể phải bỏ rồi chọn lại.</translation>
 <translation id="897805526397249209">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Kết nối từ xa trên Chrome trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Trình điều khiển máy chủ Chrome Remote Desktop</translation>
 <translation id="9016232822027372900">Vẫn tiếp tục kết nối</translation>

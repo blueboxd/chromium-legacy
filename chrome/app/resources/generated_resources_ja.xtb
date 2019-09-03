@@ -2797,7 +2797,6 @@
 <translation id="5235050375939235066">アプリをアンインストールしますか？</translation>
 <translation id="5235750401727657667">新しいタブを開いたときの表示ページを変更する</translation>
 <translation id="5238278114306905396">アプリ「<ph name="EXTENSION_NAME" />」は自動的に削除されました。</translation>
-<translation id="5238713938047984284">パスワードの保存</translation>
 <translation id="5241128660650683457">アクセスしたウェブサイトでのすべてのユーザーデータの読み取り</translation>
 <translation id="5242724311594467048">「<ph name="EXTENSION_NAME" />」を有効にしますか？</translation>
 <translation id="5243522832766285132">しばらくしてからもう一度お試しください</translation>
@@ -3422,7 +3421,6 @@
 <translation id="6129691635767514872">選択したデータが Chrome から削除され、同期されたデバイスからも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="6129938384427316298">Netscape 証明書コメント</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6130024555057767093">現在、個々に許可したサイトを除くすべてのサイトの通知がブロックされています。</translation>
 <translation id="6136114942382973861">ダウンロード バーを閉じる</translation>
 <translation id="6137767437444130246">ユーザー証明書</translation>
 <translation id="6138680304137685902">X9.62 ECDSA 署名（SHA-384）</translation>
@@ -3474,7 +3472,7 @@
 <translation id="6212039847102026977">ネットワークの詳細プロパティを表示</translation>
 <translation id="6212168817037875041">画面をオフにする</translation>
 <translation id="6212752530110374741">リンクをメールで送信</translation>
-<translation id="6214642087594370545">データ侵害が記録された安全でないパスワードを入力したときに警告を表示します。この機能はログインしているユーザーにのみ利用可能です。</translation>
+<translation id="6214642087594370545">データ侵害が記録された安全でないパスワードを入力したときに警告を表示します。この機能はログインしているユーザーのみ利用可能です。</translation>
 <translation id="6216696360484424239">自動ログイン</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> はオフラインです。インターネットに接続してもう一度お試しください。</translation>
 <translation id="6220413761270491930">拡張機能の読み込みエラー</translation>
@@ -4334,7 +4332,6 @@
 <translation id="7529411698175791732">インターネット接続を確認してください。問題が解消しない場合は、ログアウトして再度ログインしてみてください。</translation>
 <translation id="7530016656428373557">放電率（ワット）</translation>
 <translation id="7531779363494549572">[設定] &gt; [アプリと通知] &gt; [通知] の順に選択します。</translation>
-<translation id="7536220825385726660">Play ストアのアプリによる外部デバイスへのアクセスを許可する</translation>
 <translation id="7539856059004947393">Bluetooth セキュリティ キー</translation>
 <translation id="7540972813190816353">更新の確認中にエラーが発生しました: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">この <ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスでデバッグ機能を有効にします</translation>
@@ -4382,7 +4379,7 @@
 <translation id="7607002721634913082">一時停止中</translation>
 <translation id="7609148976235050828">インターネットに接続して、もう一度お試しください。</translation>
 <translation id="7611008212562900400">デバイス、アプリ、ウェブを検索...</translation>
-<translation id="7614260613810441905">サイトによってデバイスのファイルやフォルダが編集されるときに確認する（推奨）</translation>
+<translation id="7614260613810441905">サイトがデバイスのファイルやフォルダを編集しようとしたときに確認する（推奨）</translation>
 <translation id="7616214729753637086">デバイスを登録しています...</translation>
 <translation id="7617366389578322136">「<ph name="DEVICE_NAME" />」に接続しています</translation>
 <translation id="7621382409404463535">デバイスの設定を保存できませんでした。</translation>
@@ -4932,7 +4929,7 @@
 <translation id="8391218455464584335">レコード</translation>
 <translation id="8391712576156218334">画像を利用できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="8392234662362215700">キーボードのレイアウトを切り替えるには Ctrl+Shift+Space を押してください。</translation>
-<translation id="8392364544846746346">サイトによってデバイスのファイルやフォルダが編集されるときに確認する</translation>
+<translation id="8392364544846746346">サイトがデバイスのファイルやフォルダを編集しようとしたときに確認する</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8393511274964623038">プラグインを停止</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>

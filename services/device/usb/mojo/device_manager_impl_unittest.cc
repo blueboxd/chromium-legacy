@@ -17,7 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -35,7 +35,7 @@ namespace device {
 
 using mojom::UsbDeviceInfoPtr;
 using mojom::UsbDeviceManager;
-using mojom::UsbDeviceManagerClientPtr;
+using mojom::UsbDeviceManagerClient;
 using mojom::UsbEnumerationOptionsPtr;
 
 namespace usb {
@@ -67,13 +67,12 @@ class USBDeviceManagerImplTest : public testing::Test {
 
 class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
  public:
-  MockDeviceManagerClient() : binding_(this) {}
+  MockDeviceManagerClient() = default;
   ~MockDeviceManagerClient() override = default;
 
-  mojom::UsbDeviceManagerClientAssociatedPtrInfo CreateInterfacePtrAndBind() {
-    mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    return client;
+  mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient>
+  CreateRemoteAndBind() {
+    return receiver_.BindNewEndpointAndPassRemote();
   }
 
   MOCK_METHOD1(DoOnDeviceAdded, void(mojom::UsbDeviceInfo*));
@@ -87,7 +86,7 @@ class MockDeviceManagerClient : public mojom::UsbDeviceManagerClient {
   }
 
  private:
-  mojo::AssociatedBinding<mojom::UsbDeviceManagerClient> binding_;
+  mojo::AssociatedReceiver<mojom::UsbDeviceManagerClient> receiver_{this};
 };
 
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
@@ -192,7 +191,7 @@ TEST_F(USBDeviceManagerImplTest, Client) {
       device_manager.BindNewPipeAndPassReceiver());
 
   MockDeviceManagerClient mock_client;
-  device_manager->SetClient(mock_client.CreateInterfacePtrAndBind());
+  device_manager->SetClient(mock_client.CreateRemoteAndBind());
 
   {
     // Call GetDevices once to make sure the device manager is up and running

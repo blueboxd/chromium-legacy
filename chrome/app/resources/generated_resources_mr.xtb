@@ -2795,7 +2795,6 @@
 <translation id="5235050375939235066">अॅप अनइंस्टॉल करायचे?</translation>
 <translation id="5235750401727657667">एखादा नवीन टॅब उघडताना दिसत असलेले पेज बदला</translation>
 <translation id="5238278114306905396">अ‍ॅप "<ph name="EXTENSION_NAME" />" स्वयंचलितपणे काढण्यात आला.</translation>
-<translation id="5238713938047984284">तुमचे पासवर्ड सेव्ह करा</translation>
 <translation id="5241128660650683457">तुम्ही भेट देता त्या वेबसाइटवर तुमचा सर्व डेटा वाचा</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" सुरू करायचे?</translation>
 <translation id="5243522832766285132">कृपया थोड्या वेळानंतर पुन्हा प्रयत्न करा</translation>
@@ -3421,7 +3420,6 @@
 <translation id="6129691635767514872">निवडलेला डेटा Chrome आणि सिंक केलेल्या डिव्हाइसमधून काढला गेला आहे. तुमच्‍या Google खात्यामध्ये Google च्या इतर सेवांमधील शोध आणि अॅक्टिव्हिटी यासारख्या ब्राउझिंग इतिहासाची इतर स्वरूपे <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर असू शकतात.</translation>
 <translation id="6129938384427316298">Netscape सर्टिफिकेट टिप्पणी</translation>
 <translation id="6129953537138746214">जागा</translation>
-<translation id="6130024555057767093">तुम्ही वैयक्तिकरीत्या परवानगी देत असलेल्या साइट वगळता सर्व साइटसाठी सूचना सध्या ब्लॉक केल्या आहेत.</translation>
 <translation id="6136114942382973861">डाउनलोड बार बंद करा</translation>
 <translation id="6137767437444130246">वापरकर्ता सर्टिफिकेट</translation>
 <translation id="6138680304137685902">SHA-384 सह X9.62 ECDSA स्वाक्षरी</translation>
@@ -4332,7 +4330,6 @@
 <translation id="7529411698175791732">तुमचे इंटरनेट कनेक्शन तपासा. समस्या कायम राहिल्यास, साइन आउट करून आणि पुन्हा साइन इन करून पहा.</translation>
 <translation id="7530016656428373557">डिस्चार्ज रेट वॉट्स मध्ये</translation>
 <translation id="7531779363494549572">सेटिंग्‍ज &gt; ॲप्‍स आणि सूचना &gt; सूचना वर जा.</translation>
-<translation id="7536220825385726660">Play स्टोअर ॲप्लिकेशनला बाह्य डिव्हाइस ॲक्सेस करण्याची अनुमती द्या</translation>
 <translation id="7539856059004947393">ब्लूटूथ सिक्युरिटी की</translation>
 <translation id="7540972813190816353">अपडेट तपासताना एक एरर आली: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">या <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्‍हाइसवर डीबगिंग वैशिष्‍ट्ये सुरू करा</translation>

@@ -134,7 +134,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // the internal ScrollView.
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
   void RunCallback(const std::string& launch_name,
-                   apps::mojom::AppType app_type,
+                   apps::PickerEntryType entry_type,
                    apps::IntentPickerCloseReason close_reason,
                    bool should_persist);
 

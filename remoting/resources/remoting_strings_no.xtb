@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5254120496627797685">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
 <translation id="5308380583665731573">Koble til</translation>
+<translation id="5327248766486351172">Navn</translation>
 <translation id="533625276787323658">Det finnes ingenting å koble til</translation>
 <translation id="5363265567587775042">Be brukeren av datamaskinen du vil ha tilgang til, om å klikke på «<ph name="SHARE" />» og gi deg tilgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Eksternt skrivebord kan du trygt dele datamaskinen din på nettet. Begge brukerne må installere Chrome Eksternt skrivebord-appen, som er å finne på <ph name="URL" /></translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Skjermalternativer</translation>
 <translation id="7970576581263377361">Autentiseringen mislyktes. Logg på Chromium på nytt.</translation>
 <translation id="7981525049612125370">Den eksterne økten er utløpt.</translation>
+<translation id="8038111231936746805">(standard)</translation>
 <translation id="8041089156583427627">Send tilbakemelding</translation>
 <translation id="8041721485428375115">Ved å laste ned installasjonsprogrammet for verten for Chrome Eksternt skrivebord samtykker du i Googles <ph name="LINK_BEGIN" />vilkår for bruk<ph name="LINK_END" />.</translation>
 <translation id="8060029310790625334">Brukerstøtte</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mine datamaskiner</translation>
 <translation id="811307782653349804">Bruk din egen datamaskin uansett hvor du er.</translation>
 <translation id="8116630183974937060">Det oppsto en nettverksfeil. Kontrollér at enheten er tilkoblet nettet, og prøv på nytt.</translation>
-<translation id="8123581458650016326">La eksterne brukere styre denne maskinen</translation>
 <translation id="8178433417677596899">Skjermdeling bruker-til-bruker, perfekt for ekstern teknisk støttte.</translation>
 <translation id="8187079423890319756">Copyright 2013 – The Chromium Authors. Med enerett.</translation>
 <translation id="8196755618196986400">Hvis du gir oss tillatelse til å kontakte deg for å be om ytterligere informasjon, blir e-postadressen din inkludert i eventuelle tilbakemeldinger du sender inn.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Personvernregler</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="895780780740011433">For Windows 7 og nyere</translation>
-<translation id="8963047137585288214">Du må fullføre enda et konfigureringstrinn før du kan styre denne datamaskinen eksternt ved bruk av <ph name="PRODUCT_NAME" />.
-
-For å slå på denne funksjonaliteten, velg «<ph name="BUTTON_NAME" />» for å åpne innstillingspanelet for sikkerhet og personvern. Merk deretter av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
-
-Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, må du kanskje fjerne avmerkingen og deretter merke av på nytt.</translation>
 <translation id="897805526397249209">For å aktivere eksterne tilkoblinger til en annen datamaskin, må du installere Chromoting på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="8998327464021325874">Kontroller for Chrome Eksternt skrivebord-vert</translation>
 <translation id="9016232822027372900">Koble til likevel</translation>

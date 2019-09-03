@@ -139,6 +139,8 @@
 <translation id="6096348254544841612">Chromium'u özelleştirin ve kontrol edin. Güncelleme mevcut.</translation>
 <translation id="6120345080069858279">Chromium, şifrenizi Google Hesabınızda kaydedecek. Bu şekilde şifreyi hatırlamanız gerekmez.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> tehlikeli olduğu için Chromium tarafından engellendi.</translation>
+<translation id="6173098285107411678">Bir ayar bu sayfada görünmüyorsa <ph name="LINK_BEGIN" />
+    Chromium tarayıcı ayarlarınıza<ph name="LINK_END" /> bakın</translation>
 <translation id="6212496753309875659">Bu bilgisayarda Chromium'un daha yeni bir sürümü de var. Yazılım çalışmıyorsa, Chromium'u kaldırın ve tekrar deneyin.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium şimdi yeniden başlatılacak}=1{Chromium 1 saniye içinde yeniden başlatılacak}other{Chromium # saniye içinde yeniden başlatılacak}}</translation>
 <translation id="6248213926982192922">Chromium varsayılan tarayıcı olsun</translation>

@@ -25,6 +25,18 @@
 
 namespace app_list {
 
+// Creates a RankerExample with the given |features| and provided parameters.
+// Calculates other features (ClicksEachHour, ClickPerHour, FourHourClicks,
+// SixHourClicks). Converts the app id into the URL format used in the ML model.
+assist_ranker::RankerExample CreateRankerExample(
+    const AppLaunchFeatures& features,
+    int time_since_last_click,
+    int total_hours,
+    int day_of_week,
+    int hour_of_day,
+    int all_clicks_last_hour,
+    int all_clicks_last_24_hours);
+
 // Provide the app ranking using an ML model.
 // Rankings are created asynchronously using the ML Service and retrieved
 // synchronously at any time.

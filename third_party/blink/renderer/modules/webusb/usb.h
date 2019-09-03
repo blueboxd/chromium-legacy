@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom-blink.h"
 #include "services/device/public/mojom/usb_manager_client.mojom-blink.h"
@@ -88,8 +88,8 @@ class USB final : public EventTargetWithInlineData,
   mojo::Remote<mojom::blink::WebUsbService> service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_permission_requests_;
-  mojo::AssociatedBinding<device::mojom::blink::UsbDeviceManagerClient>
-      client_binding_;
+  mojo::AssociatedReceiver<device::mojom::blink::UsbDeviceManagerClient>
+      client_receiver_{this};
   HeapHashMap<String, WeakMember<USBDevice>> device_cache_;
 };
 

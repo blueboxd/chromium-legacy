@@ -13,7 +13,6 @@
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_helper.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
@@ -40,97 +39,6 @@ using ::chromeos::machine_learning::mojom::ValueList;
 namespace app_list {
 
 namespace {
-
-// Creates a RankerExample with the given |features| and provided parameters.
-// Calculates other features (ClicksEachHour, ClickPerHour, FourHourClicks,
-// SixHourClicks). Converts the app id into the URL format used in the ML model.
-assist_ranker::RankerExample CreateRankerExample(
-    const AppLaunchFeatures& features,
-    int time_since_last_click,
-    int total_hours,
-    int day_of_week,
-    int hour_of_day,
-    int all_clicks_last_hour,
-    int all_clicks_last_24_hours) {
-  assist_ranker::RankerExample example;
-  auto& ranker_example_features = *example.mutable_features();
-
-  ranker_example_features["DayOfWeek"].set_int32_value(day_of_week);
-  ranker_example_features["HourOfDay"].set_int32_value(hour_of_day);
-  ranker_example_features["AllClicksLastHour"].set_int32_value(
-      all_clicks_last_hour);
-  ranker_example_features["AllClicksLast24Hours"].set_int32_value(
-      all_clicks_last_24_hours);
-
-  ranker_example_features["AppType"].set_int32_value(features.app_type());
-  ranker_example_features["ClickRank"].set_int32_value(features.click_rank());
-  ranker_example_features["ClicksLastHour"].set_int32_value(
-      features.clicks_last_hour());
-  ranker_example_features["ClicksLast24Hours"].set_int32_value(
-      features.clicks_last_24_hours());
-  ranker_example_features["LastLaunchedFrom"].set_int32_value(
-      features.last_launched_from());
-  ranker_example_features["HasClick"].set_bool_value(
-      features.has_most_recently_used_index());
-  ranker_example_features["MostRecentlyUsedIndex"].set_int32_value(
-      features.most_recently_used_index());
-  ranker_example_features["TimeSinceLastClick"].set_int32_value(
-      Bucketize(time_since_last_click, kTimeSinceLastClickBuckets));
-  ranker_example_features["TotalClicks"].set_int32_value(
-      features.total_clicks());
-  ranker_example_features["TotalClicksPerHour"].set_float_value(
-      static_cast<float>(features.total_clicks()) / (total_hours + 1));
-  ranker_example_features["TotalHours"].set_int32_value(total_hours);
-
-  // Calculate FourHourClicksN and SixHourClicksN, which sum clicks for four
-  // and six hour periods respectively.
-  int four_hour_count = 0;
-  int six_hour_count = 0;
-  // Apps that have been clicked will have 24 clicks_each_hour values. Apps that
-  // have not been clicked will have no clicks_each_hour values, so can skip
-  // the FourHourClicksN and SixHourClicksN calculations.
-  if (features.clicks_each_hour_size() == 24) {
-    for (int hour = 0; hour < 24; hour++) {
-      int clicks = Bucketize(features.clicks_each_hour(hour), kClickBuckets);
-      ranker_example_features["ClicksEachHour" +
-                              base::StringPrintf("%02d", hour)]
-          .set_int32_value(clicks);
-      ranker_example_features["ClicksPerHour" +
-                              base::StringPrintf("%02d", hour)]
-          .set_float_value(static_cast<float>(clicks) / (total_hours + 1));
-      four_hour_count += clicks;
-      six_hour_count += clicks;
-      // Divide day into periods of 4 hours each.
-      if (hour % 4 == 3 && four_hour_count != 0) {
-        ranker_example_features["FourHourClicks" +
-                                base::StringPrintf("%01d", hour / 4)]
-            .set_int32_value(four_hour_count);
-      }
-      four_hour_count = 0;
-      // Divide day into periods of 6 hours each.
-      if (hour % 6 == 5 && six_hour_count != 0) {
-        ranker_example_features["SixHourClicks" +
-                                base::StringPrintf("%01d", hour / 6)]
-            .set_int32_value(six_hour_count);
-        six_hour_count = 0;
-      }
-    }
-  }
-
-  if (features.app_type() == AppLaunchEvent_AppType_CHROME) {
-    ranker_example_features["URL"].set_string_value(
-        kExtensionSchemeWithDelimiter + features.app_id());
-  } else if (features.app_type() == AppLaunchEvent_AppType_PWA) {
-    ranker_example_features["URL"].set_string_value(features.pwa_url());
-  } else if (features.app_type() == AppLaunchEvent_AppType_PLAY) {
-    ranker_example_features["URL"].set_string_value(
-        kAppScheme +
-        crx_file::id_util::GenerateId(features.arc_package_name()));
-  } else {
-    LOG(ERROR) << "Unknown app type: " << features.app_type();
-  }
-  return example;
-}
 
 void LoadModelCallback(LoadModelResult result) {
   if (result != LoadModelResult::OK) {
@@ -256,6 +164,94 @@ void CreateRankingsImpl(
 }
 
 }  // namespace
+
+assist_ranker::RankerExample CreateRankerExample(
+    const AppLaunchFeatures& features,
+    int time_since_last_click,
+    int total_hours,
+    int day_of_week,
+    int hour_of_day,
+    int all_clicks_last_hour,
+    int all_clicks_last_24_hours) {
+  assist_ranker::RankerExample example;
+  auto& ranker_example_features = *example.mutable_features();
+
+  ranker_example_features["DayOfWeek"].set_int32_value(day_of_week);
+  ranker_example_features["HourOfDay"].set_int32_value(hour_of_day);
+  ranker_example_features["AllClicksLastHour"].set_int32_value(
+      all_clicks_last_hour);
+  ranker_example_features["AllClicksLast24Hours"].set_int32_value(
+      all_clicks_last_24_hours);
+
+  ranker_example_features["AppType"].set_int32_value(features.app_type());
+  ranker_example_features["ClickRank"].set_int32_value(features.click_rank());
+  ranker_example_features["ClicksLastHour"].set_int32_value(
+      features.clicks_last_hour());
+  ranker_example_features["ClicksLast24Hours"].set_int32_value(
+      features.clicks_last_24_hours());
+  ranker_example_features["LastLaunchedFrom"].set_int32_value(
+      features.last_launched_from());
+  ranker_example_features["HasClick"].set_bool_value(
+      features.has_most_recently_used_index());
+  ranker_example_features["MostRecentlyUsedIndex"].set_int32_value(
+      features.most_recently_used_index());
+  ranker_example_features["TimeSinceLastClick"].set_int32_value(
+      Bucketize(time_since_last_click, kTimeSinceLastClickBuckets));
+  ranker_example_features["TotalClicks"].set_int32_value(
+      features.total_clicks());
+  ranker_example_features["TotalClicksPerHour"].set_float_value(
+      static_cast<float>(features.total_clicks()) / (total_hours + 1));
+  ranker_example_features["TotalHours"].set_int32_value(total_hours);
+
+  // Calculate FourHourClicksN and SixHourClicksN, which sum clicks for four
+  // and six hour periods respectively.
+  int four_hour_count = 0;
+  int six_hour_count = 0;
+  // Apps that have been clicked will have 24 clicks_each_hour values. Apps that
+  // have not been clicked will have no clicks_each_hour values, so can skip
+  // the FourHourClicksN and SixHourClicksN calculations.
+  if (features.clicks_each_hour_size() == 24) {
+    for (int hour = 0; hour < 24; hour++) {
+      int clicks = Bucketize(features.clicks_each_hour(hour), kClickBuckets);
+      ranker_example_features["ClicksEachHour" +
+                              base::StringPrintf("%02d", hour)]
+          .set_int32_value(clicks);
+      ranker_example_features["ClicksPerHour" +
+                              base::StringPrintf("%02d", hour)]
+          .set_float_value(static_cast<float>(clicks) / (total_hours + 1));
+      four_hour_count += clicks;
+      six_hour_count += clicks;
+      // Divide day into periods of 4 hours each.
+      if (hour % 4 == 3 && four_hour_count != 0) {
+        ranker_example_features["FourHourClicks" +
+                                base::StringPrintf("%01d", hour / 4)]
+            .set_int32_value(four_hour_count);
+        four_hour_count = 0;
+      }
+      // Divide day into periods of 6 hours each.
+      if (hour % 6 == 5 && six_hour_count != 0) {
+        ranker_example_features["SixHourClicks" +
+                                base::StringPrintf("%01d", hour / 6)]
+            .set_int32_value(six_hour_count);
+        six_hour_count = 0;
+      }
+    }
+  }
+
+  if (features.app_type() == AppLaunchEvent_AppType_CHROME) {
+    ranker_example_features["URL"].set_string_value(
+        kExtensionSchemeWithDelimiter + features.app_id());
+  } else if (features.app_type() == AppLaunchEvent_AppType_PWA) {
+    ranker_example_features["URL"].set_string_value(features.pwa_url());
+  } else if (features.app_type() == AppLaunchEvent_AppType_PLAY) {
+    ranker_example_features["URL"].set_string_value(
+        kAppScheme +
+        crx_file::id_util::GenerateId(features.arc_package_name()));
+  } else {
+    LOG(ERROR) << "Unknown app type: " << features.app_type();
+  }
+  return example;
+}
 
 MlAppRankProvider::MlAppRankProvider()
     : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),

@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Poskusite znova</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}two{# d}few{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Danes</translation>
+<translation id="2161656808144014275">Besedilo</translation>
 <translation id="2168039046890040389">Stran gor</translation>
 <translation id="2190355936436201913">(prazno)</translation>
 <translation id="2192232475740621500">Uporabi majhno gostoto</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Poišči »<ph name="LOOKUP_STRING" />«</translation>
 <translation id="364720409959344976">Izberite mapo, ki jo želite prenesti</translation>
 <translation id="3660179305079774227">Puščica gor</translation>
+<translation id="3670030362669914947">Številka</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Nadaljevanje branja v mobilni napravi <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pred 1 mesecem}one{Pred # mesecem}two{Pred # mesecema}few{Pred # meseci}other{Pred # meseci}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">VSE APLIKACIJE</translation>
-<translation id="4467014365953759647">Številke ni mogoče poslati</translation>
 <translation id="4588090240171750605">Pomik desno</translation>
 <translation id="4690510401873698237">Polica na dnu</translation>
 <translation id="4724120544754982507">Središče za obvestila, št. neprebranih sporočil: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -125,6 +126,7 @@
 <translation id="5583640892426849032">Vračalka</translation>
 <translation id="5613020302032141669">Puščica levo</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}one{# min}two{# min}few{# min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Aktivna danes}=1{Aktivna pred 1 dnevom}one{Aktivna pred # dnevom}two{Aktivna pred # dnevoma}few{Aktivna pred # dnevi}other{Aktivna pred # dnevi}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 dan in }one{# dan in }two{# dneva in }few{# dni in }other{# dni in }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{čez 1 l}one{čez # l}two{čez # l}few{čez # l}other{čez # l}}</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
@@ -174,7 +176,6 @@
 <translation id="7319740667687257810">Zaganjalnik, delni pogled</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}one{Pred # min}two{Pred # min}few{Pred # min}other{Pred # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Preverite povezavo telefona in poskusite znova</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
 <translation id="7430878839542012341">Želite izbrisati to iskanje iz zgodovine?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

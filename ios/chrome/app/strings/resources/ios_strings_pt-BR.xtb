@@ -263,6 +263,7 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="4747097190499141774">A criptografia por senha longa não inclui formas de pagamento e endereços do Google Pay. Apenas uma pessoa que tenha sua senha longa pode ler seus dados criptografados. Essa senha não é enviada ou armazenada pelo Google. Se você esquecer a senha longa ou quiser alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Encontrar na página…</translation>
 <translation id="4751645464639803239">Nova guia anônima</translation>
+<translation id="4758977202923349869">Posicione o cartão de crédito neste quadro</translation>
 <translation id="4802417911091824046">A criptografia por senha longa não inclui formas de pagamento e endereços do Google Pay.
 
 Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5728700505257787410">Houve um problema durante o login em sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de login da conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>
 <translation id="5738887413654608789">Isso permite que você descubra páginas da Web relevantes com base nos seus arredores.</translation>
+<translation id="5803566855766646066">Tem certeza de que você quer descartar este novo card?</translation>
 <translation id="5816228676161003208">Isso permite que você pesquise mais rapidamente usando sua voz.</translation>
 <translation id="5846482154967366008">Mecanismo de pesquisa</translation>
 <translation id="5854790677617711513">Com mais de 30 dias</translation>

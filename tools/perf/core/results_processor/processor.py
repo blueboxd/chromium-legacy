@@ -112,8 +112,9 @@ def ProcessOptions(options):
   else:
     options.upload_bucket = None
 
-  chosen_formats = options.output_formats
-  if not chosen_formats:
+  if options.output_formats:
+    chosen_formats = sorted(set(options.output_formats))
+  else:
     chosen_formats = ['html']
 
   options.output_formats = []

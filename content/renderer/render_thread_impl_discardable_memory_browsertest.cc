@@ -135,8 +135,9 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   EXPECT_LT(base::TimeTicks::Now(), end);
 }
 
+// TODO(crbug.com/974850): Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
-                       ReleaseFreeMemory) {
+                       DISABLED_ReleaseFreeMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
   std::unique_ptr<base::DiscardableMemory> memory =

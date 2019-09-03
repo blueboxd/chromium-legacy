@@ -962,9 +962,10 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
 void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
     const NGPhysicalBoxFragment& container) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-  bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
   const NGFragmentItems* items = container.Items();
-  DCHECK(items);
+  if (!items)
+    return;
+  bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
   for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNext()) {
     if (const NGPhysicalBoxFragment* child = cursor.CurrentBoxFragment()) {
       // Replaced elements and inline blocks need Location() set relative to

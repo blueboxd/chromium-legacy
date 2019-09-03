@@ -12,10 +12,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -65,7 +66,7 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
  private:
   // mojom::UsbDeviceManager implementation:
   void EnumerateDevicesAndSetClient(
-      mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
       EnumerateDevicesAndSetClientCallback callback) override;
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
@@ -87,11 +88,11 @@ class FakeUsbDeviceManager : public mojom::UsbDeviceManager {
                           OpenFileDescriptorCallback callback) override;
 #endif  // defined(OS_CHROMEOS)
 
-  void SetClient(
-      mojom::UsbDeviceManagerClientAssociatedPtrInfo client) override;
+  void SetClient(mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient>
+                     client) override;
 
   mojo::ReceiverSet<mojom::UsbDeviceManager> receivers_;
-  mojo::AssociatedInterfacePtrSet<mojom::UsbDeviceManagerClient> clients_;
+  mojo::AssociatedRemoteSet<mojom::UsbDeviceManagerClient> clients_;
 
   DeviceMap devices_;
 

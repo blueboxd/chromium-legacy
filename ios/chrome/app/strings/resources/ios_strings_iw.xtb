@@ -263,6 +263,7 @@
 <translation id="4747097190499141774">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay. רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם שוכחים את ביטוי הסיסמה או רוצים לשנות את ההגדרה הזו, צריך לאפס את הסנכרון. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">חיפוש בדף…</translation>
 <translation id="4751645464639803239">כרטיסייה חדשה לגלישה בסתר</translation>
+<translation id="4758977202923349869">יש למקם את כרטיס האשראי בתוך המסגרת הזו</translation>
 <translation id="4802417911091824046">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay
 
 כדי לשנות את ההגדרה הזו צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@
 <translation id="5728700505257787410">מצטערים, אירעה בעיה בכניסה לחשבון שלך.</translation>
 <translation id="5737974891429562743">פרטי הכניסה לחשבון אינם עדכניים. עדכן כדי להפעיל את הסינכרון.</translation>
 <translation id="5738887413654608789">‏תקשורת Bluetooth מאפשרת לך למצוא אתרי אינטרנט רלוונטיים לפי המיקום שלך.</translation>
+<translation id="5803566855766646066">הכרטיס החדש יימחק. להמשיך?</translation>
 <translation id="5816228676161003208">אישור זה מאפשר לך לחפש מהר יותר בעזרת דיבור.</translation>
 <translation id="5846482154967366008">מנוע חיפוש</translation>
 <translation id="5854790677617711513">לפני יותר מ-30 ימים</translation>
@@ -415,7 +417,7 @@
 <translation id="6851516051005285358">בקשת אתר למחשב</translation>
 <translation id="6858855187367714033">נסרק</translation>
 <translation id="6859944681507688231">‏כדי לסרוק קוד QR או כרטיס אשראי, יש להפעיל את המצלמה דרך ההגדרות.</translation>
-<translation id="6873263987691478642">תצוגה מפוצלת</translation>
+<translation id="6873263987691478642">‏מצב Split View</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6914583639806229067">חיפוש תמונה שהעתקת</translation>

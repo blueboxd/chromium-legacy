@@ -483,6 +483,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4372705107434148843">Atura la veu</translation>
 <translation id="4373197658375206385">No hi ha cap element anterior que no sigui un enllaç.</translation>
 <translation id="4376316291247992553">Mostra el gràfic com a braille</translation>
+<translation id="437809255587011096">Anuncia l'estil del text</translation>
 <translation id="4378308539633073595">Desplaça cap endavant</translation>
 <translation id="4384583879834880242">Preguntes</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8503360654911991865">Disminueix la granularitat de la navegació.</translation>
 <translation id="8504695234784218301">Fi de l'error gramatical</translation>
 <translation id="8520472399088452386">Botó de selecció de valors</translation>
+<translation id="8534394844575788431">Format</translation>
 <translation id="8538744478902126321">Fes una suposició a la capçalera de la fila de la cel·la actual</translation>
 <translation id="8540054775867439484">Ajustat a la part superior</translation>
 <translation id="8542271685829952264">Per explorar totes les ordres i les dreceres de ChromeVox, prem Cerca+punt. A continuació, fes servir les tecles de fletxa per desplaçar-te pels menús i la tecla Retorn per activar una ordre. Per tornar aquí, prem Cerca+o i després t.</translation>
@@ -1199,6 +1201,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Pestanya</translation>
 <translation id="9151211641321628915">Anuncia una breu descripció de la posició actual.</translation>
+<translation id="9151249085738989067">Canvia la veu de ChromeVox automàticament en funció de l'idioma</translation>
 <translation id="9153606228985488238">Presenta un <ph name="PERCENT" /> per cent</translation>
 <translation id="9160096769946561184">Ves al final de la columna actual.</translation>
 <translation id="9173115498289768110">Volum del <ph name="PERCENT" /> per cent</translation>

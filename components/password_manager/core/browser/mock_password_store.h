@@ -94,6 +94,8 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(ReadAllLogins, FormRetrievalResult(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
   MOCK_METHOD0(GetMetadataStore, PasswordStoreSync::MetadataStore*());
+  MOCK_CONST_METHOD0(IsAccountStore, bool());
+  MOCK_METHOD0(DeleteAndRecreateDatabaseFile, bool());
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 

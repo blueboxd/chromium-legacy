@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string16.h"
 #include "chrome/android/chrome_jni_headers/OnboardingDialogBridge_jni.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -14,10 +15,49 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+// First story, centered around not having to remember your password.
+constexpr char kStoryA[] = "convenience";
+// Second story, centered around avaiability on multiple devices.
+constexpr char kStoryB[] = "access";
+// Third story, centered around password safety and leak detection.
+constexpr char kStoryC[] = "safety";
+
+// Retrieve the title and explanation strings that will be used for the
+// dialog from the |story| parameter of the |kPasswordManagerOnboardingAndroid|
+// feature, which will be provided when running experiments.
+// The first story is run if the parameter isn't provided.
+std::pair<base::string16, base::string16> GetOnboardingTitleAndDetails() {
+  std::string story = base::GetFieldTrialParamValueByFeature(
+      password_manager::features::kPasswordManagerOnboardingAndroid, "story");
+  base::string16 onboarding_title, onboarding_details;
+  if (story.empty() || story == kStoryA) {
+    onboarding_title =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A);
+    onboarding_details =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A);
+  } else if (story == kStoryB) {
+    onboarding_title =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_B);
+    onboarding_details =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_B);
+  } else if (story == kStoryC) {
+    onboarding_title =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_C);
+    onboarding_details =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_C);
+  }
+  return {onboarding_title, onboarding_details};
+}
+
+}  // namespace
 
 OnboardingDialogView::OnboardingDialogView(
     ChromePasswordManagerClient* client,
@@ -36,10 +76,9 @@ void OnboardingDialogView::Show() {
   java_object_.Reset(Java_OnboardingDialogBridge_create(
       env, window_android->GetJavaObject(), reinterpret_cast<intptr_t>(this)));
 
-  base::string16 onboarding_title =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A);
-  base::string16 onboarding_details =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A);
+  base::string16 onboarding_title, onboarding_details;
+  std::tie(onboarding_title, onboarding_details) =
+      GetOnboardingTitleAndDetails();
 
   Java_OnboardingDialogBridge_showDialog(
       env, java_object_,

@@ -1867,7 +1867,6 @@ void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
   proxy_.ScheduleBrowserWakeUp(sync_type);
 }
 
-// TODO(crbug.com/996166): Remove reschedule from method signatures.
 void BackgroundSyncManager::FireReadyEvents(
     blink::mojom::BackgroundSyncType sync_type,
     bool reschedule,
@@ -1932,22 +1931,20 @@ void BackgroundSyncManager::FireReadyEventsImpl(
     }
   }
 
-  if (to_fire.empty()) {
-    ScheduleOrCancelDelayedProcessing(sync_type);
-    if (!reschedule) {
-      // This method has been called from a Chrome wakeup task.
-      BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
-          sync_type, /* events_fired= */ false);
-    }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
-    return;
-  }
-
   if (!reschedule) {
     // This method has been called from a Chrome wakeup task.
     BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
-        sync_type, /* events_fired= */ true);
+        sync_type, /* events_fired= */ !to_fire.empty());
+  }
+
+  if (to_fire.empty()) {
+    // TODO(crbug.com/996166): Reschedule wakeup after a non-zero delay if
+    // called from a wakeup task.
+    if (reschedule)
+      ScheduleOrCancelDelayedProcessing(sync_type);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -2061,7 +2058,8 @@ void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  ScheduleOrCancelDelayedProcessing(sync_type);
+  if (reschedule)
+    ScheduleOrCancelDelayedProcessing(sync_type);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 

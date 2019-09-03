@@ -141,6 +141,8 @@
 <translation id="6096348254544841612">‏تخصيص Chromium والتحكُّم فيه. هناك تحديث متوفر.</translation>
 <translation id="6120345080069858279">‏سيحفظ Chromium كلمة المرور هذه في حسابك على Google ولن تحتاج تذكّرها.</translation>
 <translation id="6129621093834146363">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chromium.</translation>
+<translation id="6173098285107411678">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+    إعدادات متصفِّح Chromium<ph name="LINK_END" /></translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، فالرجاء إزالة Chromium وإعادة المحاولة.</translation>
 <translation id="6219195342503754812">{0,plural, =0{‏ستتم إعادة تشغيل Chromium الآن}=1{‏ستتم إعادة تشغيل Chromium في غضون ثانية واحدة}two{‏ستتم إعادة تشغيل Chromium في غضون ثانيتين}few{‏ستتم إعادة تشغيل Chromium في غضون # ثوان}many{‏ستتم إعادة تشغيل Chromium في غضون # ثانيةً}other{‏ستتم إعادة تشغيل Chromium في غضون # ثانية}}</translation>
 <translation id="6248213926982192922">‏جعل Chromium المتصفح التلقائي</translation>

@@ -5,12 +5,16 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_ONBOARDING_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_ONBOARDING_H_
 
+#include "base/util/type_safety/strong_alias.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
 class PrefService;
 
 namespace password_manager {
+
+using PasswordUpdateBool = util::StrongAlias<class IsPasswordUpdateTag, bool>;
+using BlacklistedBool = util::StrongAlias<class IsBlacklistedTag, bool>;
 
 // The onboarding won't be shown if there are this many
 // saved credentials or more.
@@ -57,19 +61,20 @@ class OnboardingStateUpdate : public password_manager::PasswordStoreConsumer {
 
 // This function updates the |kPasswordManagerOnboardingState| pref on
 // a separate thread after a given time delay.
-// Runs if:
-//     1. The PasswordManagerOnboardingAndroid feature is enabled.
-//     2. The state is not |kShown|.
+// Runs if the state is not |kShown|.
 void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
                            PrefService* prefs,
                            base::TimeDelta delay);
 
 // Return true if the password manager onboarding experience should be shown to
 // the user. Conditions (all must apply):
-//      1. The PasswordManagerOnboardingAndroid feature is enabled.
+//      1. The set of credentials is not blacklisted.
 //      2. We are dealing with a new set of credentials.
 //      3. |kPasswordManagerOnboardingState| is |kShouldShow|.
-bool ShouldShowOnboarding(PrefService* prefs, bool is_password_update);
+//      4. The PasswordManagerOnboardingAndroid feature is enabled.
+bool ShouldShowOnboarding(PrefService* prefs,
+                          PasswordUpdateBool is_password_update,
+                          BlacklistedBool is_blacklisted);
 
 }  // namespace password_manager
 

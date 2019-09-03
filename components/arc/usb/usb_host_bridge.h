@@ -15,7 +15,7 @@
 #include "components/arc/mojom/usb_host.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -112,8 +112,8 @@ class ArcUsbHostBridge : public KeyedService,
 
   // Connection to the DeviceService for usb manager.
   mojo::Remote<device::mojom::UsbDeviceManager> usb_manager_;
-  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
-      client_binding_{this};
+  mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>
+      client_receiver_{this};
 
   // A mapping from GUID -> UsbDeviceInfoPtr for each attached USB device.
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> devices_;

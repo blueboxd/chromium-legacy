@@ -18,21 +18,29 @@ class TestWebAppDatabase : public AbstractWebAppDatabase {
 
   // AbstractWebAppDatabase:
   void OpenDatabase(OnceRegistryOpenedCallback callback) override;
-  void WriteWebApp(const WebApp& web_app) override;
-  void DeleteWebApps(std::vector<AppId> app_ids) override;
+  void WriteWebApps(AppsToWrite apps, CompletionCallback callback) override;
+  void DeleteWebApps(std::vector<AppId> app_ids,
+                     CompletionCallback callback) override;
 
   OnceRegistryOpenedCallback TakeOpenDatabaseCallback() {
     return std::move(open_database_callback_);
   }
-  const AppId& write_web_app_id() const { return write_web_app_id_; }
-  const std::vector<AppId>& delete_web_app_ids() const {
-    return delete_web_app_ids_;
-  }
+
+  void SetNextWriteWebAppsResult(bool next_write_web_apps_result);
+  void SetNextDeleteWebAppsResult(bool next_delete_web_apps_result);
+
+  using AppIds = std::vector<AppId>;
+
+  const AppIds& write_web_app_ids() const { return write_web_app_ids_; }
+  const AppIds& delete_web_app_ids() const { return delete_web_app_ids_; }
 
  private:
   OnceRegistryOpenedCallback open_database_callback_;
-  AppId write_web_app_id_;
-  std::vector<AppId> delete_web_app_ids_;
+  AppIds write_web_app_ids_;
+  AppIds delete_web_app_ids_;
+
+  bool next_write_web_apps_result_ = true;
+  bool next_delete_web_apps_result_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebAppDatabase);
 };

@@ -263,6 +263,7 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 <translation id="4747097190499141774">Criptarea expresiei de acces nu include metodele de plată și adresele din Google Pay. Numai un utilizator care are expresia de acces poate citi datele tale criptate. Google nu primește și nu stochează expresia ta de acces. Dacă uiți expresia de acces sau vrei să modifici această setare, va trebui să resetezi sincronizarea. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Găsește în pagină...</translation>
 <translation id="4751645464639803239">Filă incognito nouă</translation>
+<translation id="4758977202923349869">Poziționează cardul de credit în acest cadru</translation>
 <translation id="4802417911091824046">Criptarea expresiei de acces nu include metodele de plată și adresele din Google Pay.
 
 Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5728700505257787410">A apărut o problemă de conectare la cont.</translation>
 <translation id="5737974891429562743">Datele de conectare la cont sunt învechite. Actualizează pentru a începe sincronizarea.</translation>
 <translation id="5738887413654608789">Astfel, poți descoperi pagini web relevante în funcție de lucrurile din jurul tău.</translation>
+<translation id="5803566855766646066">Sigur dorești să elimini acest card nou?</translation>
 <translation id="5816228676161003208">Astfel, cauți mai rapid folosindu-ți vocea.</translation>
 <translation id="5846482154967366008">Motor de căutare</translation>
 <translation id="5854790677617711513">Mai vechi de 30 de zile</translation>

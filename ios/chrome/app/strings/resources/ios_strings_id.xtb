@@ -263,6 +263,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Loginkan frasa sandi untuk
 <translation id="4747097190499141774">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay. Hanya pengguna yang memiliki frasa sandi Anda yang dapat membaca data yang telah Anda enkripsi. Frasa sandi tidak dikirim atau disimpan oleh Google. Jika lupa frasa sandi Anda atau ingin mengubah setelan ini, Anda harus menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Cari pada Halaman...</translation>
 <translation id="4751645464639803239">Tab Samaran Baru</translation>
+<translation id="4758977202923349869">Posisikan Kartu Kredit dalam bingkai ini</translation>
 <translation id="4802417911091824046">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay.
 
 Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="5728700505257787410">Maaf, terjadi masalah saat masuk ke akun Anda.</translation>
 <translation id="5737974891429562743">Detail proses masuk akun sudah tidak berlaku lagi. Perbarui untuk memulai sinkronisasi.</translation>
 <translation id="5738887413654608789">Hal ini memungkinkan Anda menemukan halaman web yang relevan berdasarkan berbagai hal di sekitar.</translation>
+<translation id="5803566855766646066">Yakin ingin menghapus kartu baru ini?</translation>
 <translation id="5816228676161003208">Hal ini memungkinkan Anda menelusuri lebih cepat menggunakan suara.</translation>
 <translation id="5846482154967366008">Mesin Telusur</translation>
 <translation id="5854790677617711513">Lebih dari 30 hari</translation>

@@ -31,12 +31,6 @@ interface AppShim {
   // creates chrome-scoped objects that implement remote_cocoa interfaces.
   CreateCommandDispatcherForWidget(uint64 widget_id);
 
-  // Instructs the shim to hide the app.
-  Hide();
-
-  // Instructs the shim to show the app.
-  UnhideWithoutActivation();
-
   // Instructs the shim to request or cancel user attention.
   SetUserAttention(AppShimAttentionType attention_type);
 
@@ -52,12 +46,6 @@ interface AppShimHost {
   // if the focus type indicates a reopen and there are no open windows.
   FocusApp(AppShimFocusType focus_type,
            array<mojo_base.mojom.FilePath> files);
-
-  // Sent when the app shim is hidden or unhidden.
-  SetAppHidden(bool hidden);
-
-  // Called when the app shim process notifies that the app should quit.
-  QuitApp();
 };
 
 // The initial interface provided by the browser process. Used to bootstrap to

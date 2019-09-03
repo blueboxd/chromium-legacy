@@ -2795,7 +2795,6 @@
 <translation id="5235050375939235066">앱을 제거하시겠습니까?</translation>
 <translation id="5235750401727657667">새 탭을 열 때 표시되는 페이지 변경</translation>
 <translation id="5238278114306905396">'<ph name="EXTENSION_NAME" />' 앱이 자동으로 삭제되었습니다.</translation>
-<translation id="5238713938047984284">비밀번호 저장</translation>
 <translation id="5241128660650683457">방문하는 웹사이트의 모든 데이터 읽기</translation>
 <translation id="5242724311594467048">'<ph name="EXTENSION_NAME" />'을(를) 사용하시겠습니까?</translation>
 <translation id="5243522832766285132">잠시 후 다시 시도해 주세요.</translation>
@@ -3420,7 +3419,6 @@
 <translation id="6129691635767514872">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
 <translation id="6129953537138746214">공백</translation>
-<translation id="6130024555057767093">개별적으로 허용한 사이트를 제외한 모든 사이트의 알림이 현재 차단되어 있습니다.</translation>
 <translation id="6136114942382973861">다운로드바 닫기</translation>
 <translation id="6137767437444130246">사용자 인증서</translation>
 <translation id="6138680304137685902">SHA-384를 포함한 X9.62 ECDSA 서명</translation>
@@ -4331,7 +4329,6 @@
 <translation id="7529411698175791732">인터넷 연결 상태를 확인하세요. 문제가 계속되면 로그아웃한 뒤 다시 로그인해보세요.</translation>
 <translation id="7530016656428373557">방전율(와트)</translation>
 <translation id="7531779363494549572">설정 &gt; 앱 및 알림 &gt; 알림으로 이동합니다.</translation>
-<translation id="7536220825385726660">Play 스토어 애플리케이션이 외부 기기에 액세스하도록 허용</translation>
 <translation id="7539856059004947393">블루투스 보안 키</translation>
 <translation id="7540972813190816353">업데이트를 확인하는 동안 오류가 발생했습니다. <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">이 <ph name="IDS_SHORT_PRODUCT_NAME" /> 기기에서 디버깅 기능을 사용 설정하세요.</translation>

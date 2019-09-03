@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -16,6 +17,10 @@
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #endif
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ui {
 
 enum class PlatformWindowType {
@@ -23,6 +28,8 @@ enum class PlatformWindowType {
   kPopup,
   kMenu,
   kTooltip,
+  kDrag,
+  kBubble,
 };
 
 enum class PlatformWindowOpacity {
@@ -66,7 +73,13 @@ struct PlatformWindowInitProperties {
   bool remove_standard_frame = false;
   std::string workspace;
 
-  // Only used by X11. Specifies the res_name and res_class fields,
+#if defined(USE_X11)
+  // Only used by X11:
+  bool prefer_dark_theme = false;
+  gfx::ImageSkia* icon = nullptr;
+  base::Optional<int> background_color;
+#endif
+  // Specifies the res_name and res_class fields,
   // respectively, of the WM_CLASS window property. Controls window grouping
   // and desktop file matching in Linux window managers.
   std::string wm_role_name;

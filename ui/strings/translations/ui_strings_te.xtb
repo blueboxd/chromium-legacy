@@ -38,6 +38,7 @@
 <translation id="208586643495776849">దయచేసి మళ్లీ ప్రయత్నించండి</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1రో}other{#రో}}</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
+<translation id="2161656808144014275">వచనం</translation>
 <translation id="2168039046890040389">పేజీ పైకి</translation>
 <translation id="2190355936436201913">(ఖాళీ)</translation>
 <translation id="2192232475740621500">తక్కువ సాంద్రతను ఉపయోగించు</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />”ని వెతకండి</translation>
 <translation id="364720409959344976">అప్‌లోడ్ చేయడానికి ఫోల్డర్‌ని ఎంచుకోండి</translation>
 <translation id="3660179305079774227">ఎగువ బాణం</translation>
+<translation id="3670030362669914947">నంబర్</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">మీ మొబైల్ పరికరం <ph name="TITLE" /> నుండి చదవడం కొనసాగించండి</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 నెల క్రితం}other{# నెలల క్రితం}}</translation>
 <translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
 <translation id="4316910396681052118">అన్ని అనువర్తనాలు</translation>
-<translation id="4467014365953759647">నంబర్‌ను పంపడం సాధ్యపడలేదు</translation>
 <translation id="4588090240171750605">కుడికి స్క్రోల్ చేయి</translation>
 <translation id="4690510401873698237">అర కింది భాగంలో ఉంది</translation>
 <translation id="4724120544754982507">నోటిఫికేషన్ కేంద్రం, <ph name="UNREAD_NOTIFICATION_COUNT" /> చదవని నోటిఫికేషన్‌లు</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">ఎడమ బాణం</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 నిమి.}other{# నిమి.}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{ఈ రోజు యాక్టివ్‌గా ఉంది}=1{1 రోజు క్రితం యాక్టివ్‌గా ఉంది}other{# రోజుల క్రితం యాక్టివ్‌గా ఉంది}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 రోజు మరియు }other{# రోజులు మరియు }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 సంవత్సరంలో}other{# సంవత్సరంలో}}</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">లాంఛ‌ర్‌, పాక్షిక వీక్షణ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 నిమి. క్రితం}other{# నిమి. క్రితం}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">మీ ఫోన్ కనెక్షన్‌ను సరిచూసుకుని, ఆపై మళ్లీ ప్రయత్నించండి</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="7430878839542012341">మీ చరిత్ర నుండి ఈ శోధనను తొలగించాలా?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

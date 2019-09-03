@@ -160,8 +160,9 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MediaDialogViewBrowserTest);
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 // TODO(https://crbug.com/998342): Fix these on Mac.
+// Deterministic Failures on Windows: https://crbug.com/1000215
 #define MAYBE_ShowsMetadataAndControlsMedia \
   DISABLED_ShowsMetadataAndControlsMedia
 #else

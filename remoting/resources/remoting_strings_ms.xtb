@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="5254120496627797685">Tindakan meninggalkan halaman ini akan menamatkan sesi Desktop Jauh Chrome anda.</translation>
 <translation id="5308380583665731573">Sambung</translation>
+<translation id="5327248766486351172">Nama</translation>
 <translation id="533625276787323658">Tiada peranti untuk disambungkan</translation>
 <translation id="5363265567587775042">Minta pemilik komputer yang ingin anda gunakan itu supaya mengklik “<ph name="SHARE" />” dan memberi anda kod aksesnya.</translation>
 <translation id="5379087427956679853">Desktop Jauh Chrome membolehkan anda berkongsi komputer anda dengan selamat melalui Web. Kedua-dua pengguna perlu menjalankan apl Desktop Jauh Chrome, yang boleh didapati di <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Pilihan skrin</translation>
 <translation id="7970576581263377361">Pengesahan gagal. Sila log masuk ke Chromium sekali lagi.</translation>
 <translation id="7981525049612125370">Sesi jauh telah tamat tempoh.</translation>
+<translation id="8038111231936746805">(lalai)</translation>
 <translation id="8041089156583427627">Hantar Maklum Balas</translation>
 <translation id="8041721485428375115">Apabila memuat turun Pemasang Hos Desktop Jauh Chrome, anda bersetuju menerima <ph name="LINK_BEGIN" />Syarat Perkhidmatan<ph name="LINK_END" /> Google.</translation>
 <translation id="8060029310790625334">Pusat Bantuan</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Komputer Saya</translation>
 <translation id="811307782653349804">Akses komputer anda sendiri dari mana-mana sahaja.</translation>
 <translation id="8116630183974937060">Ralat rangkaian berlaku. Sila pastikan peranti anda berada dalam talian dan cuba lagi.</translation>
-<translation id="8123581458650016326">Benarkan pengguna jauh mengawal mesin ini</translation>
 <translation id="8178433417677596899">Perkongsian skrin pengguna kepada pengguna, sesuai untuk sokongan teknikal jauh.</translation>
 <translation id="8187079423890319756">Hak Cipta 2013 Pengarang Chromium. Hak Cipta Terpelihara.</translation>
 <translation id="8196755618196986400">Untuk membolehkan kami menghubungi anda untuk mendapatkan maklumat lanjut, alamat e-mel anda akan dimasukkan ke dalam mana-mana maklum balas yang anda serahkan.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Dasar Privasi</translation>
 <translation id="894763922177556086">Bagus</translation>
 <translation id="895780780740011433">Untuk Windows 7 ke atas</translation>
-<translation id="8963047137585288214">Langkah konfigurasi tambahan diperlukan sebelum anda boleh mengawal mesin ini dari jauh menggunakan <ph name="PRODUCT_NAME" />.
-
-Untuk mendayakan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk memaparkan anak tetingkap pilihan Keselamatan dan Privasi, kemudian tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ada dan ditandai, anda mungkin perlu mengalih keluar perkhidmatan ini dan kemudian menambahkan perkhidmatan ini semula.</translation>
 <translation id="897805526397249209">Untuk mendayakan sambungan jauh untuk komputer yang berbeza, pasang Chromoting pada komputer tersebut dan klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Alat Kawalan Hos Desktop Jauh Chrome</translation>
 <translation id="9016232822027372900">Sambungkan juga</translation>

@@ -2796,7 +2796,6 @@
 <translation id="5235050375939235066">ऐप्लिकेशन अनइंस्टॉल करें?</translation>
 <translation id="5235750401727657667">नया टैब खोलते समय दिखाई देने वाला पेज बदलें</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ऐप्लिकेशन को अपने आप हटा दिया गया था.</translation>
-<translation id="5238713938047984284">पासवर्ड सेव करें</translation>
 <translation id="5241128660650683457">जिन वेबसाइट पर आप जाते हैं, उन पर मौजूद अपना सारा डेटा पढ़ें</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" को चालू करें?</translation>
 <translation id="5243522832766285132">कृपया कुछ देर बाद कोशिश करें</translation>
@@ -3421,7 +3420,6 @@
 <translation id="6129691635767514872">चुना गया डेटा Chrome और सिंक किए गए सभी डिवाइस से हटा दिया गया है. हो सकता है कि आपके Google खाते में खोजों और <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य Google सेवाओं की गतिविधि जैसे अन्य प्रकार के ब्राउज़िंग इतिहास मौजूद हों.</translation>
 <translation id="6129938384427316298">Netscape प्रमाणपत्र टिप्पणी</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6130024555057767093">जिन साइटों को आपने एक-एक करके खुद अनुमति दी है उनके अलावा, फ़िलहाल सभी साइटों के लिए सूचनाएं दिखाने की सुविधा बंद है.</translation>
 <translation id="6136114942382973861">डाउनलोड बार बंद करें</translation>
 <translation id="6137767437444130246">उपयोगकर्ता प्रमाणपत्र</translation>
 <translation id="6138680304137685902">SHA-384 के साथ X9.62 ECDSA हस्ताक्षर</translation>
@@ -4332,7 +4330,6 @@
 <translation id="7529411698175791732">अपना इंटरनेट कनेक्शन जाँचें. अगर समस्या बनी रहती है, तो साइन आउट करें और दोबारा साइन इन करके देखें.</translation>
 <translation id="7530016656428373557">डिस्चार्ज दर वॉट में</translation>
 <translation id="7531779363494549572">सेटिंग &gt; ऐप्लिकेशन और सूचनाएं &gt; सूचनाएं पर जाएं.</translation>
-<translation id="7536220825385726660">बाहरी डिस्क ऐक्सेस करने के लिए Play स्टोर ऐप्लिकेशन को अनुमति दें</translation>
 <translation id="7539856059004947393">ब्लूटूथ सुरक्षा चाबी</translation>
 <translation id="7540972813190816353">अपडेट की जाँच करते समय कोई गड़बड़ी आई: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">इस <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस पर डीबग करने की सुविधाएं चालू करें</translation>

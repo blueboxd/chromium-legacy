@@ -112,17 +112,15 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
         host, recreate_shims, std::move(launch_callback),
         std::move(terminated_callback));
   }
-  void OnShimProcessDisconnected(AppShimHost* host) override {}
-  void OnShimFocus(AppShimHost* host,
-                   apps::AppShimFocusType focus_type,
-                   const std::vector<base::FilePath>& files) override {}
-  void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
-  void OnShimQuit(AppShimHost* host) override {
-    ExtensionAppShimHandler::OnShimQuit(host);
+  void OnShimProcessDisconnected(AppShimHost* host) override {
+    ExtensionAppShimHandler::OnShimProcessDisconnected(host);
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
   }
+  void OnShimFocus(AppShimHost* host,
+                   apps::AppShimFocusType focus_type,
+                   const std::vector<base::FilePath>& files) override {}
 
  private:
   std::string app_mode_id_;

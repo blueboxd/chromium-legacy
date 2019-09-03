@@ -19,6 +19,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/x11/x11_window.h"
 
 namespace gpu {
@@ -41,13 +42,17 @@ void VulkanDemo::Initialize() {
 
   event_source_ = ui::PlatformEventSource::CreateDefault();
 
-  gfx::Size size(800, 600);
-  window_ = std::make_unique<ui::X11Window>(
-      this, gfx::Rect(gfx::Point(100, 100), size));
+  ui::PlatformWindowInitProperties properties;
+  properties.bounds = gfx::Rect(100, 100, 800, 600);
+  auto x11_window = std::make_unique<ui::X11Window>(this, nullptr);
+  x11_window->Initialize(std::move(properties));
+
+  window_ = std::move(x11_window);
   window_->Show();
 
   // Sync up size between |window_| and |vulkan_surface_|
-  vulkan_surface_->Reshape(size, gfx::OVERLAY_TRANSFORM_NONE);
+  vulkan_surface_->Reshape(window_->GetBounds().size(),
+                           gfx::OVERLAY_TRANSFORM_NONE);
   sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
 }
 

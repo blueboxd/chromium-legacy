@@ -17,10 +17,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/usb/usb_service.h"
 
@@ -47,7 +48,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
  private:
   // DeviceManager implementation:
   void EnumerateDevicesAndSetClient(
-      mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
       EnumerateDevicesAndSetClientCallback callback) override;
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
@@ -79,14 +80,15 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
                                  const std::string& message);
 #endif  // defined(OS_CHROMEOS)
 
-  void SetClient(
-      mojom::UsbDeviceManagerClientAssociatedPtrInfo client) override;
+  void SetClient(mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient>
+                     client) override;
 
   // Callbacks to handle the async responses from the underlying UsbService.
-  void OnGetDevices(mojom::UsbEnumerationOptionsPtr options,
-                    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
-                    GetDevicesCallback callback,
-                    const std::vector<scoped_refptr<UsbDevice>>& devices);
+  void OnGetDevices(
+      mojom::UsbEnumerationOptionsPtr options,
+      mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
+      GetDevicesCallback callback,
+      const std::vector<scoped_refptr<UsbDevice>>& devices);
 
   // UsbService::Observer implementation:
   void OnDeviceAdded(scoped_refptr<UsbDevice> device) override;
@@ -99,7 +101,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   ScopedObserver<UsbService, UsbService::Observer> observer_;
 
   mojo::ReceiverSet<mojom::UsbDeviceManager> receivers_;
-  mojo::AssociatedInterfacePtrSet<mojom::UsbDeviceManagerClient> clients_;
+  mojo::AssociatedRemoteSet<mojom::UsbDeviceManagerClient> clients_;
 
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_{this};
 

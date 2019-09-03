@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Bandykite dar kartą</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d.}one{# d.}few{# d.}many{# d.}other{# d.}}</translation>
 <translation id="2148716181193084225">Šiandien</translation>
+<translation id="2161656808144014275">Tekstas</translation>
 <translation id="2168039046890040389">Puslapį į viršų</translation>
 <translation id="2190355936436201913">(tuščias)</translation>
 <translation id="2192232475740621500">Naudoti mažą tankį</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Ieškoti „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Pasirinkite norimą įkelti aplanką</translation>
 <translation id="3660179305079774227">Rodyklė „Aukštyn“</translation>
+<translation id="3670030362669914947">Numeris</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Toliau skaityti iš mobiliojo įrenginio „<ph name="TITLE" />“</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Prieš 1 mėnesį}one{Prieš # mėnesį}few{Prieš # mėnesius}many{Prieš # mėnesio}other{Prieš # mėnesių}}</translation>
 <translation id="4289300219472526559">Pradėti kalbėti</translation>
 <translation id="4316910396681052118">VISOS PROGRAMOS</translation>
-<translation id="4467014365953759647">Nepavyko išsiųsti numerio</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
 <translation id="4690510401873698237">Lentyna apačioje</translation>
 <translation id="4724120544754982507">Pranešimų centras, neskaitytų pranešimų: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Grįžties klavišas</translation>
 <translation id="5613020302032141669">Rodyklė į kairę</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Aktyvus šiandien}=1{Aktyvus prieš 1 d.}one{Aktyvus prieš # d.}few{Aktyvus prieš # d.}many{Aktyvus prieš # d.}other{Aktyvus prieš # d.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 diena ir }one{# diena ir }few{# dienos ir }many{# dienos ir }other{# dienų ir }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{po 1 m.}one{po # m.}few{po # m.}many{po # m.}other{po # m.}}</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Paleidimo priemonė, dalinis rodinys</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prieš 1 min.}one{Prieš # min.}few{Prieš # min.}many{Prieš # min.}other{Prieš # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Patikrinkite telefono ryšį ir bandykite dar kartą</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Liko 1 minutė}one{Liko # minutė}few{Liko # minutės}many{Liko # minutės}other{Liko # minučių}}</translation>
 <translation id="7430878839542012341">Ištrinti šią paiešką iš istorijos?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

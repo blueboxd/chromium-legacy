@@ -24,6 +24,11 @@ KeyParams::KeyParams(const KeyParams& other) = default;
 KeyParams::KeyParams(KeyParams&& other) = default;
 KeyParams::~KeyParams() = default;
 
+CryptographerDataWithPendingKeys::CryptographerDataWithPendingKeys() = default;
+CryptographerDataWithPendingKeys::CryptographerDataWithPendingKeys(
+    CryptographerDataWithPendingKeys&& other) = default;
+CryptographerDataWithPendingKeys::~CryptographerDataWithPendingKeys() = default;
+
 Cryptographer::Cryptographer() : key_bag_(NigoriKeyBag::CreateEmpty()) {}
 
 Cryptographer::Cryptographer(const Cryptographer& other)
@@ -44,6 +49,17 @@ void Cryptographer::CopyFrom(const Cryptographer& other) {
     pending_keys_ =
         std::make_unique<sync_pb::EncryptedData>(*other.pending_keys_);
   }
+}
+
+CryptographerDataWithPendingKeys
+Cryptographer::ToCryptographerDataWithPendingKeys() const {
+  CryptographerDataWithPendingKeys output;
+  *output.cryptographer_data.mutable_key_bag() = key_bag_.ToProto();
+  output.cryptographer_data.set_default_key_name(default_nigori_name_);
+  if (pending_keys_) {
+    output.pending_keys = *pending_keys_;
+  }
+  return output;
 }
 
 void Cryptographer::Bootstrap(const Encryptor& encryptor,

@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">Varianty pro příkazový řádek</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Zkuste vymazat soubory cookie<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">Funkce, které již nejsou podporovány</translation>
 <translation id="1320233736580025032">Prc1 (obálka)</translation>
 <translation id="132301787627749051">Vyhledat obrázek ve schránce</translation>
 <translation id="1323433172918577554">Zobrazit více</translation>
@@ -117,6 +118,7 @@
 <translation id="1521655867290435174">Tabulky Google</translation>
 <translation id="1527263332363067270">Čeká se na připojení…</translation>
 <translation id="1529521330346880926">10x15 (obálka)</translation>
+<translation id="1530707389502320859">Web, který se pokoušíte navštívit, vypadá falešný. Útočníci někdy weby napodobují tak, že v adrese URL provádějí drobné obtížně odhalitelné změny.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Tato stránka říká</translation>
 <translation id="153384715582417236">To je prozatím vše</translation>
@@ -345,6 +347,7 @@
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="2728127805433021124">Certifikát serveru je podepsán slabým algoritmem.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Spustit Diagnostiku připojení<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">Aktivací těchto funkcí byste mohli přijít o údaje v prohlížeči nebo ohrozit svoji bezpečnost nebo soukromí. Aktivace funkcí se vztahuje na všechny uživatele tohoto prohlížeče.</translation>
 <translation id="2735043616039983645">Pro tuto zásadu je přítomno několik zdrojů s konfliktními hodnotami.</translation>
 <translation id="2738330467931008676">Vybrat adresu vyzvednutí</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -388,6 +391,7 @@
 <translation id="2985306909656435243">Pokud je tato možnost aktivována, prohlížeč Chromium do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="2985398929374701810">Zadejte platnou adresu</translation>
 <translation id="2986368408720340940">Tento způsob vyzvednutí není k dispozici. Zkuste použít jiný způsob.</translation>
+<translation id="2987034854559945715">Žádné funkce neodpovídají</translation>
 <translation id="2991174974383378012">Sdílení s weby</translation>
 <translation id="2991571918955627853">Web <ph name="SITE" /> teď nemůžete navštívit, protože používá zabezpečení HSTS. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="3005723025932146533">Zobrazit uloženou kopii</translation>
@@ -506,6 +510,7 @@
 <translation id="3678529606614285348">Otevřete stránku v novém anonymním okně (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Zpráva o selhání pořízená <ph name="CRASH_TIME" /> byla nahrána <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informace o certifikátu</translation>
+<translation id="3701427423622901115">Resetování bylo potvrzeno.</translation>
 <translation id="3704162925118123524">Síť, kterou používáte, může vyžadovat, abyste navštívili její stránku přihlášení.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Načítání...</translation>
@@ -678,6 +683,7 @@
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
 <translation id="4597348597567598915">Velikost 8</translation>
 <translation id="4600854749408232102">C6/C5 (obálka)</translation>
+<translation id="464342062220857295">Funkce vyhledávání</translation>
 <translation id="4646534391647090355">Zobrazit</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />, protože jeho bezpečnostní certifikát obsahuje chyby. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
@@ -794,6 +800,7 @@
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (obálka)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">Funkce, které se vztahují na celý systém, může nastavit pouze vlastník: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Upozornění: Tato zásada nebyla sloučena podle zásady PolicyDictionaryMultipleSourceMergeList, protože nepatří mezi slovníkové zásady, které lze sloučit.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Konec</translation>
@@ -830,6 +837,7 @@
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> další}few{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> další}many{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> dalšího}other{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> dalších}}</translation>
 <translation id="5470861586879999274">&amp;Opakovat úpravy</translation>
+<translation id="5473728911100096288">Pokud aktivujete tyto funkce, budete používat funkce, jejichž podpora byla ukončena a které v budoucích verzích již nebudou k dispozici</translation>
 <translation id="5478437291406423475">B6/C4 (obálka)</translation>
 <translation id="5481076368049295676">Tento obsah by vám do zařízení mohl zkusit nainstalovat nebezpečný software, který odcizuje nebo maže informace. <ph name="BEGIN_LINK" />Přesto zobrazit<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Přidejte platnou adresu</translation>
@@ -888,6 +896,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5763042198335101085">Zadejte platnou e-mailovou adresu</translation>
 <translation id="5765072501007116331">Chcete-li zobrazit způsoby doručení a požadavky, vyberte adresu</translation>
 <translation id="5778550464785688721">Úplná kontrola zařízení MIDI</translation>
+<translation id="5781136890105823427">Je zapnutý experiment</translation>
 <translation id="578305955206182703">Žlutohnědá</translation>
 <translation id="57838592816432529">Ztlumit</translation>
 <translation id="5784606427469807560">Při ověřování vaší karty došlo k problému. Zkontrolujte připojení k internetu a zkuste to znovu.</translation>
@@ -1052,6 +1061,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6738516213925468394">Vaše data byla <ph name="TIME" /> zašifrována pomocí <ph name="BEGIN_LINK" />heslové fráze pro synchronizaci<ph name="END_LINK" />. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
 <translation id="674375294223700098">Neznámá chyba certifikátu serveru.</translation>
 <translation id="6744009308914054259">Zatímco čekáte na připojení, v sekci Stažené soubory si můžete přečíst offline články.</translation>
+<translation id="6747611005629681221">Upozornění: Podpora těchto funkcí byla ukončena.</translation>
 <translation id="6753269504797312559">Hodnota zásady</translation>
 <translation id="6757797048963528358">Zařízení přešlo do režimu spánku.</translation>
 <translation id="6768213884286397650">Hagaki (pohlednice)</translation>
@@ -1414,6 +1424,7 @@ Další podrobnosti:
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
 <translation id="874846938927089722">Přijímané kreditní a předplacené karty</translation>
+<translation id="874918643257405732">Přidat tuto kartu do záložek</translation>
 <translation id="8759274551635299824">Platnost této karty vypršela</translation>
 <translation id="8761567432415473239">Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />nalezlo škodlivé programy<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">Zařízení USB</translation>

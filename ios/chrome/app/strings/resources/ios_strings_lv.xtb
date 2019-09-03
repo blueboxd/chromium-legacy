@@ -263,6 +263,7 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="4747097190499141774">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay. Jūsu šifrētos datus var lasīt tikai personas, kurām ir zināma jūsu ieejas frāze. Ieejas frāze netiek sūtīta Google serveriem un netiek tajos glabāta. Ja aizmirsīsiet ieejas frāzi vai vēlēsieties mainīt šo iestatījumu, jums būs jāatiestata sinhronizācija. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="4749030437873592350">Atrast lapā…</translation>
 <translation id="4751645464639803239">Jauna inkognito cilne</translation>
+<translation id="4758977202923349869">Novietojiet kredītkarti rāmī</translation>
 <translation id="4802417911091824046">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.
 
 Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="5728700505257787410">Diemžēl, pierakstoties kontā, radās problēma.</translation>
 <translation id="5737974891429562743">Konta pieteikuminformācija ir novecojusi. Atjauniniet to, lai sāktu sinhronizāciju.</translation>
 <translation id="5738887413654608789">Tādējādi varat atklāt atbilstošas tīmekļa lapas, pamatojoties uz datiem par jūsu apkārtni.</translation>
+<translation id="5803566855766646066">Vai tiešām vēlaties atmest jauno kartīti?</translation>
 <translation id="5816228676161003208">Varat meklēt ātrāk, izmantojot balsi.</translation>
 <translation id="5846482154967366008">Meklētājprogramma</translation>
 <translation id="5854790677617711513">Vecāki par 30 dienām</translation>

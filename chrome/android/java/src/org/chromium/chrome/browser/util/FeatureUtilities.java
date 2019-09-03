@@ -91,6 +91,7 @@ public class FeatureUtilities {
     private static Boolean sIsNetworkServiceWarmUpEnabled;
     private static Boolean sIsImmersiveUiModeEnabled;
     private static Boolean sServiceManagerForDownloadResumption;
+    private static Boolean sIsClickToCallOpenDialerDirectlyEnabled;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -192,6 +193,7 @@ public class FeatureUtilities {
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
+        cacheClickToCallOpenDialerDirectlyEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -791,6 +793,38 @@ public class FeatureUtilities {
                 ChromePreferenceManager.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT));
+    }
+
+    /**
+     * Cache the value of the flag whether or not to directly open the dialer for click to call.
+     */
+    public static void cacheClickToCallOpenDialerDirectlyEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY));
+    }
+
+    /**
+     * @return Whether or not we should directly open dialer for click to call (based on the cached
+     *         value in SharedPrefs).
+     */
+    public static boolean isClickToCallOpenDialerDirectlyEnabled() {
+        if (sIsClickToCallOpenDialerDirectlyEnabled == null) {
+            sIsClickToCallOpenDialerDirectlyEnabled =
+                    ChromePreferenceManager.getInstance().readBoolean(
+                            ChromePreferenceManager.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY, false);
+        }
+        return sIsClickToCallOpenDialerDirectlyEnabled;
+    }
+
+    /**
+     * Toggles whether experiment for opening dialer directly in click to call is enabled for
+     * testing. Should be reset back to null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setIsClickToCallOpenDialerDirectlyEnabledForTesting(
+            @Nullable Boolean isEnabled) {
+        sIsClickToCallOpenDialerDirectlyEnabled = isEnabled;
     }
 
     /**

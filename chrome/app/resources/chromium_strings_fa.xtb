@@ -140,6 +140,8 @@
 <translation id="6096348254544841612">‏سفارشی کردن و کنترل Chromium. به‌روزرسانی‌ در دسترس است.</translation>
 <translation id="6120345080069858279">‏Chromium این گذرواژه را در حساب Google شما ذخیره می‌کند. لازم نیست آن را به خاطر بسپارید.</translation>
 <translation id="6129621093834146363">‏<ph name="FILE_NAME" /> خطرناک است، بنابراین Chromium آن را مسدود کرده است.</translation>
+<translation id="6173098285107411678">‏اگر تنظیمی در این صفحه نشان داده نمی‌شود، در <ph name="LINK_BEGIN" />
+    تنظیمات مرورگر Chromium<ph name="LINK_END" /> پیدایش کنید</translation>
 <translation id="6212496753309875659">‏این رایانه در حال حاضر دارای یک نسخه جدیدتر از Chromium است. درصورتی‌که نرم‌افزار کار نمی‌کند، لطفاً Chromium را حذف نصب کنید و دوباره سعی کنید.</translation>
 <translation id="6219195342503754812">{0,plural, =0{‏Chromium هم‌اکنون راه‌اندازی مجدد می‌شود}=1{‏Chromium ‏۱ ثانیه دیگر راه‌اندازی مجدد می‌شود}one{‏Chromium ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}other{‏Chromium ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}}</translation>
 <translation id="6248213926982192922">‏Chromium  مرورگر پیش‌فرض شود</translation>

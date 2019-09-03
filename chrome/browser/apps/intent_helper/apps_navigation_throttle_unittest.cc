@@ -106,152 +106,148 @@ TEST(AppsNavigationThrottleTest, TestShouldOverrideUrlLoading) {
 TEST(AppsNavigationThrottleTest, TestGetPickerAction) {
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::ERROR_BEFORE_PICKER,
                 /*should_persist=*/true));
+
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::ERROR_BEFORE_PICKER,
+          /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::ERROR_BEFORE_PICKER,
-                /*should_persist=*/true));
-
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::ERROR_BEFORE_PICKER,
                 /*should_persist=*/false));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::ERROR_BEFORE_PICKER,
-                /*should_persist=*/false));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::ERROR_BEFORE_PICKER,
+          /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::ERROR_AFTER_PICKER,
                 /*should_persist=*/true));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::ERROR_AFTER_PICKER,
-                /*should_persist=*/true));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::ERROR_AFTER_PICKER,
+          /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::ERROR_AFTER_PICKER,
                 /*should_persist=*/false));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::ERROR_AFTER_PICKER,
-                /*should_persist=*/false));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::ERROR_AFTER_PICKER,
+          /*should_persist=*/false));
 
   // Expect PickerAction::DIALOG_DEACTIVATED if the close_reason is
   // DIALOG_DEACTIVATED.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::DIALOG_DEACTIVATED,
                 /*should_persist=*/true));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::DIALOG_DEACTIVATED,
-                /*should_persist=*/true));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::DIALOG_DEACTIVATED,
+          /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::DIALOG_DEACTIVATED,
                 /*should_persist=*/false));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::DIALOG_DEACTIVATED,
-                /*should_persist=*/false));
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::DIALOG_DEACTIVATED,
+          /*should_persist=*/false));
 
   // Expect PickerAction::PREFERRED_ACTIVITY_FOUND if the close_reason is
   // PREFERRED_APP_FOUND.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
+                PickerEntryType::kUnknown,
                 IntentPickerCloseReason::PREFERRED_APP_FOUND,
-                /*should_persist=*/true));
-
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::PREFERRED_APP_FOUND,
-                /*should_persist=*/true));
-
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
-                IntentPickerCloseReason::PREFERRED_APP_FOUND,
-                /*should_persist=*/false));
-
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc,
-                IntentPickerCloseReason::PREFERRED_APP_FOUND,
-                /*should_persist=*/false));
-
-  // Expect PREFERRED depending on the value of |should_persist|, and |app_type|
-  // to be ignored if reason is STAY_IN_CHROME.
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PREFERRED_PRESSED,
-            AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
-                IntentPickerCloseReason::STAY_IN_CHROME,
                 /*should_persist=*/true));
 
   EXPECT_EQ(
-      AppsNavigationThrottle::PickerAction::CHROME_PREFERRED_PRESSED,
+      AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
       AppsNavigationThrottle::GetPickerAction(
-          apps::mojom::AppType::kArc, IntentPickerCloseReason::STAY_IN_CHROME,
+          PickerEntryType::kArc, IntentPickerCloseReason::PREFERRED_APP_FOUND,
           /*should_persist=*/true));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PRESSED,
+  EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kUnknown,
-                IntentPickerCloseReason::STAY_IN_CHROME,
+                PickerEntryType::kUnknown,
+                IntentPickerCloseReason::PREFERRED_APP_FOUND,
                 /*should_persist=*/false));
+
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kArc, IntentPickerCloseReason::PREFERRED_APP_FOUND,
+          /*should_persist=*/false));
+
+  // Expect PREFERRED depending on the value of |should_persist|, and
+  // |entry_type| to be ignored if reason is STAY_IN_CHROME.
+  EXPECT_EQ(
+      AppsNavigationThrottle::PickerAction::CHROME_PREFERRED_PRESSED,
+      AppsNavigationThrottle::GetPickerAction(
+          PickerEntryType::kUnknown, IntentPickerCloseReason::STAY_IN_CHROME,
+          /*should_persist=*/true));
+
+  EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PREFERRED_PRESSED,
+            AppsNavigationThrottle::GetPickerAction(
+                PickerEntryType::kArc, IntentPickerCloseReason::STAY_IN_CHROME,
+                /*should_persist=*/true));
 
   EXPECT_EQ(
       AppsNavigationThrottle::PickerAction::CHROME_PRESSED,
       AppsNavigationThrottle::GetPickerAction(
-          apps::mojom::AppType::kArc, IntentPickerCloseReason::STAY_IN_CHROME,
+          PickerEntryType::kUnknown, IntentPickerCloseReason::STAY_IN_CHROME,
           /*should_persist=*/false));
+
+  EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PRESSED,
+            AppsNavigationThrottle::GetPickerAction(
+                PickerEntryType::kArc, IntentPickerCloseReason::STAY_IN_CHROME,
+                /*should_persist=*/false));
 
   // Expect PREFERRED depending on the value of |should_persist|, and
   // INVALID/ARC to be chosen if reason is OPEN_APP.
-  EXPECT_EQ(
-      AppsNavigationThrottle::PickerAction::INVALID,
-      AppsNavigationThrottle::GetPickerAction(apps::mojom::AppType::kUnknown,
-                                              IntentPickerCloseReason::OPEN_APP,
-                                              /*should_persist=*/true));
+  EXPECT_EQ(AppsNavigationThrottle::PickerAction::INVALID,
+            AppsNavigationThrottle::GetPickerAction(
+                PickerEntryType::kUnknown, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ARC_APP_PREFERRED_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc, IntentPickerCloseReason::OPEN_APP,
+                PickerEntryType::kArc, IntentPickerCloseReason::OPEN_APP,
                 /*should_persist=*/true));
 
-  EXPECT_EQ(
-      AppsNavigationThrottle::PickerAction::INVALID,
-      AppsNavigationThrottle::GetPickerAction(apps::mojom::AppType::kUnknown,
-                                              IntentPickerCloseReason::OPEN_APP,
-                                              /*should_persist=*/false));
+  EXPECT_EQ(AppsNavigationThrottle::PickerAction::INVALID,
+            AppsNavigationThrottle::GetPickerAction(
+                PickerEntryType::kUnknown, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ARC_APP_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                apps::mojom::AppType::kArc, IntentPickerCloseReason::OPEN_APP,
+                PickerEntryType::kArc, IntentPickerCloseReason::OPEN_APP,
                 /*should_persist=*/false));
 }
 

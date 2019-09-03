@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">توقف گفتار</translation>
 <translation id="4373197658375206385">مورد قبلی که پیوند نباشد وجود ندارد.</translation>
 <translation id="4376316291247992553">مشاهده گرافیک به‌صورت خط بریل</translation>
+<translation id="437809255587011096">اعلام سبک نوشتار</translation>
 <translation id="4378308539633073595">پیمایش به جلو</translation>
 <translation id="4384583879834880242">پرسش و پاسخ</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">کاهش جزئیات پیمایش</translation>
 <translation id="8504695234784218301">پایان اشتباه دستور زبانی</translation>
 <translation id="8520472399088452386">دکمه چرخش</translation>
+<translation id="8534394844575788431">قالب‌بندی</translation>
 <translation id="8538744478902126321">حدس در مورد عنوان ردیف سلول کنونی</translation>
 <translation id="8540054775867439484">جمع کردن به بالا</translation>
 <translation id="8542271685829952264">‏برای کاوش همه فرمان‌ها و میان‌برهای ChromeVox،‏ Search + Period (جستجو + نقطه) را فشار دهید، سپس از کلیدهای پیکان برای پیمایش در منوها استفاده کنید و برای فعال کردن یک فرمان، Enter را فشار دهید. با فشار دادن Search+o سپس t به اینجا برگردید.</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">شرح مختصری از موقعیت کنونی را اعلام می‌کند</translation>
+<translation id="9151249085738989067">‏صدای ChromeVox به‌طور خودکار براساس زبان تغییر کند</translation>
 <translation id="9153606228985488238">گام <ph name="PERCENT" /> درصد</translation>
 <translation id="9160096769946561184">رفتن به انتهای ستون کنونی</translation>
 <translation id="9173115498289768110">میزان صدا <ph name="PERCENT" /> درصد</translation>

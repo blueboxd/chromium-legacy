@@ -483,6 +483,7 @@
 <translation id="4372705107434148843">หยุดการพูด</translation>
 <translation id="4373197658375206385">ไม่มีรายการก่อนหน้าที่ไม่ใช่ลิงก์</translation>
 <translation id="4376316291247992553">ดูภาพเป็นอักษรเบรลล์</translation>
+<translation id="437809255587011096">ประกาศการจัดรูปแบบข้อความ</translation>
 <translation id="4378308539633073595">เลื่อนไปข้างหน้า</translation>
 <translation id="4384583879834880242">ถามและตอบ</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1120,6 +1121,7 @@
 <translation id="8503360654911991865">ลดความละเอียดในการนำทาง</translation>
 <translation id="8504695234784218301">สิ้นสุดข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="8520472399088452386">ปุ่มหมุน</translation>
+<translation id="8534394844575788431">การจัดรูปแบบ</translation>
 <translation id="8538744478902126321">เดาส่วนหัวของแถวของเซลล์ปัจจุบัน</translation>
 <translation id="8540054775867439484">ข้ามไปด้านบน</translation>
 <translation id="8542271685829952264">หากต้องการดูคำสั่งและแป้นพิมพ์ลัดทั้งหมดของ ChromeVox ให้กด Search + จุด และใช้ปุ่มลูกศรนำไปยังเมนู แล้วกด Enter เพื่อเปิดใช้งานคำสั่ง กลับมาที่นี่โดยกด Search+o จากนั้นกด t</translation>
@@ -1199,6 +1201,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">แท็บ</translation>
 <translation id="9151211641321628915">แจ้งคำอธิบายโดยย่อของตำแหน่งปัจจุบัน</translation>
+<translation id="9151249085738989067">เปลี่ยนเสียง ChromeVox อัตโนมัติโดยอิงตามภาษา</translation>
 <translation id="9153606228985488238">ระดับเสียง <ph name="PERCENT" /> เปอร์เซ็นต์</translation>
 <translation id="9160096769946561184">ไปที่ด้านล่างของคอลัมน์ปัจจุบัน</translation>
 <translation id="9173115498289768110">ความดัง <ph name="PERCENT" /> เปอร์เซ็นต์</translation>

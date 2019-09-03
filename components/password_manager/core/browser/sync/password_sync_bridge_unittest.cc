@@ -212,6 +212,8 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD0(CommitTransaction, bool());
   MOCK_METHOD0(RollbackTransaction, void());
   MOCK_METHOD0(GetMetadataStore, PasswordStoreSync::MetadataStore*());
+  MOCK_CONST_METHOD0(IsAccountStore, bool());
+  MOCK_METHOD0(DeleteAndRecreateDatabaseFile, bool());
 };
 
 }  // namespace

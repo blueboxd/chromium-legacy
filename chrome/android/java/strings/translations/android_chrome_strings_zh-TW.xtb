@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">安裝位置</translation>
 <translation id="1792959175193046959">你隨時可以變更預設的下載位置</translation>
 <translation id="1807246157184219062">淺色</translation>
+<translation id="1810845389119482123">尚未完成初始同步處理設定</translation>
 <translation id="1821253160463689938">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">語言</translation>
+<translation id="4183868528246477015">使用 Google 智慧鏡頭的搜尋功能 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種運送方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種運送方式}}</translation>
+<translation id="4696983787092045100">將文字傳送到你的裝置</translation>
 <translation id="4698034686595694889">在「<ph name="APP_NAME" />」中離線瀏覽</translation>
 <translation id="4698413471314543145">找不到執行 Chrome 所需的重要功能；Chrome 安裝程序可能未完成，或是 Chrome 與這個 Android 版本不相容。</translation>
 <translation id="4699172675775169585">快取圖片和檔案</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> 要求連線</translation>
 <translation id="5013696553129441713">沒有新的建議</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">當你處於 VR 模式時，這個網站可能會取得以下資訊：
+  -  你的身體特徵，例如身高
+
+進入 VR 模式之前，請確認你信任這個網站。</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5048398596102334565">允許網站存取動作感應器 (建議)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">含有影片</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> 要求掃描附近的藍牙裝置。已找到下列裝置：</translation>
 <translation id="5233638681132016545">新增分頁</translation>
+<translation id="5234764350956374838">關閉</translation>
 <translation id="526421993248218238">無法載入這個網頁</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">輕觸 [首頁] 按鈕即可載入新分頁</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{已開啟 <ph name="OPEN_TABS_ONE" /> 個分頁，輕觸即可切換分頁}other{已開啟 <ph name="OPEN_TABS_MANY" /> 個分頁，輕觸即可切換分頁}}</translation>
 <translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(還有 1 個)}other{(還有 # 個)}}</translation>
 <translation id="5400569084694353794">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="5403592356182871684">名稱</translation>
 <translation id="5403644198645076998">只允許特定網站</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK1" />更新權限<ph name="END_LINK1" />。此外，<ph name="BEGIN_LINK2" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK2" />。</translation>
 <translation id="5527111080432883924">允許網站讀取剪貼簿中的文字和圖片前，必須先詢問你 (建議)</translation>
 <translation id="5530766185686772672">關閉無痕式分頁</translation>
+<translation id="5534334044554683961">當你處於 VR 模式時，這個網站可能會取得以下資訊：
+  -   你的身體特徵，例如身高
+  -   你的房間配置
+
+進入 VR 模式之前，請確認你信任這個網站。.</translation>
 <translation id="5534640966246046842">已複製網站</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5561549206367097665">正在等待網路連線…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6206551242102657620">已建立安全連線。網站資訊</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />選項</translation>
 <translation id="6221633008163990886">解鎖即可匯出你的密碼</translation>
 <translation id="6232535412751077445">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">新增帳戶</translation>
 <translation id="766587987807204883">文章會顯示在這裡，並可供離線閱讀</translation>
 <translation id="7682724950699840886">請嘗試按照下列提示操作：確認你的裝置上有足夠空間，然後嘗試重新匯出。</translation>
+<translation id="7685301384041462804">進入 VR 模式之前，請確認你信任這個網站。</translation>
 <translation id="7698359219371678927">在「<ph name="APP_NAME" />」中建立電子郵件</translation>
 <translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="7725024127233776428">加入書籤的頁面會顯示在這裡</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">正在 Chrome 中執行</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{正在下載檔案。}other{正在下載 # 個檔案。}}</translation>
 <translation id="7929962904089429003">開啟選單</translation>
+<translation id="7930681627240672853">檢查密碼安全性</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 版本過舊。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7963646190083259054">供應商：</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="9019902583201351841">你的家長已停用這項功能</translation>
+<translation id="9029323097866369874">要允許 <ph name="DOMAIN" /> 進入 VR 模式嗎？</translation>
 <translation id="9040142327097499898">允許顯示通知。這部裝置的定位功能已關閉。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 部影片}other{# 部影片}}</translation>
 <translation id="9050666287014529139">通關密語</translation>

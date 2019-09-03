@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Vui lòng thử lại</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 ngày}other{# ngày}}</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
+<translation id="2161656808144014275">Văn bản</translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(trống)</translation>
 <translation id="2192232475740621500">Sử dụng mật độ thấp</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Tra cứu “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Chọn thư mục để tải lên</translation>
 <translation id="3660179305079774227">Phím mũi tên Lên</translation>
+<translation id="3670030362669914947">Số</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/giây</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Tiếp tục đọc trên thiết bị di động <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 tháng trước}other{# tháng trước}}</translation>
 <translation id="4289300219472526559">Bắt đầu nói</translation>
 <translation id="4316910396681052118">TẤT CẢ ỨNG DỤNG</translation>
-<translation id="4467014365953759647">Không thể gửi số điện thoại</translation>
 <translation id="4588090240171750605">Cuộn qua Phải</translation>
 <translation id="4690510401873698237">Giá ở dưới cùng</translation>
 <translation id="4724120544754982507">Trung tâm thông báo, <ph name="UNREAD_NOTIFICATION_COUNT" /> thông báo chưa đọc</translation>
@@ -175,7 +176,6 @@
 <translation id="7319740667687257810">Trình khởi chạy, chế độ xem một phần</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 phút trước}other{# phút trước}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Hãy kiểm tra kết nối của điện thoại rồi thử lại</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Còn 1 phút}other{Còn # phút}}</translation>
 <translation id="7430878839542012341">Xóa nội dung tìm kiếm này khỏi lịch sử của bạn?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

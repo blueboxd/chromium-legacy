@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">下一首曲目</translation>
 <translation id="4479639480957787382">乙太網路</translation>
 <translation id="4481530544597605423">解除配對的裝置</translation>
+<translation id="4505050298327493054">使用中的桌面。</translation>
 <translation id="4513946894732546136">意見回饋</translation>
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 後充飽</translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">正在初始化...</translation>
 <translation id="8142441511840089262">按兩下</translation>
 <translation id="8142699993796781067">私人網路</translation>
+<translation id="8152092012181020186">按下 Ctrl + W 即可關閉。</translation>
 <translation id="8167567890448493835">使用<ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="8192202700944119416">已隱藏通知。</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">我的日曆上有什麼活動？</translation>
 <translation id="945522503751344254">提供意見</translation>
 <translation id="98515147261107953">橫向</translation>
+<translation id="990277280839877440">視窗 <ph name="WINDOW_TITILE" /> 已關閉。</translation>
 </translationbundle>

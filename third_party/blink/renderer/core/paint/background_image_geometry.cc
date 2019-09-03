@@ -501,8 +501,8 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
     case EFillBox::kContent:
       // If the PaddingOutsets are zero then this is equivalent to
       // kPadding and we should apply the snapping logic.
-      if (!positioning_box_.PaddingOutsets().IsZero()) {
-        unsnapped_dest_adjust = positioning_box_.PaddingOutsets();
+      unsnapped_dest_adjust = positioning_box_.PaddingOutsets();
+      if (!unsnapped_dest_adjust.IsZero()) {
         unsnapped_dest_adjust += positioning_box_.BorderBoxOutsets();
 
         // We're not trying to match a border position, so don't snap.
@@ -600,8 +600,8 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
     case EFillBox::kContent:
       // If the PaddingOutsets are zero then this is equivalent to
       // kPadding and we should apply the snapping logic.
-      if (!positioning_box_.PaddingOutsets().IsZero()) {
-        unsnapped_box_outset = positioning_box_.PaddingOutsets();
+      unsnapped_box_outset = positioning_box_.PaddingOutsets();
+      if (!unsnapped_box_outset.IsZero()) {
         unsnapped_box_outset += positioning_box_.BorderBoxOutsets();
 
         // We're not trying to match a border position, so don't snap.
@@ -702,11 +702,11 @@ void BackgroundImageGeometry::ComputePositioningArea(
     // outsets also include the snapping behavior.
     LayoutRectOutsets unsnapped_dest_adjust;
     LayoutRectOutsets snapped_dest_adjust;
-    LayoutRectOutsets unsnapped_box_outset;
-    LayoutRectOutsets snapped_box_outset;
     ComputeDestRectAdjustments(fill_layer, unsnapped_positioning_area,
                                disallow_border_derived_adjustment,
                                unsnapped_dest_adjust, snapped_dest_adjust);
+    LayoutRectOutsets unsnapped_box_outset;
+    LayoutRectOutsets snapped_box_outset;
     ComputePositioningAreaAdjustments(fill_layer, unsnapped_positioning_area,
                                       disallow_border_derived_adjustment,
                                       unsnapped_box_outset, snapped_box_outset);

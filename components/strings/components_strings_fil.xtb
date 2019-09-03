@@ -959,7 +959,7 @@
 <translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Gamitin ang iyong mga card sa lahat ng device mo?</translation>
 <translation id="6059925163896151826">Mga USB device</translation>
-<translation id="6060009363608157444">Di-wasto ang DnsOverHttps mode.</translation>
+<translation id="6060009363608157444">Invalid ang DnsOverHttps mode.</translation>
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN" />.</translation>
 <translation id="6094273045989040137">I-annotate</translation>
 <translation id="610911394827799129">Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>

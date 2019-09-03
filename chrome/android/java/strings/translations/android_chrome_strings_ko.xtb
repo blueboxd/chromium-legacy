@@ -556,6 +556,7 @@
 <translation id="5224771365102442243">동영상 포함</translation>
 <translation id="5230560987958996918"><ph name="SITE" />에서 주변 블루투스 기기를 검색하려고 합니다. 다음 기기가 발견되었습니다.</translation>
 <translation id="5233638681132016545">새 탭</translation>
+<translation id="5234764350956374838">숨기기</translation>
 <translation id="526421993248218238">이 페이지를 로드할 수 없습니다.</translation>
 <translation id="5271967389191913893">기기에서 다운로드하려는 콘텐츠를 열 수 없습니다.</translation>
 <translation id="528192093759286357">전체화면을 종료하려면 상단에서 드래그하여 뒤로 버튼을 터치하세요.</translation>
@@ -690,7 +691,6 @@
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
 <translation id="6221633008163990886">비밀번호를 내보내려면 잠금 해제하세요</translation>
 <translation id="6232535412751077445">‘추적 안함’을 사용하도록 설정하면 요청이 사용자의 인터넷 사용 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 해석되는 방법에 따라 결과가 결정됩니다.
 

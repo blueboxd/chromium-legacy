@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של Chrome Remote Desktop.</translation>
 <translation id="5308380583665731573">התחברות</translation>
+<translation id="5327248766486351172">שם</translation>
 <translation id="533625276787323658">אין מחשבים שניתן להתחבר אליהם</translation>
 <translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE" />” וייתן לך את קוד הגישה.</translation>
 <translation id="5379087427956679853">‏Chrome Remote Desktop מאפשר לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את האפליקציה Chrome Remote Desktop, שניתן למצוא בכתובת <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
 <translation id="7981525049612125370">פג התוקף של ההפעלה המרוחקת.</translation>
+<translation id="8038111231936746805">(ברירת מחדל)</translation>
 <translation id="8041089156583427627"> שליחת משוב</translation>
 <translation id="8041721485428375115">‏הורדת מנהל ההתקנה של מארח Chrome Remote Desktop מהווה את הסכמתך לל<ph name="LINK_BEGIN" />תנאים ולהגבלות<ph name="LINK_END" /> של Google.</translation>
 <translation id="8060029310790625334">מרכז העזרה</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">המחשבים שלי</translation>
 <translation id="811307782653349804">גש למחשב שלך מכל מקום.</translation>
 <translation id="8116630183974937060">אירעה שגיאת רשת. בדוק שהמכשיר מקוון ונסה שוב.</translation>
-<translation id="8123581458650016326">משתמשים מרוחקים יוכלו לשלוט במחשב הזה</translation>
 <translation id="8178433417677596899">שיתוף מסך ממשתמש למשתמש, הפתרון המושלם לתמיכה טכנית מרחוק.</translation>
 <translation id="8187079423890319756">‏Copyright 2013 The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8196755618196986400">כדי שנוכל ליצור איתך קשר ולקבל מידע נוסף, כתובת האימייל שלך תיכלל בכל משוב שתשלח.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
 <translation id="894763922177556086">איכות טובה</translation>
 <translation id="895780780740011433">‏ל-Windows מגירסה 7 ואילך</translation>
-<translation id="8963047137585288214">יש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
-
-כדי להפעיל את הפונקציונליות הזו, יש ללחוץ על '<ph name="BUTTON_NAME" />' כדי להציג את החלונית של העדפות האבטחה והפרטיות, ולאחר מכן לסמן את התיבה ליד <ph name="SERVICE_SCRIPT_NAME" />.
-
-אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מוצגת ומסומנת, ייתכן שצריך לבטל את הסימון ולאחר מכן לסמן מחדש.</translation>
 <translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">‏בקר מארח של Chrome Remote Desktop</translation>
 <translation id="9016232822027372900">התחבר בכל זאת</translation>

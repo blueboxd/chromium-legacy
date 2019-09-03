@@ -1123,7 +1123,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(
   }
 
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
-    return ng_block_flow->PositionForPoint(point);
+    return ng_block_flow->PositionForPoint(*this, point);
 
   DCHECK(CanUseInlineBox(*this));
 

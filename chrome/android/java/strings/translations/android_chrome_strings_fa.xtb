@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">نصب‌شده</translation>
 <translation id="1792959175193046959">هرزمان بخواهید می‌توانید محل پیش‌فرض بارگیری را تغییر دهید</translation>
 <translation id="1807246157184219062">روشن</translation>
+<translation id="1810845389119482123">همگام‌سازی اولیه کامل نشد</translation>
 <translation id="1821253160463689938">از کوکی‌ها برای به خاطر سپردن تنظیمات برگزیده‌تان استفاده می‌کند، حتی اگر از آن صفحه‌ها بازدید نکنید</translation>
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> استفاده‌شده</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
+<translation id="4183868528246477015">‏جستجو با «لنز Google» <ph name="BEGIN_NEW" />جدید<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198423547019359126">مکانی برای بارگیری دردسترس نیست</translation>
 <translation id="4209895695669353772">‏برای اینکه Google محتوای شخصی‌شده به شما پیشنهاد دهد، همگام‌سازی را روشن کنید</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
+<translation id="4696983787092045100">ارسال نوشتار به دستگاه‌های شما</translation>
 <translation id="4698034686595694889">مشاهده آفلاین در <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">‏یکی از قابلیت‌های مهم برای اجرای Chrome موجود نیست؛ ممکن است نصب Chrome شما به‌ صورت ناقص انجام شده باشد یا اینکه با این نسخه از Android سازگار نباشد.</translation>
 <translation id="4699172675775169585">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> می‌خواهد مرتبط شود</translation>
 <translation id="5013696553129441713">هیچ پیشنهاد جدیدی نیست</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">‏درمدتی که در حالت VR هستید، این سایت می‌تواند به این‌ها پی‌ببرد:
+  -  ویژگی‌های فیزیکی، مانند قد شما
+
+پیش از وارد شدن به VR، مطمئن شوید به این سایت اعتماد دارید.</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5048398596102334565">مجاز بودن دسترسی سایت‌ها به حسگرهای حرکتی (توصیه می‌شود)</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">دارای ویدیو</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> می‌خواهد دستگاه‌های «بلوتوث» اطراف را جستجو کند. دستگاه‌های زیر پیدا شدند:</translation>
 <translation id="5233638681132016545">برگه جدید</translation>
+<translation id="5234764350956374838">لغو کردن</translation>
 <translation id="526421993248218238">این صفحه بار نشد</translation>
 <translation id="5271967389191913893">دستگاه نمی‌تواند محتوا را برای بارگیری باز کند.</translation>
 <translation id="528192093759286357">برای خروج از حالت تمام صفحه، از بالا صفحه را بکشید و دکمه برگشت را لمس کنید.</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">برای بارگیری صفحه برگه جدید، روی دکمه صفحه اصلی ضربه بزنید</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> برگه باز، برای جستجوی برگه ضربه بزنید}one{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}other{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}}</translation>
 <translation id="5391532827096253100">اتصال شما به این سایت امن نیست. اطلاعات سایت</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ۱ مورد دیگر)}one{(+ # مورد دیگر)}other{(+ # مورد دیگر)}}</translation>
 <translation id="5400569084694353794">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
 <translation id="5403592356182871684">نام‌ها</translation>
 <translation id="5403644198645076998">فقط بعضی از سایت‌ها مجاز هستند</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK1" />به‌روزرسانی مجوزها<ph name="END_LINK1" /> . دسترسی به مکان نیز <ph name="BEGIN_LINK2" />برای این دستگاه خاموش است<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">قبل از اینکه به سایت‌ها اجازه داده شود به نوشتار و تصاویر بریده‌دان دسترسی پیدا کنند سؤال شود (توصیه می‌شود)</translation>
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
+<translation id="5534334044554683961">‏درمدتی که در حالت VR هستید، این سایت می‌تواند به این‌ها پی‌ببرد:
+  -   ویژگی‌های فیزیکی، مانند قد شما
+  -   چیدمان اتاقتان
+
+پیش از وارد شدن به VR، مطمئن شوید به این سایت اعتماد دارید.</translation>
 <translation id="5534640966246046842">سایت کپی شد</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5561549206367097665">در انتظار شبکه…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6206551242102657620">اتصال امن است. اطلاعات سایت</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ایمیل شما نیست؟</translation>
-<translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">برای صادر کردن گذرواژه‌ها، قفل را باز کنید</translation>
 <translation id="6232535412751077445">فعال کردن «ردیابی نشود» به این معنی است که درخواستی به ترافیک مرور شما اضافه می‌شود. نتیجه به این بستگی دارد که وب‌سایت به درخواست‌ پاسخ بدهد یا نه و درخواست چگونه تفسیر شود.
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">افزودن حساب</translation>
 <translation id="766587987807204883">مقاله‌ها اینجا نشان داده می‌شوند و حتی درحالت آفلاین هم می‌توانید آن‌ها را بخوانید.</translation>
 <translation id="7682724950699840886">نکات زیر را امتحان کنید: مطمئن شوید که در دستگاهتان فضای کافی وجود داشته باشد، سعی کنید دوباره صادر کنید.</translation>
+<translation id="7685301384041462804">‏پیش از وارد شدن به حالت VR، مطمئن شوید به این سایت اعتماد دارید.</translation>
 <translation id="7698359219371678927">ایجاد ایمیل در <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">تکمیل خودکار جستجوها و نشانی‌های وب</translation>
 <translation id="7725024127233776428">صفحاتی را که نشانک‌گذاری می‌کنید، در اینجا نشان داده می‌شوند</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">‏درحال اجرا در Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{درحال بارگیری فایل.}one{درحال بارگیری # فایل.}other{درحال بارگیری # فایل.}}</translation>
 <translation id="7929962904089429003">باز کردن منو</translation>
+<translation id="7930681627240672853">بررسی امنیت گذرواژه</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">باز کردن برگه جدیدی در حالت ناشناس</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
+<translation id="9029323097866369874">‏به <ph name="DOMAIN" /> اجازه می‌دهید به حالت VR وارد شود؟</translation>
 <translation id="9040142327097499898">اعلان‌ها مجاز هستند. مکان برای این دستگاه خاموش است.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# ویدیو}one{# ویدیو}other{# ویدیو}}</translation>
 <translation id="9050666287014529139">عبارت عبور</translation>

@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Pakisubukang muli</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 araw}one{# araw}other{# na araw}}</translation>
 <translation id="2148716181193084225">Ngayon</translation>
+<translation id="2161656808144014275">Text</translation>
 <translation id="2168039046890040389">Pataas</translation>
 <translation id="2190355936436201913">(walang laman)</translation>
 <translation id="2192232475740621500">Gumamit ng mababang density</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pumili ng Folder na I-a-upload</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
+<translation id="3670030362669914947">Numero</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> (na) GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> (na) GB</translation>
 <translation id="3842239759367498783">Magpatuloy sa pagbabasa mula sa iyong mobile device na <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 buwan ang nakalipas}one{# buwan ang nakalipas}other{# na buwan ang nakalipas}}</translation>
 <translation id="4289300219472526559">Simulan ang Pagsasalita</translation>
 <translation id="4316910396681052118">LAHAT NG APP</translation>
-<translation id="4467014365953759647">Hindi maipadala ang numero</translation>
 <translation id="4588090240171750605">Mag-scroll Pakanan</translation>
 <translation id="4690510401873698237">Nasa ibaba ang shelf</translation>
 <translation id="4724120544754982507">Notification Center, <ph name="UNREAD_NOTIFICATION_COUNT" /> (na) hindi pa nababasang notification</translation>
@@ -175,7 +176,6 @@
 <translation id="7319740667687257810">Launcher, hindi kumpletong view</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Tingnan ang koneksyon ng iyong telepono at subukan ulit</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>
 <translation id="7430878839542012341">I-delete ang paghahanap na ito mula sa iyong history?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> (na) TB</translation>

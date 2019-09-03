@@ -1498,8 +1498,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
       GenURL("d.com", "/title1.html"), true);
 }
 
+// TODO(http://crbug.com/997808): Flaky on Linux ASAN.
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
+#else
+#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
+#endif
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       SplitCacheDedicatedWorkers) {
+                       MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1590,12 +1596,6 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
                                           GenURL("e.com", "/worker.js")));
 }
 
-// TODO(http://crbug.com/997808): Flaky on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
-#else
-#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
                        MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the

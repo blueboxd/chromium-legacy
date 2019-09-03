@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">הפסק דיבור</translation>
 <translation id="4373197658375206385">אין פריט קודם שאינו קישור.</translation>
 <translation id="4376316291247992553">הגת גרפיקה כברייל</translation>
+<translation id="437809255587011096">תיאור קולי של עיצוב טקסט</translation>
 <translation id="4378308539633073595">גלילה קדימה</translation>
 <translation id="4384583879834880242">שאלות ותשובות</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">הקטן רמת פירוט של ניווט</translation>
 <translation id="8504695234784218301">סוף שגיאת דקדוק</translation>
 <translation id="8520472399088452386">לחצן סיבוב</translation>
+<translation id="8534394844575788431">עיצוב</translation>
 <translation id="8538744478902126321">נחש מהי כותרת השורה של התא הנוכחי</translation>
 <translation id="8540054775867439484">גלישה לחלק העליון</translation>
 <translation id="8542271685829952264">‏כדי לראות את כל הפקודות והקיצורים הזמינים ב-ChromeVox, הקש על מקש החיפוש ומקש הנקודה. לאחר מכן השתמש במקשי החיצים כדי לנווט בתפריטים. השתמש במקש Enter כדי להפעיל פקודה. הקשה על מקש החיפוש יחד עם o ולאחר מכן t תחזיר אותך לכאן.</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">כרטיסייה</translation>
 <translation id="9151211641321628915">הכרזה על תיאור קצר של המיקום הנוכחי</translation>
+<translation id="9151249085738989067">‏החלפת הקול של ChromeVox באופן אוטומטי על סמך השפה</translation>
 <translation id="9153606228985488238"><ph name="PERCENT" /> אחוזים מגובה הצליל</translation>
 <translation id="9160096769946561184">עבור לסוף העמודה הנוכחית</translation>
 <translation id="9173115498289768110"><ph name="PERCENT" /> אחוזים מעוצמת השמע</translation>

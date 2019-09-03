@@ -43,16 +43,11 @@
 namespace blink {
 
 struct WebEmbeddedWorkerStartData {
-  enum PauseAfterDownloadMode {
-    kDontPauseAfterDownload,
-    kPauseAfterDownload,
-  };
   enum WaitForDebuggerMode { kDontWaitForDebugger, kWaitForDebugger };
 
   WebURL script_url;
   WebString user_agent;
   mojom::ScriptType script_type;
-  PauseAfterDownloadMode pause_after_download_mode;
   // Whether to pause the initialization and wait for debugger to attach
   // before proceeding. This technique allows debugging worker startup.
   WaitForDebuggerMode wait_for_debugger_mode;
@@ -66,8 +61,7 @@ struct WebEmbeddedWorkerStartData {
   PrivacyPreferences privacy_preferences;
 
   WebEmbeddedWorkerStartData()
-      : pause_after_download_mode(kDontPauseAfterDownload),
-        wait_for_debugger_mode(kDontWaitForDebugger),
+      : wait_for_debugger_mode(kDontWaitForDebugger),
         v8_cache_options(WebSettings::V8CacheOptions::kDefault) {}
 };
 

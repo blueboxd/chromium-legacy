@@ -45,8 +45,15 @@ extern const int kCompatibleVersionNumber;
 // the login information.
 class LoginDatabase : public PasswordStoreSync::MetadataStore {
  public:
-  explicit LoginDatabase(const base::FilePath& db_path);
+  LoginDatabase(const base::FilePath& db_path, bool is_account_store);
   ~LoginDatabase() override;
+
+  // Returns whether this is the profile-scoped or the account-scoped storage:
+  // true:  Gaia-account-scoped store, which is used for signed-in but not
+  //        syncing users.
+  // false: Profile-scoped store, which is used for local storage and for
+  //        syncing users.
+  bool is_account_store() const { return is_account_store_; }
 
   // Actually creates/opens the database. If false is returned, no other method
   // should be called.
@@ -302,7 +309,9 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // enabled, or false otherwise. On all other platforms it returns false.
   bool IsUsingCleanupMechanism() const;
 
-  base::FilePath db_path_;
+  const base::FilePath db_path_;
+  const bool is_account_store_;
+
   mutable sql::Database db_;
   sql::MetaTable meta_table_;
   StatisticsTable stats_table_;

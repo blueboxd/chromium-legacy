@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
+#import "ios/chrome/browser/ui/util/transparent_link_button.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -38,6 +39,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 @interface FakeChromeSigninViewControllerDelegate
     : NSObject<ChromeSigninViewControllerDelegate>
@@ -78,6 +82,21 @@
 @end
 
 namespace {
+
+// Returns the first TransparentLinkButton view in |mainView|.
+TransparentLinkButton* FindLinkButton(UIView* mainView) {
+  NSMutableArray* views = [NSMutableArray array];
+  [views addObject:mainView];
+  while (views.count > 0) {
+    UIView* view = [views objectAtIndex:0];
+    [views removeObjectAtIndex:0];
+    [views addObjectsFromArray:view.subviews];
+    if ([view isKindOfClass:[TransparentLinkButton class]]) {
+      return base::mac::ObjCCastStrict<TransparentLinkButton>(view);
+    }
+  }
+  return nil;
+}
 
 const bool kUnifiedConsentParam[] = {
     false, true,
@@ -316,7 +335,7 @@ class ChromeSigninViewControllerTest
   // Scrolls to the bottom if needed and returns once the primary button is
   // found with the confirmation title (based on ConfirmationStringId()).
   // The scroll is done without animation. Otherwise, the scroll view doesn't
-  // scroll correctly inside base::test::ios::WaitUntilConditionOrTimeout().
+  // scroll correctly inside WaitUntilConditionOrTimeout().
   void ScrollConsentViewToBottom() {
     ConditionBlock condition = ^bool() {
       if (IsPrimaryButtonVisibleWithTitle(
@@ -331,7 +350,7 @@ class ChromeSigninViewControllerTest
       return IsPrimaryButtonVisibleWithTitle(ConfirmationStringId());
     };
     bool condition_met =
-        base::test::ios::WaitUntilConditionOrTimeout(10, condition);
+        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
     EXPECT_TRUE(condition_met);
   }
 
@@ -356,7 +375,7 @@ class ChromeSigninViewControllerTest
       return [found_strings isEqual:expected_strings];
     };
     bool condition_met =
-        base::test::ios::WaitUntilConditionOrTimeout(10, condition);
+        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
     NSString* failureExplaination = [NSString
         stringWithFormat:@"Strings not found: %@, Strings not expected: %@",
                          not_found_strings, not_expected_strings];
@@ -396,7 +415,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
   ConditionBlock condition = ^bool() {
     return this->vc_delegate_.didSigninCalled;
   };
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(10, condition));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
   const std::vector<int>& recorded_ids =
       fake_consent_auditor_->recorded_id_vectors().at(0);
   EXPECT_EQ(ExpectedConsentStringIds(), recorded_ids);
@@ -424,7 +443,18 @@ TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
 // ids, and settings confirmation string id.
 TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
   WaitAndExpectAllStringsOnScreen();
-  [vc_ signinConfirmationControllerDidTapSettingsLink:vc_.confirmationVC];
+  if (unified_consent_enabled_) {
+    UIButton* linkButton = FindLinkButton([vc_ view]);
+    EXPECT_NE(nil, linkButton);
+    [linkButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+    ConditionBlock condition = ^bool() {
+      return this->vc_delegate_.didSigninCalled;
+    };
+    EXPECT_TRUE(
+        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
+  } else {
+    [vc_ signinConfirmationControllerDidTapSettingsLink:vc_.confirmationVC];
+  }
   const std::vector<int>& recorded_ids =
       fake_consent_auditor_->recorded_id_vectors().at(0);
   EXPECT_EQ(ExpectedConsentStringIds(), recorded_ids);

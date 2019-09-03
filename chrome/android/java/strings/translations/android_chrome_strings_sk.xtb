@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Nainštalovaný</translation>
 <translation id="1792959175193046959">Kedykoľvek zmeniť predvolené umiestnenie stiahnutých súborov</translation>
 <translation id="1807246157184219062">Svetlý režim</translation>
+<translation id="1810845389119482123">Úvodné nastavenie synchronizácie nebolo dokončené</translation>
 <translation id="1821253160463689938">Používa súbory cookie na zapamätanie si predvolieb, dokonca aj keď dané stránky nenavštívite</translation>
 <translation id="1829244130665387512">Nájsť na stránke</translation>
 <translation id="1853692000353488670">Nová karta inkognito</translation>
@@ -412,6 +413,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4170011742729630528">Služba nie je k dispozícii. Skúste to znova neskôr.</translation>
 <translation id="4179980317383591987">Využité: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
+<translation id="4183868528246477015">Hľadať cez Google Lens <ph name="BEGIN_NEW" />Novinka<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="4198423547019359126">Nie sú k dispozícii žiadne umiestnenia stiahnutých súborov</translation>
 <translation id="4209895695669353772">Ak chcete získavať prispôsobený obsah navrhnutý Googlom, zapnite synchronizáciu</translation>
@@ -474,6 +476,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4665282149850138822">Stránky <ph name="NAME" /> boli pridané na plochu</translation>
 <translation id="4684427112815847243">Synchronizovať všetko</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšia}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšie}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšej}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalších}}</translation>
+<translation id="4696983787092045100">Odoslať text do vašich zariadení</translation>
 <translation id="4698034686595694889">Zobrazenie offline v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Chýba nevyhnutná funkcia na spustenie aplikácie Chrome. Inštalácia aplikácie Chrome sa nedokončila alebo aplikácia nie je kompatibilná s touto verziou Androidu.</translation>
 <translation id="4699172675775169585">Obrázky a súbory vo vyrovnávacej pamäti</translation>
@@ -529,6 +532,10 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5011311129201317034"><ph name="SITE" /> žiada o pripojenie</translation>
 <translation id="5013696553129441713">Žiadne nové návrhy</translation>
 <translation id="5016205925109358554">Pätkové</translation>
+<translation id="5033865233969348410">V režime VR môže tento web získať nasledujúce informácie:
+– vaše fyzické vlastnosti, ako je výška.
+
+Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
 <translation id="5048398596102334565">Povoliť webom prístup k senzorom pohybu (odporúčané)</translation>
@@ -556,6 +563,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5224771365102442243">S videom</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> chce vyhľadávať zariadenia Bluetooth nablízku. Našli sa tieto zariadenia:</translation>
 <translation id="5233638681132016545">Nová karta</translation>
+<translation id="5234764350956374838">Zatvoriť</translation>
 <translation id="526421993248218238">Táto stránka sa nedá načítať</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
@@ -574,6 +582,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5363230136052241468">Klepnutím na tlačidlo plochy načítate stránku na novej karte</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otvorená karta, karty prepnete klepnutím}few{<ph name="OPEN_TABS_MANY" /> otvorené karty, karty prepnete klepnutím}many{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> otvorených kariet, karty prepnete klepnutím}}</translation>
 <translation id="5391532827096253100">Spojenie s týmto webom nie je zabezpečené. Informácie o webe</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ďalšie)}few{(+ # ďalšie)}many{(+ # more)}other{(+ # ďalších)}}</translation>
 <translation id="5400569084694353794">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />oznámením o ochrane súkromia<ph name="END_LINK2" /> prehliadača Chrome.</translation>
 <translation id="5403592356182871684">Názvy</translation>
 <translation id="5403644198645076998">Povoliť len určité weby</translation>
@@ -603,6 +612,11 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5527082711130173040">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK1" />Aktualizujte povolenia<ph name="END_LINK1" />. Prístup k polohe je <ph name="BEGIN_LINK2" />vypnutý aj v tomto zariadení<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Pýtať sa, či chcete povoliť webu čítať text a obrázky v schránke (odporúčané)</translation>
 <translation id="5530766185686772672">Zavrieť karty inkognito</translation>
+<translation id="5534334044554683961">V režime VR môže tento web získať nasledujúce informácie:
+– vaše fyzické vlastnosti, ako je výška;
+– rozloženie vašej miestnosti.
+
+Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5534640966246046842">Web bol skopírovaný</translation>
 <translation id="5556459405103347317">Znova načítať</translation>
 <translation id="5561549206367097665">Čaká sa na sieť…</translation>
@@ -690,7 +704,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="6196640612572343990">Blokovať súbory cookie tretích strán</translation>
 <translation id="6206551242102657620">Spojenie je zabezpečené. Informácie o webe</translation>
 <translation id="6210748933810148297">Nie som <ph name="EMAIL" /></translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – možnosti</translation>
 <translation id="6221633008163990886">Heslá budete môcť exportovať po odomknutí</translation>
 <translation id="6232535412751077445">Ak povolíte možnosť Nesledovať, k odosielaným dátam prehliadania sa pridá žiadosť. Akýkoľvek účinok závisí od toho, či bude web na žiadosť reagovať, a tiež od interpretácie žiadosti.
 
@@ -893,6 +906,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="7665369617277396874">Pridať účet</translation>
 <translation id="766587987807204883">Tu sa zobrazia články, ktoré môžete čítať dokonca aj offline</translation>
 <translation id="7682724950699840886">Skúste tieto tipy: Uistite sa, že máte v zariadení dosť miesta, a potom skúste znova spustiť exportovanie.</translation>
+<translation id="7685301384041462804">Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="7698359219371678927">Vytvorte správu v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky dopĺňať vyhľadávania a webové adresy</translation>
 <translation id="7725024127233776428">Tu sa zobrazia vaše stránky uložené ako záložky</translation>
@@ -923,6 +937,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="7886917304091689118">Spustená v Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Sťahuje sa súbor.}few{Sťahujú sa # súbory.}many{Downloading # files.}other{Sťahuje sa # súborov.}}</translation>
 <translation id="7929962904089429003">Otvorenie ponuky</translation>
+<translation id="7930681627240672853">Skontrolovať bezpečnosť hesla</translation>
 <translation id="7942131818088350342">Aplikácia <ph name="PRODUCT_NAME" /> je zastaraná.</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
 <translation id="7963646190083259054">Dodávateľ:</translation>
@@ -1070,6 +1085,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8993760627012879038">Otvorenie novej karty v režime inkognito</translation>
 <translation id="8998729206196772491">Prihlasujete sa pomocou účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a jej správcovi tým dávate kontrolu nad svojimi údajmi Chromu. Vaše údaje budú natrvalo prepojené s týmto účtom. Odhlásením z Chromu odstránite údaje z príslušného zariadenia, avšak naďalej zostanú uložené vo vašom účte Google.</translation>
 <translation id="9019902583201351841">Spravované vašimi rodičmi</translation>
+<translation id="9029323097866369874">Povoliť webu <ph name="DOMAIN" /> prejsť do VR?</translation>
 <translation id="9040142327097499898">Upozornenia sú povolené. Poloha je v tomto zariadení vypnutá.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}few{# videá}many{# Videos}other{# videí}}</translation>
 <translation id="9050666287014529139">Prístupová fráza</translation>

@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">ప్రసంగాన్ని ఆపివేయండి</translation>
 <translation id="4373197658375206385">లింక్ కానటువంటి మునుపటి అంశం లేదు.</translation>
 <translation id="4376316291247992553">గ్రాఫిక్‌ను బ్రెయిలీ లాగా వీక్షించండి</translation>
+<translation id="437809255587011096">వచన శైలిని ప్రకటించండి</translation>
 <translation id="4378308539633073595">ముందుకు స్క్రోల్ చేస్తుంది</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8503360654911991865">నావిగేషన్ గ్రాన్యులారిటీని తగ్గించండి</translation>
 <translation id="8504695234784218301">వ్యాకరణ దోషం ముగింపు</translation>
 <translation id="8520472399088452386">స్పిన్ బటన్</translation>
+<translation id="8534394844575788431">ఫార్మాటింగ్</translation>
 <translation id="8538744478902126321">ప్రస్తుత సెల్ యొక్క అడ్డు వరుస శీర్షిక వద్ద అంచనా వేయండి</translation>
 <translation id="8540054775867439484">ఎగువకు సర్దుబాటు చేయబడింది</translation>
 <translation id="8542271685829952264">అన్ని ChromeVox ఆదేశాల‌ను, షార్ట్‌క‌ట్‌ల‌ను అన్వేషించ‌డానికి, శోధన + పూర్ణ విరామం నొక్కండి. ఆపై మెనూలను నావిగేట్ చేయడానికి బాణం కీలను ఉపయోగించండి. ఆదేశాన్ని యాక్టివేట్‌ చేయడానికి Enter నొక్కండి. శోధన+o, ఆపై t నొక్కడం ద్వారా ఇక్కడికి తిరిగి రండి.</translation>
@@ -1200,6 +1202,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">ట్యాబ్</translation>
 <translation id="9151211641321628915">ప్రస్తుత స్థానం యొక్క సంక్షిప్త వివరణను తెలియజేస్తుంది</translation>
+<translation id="9151249085738989067">భాష ఆధారంగా ChromeVox వాయిస్‌ను ఆటోమేటిక్‌గా మార్చు</translation>
 <translation id="9153606228985488238">స్వర స్థాయి <ph name="PERCENT" /> శాతం</translation>
 <translation id="9160096769946561184">ప్రస్తుత నిలువు వరుస యొక్క చివరకు వెళ్లండి</translation>
 <translation id="9173115498289768110">వాల్యూమ్ <ph name="PERCENT" /> శాతం</translation>

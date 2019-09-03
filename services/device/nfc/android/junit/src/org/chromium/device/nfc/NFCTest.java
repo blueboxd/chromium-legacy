@@ -97,6 +97,7 @@ public class NFCTest {
     private static final String AUTHOR_RECORD_TYPE = "A";
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
+    private static final String OCTET_STREAM_MIME = "application/octet-stream";
     private static final String CHARSET_UTF8 = ";charset=UTF-8";
     private static final String CHARSET_UTF16 = ";charset=UTF-16";
     private static final String LANG_EN_US = "en-US";
@@ -264,6 +265,17 @@ public class NFCTest {
         assertEquals(NdefRecordType.JSON, jsonMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, jsonMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_JSON, new String(jsonMojoNdefMessage.data[0].data));
+
+        // Test Unknown record conversion.
+        android.nfc.NdefMessage unknownNdefMessage = new android.nfc.NdefMessage(
+                new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_UNKNOWN, null, null,
+                        ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
+        NdefMessage unknownMojoNdefMessage = NdefMessageUtils.toNdefMessage(unknownNdefMessage);
+        assertNull(unknownMojoNdefMessage.url);
+        assertEquals(1, unknownMojoNdefMessage.data.length);
+        assertEquals(NdefRecordType.OPAQUE_RECORD, unknownMojoNdefMessage.data[0].recordType);
+        assertEquals(OCTET_STREAM_MIME, unknownMojoNdefMessage.data[0].mediaType);
+        assertEquals(TEST_TEXT, new String(unknownMojoNdefMessage.data[0].data));
 
         // Test NdefMessage with WebNFC external type.
         android.nfc.NdefRecord jsonNdefRecord = android.nfc.NdefRecord.createMime(

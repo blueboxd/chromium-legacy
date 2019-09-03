@@ -38,10 +38,9 @@ void SetUpOnUI(
       trace_id, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!process_manager) {
-    // If no process manager is found, maybe it's being shut down.
-    // ServiceWorkerUpdateChecker is going to be destroyed after this task, so
-    // just do nothing here.
+  if (!process_manager || process_manager->IsShutdown()) {
+    // If it's being shut down, ServiceWorkerUpdateChecker is going to be
+    // destroyed after this task. We do nothing here.
     return;
   }
 

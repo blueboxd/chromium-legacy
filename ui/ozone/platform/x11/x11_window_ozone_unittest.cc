@@ -61,8 +61,9 @@ class X11WindowOzoneTest : public testing::Test {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     PlatformWindowInitProperties init_params(bounds);
-    auto window = std::make_unique<X11WindowOzone>(delegate, init_params,
-                                                   window_manager_.get());
+    auto window =
+        std::make_unique<X11WindowOzone>(delegate, window_manager_.get());
+    window->Initialize(std::move(init_params));
     return std::move(window);
   }
 

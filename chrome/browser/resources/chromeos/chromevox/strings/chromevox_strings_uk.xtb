@@ -483,6 +483,7 @@
 <translation id="4372705107434148843">Припинити мовлення</translation>
 <translation id="4373197658375206385">Немає попереднього елемента, який не є посиланням.</translation>
 <translation id="4376316291247992553">Перегляд графіки за допомогою шрифту Брайля</translation>
+<translation id="437809255587011096">Указувати стиль тексту</translation>
 <translation id="4378308539633073595">Прокрутити вперед</translation>
 <translation id="4384583879834880242">Запитання</translation>
 <translation id="4391478986194775161">інформація про вміст</translation>
@@ -1120,6 +1121,7 @@
 <translation id="8503360654911991865">Зменшити деталізацію навігації</translation>
 <translation id="8504695234784218301">Кінець тексту з граматичною помилкою</translation>
 <translation id="8520472399088452386">Кнопка обертання</translation>
+<translation id="8534394844575788431">Форматування</translation>
 <translation id="8538744478902126321">Зробити припущення щодо заголовка рядка поточної клітинки</translation>
 <translation id="8540054775867439484">Перенесення вгору</translation>
 <translation id="8542271685829952264">Щоб переглянути всі команди та комбінації клавіш ChromeVox, натисніть Search і клавішу крапки. Виберіть потрібну команду з меню за допомогою клавіш стрілок і активуйте її, натиснувши Enter. Щоб повернутися сюди, натисніть комбінацію Search+o, а потім – клавішу t.</translation>
@@ -1199,6 +1201,7 @@
 <translation id="9149560530563164529">розділ</translation>
 <translation id="9150735707954472829">Вкладка</translation>
 <translation id="9151211641321628915">Повідомляє короткий опис поточної позиції</translation>
+<translation id="9151249085738989067">Автоматично перемикати голос ChromeVox залежно від мови</translation>
 <translation id="9153606228985488238">Висота звуку у відсотках: <ph name="PERCENT" /></translation>
 <translation id="9160096769946561184">Перейти в кінець поточного стовпця</translation>
 <translation id="9173115498289768110">Гучність у відсотках: <ph name="PERCENT" /></translation>

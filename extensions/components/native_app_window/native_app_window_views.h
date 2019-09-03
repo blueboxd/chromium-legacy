@@ -139,8 +139,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
   gfx::Insets GetFrameInsets() const override;
-  void HideWithApp() override;
-  void ShowWithApp() override;
   gfx::Size GetContentMinimumSize() const override;
   gfx::Size GetContentMaximumSize() const override;
   void SetContentSizeConstraints(const gfx::Size& min_size,

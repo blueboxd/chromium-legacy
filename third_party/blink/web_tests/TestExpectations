@@ -3247,9 +3247,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 # Flaky because of timestamps in error messages.
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
-# Random string in the error message
-crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
@@ -6525,3 +6522,9 @@ crbug.com/999473 external/wpt/streams/writable-streams/properties.any.sharedwork
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.serviceworker.html [ Pass Failure ]
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pass Failure ]
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]
+
+crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
+crbug.com/1000124 [ Mac ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash ]
+
+# Sheriff 2019-09-03
+crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]

@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5254120496627797685">Bu sayfadan ayrılırsanız Chrome Uzaktan Masaüstü oturumunuz sonlanır.</translation>
 <translation id="5308380583665731573">Bağlan</translation>
+<translation id="5327248766486351172">Ad</translation>
 <translation id="533625276787323658">Bağlanacak herhangi bir bilgisayar yok</translation>
 <translation id="5363265567587775042">Bilgisayarına erişmek istediğiniz kullanıcıdan “<ph name="SHARE" />” öğesini tıklamasını ve size erişim kodunu vermesini isteyin.</translation>
 <translation id="5379087427956679853">Chrome Uzaktan Masaüstü, bilgisayarınızı Web üzerinden güvenli bir şekilde paylaşabilmenize olanak sağlar. Her iki kullanıcının da Chrome Uzaktan Masaüstü uygulamasını çalıştırıyor olması gerekir. Uygulamayı <ph name="URL" /> adresinde bulabilirsiniz.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Ekran seçenekleri</translation>
 <translation id="7970576581263377361">Kimlik doğrulama başarısız oldu. Lütfen Chromium'da tekrar oturum açın.</translation>
 <translation id="7981525049612125370">Uzak oturumun süresi sona erdi.</translation>
+<translation id="8038111231936746805">(varsayılan)</translation>
 <translation id="8041089156583427627">Görüş bildirin</translation>
 <translation id="8041721485428375115">Chrome Uzaktan Masaüstü Ana Makine Yükleyicisi'ni indirerek Google <ph name="LINK_BEGIN" />Hizmet Şartları<ph name="LINK_END" />'nı kabul etmiş olursunuz.</translation>
 <translation id="8060029310790625334">Yardım Merkezi</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Bilgisayarlarım</translation>
 <translation id="811307782653349804">Bilgisayarınıza her yerden erişin.</translation>
 <translation id="8116630183974937060">Bir ağ hatası oluştu. Lütfen cihazınızın çevrimiçi olduğundan emin olun ve yeniden deneyin.</translation>
-<translation id="8123581458650016326">Uzak kullanıcıların bu makineyi kontrol etmesine izin verin</translation>
 <translation id="8178433417677596899">Kullanıcılar arası ekran paylaşımı, uzaktan teknik destek için mükemmeldir.</translation>
 <translation id="8187079423890319756">Telif Hakkı 2013 The Chromium Authors. Tüm hakları saklıdır.</translation>
 <translation id="8196755618196986400">Daha ayrıntılı bilgi almak üzere sizinle iletişim kurabilmemiz için e-posta adresiniz gönderdiğiniz geri bildirimlere eklenecektir.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Gizlilik Politikası</translation>
 <translation id="894763922177556086">İyi</translation>
 <translation id="895780780740011433">Windows 7 ve sonraki sürümler için</translation>
-<translation id="8963047137585288214">Bu makineyi <ph name="PRODUCT_NAME" /> ürününü kullanarak uzaktan kontrol edebilmeniz için öncelikle bir ek yapılandırma adımını tamamlamanız gerekiyor.
-
-Bu işlevi etkinleştirmek için ''<ph name="BUTTON_NAME" />" düğmesini seçerek Güvenlik ve Gizlilik tercihleri bölmesini görüntüleyin ve ardından "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.
-
-"<ph name="SERVICE_SCRIPT_NAME" />" zaten mevcut ve işaretliyse işaretini kaldırıp yeniden işaretlemeniz gerekebilir.</translation>
 <translation id="897805526397249209">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chromoting'i o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
 <translation id="8998327464021325874">Chrome Uzaktan Masaüstü Ana Makine Denetleyicisi</translation>
 <translation id="9016232822027372900">Yine de bağlan</translation>

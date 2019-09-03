@@ -16,12 +16,29 @@ void TestWebAppDatabase::OpenDatabase(OnceRegistryOpenedCallback callback) {
   open_database_callback_ = std::move(callback);
 }
 
-void TestWebAppDatabase::WriteWebApp(const WebApp& web_app) {
-  write_web_app_id_ = web_app.app_id();
+void TestWebAppDatabase::WriteWebApps(AppsToWrite apps,
+                                      CompletionCallback callback) {
+  for (auto* app : apps)
+    write_web_app_ids_.push_back(app->app_id());
+
+  std::move(callback).Run(next_write_web_apps_result_);
 }
 
-void TestWebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids) {
+void TestWebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids,
+                                       CompletionCallback callback) {
   delete_web_app_ids_ = std::move(app_ids);
+
+  std::move(callback).Run(next_delete_web_apps_result_);
+}
+
+void TestWebAppDatabase::SetNextWriteWebAppsResult(
+    bool next_write_web_apps_result) {
+  next_write_web_apps_result_ = next_write_web_apps_result;
+}
+
+void TestWebAppDatabase::SetNextDeleteWebAppsResult(
+    bool next_delete_web_apps_result) {
+  next_delete_web_apps_result_ = next_delete_web_apps_result;
 }
 
 }  // namespace web_app

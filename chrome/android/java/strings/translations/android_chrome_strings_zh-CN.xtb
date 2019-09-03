@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">安装位置</translation>
 <translation id="1792959175193046959">随时更改默认的下载内容保存位置</translation>
 <translation id="1807246157184219062">浅色调</translation>
+<translation id="1810845389119482123">未完成初始同步设置</translation>
 <translation id="1821253160463689938">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
 <translation id="1829244130665387512">在网页中查找</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
@@ -412,6 +413,7 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">语言</translation>
+<translation id="4183868528246477015">使用 Google 智能镜头进行搜索<ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4198423547019359126">没有可用的下载内容保存位置</translation>
 <translation id="4209895695669353772">要获取 Google 推荐的个性化内容，请开启同步功能</translation>
@@ -474,6 +476,7 @@
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 种送货方式}}</translation>
+<translation id="4696983787092045100">向您的多部设备发送短信</translation>
 <translation id="4698034686595694889">在 <ph name="APP_NAME" /> 中离线查看</translation>
 <translation id="4698413471314543145">缺少运行 Chrome 所需的关键功能；您可能未完成 Chrome 安装过程，或者 Chrome 与此版本的 Android 不兼容。</translation>
 <translation id="4699172675775169585">缓存的图片和文件</translation>
@@ -529,6 +532,10 @@
 <translation id="5011311129201317034"><ph name="SITE" /> 希望连接到以下所选设备：</translation>
 <translation id="5013696553129441713">没有新建议</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">当您处于 VR 环境时，此网站或许能够得知：
+  -  您的身体特征，例如身高
+
+请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5048398596102334565">允许网站使用动态传感器（推荐）</translation>
@@ -556,6 +563,7 @@
 <translation id="5224771365102442243">包含视频</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> 想搜索附近的蓝牙设备，并发现了以下设备：</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
+<translation id="5234764350956374838">关闭</translation>
 <translation id="526421993248218238">无法加载此页面</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
@@ -574,6 +582,7 @@
 <translation id="5363230136052241468">点按“首页”按钮即可加载新标签页</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> 个打开的标签页，点按即可切换标签页}other{<ph name="OPEN_TABS_MANY" /> 个打开的标签页，点按即可切换标签页}}</translation>
 <translation id="5391532827096253100">您与此网站之间建立的连接不安全。网站信息</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{（以及另外 1 个）}other{（以及另外 # 个）}}</translation>
 <translation id="5400569084694353794">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="5403592356182871684">名称</translation>
 <translation id="5403644198645076998">只允许访问某些网站</translation>
@@ -603,6 +612,11 @@
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5527111080432883924">网站需先询问并得到许可才能读取剪贴板中的文字和图片（推荐）</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
+<translation id="5534334044554683961">当您处于 VR 环境时，此网站或许能够得知：
+  -   您的身体特征，例如身高
+  -   您房间的布局
+
+请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="5534640966246046842">已复制网站</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5561549206367097665">正在等待连接到网络…</translation>
@@ -690,7 +704,6 @@
 <translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" />？</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
 <translation id="6221633008163990886">需解锁才能导出您的密码</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">添加帐号</translation>
 <translation id="766587987807204883">报道会显示在此处，即使在离线状态下也可以阅读</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
+<translation id="7685301384041462804">请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
 <translation id="7725024127233776428">您添加书签的网页会显示在此处</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">正在 Chrome 中运行</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{正在下载 1 个文件。}other{正在下载 # 个文件。}}</translation>
 <translation id="7929962904089429003">打开菜单</translation>
+<translation id="7930681627240672853">检查密码安全性</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7963646190083259054">供应商：</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
+<translation id="9029323097866369874">允许 <ph name="DOMAIN" /> 进入 VR 环境？</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 个视频}other{# 个视频}}</translation>
 <translation id="9050666287014529139">密码</translation>

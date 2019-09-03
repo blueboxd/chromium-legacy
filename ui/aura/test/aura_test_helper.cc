@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -21,12 +22,15 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/base/platform_window_defaults.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/wm_state.h"
+
+#if defined(OS_LINUX)
+#include "ui/platform_window/common/platform_window_defaults.h"  // nogncheck
+#endif
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"  // nogncheck
@@ -47,7 +51,9 @@ AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
   // Disable animations during tests.
   zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+#if defined(OS_LINUX)
   ui::test::EnableTestConfigForPlatformWindows();
+#endif
 }
 
 AuraTestHelper::~AuraTestHelper() {

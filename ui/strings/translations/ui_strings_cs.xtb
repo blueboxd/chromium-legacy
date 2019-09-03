@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Zkuste to znovu</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}few{# d}many{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Dnes</translation>
+<translation id="2161656808144014275">Text</translation>
 <translation id="2168039046890040389">Klávesa PageUp</translation>
 <translation id="2190355936436201913">(prázdné)</translation>
 <translation id="2192232475740621500">Použít nízkou hustotu</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Vyhledat „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Vyberte složku pro nahrávání</translation>
 <translation id="3660179305079774227">Klávesa šipka nahoru</translation>
+<translation id="3670030362669914947">Číslo</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Pokračujte ve čtení v mobilním zařízení <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
 <translation id="4289300219472526559">Začít mluvit</translation>
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
-<translation id="4467014365953759647">Číslo nelze odeslat</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
 <translation id="4690510401873698237">Polička dole</translation>
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Klávesa šipka vlevo</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Aktivní dnes}=1{Aktivní včera}few{Aktivní před # dny}many{Aktivní před # dne}other{Aktivní před # dny}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 den a  }few{# dny a  }many{# dne a  }other{# dnů a  }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 r}few{za # r}many{za # r}other{za # r}}</translation>
 <translation id="5895138241574237353">Restartovat</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Spouštěč, částečné zobrazení</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Před 1 min}few{Před # min}many{Před # min}other{Před # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Zkontrolujte připojení telefonu a zkuste to znovu</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zbývá 1 minuta}few{Zbývají # minuty}many{Zbývá # minuty}other{Zbývá # minut}}</translation>
 <translation id="7430878839542012341">Vymazat toto vyhledávání z historie?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

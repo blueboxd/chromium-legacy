@@ -79,8 +79,9 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
 
 }  // namespace
 
-// Test interaction of Hide/Show() with Hide/ShowWithApp().
-IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
+// Test interaction of Hide/Show() with Hide/Show(). Historically this had
+// tricky behavior for apps, but now behaves as one would expect.
+IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShow) {
   SetUpAppWithWindows(2);
   extensions::AppWindowRegistry::AppWindowList windows =
       extensions::AppWindowRegistry::Get(profile())->app_windows();
@@ -101,34 +102,34 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
 
-  // Normal Hide/ShowWithApp.
-  native_window->HideWithApp();
+  // Normal Hide/Show.
+  native_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
-  native_window->ShowWithApp();
+  native_window->Show();
   EXPECT_TRUE([ns_window isVisible]);
 
-  // HideWithApp, Hide, ShowWithApp does not show.
-  native_window->HideWithApp();
+  // Hide, Hide, Show shows.
+  native_window->Hide();
   app_window->Hide();
-  native_window->ShowWithApp();
-  EXPECT_FALSE([ns_window isVisible]);
+  native_window->Show();
+  EXPECT_TRUE([ns_window isVisible]);
 
-  // Hide, HideWithApp, ShowWithApp does not show.
-  native_window->HideWithApp();
-  native_window->ShowWithApp();
-  EXPECT_FALSE([ns_window isVisible]);
+  // Hide, Show still shows.
+  native_window->Hide();
+  native_window->Show();
+  EXPECT_TRUE([ns_window isVisible]);
 
   // Return to shown state.
   app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
 
-  // HideWithApp the other window.
+  // Hide the other window.
   EXPECT_TRUE([other_ns_window isVisible]);
-  other_native_window->HideWithApp();
+  other_native_window->Hide();
   EXPECT_FALSE([other_ns_window isVisible]);
 
-  // HideWithApp, Show shows just one window since there's no shim.
-  native_window->HideWithApp();
+  // Hide, Show shows just one window since there's no shim.
+  native_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
   app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
@@ -138,55 +139,18 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   other_app_window->Hide();
   EXPECT_FALSE([other_ns_window isVisible]);
 
-  // HideWithApp, ShowWithApp does not show the other window.
-  native_window->HideWithApp();
+  // Hide, Show does not show the other window.
+  native_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
-  native_window->ShowWithApp();
+  native_window->Show();
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_FALSE([other_ns_window isVisible]);
 }
 
-namespace {
-
-class MockAppShimHost : public AppShimHost {
- public:
-  MockAppShimHost(AppShimHost::Client* client)
-      : AppShimHost(client,
-                    "app",
-                    base::FilePath("Profile"),
-                    false /* uses_remote_views */) {}
-  ~MockAppShimHost() override {}
-
-  MOCK_METHOD0(OnAppUnhideWithoutActivation, void());
-
- private:
-};
-
-class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
- public:
-  MockExtensionAppShimHandler() {
-    ON_CALL(*this, FindHost(_, _))
-        .WillByDefault(Invoke(this, &apps::ExtensionAppShimHandler::FindHost));
-  }
-  ~MockExtensionAppShimHandler() override {}
-
-  MOCK_METHOD2(FindHost, AppShimHost*(Profile*, const std::string&));
-};
-
-}  // namespace
-
-// Test Hide/Show and Hide/ShowWithApp() behavior when shims are enabled.
-IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
-                       HideShowWithAppWithShim) {
+// Test Hide/Show and Hide/Show() behavior when shims are enabled.
+IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithShim) {
   test::AppShimListenerTestApi test_api(
       g_browser_process->platform_part()->app_shim_listener());
-  MockExtensionAppShimHandler* mock = new MockExtensionAppShimHandler();
-  test_api.SetExtensionAppShimHandler(
-      std::unique_ptr<apps::ExtensionAppShimHandler>(
-          mock));  // Takes ownership.
-  std::unique_ptr<MockAppShimHost> mock_host =
-      std::make_unique<MockAppShimHost>(mock);
-
   SetUpAppWithWindows(1);
   extensions::AppWindowRegistry::AppWindowList windows =
       extensions::AppWindowRegistry::Get(profile())->app_windows();
@@ -195,31 +159,21 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   extensions::NativeAppWindow* native_window = app_window->GetBaseWindow();
   NSWindow* ns_window = native_window->GetNativeWindow().GetNativeNSWindow();
 
-  // HideWithApp.
-  native_window->HideWithApp();
+  // Hide.
+  native_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
 
   // Show notifies the shim to unhide.
-  EXPECT_CALL(*mock_host, OnAppUnhideWithoutActivation());
-  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(mock_host.get()));
   app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
-  testing::Mock::VerifyAndClearExpectations(mock);
-  testing::Mock::VerifyAndClearExpectations(mock_host.get());
 
-  // HideWithApp
-  native_window->HideWithApp();
+  // Hide
+  native_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
 
   // Activate does the same.
-  EXPECT_CALL(*mock_host, OnAppUnhideWithoutActivation());
-  EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(mock_host.get()));
   native_window->Activate();
   EXPECT_TRUE([ns_window isVisible]);
-  testing::Mock::VerifyAndClearExpectations(mock);
-  testing::Mock::VerifyAndClearExpectations(mock_host.get());
-
-  mock_host.reset();
 }
 
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when

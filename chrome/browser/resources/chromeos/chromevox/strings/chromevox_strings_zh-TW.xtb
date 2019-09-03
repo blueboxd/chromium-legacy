@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">停止語音</translation>
 <translation id="4373197658375206385">沒有上一個非連結項目。</translation>
 <translation id="4376316291247992553">以點字模式檢視圖形</translation>
+<translation id="437809255587011096">朗讀文字樣式</translation>
 <translation id="4378308539633073595">向前捲動</translation>
 <translation id="4384583879834880242">問與答</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">降低導覽精細度</translation>
 <translation id="8504695234784218301">文法錯誤結尾</translation>
 <translation id="8520472399088452386">微調按鈕</translation>
+<translation id="8534394844575788431">格式設定</translation>
 <translation id="8538744478902126321">推測目前儲存格的列標題</translation>
 <translation id="8540054775867439484">自動換行至頂端</translation>
 <translation id="8542271685829952264">如要探索所有 ChromeVox 指令和快速鍵，請按下搜尋鍵 + 句號鍵，然後使用方向鍵瀏覽選單，最後按下 Enter 鍵即可下達指令。如要返回這裡，請按下搜尋鍵 + O 鍵，再按下 T 鍵。</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">分頁</translation>
 <translation id="9151211641321628915">朗讀目前位置的簡短說明</translation>
+<translation id="9151249085738989067">根據語言自動切換 ChromeVox 語音</translation>
 <translation id="9153606228985488238">音調為百分之 <ph name="PERCENT" /></translation>
 <translation id="9160096769946561184">前往目前欄的結尾</translation>
 <translation id="9173115498289768110">音量為百分之 <ph name="PERCENT" /></translation>

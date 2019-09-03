@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -66,6 +67,16 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             10 * ConversionUtils.BYTES_PER_MEGABYTE; // 10MB
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
     private static final String PREF_SHOW_HISTORY_INFO = "history_home_show_info";
+
+    // Keep consistent with the UMA constants on the WebUI history page (history/constants.js).
+    private static final int UMA_MAX_BUCKET_VALUE = 1000;
+    private static final int UMA_MAX_SUBSET_BUCKET_VALUE = 100;
+
+    // TODO(msramek): The WebUI counterpart computes the bucket count by
+    // dividing by 10 until it gets under 100, reaching 10 for both
+    // UMA_MAX_BUCKET_VALUE and UMA_MAX_SUBSET_BUCKET_VALUE, and adds +1
+    // for overflow. How do we keep that in sync with this code?
+    private static final int UMA_BUCKET_COUNT = 11;
 
     // PageTransition value to use for all URL requests triggered by the history page.
     private static final int PAGE_TRANSITION_TYPE = PageTransition.AUTO_BOOKMARK;
@@ -414,6 +425,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         for (HistoryItem item : items) {
             openUrl(item.getUrl(), isIncognito, true);
+            recordOpenedItemMetrics(item);
         }
     }
 
@@ -453,6 +465,25 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     void recordUserActionWithOptionalSearch(String action) {
         recordUserAction((mIsSearching ? "Search." : "") + action);
+    }
+
+    /**
+     * Records metrics about the age of an opened history |item|.
+     * @param item The item that has been opened.
+     */
+    void recordOpenedItemMetrics(HistoryItem item) {
+        int ageInDays = 1
+                + (int) ((System.currentTimeMillis() - item.getTimestamp())
+                        / 1000 /* s/ms */ / 60 /* m/s */ / 60 /* h/m */ / 24 /* d/h */);
+
+        RecordHistogram.recordCustomCountHistogram("HistoryPage.ClickAgeInDays",
+                Math.min(ageInDays, UMA_MAX_BUCKET_VALUE), 1, UMA_MAX_BUCKET_VALUE,
+                UMA_BUCKET_COUNT);
+
+        if (ageInDays <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+            RecordHistogram.recordCustomCountHistogram("HistoryPage.ClickAgeInDaysSubset",
+                    ageInDays, 1, UMA_MAX_SUBSET_BUCKET_VALUE, UMA_BUCKET_COUNT);
+        }
     }
 
     /**

@@ -72,6 +72,7 @@
 <translation id="1294154142200295408">บรรทัดคำสั่งรูปแบบต่างๆ</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ลองล้างคุกกี้<ph name="END_LINK" /></translation>
+<translation id="1307966114820526988">ฟีเจอร์ที่เลิกใช้งานแล้ว</translation>
 <translation id="1320233736580025032">Prc1 (ซองจดหมาย)</translation>
 <translation id="132301787627749051">ค้นหารูปภาพในคลิปบอร์ด</translation>
 <translation id="1323433172918577554">แสดงเพิ่มเติม</translation>
@@ -119,6 +120,7 @@
 <translation id="1521655867290435174">Google ชีต</translation>
 <translation id="1527263332363067270">กำลังรอการเชื่อมต่อ…</translation>
 <translation id="1529521330346880926">10x15 (ซองจดหมาย)</translation>
+<translation id="1530707389502320859">เว็บไซต์ที่คุณเพิ่งพยายามเข้าถึงดูเป็นเว็บไซต์ปลอม บางครั้งผู้โจมตีจะเลียนแบบเว็บไซต์ต่างๆ โดยทำการเปลี่ยนแปลงเล็กๆ น้อยๆ ที่สังเกตเห็นได้ยากกับ URL</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">หน้านี้บอกว่า</translation>
 <translation id="153384715582417236">เสร็จเรียบร้อย</translation>
@@ -353,6 +355,7 @@
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
 <translation id="2728127805433021124">ใบรับรองของเซิร์ฟเวอร์ถูกเซ็นชื่อด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />เรียกใช้การวินิจฉัยการเชื่อมต่อ<ph name="END_LINK" /></translation>
+<translation id="2734544361860335147">การเปิดใช้ฟีเจอร์เหล่านี้อาจทำให้คุณสูญเสียข้อมูลในเบราว์เซอร์หรือทำให้ความปลอดภัยและความเป็นส่วนตัวมีความเสี่ยง ฟีเจอร์ที่เปิดใช้จะมีผลกับผู้ใช้ทั้งหมดของเบราว์เซอร์นี้</translation>
 <translation id="2735043616039983645">นโยบายนี้มีแหล่งที่มามากกว่า 1 แห่งที่มีค่าขัดแย้งกัน</translation>
 <translation id="2738330467931008676">เลือกที่อยู่สำหรับรับสินค้า</translation>
 <translation id="2740531572673183784">ตกลง</translation>
@@ -396,6 +399,7 @@
 <translation id="2985306909656435243">หากเปิดใช้ไว้ Chromium จะจัดเก็บสำเนาบัตรของคุณในอุปกรณ์นี้เพื่อการกรอกแบบฟอร์มที่รวดเร็วขึ้น</translation>
 <translation id="2985398929374701810">ป้อนที่อยู่ที่ถูกต้อง</translation>
 <translation id="2986368408720340940">วิธีการรับสินค้านี้ไม่พร้อมให้บริการ โปรดลองใช้วิธีการอื่น</translation>
+<translation id="2987034854559945715">ไม่มีฟีเจอร์ที่ตรงกัน</translation>
 <translation id="2991174974383378012">การแชร์กับเว็บไซต์</translation>
 <translation id="2991571918955627853">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ใช้ HSTS โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจใช้งานได้ในภายหลัง</translation>
 <translation id="3005723025932146533">แสดงสำเนาที่บันทึกไว้</translation>
@@ -517,6 +521,7 @@
 <translation id="3678529606614285348">เปิดหน้าเว็บในหน้าต่างที่ไม่ระบุตัวตนใหม่ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> อัปโหลดเมื่อ <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">ข้อมูลในใบรับรอง</translation>
+<translation id="3701427423622901115">รับทราบการรีเซ็ตแล้ว</translation>
 <translation id="3704162925118123524">เครือข่ายที่คุณใช้อาจต้องการให้คุณไปที่หน้าการเข้าสู่ระบบ</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">กำลังโหลด ...</translation>
@@ -689,6 +694,7 @@
 <translation id="4594403342090139922">&amp;เลิกทำการนำออก</translation>
 <translation id="4597348597567598915">ขนาด 8</translation>
 <translation id="4600854749408232102">C6/C5 (ซองจดหมาย)</translation>
+<translation id="464342062220857295">ฟีเจอร์การค้นหา</translation>
 <translation id="4646534391647090355">พาฉันไปที่นั่นเลย</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยมีข้อผิดพลาด โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
@@ -805,6 +811,7 @@
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5252000469029418751">C7 (ซองจดหมาย)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5269999699920406580">ฟีเจอร์ที่ใช้กับทั้งระบบจะตั้งค่าได้โดยเจ้าของเท่านั้น: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">คำเตือน: ระบบไม่ได้รวมนโยบายนี้ตามที่ระบุในนโยบาย PolicyDictionaryMultipleSourceMergeList เพราะไม่ใช่ส่วนหนึ่งของนโยบายพจนานุกรมที่รวมได้</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">สิ้นสุด</translation>
@@ -841,6 +848,7 @@
 <translation id="5457113250005438886">ไม่ถูกต้อง</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}other{<ph name="CONTACT_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}}</translation>
 <translation id="5470861586879999274">&amp;ทำซ้ำการแก้ไข</translation>
+<translation id="5473728911100096288">การเปิดใช้ฟีเจอร์เหล่านี้จะเป็นการใช้ฟีเจอร์ที่เลิกใช้งานแล้ว ซึ่งจะไม่มีให้ใช้อีกในเวอร์ชันต่อๆ ไป</translation>
 <translation id="5478437291406423475">B6/C4 (ซองจดหมาย)</translation>
 <translation id="5481076368049295676">เนื้อหานี้อาจพยายามติดตั้งซอฟต์แวร์อันตรายที่จะขโมยหรือลบข้อมูลในอุปกรณ์ของคุณ <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">เพิ่มที่อยู่ที่ถูกต้อง</translation>
@@ -899,6 +907,7 @@
 <translation id="5763042198335101085">ป้อนที่อยู่อีเมลที่ถูกต้อง</translation>
 <translation id="5765072501007116331">หากต้องการดูวิธีการนำส่งสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
 <translation id="5778550464785688721">การควบคุมอุปกรณ์ MIDI เต็มรูปแบบ</translation>
+<translation id="5781136890105823427">เปิดใช้การทดสอบอยู่</translation>
 <translation id="578305955206182703">เหลืองอำพัน</translation>
 <translation id="57838592816432529">ปิดเสียง</translation>
 <translation id="5784606427469807560">เกิดปัญหาในการยืนยันบัตรของคุณ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง</translation>
@@ -1064,6 +1073,7 @@
 <translation id="6738516213925468394">ข้อมูลของคุณเข้ารหัสลับไว้ด้วย<ph name="BEGIN_LINK" />รหัสผ่านการซิงค์<ph name="END_LINK" />เมื่อ <ph name="TIME" /> ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="674375294223700098">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="6744009308914054259">ระหว่างที่รอการเชื่อมต่อ คุณไปที่หน้า "ดาวน์โหลด" เพื่ออ่านบทความออฟไลน์ได้</translation>
+<translation id="6747611005629681221">คำเตือน: พบฟีเจอร์ที่เลิกใช้งานแล้ว</translation>
 <translation id="6753269504797312559">ค่านโยบาย</translation>
 <translation id="6757797048963528358">อุปกรณ์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
 <translation id="6768213884286397650">Hagaki (โปสการ์ด)</translation>
@@ -1430,6 +1440,7 @@
 <translation id="8738058698779197622">หากต้องเริ่มการเชื่อมต่อที่ปลอดภัย นาฬิกาจะต้องตั้งค่าไว้อย่างถูกต้อง เนื่องจากใบรับรองที่เว็บไซต์ใช้เพื่อระบุตนเองจะใช้ได้เฉพาะช่วงเวลาหนึ่งเท่านั้น นาฬิกาของอุปกรณ์ไม่ถูกต้อง Chromium จึงไม่สามารถยืนยันใบรับรองเหล่านี้ได้</translation>
 <translation id="8740359287975076522">ไม่พบ&lt;abbr id="dnsDefinition"&gt;ที่อยู่ DNS&lt;/abbr&gt; ของ <ph name="HOST_NAME" /> กำลังวินิจฉัยปัญหา</translation>
 <translation id="874846938927089722">บัตรเครดิตและบัตรเติมเงินที่ยอมรับ</translation>
+<translation id="874918643257405732">บุ๊กมาร์กแท็บนี้</translation>
 <translation id="8759274551635299824">บัตรนี้หมดอายุแล้ว</translation>
 <translation id="8761567432415473239">Google Safe Browsing <ph name="BEGIN_LINK" />พบโปรแกรมที่เป็นอันตราย<ph name="END_LINK" />บน <ph name="SITE" /> เมื่อเร็วๆ นี้</translation>
 <translation id="8763927697961133303">อุปกรณ์ USB</translation>

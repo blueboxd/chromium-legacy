@@ -33,6 +33,7 @@
 #include "components/sync/engine_impl/sync_encryption_handler_impl.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/nigori/nigori_model_type_processor.h"
+#include "components/sync/nigori/nigori_storage_impl.h"
 #include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/nigori_handler_proxy.h"
@@ -56,6 +57,9 @@ namespace syncer {
 class EngineComponentsFactory;
 
 namespace {
+
+const base::FilePath::CharType kNigoriStorageFilename[] =
+    FILE_PATH_LITERAL("Nigori.bin");
 
 void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
   UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType", model_type,
@@ -81,7 +85,7 @@ SyncEngineBackend::SyncEngineBackend(const std::string& name,
 }
 
 SyncEngineBackend::~SyncEngineBackend() {
-  DCHECK(!sync_manager_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 bool SyncEngineBackend::OnMemoryDump(
@@ -342,8 +346,10 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
         NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
                     nigori_processor->GetControllerDelegate().get()));
     sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(nigori_processor), &encryptor_,
-        params.restored_key_for_bootstrapping);
+        std::move(nigori_processor),
+        std::make_unique<NigoriStorageImpl>(
+            sync_data_folder_.Append(kNigoriStorageFilename), &encryptor_),
+        &encryptor_, params.restored_key_for_bootstrapping);
     nigori_handler_proxy_ =
         std::make_unique<syncable::NigoriHandlerProxy>(&user_share_);
     sync_encryption_handler_->AddObserver(nigori_handler_proxy_.get());

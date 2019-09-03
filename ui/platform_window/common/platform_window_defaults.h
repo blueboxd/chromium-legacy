@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_PLATFORM_WINDOW_DEFAULTS_H_
-#define UI_BASE_PLATFORM_WINDOW_DEFAULTS_H_
-
-#include "ui/base/ui_base_export.h"
+#ifndef UI_PLATFORM_WINDOW_COMMON_PLATFORM_WINDOW_DEFAULTS_H_
+#define UI_PLATFORM_WINDOW_COMMON_PLATFORM_WINDOW_DEFAULTS_H_
 
 namespace ui {
 
 // Returns true if PlatformWindow should use test configuration. Will return
 // false by default, unless test::EnableTestConfigForPlatformWindows() has been
 // called, then it will return true.
-UI_BASE_EXPORT bool UseTestConfigForPlatformWindows();
+bool UseTestConfigForPlatformWindows();
 
 namespace test {
 
@@ -24,9 +22,9 @@ namespace test {
 // various tests, otherwise the call to Show() blocks because it never receives
 // the MapNotify event. It is unclear why this is necessary, but might be
 // related to calls to XInitThreads().
-UI_BASE_EXPORT void EnableTestConfigForPlatformWindows();
+void EnableTestConfigForPlatformWindows();
 
 }  // namespace test
 }  // namespace ui
 
-#endif  // UI_BASE_PLATFORM_WINDOW_DEFAULTS_H_
+#endif  // UI_PLATFORM_WINDOW_COMMON_PLATFORM_WINDOW_DEFAULTS_H_

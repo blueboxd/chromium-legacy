@@ -144,6 +144,8 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="6096348254544841612">Prilagodite in nadzirajte Chromium. Posodobitev je na voljo.</translation>
 <translation id="6120345080069858279">Chromium bo shranil to geslo v Google Računu. Ni si vam ga treba zapomniti.</translation>
 <translation id="6129621093834146363">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chromium blokiral.</translation>
+<translation id="6173098285107411678">Če nastavitev ni prikazana na tej strani, preverite <ph name="LINK_BEGIN" />
+    nastavitve brskalnika Chromium<ph name="LINK_END" /></translation>
 <translation id="6212496753309875659">Ta računalnik že ima novejšo različico Chromiuma. Če programska oprema ne deluje, odstranite Chromium in poskusite znova.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium se bo zdaj znova zagnal}=1{Chromium se bo znova zagnal čez eno sekundo}one{Chromium se bo znova zagnal čez # sekundo}two{Chromium se bo znova zagnal čez # sekundi}few{Chromium se bo znova zagnal čez # sekunde}other{Chromium se bo znova zagnal čez # sekund}}</translation>
 <translation id="6248213926982192922">Nastavi Chromium kot privzeti brskalnik</translation>

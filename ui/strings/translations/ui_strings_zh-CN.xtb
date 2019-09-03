@@ -38,6 +38,7 @@
 <translation id="208586643495776849">请重试</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="2148716181193084225">今天</translation>
+<translation id="2161656808144014275">文字</translation>
 <translation id="2168039046890040389">向上翻页</translation>
 <translation id="2190355936436201913">（空）</translation>
 <translation id="2192232475740621500">使用低密度</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">选择要上传的文件夹</translation>
 <translation id="3660179305079774227">向上箭头</translation>
+<translation id="3670030362669914947">卡号</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">继续在移动设备“<ph name="TITLE" />”上阅读</translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 个月前}other{# 个月前}}</translation>
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="4316910396681052118">所有应用</translation>
-<translation id="4467014365953759647">无法发送电话号码</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4690510401873698237">任务栏位于屏幕底部</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">退格</translation>
 <translation id="5613020302032141669">向左箭头</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{今天曾有活动}=1{1 天前曾有活动}other{# 天前曾有活动}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天 }other{# 天 }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年后}other{# 年后}}</translation>
 <translation id="5895138241574237353">重新启动</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">启动器，局部视图</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">请检查手机的网络连接，然后重试</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

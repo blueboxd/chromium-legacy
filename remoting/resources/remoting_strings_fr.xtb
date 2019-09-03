@@ -174,6 +174,7 @@
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5254120496627797685">En quittant cette page, vous mettrez fin à la session du bureau à distance Google Chrome.</translation>
 <translation id="5308380583665731573">Connexion</translation>
+<translation id="5327248766486351172">Nom</translation>
 <translation id="533625276787323658">Aucun appareil auquel se connecter.</translation>
 <translation id="5363265567587775042">Demandez à l'utilisateur de l'ordinateur auquel vous souhaitez accéder de cliquer sur "<ph name="SHARE" />" et de vous donner le code d'accès.</translation>
 <translation id="5379087427956679853">L'application Bureau à distance Google Chrome vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL" />.</translation>
@@ -277,6 +278,7 @@
 <translation id="7948001860594368197">Options de l'écran</translation>
 <translation id="7970576581263377361">Échec de l'authentification. Veuillez vous connecter de nouveau à Chromium.</translation>
 <translation id="7981525049612125370">La session à distance est arrivée à expiration.</translation>
+<translation id="8038111231936746805">(par défaut)</translation>
 <translation id="8041089156583427627">Envoyer</translation>
 <translation id="8041721485428375115">En téléchargeant le programme d'installation de l'hôte Bureau à distance Google Chrome, vous acceptez les <ph name="LINK_BEGIN" />Conditions d'utilisation<ph name="LINK_END" /> de Google.</translation>
 <translation id="8060029310790625334">Centre d'aide</translation>
@@ -286,7 +288,6 @@
 <translation id="809687642899217504">Mes ordinateurs</translation>
 <translation id="811307782653349804">Accédez à votre ordinateur où que vous soyez.</translation>
 <translation id="8116630183974937060">Une erreur réseau s'est produite. Veuillez vérifier que votre appareil est en ligne, puis réessayer.</translation>
-<translation id="8123581458650016326">Autoriser les utilisateurs distants à contrôler cet ordinateur</translation>
 <translation id="8178433417677596899">Partagez des écrans avec d'autres utilisateurs : idéal pour l'assistance technique à distance.</translation>
 <translation id="8187079423890319756">Copyright des auteurs de Chromium 2013. Tous droits réservés.</translation>
 <translation id="8196755618196986400">Afin que nous puissions vous contacter pour vous demander de nous fournir plus d'informations, votre adresse e-mail est incluse dans tous les commentaires que vous soumettez.</translation>
@@ -312,11 +313,6 @@
 <translation id="8804164990146287819">Règles de confidentialité</translation>
 <translation id="894763922177556086">Bonne</translation>
 <translation id="895780780740011433">Pour Windows 7 ou version ultérieure</translation>
-<translation id="8963047137585288214">Une étape de configuration supplémentaire est requise pour que vous puissiez contrôler cet ordinateur à distance avec <ph name="PRODUCT_NAME" />.
-
-Pour activer cette fonctionnalité, sélectionnez "<ph name="BUTTON_NAME" />" afin d'afficher le volet des préférences de sécurité et de confidentialité, puis cochez la case à côté de "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Si le script "<ph name="SERVICE_SCRIPT_NAME" />" y figure déjà et qu'il est coché, vous devrez peut-être le décocher, puis le cocher à nouveau.</translation>
 <translation id="897805526397249209">Pour activer les connexions à distance à un autre ordinateur, installez l'application Google Chromoting sur celui-ci, puis cliquez sur "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Contrôleur de l'hôte Bureau à distance Google Chrome</translation>
 <translation id="9016232822027372900">Ignorer le message et se connecter</translation>

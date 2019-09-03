@@ -263,6 +263,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="4747097190499141774">Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Find in Page…</translation>
 <translation id="4751645464639803239">New Incognito Tab</translation>
+<translation id="4758977202923349869">Position Credit Card in this frame</translation>
 <translation id="4802417911091824046">Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
 
 To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
@@ -328,6 +329,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5728700505257787410">Sorry, there was a problem signing in to your account.</translation>
 <translation id="5737974891429562743">Account sign-in details are out of date. Update to start sync.</translation>
 <translation id="5738887413654608789">This lets you discover relevant web pages based on your surroundings.</translation>
+<translation id="5803566855766646066">Are you sure that you want to discard this new card?</translation>
 <translation id="5816228676161003208">This lets you search faster using your voice.</translation>
 <translation id="5846482154967366008">Search Engine</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>

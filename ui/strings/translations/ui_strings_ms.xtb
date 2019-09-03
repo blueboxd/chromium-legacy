@@ -38,6 +38,7 @@
 <translation id="208586643495776849">Sila cuba lagi</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1h}other{#h}}</translation>
 <translation id="2148716181193084225">Hari ini</translation>
+<translation id="2161656808144014275">Teks</translation>
 <translation id="2168039046890040389">Halaman Ke Atas</translation>
 <translation id="2190355936436201913">(kosong)</translation>
 <translation id="2192232475740621500">Gunakan ketumpatan rendah</translation>
@@ -84,6 +85,7 @@
 <translation id="3618849550573277856">Cari “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pilih Folder untuk Dimuat Naik</translation>
 <translation id="3660179305079774227">Anak Panah Atas</translation>
+<translation id="3670030362669914947">Nombor</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Teruskan membaca daripada peranti mudah alih anda <ph name="TITLE" /></translation>
@@ -99,7 +101,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 bulan yang lalu}other{# bulan yang lalu}}</translation>
 <translation id="4289300219472526559">Mula Bercakap</translation>
 <translation id="4316910396681052118">SEMUA APL</translation>
-<translation id="4467014365953759647">Tidak dapat menghantar nombor</translation>
 <translation id="4588090240171750605">Tatal ke Kanan</translation>
 <translation id="4690510401873698237">Rak di bahagian bawah</translation>
 <translation id="4724120544754982507">Pusat Pemberitahuan, <ph name="UNREAD_NOTIFICATION_COUNT" /> pemberitahuan belum dibaca</translation>
@@ -126,6 +127,7 @@
 <translation id="5583640892426849032">Undur ruang</translation>
 <translation id="5613020302032141669">Anak Panah Kiri</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Aktif hari ini}=1{Aktif 1 hari yang lalu}other{Aktif # hari yang lalu}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 hari dan }other{# hari dan }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{dalam 1t}other{dalam #t}}</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
@@ -175,7 +177,6 @@
 <translation id="7319740667687257810">Pelancar, paparan separa</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min yang lalu}other{# min yang lalu}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Periksa sambungan telefon anda dan cuba lagi</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minit lagi}other{# minit lagi}}</translation>
 <translation id="7430878839542012341">Padamkan carian ini daripada sejarah anda?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

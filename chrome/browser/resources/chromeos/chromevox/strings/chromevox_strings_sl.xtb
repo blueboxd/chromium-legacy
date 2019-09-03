@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">Ustavitev govora</translation>
 <translation id="4373197658375206385">Ni prejšnjega elementa, ki ni povezava.</translation>
 <translation id="4376316291247992553">Ogled grafike v brailovi pisavi</translation>
+<translation id="437809255587011096">Oblikovanje sloga za predstavitev besedila</translation>
 <translation id="4378308539633073595">Pomik naprej</translation>
 <translation id="4384583879834880242">Vprašanja</translation>
 <translation id="4391478986194775161">podovseb</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">Zmanjšanje razdrobljenosti krmarjenja</translation>
 <translation id="8504695234784218301">Konec slovnične napake</translation>
 <translation id="8520472399088452386">Pomikalnik</translation>
+<translation id="8534394844575788431">Oblikovanje</translation>
 <translation id="8538744478902126321">Ugibanje glave vrstice v trenutni celici</translation>
 <translation id="8540054775867439484">Prelom do vrha</translation>
 <translation id="8542271685829952264">Če želite raziskati vse ukaze in bližnjice ChromeVoxa, pritisnite tipko za iskanje in piko, nato se po menijih pomikajte s puščičnimi tipkami in pritisnite tipko Enter, če želite aktivirati ukaz. Sem se vrnete tako, da pritisnete tipko za iskanje in tipko O, nato pa tipko T.</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">razd</translation>
 <translation id="9150735707954472829">Zavihek</translation>
 <translation id="9151211641321628915">Objavi kratek opis trenutnega položaja</translation>
+<translation id="9151249085738989067">Samodejni preklop glasu ChromeVoxa glede na jezik</translation>
 <translation id="9153606228985488238">Višina tona: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Pomik na konec trenutnega stolpca</translation>
 <translation id="9173115498289768110">Glasnost: <ph name="PERCENT" /> %</translation>

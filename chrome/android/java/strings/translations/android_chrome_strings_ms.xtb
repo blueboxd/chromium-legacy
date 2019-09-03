@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">Dipasang</translation>
 <translation id="1792959175193046959">Tukar lokasi muat turun lalai pada bila-bila masa</translation>
 <translation id="1807246157184219062">Cahaya</translation>
+<translation id="1810845389119482123">Penyediaan penyegerakan permulaan belum selesai</translation>
 <translation id="1821253160463689938">Menggunakan kuki untuk mengingati pilihan anda, walaupun anda tidak melawati halaman tersebut</translation>
 <translation id="1829244130665387512">Cari dalam halaman</translation>
 <translation id="1853692000353488670">Tab inkognito baharu</translation>
@@ -412,6 +413,7 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4170011742729630528">Perkhidmatan tidak tersedia; cuba lagi kemudian.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> digunakan</translation>
 <translation id="4181841719683918333">Bahasa</translation>
+<translation id="4183868528246477015">Cari dengan Google Lens <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Buka dalam tab baharu</translation>
 <translation id="4198423547019359126">Tiada lokasi muat turun tersedia</translation>
 <translation id="4209895695669353772">Hidupkan penyegerakan untuk mendapatkan kandungan diperibadikan yang dicadangkan oleh Google</translation>
@@ -474,6 +476,7 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke skrin Utama anda</translation>
 <translation id="4684427112815847243">Segerakkan semua</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lagi}}</translation>
+<translation id="4696983787092045100">Hantar teks ke Peranti Anda</translation>
 <translation id="4698034686595694889">Lihat di luar talian dalam <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Kefungsian kritikal yang diperlukan untuk menjalankan Chrome tiada; sama ada pemasangan Chrome anda tidak lengkap atau tidak serasi dengan versi Android ini.</translation>
 <translation id="4699172675775169585">Imej dan fail dicache</translation>
@@ -529,6 +532,10 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5011311129201317034"><ph name="SITE" /> ingin menyambung</translation>
 <translation id="5013696553129441713">Tiada cadangan baharu</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">Semasa anda berada dalam VR, tapak ini mungkin dapat mengetahui tentang:
+  -  ciri fizikal anda, seperti ketinggian
+
+Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5048398596102334565">Benarkan tapak mengakses penderia gerakan (disyorkan)</translation>
@@ -556,6 +563,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5224771365102442243">Dengan video</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> mahu mengimbas untuk mengesan peranti Bluetooth berdekatan. Peranti berikut telah dijumpai:</translation>
 <translation id="5233638681132016545">Tab baharu</translation>
+<translation id="5234764350956374838">Singkirkan</translation>
 <translation id="526421993248218238">Tidak dapat memuatkan halaman ini</translation>
 <translation id="5271967389191913893">Peranti tidak dapat membuka kandungan yang hendak dimuat turun.</translation>
 <translation id="528192093759286357">Seret dari atas dan sentuh butang kembali untuk keluar daripada skrin penuh.</translation>
@@ -574,6 +582,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5363230136052241468">Ketik butang skrin utama untuk memuatkan halaman tab baharu</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab terbuka, ketik untuk beralih antara tab}other{<ph name="OPEN_TABS_MANY" /> tab terbuka, ketik untuk beralih antara tab}}</translation>
 <translation id="5391532827096253100">Sambungan anda ke tapak web ini tidak selamat. Maklumat tapak</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 lagi)}other{(+ # lagi)}}</translation>
 <translation id="5400569084694353794">Dengan menggunakan aplikasi ini, anda bersetuju menerima <ph name="BEGIN_LINK1" />Syarat Perkhidmatan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Notis Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403592356182871684">Nama</translation>
 <translation id="5403644198645076998">Benarkan tapak tertentu sahaja</translation>
@@ -603,6 +612,11 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk mengimbas peranti. <ph name="BEGIN_LINK1" />Kemas kini kebenaran<ph name="END_LINK1" />. Akses lokasi turut <ph name="BEGIN_LINK2" />dimatikan untuk peranti ini<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Tanya sebelum membenarkan tapak membaca teks dan imej daripada papan keratan (disyorkan)</translation>
 <translation id="5530766185686772672">Tutup tab inkognito</translation>
+<translation id="5534334044554683961">Semasa anda berada dalam VR, tapak ini mungkin dapat mengetahui tentang:
+  -   ciri fizikal anda, seperti ketinggian
+  -   susun atur bilik anda
+
+Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5534640966246046842">Tapak disalin</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5561549206367097665">Menunggu rangkaian…</translation>
@@ -690,7 +704,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan selamat. Maklumat tapak</translation>
 <translation id="6210748933810148297">Bukan <ph name="EMAIL" />?</translation>
-<translation id="6216432067784365534">Pilihan <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Buka kunci untuk mengeksport kata laluan anda</translation>
 <translation id="6232535412751077445">Tindakan mendayakan "Jangan Kesan" bermaksud permintaan akan disertakan dengan trafik penyemakan imbas anda. Sebarang kesan bergantung pada sama ada tapak web memberi respons kepada permintaan dan cara permintaan ditafsirkan.
 
@@ -893,6 +906,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7665369617277396874">Tambah akaun</translation>
 <translation id="766587987807204883">Artikel dipaparkan di sini, yang boleh anda baca walaupun semasa anda luar talian</translation>
 <translation id="7682724950699840886">Cuba petua berikut: pastikan ruang pada peranti anda mencukupi, cuba eksport sekali lagi.</translation>
+<translation id="7685301384041462804">Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="7698359219371678927">Buat e-mel dalam <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autolengkap carian dan URL</translation>
 <translation id="7725024127233776428">Halaman yang anda tandai halaman dipaparkan di sini</translation>
@@ -923,6 +937,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7886917304091689118">Sedang berjalan dalam Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Memuat turun fail.}other{Memuat turun # fail.}}</translation>
 <translation id="7929962904089429003">Buka menu</translation>
+<translation id="7930681627240672853">Semak keselamatan kata laluan</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> telah lapuk.</translation>
 <translation id="7947953824732555851">Terima dan log masuk</translation>
 <translation id="7963646190083259054">Vendor:</translation>
@@ -1070,6 +1085,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8993760627012879038">Buka tetingkap baharu dalam mod Inkognito</translation>
 <translation id="8998729206196772491">Anda log masuk dengan akaun yang diurus oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kawalan terhadap data Chrome anda kepada pentadbirnya. Data anda akan terikat secara kekal kepada akaun ini. Tindakan log keluar daripada Chrome akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam Akaun Google anda.</translation>
 <translation id="9019902583201351841">Diurus oleh ibu bapa anda</translation>
+<translation id="9029323097866369874">Benarkan <ph name="DOMAIN" /> untuk memasuki VR?</translation>
 <translation id="9040142327097499898">Pemberitahuan dibenarkan. Lokasi dimatikan untuk peranti ini.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Video}}</translation>
 <translation id="9050666287014529139">Frasa laluan</translation>

@@ -2797,7 +2797,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5235050375939235066">I-uninstall ang app?</translation>
 <translation id="5235750401727657667">Palitan ang page na nakikita mo kapag nagbubukas ng bagong tab</translation>
 <translation id="5238278114306905396">Awtomatikong inalis ang app na "<ph name="EXTENSION_NAME" />."</translation>
-<translation id="5238713938047984284">I-save ang iyong mga password</translation>
 <translation id="5241128660650683457">Basahin ang lahat ng iyong data sa mga website na binibisita mo</translation>
 <translation id="5242724311594467048">I-enable ang "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Pakisubukang muli pagkalipas ng ilang sandali</translation>
@@ -3422,7 +3421,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6129691635767514872">Inalis sa Chrome at sa mga naka-sync na device ang napiling data. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account tulad ng mga paghahanap at aktibidad mula sa iba pang serbisyo ng Google sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Komento sa Netscape Certificate</translation>
 <translation id="6129953537138746214">Puwang</translation>
-<translation id="6130024555057767093">Kasalukuyang naka-block ang mga notification para sa lahat ng site maliban sa mga site na isa-isa mong pinapayagan.</translation>
 <translation id="6136114942382973861">Isara ang bar ng mga download</translation>
 <translation id="6137767437444130246">Certificate ng user</translation>
 <translation id="6138680304137685902">X9.62 ECDSA Signature na may SHA-384</translation>
@@ -4333,7 +4331,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7529411698175791732">Suriin ang iyong koneksyon sa internet. Kung magpapatuloy ang problema, subukang mag-sign out at muling mag-sign in.</translation>
 <translation id="7530016656428373557">Rate ng Pagdiskarga sa Watts</translation>
 <translation id="7531779363494549572">Pumunta sa Mga Setting &gt; Mga app at notification &gt; Mga Notification.</translation>
-<translation id="7536220825385726660">Payagan ang mga application sa Play Store na i-access ang mga external na drive</translation>
 <translation id="7539856059004947393">Bluetooth security key</translation>
 <translation id="7540972813190816353">Naganap ang isang error habang nagsusuri ng mga update: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">I-enable ang mga feature para sa pagde-debug sa <ph name="IDS_SHORT_PRODUCT_NAME" /> device na ito</translation>
@@ -4381,7 +4378,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7607002721634913082">I-pause</translation>
 <translation id="7609148976235050828">Kumonekta sa internet at subukang muli.</translation>
 <translation id="7611008212562900400">Hanapin ang iyong device, mga app, web...</translation>
-<translation id="7614260613810441905">Tanungin kapag gusto ng site na mag-edit ng mga file o folder sa iyong device (inirerekomenda)</translation>
+<translation id="7614260613810441905">Itanong kapag gusto ng site na mag-edit ng mga file o folder sa iyong device (inirerekomenda)</translation>
 <translation id="7616214729753637086">Ine-enroll ang device...</translation>
 <translation id="7617366389578322136">Kumokonekta sa "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7621382409404463535">Hindi na-save ng system ang configuration ng device.</translation>
@@ -4931,7 +4928,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8391218455464584335">Vinyl</translation>
 <translation id="8391712576156218334">Hindi available ang larawan. Subukang muli sa ibang pagkakataon.</translation>
 <translation id="8392234662362215700">Pindutin ang Control-Shift-Space upang magpalit ng layout ng keyboard.</translation>
-<translation id="8392364544846746346">Tanungin kapag gusto ng site na mag-edit ng mga file o folder sa iyong device</translation>
+<translation id="8392364544846746346">Itanong kapag gusto ng site na mag-edit ng mga file o folder sa iyong device</translation>
 <translation id="8392451568018454956">Menu ng mga pagpipilian para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8393511274964623038">Ihinto ang plugin</translation>
 <translation id="8393700583063109961">Ipadala ang mensahe</translation>

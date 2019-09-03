@@ -50,7 +50,7 @@
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> থেকে পাঠানো হয়েছে</translation>
 <translation id="1310482092992808703">ট্যাবগুলি গ্রুপ করুন</translation>
-<translation id="1327257854815634930">নেভিগেশনের ইতিহাস খোলা আছে</translation>
+<translation id="1327257854815634930">নেভিগেশনের ইতিহাস খোলা হয়েছে</translation>
 <translation id="1331212799747679585">Chrome আপডেট হচ্ছে না। আরও বিকল্প</translation>
 <translation id="1332501820983677155">Google Chrome এর বাছাই করা শর্টকাটগুলি</translation>
 <translation id="1360432990279830238">সাইন-আউট করে সিঙ্ক বন্ধ করবেন?</translation>
@@ -558,6 +558,7 @@
 <translation id="5224771365102442243">ভিডিও এর সাথে</translation>
 <translation id="5230560987958996918">কাছাকাছি থাকা ব্লুটুথ ডিভাইসগুলিকে <ph name="SITE" /> স্ক্যান করতে চায়, এই ডিভাইসগুলি পাওয়া গেছে:</translation>
 <translation id="5233638681132016545">নতুন ট্যাব</translation>
+<translation id="5234764350956374838">খারিজ</translation>
 <translation id="526421993248218238">পৃষ্ঠাটি লোড করা যাচ্ছে না</translation>
 <translation id="5271967389191913893">ডাউনলোড করা কন্টেন্ট ডিভাইস খুলতে পারবে না৷</translation>
 <translation id="528192093759286357">উপর থেকে টেনে আনুন এবং পূর্ণ স্ক্রিন থেকে বেরিয়ে যেতে পিছনে ফেরার বোতাম স্পর্শ করুন।</translation>
@@ -565,7 +566,7 @@
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
 <translation id="5304593522240415983">এই ক্ষেত্রটি খালি রাখা যাবে না</translation>
-<translation id="5307446750509046227">সাইটের স্টোরেজ মুছুন</translation>
+<translation id="5307446750509046227">সাইটের সেভ করা ডেটা মুছুন</translation>
 <translation id="5308380583665731573">সংযুক্ত করুন</translation>
 <translation id="5313967007315987356">সাইট যোগ করুন</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
@@ -692,7 +693,6 @@
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6206551242102657620">কানেকশনটি নিরাপদ। সাইট তথ্য</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> না?</translation>
-<translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> এর বিকল্পগুলি</translation>
 <translation id="6221633008163990886">আপনার পাসওয়ার্ড এক্সপোর্ট করতে আনলক করুন</translation>
 <translation id="6232535412751077445">"ট্র্যাক করবেন না" চালু করার অর্থ হল আপনার ব্রাউজিং ট্র্যাফিকের সাথে একটি অনুরোধ অন্তর্ভুক্ত হবে৷ অনুরোধটিতে কোনো ওয়েবসাইট প্রতিক্রিয়া করে কি না এবং অনুরোধটিকে কীভাবে ব্যাখ্যা করা হয় তার উপর যেকোনো প্রভাব নির্ভর করে৷
 
@@ -1041,7 +1041,7 @@
 <translation id="8730621377337864115">হয়ে গেছে</translation>
 <translation id="8748850008226585750">সামগ্রী লুকানো আছে</translation>
 <translation id="8751914237388039244">একটি ছবি বেছে নিন</translation>
-<translation id="8788265440806329501">নেভিগেশনের ইতিহাস বন্ধ করা আছে</translation>
+<translation id="8788265440806329501">নেভিগেশনের ইতিহাস বন্ধ করা হয়েছে</translation>
 <translation id="8788968922598763114">সব শেষে বন্ধ করা ট্যাবটি পুনরায় খুলুন</translation>
 <translation id="8801436777607969138">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট ব্লক করুন।</translation>
 <translation id="8812260976093120287">কিছু ওয়েবসাইটে আপনি উপরের সমর্থিত পেমেন্ট অ্যাপ্লিকেশান দিয়ে অর্থপ্রদান করতে পারেন।</translation>

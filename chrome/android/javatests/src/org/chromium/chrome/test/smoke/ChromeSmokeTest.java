@@ -32,8 +32,8 @@ public class ChromeSmokeTest {
     private static final String DATA_URL = "data:,Hello";
     private static final String ACTIVITY_NAME = "org.chromium.chrome.browser.ChromeTabbedActivity";
 
-    public final long mTimeout = ScalableTimeout.scaleTimeout(5000L);
-    public static final long UI_CHECK_INTERVAL = 200L;
+    public final long mTimeout = ScalableTimeout.scaleTimeout(20000L);
+    public static final long UI_CHECK_INTERVAL = 1000L;
     private String mPackageName;
 
     @Before

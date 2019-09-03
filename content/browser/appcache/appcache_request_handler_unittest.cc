@@ -28,8 +28,8 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_job.h"
+#include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
-#include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -265,14 +265,14 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
 
     network::ResourceResponseHead response;
     response.headers = info.headers;
-    request_->AsURLLoaderRequest()->set_response(response);
+    request_->set_response(response);
     DCHECK_EQ(response_code, request_->GetResponseCode());
   }
 
   void SimulateResponseInfo(const net::HttpResponseInfo& info) {
     network::ResourceResponseHead response;
     response.headers = info.headers;
-    request_->AsURLLoaderRequest()->set_response(response);
+    request_->set_response(response);
   }
 
   void Verify_MainResource_Fallback() {
@@ -698,7 +698,7 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     network::ResourceRequest resource_request;
     resource_request.url = url;
     resource_request.method = "GET";
-    auto request = std::make_unique<AppCacheURLLoaderRequest>(resource_request);
+    auto request = std::make_unique<AppCacheRequest>(resource_request);
     request_ = request.get();
     handler_ =
         host->CreateRequestHandler(std::move(request), resource_type, false);

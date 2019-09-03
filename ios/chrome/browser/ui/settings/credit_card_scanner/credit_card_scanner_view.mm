@@ -35,7 +35,7 @@ const CGSize kViewportSizeIPad = CGSizeMake(CreditCardAspectRatio.width * 4.8,
   return IsIPadIdiom() ? kViewportSizeIPad : kViewportSizeIPhone;
 }
 
-- (NSString*)scannerCaption {
+- (NSString*)caption {
   return l10n_util::GetNSString(IDS_IOS_CREDIT_CARD_SCANNER_VIEWPORT_CAPTION);
 }
 

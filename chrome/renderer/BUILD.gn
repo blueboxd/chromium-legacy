@@ -103,8 +103,6 @@ jumbo_static_library("renderer") {
     "subresource_redirect/subresource_redirect_util.h",
     "supervised_user/supervised_user_error_page_controller.cc",
     "supervised_user/supervised_user_error_page_controller.h",
-    "tts_dispatcher.cc",
-    "tts_dispatcher.h",
     "url_loader_throttle_provider_impl.cc",
     "url_loader_throttle_provider_impl.h",
     "v8_unwinder.cc",

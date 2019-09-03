@@ -69,8 +69,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Platform methods:
   blink::WebSandboxSupport* GetSandboxSupport() override;
   blink::WebThemeEngine* ThemeEngine() override;
-  std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
-      blink::WebSpeechSynthesizerClient* client) override;
   virtual bool sandboxEnabled();
   uint64_t VisitedLinkHash(const char* canonicalURL, size_t length) override;
   bool IsLinkVisited(uint64_t linkHash) override;

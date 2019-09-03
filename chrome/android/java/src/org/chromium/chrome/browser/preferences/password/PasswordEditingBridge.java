@@ -4,7 +4,11 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
+import android.content.Context;
+import android.os.Bundle;
+
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 
 /**
  * This is a bridge between PasswordEntryEditor and the C++ code. The bridge is in charge of
@@ -21,6 +25,15 @@ public class PasswordEditingBridge {
     @CalledByNative
     private static PasswordEditingBridge create(long nativePasswordEditingBridge) {
         return new PasswordEditingBridge(nativePasswordEditingBridge);
+    }
+
+    @CalledByNative
+    private void showEditingUI(Context context, String site, String username, String password) {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, username);
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, site);
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, password);
+        PreferencesLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
     }
 
     /**

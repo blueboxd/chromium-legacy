@@ -72,7 +72,8 @@ bool RemoteCommandJob::Init(
   return true;
 }
 
-bool RemoteCommandJob::Run(base::TimeTicks now,
+bool RemoteCommandJob::Run(base::Time now,
+                           base::TimeTicks now_ticks,
                            FinishedCallback finished_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -83,9 +84,9 @@ bool RemoteCommandJob::Run(base::TimeTicks now,
 
   DCHECK_EQ(NOT_STARTED, status_);
 
-  if (IsExpired(now)) {
+  if (IsExpired(now_ticks)) {
     SYSLOG(ERROR) << "Remote command " << unique_id_
-                  << " expired (it was issued " << now - issued_time_
+                  << " expired (it was issued " << now_ticks - issued_time_
                   << " ago).";
     status_ = EXPIRED;
     return false;

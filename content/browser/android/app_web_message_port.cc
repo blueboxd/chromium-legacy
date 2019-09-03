@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/android/content_jni_headers/AppWebMessagePort_jni.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 using blink::MessagePortChannel;

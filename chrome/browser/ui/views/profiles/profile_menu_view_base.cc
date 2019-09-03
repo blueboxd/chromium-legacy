@@ -8,11 +8,14 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
@@ -41,6 +44,7 @@ ProfileMenuViewBase* g_profile_bubble_ = nullptr;
 
 constexpr int kMenuWidth = 288;
 constexpr int kIconSize = 16;
+constexpr int kIdentityImageSize = 64;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
 // least this tall to show one row.
@@ -49,6 +53,14 @@ constexpr int kMinimumScrollableContentHeight = 40;
 // Spacing between the edge of the user menu and the top/bottom or left/right of
 // the menu items.
 constexpr int kMenuEdgeMargin = 16;
+
+std::unique_ptr<views::BoxLayout> CreateBoxLayout(
+    views::BoxLayout::Orientation orientation,
+    views::BoxLayout::CrossAxisAlignment cross_axis_alignment) {
+  auto layout = std::make_unique<views::BoxLayout>(orientation);
+  layout->set_cross_axis_alignment(cross_axis_alignment);
+  return layout;
+}
 
 }  // namespace
 
@@ -137,6 +149,20 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
+void ProfileMenuViewBase::SetIdentityImage(const gfx::Image& image) {
+  identity_image_container_->RemoveAllChildViews(/*delete_children=*/true);
+  identity_image_container_->SetLayoutManager(
+      CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
+                      views::BoxLayout::CrossAxisAlignment::kCenter));
+
+  views::ImageView* image_view = identity_image_container_->AddChildView(
+      std::make_unique<views::ImageView>());
+  image_view->SetImage(profiles::GetSizedAvatarIcon(
+                           image, /*is_rectangle=*/true, kIdentityImageSize,
+                           kIdentityImageSize, profiles::SHAPE_CIRCLE)
+                           .AsImageSkia());
+}
+
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
   // Return |ax::mojom::Role::kDialog| which will make screen readers announce
   // the following in the listed order:
@@ -166,7 +192,8 @@ bool ProfileMenuViewBase::HandleContextMenu(
 void ProfileMenuViewBase::Init() {
   Reset();
   BuildMenu();
-  RepopulateViewFromMenuItems();
+  if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp))
+    RepopulateViewFromMenuItems();
 }
 
 void ProfileMenuViewBase::WindowClosing() {
@@ -210,7 +237,38 @@ int ProfileMenuViewBase::GetMaxHeight() const {
 }
 
 void ProfileMenuViewBase::Reset() {
-  menu_item_groups_.clear();
+  if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
+    menu_item_groups_.clear();
+    return;
+  }
+  click_actions_.clear();
+  RemoveAllChildViews(/*delete_childen=*/true);
+
+  auto components = std::make_unique<views::View>();
+  components->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  // Create and add new component containers in the correct order.
+  identity_image_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+
+  // Create a scroll view to hold the components.
+  auto scroll_view = std::make_unique<views::ScrollView>();
+  scroll_view->SetHideHorizontalScrollBar(true);
+  // TODO(https://crbug.com/871762): it's a workaround for the crash.
+  scroll_view->SetDrawOverflowIndicator(false);
+  scroll_view->ClipHeightTo(0, GetMaxHeight());
+  scroll_view->SetContents(std::move(components));
+
+  // Create a grid layout to set the menu width.
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     kMenuWidth, kMenuWidth);
+  layout->StartRow(1.0, 0);
+  layout->AddView(std::move(scroll_view));
 }
 
 int ProfileMenuViewBase::GetMarginSize(GroupMarginSize margin_size) const {

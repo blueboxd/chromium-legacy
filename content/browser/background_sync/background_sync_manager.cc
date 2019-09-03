@@ -535,17 +535,6 @@ void BackgroundSyncManager::OnStorageWiped() {
                      weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
 }
 
-void BackgroundSyncManager::SetMaxSyncAttemptsForTesting(int max_attempts) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  auto id = op_scheduler_.CreateId();
-  op_scheduler_.ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(&BackgroundSyncManager::SetMaxSyncAttemptsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), max_attempts,
-                     MakeEmptyCompletion(id)));
-}
-
 void BackgroundSyncManager::EmulateDispatchSyncEvent(
     const std::string& tag,
     scoped_refptr<ServiceWorkerVersion> active_version,
@@ -2346,14 +2335,6 @@ void BackgroundSyncManager::OnNetworkChanged() {
                   base::DoNothing::Once());
   FireReadyEvents(BackgroundSyncType::PERIODIC, /* reschedule= */ true,
                   base::DoNothing::Once());
-}
-
-void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,
-                                                   base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  parameters_->max_sync_attempts = max_attempts;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion(

@@ -3646,6 +3646,10 @@ if (!is_ios) {
   }
   executable("quic_server") {
     sources = [
+      "third_party/quiche/src/quic/tools/quic_toy_server.cc",
+      "third_party/quiche/src/quic/tools/quic_toy_server.h",
+      "tools/quic/quic_simple_server_backend_factory.cc",
+      "tools/quic/quic_simple_server_backend_factory.h",
       "tools/quic/quic_simple_server_bin.cc",
     ]
     deps = [

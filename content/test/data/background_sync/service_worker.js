@@ -14,6 +14,7 @@
 
 let resolveCallback = null;
 let rejectCallback = null;
+let periodicSyncEventCount = 0;
 
 this.onmessage = (event) => {
   switch(event.data.action) {
@@ -107,27 +108,31 @@ this.onmessage = (event) => {
         .catch(sendSyncErrorToClients);
       return;
     }
+    case 'getPeriodicSyncEventCount':
+      sendMessageToClients('gotEventCount', periodicSyncEventCount.toString());
+      return;
   }
 }
-this.onsync = (event) => {
+
+function handleSync(event, isPeriodic) {
+  const expectedEventType = isPeriodic ? 'PeriodicSyncEvent' : 'SyncEvent';
+
   const eventProperties = [
     // Extract name from toString result: "[object <Class>]"
     Object.prototype.toString.call(event).match(/\s([a-zA-Z]+)/)[1],
     (typeof event.waitUntil)
   ];
 
-  if (eventProperties[0] != 'SyncEvent') {
-    sendMessageToClients('sync', 'error - wrong event type');
-    return;
+  if (eventProperties[0] !== expectedEventType) {
+    return sendMessageToClients('sync', 'error - wrong event type');
   }
 
   if (eventProperties[1] != 'function') {
-    sendMessageToClients('sync', 'error - wrong wait until type');
+    return sendMessageToClients('sync', 'error - wrong wait until type');
   }
 
   if (event.tag === undefined) {
-    sendMessageToClients('sync', 'error - registration missing tag');
-    return;
+    return sendMessageToClients('sync', 'error - registration missing tag');
   }
 
   const tag = event.tag;
@@ -137,15 +142,24 @@ this.onsync = (event) => {
       resolveCallback = resolve;
       rejectCallback = reject;
     });
-    event.waitUntil(syncPromise);
-    return;
+    return syncPromise;
   }
 
-  sendMessageToClients('sync', tag + ' fired');
-};
+  if (isPeriodic)
+    periodicSyncEventCount++;
+  return sendMessageToClients('sync', tag + ' fired');
+}
+
+self.addEventListener('sync', event => {
+  event.waitUntil(handleSync(event, /* isPeriodic= */ false));
+});
+
+self.addEventListener('periodicsync', event => {
+  event.waitUntil(handleSync(event, /* isPeriodic= */ true));
+});
 
 function sendMessageToClients(type, data) {
-  clients.matchAll({ includeUncontrolled: true }).then((clients) => {
+  return clients.matchAll({ includeUncontrolled: true }).then((clients) => {
     clients.forEach((client) => {
       client.postMessage({type, data});
     });

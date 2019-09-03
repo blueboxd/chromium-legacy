@@ -2,11 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_base_browsertest.h"
+#include "content/browser/background_sync/background_sync_manager.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/background_sync_test_util.h"
+
+namespace {
+
+constexpr base::TimeDelta kMinGapBetweenPeriodicSyncEvents =
+    base::TimeDelta::FromSeconds(5);
+
+}  // namespace
 
 namespace content {
 
@@ -15,7 +23,6 @@ class PeriodicBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   PeriodicBackgroundSyncBrowserTest() {}
   ~PeriodicBackgroundSyncBrowserTest() override {}
 
-  void SetUp() override;
   bool Register(const std::string& tag, int min_interval_ms);
   bool RegisterNoMinInterval(const std::string& tag);
   bool RegisterFromServiceWorker(const std::string& tag, int min_interval_ms);
@@ -24,19 +31,14 @@ class PeriodicBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   bool HasTagFromServiceWorker(const std::string& tag);
   bool Unregister(const std::string& tag);
   bool UnregisterFromServiceWorker(const std::string& tag);
+  int GetNumPeriodicSyncEvents();
 
  protected:
   base::SimpleTestClock clock_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(PeriodicBackgroundSyncBrowserTest);
 };
-
-void PeriodicBackgroundSyncBrowserTest::SetUp() {
-  scoped_feature_list_.InitAndEnableFeature(features::kPeriodicBackgroundSync);
-  BackgroundSyncBaseBrowserTest::SetUp();
-}
 
 bool PeriodicBackgroundSyncBrowserTest::Register(const std::string& tag,
                                                  int min_interval_ms) {
@@ -108,6 +110,16 @@ bool PeriodicBackgroundSyncBrowserTest::UnregisterFromServiceWorker(
   return script_result == BuildExpectedResult(tag, "unregister sent to SW");
 }
 
+int PeriodicBackgroundSyncBrowserTest::GetNumPeriodicSyncEvents() {
+  std::string script_result;
+  EXPECT_TRUE(RunScript("getNumPeriodicSyncEvents()", &script_result));
+  int num_periodic_sync_events = -1;
+  bool converted =
+      base::StringToInt(PopConsoleString(), &num_periodic_sync_events);
+  DCHECK(converted);
+  return num_periodic_sync_events;
+}
+
 IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
                        RegisterFromControlledDocument) {
   EXPECT_TRUE(RegisterServiceWorker());
@@ -174,6 +186,31 @@ IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
   EXPECT_TRUE(HasTag("foo"));
   EXPECT_TRUE(UnregisterFromServiceWorker("foo"));
   EXPECT_TRUE(PopConsole("ok - foo unregistered in SW"));
+}
+
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
+                       FirePeriodicSyncOnConnectivity) {
+  SetTestClock(&clock_);
+  EXPECT_TRUE(RegisterServiceWorker());
+  EXPECT_TRUE(LoadTestPage(kDefaultTestURL));
+
+  // Prevent firing by going offline.
+  background_sync_test_util::SetOnline(web_contents(), false);
+  EXPECT_TRUE(Register("foo", /* min_interval_ms= */ 10));
+  EXPECT_TRUE(HasTag("foo"));
+
+  int initial_periodic_sync_events = GetNumPeriodicSyncEvents();
+  ASSERT_EQ(initial_periodic_sync_events, 0);
+
+  clock_.Advance(kMinGapBetweenPeriodicSyncEvents);
+
+  EXPECT_EQ(GetNumPeriodicSyncEvents(), initial_periodic_sync_events);
+
+  // Resume firing by going online.
+  background_sync_test_util::SetOnline(web_contents(), true);
+  EXPECT_TRUE(PopConsole("foo fired"));
+  EXPECT_EQ(GetNumPeriodicSyncEvents(), initial_periodic_sync_events + 1);
+  EXPECT_TRUE(HasTag("foo"));
 }
 
 }  // namespace content

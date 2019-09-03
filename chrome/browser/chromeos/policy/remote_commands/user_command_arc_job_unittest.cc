@@ -99,7 +99,8 @@ TEST_F(UserCommandArcJobTest, TestPayloadReceiving) {
         run_loop->Quit();
       },
       &run_loop, job.get(), policy_instance_.get(), kPayload));
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), check_result_callback));
+  EXPECT_TRUE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                       check_result_callback));
   run_loop.Run();
 }
 

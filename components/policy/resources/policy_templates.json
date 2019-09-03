@@ -10096,7 +10096,34 @@
 
           If you set this policy, users can temporarily override it by enabling or disabling the large cursor. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
-          If this policy is left unset, the large cursor is disabled when the login screen is first shown. Users can enable or disable the large cursor anytime and its status on the login screen is persisted between users.''',
+          If this policy is left unset, the large cursor is disabled when the login screen is first shown. Users can enable or disable the large cursor anytime and its status on the login screen is persisted between users.
+
+          Note: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED">DeviceLoginScreenLargeCursorEnabled</ph> overrides this policy if the former is specified.''',
+    },
+    {
+      'name': 'DeviceLoginScreenLargeCursorEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:78-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 599,
+      'caption': '''Enable the large cursor on the login screen''',
+      'tags': [],
+      'desc': '''Enable the large cursor accessibility feature on the login screen.
+
+          If this policy is set to true, the large cursor will always be enabled on the login screen.
+
+          If this policy is set to false, the large cursor will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the large cursor is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
       'name': 'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
@@ -17857,6 +17884,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'RebootAfterUpdate': 'auto_update_settings.reboot_after_update',
     'DeviceAutoUpdateP2PEnabled': 'auto_update_settings.p2p_enabled',
     'DeviceLoginScreenDefaultLargeCursorEnabled': 'accessibility_settings.login_screen_default_large_cursor_enabled',
+    'DeviceLoginScreenLargeCursorEnabled': 'accessibility_settings.login_screen_large_cursor_enabled',
     'DeviceLoginScreenDefaultSpokenFeedbackEnabled': 'accessibility_settings.login_screen_default_spoken_feedback_enabled',
     'DeviceLoginScreenDefaultHighContrastEnabled': 'accessibility_settings.login_screen_default_high_contrast_enabled',
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
@@ -18359,6 +18387,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 598,
+  'highest_id_currently_used': 599,
   'highest_atomic_group_id_currently_used': 37
 }

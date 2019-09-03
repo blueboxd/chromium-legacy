@@ -14,7 +14,6 @@
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -67,14 +66,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 @implementation SigninPromoView {
   signin_metrics::AccessPoint _accessPoint;
 }
-
-@synthesize delegate = _delegate;
-@synthesize mode = _mode;
-@synthesize imageView = _imageView;
-@synthesize textLabel = _textLabel;
-@synthesize primaryButton = _primaryButton;
-@synthesize secondaryButton = _secondaryButton;
-@synthesize closeButton = _closeButton;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -225,9 +216,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   DCHECK(logo);
   _imageView.image = logo;
-  [_primaryButton
-      setTitle:l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN)
-      forState:UIControlStateNormal];
   _secondaryButton.hidden = YES;
 }
 
@@ -279,17 +267,13 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 
 #pragma mark - NSObject(Accessibility)
 
+- (BOOL)accessibilityActivate {
+  [self accessibilityPrimaryAction:nil];
+  return YES;
+}
+
 - (NSArray<UIAccessibilityCustomAction*>*)accessibilityCustomActions {
   NSMutableArray* actions = [NSMutableArray array];
-
-  NSString* primaryActionName =
-      [self.primaryButton titleForState:UIControlStateNormal];
-  UIAccessibilityCustomAction* primaryCustomAction =
-      [[UIAccessibilityCustomAction alloc]
-          initWithName:primaryActionName
-                target:self
-              selector:@selector(accessibilityPrimaryAction:)];
-  [actions addObject:primaryCustomAction];
 
   if (_mode == SigninPromoViewModeWarmState) {
     NSString* secondaryActionName =
@@ -314,10 +298,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
   }
 
   return actions;
-}
-
-- (NSString*)accessibilityLabel {
-  return self.textLabel.text;
 }
 
 @end

@@ -722,21 +722,36 @@ class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
     // Use "real" CertVerifier.
     disable_mock_cert_verifier();
   }
+  void SetUp() override {
+    SignedExchangeHandler::SetShouldIgnoreCertValidityPeriodErrorForTesting(
+        true);
+    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
+  }
+  void TearDown() override {
+    SignedExchangeRequestHandlerBrowserTestBase::TearDown();
+    SignedExchangeHandler::SetShouldIgnoreCertValidityPeriodErrorForTesting(
+        false);
+  }
 };
 
-// The test cert has expired. crbug.com/999419
+// If this fails with ERR_CERT_DATE_INVALID, try to regenerate test data
+// by running generate-test-certs.sh and generate-test-sxgs.sh in
+// src/content/test/data/sxg.
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
-                       DISABLED_Basic) {
-  InstallMockCertChainInterceptor();
+                       Basic) {
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org-long-validity.public.pem.cbor");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
+  GURL url = embedded_test_server()->GetURL(
+      "/sxg/test.example.org_long_cert_validity.sxg");
 
-  // "test.example.org_test.sxg" should pass CertVerifier::Verify() and then
-  // fail at SignedExchangeHandler::CheckOCSPStatus() because of the dummy OCSP
+  // This signed exchange should pass CertVerifier::Verify() and then fail at
+  // SignedExchangeHandler::CheckOCSPStatus() because of the dummy OCSP
   // response.
   // TODO(https://crbug.com/815024): Make this test pass the OCSP check. We'll
   // need to either generate an OCSP response on the fly, or override the OCSP

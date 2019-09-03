@@ -104,6 +104,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/sms/sms_service.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
+#include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_package/bundled_exchanges_handle.h"
@@ -6303,6 +6304,15 @@ void RenderFrameHostImpl::GetIdleManager(
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetIdleManager()
       ->CreateService(std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetSpeechSynthesis(
+    mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver) {
+  if (!speech_synthesis_impl_) {
+    speech_synthesis_impl_ = std::make_unique<SpeechSynthesisImpl>(
+        GetProcess()->GetBrowserContext());
+  }
+  speech_synthesis_impl_->AddReceiver(std::move(receiver));
 }
 
 blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {

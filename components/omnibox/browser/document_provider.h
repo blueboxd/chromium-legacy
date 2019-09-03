@@ -121,7 +121,7 @@ class DocumentProvider : public AutocompleteProvider {
   // We avoid queries for these cases for quality and scaling reasons.
   static bool IsInputLikelyURL(const AutocompleteInput& input);
 
-  // Called when loading is complete.
+  // Called when the network request for suggestions has completed.
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
                          std::unique_ptr<std::string> response_body);
 

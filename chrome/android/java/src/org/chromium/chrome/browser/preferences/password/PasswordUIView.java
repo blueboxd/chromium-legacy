@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
+import android.content.Context;
+
 import org.chromium.base.Callback;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.annotations.CalledByNative;
@@ -86,8 +88,8 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
-    public void showPasswordEntryEditingView(int index) {
-        nativeHandleShowPasswordEntryEditingView(mNativePasswordUIViewAndroid, index);
+    public void showPasswordEntryEditingView(Context context, int index) {
+        nativeHandleShowPasswordEntryEditingView(mNativePasswordUIViewAndroid, context, index);
     }
 
     /**
@@ -136,5 +138,5 @@ public final class PasswordUIView implements PasswordManagerHandler {
             String targetPath, IntStringCallback successCallback, Callback<String> errorCallback);
 
     private native void nativeHandleShowPasswordEntryEditingView(
-            long nativePasswordUIViewAndroid, int index);
+            long nativePasswordUIViewAndroid, Context context, int index);
 }

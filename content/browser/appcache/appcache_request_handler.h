@@ -52,25 +52,11 @@ class CONTENT_EXPORT AppCacheRequestHandler
  public:
   ~AppCacheRequestHandler() override;
 
-  // These are called on each request intercept opportunity.
-  // When the NetworkService is not enabled, the AppCacheInterceptor calls these
-  // methods directly. When the NetworkService is enabled, the various
-  // MaybeCreateLoader methods below call call these internally.
-  AppCacheJob* MaybeLoadResource(net::NetworkDelegate* network_delegate);
-  AppCacheJob* MaybeLoadFallbackForRedirect(
-      net::NetworkDelegate* network_delegate,
-      const GURL& location);
-  AppCacheJob* MaybeLoadFallbackForResponse(
-      net::NetworkDelegate* network_delegate);
-
-  void GetExtraResponseInfo(int64_t* cache_id, GURL* manifest_url);
-
   // NetworkService loading
 
   // NavigationLoaderInterceptor overrides - main resource loading.
   // These methods are used by the NavigationURLLoaderImpl.
-  // Internally they use same methods used by the network library based impl,
-  // MaybeLoadResource and MaybeLoadFallbackForResponse.
+  // Internally they use MaybeLoadResource and MaybeLoadFallbackForResponse.
   // Eventually one of the Deliver*Response() methods is called and the
   // LoaderCallback is invoked.
   void MaybeCreateLoader(
@@ -92,8 +78,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // These methods are used for subresource loading by the
   // AppCacheSubresourceURLFactory::SubresourceLoader class.
-  // Internally they use same methods used by the network library based impl,
-  // MaybeLoadResource, MaybeLoadFallbackForResponse, and
+  // Internally they use MaybeLoadResource, MaybeLoadFallbackForResponse, and
   // MaybeLoadFallbackForRedirect. Eventually one of the Deliver*Response()
   // methods is called and the LoaderCallback is invoked.
   void MaybeCreateSubresourceLoader(
@@ -129,10 +114,10 @@ class CONTENT_EXPORT AppCacheRequestHandler
                          bool should_reset_appcache,
                          std::unique_ptr<AppCacheRequest> request);
 
-  // AppCacheHost::Observer override
+  // AppCacheHost::Observer.
   void OnDestructionImminent(AppCacheHost* host) override;
 
-  // AppCacheServiceImpl::Observer override
+  // AppCacheServiceImpl::Observer.
   void OnServiceDestructionImminent(AppCacheServiceImpl* service) override;
 
   // Helpers to instruct a waiting job with what response to
@@ -156,6 +141,17 @@ class CONTENT_EXPORT AppCacheRequestHandler
   bool is_main_resource() const {
     return IsMainResourceType(resource_type_);
   }
+
+  // These are called on each request intercept opportunity, by the various
+  // MaybeCreateLoader methods in the public API.
+  AppCacheJob* MaybeLoadResource(net::NetworkDelegate* network_delegate);
+  AppCacheJob* MaybeLoadFallbackForRedirect(
+      net::NetworkDelegate* network_delegate,
+      const GURL& location);
+  AppCacheJob* MaybeLoadFallbackForResponse(
+      net::NetworkDelegate* network_delegate);
+
+  void GetExtraResponseInfo(int64_t* cache_id, GURL* manifest_url);
 
   // Main-resource loading -------------------------------------
   // Frame and SharedWorker main resources are handled here.

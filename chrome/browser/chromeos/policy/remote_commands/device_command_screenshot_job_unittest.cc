@@ -270,7 +270,7 @@ TEST_F(DeviceCommandScreenshotTest, Success) {
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::Bind(
           &DeviceCommandScreenshotTest::VerifyResults, base::Unretained(this),
           base::Unretained(job.get()), RemoteCommandJob::SUCCEEDED,
@@ -285,7 +285,7 @@ TEST_F(DeviceCommandScreenshotTest, FailureUserInput) {
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success =
-      job->Run(base::TimeTicks::Now(),
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
                base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
                           base::Unretained(this), base::Unretained(job.get()),
                           RemoteCommandJob::FAILED,
@@ -304,7 +304,7 @@ TEST_F(DeviceCommandScreenshotTest, Failure) {
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
                  base::Unretained(this), base::Unretained(job.get()),
                  RemoteCommandJob::FAILED,

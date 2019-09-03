@@ -100,7 +100,6 @@ if (is_chromeos) {
     "login.idl",
     "login_screen_storage.idl",
     "login_screen_ui.idl",
-    "login_state.idl",
     "platform_keys.idl",
     "platform_keys_internal.idl",
     "quick_unlock_private.idl",

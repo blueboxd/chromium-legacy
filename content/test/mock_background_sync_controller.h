@@ -57,6 +57,8 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   }
 
  private:
+  void ApplyFieldTrialParamsOverrides();
+
   int registration_count_ = 0;
   url::Origin registration_origin_;
 

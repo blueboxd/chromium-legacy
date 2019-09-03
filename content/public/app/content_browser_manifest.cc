@@ -72,6 +72,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PluginRegistry",
                   "blink.mojom.PushMessaging",
                   "blink.mojom.ReportingServiceProxy",
+                  "blink.mojom.SpeechSynthesis",
                   "blink.mojom.StoragePartitionService",
                   "blink.mojom.WebDatabaseHost",
                   "content.mojom.ClipboardHost",

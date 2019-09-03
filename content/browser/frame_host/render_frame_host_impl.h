@@ -86,6 +86,7 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -167,6 +168,7 @@ class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class SensorProviderProxyImpl;
 class SerialService;
+class SpeechSynthesisImpl;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
 struct ContextMenuParams;
@@ -1023,6 +1025,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
+
+  void GetSpeechSynthesis(
+      mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
@@ -2136,6 +2141,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Hosts blink::mojom::PushMessaging for the RenderFrame.
   std::unique_ptr<PushMessagingManager, base::OnTaskRunnerDeleter>
       push_messaging_manager_;
+
+  // Hosts blink::mojom::SpeechSynthesis for the RenderFrame.
+  std::unique_ptr<SpeechSynthesisImpl> speech_synthesis_impl_;
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;

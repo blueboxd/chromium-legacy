@@ -26,8 +26,4 @@ class PasswordUpdateDelegate : public PasswordChangeDelegate {
   DISALLOW_COPY_AND_ASSIGN(PasswordUpdateDelegate);
 };
 
-// Creates a new PasswordEditingBridge and connects it with the delegate.
-void LaunchPasswordEntryEditor(password_manager::PasswordStore* store,
-                               const autofill::PasswordForm& password_form);
-
 #endif  // CHROME_BROWSER_ANDROID_PASSWORD_UPDATE_DELEGATE_H_

@@ -114,7 +114,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
       const SearchSuggestionParser::SuggestResult& result) const override;
   void RecordDeletionResult(bool success) override;
 
-  // Called when loading is complete.
+  // Called when the network request for suggestions has completed.
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
                          std::unique_ptr<std::string> response_body);
 

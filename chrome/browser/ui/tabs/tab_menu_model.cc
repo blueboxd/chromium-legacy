@@ -63,11 +63,9 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
   bool will_pin = tab_strip->WillContextMenuPin(index);
-  AddItem(TabStripModel::CommandTogglePinned,
-          will_pin ? l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_PIN_TAB,
-                                                      num_affected_tabs)
-                   : l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_UNPIN_TAB,
-                                                      num_affected_tabs));
+  AddItemWithStringId(
+      TabStripModel::CommandTogglePinned,
+      will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
   if (base::FeatureList::IsEnabled(features::kFocusMode)) {
     // TODO(crbug.com/941577): Allow Focus Mode in Incognito and Guest Session.
     if (!tab_strip->profile()->IsOffTheRecord()) {
@@ -127,9 +125,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   }
 
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItem(TabStripModel::CommandCloseTab,
-          l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_CLOSETAB,
-                                           num_affected_tabs));
+  AddItemWithStringId(TabStripModel::CommandCloseTab, IDS_TAB_CXMENU_CLOSETAB);
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
                       IDS_TAB_CXMENU_CLOSETABSTORIGHT);
 }

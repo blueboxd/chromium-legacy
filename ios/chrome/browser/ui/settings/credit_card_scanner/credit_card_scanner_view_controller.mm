@@ -73,7 +73,9 @@ using base::UserMetricsAction;
 #pragma mark - CreditCardScannerCameraControllerDelegate
 
 - (void)receiveCreditCardScannerResult:(CMSampleBufferRef)sampleBuffer {
-  [self.delegate processOutputSampleBuffer:sampleBuffer];
+  CGRect creditCardViewport = [self.scannerView viewportRectOfInterest];
+  [self.delegate processOutputSampleBuffer:sampleBuffer
+                                  viewport:creditCardViewport];
 }
 
 @end

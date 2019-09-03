@@ -7,9 +7,10 @@
 #include <memory>
 #include <set>
 #include <vector>
-
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/test/mock_entropy_provider.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -17,6 +18,7 @@
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/mock_background_sync_controller.h"
 
 namespace content {
 
@@ -120,17 +122,37 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread(
                           std::move(callback)));
 }
 
-void BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnCoreThread(
-    const scoped_refptr<BackgroundSyncContextImpl>& sync_context,
-    int max_sync_attempts) {
+void BackgroundSyncBaseBrowserTest::SetTestClockOnIOThread(
+    BackgroundSyncContextImpl* sync_context,
+    base::SimpleTestClock* clock) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(clock);
+
   BackgroundSyncManager* background_sync_manager =
       sync_context->background_sync_manager();
-  background_sync_manager->SetMaxSyncAttemptsForTesting(max_sync_attempts);
+  background_sync_manager->set_clock(clock);
 }
 
 void BackgroundSyncBaseBrowserTest::SetUp() {
-  background_sync_test_util::SetIgnoreNetworkChanges(true);
+  const char kTrialName[] = "BackgroundSync";
+  const char kGroupName[] = "BackgroundSync";
+  const char kFeatureName[] = "PeriodicBackgroundSync";
+  base::FieldTrialList field_trial_list(
+      std::make_unique<base::MockEntropyProvider>());
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+  std::map<std::string, std::string> params;
+  params["max_sync_attempts"] = "1";
+  params["min_periodic_sync_events_interval_sec"] = "5";
+  base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+      kTrialName, kGroupName, params);
+  std::unique_ptr<base::FeatureList> feature_list(
+      std::make_unique<base::FeatureList>());
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+  scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
+  background_sync_test_util::SetIgnoreNetworkChanges(true);
   ContentBrowserTest::SetUp();
 }
 
@@ -157,7 +179,6 @@ void BackgroundSyncBaseBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(https_server_->Start());
 
   SetIncognitoMode(false);
-  SetMaxSyncAttempts(1);
   background_sync_test_util::SetOnline(web_contents(), true);
   ASSERT_TRUE(LoadTestPage(kDefaultTestURL));
 
@@ -177,24 +198,20 @@ bool BackgroundSyncBaseBrowserTest::RunScript(const std::string& script,
   return content::ExecuteScriptAndExtractString(web_contents(), script, result);
 }
 
-void BackgroundSyncBaseBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
-  StoragePartitionImpl* storage = GetStorage();
-  scoped_refptr<BackgroundSyncContextImpl> sync_context =
-      storage->GetBackgroundSyncContext();
+void BackgroundSyncBaseBrowserTest::SetTestClock(base::SimpleTestClock* clock) {
+  base::RunLoop run_loop;
 
-  // TODO(crbug.com/824858): Remove the else after the feature is enabled.
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    SetMaxSyncAttemptsOnCoreThread(std::move(sync_context), max_sync_attempts);
-  } else {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
-        base::BindOnce(
-            &BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnCoreThread,
-            base::Unretained(this), std::move(sync_context), max_sync_attempts),
-        run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  StoragePartitionImpl* storage = GetStorage();
+  BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
+
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&BackgroundSyncBaseBrowserTest::SetTestClockOnIOThread,
+                     base::Unretained(this), base::Unretained(sync_context),
+                     clock),
+      run_loop.QuitClosure());
+
+  run_loop.Run();
 }
 
 void BackgroundSyncBaseBrowserTest::ClearStoragePartitionData() {

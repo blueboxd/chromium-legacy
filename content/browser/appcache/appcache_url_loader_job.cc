@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
-#include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/ip_endpoint.h"
@@ -55,7 +55,7 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   if (is_fallback_ && loader_callback_)
     CallLoaderCallback();
 
-  InitializeRangeRequestInfo(appcache_request_->GetResourceRequest()->headers);
+  InitializeRangeRequestInfo(appcache_request_->GetHeaders());
   storage_->LoadResponseInfo(manifest_url_, entry_.response_id(), this);
 }
 
@@ -142,7 +142,7 @@ void AppCacheURLLoaderJob::Start(
 }
 
 AppCacheURLLoaderJob::AppCacheURLLoaderJob(
-    AppCacheURLLoaderRequest* appcache_request,
+    AppCacheRequest* appcache_request,
     AppCacheStorage* storage,
     NavigationLoaderInterceptor::LoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
@@ -155,8 +155,8 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
                                base::SequencedTaskRunnerHandle::Get()),
       loader_callback_(std::move(loader_callback)),
       appcache_request_(appcache_request->GetWeakPtr()),
-      is_main_resource_load_(IsResourceTypeFrame(static_cast<ResourceType>(
-          appcache_request->GetResourceRequest()->resource_type))) {}
+      is_main_resource_load_(IsResourceTypeFrame(
+          static_cast<ResourceType>(appcache_request->GetResourceType()))) {}
 
 void AppCacheURLLoaderJob::CallLoaderCallback() {
   DCHECK(loader_callback_);

@@ -29,31 +29,6 @@ constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {
   return 1 << static_cast<uint32_t>(feature);
 }
 
-// TODO(lowell): Finalize disallowed feature list, and test for each disallowed
-// feature.
-constexpr uint64_t kDisallowedFeatures =
-    ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
-    ToFeatureBit(
-        WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedGeolocationPermission) |
-    ToFeatureBit(
-        WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kRequestedSensorsPermission) |
-    ToFeatureBit(
-        WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kWebGL) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kWebXR);
-
 void SetPageFrozenImpl(
     RenderFrameHostImpl* render_frame_host,
     bool frozen,
@@ -85,7 +60,8 @@ void SetPageFrozenImpl(
 
 // Recursively checks whether this RenderFrameHost and all child frames
 // can be cached.
-bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
+bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
+                             uint64_t disallowed_features) {
   // For the main frame, we don't check loading at the FrameTreeNode level,
   // because the FrameTreeNode has already begun loading the page being
   // navigated to.
@@ -106,11 +82,12 @@ bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
   // One solution could be to listen for changes to scheduler_tracked_features
   // and if we see a frame in bfcache starting to use something forbidden, evict
   // it from the bfcache.
-  if (kDisallowedFeatures & rfh->scheduler_tracked_features())
+  if (disallowed_features & rfh->scheduler_tracked_features())
     return false;
 
   for (size_t i = 0; i < rfh->child_count(); i++) {
-    if (!CanStoreRenderFrameHost(rfh->child_at(i)->current_frame_host())) {
+    if (!CanStoreRenderFrameHost(rfh->child_at(i)->current_frame_host(),
+                                 disallowed_features)) {
       return false;
     }
   }
@@ -118,7 +95,48 @@ bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
   return true;
 }
 
+uint64_t GetDisallowedFeatures() {
+  // TODO(lowell): Finalize disallowed feature list, and test for each
+  // disallowed feature.
+  constexpr uint64_t kAlwaysDisallowedFeatures =
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kRequestedGeolocationPermission) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kRequestedSensorsPermission) |
+      ToFeatureBit(
+          WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebGL) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR);
+
+  uint64_t result = kAlwaysDisallowedFeatures;
+
+  if (!base::FeatureList::IsEnabled(kBackForwardCacheWithServiceWorker)) {
+    result |=
+        ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
+  }
+  return result;
+}
+
 }  // namespace
+
+const base::Feature kBackForwardCacheWithServiceWorker = {
+    "BackForwardCacheWithServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
 
 BackForwardCache::BackForwardCache() = default;
 BackForwardCache::~BackForwardCache() = default;
@@ -153,7 +171,7 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
     return false;
 
-  return CanStoreRenderFrameHost(rfh);
+  return CanStoreRenderFrameHost(rfh, GetDisallowedFeatures());
 }
 
 void BackForwardCache::StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh) {

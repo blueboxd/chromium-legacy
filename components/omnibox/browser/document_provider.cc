@@ -379,8 +379,7 @@ bool DocumentProvider::IsDocumentProviderAllowed(
     return false;
   }
 
-  // Google must be set as default search provider; we mix results which may
-  // change placement.
+  // Google must be set as default search provider.
   auto* template_url_service = client->GetTemplateURLService();
   if (template_url_service == nullptr)
     return false;
@@ -422,6 +421,10 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   // Perform various checks - feature is enabled, user is allowed to use the
   // feature, we're not under backoff, etc.
   if (!IsDocumentProviderAllowed(client_)) {
+    return;
+  }
+
+  if (input.type() == metrics::OmniboxInputType::EMPTY) {
     return;
   }
 

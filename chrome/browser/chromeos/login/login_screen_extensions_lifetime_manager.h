@@ -6,16 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_SCREEN_EXTENSIONS_LIFETIME_MANAGER_H_
 
 #include "components/session_manager/core/session_manager_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace chromeos {
 
 // Manages the lifetime of the login-screen policy-installed extensions and
 // apps, making sure that they are stopped during an active user session.
-//
-// TODO(crbug.com/990484): Handle policy changes correctly, so that extensions
-// are kept disabled even after the policy is reapplied.
 class LoginScreenExtensionsLifetimeManager final
-    : public session_manager::SessionManagerObserver {
+    : public session_manager::SessionManagerObserver,
+      public extensions::ExtensionRegistryObserver {
  public:
   LoginScreenExtensionsLifetimeManager();
   LoginScreenExtensionsLifetimeManager(
@@ -26,6 +25,10 @@ class LoginScreenExtensionsLifetimeManager final
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
 };
 
 }  // namespace chromeos

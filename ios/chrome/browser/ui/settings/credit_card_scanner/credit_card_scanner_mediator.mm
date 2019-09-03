@@ -8,6 +8,7 @@
 #import <Vision/Vision.h>
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,7 +37,8 @@
 
 #pragma mark - CreditCardScannerImageDelegate
 
-- (void)processOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+- (void)processOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+                         viewport:(CGRect)viewport {
   if (!self.textRecognitionRequest) {
     __weak __typeof(self) weakSelf = self;
 
@@ -49,6 +51,10 @@
     self.textRecognitionRequest = [[VNRecognizeTextRequest alloc]
         initWithCompletionHandler:completionHandler];
 
+    // Sets the region of interest of the request to the scanner viewport to
+    // focus on the scan area. This improves performance by ignoring irrelevant
+    // background text.
+    self.textRecognitionRequest.regionOfInterest = viewport;
     // Fast option doesn't recognise card number correctly.
     self.textRecognitionRequest.recognitionLevel =
         VNRequestTextRecognitionLevelAccurate;
@@ -90,31 +96,47 @@
 }
 
 // Checks the type of |text| to assign it to appropriate property.
-// TODO(crbug.com/984545): Add check for credit card number.
 - (void)extractDataFromText:(NSString*)text {
-  NSDateComponents* components = [self extractExpirationDateFromText:text];
+  NSDateComponents* components = ios::ExtractExpirationDateFromText(text);
 
   if (components) {
     self.expirationMonth = [@([components month]) stringValue];
     self.expirationYear = [@([components year]) stringValue];
   }
+  if (!self.cardNumber) {
+    self.cardNumber = [self extractCreditCardNumber:text];
+  }
 }
 
-// Extracts expiration month and year from |text|.
-- (NSDateComponents*)extractExpirationDateFromText:(NSString*)text {
-  NSDateComponents* components;
-  NSDateFormatter* formatter = [[NSDateFormatter init] alloc];
-  [formatter setDateFormat:@"MM/yy"];
-  NSDate* date = [formatter dateFromString:text];
 
-  if (date) {
-    NSCalendar* gregorian = [[NSCalendar alloc]
-        initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    components = [gregorian components:NSCalendarUnitMonth | NSCalendarUnitYear
-                              fromDate:date];
+// Extracts credit card number from |string|.
+- (NSString*)extractCreditCardNumber:(NSString*)string {
+  NSString* text = [[NSString alloc] initWithString:string];
+  // Strip whitespaces and symbols.
+  NSArray* ignoreSymbols = @[ @" ", @"/", @"-", @".", @":", @"\\" ];
+  for (NSString* symbol in ignoreSymbols) {
+    text = [text stringByReplacingOccurrencesOfString:symbol withString:@""];
   }
 
-  return components;
+  // Matches strings which have 13-19 numbers between the start(^) and the
+  // end($) of the line.
+  NSString* pattern = @"^([0-9]{13,19})$";
+
+  NSError* error;
+  NSRegularExpression* regex = [[NSRegularExpression alloc]
+      initWithPattern:pattern
+              options:NSRegularExpressionAllowCommentsAndWhitespace
+                error:&error];
+
+  NSRange rangeOfText = NSMakeRange(0, [text length]);
+  NSTextCheckingResult* match = [regex firstMatchInString:text
+                                                  options:0
+                                                    range:rangeOfText];
+  if (!match) {
+    return nil;
+  }
+  NSString* creditCardNumber = [text substringWithRange:match.range];
+  return creditCardNumber;
 }
 
 @end

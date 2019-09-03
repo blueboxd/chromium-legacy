@@ -44,10 +44,12 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -67,6 +69,7 @@ import android.widget.LinearLayout;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -86,6 +89,7 @@ import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -141,6 +145,10 @@ public class SavePasswordsPreferencesTest {
         @Nullable
         private String mExportTargetPath;
 
+        // This is set to the last entry index {@link #showPasswordEntryEditingView()} was called
+        // with.
+        private int mLastEntryIndex;
+
         public void setSavedPasswords(ArrayList<SavedPasswordEntry> savedPasswords) {
             mSavedPasswords = savedPasswords;
         }
@@ -159,6 +167,10 @@ public class SavePasswordsPreferencesTest {
 
         public String getExportTargetPath() {
             return mExportTargetPath;
+        }
+
+        public int getLastEntryIndex() {
+            return mLastEntryIndex;
         }
 
         /**
@@ -214,8 +226,8 @@ public class SavePasswordsPreferencesTest {
         }
 
         @Override
-        public void showPasswordEntryEditingView(int index) {
-            assert false : "Define this method before starting to use it in tests.";
+        public void showPasswordEntryEditingView(Context context, int index) {
+            mLastEntryIndex = index;
         }
     }
 
@@ -741,14 +753,15 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Check that the password data shown in the password editing activity matches the data of the
-     * password that was clicked.
+     * Check that {@link #showPasswordEntryEditingView()} was called with the index matching the one
+     * of the password that was clicked.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
-    public void testSelectedStoredPasswordDataIsSameAsEditedPasswordData() throws Exception {
+    public void testSelectedStoredPasswordIndexIsSameAsInShowPasswordEntryEditingView()
+            throws Exception {
         setPasswordSourceWithMultipleEntries( // Initialize preferences
                 new SavedPasswordEntry[] {new SavedPasswordEntry("https://example.com",
                                                   "example user", "example password"),
@@ -761,7 +774,27 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.onView(withEditMenuIdOrText()).perform(click());
 
-        Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://test.com")));
+        Assert.assertEquals(mHandler.getLastEntryIndex(), 1);
+    }
+
+    /**
+     * Check that the password editing activity displays the data received through arguments.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testPasswordDataDisplayedInEditingActivity() throws Exception {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, "test password");
+        PreferencesLauncher.launchSettingsPage(
+                InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
+
+        Espresso.onView(withId(R.id.username_edit)).check(matches(withText("test user")));
+        Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
+        Espresso.onView(withId(R.id.password_edit)).check(matches(withText("test password")));
     }
 
     /**
@@ -769,6 +802,8 @@ public class SavePasswordsPreferencesTest {
      * shown in the password viewing activity and in the list of passwords after the save button
      * was clicked.
      */
+    // TODO(izuzic): Remove @Ignore when saving of changes is enabled again.
+    @Ignore("The test is ignored because saving the changes of credentials is currently disabled.")
     @Test
     @SmallTest
     @Feature({"Preferences"})

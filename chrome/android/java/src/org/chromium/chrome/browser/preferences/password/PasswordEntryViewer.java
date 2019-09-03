@@ -36,7 +36,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.text.SpanApplier;
@@ -227,10 +226,9 @@ public class PasswordEntryViewer
             return true;
         }
         if (id == R.id.action_edit_saved_password) {
-            Bundle fragmentArgs = new Bundle();
-            fragmentArgs.putInt(SavePasswordsPreferences.PASSWORD_LIST_ID, mID);
-            PreferencesLauncher.launchSettingsPage(
-                    getActivity(), PasswordEntryEditor.class, fragmentArgs);
+            PasswordManagerHandlerProvider.getInstance()
+                    .getPasswordManagerHandler()
+                    .showPasswordEntryEditingView(getContext(), mID);
             return true;
         }
         return super.onOptionsItemSelected(item);

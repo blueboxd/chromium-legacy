@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
+import android.content.Context;
+
 import org.chromium.base.Callback;
 import org.chromium.base.IntStringCallback;
 
@@ -88,5 +90,5 @@ public interface PasswordManagerHandler {
      * Proceed to edit a credential entry.
      * @param index is the current id of a credential.
      */
-    void showPasswordEntryEditingView(int index);
+    void showPasswordEntryEditingView(Context context, int index);
 }

@@ -12,8 +12,6 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/syslog_logging.h"
-#include "base/time/tick_clock.h"
-#include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -82,8 +80,10 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   return true;
 }
 
-void RemoteCommandsService::SetClockForTesting(const base::TickClock* clock) {
-  queue_.SetClockForTesting(clock);
+void RemoteCommandsService::SetClocksForTesting(
+    const base::Clock* clock,
+    const base::TickClock* tick_clock) {
+  queue_.SetClocksForTesting(clock, tick_clock);
 }
 
 void RemoteCommandsService::SetOnCommandAckedCallback(
@@ -179,8 +179,7 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
 
   em::RemoteCommandResult result;
   result.set_command_id(command->unique_id());
-  result.set_timestamp((command->execution_started_time() -
-                        base::TimeTicks::UnixEpoch()).InMilliseconds());
+  result.set_timestamp(command->execution_started_time().ToJavaTime());
 
   if (command->status() == RemoteCommandJob::SUCCEEDED ||
       command->status() == RemoteCommandJob::FAILED) {

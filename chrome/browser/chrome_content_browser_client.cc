@@ -134,7 +134,6 @@
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
@@ -1386,7 +1385,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
-  host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
 
   WebRtcLoggingController::AttachToRenderProcessHost(
       host, g_browser_process->webrtc_log_uploader());

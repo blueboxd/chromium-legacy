@@ -1520,6 +1520,11 @@ config("default_warnings") {
             # https://crbug.com/999871
             "-Wno-error=c99-designator",
 
+            # See https://crbug.com/999871 for this one too -- but we can't
+            # roll in -Wno-reorder :/ Need to fix this before the next roll
+            # somehow.
+            "-Wno-error=reorder",
+
             # TODO(https://crbug.com/999886): Clean up, enable.
             # If roling this in, use -Wno-final-dtor-non-final-class instead
             # of the -Wno-error form.

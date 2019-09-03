@@ -924,7 +924,7 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
     return;
   }
 
-  const DetailsProto& proto = details->detailsProto();
+  const DetailsProto& proto = details->details_proto();
   const DetailsChangesProto& changes = details->changes();
 
   auto jdetails = Java_AssistantDetails_create(
@@ -942,7 +942,7 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
       proto.show_image_placeholder(),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
-      base::android::ConvertUTF8ToJavaString(env, details->GetDatetime()),
+      base::android::ConvertUTF8ToJavaString(env, details->datetime()),
       proto.datetime().date().year(), proto.datetime().date().month(),
       proto.datetime().date().day(), proto.datetime().time().hour(),
       proto.datetime().time().minute(), proto.datetime().time().second(),

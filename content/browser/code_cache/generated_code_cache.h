@@ -148,10 +148,6 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void OpenCompleteForReadData(ReadDataCallback callback,
                                const std::string& key,
                                disk_cache::EntryResult result);
-  void ReadDataComplete(const std::string& key,
-                        ReadDataCallback callback,
-                        scoped_refptr<net::IOBufferWithSize> buffer,
-                        int rv);
   void ReadResponseTimeComplete(const std::string& key,
                                 ReadDataCallback callback,
                                 scoped_refptr<net::IOBufferWithSize> buffer,

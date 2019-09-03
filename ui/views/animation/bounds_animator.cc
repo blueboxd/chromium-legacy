@@ -208,10 +208,10 @@ void BoundsAnimator::AnimationEndedOrCanceled(const gfx::Animation* animation,
   Data data = RemoveFromMaps(view);
 
   if (data.delegate) {
-    if (type == ANIMATION_ENDED) {
+    if (type == AnimationEndType::kEnded) {
       data.delegate->AnimationEnded(animation);
     } else {
-      DCHECK_EQ(ANIMATION_CANCELED, type);
+      DCHECK_EQ(AnimationEndType::kCanceled, type);
       data.delegate->AnimationCanceled(animation);
     }
   }
@@ -242,11 +242,11 @@ void BoundsAnimator::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void BoundsAnimator::AnimationEnded(const gfx::Animation* animation) {
-  AnimationEndedOrCanceled(animation, ANIMATION_ENDED);
+  AnimationEndedOrCanceled(animation, AnimationEndType::kEnded);
 }
 
 void BoundsAnimator::AnimationCanceled(const gfx::Animation* animation) {
-  AnimationEndedOrCanceled(animation, ANIMATION_CANCELED);
+  AnimationEndedOrCanceled(animation, AnimationEndType::kCanceled);
 }
 
 void BoundsAnimator::AnimationContainerProgressed(

@@ -4,7 +4,7 @@
 
 #include "content/browser/speech/tts_utterance_impl.h"
 #include "base/values.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
 namespace content {
 
@@ -24,9 +24,9 @@ bool IsFinalTtsEventType(TtsEventType event_type) {
 //
 
 UtteranceContinuousParameters::UtteranceContinuousParameters()
-    : rate(blink::kWebSpeechSynthesisDoublePrefNotSet),
-      pitch(blink::kWebSpeechSynthesisDoublePrefNotSet),
-      volume(blink::kWebSpeechSynthesisDoublePrefNotSet) {}
+    : rate(blink::mojom::kSpeechSynthesisDoublePrefNotSet),
+      pitch(blink::mojom::kSpeechSynthesisDoublePrefNotSet),
+      volume(blink::mojom::kSpeechSynthesisDoublePrefNotSet) {}
 
 //
 // Utterance

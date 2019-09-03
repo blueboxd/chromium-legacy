@@ -61,7 +61,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/previews/resource_loading_hints_agent.h"
-#include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
 #include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
@@ -1370,12 +1369,6 @@ std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
       browser_interface_broker_.get());
-}
-
-std::unique_ptr<blink::WebSpeechSynthesizer>
-ChromeContentRendererClient::OverrideSpeechSynthesizer(
-    blink::WebSpeechSynthesizerClient* client) {
-  return std::make_unique<TtsDispatcher>(client);
 }
 
 void ChromeContentRendererClient::AddSupportedKeySystems(

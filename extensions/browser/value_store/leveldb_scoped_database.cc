@@ -49,7 +49,7 @@ LeveldbScopedDatabase::~LeveldbScopedDatabase() {}
 ValueStore::Status LeveldbScopedDatabase::Read(
     const std::string& scope,
     const std::string& key,
-    std::unique_ptr<base::Value>* value) {
+    base::Optional<base::Value>* value) {
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())
     return status;

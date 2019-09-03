@@ -52,6 +52,16 @@ openssl ca -batch \
   -in  prime256v1-sha256.csr \
   -out prime256v1-sha256-validity-too-long.public.pem
 
+# Generate a certificate which is valid for 3000 days. It is used in
+# SignedExchangeRequestHandlerRealCertVerifierBrowserTest, where the SXG cert's
+# validity period check is skipped.
+openssl ca -batch \
+  -config ca.cnf \
+  -extensions sxg_cert \
+  -days 3000 \
+  -in  prime256v1-sha256.csr \
+  -out prime256v1-sha256-long-validity.public.pem
+
 # Generate a "secp384r1 ecdsa with sha256" key/cert pair for negative test
 openssl ecparam -out secp384r1.key -name secp384r1 -genkey
 

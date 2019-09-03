@@ -95,7 +95,7 @@ TEST_F(DeviceCommandSetVolumeTest, NonMuted) {
   const int kVolume = 45;
   auto job = CreateSetVolumeJob(test_start_time_, kVolume);
   EXPECT_TRUE(
-      job->Run(base::TimeTicks::Now(),
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
                base::BindOnce(&VerifyResults, base::Unretained(&run_loop_),
                               base::Unretained(job.get()), kVolume, false)));
   run_loop_.Run();
@@ -105,7 +105,7 @@ TEST_F(DeviceCommandSetVolumeTest, Muted) {
   const int kVolume = 0;
   auto job = CreateSetVolumeJob(test_start_time_, kVolume);
   EXPECT_TRUE(
-      job->Run(base::TimeTicks::Now(),
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
                base::BindOnce(&VerifyResults, base::Unretained(&run_loop_),
                               base::Unretained(job.get()), kVolume, true)));
   run_loop_.Run();
@@ -124,7 +124,7 @@ TEST_F(DeviceCommandSetVolumeTest, VolumeOutOfRange) {
 TEST_F(DeviceCommandSetVolumeTest, CommandTimeout) {
   auto delta = base::TimeDelta::FromMinutes(10);
   auto job = CreateSetVolumeJob(test_start_time_ - delta, 50);
-  EXPECT_FALSE(job->Run(base::TimeTicks::Now(),
+  EXPECT_FALSE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
                         RemoteCommandJob::FinishedCallback()));
   EXPECT_EQ(RemoteCommandJob::EXPIRED, job->status());
 }

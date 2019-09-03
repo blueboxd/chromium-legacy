@@ -62,7 +62,6 @@
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/platform/web_speech_synthesizer.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -132,8 +131,6 @@ class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebSecurityOrigin;
-class WebSpeechSynthesizer;
-class WebSpeechSynthesizerClient;
 class WebThemeEngine;
 class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
@@ -196,12 +193,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null on some platforms.
   virtual WebThemeEngine* ThemeEngine() { return nullptr; }
-
-  // May return null.
-  virtual std::unique_ptr<WebSpeechSynthesizer> CreateSpeechSynthesizer(
-      WebSpeechSynthesizerClient*) {
-    return nullptr;
-  }
 
   // AppCache  ----------------------------------------------------------
 

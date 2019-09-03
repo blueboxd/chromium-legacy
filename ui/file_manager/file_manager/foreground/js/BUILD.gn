@@ -84,29 +84,29 @@ js_library("closure_compile_externs") {
     "$externs_path/command_line_private.js",
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
-    "../../../externs/background/crostini.js",
-    "../../../externs/background/drive_sync_handler.js",
-    "../../../externs/background/file_browser_background.js",
-    "../../../externs/background/file_browser_background_full.js",
-    "../../../externs/background/file_operation_manager.js",
-    "../../../externs/background/import_runner.js",
-    "../../../externs/background/media_import_handler.js",
-    "../../../externs/background/task_queue.js",
-    "../../../externs/background/duplicate_finder.js",
-    "../../../externs/background/media_scanner.js",
-    "../../../externs/background/progress_center.js",
-    "../../../externs/background_window.js",
-    "../../../externs/chrome_echo_private.js",
-    "../../../externs/chrome_webstore_widget_private.js",
-    "../../../externs/command_handler_deps.js",
-    "../../../externs/css_rule.js",
-    "../../../externs/directory_change_event.js",
-    "../../../externs/entries_changed_event.js",
-    "../../../externs/gallery_foreground.js",
-    "../../../externs/menu_item_update_event.js",
-    "../../../externs/paper_elements.js",
-    "../../../externs/platform.js",
-    "../../../externs/search_item.js",
+    "//ui/file_manager/externs/background/crostini.js",
+    "//ui/file_manager/externs/background/drive_sync_handler.js",
+    "//ui/file_manager/externs/background/file_browser_background.js",
+    "//ui/file_manager/externs/background/file_browser_background_full.js",
+    "//ui/file_manager/externs/background/file_operation_manager.js",
+    "//ui/file_manager/externs/background/import_runner.js",
+    "//ui/file_manager/externs/background/media_import_handler.js",
+    "//ui/file_manager/externs/background/task_queue.js",
+    "//ui/file_manager/externs/background/duplicate_finder.js",
+    "//ui/file_manager/externs/background/media_scanner.js",
+    "//ui/file_manager/externs/background/progress_center.js",
+    "//ui/file_manager/externs/background_window.js",
+    "//ui/file_manager/externs/chrome_echo_private.js",
+    "//ui/file_manager/externs/chrome_webstore_widget_private.js",
+    "//ui/file_manager/externs/command_handler_deps.js",
+    "//ui/file_manager/externs/css_rule.js",
+    "//ui/file_manager/externs/directory_change_event.js",
+    "//ui/file_manager/externs/entries_changed_event.js",
+    "//ui/file_manager/externs/gallery_foreground.js",
+    "//ui/file_manager/externs/menu_item_update_event.js",
+    "//ui/file_manager/externs/paper_elements.js",
+    "//ui/file_manager/externs/platform.js",
+    "//ui/file_manager/externs/search_item.js",
   ]
 }
 
@@ -137,14 +137,15 @@ js_library("actions_controller") {
 js_library("actions_model") {
   deps = [
     ":folder_shortcuts_data_model",
-    "../../common/js:util",
     "metadata:metadata_model",
     "ui:files_alert_dialog",
     "ui:list_container",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/foreground/js/ui:action_model_ui",
     "//ui/webui/resources/js:cr",
   ]
-  externs_list = [ "../../../externs/background/drive_sync_handler.js" ]
+  externs_list =
+      [ "//ui/file_manager/externs/background/drive_sync_handler.js" ]
 }
 
 js_library("mock_actions_model") {
@@ -247,9 +248,9 @@ js_library("dialog_action_controller") {
     ":file_selection",
     ":launch_param",
     ":naming_controller",
-    "../../common/js:metrics",
     "metadata:metadata_model",
     "ui:dialog_footer",
+    "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/webui/resources/js/cr/ui:command",
   ]
 }
@@ -261,11 +262,11 @@ js_library("directory_contents") {
   deps = [
     ":constants",
     ":file_list_model",
-    "../../common/js:async_util",
-    "../../common/js:metrics",
-    "../../common/js:util",
     "metadata:metadata_model",
     "//ui/file_manager/base/js:volume_manager_types",
+    "//ui/file_manager/file_manager/common/js:async_util",
+    "//ui/file_manager/file_manager/common/js:metrics",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
@@ -275,27 +276,27 @@ js_library("directory_model") {
   deps = [
     ":directory_contents",
     ":file_watcher",
-    "../../common/js:importer_common",
     "ui:file_list_selection_model",
+    "//ui/file_manager/file_manager/common/js:importer_common",
   ]
   externs_list = [
-    "../../../externs/background/file_operation_manager.js",
-    "../../../externs/entries_changed_event.js",
+    "//ui/file_manager/externs/background/file_operation_manager.js",
+    "//ui/file_manager/externs/entries_changed_event.js",
   ]
 }
 
 js_library("navigation_uma") {
   deps = [
     ":dialog_type",
-    "../../common/js:metrics",
+    "//ui/file_manager/file_manager/common/js:metrics",
   ]
 }
 
 js_library("directory_tree_naming_controller") {
   deps = [
     ":directory_model",
-    "../../common/js:util",
     "ui:directory_tree",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js/cr/ui:dialogs",
   ]
 }
@@ -316,9 +317,9 @@ js_library("empty_folder_controller") {
 
 js_library("file_list_model") {
   deps = [
-    "../../common/js:file_type",
-    "../../common/js:util",
     "metadata:metadata_model",
+    "//ui/file_manager/file_manager/common/js:file_type",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
 }
@@ -394,11 +395,11 @@ js_library("file_selection") {
   deps = [
     ":constants",
     ":directory_model",
-    "../../common/js:file_type",
-    "../../common/js:util",
     "metadata:metadata_model",
     "ui:list_container",
     "//ui/file_manager/base/js:volume_manager_types",
+    "//ui/file_manager/file_manager/common/js:file_type",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -412,7 +413,7 @@ js_library("file_tasks") {
     "metadata:metadata_model",
     "ui:file_manager_ui",
   ]
-  externs_list = [ "../../../externs/background/crostini.js" ]
+  externs_list = [ "//ui/file_manager/externs/background/crostini.js" ]
 }
 
 js_unittest("file_tasks_unittest") {
@@ -432,7 +433,6 @@ js_library("file_transfer_controller") {
     ":drop_effect_and_label",
     ":file_selection",
     ":webui_command_extender",
-    "../../common/js:progress_center_common",
     "metadata:metadata_model",
     "metadata:thumbnail_model",
     "ui:directory_tree",
@@ -440,8 +440,9 @@ js_library("file_transfer_controller") {
     "ui:list_container",
     "ui:multi_profile_share_dialog",
     "ui:progress_center_panel",
+    "//ui/file_manager/file_manager/common/js:progress_center_common",
   ]
-  externs_list = [ "../../../externs/background/progress_center.js" ]
+  externs_list = [ "//ui/file_manager/externs/background/progress_center.js" ]
 }
 
 js_unittest("file_transfer_controller_unittest") {
@@ -458,9 +459,9 @@ js_unittest("file_transfer_controller_unittest") {
 
 js_library("file_watcher") {
   deps = [
-    "../../common/js:async_util",
-    "../../common/js:util",
     "//ui/file_manager/base/js:volume_manager_types",
+    "//ui/file_manager/file_manager/common/js:async_util",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -480,8 +481,8 @@ js_library("gear_menu_controller") {
   deps = [
     ":directory_model",
     ":file_manager_commands",
-    "../elements:files_toggle_ripple",
     "ui:gear_menu",
+    "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
   ]
 }
 
@@ -496,9 +497,9 @@ js_library("import_controller") {
     ":providers_model",
     ":spinner_controller",
     ":task_controller",
-    "../../common/js:importer_common",
     "ui:directory_tree",
     "ui:file_manager_ui",
+    "//ui/file_manager/file_manager/common/js:importer_common",
   ]
   externs_list = [
     "//ui/file_manager/externs/background/import_runner.js",
@@ -556,9 +557,9 @@ js_unittest("list_thumbnail_loader_unittest") {
 js_library("main") {
   deps = [
     ":file_manager",
-    "../../common/js:files_app_entry_types",
-    "../../common/js:metrics",
-    "../../common/js:util",
+    "//ui/file_manager/file_manager/common/js:files_app_entry_types",
+    "//ui/file_manager/file_manager/common/js:metrics",
+    "//ui/file_manager/file_manager/common/js:util",
   ]
 }
 
@@ -578,11 +579,11 @@ js_library("main_window_component") {
 js_library("metadata_box_controller") {
   deps = [
     ":quick_view_model",
-    "../../common/js:file_type",
-    "../elements:files_metadata_box",
-    "../elements:files_quick_view",
     "metadata:metadata_model",
     "ui:file_metadata_formatter",
+    "//ui/file_manager/file_manager/common/js:file_type",
+    "//ui/file_manager/file_manager/foreground/elements:files_metadata_box",
+    "//ui/file_manager/file_manager/foreground/elements:files_quick_view",
   ]
 }
 
@@ -597,7 +598,7 @@ js_library("metadata_update_controller") {
 
 js_library("metrics_start") {
   deps = [
-    "../../common/js:metrics",
+    "//ui/file_manager/file_manager/common/js:metrics",
   ]
 }
 
@@ -634,8 +635,8 @@ js_unittest("navigation_list_model_unittest") {
 
 js_library("progress_center_item_group") {
   deps = [
-    "../../common/js:progress_center_common",
-    "../../common/js:util",
+    "//ui/file_manager/file_manager/common/js:progress_center_common",
+    "//ui/file_manager/file_manager/common/js:util",
   ]
 }
 
@@ -678,8 +679,8 @@ js_library("quick_view_controller") {
 
 js_library("quick_view_model") {
   deps = [
-    "../../../../../ui/webui/resources/js:cr",
-    "../../../../../ui/webui/resources/js/cr:event_target",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
@@ -687,7 +688,7 @@ js_library("quick_view_uma") {
   deps = [
     ":dialog_type",
     ":file_tasks",
-    "../../common/js:file_type",
+    "//ui/file_manager/file_manager/common/js:file_type",
   ]
 }
 
@@ -714,14 +715,14 @@ js_library("selection_menu_controller") {
   deps = [
     ":directory_model",
     ":file_manager_commands",
-    "../elements:files_toggle_ripple",
+    "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
   ]
 }
 
 js_library("sort_menu_controller") {
   deps = [
     ":file_list_model",
-    "../elements:files_toggle_ripple",
+    "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
   ]
 }
 
@@ -772,9 +773,9 @@ js_library("task_history") {
 js_library("thumbnail_loader") {
   visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
-    "../../../image_loader:image_loader_client",
-    "../../common/js:file_type",
-    "../../common/js:util",
+    "//ui/file_manager/file_manager/common/js:file_type",
+    "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/image_loader:image_loader_client",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -782,17 +783,17 @@ js_library("thumbnail_loader") {
 js_unittest("thumbnail_loader_unittest") {
   deps = [
     ":thumbnail_loader",
-    "../../common/js:mock_entry",
     "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
   ]
 }
 
 js_library("toolbar_controller") {
   deps = [
     ":file_selection",
-    "../../common/js:util",
     "ui:list_container",
     "ui:location_line",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js/cr/ui:command",
   ]
 }

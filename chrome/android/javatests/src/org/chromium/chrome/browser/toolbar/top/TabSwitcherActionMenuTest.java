@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -48,6 +49,7 @@ public class TabSwitcherActionMenuTest extends DummyUiActivityTestCase {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1000040")
     public void testCloseTab() {
         int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         onView(withId(R.id.tab_switcher_button)).perform(longClick());
@@ -61,6 +63,7 @@ public class TabSwitcherActionMenuTest extends DummyUiActivityTestCase {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1000040")
     public void testOpenNewTab() {
         int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         onView(withId(R.id.tab_switcher_button)).perform(longClick());
@@ -74,6 +77,7 @@ public class TabSwitcherActionMenuTest extends DummyUiActivityTestCase {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1000040")
     public void testOpenNewIncognitoTab() {
         onView(withId(R.id.tab_switcher_button)).perform(longClick());
 

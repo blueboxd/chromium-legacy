@@ -11,9 +11,13 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/background_sync_registration.h"
 #include "content/public/test/content_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -56,8 +60,7 @@ class BackgroundSyncBaseBrowserTest : public ContentBrowserTest {
   // (assertion failure) if the tag isn't registered.
   bool RegistrationPending(const std::string& tag);
 
-  // Sets the BackgroundSyncManager's max sync attempts per registration.
-  void SetMaxSyncAttempts(int max_sync_attempts);
+  void SetTestClock(base::SimpleTestClock* clock);
 
   void ClearStoragePartitionData();
 
@@ -93,13 +96,13 @@ class BackgroundSyncBaseBrowserTest : public ContentBrowserTest {
       const std::string& tag,
       const GURL& url,
       base::OnceCallback<void(bool)> callback);
-  void SetMaxSyncAttemptsOnCoreThread(
-      const scoped_refptr<BackgroundSyncContextImpl>& sync_context,
-      int max_sync_attempts);
   StoragePartitionImpl* GetStorage();
+  void SetTestClockOnIOThread(BackgroundSyncContextImpl* sync_context,
+                              base::SimpleTestClock* clock);
 
   Shell* shell_ = nullptr;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace content

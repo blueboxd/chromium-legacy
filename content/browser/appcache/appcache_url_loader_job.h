@@ -28,7 +28,6 @@ class NetToMojoPendingBuffer;
 namespace content {
 
 class AppCacheRequest;
-class AppCacheURLLoaderRequest;
 
 // AppCacheJob wrapper for a network::mojom::URLLoader implementation which
 // returns responses stored in the AppCache.
@@ -41,7 +40,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   //
   // The constructor is exposed for std::make_unique.
   AppCacheURLLoaderJob(
-      AppCacheURLLoaderRequest* appcache_request,
+      AppCacheRequest* appcache_request,
       AppCacheStorage* storage,
       NavigationLoaderInterceptor::LoaderCallback loader_callback);
 
@@ -130,7 +129,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
 
   // The AppCacheRequest instance, used to inform the loader job about range
   // request headers. Not owned by this class.
-  base::WeakPtr<AppCacheURLLoaderRequest> appcache_request_;
+  base::WeakPtr<AppCacheRequest> appcache_request_;
 
   bool is_deleting_soon_ = false;
   bool is_main_resource_load_;

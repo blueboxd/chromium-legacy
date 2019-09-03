@@ -28,6 +28,7 @@ bool Details::UpdateFromProto(const ShowDetailsProto& proto, Details* details) {
   ShowDetailsProto updated_proto = proto;
   // Legacy treatment for old proto fields. Can be removed once the backend
   // is updated to set the description_line_1/line_2 fields.
+  // TODO(crbug.com/806868): Is this still needed?
   if (updated_proto.details().has_description() &&
       !updated_proto.details().has_description_line_2()) {
     updated_proto.mutable_details()->set_description_line_2(
@@ -124,41 +125,41 @@ bool Details::UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
 
 base::Value Details::GetDebugContext() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  if (!detailsProto().title().empty())
-    dict.SetKey("title", base::Value(detailsProto().title()));
+  if (!details_proto().title().empty())
+    dict.SetKey("title", base::Value(details_proto().title()));
 
-  if (!detailsProto().image_url().empty())
-    dict.SetKey("image_url", base::Value(detailsProto().image_url()));
+  if (!details_proto().image_url().empty())
+    dict.SetKey("image_url", base::Value(details_proto().image_url()));
 
-  if (!detailsProto().total_price().empty())
-    dict.SetKey("total_price", base::Value(detailsProto().total_price()));
+  if (!details_proto().total_price().empty())
+    dict.SetKey("total_price", base::Value(details_proto().total_price()));
 
-  if (!detailsProto().total_price_label().empty())
+  if (!details_proto().total_price_label().empty())
     dict.SetKey("total_price_label",
-                base::Value(detailsProto().total_price_label()));
+                base::Value(details_proto().total_price_label()));
 
-  if (!detailsProto().description_line_1().empty())
+  if (!details_proto().description_line_1().empty())
     dict.SetKey("description_line_1",
-                base::Value(detailsProto().description_line_1()));
+                base::Value(details_proto().description_line_1()));
 
-  if (!detailsProto().description_line_2().empty())
+  if (!details_proto().description_line_2().empty())
     dict.SetKey("description_line_2",
-                base::Value(detailsProto().description_line_2()));
+                base::Value(details_proto().description_line_2()));
 
-  if (!detailsProto().description_line_3().empty())
+  if (!details_proto().description_line_3().empty())
     dict.SetKey("description_line_3",
-                base::Value(detailsProto().description_line_3()));
+                base::Value(details_proto().description_line_3()));
 
-  if (detailsProto().has_datetime()) {
+  if (details_proto().has_datetime()) {
     dict.SetKey("datetime",
                 base::Value(base::StringPrintf(
                     "%d-%02d-%02dT%02d:%02d:%02d",
-                    static_cast<int>(detailsProto().datetime().date().year()),
-                    detailsProto().datetime().date().month(),
-                    detailsProto().datetime().date().day(),
-                    detailsProto().datetime().time().hour(),
-                    detailsProto().datetime().time().minute(),
-                    detailsProto().datetime().time().second())));
+                    static_cast<int>(details_proto().datetime().date().year()),
+                    details_proto().datetime().date().month(),
+                    details_proto().datetime().date().day(),
+                    details_proto().datetime().time().hour(),
+                    details_proto().datetime().time().minute(),
+                    details_proto().datetime().time().second())));
   }
   if (!datetime_.empty())
     dict.SetKey("datetime_str", base::Value(datetime_));

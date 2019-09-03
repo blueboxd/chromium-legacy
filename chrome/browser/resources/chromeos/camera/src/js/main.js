@@ -200,7 +200,8 @@ cca.App.prototype.onKeyPressed_ = function(event) {
 };
 
 /**
- * @type {cca.App} Singleton of the App object.
+ * Singleton of the App object.
+ * @type {cca.App}
  * @private
  */
 cca.App.instance_ = null;

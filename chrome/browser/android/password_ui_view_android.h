@@ -89,6 +89,7 @@ class PasswordUIViewAndroid : public PasswordUIView {
   void HandleShowPasswordEntryEditingView(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& context,
       int index);
   // Destroy the native implementation.
   void Destroy(JNIEnv*, const base::android::JavaRef<jobject>&);

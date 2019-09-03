@@ -103,6 +103,7 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
+    'ChromeDriverTestLegacy.testMouseMoveTo',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
@@ -111,7 +112,8 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowFullScreen',
     'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
     'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
-    'ChromeDownloadDirTest.testFileDownloadWithGetHeadless'
+    'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
+    'ChromeDriverTestLegacy.testMouseMoveTo',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [

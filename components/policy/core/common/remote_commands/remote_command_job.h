@@ -57,15 +57,18 @@ class POLICY_EXPORT RemoteCommandJob {
             const enterprise_management::RemoteCommand& command,
             const enterprise_management::SignedData* signed_command);
 
-  // Run the command asynchronously. |now| is the time which will be used for
-  // command expiration checking and marking of execution start.
+  // Run the command asynchronously. |now| is the time used for marking the
+  // execution start. |now_ticks| is the time which will be used for command
+  // expiration checking.
   // |finished_callback| will be called once the command finishes running,
   // regardless of whether the command is successful, fails or is terminated
   // prematurely.
   // Returns true if the task is posted and the command marked as running.
   // Returns false otherwise, for example if the command is invalid or expired.
   // Subclasses should implement RunImpl() for actual work.
-  bool Run(base::TimeTicks now, FinishedCallback finished_callback);
+  bool Run(base::Time now,
+           base::TimeTicks now_ticks,
+           FinishedCallback finished_callback);
 
   // Attempts to terminate the running tasks associated with this command. Does
   // nothing if the task is already terminated or finished. It's guaranteed that
@@ -86,9 +89,7 @@ class POLICY_EXPORT RemoteCommandJob {
   // Helpful accessors.
   UniqueIDType unique_id() const { return unique_id_; }
   base::TimeTicks issued_time() const { return issued_time_; }
-  base::TimeTicks execution_started_time() const {
-    return execution_started_time_;
-  }
+  base::Time execution_started_time() const { return execution_started_time_; }
   Status status() const { return status_; }
 
   // Returns whether execution of this command is finished.
@@ -159,7 +160,7 @@ class POLICY_EXPORT RemoteCommandJob {
   // The estimated time when the command was issued.
   base::TimeTicks issued_time_;
   // The time when the command started running.
-  base::TimeTicks execution_started_time_;
+  base::Time execution_started_time_;
 
   // Serialized command inside policy data proto with signature in case of a
   // signed command, otherwise empty.

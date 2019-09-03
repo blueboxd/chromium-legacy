@@ -17,9 +17,9 @@ class TriggerContext;
 
 class Details {
  public:
-  const DetailsProto& detailsProto() const { return proto_; }
+  const DetailsProto& details_proto() const { return proto_; }
   const DetailsChangesProto& changes() const { return change_flags_; }
-  const std::string GetDatetime() const { return datetime_; }
+  const std::string datetime() const { return datetime_; }
 
   // Returns a dictionary describing the current execution context, which
   // is intended to be serialized as JSON string. The execution context is

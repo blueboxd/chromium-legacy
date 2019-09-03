@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -63,6 +64,14 @@ namespace {
 
 // Number of times the Dice sign-in promo illustration should be shown.
 constexpr int kDiceSigninPromoIllustrationShowCountMax = 10;
+
+ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
+  ProfileAttributesEntry* entry;
+  CHECK(g_browser_process->profile_manager()
+            ->GetProfileAttributesStorage()
+            .GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  return entry;
+}
 
 BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   if (profile->IsSupervised()) {
@@ -149,13 +158,17 @@ void ProfileMenuView::BuildMenu() {
       this, browser());
   avatar_menu_->RebuildMenu();
 
-  if (dice_enabled_) {
-    // Fetch DICE accounts. Note: This always includes the primary account if it
-    // is set.
-    dice_accounts_ =
-        signin_ui_util::GetAccountsForDicePromos(browser()->profile());
+  if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
+    if (dice_enabled_) {
+      // Fetch DICE accounts. Note: This always includes the primary account if
+      // it is set.
+      dice_accounts_ =
+          signin_ui_util::GetAccountsForDicePromos(browser()->profile());
+    }
+    AddProfileMenuView(avatar_menu_.get());
+    return;
   }
-  AddProfileMenuView(avatar_menu_.get());
+  SetIdentity();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -353,6 +366,23 @@ void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
 
 void ProfileMenuView::RecordClick(ActionableItem item) {
   base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
+}
+
+void ProfileMenuView::SetIdentity() {
+  Profile* profile = browser()->profile();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  CoreAccountInfo account =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  base::Optional<AccountInfo> account_info =
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
+          account);
+
+  if (account_info.has_value()) {
+    SetIdentityImage(account_info.value().account_image);
+  } else {
+    SetIdentityImage(GetProfileAttributesEntry(profile)->GetAvatarIcon());
+  }
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {

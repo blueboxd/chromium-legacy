@@ -124,6 +124,7 @@ mojom("mojom_platform") {
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
+    "speech/speech_synthesis.mojom",
     "ukm/ukm.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",

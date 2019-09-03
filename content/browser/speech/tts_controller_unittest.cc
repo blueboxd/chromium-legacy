@@ -10,7 +10,7 @@
 #include "content/public/browser/tts_controller_delegate.h"
 #include "content/public/browser/tts_platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
 namespace content {
 
@@ -109,20 +109,20 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
   std::unique_ptr<TtsUtterance> utterance1 =
       base::WrapUnique(content::TtsUtterance::Create(nullptr));
   // Initialized to default (unset constant) values.
-  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
+  EXPECT_EQ(blink::mojom::kSpeechSynthesisDoublePrefNotSet,
             utterance1->GetContinuousParameters().rate);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
+  EXPECT_EQ(blink::mojom::kSpeechSynthesisDoublePrefNotSet,
             utterance1->GetContinuousParameters().pitch);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
+  EXPECT_EQ(blink::mojom::kSpeechSynthesisDoublePrefNotSet,
             utterance1->GetContinuousParameters().volume);
 
   controller->UpdateUtteranceDefaults(utterance1.get());
   // Updated to global defaults.
-  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
+  EXPECT_EQ(blink::mojom::kSpeechSynthesisDefaultRate,
             utterance1->GetContinuousParameters().rate);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
+  EXPECT_EQ(blink::mojom::kSpeechSynthesisDefaultPitch,
             utterance1->GetContinuousParameters().pitch);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
+  EXPECT_EQ(blink::mojom::kSpeechSynthesisDefaultVolume,
             utterance1->GetContinuousParameters().volume);
 }
 #endif  // !defined(OS_CHROMEOS)

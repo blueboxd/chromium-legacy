@@ -721,14 +721,6 @@ RendererBlinkPlatformImpl::GetVideoCaptureImplManager() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebSpeechSynthesizer>
-RendererBlinkPlatformImpl::CreateSpeechSynthesizer(
-    blink::WebSpeechSynthesizerClient* client) {
-  return GetContentClient()->renderer()->OverrideSpeechSynthesizer(client);
-}
-
-//------------------------------------------------------------------------------
-
 static void Collect3DContextInformation(
     blink::Platform::GraphicsInfo* gl_info,
     const gpu::GPUInfo& gpu_info) {

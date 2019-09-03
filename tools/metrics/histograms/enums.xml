@@ -1979,6 +1979,13 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Disk Cache Error"/>
 </enum>
 
+<enum name="AppCacheManifestInterceptUsage">
+  <summary>Values for appcache.Manifest.InterceptUsage.</summary>
+  <int value="0" label="No usage"/>
+  <int value="1" label="Only exact URLs"/>
+  <int value="2" label="At least one pattern URL"/>
+</enum>
+
 <enum name="AppCacheUpdateJobResult">
   <obsolete>
     Deprecated on 2019-06-17. appcache.UpdateJobResult no longer tracked.
@@ -17913,6 +17920,7 @@ Called by update_net_error_codes.py.-->
   <int value="596" label="MonoAudioEnabled"/>
   <int value="597" label="AutoclickEnabled"/>
   <int value="598" label="RendererCodeIntegrity"/>
+  <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -19012,7 +19020,6 @@ Called by update_net_error_codes.py.-->
   <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
   <int value="440"
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
-  <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20455,8 +20462,6 @@ Called by update_net_error_codes.py.-->
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
   <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
   <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
-  <int value="1379" label="LOGINSTATE_GETPROFILETYPE"/>
-  <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -20999,7 +21004,6 @@ Called by update_net_error_codes.py.-->
   <int value="219" label="kTransientBackground"/>
   <int value="220" label="kLogin"/>
   <int value="221" label="kLoginScreenStorage"/>
-  <int value="222" label="kLoginState"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

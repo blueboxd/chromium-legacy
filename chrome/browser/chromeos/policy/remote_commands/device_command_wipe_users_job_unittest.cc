@@ -108,7 +108,8 @@ TEST_F(DeviceCommandWipeUsersJobTest, TestCommandLifetime) {
   std::unique_ptr<policy::RemoteCommandJob> job =
       CreateWipeUsersJob(kVeryoldCommandAge, service_.get());
 
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), base::Closure()));
+  EXPECT_TRUE(
+      job->Run(base::Time::Now(), base::TimeTicks::Now(), base::Closure()));
 }
 
 // Make sure that the command's succeeded_callback is being invoked.
@@ -122,8 +123,8 @@ TEST_F(DeviceCommandWipeUsersJobTest, TestCommandSucceededCallback) {
         run_loop->Quit();
       },
       &run_loop_, job.get());
-  EXPECT_TRUE(
-      job->Run(base::TimeTicks::Now(), std::move(check_result_callback)));
+  EXPECT_TRUE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                       std::move(check_result_callback)));
   // This call processes the CommitPendingWrite which persists the pref to disk,
   // and runs the passed callback which is the succeeded_callback.
   run_loop_.Run();
@@ -135,7 +136,8 @@ TEST_F(DeviceCommandWipeUsersJobTest, TestLogOutCalled) {
   std::unique_ptr<policy::RemoteCommandJob> job =
       CreateWipeUsersJob(kCommandAge, service_.get());
 
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), run_loop_.QuitClosure()));
+  EXPECT_TRUE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                       run_loop_.QuitClosure()));
   // At this point the job is run, and the succeeded_callback is waiting to be
   // invoked.
 

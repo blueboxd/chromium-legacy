@@ -7,7 +7,6 @@
 #include "media/base/renderer_factory.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/platform/web_speech_synthesizer.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
@@ -75,12 +74,6 @@ blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
 
 std::unique_ptr<WebSocketHandshakeThrottleProvider>
 ContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  return nullptr;
-}
-
-std::unique_ptr<blink::WebSpeechSynthesizer>
-ContentRendererClient::OverrideSpeechSynthesizer(
-    blink::WebSpeechSynthesizerClient* client) {
   return nullptr;
 }
 

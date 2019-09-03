@@ -75,7 +75,7 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnTouchUiChanged() override;
 
   void ExpandToShowEmail();
-  void ResetUserEmailToShow();
+  void ResetUserEmail();
 
   bool IsIncognito() const;
   bool IsIncognitoCounterActive() const;
@@ -87,6 +87,9 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void SetInsets();
 
+  // Sets |user_email_| and initiates showing the email (if non-empty).
+  void SetUserEmail(const std::string& user_email);
+
   Browser* const browser_;
   Profile* const profile_;
 
@@ -96,7 +99,7 @@ class AvatarToolbarButton : public ToolbarButton,
 
   // The user email that we're currently showing in an animation or empty if no
   // animation is in progress.
-  base::Optional<std::string> user_email_to_show_;
+  base::Optional<std::string> user_email_;
   // We cannot show the animation before we fetch the new avatar.
   bool waiting_for_image_to_show_user_email_ = false;
 

@@ -127,10 +127,7 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   };
 
   // Used by AnimationEndedOrCanceled.
-  enum AnimationEndType {
-    ANIMATION_ENDED,
-    ANIMATION_CANCELED
-  };
+  enum class AnimationEndType { kEnded, kCanceled };
 
   typedef std::map<const View*, Data> ViewToDataMap;
 

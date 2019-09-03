@@ -25,9 +25,9 @@ cca.mojo.DeviceOperator = class {
    */
   constructor(devices) {
     /**
-     * @type {!Map<string, !cros.mojom.CameraAppDeviceRemote>} A map
-     *     that stores the device remotes that could be used to communicate
-     *     with camera device through mojo interface.
+     * A map that stores the device remotes that could be used to communicate
+     * with camera device through mojo interface.
+     * @type {!Map<string, !cros.mojom.CameraAppDeviceRemote>}
      */
     this.devices_ = devices;
   }

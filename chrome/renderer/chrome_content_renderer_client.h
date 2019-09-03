@@ -157,8 +157,6 @@ class ChromeContentRendererClient
   bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider() override;
-  std::unique_ptr<blink::WebSpeechSynthesizer> OverrideSpeechSynthesizer(
-      blink::WebSpeechSynthesizerClient* client) override;
   bool ShouldReportDetailedMessageForSource(
       const base::string16& source) override;
   std::unique_ptr<blink::WebContentSettingsClient>

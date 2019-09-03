@@ -31,9 +31,9 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1660,8 +1660,8 @@ class AppCacheStorageImplTest : public testing::Test {
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");
       handler_ = host2->CreateRequestHandler(
-          std::make_unique<AppCacheURLLoaderRequest>(request),
-          ResourceType::kMainFrame, false);
+          std::make_unique<AppCacheRequest>(request), ResourceType::kMainFrame,
+          false);
       handler_->MaybeCreateLoader(request, nullptr, base::DoNothing(),
                                   base::DoNothing());
     }

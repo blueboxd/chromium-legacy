@@ -31,7 +31,7 @@ namespace {
 
 // Builds a document search request body. Inputs that affect the request are:
 //   |query|: Current omnibox query text, passed as an argument.
-// The format of the request is:
+// The format of the request JSON is:
 //     {
 //       query: "|query|",
 //       start: 0,
@@ -43,6 +43,8 @@ namespace {
 std::string BuildDocumentSuggestionRequest(const base::string16& query) {
   base::Value root(base::Value::Type::DICTIONARY);
   root.SetKey("query", base::Value(query));
+  // The API supports pagination. We're always concerned with the first N
+  // results on the first page.
   root.SetKey("start", base::Value(0));
   root.SetKey("pageSize", base::Value(10));
 

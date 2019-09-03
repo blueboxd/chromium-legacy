@@ -22,6 +22,10 @@
 namespace policy {
 
 namespace {
+struct DevicePolicyToUserPolicyMapEntry {
+  const char* const device_policy_name;
+  const char* const user_policy_name;
+};
 
 const char kLidCloseAction[] = "LidCloseAction";
 const char kUserActivityScreenDimDelayScale[] =
@@ -31,6 +35,25 @@ const char kActionSuspend[] = "Suspend";
 const char kActionLogout[] = "Logout";
 const char kActionShutdown[]  = "Shutdown";
 const char kActionDoNothing[] = "DoNothing";
+
+const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
+    {key::kDeviceLoginScreenAutoSelectCertificateForUrls,
+     key::kAutoSelectCertificateForUrls},
+    {key::kDeviceLoginScreenLargeCursorEnabled, key::kLargeCursorEnabled},
+};
+
+const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {
+    {key::kDeviceLoginScreenDefaultLargeCursorEnabled,
+     key::kLargeCursorEnabled},
+    {key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
+     key::kSpokenFeedbackEnabled},
+    {key::kDeviceLoginScreenDefaultHighContrastEnabled,
+     key::kHighContrastEnabled},
+    {key::kDeviceLoginScreenDefaultScreenMagnifierType,
+     key::kScreenMagnifierType},
+    {key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
+     key::kVirtualKeyboardEnabled},
+};
 
 std::unique_ptr<base::Value> GetAction(const std::string& action) {
   if (action == kActionSuspend) {
@@ -52,6 +75,17 @@ std::unique_ptr<base::Value> GetAction(const std::string& action) {
   return std::unique_ptr<base::Value>();
 }
 
+// Applies |value| as the recommended value of |user_policy| in
+// |user_policy_map|. If |value| is nullptr, does nothing.
+void ApplyValueAsRecommendedPolicy(const base::Value* value,
+                                   const std::string& user_policy,
+                                   PolicyMap* user_policy_map) {
+  if (value) {
+    user_policy_map->Set(user_policy, POLICY_LEVEL_RECOMMENDED,
+                         POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                         value->CreateDeepCopy(), nullptr);
+  }
+}
 
 // Applies the value of |device_policy| in |device_policy_map| as the
 // recommended value of |user_policy| in |user_policy_map|. If the value of
@@ -61,11 +95,7 @@ void ApplyDevicePolicyAsRecommendedPolicy(const std::string& device_policy,
                                           const PolicyMap& device_policy_map,
                                           PolicyMap* user_policy_map) {
   const base::Value* value = device_policy_map.GetValue(device_policy);
-  if (value) {
-    user_policy_map->Set(user_policy, POLICY_LEVEL_RECOMMENDED,
-                         POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                         value->CreateDeepCopy(), nullptr);
-  }
+  ApplyValueAsRecommendedPolicy(value, user_policy, user_policy_map);
 }
 
 // Applies |value| as the mandatory value of |user_policy| in |user_policy_map|.
@@ -79,17 +109,17 @@ void ApplyValueAsMandatoryPolicy(const base::Value* value,
   }
 }
 
-// Applies the value of |device_policy| in |device_policy_map| as the
-// mandatory value of |user_policy| in |user_policy_map|. If the value of
-// |device_policy| is unset, does nothing.
-void ApplyDevicePolicyAsMandatoryPolicy(const std::string& device_policy,
+void ApplyDevicePolicyWithPolicyOptions(const std::string& device_policy,
                                         const std::string& user_policy,
                                         const PolicyMap& device_policy_map,
                                         PolicyMap* user_policy_map) {
-  const base::Value* value = device_policy_map.GetValue(device_policy);
-  ApplyValueAsMandatoryPolicy(value, user_policy, user_policy_map);
+  const PolicyMap::Entry* entry = device_policy_map.Get(device_policy);
+  if (entry) {
+    user_policy_map->Set(user_policy, entry->level, POLICY_SCOPE_USER,
+                         POLICY_SOURCE_CLOUD, entry->value->CreateDeepCopy(),
+                         nullptr);
+  }
 }
-
 }  // namespace
 
 LoginProfilePolicyProvider::LoginProfilePolicyProvider(
@@ -150,30 +180,21 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle);
   PolicyMap& user_policy_map = bundle->Get(chrome_namespaces);
 
-  ApplyDevicePolicyAsRecommendedPolicy(
-      key::kDeviceLoginScreenDefaultLargeCursorEnabled,
-      key::kLargeCursorEnabled,
-      device_policy_map, &user_policy_map);
-  ApplyDevicePolicyAsRecommendedPolicy(
-      key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
-      key::kSpokenFeedbackEnabled,
-      device_policy_map, &user_policy_map);
-  ApplyDevicePolicyAsRecommendedPolicy(
-      key::kDeviceLoginScreenDefaultHighContrastEnabled,
-      key::kHighContrastEnabled,
-      device_policy_map, &user_policy_map);
-  ApplyDevicePolicyAsRecommendedPolicy(
-      key::kDeviceLoginScreenDefaultScreenMagnifierType,
-      key::kScreenMagnifierType,
-      device_policy_map, &user_policy_map);
-  ApplyDevicePolicyAsRecommendedPolicy(
-      key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
-      key::kVirtualKeyboardEnabled,
-      device_policy_map, &user_policy_map);
+  // The device policies which includes the policy options
+  // |kDevicePoliciesWithPolicyOptionsMap| should be applied after
+  // |kRecommendedDevicePoliciesMap|, because its overrides some deprecated ones
+  // there.
+  for (const auto& entry : kRecommendedDevicePoliciesMap) {
+    ApplyDevicePolicyAsRecommendedPolicy(entry.device_policy_name,
+                                         entry.user_policy_name,
+                                         device_policy_map, &user_policy_map);
+  }
 
-  ApplyDevicePolicyAsMandatoryPolicy(
-      key::kDeviceLoginScreenAutoSelectCertificateForUrls,
-      key::kAutoSelectCertificateForUrls, device_policy_map, &user_policy_map);
+  for (const auto& entry : kDevicePoliciesWithPolicyOptionsMap) {
+    ApplyDevicePolicyWithPolicyOptions(entry.device_policy_name,
+                                       entry.user_policy_name,
+                                       device_policy_map, &user_policy_map);
+  }
 
   const base::Value* value =
       device_policy_map.GetValue(key::kDeviceLoginScreenPowerManagement);

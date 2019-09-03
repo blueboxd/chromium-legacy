@@ -21,15 +21,16 @@ cca.mojo.MojoConnector = class {
   /** @public */
   constructor() {
     /**
-     * @type {cros.mojom.CameraAppDeviceProviderRemote} An interface remote that
-     *     used to construct the mojo interface.
+     * An interface remote that used to construct the mojo interface.
+     * @type {cros.mojom.CameraAppDeviceProviderRemote}
      * @private
      */
     this.deviceProvider_ = cros.mojom.CameraAppDeviceProvider.getRemote();
 
     /**
-     * @type {cca.mojo.DeviceOperator} The device operator that could
-     *     operates video capture device through mojo interface.
+     * The device operator that could operates video capture device through mojo
+     * interface.
+     * @type {cca.mojo.DeviceOperator}
      * @private
      */
     this.deviceOperator_ = null;

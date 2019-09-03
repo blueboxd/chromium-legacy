@@ -46,8 +46,6 @@ class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebServiceWorkerContextProxy;
-class WebSpeechSynthesizer;
-class WebSpeechSynthesizerClient;
 class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
@@ -182,11 +180,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns NULL then none will be used.
   virtual std::unique_ptr<WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider();
-
-  // Allows the embedder to override the WebSpeechSynthesizer used.
-  // If it returns NULL the content layer will provide an engine.
-  virtual std::unique_ptr<blink::WebSpeechSynthesizer>
-  OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
 
   // Called on the main-thread immediately after the io thread is
   // created.

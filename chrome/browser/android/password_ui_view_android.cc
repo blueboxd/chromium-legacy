@@ -24,7 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/android/chrome_jni_headers/PasswordUIView_jni.h"
-#include "chrome/browser/android/password_update_delegate.h"
+#include "chrome/browser/android/password_editing_bridge.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
@@ -203,8 +203,10 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
 void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& context,
     int index) {
-  LaunchPasswordEntryEditor(
+  PasswordEditingBridge::LaunchPasswordEntryEditor(
+      env, context,
       PasswordStoreFactory::GetForProfile(GetProfile(),
                                           ServiceAccessType::EXPLICIT_ACCESS)
           .get(),

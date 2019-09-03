@@ -110,7 +110,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
@@ -272,9 +271,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::SyncedPrintersManagerFactory::GetInstance();
   chromeos::smb_client::SmbServiceFactory::GetInstance();
   crostini::CrostiniRegistryServiceFactory::GetInstance();
-  extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
-  extensions::VerifyTrustAPI::GetFactoryInstance();
   TetherServiceFactory::GetInstance();
+  extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
   HistoryUiFaviconRequestHandlerFactory::GetInstance();

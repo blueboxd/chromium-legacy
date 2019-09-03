@@ -22,7 +22,7 @@
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
 namespace content {
 
@@ -242,9 +242,11 @@ void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
       tts_platform->GetVoices(out_voices);
   }
 
-  if (browser_context && GetTtsControllerDelegate()->GetTtsEngineDelegate())
-    GetTtsControllerDelegate()->GetTtsEngineDelegate()->GetVoices(
-        browser_context, out_voices);
+  if (browser_context) {
+    TtsControllerDelegate* delegate = GetTtsControllerDelegate();
+    if (delegate && delegate->GetTtsEngineDelegate())
+      delegate->GetTtsEngineDelegate()->GetVoices(browser_context, out_voices);
+  }
 }
 
 bool TtsControllerImpl::IsSpeaking() {
@@ -464,12 +466,12 @@ void TtsControllerImpl::UpdateUtteranceDefaults(TtsUtterance* utterance) {
 #else
   // Update pitch, rate and volume to defaults if not explicity set on
   // this utterance.
-  if (rate == blink::kWebSpeechSynthesisDoublePrefNotSet)
-    rate = blink::kWebSpeechSynthesisDefaultTextToSpeechRate;
-  if (pitch == blink::kWebSpeechSynthesisDoublePrefNotSet)
-    pitch = blink::kWebSpeechSynthesisDefaultTextToSpeechPitch;
-  if (volume == blink::kWebSpeechSynthesisDoublePrefNotSet)
-    volume = blink::kWebSpeechSynthesisDefaultTextToSpeechVolume;
+  if (rate == blink::mojom::kSpeechSynthesisDoublePrefNotSet)
+    rate = blink::mojom::kSpeechSynthesisDefaultRate;
+  if (pitch == blink::mojom::kSpeechSynthesisDoublePrefNotSet)
+    pitch = blink::mojom::kSpeechSynthesisDefaultPitch;
+  if (volume == blink::mojom::kSpeechSynthesisDoublePrefNotSet)
+    volume = blink::mojom::kSpeechSynthesisDefaultVolume;
 #endif  // defined(OS_CHROMEOS)
   utterance->SetContinuousParameters(rate, pitch, volume);
 }

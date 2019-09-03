@@ -70,6 +70,28 @@ void SetJsonDevicePolicy(
     policies->AddError(policy_name, error);
 }
 
+// Returns true and sets |level| to a PolicyLevel if the policy has been set
+// at that level. Returns false if the policy has been set at the level of
+// DevicePolicyOptions::UNSET.
+bool GetPolicyLevel(bool has_policy_options,
+                    const em::DevicePolicyOptions& policy_option_proto,
+                    PolicyLevel* level) {
+  if (!has_policy_options) {
+    *level = POLICY_LEVEL_MANDATORY;
+    return true;
+  }
+  switch (policy_option_proto.mode()) {
+    case em::DevicePolicyOptions::MANDATORY:
+      *level = POLICY_LEVEL_MANDATORY;
+      return true;
+    case em::DevicePolicyOptions::RECOMMENDED:
+      *level = POLICY_LEVEL_RECOMMENDED;
+      return true;
+    case em::DevicePolicyOptions::UNSET:
+      return false;
+  }
+}
+
 void SetJsonDevicePolicy(const std::string& policy_name,
                          const std::string& json_string,
                          PolicyMap* policies) {
@@ -797,6 +819,19 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                     std::make_unique<base::Value>(
                         container.login_screen_default_large_cursor_enabled()),
                     nullptr);
+    }
+
+    if (container.has_login_screen_large_cursor_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_large_cursor_enabled_options(),
+              container.login_screen_large_cursor_enabled_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenLargeCursorEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_large_cursor_enabled()),
+                      nullptr);
+      }
     }
 
     if (container.has_login_screen_default_spoken_feedback_enabled()) {

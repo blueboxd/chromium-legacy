@@ -4001,6 +4001,9 @@
   "DeviceLoginScreenDefaultLargeCursorEnabled" : {
   },
 
+  "DeviceLoginScreenLargeCursorEnabled" : {
+  },
+
   "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {
   },
 

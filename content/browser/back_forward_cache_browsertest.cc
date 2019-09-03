@@ -39,14 +39,22 @@ namespace {
 
 // Test about the BackForwardCache.
 class BackForwardCacheBrowserTest : public ContentBrowserTest {
+ public:
+  ~BackForwardCacheBrowserTest() override = default;
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeUIForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIgnoreCertificateErrors);
-    feature_list_.InitAndEnableFeature(features::kBackForwardCache);
+    feature_list_.InitWithFeatures(FeaturesToEnable(), {});
+
     ContentBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  virtual std::vector<base::Feature> FeaturesToEnable() {
+    return std::vector<base::Feature>({features::kBackForwardCache});
   }
 
   void SetUpOnMainThread() override {
@@ -1673,6 +1681,108 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
 
     delete_observer.WaitUntilDeleted();
   }
+}
+
+namespace {
+
+void RegisterServiceWorker(RenderFrameHostImpl* rfh) {
+  EXPECT_EQ("success", EvalJs(rfh, R"(
+    let controller_changed_promise = new Promise(resolve_controller_change => {
+      navigator.serviceWorker.oncontrollerchange = resolve_controller_change;
+    });
+
+    new Promise(async resolve => {
+      try {
+        await navigator.serviceWorker.register(
+          "./service-worker.js", {scope: "./"})
+      } catch (e) {
+        resolve("error: registration has failed");
+      }
+
+      await controller_changed_promise;
+
+      if (navigator.serviceWorker.controller) {
+        resolve("success");
+      } else {
+        resolve("error: not controlled by service worker");
+      }
+    });
+  )"));
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCachePagesWithServiceWorkers) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+
+  // Register a service worker.
+  RegisterServiceWorker(current_frame_host());
+
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted(rfh_a);
+
+  // 2) Navigate away.
+  shell()->LoadURL(https_server.GetURL("b.com", "/title1.html"));
+
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  // The page is controlled by a service worker, so it shouldn't have been
+  // cached.
+  deleted.WaitUntilDeleted();
+}
+
+class BackForwardCacheBrowserTestWithServiceWorkerEnabled
+    : public BackForwardCacheBrowserTest {
+ public:
+  BackForwardCacheBrowserTestWithServiceWorkerEnabled() {}
+  ~BackForwardCacheBrowserTestWithServiceWorkerEnabled() override {}
+
+ protected:
+  std::vector<base::Feature> FeaturesToEnable() override {
+    std::vector<base::Feature> result =
+        BackForwardCacheBrowserTest::FeaturesToEnable();
+    result.push_back(kBackForwardCacheWithServiceWorker);
+    return result;
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+                       CachedPagesWithServiceWorkers) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  SetupCrossSiteRedirector(&https_server);
+  ASSERT_TRUE(https_server.Start());
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+
+  // Register a service worker.
+  RegisterServiceWorker(current_frame_host());
+
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted(rfh_a);
+
+  // 2) Navigate away.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
+
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 3) Go back to A. The navigation should be served from the cache.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
 }
 
 }  // namespace content

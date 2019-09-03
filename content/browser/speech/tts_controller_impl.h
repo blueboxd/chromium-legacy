@@ -24,7 +24,6 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_controller_delegate.h"
 #include "content/public/browser/tts_platform.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 #include "url/gurl.h"
 
 namespace content {

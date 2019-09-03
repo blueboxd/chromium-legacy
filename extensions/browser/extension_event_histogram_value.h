@@ -460,7 +460,6 @@ enum HistogramValue {
   ACTION_ON_CLICKED = 438,
   ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND = 439,
   ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT = 440,
-  LOGIN_STATE_ON_SESSION_STATE_CHANGED = 441,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

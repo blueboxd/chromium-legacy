@@ -107,7 +107,8 @@ TEST_F(DeviceCommandRemotePowerwashJobTest, TestCommandLifetime) {
   std::unique_ptr<policy::RemoteCommandJob> job =
       CreateRemotePowerwashJob(kVeryoldCommandAge, service_.get());
 
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), base::OnceClosure()));
+  EXPECT_TRUE(
+      job->Run(base::Time::Now(), base::TimeTicks::Now(), base::OnceClosure()));
 }
 
 // Make sure that powerwash starts once the command gets ACK'd to the server.
@@ -119,7 +120,8 @@ TEST_F(DeviceCommandRemotePowerwashJobTest, TestCommandAckStartsPowerwash) {
   EXPECT_EQ(0, chromeos::FakeSessionManagerClient::Get()
                    ->start_device_wipe_call_count());
 
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), run_loop_.QuitClosure()));
+  EXPECT_TRUE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                       run_loop_.QuitClosure()));
   // At this point the job is run, and the succeeded_callback is waiting to be
   // invoked.
 
@@ -153,7 +155,8 @@ TEST_F(DeviceCommandRemotePowerwashJobTest, TestFailsafeTimerStartsPowerwash) {
                    ->start_device_wipe_call_count());
 
   // Run job + succeeded_callback.
-  EXPECT_TRUE(job->Run(base::TimeTicks::Now(), run_loop_.QuitClosure()));
+  EXPECT_TRUE(job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                       run_loop_.QuitClosure()));
   run_loop_.Run();
 
   // After 500ms the timer is not run yet.

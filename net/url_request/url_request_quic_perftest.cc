@@ -9,10 +9,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_manager_test_utils.h"
@@ -90,7 +90,10 @@ void PrintPerfTest(const std::string& name,
 
 class URLRequestQuicPerfTest : public ::testing::Test {
  protected:
-  URLRequestQuicPerfTest() : message_loop_(new base::MessageLoopForIO()) {
+  URLRequestQuicPerfTest()
+      : task_environment_(
+            std::make_unique<base::test::SingleThreadTaskEnvironment>(
+                base::test::SingleThreadTaskEnvironment::MainThreadType::IO)) {
     memory_dump_manager_ =
         base::trace_event::MemoryDumpManager::CreateInstanceForTesting();
     base::trace_event::InitializeMemoryDumpManagerForInProcessTesting(
@@ -131,7 +134,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
     }
     // |tcp_server_| shuts down in EmbeddedTestServer destructor.
     memory_dump_manager_.reset();
-    message_loop_.reset();
+    task_environment_.reset();
   }
 
   std::unique_ptr<URLRequest> CreateRequest(const GURL& url,
@@ -180,7 +183,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
   std::unique_ptr<MappedHostResolver> host_resolver_;
   std::unique_ptr<EmbeddedTestServer> tcp_server_;
   std::unique_ptr<QuicSimpleServer> quic_server_;
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   std::unique_ptr<TestURLRequestContext> context_;
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;

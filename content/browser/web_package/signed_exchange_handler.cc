@@ -73,6 +73,7 @@ constexpr char kSXGWithoutNoSniffErrorMessage[] =
     "header is not supported.";
 
 network::mojom::NetworkContext* g_network_context_for_testing = nullptr;
+bool g_should_ignore_cert_validity_period_error = false;
 
 bool IsSupportedSignedExchangeVersion(
     const base::Optional<SignedExchangeVersion>& version) {
@@ -156,6 +157,12 @@ std::string OCSPErrorToString(const net::OCSPVerifyResult& ocsp_result) {
 void SignedExchangeHandler::SetNetworkContextForTesting(
     network::mojom::NetworkContext* network_context) {
   g_network_context_for_testing = network_context;
+}
+
+// static
+void SignedExchangeHandler::SetShouldIgnoreCertValidityPeriodErrorForTesting(
+    bool ignore) {
+  g_should_ignore_cert_validity_period_error = ignore;
 }
 
 SignedExchangeHandler::SignedExchangeHandler(
@@ -546,7 +553,8 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
   base::TimeDelta validity_period =
       verified_cert->valid_expiry() - verified_cert->valid_start();
   if (validity_period > base::TimeDelta::FromDays(90) &&
-      !unverified_cert_chain_->ShouldIgnoreErrors()) {
+      !unverified_cert_chain_->ShouldIgnoreErrors() &&
+      !g_should_ignore_cert_validity_period_error) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         "After 2019-08-01, Signed Exchange's certificate must not have a "

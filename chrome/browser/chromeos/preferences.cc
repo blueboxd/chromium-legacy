@@ -58,7 +58,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -557,16 +557,13 @@ void Preferences::RegisterProfilePrefs(
       prefs::kTextToSpeechLangToVoiceName,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechRate,
-      blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
+      prefs::kTextToSpeechRate, blink::mojom::kSpeechSynthesisDefaultRate,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechPitch,
-      blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
+      prefs::kTextToSpeechPitch, blink::mojom::kSpeechSynthesisDefaultPitch,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechVolume,
-      blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
+      prefs::kTextToSpeechVolume, blink::mojom::kSpeechSynthesisDefaultVolume,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
 
   // By default showing Sync Consent is set to true. It can changed by policy.

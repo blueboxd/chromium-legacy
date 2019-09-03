@@ -16,7 +16,6 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
-#include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -226,7 +225,7 @@ AppCacheRequestHandler::InitializeForMainResourceNetworkService(
     base::WeakPtr<AppCacheHost> appcache_host) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_host->CreateRequestHandler(
-          std::make_unique<AppCacheURLLoaderRequest>(request),
+          std::make_unique<AppCacheRequest>(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
   if (handler)
@@ -299,8 +298,8 @@ void AppCacheRequestHandler::DeliverNetworkResponse() {
 std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
     net::NetworkDelegate* network_delegate) {
   std::unique_ptr<AppCacheJob> job;
-  job = std::make_unique<AppCacheURLLoaderJob>(
-      request_->AsURLLoaderRequest(), storage(), std::move(loader_callback_));
+  job = std::make_unique<AppCacheURLLoaderJob>(request_.get(), storage(),
+                                               std::move(loader_callback_));
   job_ = job->GetWeakPtr();
   return job;
 }
@@ -527,7 +526,7 @@ void AppCacheRequestHandler::MaybeCreateLoader(
   // |tentative_resource_request| here, since throttles can rewrite headers
   // between now and when the request handler passed to |loader_callback_| is
   // invoked.
-  request_->AsURLLoaderRequest()->set_request(tentative_resource_request);
+  request_->set_request(tentative_resource_request);
 
   MaybeLoadResource(nullptr);
   // If a job is created, the job assumes ownership of the callback and
@@ -562,9 +561,8 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
         std::move(handler).Run(resource_request, mojo::MakeRequest(loader),
                                std::move(client));
       },
-      *(request_->AsURLLoaderRequest()->GetResourceRequest()), loader,
-      client_request, &was_called);
-  request_->AsURLLoaderRequest()->set_response(response);
+      *(request_->GetResourceRequest()), loader, client_request, &was_called);
+  request_->set_response(response);
   if (!MaybeLoadFallbackForResponse(nullptr)) {
     DCHECK(!was_called);
     loader_callback_.Reset();
@@ -621,7 +619,7 @@ void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(
   DCHECK(!job_);
   DCHECK(!is_main_resource());
   loader_callback_ = std::move(loader_callback);
-  request_->AsURLLoaderRequest()->set_response(response);
+  request_->set_response(response);
   MaybeLoadFallbackForResponse(nullptr);
   if (loader_callback_)
     std::move(loader_callback_).Run({});
@@ -644,7 +642,7 @@ void AppCacheRequestHandler::MaybeFollowSubresourceRedirect(
   DCHECK(!job_);
   DCHECK(!is_main_resource());
   loader_callback_ = std::move(loader_callback);
-  request_->AsURLLoaderRequest()->UpdateWithRedirectInfo(redirect_info);
+  request_->UpdateWithRedirectInfo(redirect_info);
   MaybeLoadResource(nullptr);
   if (loader_callback_)
     std::move(loader_callback_).Run({});

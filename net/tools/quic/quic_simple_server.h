@@ -20,6 +20,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_version_manager.h"
 #include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
+#include "net/third_party/quiche/src/quic/tools/quic_spdy_server_base.h"
 
 namespace net {
 
@@ -35,7 +36,7 @@ namespace test {
 class QuicSimpleServerPeer;
 }  // namespace test
 
-class QuicSimpleServer {
+class QuicSimpleServer : public quic::QuicSpdyServerBase {
  public:
   QuicSimpleServer(
       std::unique_ptr<quic::ProofSource> proof_source,
@@ -44,7 +45,12 @@ class QuicSimpleServer {
       const quic::ParsedQuicVersionVector& supported_versions,
       quic::QuicSimpleServerBackend* quic_simple_server_backend);
 
-  virtual ~QuicSimpleServer();
+  ~QuicSimpleServer() override;
+
+  // QuicSpdyServerBase methods:
+  bool CreateUDPSocketAndListen(
+      const quic::QuicSocketAddress& address) override;
+  void HandleEventsForever() override;
 
   // Start listening on the specified address. Returns an error code.
   int Listen(const IPEndPoint& address);

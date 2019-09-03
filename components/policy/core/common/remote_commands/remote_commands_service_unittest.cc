@@ -202,7 +202,8 @@ class RemoteCommandsServiceTest : public testing::Test {
   void StartService(std::unique_ptr<RemoteCommandsFactory> factory) {
     remote_commands_service_.reset(new RemoteCommandsService(
         std::move(factory), cloud_policy_client_.get(), nullptr /* store */));
-    remote_commands_service_->SetClockForTesting(
+    remote_commands_service_->SetClocksForTesting(
+        mock_task_runner_->GetMockClock(),
         mock_task_runner_->GetMockTickClock());
   }
 

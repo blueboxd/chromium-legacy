@@ -19,6 +19,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace base {
+class Clock;
 class TickClock;
 }  // namespace base
 
@@ -53,8 +54,9 @@ class POLICY_EXPORT RemoteCommandsService
     return command_fetch_in_progress_;
   }
 
-  // Set an alternative clock for testing.
-  void SetClockForTesting(const base::TickClock* clock);
+  // Set alternative clocks for testing.
+  void SetClocksForTesting(const base::Clock* clock,
+                           const base::TickClock* tick_clock);
 
   virtual void SetOnCommandAckedCallback(base::OnceClosure callback);
 

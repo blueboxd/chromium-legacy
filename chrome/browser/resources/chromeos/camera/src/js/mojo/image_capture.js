@@ -34,19 +34,21 @@ cca.mojo.PhotoCapabilities.prototype.supportedEffects;
  */
 cca.mojo.ImageCapture = function(videoTrack, mojoConnector) {
   /**
-   * @type {string} The id of target media device.
+   * The id of target media device.
+   * @type {string}
    */
   this.deviceId_ = videoTrack.getSettings().deviceId;
 
   /**
-   * @type {ImageCapture} The standard ImageCapture object.
+   * The standard ImageCapture object.
+   * @type {ImageCapture}
    * @private
    */
   this.capture_ = new ImageCapture(videoTrack);
 
   /**
-   * @type {cca.mojo.MojoConnector} The mojo connector that we used to negotiate
-   *     with the video capture device.
+   * The mojo connector that we used to negotiate with the video capture device.
+   * @type {cca.mojo.MojoConnector}
    * @private
    */
   this.mojoConnector_ = mojoConnector;

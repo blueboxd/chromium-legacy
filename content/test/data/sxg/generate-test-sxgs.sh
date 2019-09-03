@@ -44,6 +44,12 @@ gen-certurl -pem prime256v1-sha256-validity-too-long.public.pem \
 gen-certurl -pem prime256v1-sha256-noext.public.pem \
   -ocsp $tmpdir/ocsp -sctDir $sctdir > test.example.org-noext.public.pem.cbor
 
+# Generate the certificate chain of "*.example.org", for
+# SignedExchangeRequestHandlerRealCertVerifierBrowserTest.
+gen-certurl -pem prime256v1-sha256-long-validity.public.pem \
+  -ocsp $tmpdir/ocsp -sctDir $sctdir \
+  > test.example.org-long-validity.public.pem.cbor
+
 # Generate the signed exchange file.
 gen-signedexchange \
   -version 1b3 \
@@ -135,6 +141,22 @@ gen-signedexchange \
   -date $signature_date \
   -expire 168h \
   -o test.example.org_cert_validity_too_long.sxg \
+  -miRecordSize 100
+
+# Generate the signed exchange file for
+# SignedExchangeRequestHandlerRealCertVerifierBrowserTest.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256-long-validity.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date $signature_date \
+  -expire 168h \
+  -o test.example.org_long_cert_validity.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange file with invalid URL.

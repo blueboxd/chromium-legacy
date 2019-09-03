@@ -80,6 +80,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   static void SetNetworkContextForTesting(
       network::mojom::NetworkContext* network_context);
+  static void SetShouldIgnoreCertValidityPeriodErrorForTesting(bool ignore);
 
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read

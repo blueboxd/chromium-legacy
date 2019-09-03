@@ -22,11 +22,6 @@
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #error "Failed to include header chrome/common/render_messages.h"
 #endif
-#undef CHROME_COMMON_TTS_MESSAGES_H_
-#include "chrome/common/tts_messages.h"
-#ifndef CHROME_COMMON_TTS_MESSAGES_H_
-#error "Failed to include header chrome/common/tts_messages.h"
-#endif
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"

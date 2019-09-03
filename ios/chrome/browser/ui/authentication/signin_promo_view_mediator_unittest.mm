@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 
 #include "base/run_loop.h"
+#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/unified_consent/feature.h"
@@ -12,19 +13,24 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using base::SysNSStringToUTF16;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+using l10n_util::GetNSString;
+using l10n_util::GetNSStringF;
 
 namespace {
 
@@ -62,9 +68,9 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     mediator_.consumer = consumer_;
 
     signin_promo_view_ = OCMStrictClassMock([SigninPromoView class]);
-    primary_button_ = OCMStrictClassMock([MDCFlatButton class]);
+    primary_button_ = OCMStrictClassMock([UIButton class]);
     OCMStub([signin_promo_view_ primaryButton]).andReturn(primary_button_);
-    secondary_button_ = OCMStrictClassMock([MDCFlatButton class]);
+    secondary_button_ = OCMStrictClassMock([UIButton class]);
     OCMStub([signin_promo_view_ secondaryButton]).andReturn(secondary_button_);
     close_button_ = OCMStrictClassMock([UIButton class]);
     OCMStub([signin_promo_view_ closeButton]).andReturn(close_button_);
@@ -116,9 +122,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Expects the signin promo view to be configured in a cold state.
   void ExpectColdStateConfiguration() {
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeColdState]);
+    NSString* title = GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
+    OCMExpect([signin_promo_view_ setAccessibilityLabel:title]);
+    OCMExpect([primary_button_ setTitle:title forState:UIControlStateNormal]);
     image_view_profile_image_ = nil;
-    primary_button_title_ = nil;
-    secondary_button_title_ = nil;
   }
 
   // Checks a cold state configurator.
@@ -128,8 +135,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     OCMExpect([close_button_ setHidden:close_button_hidden_]);
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_EQ(nil, image_view_profile_image_);
-    EXPECT_EQ(nil, primary_button_title_);
-    EXPECT_EQ(nil, secondary_button_title_);
   }
 
   // Expects the signin promo view to be configured in a warm state.
@@ -141,18 +146,18 @@ class SigninPromoViewMediatorTest : public PlatformTest {
           image_view_profile_image_ = value;
           return YES;
         }]]);
-    primary_button_title_ = nil;
-    OCMExpect([primary_button_ setTitle:[OCMArg checkWithBlock:^BOOL(id value) {
-                                 primary_button_title_ = value;
-                                 return YES;
-                               }]
-                               forState:UIControlStateNormal]);
-    secondary_button_title_ = nil;
+    NSString* name = expected_default_identity_.userFullName.length
+                         ? expected_default_identity_.userFullName
+                         : expected_default_identity_.userEmail;
+    base::string16 name16 = SysNSStringToUTF16(name);
+    NSString* accessibilityLabel =
+        GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
+    OCMExpect([signin_promo_view_ setAccessibilityLabel:accessibilityLabel]);
+    OCMExpect([primary_button_
+        setTitle:GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS, name16)
+        forState:UIControlStateNormal]);
     OCMExpect([secondary_button_
-        setTitle:[OCMArg checkWithBlock:^BOOL(id value) {
-          secondary_button_title_ = value;
-          return YES;
-        }]
+        setTitle:GetNSString(IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT)
         forState:UIControlStateNormal]);
   }
 
@@ -163,21 +168,6 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     OCMExpect([close_button_ setHidden:YES]);
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_NE(nil, image_view_profile_image_);
-    NSString* userFullName = expected_default_identity_.userFullName.length
-                                 ? expected_default_identity_.userFullName
-                                 : expected_default_identity_.userEmail;
-    NSRange profileNameRange =
-        [primary_button_title_ rangeOfString:userFullName];
-    EXPECT_NE(profileNameRange.length, 0u);
-
-    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-      // Secondary buttons for sign-in promos contained the email before
-      // Unified Consent.
-      NSString* userEmail = expected_default_identity_.userEmail;
-      NSRange profileEmailRange =
-          [secondary_button_title_ rangeOfString:userEmail];
-      EXPECT_NE(profileEmailRange.length, 0u);
-    }
   }
 
   // Checks to receive a notification for the image upate of the current
@@ -215,16 +205,12 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Mocks.
   id<SigninPromoViewConsumer> consumer_;
   SigninPromoView* signin_promo_view_;
-  MDCFlatButton* primary_button_;
-  MDCFlatButton* secondary_button_;
+  UIButton* primary_button_;
+  UIButton* secondary_button_;
   UIButton* close_button_;
 
   // Value set by -[SigninPromoView setProfileImage:].
   UIImage* image_view_profile_image_;
-  // Value set by -[primary_button_ setTitle: forState:UIControlStateNormal].
-  NSString* primary_button_title_;
-  // Value set by -[secondary_button_ setTitle: forState:UIControlStateNormal].
-  NSString* secondary_button_title_;
   // Value set by -[close_button_ setHidden:].
   BOOL close_button_hidden_;
 };

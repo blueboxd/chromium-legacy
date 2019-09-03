@@ -37,10 +37,7 @@
 #include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "gpu/command_buffer/common/sync_token.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/deprecated_interface_types_forward.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -62,6 +59,15 @@ class sk_sp;
 
 namespace gfx {
 class Size;
+}
+
+namespace gpu {
+struct SyncToken;
+}
+
+namespace mojo {
+template <typename Interface>
+class PendingReceiver;
 }
 
 namespace WTF {

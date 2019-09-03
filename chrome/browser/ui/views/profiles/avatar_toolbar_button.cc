@@ -75,8 +75,10 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
   if (profile_->IsRegularProfile()) {
-    identity_manager_observer_.Add(
-        IdentityManagerFactory::GetForProfile(profile_));
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_);
+    identity_manager_observer_.Add(identity_manager);
+    SetUserEmail(identity_manager->GetUnconsentedPrimaryAccountInfo().email);
   }
 
   // Activate on press for left-mouse-button only to mimic other MenuButtons
@@ -118,6 +120,12 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 AvatarToolbarButton::~AvatarToolbarButton() {}
 
 void AvatarToolbarButton::UpdateIcon() {
+  // If widget isn't set, the button doesn't have access to the theme provider
+  // to set colors. Defer updating until AddedToWidget(). This may get called as
+  // a result of SetUserEmail() called from the constructor when the button is
+  // not yet added to the ToolbarView's hierarchy.
+  if (!GetWidget())
+    return;
   gfx::Image gaia_image = GetGaiaImage();
   SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(gaia_image));
 
@@ -162,9 +170,9 @@ void AvatarToolbarButton::UpdateText() {
         gfx::kGoogleBlue050, gfx::kGoogleBlue900);
 
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
-  } else if (user_email_to_show_.has_value() &&
+  } else if (user_email_.has_value() &&
              !waiting_for_image_to_show_user_email_) {
-    text = base::UTF8ToUTF16(*user_email_to_show_);
+    text = base::UTF8ToUTF16(*user_email_);
     if (GetThemeProvider()) {
       const SkColor text_color =
           GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT);
@@ -253,14 +261,7 @@ void AvatarToolbarButton::OnProfileNameChanged(
 
 void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
-  if (!unconsented_primary_account_info.IsEmpty() &&
-      base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    user_email_to_show_ = unconsented_primary_account_info.email;
-    // If we already have a gaia image, the pill will be immediately
-    // displayed by UpdateIcon().
-    waiting_for_image_to_show_user_email_ = true;
-    UpdateIcon();
-  }
+  SetUserEmail(unconsented_primary_account_info.email);
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
@@ -285,7 +286,7 @@ void AvatarToolbarButton::OnTouchUiChanged() {
 }
 
 void AvatarToolbarButton::ExpandToShowEmail() {
-  DCHECK(user_email_to_show_.has_value());
+  DCHECK(user_email_.has_value());
   DCHECK(!waiting_for_image_to_show_user_email_);
 
   UpdateText();
@@ -293,14 +294,14 @@ void AvatarToolbarButton::ExpandToShowEmail() {
   // Hide the pill after a while.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AvatarToolbarButton::ResetUserEmailToShow,
+      base::BindOnce(&AvatarToolbarButton::ResetUserEmail,
                      weak_ptr_factory_.GetWeakPtr()),
       kEmailExpansionDuration);
 }
 
-void AvatarToolbarButton::ResetUserEmailToShow() {
-  DCHECK(user_email_to_show_.has_value());
-  user_email_to_show_ = base::nullopt;
+void AvatarToolbarButton::ResetUserEmail() {
+  DCHECK(user_email_.has_value());
+  user_email_ = base::nullopt;
 
   // Update the text to the pre-shown state. This also makes sure that we now
   // reflect changes that happened while the identity pill was shown.
@@ -348,8 +349,8 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
   if (ShouldShowGenericIcon())
     return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
 
-  if (user_email_to_show_.has_value() && !waiting_for_image_to_show_user_email_)
-    return base::UTF8ToUTF16(*user_email_to_show_);
+  if (user_email_.has_value() && !waiting_for_image_to_show_user_email_)
+    return base::UTF8ToUTF16(*user_email_);
 
   const base::string16 profile_name =
       profiles::GetAvatarNameForProfile(profile_->GetPath());
@@ -469,4 +470,17 @@ void AvatarToolbarButton::SetInsets() {
   gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui() ? 0 : -2);
 
   SetLayoutInsetDelta(layout_insets);
+}
+
+void AvatarToolbarButton::SetUserEmail(const std::string& user_email) {
+  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
+      user_email.empty()) {
+    return;
+  }
+
+  user_email_ = user_email;
+  // If we already have a gaia image, the pill will be immediately
+  // displayed by UpdateIcon().
+  waiting_for_image_to_show_user_email_ = true;
+  UpdateIcon();
 }

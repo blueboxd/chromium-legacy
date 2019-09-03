@@ -16,9 +16,12 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 
 namespace chromeos {
 
@@ -97,14 +100,34 @@ void UpdateLoginScreenPolicyExtensionsState() {
 LoginScreenExtensionsLifetimeManager::LoginScreenExtensionsLifetimeManager() {
   UpdateLoginScreenPolicyExtensionsState();
   session_manager::SessionManager::Get()->AddObserver(this);
+  extensions::ExtensionRegistry::Get(ProfileHelper::GetSigninProfile())
+      ->AddObserver(this);
 }
 
 LoginScreenExtensionsLifetimeManager::~LoginScreenExtensionsLifetimeManager() {
+  extensions::ExtensionRegistry::Get(ProfileHelper::GetSigninProfile())
+      ->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
 void LoginScreenExtensionsLifetimeManager::OnSessionStateChanged() {
   UpdateLoginScreenPolicyExtensionsState();
+}
+
+void LoginScreenExtensionsLifetimeManager::OnExtensionLoaded(
+    content::BrowserContext* /*browser_context*/,
+    const extensions::Extension* extension) {
+  if (extension->location() == extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD &&
+      !ShouldEnableLoginScreenPolicyExtensions()) {
+    // The policy extensions should be disabled, however the extension got
+    // loaded - due to the policy change or due to some internal reason in the
+    // extensions subsystem. Therefore forcibly disable this extension.
+    extensions::ExtensionSystem::Get(ProfileHelper::GetSigninProfile())
+        ->extension_service()
+        ->DisableExtension(
+            extension->id(),
+            extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY);
+  }
 }
 
 }  // namespace chromeos

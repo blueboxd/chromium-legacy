@@ -479,11 +479,6 @@
       "4DBFC1C52D6660DD90791976DF7FEF7B3D360509"  // Imprivata (login screen) DEV
     ]
   },
-  "loginState": {
-    "channel": "dev",
-    "extension_types": ["login_screen_extension", "extension"],
-    "platforms": ["chromeos"]
-  },
   "webcamPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],

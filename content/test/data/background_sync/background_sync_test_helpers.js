@@ -267,9 +267,24 @@ function receiveMessage() {
   });
 }
 
+function getNumPeriodicSyncEvents() {
+  navigator.serviceWorker.ready
+    .then(swRegistration => {
+      swRegistration.active.postMessage({action: 'getPeriodicSyncEventCount'});
+      sendResultToTest('ok - getting count of periodicsync events');
+    })
+    .catch(sendErrorToTest);
+}
+
 navigator.serviceWorker.addEventListener('message', (event) => {
   const message = event.data;
-  if (message.type == 'sync' || message.type === 'register' ||
-        message.type === 'unregister')
+  const expected_messages = [
+    'sync',
+    'register',
+    'unregister',
+    'gotEventCount',
+  ];
+
+  if (expected_messages.includes(message.type))
     resultQueue.push(message.data);
 }, false);

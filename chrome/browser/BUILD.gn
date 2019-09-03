@@ -1680,8 +1680,6 @@ jumbo_split_static_library("browser") {
     "speech/speech_recognizer_delegate.h",
     "speech/tts_controller_delegate_impl.cc",
     "speech/tts_controller_delegate_impl.h",
-    "speech/tts_message_filter.cc",
-    "speech/tts_message_filter.h",
     "ssl/bad_clock_blocking_page.cc",
     "ssl/bad_clock_blocking_page.h",
     "ssl/captive_portal_blocking_page.cc",

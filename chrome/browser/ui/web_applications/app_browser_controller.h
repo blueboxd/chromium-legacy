@@ -14,12 +14,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 class Browser;
-
-namespace gfx {
-class ImageSkia;
-}
 
 namespace web_app {
 
@@ -141,6 +138,9 @@ class AppBrowserController : public TabStripModelObserver,
   // Called by OnTabstripModelChanged().
   virtual void OnTabInserted(content::WebContents* contents);
   virtual void OnTabRemoved(content::WebContents* contents);
+
+  // Gets the icon to use if the app icon is not available.
+  gfx::ImageSkia GetFallbackAppIcon() const;
 
  private:
   // Sets the url that the app browser controller was created with.

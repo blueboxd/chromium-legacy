@@ -28,7 +28,6 @@
 #include <memory>
 #include <utility>
 
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -153,7 +152,6 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       script_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       sandbox_mask_(WebSandboxFlags::kNone),
-      treat_as_public_address_(false),
       require_trusted_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
@@ -200,8 +198,6 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
     Count(WebFeature::kSandboxViaCSP);
     delegate_->SetSandboxFlags(sandbox_mask_);
   }
-  if (treat_as_public_address_)
-    delegate_->SetAddressSpace(network::mojom::IPAddressSpace::kPublic);
 
   if (require_trusted_types_)
     delegate_->SetRequireTrustedTypes();
@@ -872,12 +868,6 @@ void ContentSecurityPolicy::EnforceSandboxFlags(SandboxFlags mask) {
   sandbox_mask_ |= mask;
 }
 
-void ContentSecurityPolicy::TreatAsPublicAddress() {
-  if (!RuntimeEnabledFeatures::AddressSpaceEnabled())
-    return;
-  treat_as_public_address_ = true;
-}
-
 void ContentSecurityPolicy::RequireTrustedTypes() {
   // We store whether CSP demands a policy. The caller still needs to check
   // whether the feature is enabled in the first place.
@@ -1454,8 +1444,6 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "style-src-attr";
     case DirectiveType::kStyleSrcElem:
       return "style-src-elem";
-    case DirectiveType::kTreatAsPublicAddress:
-      return "treat-as-public-address";
     case DirectiveType::kUpgradeInsecureRequests:
       return "upgrade-insecure-requests";
     case DirectiveType::kWorkerSrc:
@@ -1525,8 +1513,6 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kStyleSrcAttr;
   if (name == "style-src-elem")
     return DirectiveType::kStyleSrcElem;
-  if (name == "treat-as-public-address")
-    return DirectiveType::kTreatAsPublicAddress;
   if (name == "upgrade-insecure-requests")
     return DirectiveType::kUpgradeInsecureRequests;
   if (name == "worker-src")

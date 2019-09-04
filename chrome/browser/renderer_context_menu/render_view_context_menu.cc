@@ -866,7 +866,10 @@ void RenderViewContextMenu::InitMenu() {
   // Add shared clipboard menu item and copy items.
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
-    AppendSharedClipboardItems();
+    // If this is a link, shared clipboard will be shown along with link items
+    // (AppendLinkItems), otherwise show it here along with copy items.
+    if (params_.link_url.is_empty())
+      AppendSharedClipboardItems();
     AppendCopyItem();
   }
 
@@ -1262,11 +1265,14 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 #endif  // !defined(OS_CHROMEOS)
+    AppendSharedClipboardItems();
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
                        active_web_contents, params_.link_url)) {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+      // If Shared Clipboard is available don't add the separator.
+      if (!ShouldOfferSharedClipboard(browser_context_, params_.selection_text))
+        menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
         menu_model_.AddItem(IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,

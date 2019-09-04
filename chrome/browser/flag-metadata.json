@@ -1191,7 +1191,7 @@
   {
     "name": "enable-experimental-productivity-features",
     "owners": [ "feature-control@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 81
   },
   {
     "name": "enable-experimental-web-platform-features",
@@ -2154,11 +2154,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "force-use-chrome-camera",
-    "owners": [ "shik", "chromeos-camera-app-eng@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "foreground-notification-manager",
     "owners": [ "//components/download/OWNERS" ],
     "expiry_milestone": 76
@@ -2836,7 +2831,7 @@
     "expiry_milestone": 85
   },
   {
-    "name": "prefetch-redirect-error",
+    "name": "prefetch-privacy-changes",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 85
   },
@@ -3236,7 +3231,7 @@
   {
     "name": "unified-consent",
     "owners": [ "msarda", "tangltom" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "unsafely-treat-insecure-origin-as-secure",

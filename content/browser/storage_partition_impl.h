@@ -38,6 +38,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -463,8 +464,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   // by |network_context_owner_|.
   network::mojom::NetworkContextPtr network_context_;
 
-  mojo::Binding<network::mojom::NetworkContextClient>
-      network_context_client_binding_;
+  mojo::Receiver<network::mojom::NetworkContextClient>
+      network_context_client_receiver_{this};
 
   scoped_refptr<URLLoaderFactoryForBrowserProcess>
       shared_url_loader_factory_for_browser_process_;

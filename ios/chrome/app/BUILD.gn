@@ -103,6 +103,9 @@ tweak_info_plist("info_plist") {
   if (ios_encryption_export_compliance_code != "") {
     info_plists += [ "resources/EncryptionExportCompliance+Info.plist" ]
   }
+  if (ios_enable_multi_window) {
+    info_plists += [ "resources/MultiWindow+Info.plist" ]
+  }
   args = [
     "--breakpad=$breakpad_enabled_as_int",
     "--branding=$chromium_short_name",
@@ -170,7 +173,6 @@ source_set("app_internal") {
     "//components/suggestions",
     "//components/sync",
     "//components/ukm/ios:features",
-    "//components/unified_consent",
     "//components/url_formatter",
     "//components/web_resource",
     "//ios/chrome/app/application_delegate",

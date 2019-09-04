@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -171,8 +172,9 @@ constexpr base::TaskTraits kTaskTraits = {
 }  // namespace
 
 WebAppIconManager::WebAppIconManager(Profile* profile,
+                                     WebAppRegistrar& registrar,
                                      std::unique_ptr<FileUtilsWrapper> utils)
-    : utils_(std::move(utils)) {
+    : registrar_(registrar), utils_(std::move(utils)) {
   web_apps_directory_ = GetWebAppsDirectory(profile);
 }
 
@@ -191,24 +193,57 @@ void WebAppIconManager::WriteData(
       std::move(callback));
 }
 
-bool WebAppIconManager::ReadIcon(const WebApp& web_app,
+bool WebAppIconManager::ReadIcon(const AppId& app_id,
                                  int icon_size_in_px,
                                  ReadIconCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (const WebApp::IconInfo& icon_info : web_app.icons()) {
-    if (icon_info.size_in_px == icon_size_in_px) {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE, kTaskTraits,
-          base::BindOnce(ReadIconBlocking, utils_->Clone(), web_apps_directory_,
-                         web_app.app_id(), icon_size_in_px),
-          std::move(callback));
+  const WebApp* web_app = registrar_.GetAppById(app_id);
+  if (!web_app)
+    return false;
 
+  for (const WebApp::IconInfo& icon_info : web_app->icons()) {
+    if (icon_info.size_in_px == icon_size_in_px) {
+      ReadIconInternal(app_id, icon_size_in_px, std::move(callback));
       return true;
     }
   }
 
   return false;
+}
+
+bool WebAppIconManager::ReadSmallestIcon(const AppId& app_id,
+                                         int icon_size_in_px,
+                                         ReadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const WebApp* web_app = registrar_.GetAppById(app_id);
+  if (!web_app)
+    return false;
+
+  int best_size_in_px = std::numeric_limits<int>::max();
+  for (const WebApp::IconInfo& icon_info : web_app->icons()) {
+    if (icon_info.size_in_px >= icon_size_in_px &&
+        icon_info.size_in_px < best_size_in_px) {
+      best_size_in_px = icon_info.size_in_px;
+    }
+  }
+
+  if (best_size_in_px == std::numeric_limits<int>::max())
+    return false;
+
+  ReadIconInternal(app_id, best_size_in_px, std::move(callback));
+  return true;
+}
+
+void WebAppIconManager::ReadIconInternal(const AppId& app_id,
+                                         int icon_size_in_px,
+                                         ReadIconCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(ReadIconBlocking, utils_->Clone(), web_apps_directory_,
+                     app_id, icon_size_in_px),
+      std::move(callback));
 }
 
 }  // namespace web_app

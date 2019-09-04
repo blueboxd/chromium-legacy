@@ -13,6 +13,7 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/renderer/render_frame_impl.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace blink {
@@ -75,8 +76,8 @@ class TestRenderFrame : public RenderFrameImpl {
   service_manager::mojom::InterfaceProviderRequest
   TakeLastInterfaceProviderRequest();
 
-  blink::mojom::DocumentInterfaceBrokerRequest
-  TakeLastDocumentInterfaceBrokerRequest();
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  TakeLastDocumentInterfaceBrokerReceiver();
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();

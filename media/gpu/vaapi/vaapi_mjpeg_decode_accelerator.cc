@@ -5,6 +5,7 @@
 #include "media/gpu/vaapi/vaapi_mjpeg_decode_accelerator.h"
 
 #include <stddef.h>
+#include <sys/mman.h>
 #include <va/va.h>
 
 #include <array>
@@ -13,13 +14,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/containers/span.h"
+#include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -133,13 +135,12 @@ static uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format) {
 
 }  // namespace
 
-void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                              Error error) {
+void VaapiMjpegDecodeAccelerator::NotifyError(int32_t task_id, Error error) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VaapiMjpegDecodeAccelerator::NotifyError,
-                                  weak_this_factory_.GetWeakPtr(),
-                                  bitstream_buffer_id, error));
+        FROM_HERE,
+        base::BindOnce(&VaapiMjpegDecodeAccelerator::NotifyError,
+                       weak_this_factory_.GetWeakPtr(), task_id, error));
     return;
   }
   VLOGF(1) << "Notifying of error " << error;
@@ -148,14 +149,14 @@ void VaapiMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
   DCHECK_NE(chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS, error);
   ReportToVAJDAResponseToClientUMA(error);
   DCHECK(client_);
-  client_->NotifyError(bitstream_buffer_id, error);
+  client_->NotifyError(task_id, error);
 }
 
-void VaapiMjpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
+void VaapiMjpegDecodeAccelerator::VideoFrameReady(int32_t task_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   ReportToVAJDAResponseToClientUMA(
       chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS);
-  client_->VideoFrameReady(bitstream_buffer_id);
+  client_->VideoFrameReady(task_id);
 }
 
 VaapiMjpegDecodeAccelerator::VaapiMjpegDecodeAccelerator(
@@ -286,6 +287,7 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureLibYuvOnTaskRunner(
     buffer_unmapper.ReplaceClosure(
         base::BindOnce(&gpu::GpuMemoryBufferImpl::Unmap, std::move(gmb)));
   } else {
+    DCHECK(video_frame->IsMappable());
     for (size_t i = 0; i < video_frame->layout().num_planes(); i++) {
       dst_ptrs[i] = video_frame->visible_data(i);
       dst_strides[i] = video_frame->stride(i);
@@ -433,65 +435,102 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
   return true;
 }
 
-void VaapiMjpegDecodeAccelerator::DecodeTask(
-    int32_t bitstream_buffer_id,
+void VaapiMjpegDecodeAccelerator::DecodeFromShmTask(
+    int32_t task_id,
     std::unique_ptr<UnalignedSharedMemory> shm,
-    scoped_refptr<VideoFrame> video_frame) {
+    scoped_refptr<VideoFrame> dst_frame) {
   DVLOGF(4);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT0("jpeg", "DecodeTask");
+  TRACE_EVENT0("jpeg", __func__);
 
+  auto src_image =
+      base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size());
+  DecodeImpl(task_id, src_image, std::move(dst_frame));
+}
+
+void VaapiMjpegDecodeAccelerator::DecodeFromDmaBufTask(
+    int32_t task_id,
+    base::ScopedFD src_dmabuf_fd,
+    size_t src_size,
+    off_t src_offset,
+    scoped_refptr<VideoFrame> dst_frame) {
+  DVLOGF(4);
+  DCHECK(decoder_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("jpeg", __func__);
+
+  // The DMA-buf FD should be mapped as read-only since it may only have read
+  // permission, e.g. when it comes from camera driver.
+  DCHECK(src_dmabuf_fd.is_valid());
+  DCHECK_GT(src_size, 0u);
+  void* src_addr = mmap(nullptr, src_size, PROT_READ, MAP_SHARED,
+                        src_dmabuf_fd.get(), src_offset);
+  if (src_addr == MAP_FAILED) {
+    VPLOGF(1) << "Failed to map input DMA buffer";
+    NotifyError(task_id, UNREADABLE_INPUT);
+    return;
+  }
+  base::span<const uint8_t> src_image =
+      base::make_span(static_cast<const uint8_t*>(src_addr), src_size);
+
+  DecodeImpl(task_id, src_image, std::move(dst_frame));
+
+  const int ret = munmap(src_addr, src_size);
+  DPCHECK(ret == 0);
+}
+
+void VaapiMjpegDecodeAccelerator::DecodeImpl(
+    int32_t task_id,
+    base::span<const uint8_t> src_image,
+    scoped_refptr<VideoFrame> dst_frame) {
   // TODO(andrescj): validate that the video frame's visible size is the same as
   // the parsed JPEG's visible size when it is returned from Decode(), and
   // remove the size checks in OutputPicture*().
-  VaapiImageDecodeStatus status = decoder_.Decode(
-      base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()));
+  VaapiImageDecodeStatus status = decoder_.Decode(src_image);
   if (status != VaapiImageDecodeStatus::kSuccess) {
-    NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
+    NotifyError(task_id, VaapiJpegDecodeStatusToError(status));
     return;
   }
   const ScopedVASurface* surface = decoder_.GetScopedVASurface();
   DCHECK(surface);
   DCHECK(surface->IsValid());
 
-  // For DMA-buf backed |video_frame|, we will import it as a VA surface and use
+  // For DMA-buf backed |dst_frame|, we will import it as a VA surface and use
   // VPP to convert the decoded |surface| into it, if the formats and sizes are
   // supported.
   const uint32_t video_frame_va_fourcc =
-      VideoPixelFormatToVAFourCC(video_frame->format());
+      VideoPixelFormatToVAFourCC(dst_frame->format());
   if (video_frame_va_fourcc == kInvalidVaFourcc) {
-    VLOGF(1) << "Unsupported video frame format: " << video_frame->format();
-    NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
+    VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
+    NotifyError(task_id, PLATFORM_FAILURE);
     return;
   }
   // TODO(kamesan): move HasDmaBufs() to DCHECK when we deprecate
   // shared-memory-backed video frame.
-  if (video_frame->HasDmaBufs() &&
+  if (dst_frame->HasDmaBufs() &&
       VaapiWrapper::IsVppResolutionAllowed(surface->size()) &&
       VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
           surface->format(), video_frame_va_fourcc)) {
-    if (!OutputPictureVppOnTaskRunner(surface, bitstream_buffer_id,
-                                      std::move(video_frame))) {
+    if (!OutputPictureVppOnTaskRunner(surface, task_id, std::move(dst_frame))) {
       VLOGF(1) << "Output picture using VPP failed";
-      NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
+      NotifyError(task_id, PLATFORM_FAILURE);
     }
     return;
   }
 
   // Fallback to do conversion by libyuv. This happens when:
-  // 1. |video_frame| is backed by shared memory.
+  // 1. |dst_frame| is backed by shared memory.
   // 2. VPP doesn't support the format conversion. This is intended for AMD
   //    VAAPI driver whose VPP only supports converting decoded 4:2:0 JPEGs.
   std::unique_ptr<ScopedVAImage> image =
       decoder_.GetImage(video_frame_va_fourcc, &status);
   if (status != VaapiImageDecodeStatus::kSuccess) {
-    NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
+    NotifyError(task_id, VaapiJpegDecodeStatusToError(status));
     return;
   }
-  if (!OutputPictureLibYuvOnTaskRunner(std::move(image), bitstream_buffer_id,
-                                       std::move(video_frame))) {
+  if (!OutputPictureLibYuvOnTaskRunner(std::move(image), task_id,
+                                       std::move(dst_frame))) {
     VLOGF(1) << "Output picture using libyuv failed";
-    NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
+    NotifyError(task_id, PLATFORM_FAILURE);
   }
 }
 
@@ -499,7 +538,7 @@ void VaapiMjpegDecodeAccelerator::Decode(
     BitstreamBuffer bitstream_buffer,
     scoped_refptr<VideoFrame> video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("jpeg", "Decode", "input_id", bitstream_buffer.id());
+  TRACE_EVENT1("jpeg", __func__, "input_id", bitstream_buffer.id());
 
   DVLOGF(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
             << " size: " << bitstream_buffer.size();
@@ -510,6 +549,12 @@ void VaapiMjpegDecodeAccelerator::Decode(
     return;
   }
 
+  // Validate output video frame.
+  if (!video_frame->IsMappable() && !video_frame->HasDmaBufs()) {
+    VLOGF(1) << "Unsupported output frame storage type";
+    NotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
+    return;
+  }
   if ((video_frame->visible_rect().width() & 1) ||
       (video_frame->visible_rect().height() & 1)) {
     VLOGF(1) << "Video frame visible size has odd dimension";
@@ -531,9 +576,65 @@ void VaapiMjpegDecodeAccelerator::Decode(
   // It's safe to use base::Unretained(this) because |decoder_task_runner_| runs
   // tasks on |decoder_thread_| which is stopped in the destructor of |this|.
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiMjpegDecodeAccelerator::DecodeTask,
+      FROM_HERE, base::BindOnce(&VaapiMjpegDecodeAccelerator::DecodeFromShmTask,
                                 base::Unretained(this), bitstream_buffer.id(),
                                 std::move(shm), std::move(video_frame)));
+}
+
+void VaapiMjpegDecodeAccelerator::Decode(int32_t task_id,
+                                         base::ScopedFD src_dmabuf_fd,
+                                         size_t src_size,
+                                         off_t src_offset,
+                                         scoped_refptr<VideoFrame> dst_frame) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("jpeg", __func__, "task_id", task_id);
+
+  if (task_id < 0) {
+    VLOGF(1) << "Invalid task id: " << task_id;
+    NotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+
+  // Validate input arguments.
+  if (!src_dmabuf_fd.is_valid()) {
+    VLOGF(1) << "Invalid input buffer FD";
+    NotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+  if (src_size == 0) {
+    VLOGF(1) << "Input buffer size is zero";
+    NotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+  const size_t page_size = base::GetPageSize();
+  if (src_offset < 0 || src_offset % page_size != 0) {
+    VLOGF(1) << "Input buffer offset (" << src_offset
+             << ") should be non-negative and aligned to page size ("
+             << page_size << ")";
+    NotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+
+  // Validate output video frame.
+  if (!dst_frame->IsMappable() && !dst_frame->HasDmaBufs()) {
+    VLOGF(1) << "Unsupported output frame storage type";
+    NotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+  if ((dst_frame->visible_rect().width() & 1) ||
+      (dst_frame->visible_rect().height() & 1)) {
+    VLOGF(1) << "Output frame visible size has odd dimension";
+    NotifyError(task_id, PLATFORM_FAILURE);
+    return;
+  }
+
+  // It's safe to use base::Unretained(this) because |decoder_task_runner_| runs
+  // tasks on |decoder_thread_| which is stopped in the destructor of |this|.
+  decoder_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VaapiMjpegDecodeAccelerator::DecodeFromDmaBufTask,
+                     base::Unretained(this), task_id, std::move(src_dmabuf_fd),
+                     src_size, src_offset, std::move(dst_frame)));
 }
 
 bool VaapiMjpegDecodeAccelerator::IsSupported() {

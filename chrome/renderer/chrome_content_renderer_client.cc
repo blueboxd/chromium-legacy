@@ -1507,17 +1507,16 @@ void ChromeContentRendererClient::
       metrics::CallStackProfileParams::SERVICE_WORKER_THREAD);
 }
 
-void ChromeContentRendererClient::
-    DidInitializeServiceWorkerContextOnWorkerThread(
-        blink::WebServiceWorkerContextProxy* context_proxy,
-        v8::Local<v8::Context> v8_context,
-        int64_t service_worker_version_id,
-        const GURL& service_worker_scope,
-        const GURL& script_url) {
+void ChromeContentRendererClient::WillEvaluateServiceWorkerOnWorkerThread(
+    blink::WebServiceWorkerContextProxy* context_proxy,
+    v8::Local<v8::Context> v8_context,
+    int64_t service_worker_version_id,
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()
       ->extension_dispatcher()
-      ->DidInitializeServiceWorkerContextOnWorkerThread(
+      ->WillEvaluateServiceWorkerOnWorkerThread(
           context_proxy, v8_context, service_worker_version_id,
           service_worker_scope, script_url);
 #endif

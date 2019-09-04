@@ -74,8 +74,6 @@ namespace internal {
 // To avoid symbol collisions in jumbo builds.
 namespace sequence_manager_impl_unittest {
 
-constexpr TimeDelta kDelay = TimeDelta::FromSeconds(42);
-
 enum class TestType {
   kMockTaskRunner,
   kMessageLoop,
@@ -4828,6 +4826,7 @@ TEST_P(SequenceManagerTest,
 // EnqueueOrder should be less than GetLastUnblockEnqueueOrder().
 TEST_P(SequenceManagerTest,
        GetLastUnblockEnqueueOrder_PostInsertDelayedFencePostAfterFence) {
+  constexpr TimeDelta kDelay = TimeDelta::FromSeconds(42);
   const TimeTicks start_time = mock_tick_clock()->NowTicks();
   auto queue =
       CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));
@@ -4847,6 +4846,7 @@ TEST_P(SequenceManagerTest,
 // queue was never blocked (front task could always run).
 TEST_P(SequenceManagerTest,
        GetLastUnblockEnqueueOrder_PostInsertDelayedFencePostBeforeFence) {
+  constexpr TimeDelta kDelay = TimeDelta::FromSeconds(42);
   const TimeTicks start_time = mock_tick_clock()->NowTicks();
   auto queue =
       CreateTaskQueue(TaskQueue::Spec("test").SetDelayedFencesAllowed(true));

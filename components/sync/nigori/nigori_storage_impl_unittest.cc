@@ -4,6 +4,7 @@
 
 #include "components/sync/nigori/nigori_storage_impl.h"
 
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,6 +57,15 @@ TEST_F(NigoriStorageImplTest, ShouldBeAbleToRestoreAfterWrite) {
 TEST_F(NigoriStorageImplTest, ShouldReturnNulloptWhenFileNotExists) {
   NigoriStorageImpl storage(GetFilePath(), encryptor());
   EXPECT_EQ(storage.RestoreData(), base::nullopt);
+}
+
+TEST_F(NigoriStorageImplTest, ShouldRemoveFile) {
+  NigoriStorageImpl storage(GetFilePath(), encryptor());
+  sync_pb::NigoriLocalData data = MakeSomeNigoriLocalData();
+  storage.StoreData(data);
+  ASSERT_TRUE(base::PathExists(GetFilePath()));
+  storage.ClearData();
+  EXPECT_FALSE(base::PathExists(GetFilePath()));
 }
 
 }  // namespace

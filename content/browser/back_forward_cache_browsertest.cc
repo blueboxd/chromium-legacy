@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/back_forward_cache.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -1487,9 +1489,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // │browser│                     │renderer│
 // └───────┘                     └────────┘
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DISABLED_SchedulerTrackedFeaturesUpdatedWhileStoring) {
-  net::test_server::ControllableHttpResponse send_beacon_request(
-      embedded_test_server(), "/beacon");
+                       SchedulerTrackedFeaturesUpdatedWhileStoring) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -1508,28 +1508,33 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       let canvas = document.createElement('canvas');
       document.body.appendChild(canvas);
       gl = canvas.getContext('webgl');
-      navigator.sendBeacon('/beacon');
     });
   )"));
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
 
-  // Wait for the sendBeacon request. This is used to wait for the scheduler
-  // tracked features to be updated. This is not guaranteed to work in theory,
-  // but works in practise.
   // TODO(https://crbug.com/996267): Evict the document and wait for its
   // destruction here instead.
-  send_beacon_request.WaitForRequest();
 
-  // The scheduler tracked features have been updated. The document cannot stay
-  // in the BackForwardCache anymore.
-  // TODO(arthursonzogni): Evict the page when it happens.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  auto old_document_using_webgl = [rfh_a]() {
+    return rfh_a->scheduler_tracked_features() &
+           (1 << static_cast<uint32_t>(
+                blink::scheduler::WebSchedulerTrackedFeature::kWebGL));
+  };
+
+  // Wait for WebGL to be used in the old document.
+  while (!old_document_using_webgl()) {
+    base::RunLoop loop;
+    base::PostDelayedTask(FROM_HERE, loop.QuitClosure(),
+                          base::TimeDelta::FromMilliseconds(50));
+    loop.Run();
+  }
+
+  // The scheduler tracked features have been updated. The document shouldn't
+  // stay in the BackForwardCache anymore.  TODO(arthursonzogni): Evict the
+  // page.
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-  EXPECT_TRUE(rfh_a->scheduler_tracked_features() &
-              (1 << static_cast<uint32_t>(
-                   blink::scheduler::WebSchedulerTrackedFeature::kWebGL)));
   EXPECT_FALSE(
       web_contents()->GetController().back_forward_cache().CanStoreDocument(
           rfh_a));

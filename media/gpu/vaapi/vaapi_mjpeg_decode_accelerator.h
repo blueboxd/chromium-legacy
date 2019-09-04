@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -53,22 +54,38 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
       chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
   void Decode(BitstreamBuffer bitstream_buffer,
               scoped_refptr<VideoFrame> video_frame) override;
+  void Decode(int32_t task_id,
+              base::ScopedFD src_dmabuf_fd,
+              size_t src_size,
+              off_t src_offset,
+              scoped_refptr<VideoFrame> dst_frame) override;
   bool IsSupported() override;
 
  private:
   // Notifies the client that an error has occurred and decoding cannot
   // continue. The client is notified on the |task_runner_|, i.e., the thread in
   // which |*this| was created.
-  void NotifyError(int32_t bitstream_buffer_id, Error error);
+  void NotifyError(int32_t task_id, Error error);
 
   // Notifies the client that a decode is ready. The client is notified on the
   // |task_runner_|, i.e., the thread in which |*this| was created.
-  void VideoFrameReady(int32_t bitstream_buffer_id);
+  void VideoFrameReady(int32_t task_id);
 
   // Processes one decode request.
-  void DecodeTask(int32_t bitstream_buffer_id,
-                  std::unique_ptr<UnalignedSharedMemory> shm,
-                  scoped_refptr<VideoFrame> video_frame);
+  void DecodeFromShmTask(int32_t task_id,
+                         std::unique_ptr<UnalignedSharedMemory> shm,
+                         scoped_refptr<VideoFrame> dst_frame);
+  void DecodeFromDmaBufTask(int32_t task_id,
+                            base::ScopedFD src_dmabuf_fd,
+                            size_t src_size,
+                            off_t src_offset,
+                            scoped_refptr<VideoFrame> dst_frame);
+
+  // Decodes the JPEG in |src_image| into |dst_frame| and notifies the client
+  // when finished or when an error occurs.
+  void DecodeImpl(int32_t task_id,
+                  base::span<const uint8_t> src_image,
+                  scoped_refptr<VideoFrame> dst_frame);
 
   // Puts contents of |surface| into given |video_frame| using VA-API Video
   // Processing Pipeline (VPP), and passes the |input_buffer_id| of the

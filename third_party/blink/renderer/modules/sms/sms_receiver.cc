@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
 #include "third_party/blink/renderer/modules/sms/sms_metrics.h"
-#include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -23,11 +22,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-namespace {
-
-const uint32_t kDefaultTimeoutSeconds = 60;
-
-}  // namespace
 
 SMSReceiver::SMSReceiver(ExecutionContext* context) : ContextClient(context) {}
 
@@ -44,18 +38,6 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
                           "Must be in top-level browsing context."));
   }
 
-  int32_t timeout_seconds =
-      options->hasTimeout() ? options->timeout() : kDefaultTimeoutSeconds;
-
-  if (timeout_seconds <= 0) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           "Invalid timeout."));
-  }
-
-  RecordSMSRequestedTimeout(options->hasTimeout() ? options->timeout() : 0);
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
 
@@ -71,7 +53,6 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
   }
 
   service_->Receive(
-      base::TimeDelta::FromSeconds(timeout_seconds),
       WTF::Bind(&SMSReceiver::OnReceive, WrapPersistent(this),
                 WrapPersistent(resolver), base::TimeTicks::Now()));
 
@@ -92,7 +73,6 @@ void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
   if (status == mojom::blink::SmsStatus::kTimeout) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kTimeoutError, "SMSReceiver timed out."));
-    RecordSMSTimeoutExceededTime(base::TimeTicks::Now() - start_time);
     RecordSMSOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);
     return;
   } else if (status == mojom::blink::SmsStatus::kCancelled) {

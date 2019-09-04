@@ -17,7 +17,6 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
@@ -100,13 +99,8 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 }
 
 - (void)commitSyncForBrowserState:(ios::ChromeBrowserState*)browserState {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    SyncSetupServiceFactory::GetForBrowserState(browserState)
-        ->CommitSyncChanges();
-  } else {
-    SyncSetupServiceFactory::GetForBrowserState(browserState)
-        ->PreUnityCommitChanges();
-  }
+  SyncSetupServiceFactory::GetForBrowserState(browserState)
+      ->CommitSyncChanges();
 }
 
 - (void)startWatchdogTimerForManagedStatus {
@@ -278,7 +272,6 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                                                   fromEmail:lastSignedInEmail
                                                     toEmail:[identity userEmail]
                                                  isSignedIn:isSignedIn];
-  [_navigationController setShouldCommitSyncChangesOnDismissal:NO];
   [[_delegate presentingViewController]
       presentViewController:_navigationController
                    animated:YES

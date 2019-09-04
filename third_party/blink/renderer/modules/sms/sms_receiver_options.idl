@@ -5,5 +5,5 @@
 // https://github.com/samuelgoto/sms-receiver
 
 dictionary SMSReceiverOptions {
-  unsigned long timeout;
+  // TODO(b/976401): Implement abort controller.
 };

@@ -17,9 +17,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/files/scoped_file.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/base/bitstream_buffer.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/gpu/format_utils.h"
@@ -30,13 +34,13 @@
 #include "media/parsers/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 
-#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name)    \
-  do {                                                              \
-    if (device_->Ioctl(type, arg) != 0) {                           \
-      VPLOGF(1) << "ioctl() failed: " << type_name;                 \
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE); \
-      return value;                                                 \
-    }                                                               \
+#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_name) \
+  do {                                                           \
+    if (device_->Ioctl(type, arg) != 0) {                        \
+      VPLOGF(1) << "ioctl() failed: " << type_name;              \
+      PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);         \
+      return value;                                              \
+    }                                                            \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN(type, arg) \
@@ -45,12 +49,12 @@
 #define IOCTL_OR_ERROR_RETURN_FALSE(type, arg) \
   IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false, #type)
 
-#define IOCTL_OR_LOG_ERROR(type, arg)                               \
-  do {                                                              \
-    if (device_->Ioctl(type, arg) != 0) {                           \
-      VPLOGF(1) << "ioctl() failed: " << #type;                     \
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE); \
-    }                                                               \
+#define IOCTL_OR_LOG_ERROR(type, arg)                    \
+  do {                                                   \
+    if (device_->Ioctl(type, arg) != 0) {                \
+      VPLOGF(1) << "ioctl() failed: " << #type;          \
+      PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE); \
+    }                                                    \
   } while (0)
 
 #define READ_U8_OR_RETURN_FALSE(reader, out)                               \
@@ -130,24 +134,124 @@ const uint8_t kDefaultDhtSeg[] = {
     0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
     0xE8, 0xE9, 0xEA, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA};
 
+class V4L2MjpegDecodeAccelerator::JobRecord {
+ public:
+  virtual ~JobRecord() = default;
+
+  // Task ID passed from Decode() call.
+  virtual int32_t task_id() const = 0;
+  // Input buffer size.
+  virtual size_t size() const = 0;
+  // Input buffer offset.
+  virtual off_t offset() const = 0;
+  // Maps input buffer.
+  virtual bool map() = 0;
+  // Pointer to the input content. Only valid if map() is already called.
+  virtual const void* memory() const = 0;
+
+  // Output frame buffer.
+  virtual const scoped_refptr<VideoFrame>& out_frame() = 0;
+
+ protected:
+  JobRecord() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(JobRecord);
+};
+
+// Job record when the client uses BitstreamBuffer as input in Decode().
+class JobRecordBitstreamBuffer : public V4L2MjpegDecodeAccelerator::JobRecord {
+ public:
+  JobRecordBitstreamBuffer(BitstreamBuffer bitstream_buffer,
+                           scoped_refptr<VideoFrame> video_frame)
+      : task_id_(bitstream_buffer.id()),
+        shm_(bitstream_buffer.TakeRegion(),
+             bitstream_buffer.size(),
+             false /* read_only */),
+        offset_(bitstream_buffer.offset()),
+        out_frame_(video_frame) {}
+
+  int32_t task_id() const override { return task_id_; }
+  size_t size() const override { return shm_.size(); }
+  off_t offset() const override { return offset_; }
+  bool map() override { return shm_.MapAt(offset(), size()); }
+  const void* memory() const override { return shm_.memory(); }
+
+  const scoped_refptr<VideoFrame>& out_frame() override { return out_frame_; }
+
+ private:
+  int32_t task_id_;
+  UnalignedSharedMemory shm_;
+  off_t offset_;
+  scoped_refptr<VideoFrame> out_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(JobRecordBitstreamBuffer);
+};
+
+// Job record when the client uses DMA buffer as input in Decode().
+class JobRecordDmaBuf : public V4L2MjpegDecodeAccelerator::JobRecord {
+ public:
+  JobRecordDmaBuf(int32_t task_id,
+                  base::ScopedFD src_dmabuf_fd,
+                  size_t src_size,
+                  off_t src_offset,
+                  scoped_refptr<VideoFrame> dst_frame)
+      : task_id_(task_id),
+        dmabuf_fd_(std::move(src_dmabuf_fd)),
+        size_(src_size),
+        offset_(src_offset),
+        mapped_addr_(nullptr),
+        out_frame_(std::move(dst_frame)) {}
+
+  ~JobRecordDmaBuf() {
+    if (mapped_addr_) {
+      const int ret = munmap(mapped_addr_, size());
+      DPCHECK(ret == 0);
+    }
+  }
+
+  int32_t task_id() const override { return task_id_; }
+  size_t size() const override { return size_; }
+  off_t offset() const override { return offset_; }
+
+  bool map() override {
+    if (mapped_addr_)
+      return true;
+    // The DMA-buf FD should be mapped as read-only since it may only have read
+    // permission, e.g. when it comes from camera driver.
+    DCHECK(dmabuf_fd_.is_valid());
+    DCHECK_GT(size(), 0u);
+    void* addr = mmap(nullptr, size(), PROT_READ, MAP_SHARED, dmabuf_fd_.get(),
+                      offset());
+    if (addr == MAP_FAILED)
+      return false;
+    mapped_addr_ = addr;
+    return true;
+  }
+
+  const void* memory() const override {
+    DCHECK(mapped_addr_);
+    return mapped_addr_;
+  }
+
+  const scoped_refptr<VideoFrame>& out_frame() override { return out_frame_; }
+
+ private:
+  int32_t task_id_;
+  base::ScopedFD dmabuf_fd_;
+  size_t size_;
+  off_t offset_;
+  void* mapped_addr_;
+  scoped_refptr<VideoFrame> out_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(JobRecordDmaBuf);
+};
+
 V4L2MjpegDecodeAccelerator::BufferRecord::BufferRecord() : at_device(false) {
   memset(address, 0, sizeof(address));
   memset(length, 0, sizeof(length));
 }
 
 V4L2MjpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
-
-V4L2MjpegDecodeAccelerator::JobRecord::JobRecord(
-    BitstreamBuffer bitstream_buffer,
-    scoped_refptr<VideoFrame> video_frame)
-    : bitstream_buffer_id(bitstream_buffer.id()),
-      shm(bitstream_buffer.TakeRegion(),
-          bitstream_buffer.size(),
-          false /* read_only */),
-      offset(bitstream_buffer.offset()),
-      out_frame(video_frame) {}
-
-V4L2MjpegDecodeAccelerator::JobRecord::~JobRecord() {}
 
 V4L2MjpegDecodeAccelerator::V4L2MjpegDecodeAccelerator(
     const scoped_refptr<V4L2Device>& device,
@@ -193,24 +297,21 @@ void V4L2MjpegDecodeAccelerator::DestroyTask() {
   DestroyOutputBuffers();
 }
 
-void V4L2MjpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
+void V4L2MjpegDecodeAccelerator::VideoFrameReady(int32_t task_id) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  client_->VideoFrameReady(bitstream_buffer_id);
+  client_->VideoFrameReady(task_id);
 }
 
-void V4L2MjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                             Error error) {
+void V4L2MjpegDecodeAccelerator::NotifyError(int32_t task_id, Error error) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  VLOGF(1) << "Notifying of error " << error << " for buffer id "
-           << bitstream_buffer_id;
-  client_->NotifyError(bitstream_buffer_id, error);
+  VLOGF(1) << "Notifying of error " << error << " for task id " << task_id;
+  client_->NotifyError(task_id, error);
 }
 
-void V4L2MjpegDecodeAccelerator::PostNotifyError(int32_t bitstream_buffer_id,
-                                                 Error error) {
+void V4L2MjpegDecodeAccelerator::PostNotifyError(int32_t task_id, Error error) {
   child_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::NotifyError,
-                                weak_ptr_, bitstream_buffer_id, error));
+                                weak_ptr_, task_id, error));
 }
 
 bool V4L2MjpegDecodeAccelerator::Initialize(
@@ -272,13 +373,82 @@ void V4L2MjpegDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer,
     return;
   }
 
-  std::unique_ptr<JobRecord> job_record(
-      new JobRecord(std::move(bitstream_buffer), std::move(video_frame)));
+  // Validate output video frame.
+  if (!video_frame->IsMappable() && !video_frame->HasDmaBufs()) {
+    VLOGF(1) << "Unsupported output frame storage type";
+    PostNotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
+    return;
+  }
+  if ((video_frame->visible_rect().width() & 1) ||
+      (video_frame->visible_rect().height() & 1)) {
+    VLOGF(1) << "Output frame visible size has odd dimension";
+    PostNotifyError(bitstream_buffer.id(), PLATFORM_FAILURE);
+    return;
+  }
+
+  std::unique_ptr<JobRecord> job_record(new JobRecordBitstreamBuffer(
+      std::move(bitstream_buffer), std::move(video_frame)));
 
   decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2MjpegDecodeAccelerator::DecodeTask,
-                     base::Unretained(this), base::Passed(&job_record)));
+      FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::DecodeTask,
+                                base::Unretained(this), std::move(job_record)));
+}
+
+void V4L2MjpegDecodeAccelerator::Decode(
+    int32_t task_id,
+    base::ScopedFD src_dmabuf_fd,
+    size_t src_size,
+    off_t src_offset,
+    scoped_refptr<media::VideoFrame> dst_frame) {
+  DVLOGF(4) << "task_id=" << task_id;
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (task_id < 0) {
+    VLOGF(1) << "Invalid task id: " << task_id;
+    PostNotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+
+  // Validate input arguments.
+  if (!src_dmabuf_fd.is_valid()) {
+    VLOGF(1) << "Invalid input buffer FD";
+    PostNotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+  if (src_size == 0) {
+    VLOGF(1) << "Input buffer size is zero";
+    PostNotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+  const size_t page_size = base::GetPageSize();
+  if (src_offset < 0 || src_offset % page_size != 0) {
+    VLOGF(1) << "Input buffer offset (" << src_offset
+             << ") should be non-negative and aligned to page size ("
+             << page_size << ")";
+    PostNotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+
+  // Validate output video frame.
+  if (!dst_frame->IsMappable() && !dst_frame->HasDmaBufs()) {
+    VLOGF(1) << "Unsupported output frame storage type";
+    PostNotifyError(task_id, INVALID_ARGUMENT);
+    return;
+  }
+  if ((dst_frame->visible_rect().width() & 1) ||
+      (dst_frame->visible_rect().height() & 1)) {
+    VLOGF(1) << "Output frame visible size has odd dimension";
+    PostNotifyError(task_id, PLATFORM_FAILURE);
+    return;
+  }
+
+  std::unique_ptr<JobRecord> job_record(
+      new JobRecordDmaBuf(task_id, std::move(src_dmabuf_fd), src_size,
+                          src_offset, std::move(dst_frame)));
+
+  decoder_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2MjpegDecodeAccelerator::DecodeTask,
+                                base::Unretained(this), std::move(job_record)));
 }
 
 // static
@@ -293,9 +463,9 @@ bool V4L2MjpegDecodeAccelerator::IsSupported() {
 void V4L2MjpegDecodeAccelerator::DecodeTask(
     std::unique_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  if (!job_record->shm.MapAt(job_record->offset, job_record->shm.size())) {
-    VPLOGF(1) << "could not map bitstream_buffer";
-    PostNotifyError(job_record->bitstream_buffer_id, UNREADABLE_INPUT);
+  if (!job_record->map()) {
+    VPLOGF(1) << "could not map input buffer";
+    PostNotifyError(job_record->task_id(), UNREADABLE_INPUT);
     return;
   }
   input_jobs_.push(std::move(job_record));
@@ -318,8 +488,9 @@ bool V4L2MjpegDecodeAccelerator::ShouldRecreateInputBuffers() {
 
   JobRecord* job_record = input_jobs_.front().get();
   // Check input buffer size is enough
+  // TODO(kamesan): use safe arithmetic to handle overflows.
   return (input_buffer_map_.empty() ||
-          (job_record->shm.size() + sizeof(kDefaultDhtSeg)) >
+          (job_record->size() + sizeof(kDefaultDhtSeg)) >
               input_buffer_map_.front().length[0]);
 }
 
@@ -364,7 +535,8 @@ bool V4L2MjpegDecodeAccelerator::CreateInputBuffers() {
   // The input image may miss huffman table. We didn't parse the image before,
   // so we create more to avoid the situation of not enough memory.
   // Reserve twice size to avoid recreating input buffer frequently.
-  size_t reserve_size = (job_record->shm.size() + sizeof(kDefaultDhtSeg)) * 2;
+  // TODO(kamesan): use safe arithmetic to handle overflows.
+  size_t reserve_size = (job_record->size() + sizeof(kDefaultDhtSeg)) * 2;
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -407,7 +579,7 @@ bool V4L2MjpegDecodeAccelerator::CreateInputBuffers() {
                         MAP_SHARED, planes[j].m.mem_offset);
       if (address == MAP_FAILED) {
         VPLOGF(1) << "mmap() failed";
-        PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+        PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
         return false;
       }
       input_buffer_map_[i].address[j] = address;
@@ -426,12 +598,12 @@ bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
   JobRecord* job_record = running_jobs_.front().get();
 
   size_t frame_size = VideoFrame::AllocationSize(
-      PIXEL_FORMAT_I420, job_record->out_frame->coded_size());
+      PIXEL_FORMAT_I420, job_record->out_frame()->coded_size());
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.width = job_record->out_frame->coded_size().width();
-  format.fmt.pix_mp.height = job_record->out_frame->coded_size().height();
+  format.fmt.pix_mp.width = job_record->out_frame()->coded_size().width();
+  format.fmt.pix_mp.height = job_record->out_frame()->coded_size().height();
   format.fmt.pix_mp.num_planes = 1;
   format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_YUV420;
   format.fmt.pix_mp.plane_fmt[0].sizeimage = frame_size;
@@ -449,7 +621,7 @@ bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
   if (output_format == PIXEL_FORMAT_UNKNOWN) {
     VLOGF(1) << "unknown V4L2 pixel format: "
              << FourccToString(output_buffer_pixelformat_);
-    PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
     return false;
   }
 
@@ -493,7 +665,7 @@ bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
                         MAP_SHARED, planes[j].m.mem_offset);
       if (address == MAP_FAILED) {
         VPLOGF(1) << "mmap() failed";
-        PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+        PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
         return false;
       }
       output_buffer_map_[i].address[j] = address;
@@ -571,7 +743,7 @@ void V4L2MjpegDecodeAccelerator::DevicePollTask() {
   bool event_pending;
   if (!device_->Poll(true, &event_pending)) {
     VPLOGF(1) << "Poll device error.";
-    PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
     return;
   }
 
@@ -602,7 +774,7 @@ bool V4L2MjpegDecodeAccelerator::DequeueSourceChangeEvent() {
   } else {
     VLOGF(1) << "dequeue event failed.";
   }
-  PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+  PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
   return false;
 }
 
@@ -852,7 +1024,7 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
         break;
       }
       VPLOGF(1) << "ioctl() failed: input buffer VIDIOC_DQBUF failed.";
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+      PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
       return;
     }
     BufferRecord& input_record = input_buffer_map_[dqbuf.index];
@@ -862,7 +1034,7 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
 
     if (dqbuf.flags & V4L2_BUF_FLAG_ERROR) {
       VLOGF(1) << "Error in dequeued input buffer.";
-      PostNotifyError(kInvalidBitstreamBufferId, UNSUPPORTED_JPEG);
+      PostNotifyError(kInvalidTaskId, UNSUPPORTED_JPEG);
       running_jobs_.pop();
     }
   }
@@ -889,7 +1061,7 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
         break;
       }
       VPLOGF(1) << "ioctl() failed: output buffer VIDIOC_DQBUF failed.";
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+      PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
       return;
     }
     BufferRecord& output_record = output_buffer_map_[dqbuf.index];
@@ -903,23 +1075,26 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
 
     if (dqbuf.flags & V4L2_BUF_FLAG_ERROR) {
       VLOGF(1) << "Error in dequeued output buffer.";
-      PostNotifyError(kInvalidBitstreamBufferId, UNSUPPORTED_JPEG);
+      PostNotifyError(kInvalidTaskId, UNSUPPORTED_JPEG);
     } else {
       // Copy the decoded data from output buffer to the buffer provided by the
       // client. Do format conversion when output format is not
       // V4L2_PIX_FMT_YUV420.
-      if (!ConvertOutputImage(output_record,
-                              std::move(job_record->out_frame))) {
-        PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
+      if (!ConvertOutputImage(output_record, job_record->out_frame())) {
+        PostNotifyError(job_record->task_id(), PLATFORM_FAILURE);
         return;
       }
       DVLOGF(4) << "Decoding finished, returning bitstream buffer, id="
-                << job_record->bitstream_buffer_id;
+                << job_record->task_id();
 
+      // Destroy |job_record| before posting VideoFrameReady to the client to
+      // prevent race condition on the buffers.
+      const int32_t task_id = job_record->task_id();
+      job_record.reset();
       child_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&V4L2MjpegDecodeAccelerator::VideoFrameReady,
-                         weak_ptr_, job_record->bitstream_buffer_id));
+                         weak_ptr_, task_id));
     }
   }
 }
@@ -1016,9 +1191,9 @@ bool V4L2MjpegDecodeAccelerator::EnqueueInputRecord() {
   DCHECK(!input_record.at_device);
 
   // It will add default huffman segment if it's missing.
-  if (!AddHuffmanTable(job_record->shm.memory(), job_record->shm.size(),
+  if (!AddHuffmanTable(job_record->memory(), job_record->size(),
                        input_record.address[0], input_record.length[0])) {
-    PostNotifyError(job_record->bitstream_buffer_id, PARSE_JPEG_FAILED);
+    PostNotifyError(job_record->task_id(), PARSE_JPEG_FAILED);
     return false;
   }
 
@@ -1036,8 +1211,7 @@ bool V4L2MjpegDecodeAccelerator::EnqueueInputRecord() {
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
 
-  DVLOGF(3) << "enqueued frame id=" << job_record->bitstream_buffer_id
-            << " to device.";
+  DVLOGF(3) << "enqueued frame id=" << job_record->task_id() << " to device.";
   running_jobs_.push(std::move(job_record));
   free_input_buffers_.pop_back();
   return true;
@@ -1073,7 +1247,7 @@ void V4L2MjpegDecodeAccelerator::StartDevicePoll() {
 
   if (!device_poll_thread_.Start()) {
     VLOGF(1) << "Device thread failed to start";
-    PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
     return;
   }
   device_poll_task_runner_ = device_poll_thread_.task_runner();
@@ -1084,7 +1258,7 @@ bool V4L2MjpegDecodeAccelerator::StopDevicePoll() {
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!device_->SetDevicePollInterrupt()) {
     VLOGF(1) << "SetDevicePollInterrupt failed.";
-    PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    PostNotifyError(kInvalidTaskId, PLATFORM_FAILURE);
     return false;
   }
 

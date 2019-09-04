@@ -297,6 +297,8 @@ class CORE_EXPORT StyleResolver final
                         ValidPropertyFilter,
                         unsigned apply_mask);
 
+  void ApplyCascadedColorValue(StyleResolverState&);
+
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,
                                      StyleResolverState&);

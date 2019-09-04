@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/optional.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "dbus/object_proxy.h"
@@ -17,7 +18,8 @@
 namespace chromeos {
 
 class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
-    : public KerberosClient {
+    : public KerberosClient,
+      public KerberosClient::TestInterface {
  public:
   FakeKerberosClient();
   ~FakeKerberosClient() override;
@@ -44,6 +46,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
       KerberosFilesChangedCallback callback) override;
   void ConnectToKerberosTicketExpiringSignal(
       KerberosTicketExpiringCallback callback) override;
+  KerberosClient::TestInterface* GetTestInterface() override;
+
+  // KerberosClient::TestInterface:
+  void SetTaskDelay(base::TimeDelta delay) override;
+  void StartRecordingFunctionCalls() override;
+  std::string StopRecordingAndGetRecordedFunctionCalls() override;
 
  private:
   struct AccountData {
@@ -83,8 +91,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   // otherwise.
   AccountData* GetAccountData(const std::string& principal_name);
 
+  // Appends |function_name| to |recorded_function_calls_| if the latter is set.
+  void MaybeRecordFunctionCallForTesting(const char* function_name);
+
   // Maps principal name (user@REALM.COM) to account data.
   std::vector<AccountData> accounts_;
+
+  // For recording which methods have been called (for testing).
+  base::Optional<std::string> recorded_function_calls_;
+
+  // Fake delay for any asynchronous operation.
+  base::TimeDelta mTaskDelay = base::TimeDelta::FromMilliseconds(100);
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
   KerberosTicketExpiringCallback kerberos_ticket_expiring_callback_;

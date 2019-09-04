@@ -4,19 +4,22 @@
 
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
     : AppBrowserController(browser),
-      registrar_(WebAppProvider::Get(browser->profile())->registrar()),
+      provider_(*WebAppProvider::Get(browser->profile())),
       app_id_(GetAppIdFromApplicationName(browser->app_name())) {}
 
 WebAppBrowserController::~WebAppBrowserController() = default;
@@ -39,13 +42,20 @@ bool WebAppBrowserController::ShouldShowCustomTabBar() const {
 }
 
 gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
-  // TODO(https://crbug.com/966290): Complete implementation.
-  return gfx::ImageSkia();
+  if (app_icon_)
+    return *app_icon_;
+  app_icon_ = GetFallbackAppIcon();
+
+  provider_.icon_manager().ReadSmallestIcon(
+      app_id_, gfx::kFaviconSize,
+      base::BindOnce(&WebAppBrowserController::OnReadIcon,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  return *app_icon_;
 }
 
 gfx::ImageSkia WebAppBrowserController::GetWindowIcon() const {
-  // TODO(https://crbug.com/966290): Complete implementation.
-  return gfx::ImageSkia();
+  return GetWindowAppIcon();
 }
 
 base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
@@ -54,15 +64,15 @@ base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   if (web_theme_color)
     return web_theme_color;
 
-  return registrar_.GetAppThemeColor(app_id_);
+  return registrar().GetAppThemeColor(app_id_);
 }
 
 GURL WebAppBrowserController::GetAppLaunchURL() const {
-  return registrar_.GetAppLaunchURL(app_id_);
+  return registrar().GetAppLaunchURL(app_id_);
 }
 
 bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
-  base::Optional<GURL> app_scope = registrar_.GetAppScope(app_id_);
+  base::Optional<GURL> app_scope = registrar().GetAppScope(app_id_);
   if (!app_scope)
     return false;
 
@@ -74,12 +84,11 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
 
   std::string scope_path = app_scope->path();
   std::string url_path = url.path();
-  return scope_path.size() <= url_path.size() &&
-         scope_path == url_path.substr(0, scope_path.size());
+  return base::StartsWith(url_path, scope_path, base::CompareCase::SENSITIVE);
 }
 
 std::string WebAppBrowserController::GetAppShortName() const {
-  return registrar_.GetAppShortName(app_id_);
+  return registrar().GetAppShortName(app_id_);
 }
 
 base::string16 WebAppBrowserController::GetFormattedUrlOrigin() const {
@@ -100,7 +109,21 @@ void WebAppBrowserController::Uninstall() {
 }
 
 bool WebAppBrowserController::IsInstalled() const {
-  return registrar_.IsInstalled(app_id_);
+  return registrar().IsInstalled(app_id_);
+}
+
+const AppRegistrar& WebAppBrowserController::registrar() const {
+  return provider_.registrar();
+}
+
+void WebAppBrowserController::OnReadIcon(SkBitmap bitmap) {
+  if (bitmap.empty()) {
+    DLOG(ERROR) << "Failed to read icon for web app";
+    return;
+  }
+
+  app_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 }
 
 }  // namespace web_app

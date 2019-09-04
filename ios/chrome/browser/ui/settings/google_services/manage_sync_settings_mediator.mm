@@ -32,6 +32,9 @@
 
 using l10n_util::GetNSString;
 
+NSString* const kDataFromChromeSyncAccessibilityIdentifier =
+    @"DataFromChromeSyncAccessibilityIdentifier";
+
 namespace {
 
 // List of sections.
@@ -259,6 +262,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
   dataFromChromeSyncItem.detailText =
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
+  dataFromChromeSyncItem.accessibilityIdentifier =
+      kDataFromChromeSyncAccessibilityIdentifier;
   [model addItem:dataFromChromeSyncItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 }

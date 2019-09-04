@@ -101,7 +101,6 @@ void Partitions::DumpMemoryStats(
   // accessed only on the main thread.
   DCHECK(IsMainThread());
 
-  base::PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
   FastMallocPartition()->DumpStats("fast_malloc", is_light_dump,
                                    partition_stats_dumper);
   ArrayBufferPartition()->DumpStats("array_buffer", is_light_dump,

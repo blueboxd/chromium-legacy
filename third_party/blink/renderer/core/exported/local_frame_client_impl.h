@@ -37,6 +37,9 @@
 #include "base/memory/scoped_refptr.h"
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -357,20 +360,18 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   String user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
 
-  mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
+  mojo::Remote<mojom::blink::DocumentInterfaceBroker>
+      document_interface_broker_;
 
-  // |document_interface_broker_bindings_| basically just forwards the broker
+  // |document_interface_broker_receivers_| basically just forwards the broker
   // methods to GetDocumentInterfaceBroker()
   // via DocumentInterfaceBrokerForwarderTraits.
   // Used to connect JavaScript clients of DocumentInterfaceBroker with the same
   // implementation that |document_interface_broker_| is bound to.
-  using DocumentInterfaceBrokerBinding =
-      mojo::Binding<mojom::blink::DocumentInterfaceBroker,
-                    DocumentInterfaceBrokerForwarderTraits>;
-  mojo::BindingSetBase<mojom::blink::DocumentInterfaceBroker,
-                       DocumentInterfaceBrokerBinding,
-                       void>
-      document_interface_broker_bindings_;
+  mojo::ReceiverSetBase<mojo::Receiver<mojom::blink::DocumentInterfaceBroker,
+                                       DocumentInterfaceBrokerForwarderTraits>,
+                        void>
+      document_interface_broker_receivers_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,

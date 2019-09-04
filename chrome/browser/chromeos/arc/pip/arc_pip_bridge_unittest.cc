@@ -4,13 +4,11 @@
 
 #include "chrome/browser/chromeos/arc/pip/arc_picture_in_picture_window_controller_impl.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_pip_instance.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,12 +38,6 @@ class ArcPipBridgeTest : public testing::Test {
   ArcPipBridge* bridge() { return bridge_.get(); }
   FakePipInstance* pip_instance() { return pip_instance_.get(); }
 
- protected:
-  void SetSpokenFeedbackEnabled(bool enabled) {
-    return testing_profile_.GetPrefs()->SetBoolean(
-        ash::prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
-  }
-
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
@@ -68,20 +60,6 @@ TEST_F(ArcPipBridgeTest, OpeningAndroidPipTwiceElidesCloseCall) {
 
   bridge()->OnPipEvent(arc::mojom::ArcPipEvent::ENTER);
   EXPECT_EQ(0, pip_instance()->num_closed());
-}
-
-TEST_F(ArcPipBridgeTest, ChromeVoxSuppressesPip) {
-  // Initialized as "false" on connection ready.
-  EXPECT_TRUE(pip_instance()->suppressed().has_value());
-  EXPECT_FALSE(pip_instance()->suppressed().value());
-
-  // Enabling spoken-feedback suppresses pip.
-  SetSpokenFeedbackEnabled(true);
-  EXPECT_TRUE(pip_instance()->suppressed().value());
-
-  // Disabling spoken-feedback unsuppresses pip.
-  SetSpokenFeedbackEnabled(false);
-  EXPECT_FALSE(pip_instance()->suppressed().value());
 }
 
 }  // namespace arc

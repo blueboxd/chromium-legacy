@@ -129,8 +129,8 @@ void AvatarToolbarButton::UpdateIcon() {
   gfx::Image gaia_image = GetGaiaImage();
   SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(gaia_image));
 
-  // TODO(crbug.com/983182): Move this logic to OnExtendedAccountInfoUpdated()
-  // once GetGaiaImage() is updated to use GetUnconsentedPrimaryAccountInfo().
+  // TODO(crbug.com/990286): Get rid of this logic completely when we cache the
+  // Google account image in the profile cache and thus it is always available.
   if (waiting_for_image_to_show_user_email_ && !gaia_image.IsEmpty()) {
     waiting_for_image_to_show_user_email_ = false;
     ExpandToShowEmail();
@@ -316,10 +316,11 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // This function should only be used for regular profiles. Guest and Incognito
   // sessions should be handled separately and never call this function.
   DCHECK(profile_->IsRegularProfile());
-#if !defined(OS_CHROMEOS)
-  if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
+
+  if (IdentityManagerFactory::GetForProfile(profile_)
+          ->HasUnconsentedPrimaryAccount()) {
     return false;
-#endif  // !defined(OS_CHROMEOS)
+  }
 
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
   if (!entry) {
@@ -335,8 +336,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   return entry->GetAvatarIconIndex() == 0 &&
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
-                 .GetNumberOfProfiles() == 1 &&
-         !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount();
+                 .GetNumberOfProfiles() == 1;
 }
 
 base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
@@ -422,26 +422,24 @@ gfx::Image AvatarToolbarButton::GetGaiaImage() const {
     return gfx::Image();
   }
 
-#if !defined(OS_CHROMEOS)
   // Try to show the first account icon of the sync promo when the following
   // conditions are satisfied:
   //  - the user is migrated to Dice
   //  - the user isn't signed in
   //  - the profile icon wasn't explicitly changed
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
-      !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount() &&
+      !identity_manager->HasPrimaryAccount() &&
+      identity_manager->HasUnconsentedPrimaryAccount() &&
       entry->IsUsingDefaultAvatar()) {
-    // TODO(crbug.com/983182): Update to use GetUnconsentedPrimaryAccountInfo()
-    // and maybe move this whole logic to OnExtendedAccountInfoUpdated() which
-    // is the only callback where the image can change (and cache the resulting
-    // image as and cache it as |unconsented_primary_account_gaia_image_|).
-    std::vector<AccountInfo> promo_accounts =
-        signin_ui_util::GetAccountsForDicePromos(profile_);
-    if (!promo_accounts.empty()) {
-      return promo_accounts.front().account_image;
-    }
+    base::Optional<AccountInfo> account_info =
+        identity_manager
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                identity_manager->GetUnconsentedPrimaryAccountId());
+    if (account_info.has_value())
+      return account_info->account_image;
   }
-#endif  // !defined(OS_CHROMEOS)
   return gfx::Image();
 }
 

@@ -7,16 +7,18 @@
 
 #include <memory>
 
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
 
 class Browser;
 class ExtensionContextMenuController;
 class ExtensionsMenuButton;
 class ToolbarActionViewController;
+class ToolbarActionsModel;
 
 namespace views {
+class ImageButton;
 class MenuButton;
 }  // namespace views
 
@@ -25,6 +27,7 @@ class MenuButton;
 // a button to pin the extension to the toolbar and a button for accessing the
 // associated context menu.
 class ExtensionsMenuItemView : public views::View,
+                               public views::ButtonListener,
                                public views::MenuButtonListener {
  public:
   static constexpr int kSecondaryIconSizeDp = 16;
@@ -33,6 +36,9 @@ class ExtensionsMenuItemView : public views::View,
       Browser* browser,
       std::unique_ptr<ToolbarActionViewController> controller);
   ~ExtensionsMenuItemView() override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::Button* source,
@@ -43,14 +49,24 @@ class ExtensionsMenuItemView : public views::View,
 
   bool IsContextMenuRunning();
 
+  bool IsPinned();
+
   ExtensionsMenuButton* primary_action_button_for_testing();
 
  private:
+  // views::Button:
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+
   ExtensionsMenuButton* const primary_action_button_;
 
   std::unique_ptr<ToolbarActionViewController> controller_;
 
   views::MenuButton* context_menu_button_ = nullptr;
+
+  ToolbarActionsModel* const model_;
+
+  views::ImageButton* pin_button_ = nullptr;
 
   // This controller is responsible for showing the context menu for an
   // extension.

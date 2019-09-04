@@ -94,6 +94,7 @@ class TestSigninClient : public SigninClient {
   void PreGaiaLogout(base::OnceClosure callback) override;
   void SetReadyForDiceMigration(bool ready) override;
   void SetDiceMigrationCompleted() override;
+  bool IsNonEnterpriseUser(const std::string& email) override;
 
  private:
   std::unique_ptr<network::TestURLLoaderFactory>

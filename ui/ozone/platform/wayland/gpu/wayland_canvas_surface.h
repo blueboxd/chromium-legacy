@@ -42,6 +42,8 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas,
   // is backed by that shared region.
   class SharedMemoryBuffer;
 
+  void ProcessUnsubmittedBuffers();
+
   // WaylandSurfaceGpu overrides:
   void OnSubmission(uint32_t buffer_id,
                     const gfx::SwapResult& swap_result) override;
@@ -57,11 +59,18 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas,
   gfx::Size size_;
   std::vector<std::unique_ptr<SharedMemoryBuffer>> buffers_;
 
-  // Currently used buffer. Set on GetSurface() and released on PresentCanvas()
-  // call.
+  // Contains pending to be submitted buffers. The vector is processed as FIFO.
+  std::vector<SharedMemoryBuffer*> unsubmitted_buffers_;
+
+  // Pending buffer that is to be placed into the |unsubmitted_buffers_| to be
+  // processed.
+  SharedMemoryBuffer* pending_buffer_ = nullptr;
+
+  // Currently used buffer. Set on PresentCanvas() and released on
+  // OnSubmission() call.
   SharedMemoryBuffer* current_buffer_ = nullptr;
 
-  // Previously used buffer. Set on PresentCanvas().
+  // Previously used buffer. Set on OnSubmission().
   SharedMemoryBuffer* previous_buffer_ = nullptr;
 
   // The id of the current existing buffer. Even though, there can only be one

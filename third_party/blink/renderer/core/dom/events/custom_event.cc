@@ -36,7 +36,7 @@ CustomEvent::CustomEvent(ScriptState* script_state,
                          const CustomEventInit* initializer)
     : Event(type, initializer) {
   if (initializer->hasDetail()) {
-    detail_.SetAcrossWorld(initializer->detail().GetIsolate(),
+    detail_.SetAcrossWorld(script_state->GetIsolate(),
                            initializer->detail().V8Value());
   }
 }
@@ -50,7 +50,7 @@ void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   const ScriptValue& script_value) {
   initEvent(type, bubbles, cancelable);
   if (!IsBeingDispatched() && !script_value.IsEmpty())
-    detail_.SetAcrossWorld(script_value.GetIsolate(), script_value.V8Value());
+    detail_.SetAcrossWorld(script_state->GetIsolate(), script_value.V8Value());
 }
 
 ScriptValue CustomEvent::detail(ScriptState* script_state) const {

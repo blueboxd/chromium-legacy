@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 namespace dom_distiller {
 
@@ -75,7 +76,7 @@ const std::string GetJavaScript();
 // viewing distilled content based on the |path|.
 std::unique_ptr<ViewerHandle> CreateViewRequest(
     DomDistillerServiceInterface* dom_distiller_service,
-    const std::string& path,
+    const GURL& url,
     ViewRequestDelegate* view_request_delegate,
     const gfx::Size& render_view_size);
 

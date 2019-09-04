@@ -136,9 +136,9 @@ def main():
 
   # Append closure path to sys.path to be able to import js_unit_test.
   sys.path.append(os.path.join(args.src_path, 'third_party/closure_compiler'))
-  from js_unit_test import Flatten
+  from js_binary import CrawlDepsTree
 
-  deps = Flatten([args.input])
+  deps, _ = CrawlDepsTree([args.input])
 
   return _process(deps, args.output, args.mocks, args.html_import,
                   args.target_name)

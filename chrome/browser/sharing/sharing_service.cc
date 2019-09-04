@@ -44,7 +44,8 @@ SharingService::SharingService(
     gcm::GCMDriver* gcm_driver,
     syncer::DeviceInfoTracker* device_info_tracker,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
-    syncer::SyncService* sync_service)
+    syncer::SyncService* sync_service,
+    NotificationDisplayService* notification_display_service)
     : sync_prefs_(std::move(sync_prefs)),
       vapid_key_manager_(std::move(vapid_key_manager)),
       sharing_device_registration_(std::move(sharing_device_registration)),
@@ -82,12 +83,19 @@ SharingService::SharingService(
         sharing_service_proxy_android_.click_to_call_message_handler());
   }
 
+  shared_clipboard_message_handler_ =
+      std::make_unique<SharedClipboardMessageHandlerAndroid>(this);
+#else
+  shared_clipboard_message_handler_ =
+      std::make_unique<SharedClipboardMessageHandlerDesktop>(
+          this, notification_display_service);
+#endif  // defined(OS_ANDROID)
+
   if (base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
-        sharing_service_proxy_android_.shared_clipboard_message_handler());
+        shared_clipboard_message_handler_.get());
   }
-#endif  // defined(OS_ANDROID)
 
   // If device has already registered before, start listening to FCM right away
   // to avoid missing messages.

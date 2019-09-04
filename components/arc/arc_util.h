@@ -43,11 +43,6 @@ bool IsArcAvailable();
 // Returns true if ARC VM is enabled.
 bool IsArcVmEnabled();
 
-// These two methods used for testing only add and remove the arcvm flag so that
-// IsArcVmEnabled() returns the corresponding result.
-void EnableArcVmForTesting();
-void DisableArcVmForTesting();
-
 // Returns true if ARC should always start within the primary user session
 // (opted in user or not), and other supported mode such as guest and Kiosk
 // mode.

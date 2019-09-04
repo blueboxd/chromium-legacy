@@ -34,7 +34,7 @@ class ContentIndexMetrics {
   void RecordContentOpened(content::WebContents* web_contents,
                            blink::mojom::ContentCategory category);
 
-  // Records when a Content UIndex entry is deleted by a user.
+  // Records when a Content Index entry is deleted by a user.
   void RecordContentDeletedByUser(const url::Origin& origin);
 
   // Records the number of Content Index entries available when requested.

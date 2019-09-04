@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -77,10 +78,6 @@ void SharedClipboardUiController::OnAppChosen(const App& app) {
   // Do nothing - there is no apps
 }
 
-void SharedClipboardUiController::OnHelpTextClicked() {
-  // No help text
-}
-
 base::string16 SharedClipboardUiController::GetContentType() const {
   return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT);
 }
@@ -110,6 +107,17 @@ const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
 base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
     const {
   // TODO(yasmo): Update the text after approval.
+  return base::string16();
+}
+
+SharingFeatureName SharedClipboardUiController::GetFeatureMetricsPrefix()
+    const {
+  return SharingFeatureName::kSharedClipboard;
+}
+
+base::string16 SharedClipboardUiController::GetEducationWindowTitleText()
+    const {
+  // No educational window text for shared clipboard.
   return base::string16();
 }
 

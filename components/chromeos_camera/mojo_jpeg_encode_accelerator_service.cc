@@ -19,6 +19,8 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "components/chromeos_camera/common/dmabuf.mojom.h"
+#include "components/chromeos_camera/dmabuf_utils.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -31,45 +33,6 @@ namespace chromeos_camera {
 namespace {
 
 const int kJpegQuality = 90;
-
-scoped_refptr<media::VideoFrame> ConstructVideoFrame(
-    std::vector<chromeos_camera::mojom::DmaBufPlanePtr> dma_buf_planes,
-    media::VideoPixelFormat pixel_format,
-    int32_t width,
-    int32_t height) {
-  size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
-  if (num_planes != dma_buf_planes.size()) {
-    DLOG(ERROR) << "The amount of DMA buf planes does not match the format.";
-    return nullptr;
-  }
-  if (width <= 0 || height <= 0) {
-    DLOG(ERROR) << "Width and height should > 0: " << width << ", " << height;
-    return nullptr;
-  }
-  gfx::Size coded_size(width, height);
-  gfx::Rect visible_rect(coded_size);
-
-  std::vector<base::ScopedFD> dma_buf_fds(num_planes);
-  std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
-
-  for (size_t i = 0; i < num_planes; ++i) {
-    dma_buf_fds[i] =
-        mojo::UnwrapPlatformHandle(std::move(dma_buf_planes[i]->fd_handle))
-            .TakeFD();
-    planes[i].stride = dma_buf_planes[i]->stride;
-    planes[i].offset = dma_buf_planes[i]->offset;
-    planes[i].size = dma_buf_planes[i]->size;
-  }
-  auto layout = media::VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size, std::move(planes));
-
-  return media::VideoFrame::WrapExternalDmabufs(
-      *layout,                 // layout
-      visible_rect,            // visible_rect
-      coded_size,              // natural_size
-      std::move(dma_buf_fds),  // dmabuf_fds
-      base::TimeDelta());      // timestamp
-}
 
 media::VideoPixelFormat ToVideoPixelFormat(uint32_t fourcc_fmt) {
   switch (fourcc_fmt) {
@@ -284,7 +247,9 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
     int32_t coded_size_height,
     EncodeWithDmaBufCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (coded_size_width <= 0 || coded_size_height <= 0) {
+
+  const gfx::Size coded_size(coded_size_width, coded_size_height);
+  if (coded_size.IsEmpty()) {
     std::move(callback).Run(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::INVALID_ARGUMENT);
     return;
@@ -303,16 +268,14 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
   }
 
   auto input_video_frame = ConstructVideoFrame(
-      std::move(input_planes), ToVideoPixelFormat(input_format),
-      coded_size_width, coded_size_height);
+      std::move(input_planes), ToVideoPixelFormat(input_format), coded_size);
   if (!input_video_frame) {
     std::move(callback).Run(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
-  auto output_video_frame =
-      ConstructVideoFrame(std::move(output_planes), media::PIXEL_FORMAT_MJPEG,
-                          coded_size_width, coded_size_height);
+  auto output_video_frame = ConstructVideoFrame(
+      std::move(output_planes), media::PIXEL_FORMAT_MJPEG, coded_size);
   if (!output_video_frame) {
     std::move(callback).Run(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);

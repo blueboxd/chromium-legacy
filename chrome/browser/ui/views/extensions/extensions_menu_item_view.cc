@@ -7,20 +7,23 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/extension_context_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_host_view.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
 constexpr int EXTENSION_CONTEXT_MENU = 13;
+constexpr int EXTENSION_PINNING = 14;
 }  // namespace
 
 ExtensionsMenuItemView::ExtensionsMenuItemView(
@@ -28,7 +31,12 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
     std::unique_ptr<ToolbarActionViewController> controller)
     : primary_action_button_(
           new ExtensionsMenuButton(browser, this, controller.get())),
-      controller_(std::move(controller)) {
+      controller_(std::move(controller)),
+      model_(ToolbarActionsModel::Get(browser->profile())) {
+  // Set so the extension button receives enter/exit on children to retain hover
+  // status when hovering child views.
+  set_notify_enter_exit_on_child(true);
+
   context_menu_controller_ = std::make_unique<ExtensionContextMenuController>(
       nullptr, controller_.get());
 
@@ -47,6 +55,12 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
   const SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
+
+  auto pin_button = views::CreateVectorImageButton(this);
+  pin_button->SetID(EXTENSION_PINNING);
+  pin_button->set_ink_drop_base_color(icon_color);
+  pin_button_ = pin_button.get();
+  AddChildView(std::move(pin_button));
 
   // TODO(pbos): There's complicated configuration code in place since menus
   // can't be triggered from ImageButtons. When MenuRunner::RunMenuAt accepts
@@ -79,6 +93,15 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
 ExtensionsMenuItemView::~ExtensionsMenuItemView() = default;
 
+void ExtensionsMenuItemView::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
+  if (sender->GetID() == EXTENSION_PINNING) {
+    model_->SetActionVisibility(controller_->GetId(), !IsPinned());
+    return;
+  }
+  NOTREACHED();
+}
+
 void ExtensionsMenuItemView::OnMenuButtonClicked(views::Button* source,
                                                  const gfx::Point& point,
                                                  const ui::Event* event) {
@@ -90,11 +113,41 @@ void ExtensionsMenuItemView::OnMenuButtonClicked(views::Button* source,
 }
 
 void ExtensionsMenuItemView::UpdatePinButton() {
-  primary_action_button_->UpdatePinButton();
+  pin_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IsPinned() ? IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP
+                 : IDS_EXTENSIONS_MENU_PIN_BUTTON_TOOLTIP));
+  SkColor unpinned_icon_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
+          ? gfx::kGoogleGrey500
+          : gfx::kChromeIconGrey;
+  SkColor icon_color = IsPinned()
+                           ? GetNativeTheme()->GetSystemColor(
+                                 ui::NativeTheme::kColorId_ProminentButtonColor)
+                           : unpinned_icon_color;
+  views::SetImageFromVectorIcon(
+      pin_button_, IsPinned() ? views::kUnpinIcon : views::kPinIcon,
+      kSecondaryIconSizeDp, icon_color);
+  pin_button_->SetVisible(IsPinned() || IsMouseHovered() ||
+                          IsContextMenuRunning());
+}
+
+void ExtensionsMenuItemView::OnMouseEntered(const ui::MouseEvent& event) {
+  UpdatePinButton();
+}
+
+void ExtensionsMenuItemView::OnMouseExited(const ui::MouseEvent& event) {
+  UpdatePinButton();
 }
 
 bool ExtensionsMenuItemView::IsContextMenuRunning() {
   return context_menu_controller_->IsMenuRunning();
+}
+
+bool ExtensionsMenuItemView::IsPinned() {
+  // |model_| can be null in unit tests.
+  if (!model_)
+    return false;
+  return model_->IsActionPinned(controller_->GetId());
 }
 
 ExtensionsMenuButton*

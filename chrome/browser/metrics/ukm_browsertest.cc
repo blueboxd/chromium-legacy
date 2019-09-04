@@ -571,7 +571,13 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
   CloseBrowserSynchronously(sync_browser);
 }
 
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/996823): Re-enable this test.
+#define MAYBE_LogProtoData DISABLED_LogProtoData
+#else
+#define MAYBE_LogProtoData LogProtoData
+#endif
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_LogProtoData) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -611,7 +617,16 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogProtoData) {
 
 // Verifies that network provider attaches effective connection type correctly
 // to the UKM report.
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/996823): Re-enable this test.
+#define MAYBE_NetworkProviderPopulatesSystemProfile \
+  DISABLED_NetworkProviderPopulatesSystemProfile
+#else
+#define MAYBE_NetworkProviderPopulatesSystemProfile \
+  NetworkProviderPopulatesSystemProfile
+#endif
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest,
+                       MAYBE_NetworkProviderPopulatesSystemProfile) {
   // Override network quality to 2G. This should cause the
   // |max_effective_connection_type| in the system profile to be set to 2G.
   g_browser_process->network_quality_tracker()

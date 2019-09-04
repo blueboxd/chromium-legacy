@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
@@ -24,8 +23,6 @@ namespace base {
 namespace internal {
 
 struct PartitionRootBase;
-
-BASE_EXPORT extern const Feature kPartitionAllocPeriodicDecommit;
 
 }  // namespace internal
 
@@ -52,8 +49,6 @@ class BASE_EXPORT PartitionAllocMemoryReclaimer {
   void Start(scoped_refptr<SequencedTaskRunner> task_runner);
   // Triggers an explicit reclaim now.
   void Reclaim();
-  // Triggers a reclaim. Do not add new callers.
-  void DeprecatedReclaim();
 
   static constexpr TimeDelta kStatsRecordingTimeDelta =
       TimeDelta::FromMinutes(5);

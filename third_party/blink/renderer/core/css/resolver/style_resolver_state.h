@@ -174,6 +174,20 @@ class CORE_EXPORT StyleResolverState {
   void SetHasDirAutoAttribute(bool value) { has_dir_auto_attribute_ = value; }
   bool HasDirAutoAttribute() const { return has_dir_auto_attribute_; }
 
+  const CSSValue* GetCascadedColorValue() const {
+    return cascaded_color_value_;
+  }
+  const CSSValue* GetCascadedVisitedColorValue() const {
+    return cascaded_visited_color_value_;
+  }
+
+  void SetCascadedColorValue(const CSSValue* color) {
+    cascaded_color_value_ = color;
+  }
+  void SetCascadedVisitedColorValue(const CSSValue* color) {
+    cascaded_visited_color_value_ = color;
+  }
+
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
   ParsedPropertiesForPendingSubstitutionCache(
       const cssvalue::CSSPendingSubstitutionValue&) const;
@@ -212,6 +226,9 @@ class CORE_EXPORT StyleResolverState {
   bool is_animating_custom_properties_;
 
   bool has_dir_auto_attribute_;
+
+  Member<const CSSValue> cascaded_color_value_;
+  Member<const CSSValue> cascaded_visited_color_value_;
 
   FontBuilder font_builder_;
 

@@ -153,7 +153,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Updates the stored time to match the value of
   // registration->last_update_check().
-  void UpdateLastUpdateCheckTime(ServiceWorkerRegistration* registration);
+  void UpdateLastUpdateCheckTime(ServiceWorkerRegistration* registration,
+                                 StatusCallback callback);
 
   // Updates the specified registration's navigation preload state in storage.
   // The caller is responsible for mutating the live registration's state.
@@ -288,6 +289,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void PurgeResources(const ResourceList& resources);
 
   void LazyInitializeForTest();
+
+  void SetPurgingCompleteCallbackForTest(base::OnceClosure callback);
 
  private:
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
@@ -614,6 +617,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   base::circular_deque<int64_t> purgeable_resource_ids_;
   bool is_purge_pending_;
   bool has_checked_for_stale_resources_;
+  base::OnceClosure purging_complete_callback_for_test_;
 
   base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_{this};
 

@@ -55,8 +55,7 @@ class DomDistillerViewerSource::RequestViewerHandle
       public content::WebContentsObserver {
  public:
   RequestViewerHandle(content::WebContents* web_contents,
-                      const std::string& expected_scheme,
-                      const std::string& expected_request_path,
+                      const GURL& expected_url,
                       DistilledPagePrefs* distilled_page_prefs,
                       DistillerUIHandle* ui_handle);
   ~RequestViewerHandle() override;
@@ -83,11 +82,8 @@ class DomDistillerViewerSource::RequestViewerHandle
   // cancelled.
   void Cancel();
 
-  // The scheme hosting the current view request;
-  std::string expected_scheme_;
-
-  // The query path for the current view request.
-  std::string expected_request_path_;
+  // The URL hosting the current view request;
+  const GURL expected_url_;
 
   // Whether the page is sufficiently initialized to handle updates from the
   // distiller.
@@ -108,13 +104,11 @@ class DomDistillerViewerSource::RequestViewerHandle
 
 DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
     content::WebContents* web_contents,
-    const std::string& expected_scheme,
-    const std::string& expected_request_path,
+    const GURL& expected_url,
     DistilledPagePrefs* distilled_page_prefs,
     DistillerUIHandle* ui_handle)
     : DomDistillerRequestViewBase(distilled_page_prefs),
-      expected_scheme_(expected_scheme),
-      expected_request_path_(expected_request_path),
+      expected_url_(expected_url),
       waiting_for_page_ready_(true),
       distiller_ui_handle_(ui_handle) {
   content::WebContentsObserver::Observe(web_contents);
@@ -146,9 +140,7 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     return;
 
   const GURL& navigation = navigation_handle->GetURL();
-  bool expected_main_view_request =
-      navigation.SchemeIs(expected_scheme_) &&
-      expected_request_path_ == navigation.query();
+  bool expected_main_view_request = navigation == expected_url_;
   if (navigation_handle->IsSameDocument() || expected_main_view_request) {
     // In-page navigations, as well as the main view request can be ignored.
     if (expected_main_view_request) {
@@ -260,21 +252,29 @@ void DomDistillerViewerSource::StartDataRequest(
     }
   }
 
-  // An empty |path| is invalid, but guard against it. If not empty, assume
-  // |path| starts with '?', which is stripped away.
-  const std::string path_after_query_separator =
-      path.size() > 0 ? path.substr(1) : "";
+  // We need the host part to validate the parameter, but it's not available
+  // from |URLDataSource|. |web_contents| is the most convenient place to
+  // obtain the full URL.
+  // TODO(crbug.com/991888): pass GURL in URLDataSource::StartDataRequest().
+  const std::string query = GURL("https://host/" + path).query();
+  GURL request_url = web_contents->GetVisibleURL();
+  // The query should match what's seen in |web_contents|.
+  // For javascript:window.open(), it's not the case, but it's not a supported
+  // use case.
+  if (request_url.query() != query || request_url.path() != "/") {
+    request_url = GURL();
+  }
   RequestViewerHandle* request_viewer_handle =
-      new RequestViewerHandle(web_contents, scheme_, path_after_query_separator,
+      new RequestViewerHandle(web_contents, request_url,
                               dom_distiller_service_->GetDistilledPagePrefs(),
                               distiller_ui_handle_.get());
   std::unique_ptr<ViewerHandle> viewer_handle = viewer::CreateViewRequest(
-      dom_distiller_service_, path, request_viewer_handle,
+      dom_distiller_service_, request_url, request_viewer_handle,
       web_contents->GetContainerBounds().size());
 
-  GURL current_url(url_utils::GetValueForKeyInUrlPathQuery(path, kUrlKey));
+  GURL current_url(url_utils::GetOriginalUrlFromDistillerUrl(request_url));
   std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
-      url_utils::GetOriginalUrlFromDistillerUrl(current_url).spec(),
+      current_url.spec(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
 

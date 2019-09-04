@@ -2987,9 +2987,11 @@ crbug.com/399507 virtual/threaded/http/tests/devtools/tracing/timeline-paint/lay
 # non-deterministic order.
 crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-out-of-DOM-element.html [ Failure ]
 
-# Skip the non-virtualized CORS-RFC1918 tests:
-crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
-crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
+# Skip the non-virtualized CORS-RFC1918 blocking tests (`.addressSpace` tests are fine):
+crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
+crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
+crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
+crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
 
 crbug.com/831729 external/wpt/event-timing/crossiframe.html [ Timeout ]
 crbug.com/831729 external/wpt/event-timing/observer-manual.html [ Skip ]
@@ -6532,3 +6534,6 @@ crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-nav
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Pass Failure ]
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Pass Failure ]
 crbug.com/1000396 [ Win ] virtual/audio-service/media/video-remove-insert-repaints.html [ Pass Failure ]
+
+# Partial fix to avoid a regression on eval(string) with Trusted Types enabled in Chrome 77.
+crbug.com/992424 external/wpt/trusted-types/block-eval.tentative.html [ Failure ]

@@ -41,6 +41,7 @@
 #include "content/test/test_document_interface_broker.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -112,13 +113,15 @@ class RenderFrameImplTest : public RenderViewTest {
     service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
     mojo::MakeRequest(&stub_interface_provider);
 
-    blink::mojom::DocumentInterfaceBrokerPtr
+    mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
         stub_document_interface_broker_content;
-    mojo::MakeRequest(&stub_document_interface_broker_content);
+    ignore_result(stub_document_interface_broker_content
+                      .InitWithNewPipeAndPassReceiver());
 
-    blink::mojom::DocumentInterfaceBrokerPtr
+    mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
         stub_document_interface_broker_blink;
-    mojo::MakeRequest(&stub_document_interface_broker_blink);
+    ignore_result(
+        stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
 
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         stub_browser_interface_broker;
@@ -260,8 +263,9 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
 
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
-  mojo::MakeRequest(&stub_document_interface_broker);
+  mojo::Remote<blink::mojom::DocumentInterfaceBroker>
+      stub_document_interface_broker;
+  ignore_result(stub_document_interface_broker.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
@@ -280,7 +284,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   parent_web_frame->CreateLocalChild(
       blink::WebTreeScopeType::kDocument, grandchild,
       grandchild->blink_interface_registry_.get(),
-      mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
+      stub_document_interface_broker.BindNewPipeAndPassReceiver().PassPipe());
   grandchild->in_frame_tree_ = true;
   grandchild->Initialize();
 
@@ -337,10 +341,12 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
         frame()->GetWebFrame()->GetDocumentLoader());
     navigation_state->set_was_within_same_document(false);
 
-    blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
+    mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+        stub_document_interface_broker;
     frame()->DidCommitProvisionalLoad(
         item, blink::kWebStandardCommit,
-        mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
+        stub_document_interface_broker.InitWithNewPipeAndPassReceiver()
+            .PassPipe());
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The main frame's effective connection type should be reset on commit.
@@ -348,9 +354,11 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
         GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
     navigation_state->set_was_within_same_document(false);
 
+    stub_document_interface_broker.reset();
     GetMainRenderFrame()->DidCommitProvisionalLoad(
         item, blink::kWebStandardCommit,
-        mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
+        stub_document_interface_broker.InitWithNewPipeAndPassReceiver()
+            .PassPipe());
     EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
               GetMainRenderFrame()->GetEffectiveConnectionType());
 
@@ -660,9 +668,9 @@ class FrameHostTestDocumentInterfaceBroker
  public:
   FrameHostTestDocumentInterfaceBroker(
       blink::mojom::DocumentInterfaceBroker* document_interface_broker,
-      blink::mojom::DocumentInterfaceBrokerRequest request)
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker> receiver)
       : TestDocumentInterfaceBroker(document_interface_broker,
-                                    std::move(request)) {}
+                                    std::move(receiver)) {}
 
   void GetFrameHostTestInterface(
       mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
@@ -673,9 +681,10 @@ class FrameHostTestDocumentInterfaceBroker
 };
 
 TEST_F(RenderFrameImplTest, TestDocumentInterfaceBrokerOverride) {
-  blink::mojom::DocumentInterfaceBrokerPtr doc;
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker> doc;
   FrameHostTestDocumentInterfaceBroker frame_interface_broker(
-      frame()->GetDocumentInterfaceBroker(), mojo::MakeRequest(&doc));
+      frame()->GetDocumentInterfaceBroker(),
+      doc.InitWithNewPipeAndPassReceiver());
   frame()->SetDocumentInterfaceBrokerForTesting(std::move(doc));
 
   mojo::Remote<blink::mojom::FrameHostTestInterface> frame_test;
@@ -780,11 +789,12 @@ class TestSimpleDocumentInterfaceBrokerImpl
   using BinderCallback = base::RepeatingCallback<void(
       mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>)>;
   TestSimpleDocumentInterfaceBrokerImpl(BinderCallback binder_callback)
-      : binding_(this), binder_callback_(binder_callback) {}
-  void BindAndFlush(blink::mojom::DocumentInterfaceBrokerRequest request) {
-    ASSERT_FALSE(binding_.is_bound());
-    binding_.Bind(std::move(request));
-    binding_.FlushForTesting();
+      : binder_callback_(binder_callback) {}
+  void BindAndFlush(
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker> receiver) {
+    ASSERT_FALSE(receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
+    receiver_.FlushForTesting();
   }
 
  private:
@@ -804,7 +814,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
       mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
           receiver) override {}
 
-  mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
+  mojo::Receiver<blink::mojom::DocumentInterfaceBroker> receiver_{this};
   BinderCallback binder_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSimpleDocumentInterfaceBrokerImpl);
@@ -1023,8 +1033,8 @@ class ScopedNewFrameInterfaceProviderExerciser {
     interface_request_for_first_document_ =
         frame_->TakeLastInterfaceProviderRequest();
 
-    document_interface_broker_request_for_first_document_ =
-        frame_->TakeLastDocumentInterfaceBrokerRequest();
+    document_interface_broker_receiver_for_first_document_ =
+        frame_->TakeLastDocumentInterfaceBrokerReceiver();
 
     browser_interface_broker_receiver_for_first_document_ =
         frame_->TakeLastBrowserInterfaceBrokerReceiver();
@@ -1035,10 +1045,10 @@ class ScopedNewFrameInterfaceProviderExerciser {
     return std::move(interface_request_for_initial_empty_document_);
   }
 
-  blink::mojom::DocumentInterfaceBrokerRequest
-  document_interface_broker_request_for_initial_empty_document() {
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  document_interface_broker_receiver_for_initial_empty_document() {
     return std::move(
-        document_interface_broker_request_for_initial_empty_document_);
+        document_interface_broker_receiver_for_initial_empty_document_);
   }
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
@@ -1052,9 +1062,9 @@ class ScopedNewFrameInterfaceProviderExerciser {
     return std::move(interface_request_for_first_document_);
   }
 
-  blink::mojom::DocumentInterfaceBrokerRequest
-  document_interface_broker_request_for_first_document() {
-    return std::move(document_interface_broker_request_for_first_document_);
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  document_interface_broker_receiver_for_first_document() {
+    return std::move(document_interface_broker_receiver_for_first_document_);
   }
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
@@ -1082,8 +1092,8 @@ class ScopedNewFrameInterfaceProviderExerciser {
 
     interface_request_for_initial_empty_document_ =
         frame->TakeLastInterfaceProviderRequest();
-    document_interface_broker_request_for_initial_empty_document_ =
-        frame->TakeLastDocumentInterfaceBrokerRequest();
+    document_interface_broker_receiver_for_initial_empty_document_ =
+        frame->TakeLastDocumentInterfaceBrokerReceiver();
     browser_interface_broker_receiver_for_initial_empty_document_ =
         frame_->TakeLastBrowserInterfaceBrokerReceiver();
     EXPECT_TRUE(frame->current_history_item().IsNull());
@@ -1102,10 +1112,10 @@ class ScopedNewFrameInterfaceProviderExerciser {
   service_manager::mojom::InterfaceProviderRequest
       interface_request_for_first_document_;
 
-  blink::mojom::DocumentInterfaceBrokerRequest
-      document_interface_broker_request_for_initial_empty_document_;
-  blink::mojom::DocumentInterfaceBrokerRequest
-      document_interface_broker_request_for_first_document_;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_receiver_for_initial_empty_document_;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_receiver_for_first_document_;
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_for_initial_empty_document_;
@@ -1121,8 +1131,8 @@ class ScopedNewFrameInterfaceProviderExerciser {
 // FrameHostTestInterface requests.
 void ExpectPendingInterfaceRequestsFromSources(
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
-    blink::mojom::DocumentInterfaceBrokerRequest
-        document_interface_broker_request,
+    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+        document_interface_broker_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
     std::vector<SourceAnnotation> expected_sources) {
@@ -1143,7 +1153,7 @@ void ExpectPendingInterfaceRequestsFromSources(
   EXPECT_THAT(sources, ::testing::ElementsAreArray(expected_sources));
 
   std::vector<SourceAnnotation> document_interface_broker_sources;
-  ASSERT_TRUE(document_interface_broker_request.is_pending());
+  ASSERT_TRUE(document_interface_broker_receiver.is_valid());
   TestSimpleDocumentInterfaceBrokerImpl broker(base::BindLambdaForTesting(
       [&document_interface_broker_sources](
           mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>
@@ -1153,7 +1163,7 @@ void ExpectPendingInterfaceRequestsFromSources(
         ASSERT_TRUE(impl.ping_source().has_value());
         document_interface_broker_sources.push_back(impl.ping_source().value());
       }));
-  broker.BindAndFlush(std::move(document_interface_broker_request));
+  broker.BindAndFlush(std::move(document_interface_broker_receiver));
   EXPECT_THAT(document_interface_broker_sources,
               ::testing::ElementsAreArray(expected_sources));
 
@@ -1239,7 +1249,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
   ExpectPendingInterfaceRequestsFromSources(
       child_frame_exerciser.interface_request_for_initial_empty_document(),
       child_frame_exerciser
-          .document_interface_broker_request_for_initial_empty_document(),
+          .document_interface_broker_receiver_for_initial_empty_document(),
       child_frame_exerciser
           .browser_interface_broker_receiver_for_initial_empty_document(),
       {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
@@ -1253,7 +1263,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
   ExpectPendingInterfaceRequestsFromSources(
       child_frame_exerciser.interface_request_for_first_document(),
       child_frame_exerciser
-          .document_interface_broker_request_for_first_document(),
+          .document_interface_broker_receiver_for_first_document(),
       child_frame_exerciser
           .browser_interface_broker_receiver_for_first_document(),
       {{child_frame_url, kFrameEventDidCommitProvisionalLoad},
@@ -1295,7 +1305,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
   ExpectPendingInterfaceRequestsFromSources(
       main_frame_exerciser.interface_request_for_initial_empty_document(),
       main_frame_exerciser
-          .document_interface_broker_request_for_initial_empty_document(),
+          .document_interface_broker_receiver_for_initial_empty_document(),
       main_frame_exerciser
           .browser_interface_broker_receiver_for_initial_empty_document(),
       {{initial_empty_url, kFrameEventDidCreateNewFrame},
@@ -1304,7 +1314,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
   ExpectPendingInterfaceRequestsFromSources(
       main_frame_exerciser.interface_request_for_first_document(),
       main_frame_exerciser
-          .document_interface_broker_request_for_first_document(),
+          .document_interface_broker_receiver_for_first_document(),
       main_frame_exerciser
           .browser_interface_broker_receiver_for_first_document(),
       {{new_window_url, kFrameEventDidCommitProvisionalLoad},
@@ -1361,7 +1371,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
     ExpectPendingInterfaceRequestsFromSources(
         child_frame_exerciser.interface_request_for_initial_empty_document(),
         child_frame_exerciser
-            .document_interface_broker_request_for_initial_empty_document(),
+            .document_interface_broker_receiver_for_initial_empty_document(),
         child_frame_exerciser
             .browser_interface_broker_receiver_for_initial_empty_document(),
         {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
@@ -1374,10 +1384,10 @@ TEST_F(RenderFrameRemoteInterfacesTest,
 
     auto request = child_frame_exerciser.interface_request_for_first_document();
     ASSERT_FALSE(request.is_pending());
-    auto document_interface_broker_request =
+    auto document_interface_broker_receiver =
         child_frame_exerciser
-            .document_interface_broker_request_for_first_document();
-    ASSERT_FALSE(document_interface_broker_request.is_pending());
+            .document_interface_broker_receiver_for_first_document();
+    ASSERT_FALSE(document_interface_broker_receiver.is_valid());
     auto browser_interface_broker_receiver =
         child_frame_exerciser
             .browser_interface_broker_receiver_for_first_document();
@@ -1396,8 +1406,8 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
   auto interface_provider_request_for_first_document =
       GetMainRenderFrame()->TakeLastInterfaceProviderRequest();
 
-  auto document_interface_broker_request_for_first_document =
-      GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerRequest();
+  auto document_interface_broker_receiver_for_first_document =
+      GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerReceiver();
 
   auto browser_interface_broker_receiver_for_first_document =
       GetMainRenderFrame()->TakeLastBrowserInterfaceBrokerReceiver();
@@ -1411,27 +1421,25 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
       GetMainRenderFrame()->TakeLastInterfaceProviderRequest();
 
   auto document_interface_broker_request_for_second_document =
-      GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerRequest();
+      GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerReceiver();
 
   auto browser_interface_broker_receiver_for_second_document =
       GetMainRenderFrame()->TakeLastBrowserInterfaceBrokerReceiver();
 
   ASSERT_TRUE(interface_provider_request_for_first_document.is_pending());
-  ASSERT_TRUE(
-      document_interface_broker_request_for_first_document.is_pending());
+  ASSERT_TRUE(document_interface_broker_receiver_for_first_document.is_valid());
   ASSERT_TRUE(browser_interface_broker_receiver_for_first_document.is_valid());
 
   ExpectPendingInterfaceRequestsFromSources(
       std::move(interface_provider_request_for_first_document),
-      std::move(document_interface_broker_request_for_first_document),
+      std::move(document_interface_broker_receiver_for_first_document),
       std::move(browser_interface_broker_receiver_for_first_document),
       {{GURL(kTestFirstURL), kFrameEventAfterCommit},
        {GURL(kTestFirstURL), kFrameEventReadyToCommitNavigation},
        {GURL(kTestSecondURL), kFrameEventDidCreateNewDocument}});
 
   ASSERT_TRUE(interface_provider_request_for_second_document.is_pending());
-  ASSERT_TRUE(
-      document_interface_broker_request_for_second_document.is_pending());
+  ASSERT_TRUE(document_interface_broker_request_for_second_document.is_valid());
   ASSERT_TRUE(browser_interface_broker_receiver_for_second_document.is_valid());
 
   ExpectPendingInterfaceRequestsFromSources(
@@ -1455,7 +1463,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
       GetMainRenderFrame()->TakeLastInterfaceProviderRequest();
 
   auto document_interface_broker =
-      GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerRequest();
+      GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerReceiver();
 
   auto browser_interface_broker_receiver =
       GetMainRenderFrame()->TakeLastBrowserInterfaceBrokerReceiver();
@@ -1467,11 +1475,11 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
       GetMainRenderFrame()->TakeLastInterfaceProviderRequest().is_pending());
 
   EXPECT_FALSE(GetMainRenderFrame()
-                   ->TakeLastDocumentInterfaceBrokerRequest()
-                   .is_pending());
+                   ->TakeLastDocumentInterfaceBrokerReceiver()
+                   .is_valid());
 
   ASSERT_TRUE(interface_provider_request.is_pending());
-  ASSERT_TRUE(document_interface_broker.is_pending());
+  ASSERT_TRUE(document_interface_broker.is_valid());
   ASSERT_TRUE(browser_interface_broker_receiver.is_valid());
 
   ExpectPendingInterfaceRequestsFromSources(

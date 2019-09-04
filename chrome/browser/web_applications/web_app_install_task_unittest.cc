@@ -122,8 +122,8 @@ class WebAppInstallTaskTest : public WebAppTest {
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
 
-    icon_manager_ =
-        std::make_unique<WebAppIconManager>(profile(), std::move(file_utils));
+    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), *registrar_,
+                                                        std::move(file_utils));
 
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 

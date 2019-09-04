@@ -8,6 +8,7 @@
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 
 namespace content {
@@ -39,6 +40,10 @@ enum class SharingDialogType {
   kMaxValue = kErrorDialog,
 };
 
+// These histogram suffixes must match the ones in Sharing{feature}Ui
+// defined in histograms.xml.
+const char kSharingUiContextMenu[] = "ContextMenu";
+const char kSharingUiDialog[] = "Dialog";
 // Entry point of a Click to Call journey.
 // These values are logged to UKM. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
@@ -84,35 +89,46 @@ void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result);
 void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result);
 
 // Logs the number of available devices that are about to be shown in a UI for
-// picking a device to start a phone call on. The |histogram_suffix| indicates
-// in which UI this event happened and must match one from SharingClickToCallUi
-// defined in histograms.xml - use the constants defined in this file for that.
-void LogClickToCallDevicesToShow(const char* histogram_suffix, int count);
+// picking a device to start a sharing functionality. The |histogram_suffix|
+// indicates in which UI this event happened and must match one from
+// Sharing{feature}Ui defined in histograms.xml use the constants defined
+// in this file for that.
+// TODO(yasmo): Change histogram_suffix to be an enum type.
+void LogSharingDevicesToShow(SharingFeatureName feature,
+                             const char* histogram_suffix,
+                             int count);
 
 // Logs the number of available apps that are about to be shown in a UI for
-// picking an app to start a phone call with. The |histogram_suffix| indicates
-// in which UI this event happened and must match one from SharingClickToCallUi
-// defined in histograms.xml - use the constants defined in this file for that.
-void LogClickToCallAppsToShow(const char* histogram_suffix, int count);
+// picking an app to start a sharing functionality. The |histogram_suffix|
+// indicates in which UI this event happened and must match one from
+// Sharing{feature}Ui defined in histograms.xml - use the constants defined
+// in this file for that.
+void LogSharingAppsToShow(SharingFeatureName feature,
+                          const char* histogram_suffix,
+                          int count);
 
-// Logs the |index| of the device selected by the user for Click to Call. The
+// Logs the |index| of the device selected by the user for sharing feature. The
 // |histogram_suffix| indicates in which UI this event happened and must match
-// one from SharingClickToCallUi defined in histograms.xml - use the constants
-// defined in this file for that.
-void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix, int index);
+// one from Sharing{feature}Ui defined in histograms.xml - use the
+// constants defined in this file for that.
+void LogSharingSelectedDeviceIndex(SharingFeatureName feature,
+                                   const char* histogram_suffix,
+                                   int index);
 
-// Logs the |index| of the app selected by the user for Click to Call. The
+// Logs the |index| of the app selected by the user for sharing feature. The
 // |histogram_suffix| indicates in which UI this event happened and must match
-// one from SharingClickToCallUi defined in histograms.xml - use the constants
-// defined in this file for that.
-void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index);
+// one from Sharing{feature}Ui defined in histograms.xml - use the
+// constants defined in this file for that.
+void LogSharingSelectedAppIndex(SharingFeatureName feature,
+                                const char* histogram_suffix,
+                                int index);
 
 // Logs to UMA the time from sending a FCM message from the Sharing service
 // until an ack message is received for it.
 void LogSharingMessageAckTime(base::TimeDelta time);
 
-// Logs to UMA the |type| of dialog shown for Click to Call.
-void LogClickToCallDialogShown(SharingDialogType type);
+// Logs to UMA the |type| of dialog shown for sharing feature.
+void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
 
 // Logs to UMA result of sending a SharingMessage. This should not be called for
 // sending ack messages.

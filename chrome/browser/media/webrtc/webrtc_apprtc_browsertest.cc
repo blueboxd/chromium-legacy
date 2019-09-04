@@ -71,7 +71,8 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   bool LaunchApprtcInstanceOnLocalhost(const std::string& port) {
     base::FilePath appengine_dev_appserver =
         GetSourceDir().Append(FILE_PATH_LITERAL(
-            "out/apprtc/temp/google-cloud-sdk/bin/dev_appserver.py"));
+            "third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/"
+            "apprtc/temp/google-cloud-sdk/bin/dev_appserver.py"));
     if (!base::PathExists(appengine_dev_appserver)) {
       LOG(ERROR) << "Missing appengine sdk at " <<
           appengine_dev_appserver.value() << ".\n" <<
@@ -79,8 +80,9 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
       return false;
     }
 
-    base::FilePath apprtc_dir =
-        GetSourceDir().Append(FILE_PATH_LITERAL("out/apprtc/out/app_engine"));
+    base::FilePath apprtc_dir = GetSourceDir().Append(
+        FILE_PATH_LITERAL("third_party/webrtc/rtc_tools/testing/"
+                          "webrtc_apprtc_browsertest/apprtc/out/app_engine"));
     if (!base::PathExists(apprtc_dir)) {
       LOG(ERROR) << "Missing AppRTC AppEngine app at " <<
           apprtc_dir.value() << ".\n" << test::kAdviseOnGclientSolution;
@@ -113,11 +115,13 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     // The go workspace should be created, and collidermain built, at the
     // runhooks stage when webrtc.DEPS/build_apprtc_collider.py runs.
 #if defined(OS_WIN)
-    base::FilePath collider_server = GetSourceDir().Append(
-        FILE_PATH_LITERAL("out/collider/collidermain.exe"));
+    base::FilePath collider_server = GetSourceDir().Append(FILE_PATH_LITERAL(
+        "third_party/webrtc/rtc_tools/testing/"
+        "webrtc_apprtc_browsertest/collider/collidermain.exe"));
 #else
-    base::FilePath collider_server =
-        GetSourceDir().Append(FILE_PATH_LITERAL("out/collider/collidermain"));
+    base::FilePath collider_server = GetSourceDir().Append(
+        FILE_PATH_LITERAL("third_party/webrtc/rtc_tools/testing/"
+                          "webrtc_apprtc_browsertest/collider/collidermain"));
 #endif
     if (!base::PathExists(collider_server)) {
       LOG(ERROR) << "Missing Collider server binary at " <<

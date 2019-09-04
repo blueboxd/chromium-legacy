@@ -207,7 +207,7 @@ void VideoCaptureManager::Close(
 
     // StopSession() may have removed the last client, so we might need to
     // close the device.
-    DestroyControllerIfNoClients(existing_device);
+    DestroyControllerIfNoClients(capture_session_id, existing_device);
   }
 
   // Notify listeners asynchronously, and forget the session.
@@ -480,7 +480,7 @@ void VideoCaptureManager::DisconnectClient(
   EmitLogMessage(string_stream.str(), 1);
 
   // If controller has no more clients, delete controller and device.
-  DestroyControllerIfNoClients(controller);
+  DestroyControllerIfNoClients(session_id, controller);
 }
 
 void VideoCaptureManager::PauseCaptureForClient(
@@ -765,6 +765,7 @@ void VideoCaptureManager::OnDeviceInfosReceived(
 }
 
 void VideoCaptureManager::DestroyControllerIfNoClients(
+    const base::UnguessableToken& capture_session_id,
     VideoCaptureController* controller) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Removal of the last client stops the device.
@@ -789,6 +790,12 @@ void VideoCaptureManager::DestroyControllerIfNoClients(
           return device_entry.get() == controller;
         });
     controllers_.erase(controller_iter);
+    // Check if there are any associated pending callbacks and delete them.
+    photo_request_queue_.remove_if(
+        [capture_session_id](
+            const std::pair<base::UnguessableToken, base::Closure>& request) {
+          return request.first == capture_session_id;
+        });
   }
 }
 

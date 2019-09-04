@@ -170,6 +170,8 @@ class KerberosClientImpl : public KerberosClient {
   }
 
  private:
+  TestInterface* GetTestInterface() override { return nullptr; }
+
   // Calls kerberosd's |method_name| method, passing in |request| as input. Once
   // the (asynchronous) call finishes, |callback| is called with the response
   // proto (on the same thread as this call).

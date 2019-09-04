@@ -615,6 +615,7 @@ blink_core_tests("unit_tests") {
     "font_face_cache_test.cc",
     "invalidation/invalidation_set_test.cc",
     "invalidation/pending_invalidations_test.cc",
+    "invalidation/style_invalidator_test.cc",
     "media_query_evaluator_test.cc",
     "media_query_list_test.cc",
     "media_query_matcher_test.cc",

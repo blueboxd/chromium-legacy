@@ -39,6 +39,14 @@ public class TrustedWebActivityUmaRecorder {
         int NUM_ENTRIES = 4;
     }
 
+    @IntDef({ShareRequestMethod.GET, ShareRequestMethod.POST})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ShareRequestMethod {
+        int GET = 0;
+        int POST = 1;
+        int NUM_ENTRIES = 2;
+    }
+
     private final ChromeBrowserInitializer mBrowserInitializer;
 
     @Inject
@@ -138,6 +146,14 @@ public class TrustedWebActivityUmaRecorder {
                         RecordHistogram.recordBooleanHistogram(
                                 "TrustedWebActivity.SplashScreenShown", wasShown)
                 ));
+    }
+
+    /**
+     * Records the fact that data was shared via a TWA.
+     */
+    public void recordShareTargetRequest(@ShareRequestMethod int method) {
+        RecordHistogram.recordEnumeratedHistogram("TrustedWebActivity.ShareTargetRequest",
+                method, ShareRequestMethod.NUM_ENTRIES);
     }
 
     private void doWhenNativeLoaded(Runnable runnable) {

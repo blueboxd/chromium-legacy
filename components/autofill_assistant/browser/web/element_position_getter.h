@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
+#include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 
@@ -22,7 +23,6 @@ class RenderFrameHost;
 }  // namespace content
 
 namespace autofill_assistant {
-class DevtoolsClient;
 
 // Worker class to get an element's position in viewport coordinates when it is
 // stable and the frame it belongs to has finished its visual update.
@@ -49,8 +49,10 @@ class ElementPositionGetter : public WebControllerWorker {
   void OnVisualStateUpdatedCallback(bool success);
   void GetAndWaitBoxModelStable();
   void OnGetBoxModelForStableCheck(
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<dom::GetBoxModelResult> result);
-  void OnScrollIntoView(std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnScrollIntoView(const DevtoolsClient::ReplyStatus& reply_status,
+                        std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnResult(int x, int y);
   void OnError();
 

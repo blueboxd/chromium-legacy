@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/shared_worker_service.h"
@@ -48,6 +49,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   ~SharedWorkerServiceImpl() override;
 
   // SharedWorkerService implementation.
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(const Observer* observer) override;
   bool TerminateWorker(const GURL& url,
                        const std::string& name,
                        const url::Origin& constructor_origin) override;
@@ -71,6 +74,17 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // Virtual for testing.
   virtual void DestroyHost(SharedWorkerHost* host);
+
+  void NotifyWorkerStarted(const SharedWorkerInstance& instance,
+                           int worker_process_id,
+                           const base::UnguessableToken& dev_tools_token);
+  void NotifyWorkerTerminating(const SharedWorkerInstance& instance);
+  void NotifyClientAdded(const SharedWorkerInstance& instance,
+                         int client_process_id,
+                         int frame_id);
+  void NotifyClientRemoved(const SharedWorkerInstance& instance,
+                           int client_process_id,
+                           int frame_id);
 
   StoragePartitionImpl* storage_partition() { return storage_partition_; }
 
@@ -136,6 +150,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<SharedWorkerServiceImpl> weak_factory_{this};
 

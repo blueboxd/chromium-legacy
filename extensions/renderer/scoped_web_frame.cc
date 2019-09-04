@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/scoped_web_frame.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -13,8 +14,9 @@ namespace extensions {
 
 // returns a valid handle that can be passed to WebLocalFrame constructor
 mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
-  blink::mojom::DocumentInterfaceBrokerPtrInfo info;
-  return mojo::MakeRequest(&info).PassMessagePipe();
+  return mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+      .InitWithNewPipeAndPassReceiver()
+      .PassPipe();
 }
 
 ScopedWebFrame::ScopedWebFrame()

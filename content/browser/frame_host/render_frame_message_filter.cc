@@ -42,6 +42,8 @@
 #include "content/public/common/content_features.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -94,9 +96,9 @@ void CreateChildFrameOnUI(
         new_routing_id,
         service_manager::mojom::InterfaceProviderRequest(
             std::move(interface_provider_request_handle)),
-        blink::mojom::DocumentInterfaceBrokerRequest(
+        mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
             std::move(document_interface_broker_content_handle)),
-        blink::mojom::DocumentInterfaceBrokerRequest(
+        mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
             std::move(document_interface_broker_blink_handle)),
         mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>(
             std::move(browser_interface_broker_handle)),
@@ -388,18 +390,19 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
   params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       document_interface_broker_content;
-  auto document_interface_broker_request_content(
-      mojo::MakeRequest(&document_interface_broker_content));
+  auto document_interface_broker_receiver_content =
+      document_interface_broker_content.InitWithNewPipeAndPassReceiver();
   params_reply->document_interface_broker_content_handle =
-      document_interface_broker_content.PassHandle().release();
+      document_interface_broker_content.PassPipe().release();
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
-  auto document_interface_broker_request_blink(
-      mojo::MakeRequest(&document_interface_broker_blink));
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink;
+  auto document_interface_broker_receiver_blink =
+      document_interface_broker_blink.InitWithNewPipeAndPassReceiver();
   params_reply->document_interface_broker_blink_handle =
-      document_interface_broker_blink.PassHandle().release();
+      document_interface_broker_blink.PassPipe().release();
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -419,8 +422,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
           params.frame_policy, params.frame_owner_properties,
           params.frame_owner_element_type, params_reply->child_routing_id,
           interface_provider_request.PassMessagePipe(),
-          document_interface_broker_request_content.PassMessagePipe(),
-          document_interface_broker_request_blink.PassMessagePipe(),
+          document_interface_broker_receiver_content.PassPipe(),
+          document_interface_broker_receiver_blink.PassPipe(),
           browser_interface_broker_receiver.PassPipe()));
 }
 

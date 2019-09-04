@@ -23,6 +23,8 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
@@ -161,6 +163,27 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
   }
 }
 
+// Heuristic to check screen capture permission on macOS 10.15.
+// See https://crbug.com/993692#c3.
+bool IsScreenCaptureAllowed() {
+  if (@available(macOS 10.15, *)) {
+    base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
+        kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
+    NSUInteger num_windows = CFArrayGetCount(window_list);
+    NSUInteger num_windows_with_name = 0;
+    for (NSDictionary* dict in base::mac::CFToNSCast(window_list.get())) {
+      if ([dict objectForKey:base::mac::CFToNSCast(kCGWindowName)]) {
+        num_windows_with_name++;
+      } else {
+        // No kCGWindowName detected implies no permission.
+        break;
+      }
+    }
+    return num_windows == num_windows_with_name;
+  }
+  return true;
+}
+
 }  // namespace
 
 SystemPermission CheckSystemAudioCapturePermission() {
@@ -169,6 +192,11 @@ SystemPermission CheckSystemAudioCapturePermission() {
 
 SystemPermission CheckSystemVideoCapturePermission() {
   return CheckSystemMediaCapturePermission(AVMediaTypeVideo);
+}
+
+SystemPermission CheckSystemScreenCapturePermission() {
+  return IsScreenCaptureAllowed() ? SystemPermission::kAllowed
+                                  : SystemPermission::kDenied;
 }
 
 void RequestSystemAudioCapturePermisson(base::OnceClosure callback,

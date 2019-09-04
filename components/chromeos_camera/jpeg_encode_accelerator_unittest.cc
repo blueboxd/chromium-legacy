@@ -310,9 +310,9 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   // support them.
   const std::vector<TestImage*>& test_aligned_images_;
 
-  // JpegClient doesn't own |test_images_|.
+  // JpegClient doesn't own |test_unaligned_images_|.
   // The resolutions of these images may be unaligned.
-  const std::vector<TestImage*>& test_images_;
+  const std::vector<TestImage*>& test_unaligned_images_;
 
   // A map that stores HW encoding start timestamp for each output buffer id.
   std::map<int, base::TimeTicks> buffer_id_to_start_time_;
@@ -349,7 +349,7 @@ JpegClient::JpegClient(const std::vector<TestImage*>& test_aligned_images,
                        const std::vector<TestImage*>& test_images,
                        media::test::ClientStateNotification<ClientState>* note)
     : test_aligned_images_(test_aligned_images),
-      test_images_(test_images),
+      test_unaligned_images_(test_images),
       state_(ClientState::CREATED),
       note_(note),
       gpu_memory_buffer_manager_(new media::LocalGpuMemoryBufferManager()) {}
@@ -399,7 +399,8 @@ void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
   if (buffer_id < static_cast<int32_t>(test_aligned_images_.size())) {
     test_image = test_aligned_images_[buffer_id];
   } else {
-    test_image = test_images_[buffer_id - test_aligned_images_.size()];
+    test_image =
+        test_unaligned_images_[buffer_id - test_aligned_images_.size()];
   }
 
   if (hw_out_frame_ && !hw_out_frame_->IsMappable()) {
@@ -530,13 +531,13 @@ void JpegClient::NotifyError(int32_t buffer_id,
 
 TestImage* JpegClient::GetTestImage(int32_t bitstream_buffer_id) {
   DCHECK_LT(static_cast<size_t>(bitstream_buffer_id),
-            test_aligned_images_.size() + test_images_.size());
+            test_aligned_images_.size() + test_unaligned_images_.size());
   TestImage* image_file;
   if (bitstream_buffer_id < static_cast<int32_t>(test_aligned_images_.size())) {
     image_file = test_aligned_images_[bitstream_buffer_id];
   } else {
-    image_file =
-        test_images_[bitstream_buffer_id - test_aligned_images_.size()];
+    image_file = test_unaligned_images_[bitstream_buffer_id -
+                                        test_aligned_images_.size()];
   }
 
   return image_file;
@@ -682,10 +683,10 @@ class JpegEncodeAcceleratorTest : public ::testing::Test {
   // JpegEncodeAccelerator implementations.
   base::test::TaskEnvironment task_environment_;
 
-  // The elements of |test_aligned_images_| and |test_images_| are
+  // The elements of |test_aligned_images_| and |test_unaligned_images_| are
   // owned by JpegEncodeAcceleratorTestEnvironment.
   std::vector<TestImage*> test_aligned_images_;
-  std::vector<TestImage*> test_images_;
+  std::vector<TestImage*> test_unaligned_images_;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(JpegEncodeAcceleratorTest);
@@ -706,7 +707,7 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
     notes.push_back(
         std::make_unique<media::test::ClientStateNotification<ClientState>>());
     clients.push_back(std::make_unique<JpegClient>(
-        test_aligned_images_, test_images_, notes.back().get()));
+        test_aligned_images_, test_unaligned_images_, notes.back().get()));
     encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&JpegClient::CreateJpegEncoder,
                                   base::Unretained(clients.back().get())));
@@ -750,12 +751,12 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
   // For unaligned images, V4L2 may not be able to encode them so skip for V4L2
   // cases.
 #else
-  for (size_t index = 0; index < test_images_.size(); index++) {
+  for (size_t index = 0; index < test_unaligned_images_.size(); index++) {
     int buffer_id = index + test_aligned_images_.size();
     VLOG(3) << buffer_id
-            << ",width:" << test_images_[index]->visible_size.width();
-    VLOG(3) << buffer_id
-            << ",height:" << test_images_[index]->visible_size.height();
+            << ",width:" << test_unaligned_images_[index]->visible_size.width();
+    VLOG(3) << buffer_id << ",height:"
+            << test_unaligned_images_[index]->visible_size.height();
 
     if (!is_dma) {
       for (size_t i = 0; i < num_concurrent_encoders; i++) {
@@ -794,7 +795,7 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
 TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {
     for (auto& image : g_env->image_data_user_) {
-      test_images_.push_back(image.get());
+      test_aligned_images_.push_back(image.get());
     }
   }
   TestEncode(1, false);
@@ -802,14 +803,13 @@ TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
 
 TEST_F(JpegEncodeAcceleratorTest, MultipleEncoders) {
   for (auto& image : g_env->image_data_user_) {
-    test_images_.push_back(image.get());
+    test_aligned_images_.push_back(image.get());
   }
   TestEncode(3, false);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, ResolutionChange) {
-  test_images_.push_back(g_env->image_data_640x368_black_.get());
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_aligned_images_.push_back(g_env->image_data_640x368_black_.get());
   test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
   TestEncode(1, false);
 }
@@ -822,14 +822,14 @@ TEST_F(JpegEncodeAcceleratorTest, AlignedSizes) {
 }
 
 TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignment) {
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_unaligned_images_.push_back(g_env->image_data_640x360_black_.get());
   TestEncode(1, false);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, SimpleDmaEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {
     for (auto& image : g_env->image_data_user_) {
-      test_images_.push_back(image.get());
+      test_aligned_images_.push_back(image.get());
     }
   }
   TestEncode(1, true);
@@ -837,14 +837,13 @@ TEST_F(JpegEncodeAcceleratorTest, SimpleDmaEncode) {
 
 TEST_F(JpegEncodeAcceleratorTest, MultipleDmaEncoders) {
   for (auto& image : g_env->image_data_user_) {
-    test_images_.push_back(image.get());
+    test_aligned_images_.push_back(image.get());
   }
   TestEncode(3, true);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, ResolutionChangeDma) {
-  test_images_.push_back(g_env->image_data_640x368_black_.get());
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_aligned_images_.push_back(g_env->image_data_640x368_black_.get());
   test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
   TestEncode(1, true);
 }
@@ -857,7 +856,7 @@ TEST_F(JpegEncodeAcceleratorTest, AlignedSizesDma) {
 }
 
 TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignmentDma) {
-  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_unaligned_images_.push_back(g_env->image_data_640x360_black_.get());
   TestEncode(1, true);
 }
 

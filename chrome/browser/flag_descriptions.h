@@ -992,8 +992,8 @@ extern const char kRequestTabletSiteDescription[];
 extern const char kResourceLoadSchedulerName[];
 extern const char kResourceLoadSchedulerDescription[];
 
-extern const char kPrefetchRedirectErrorName[];
-extern const char kPrefetchRedirectErrorDescription[];
+extern const char kPrefetchPrivacyChangesName[];
+extern const char kPrefetchPrivacyChangesDescription[];
 
 extern const char kPrefetchMainResourceNetworkIsolationKeyName[];
 extern const char kPrefetchMainResourceNetworkIsolationKeyDescription[];
@@ -2047,9 +2047,6 @@ extern const char kFilesNGDescription[];
 
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
-
-extern const char kForceUseChromeCameraName[];
-extern const char kForceUseChromeCameraDescription[];
 
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];

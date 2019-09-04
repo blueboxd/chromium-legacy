@@ -25,8 +25,7 @@ void JNI_SharingServiceProxy_InitSharingService(
 
 SharingServiceProxyAndroid::SharingServiceProxyAndroid(
     SharingService* sharing_service)
-    : sharing_service_(sharing_service),
-      shared_clipboard_message_handler_(sharing_service) {
+    : sharing_service_(sharing_service) {
   DCHECK(sharing_service_);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SharingServiceProxy_onProxyCreated(env,

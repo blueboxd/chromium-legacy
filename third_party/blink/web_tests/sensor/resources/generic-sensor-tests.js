@@ -64,7 +64,7 @@ function runGenericSensorTests(sensorType,
     }
   }
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     sensorProvider.getSensorTypeSettings(sensorType.name).unavailable = true;
     let sensorObject = new sensorType;
     sensorObject.start();
@@ -80,7 +80,7 @@ function runGenericSensorTests(sensorType,
     });
   }, `${sensorType.name}: Test that onerror is sent when sensor is not supported.`);
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     sensorProvider.getSensorTypeSettings(sensorType.name).shouldDenyRequests = true;
     let sensorObject = new sensorType;
     sensorObject.start();
@@ -96,7 +96,7 @@ function runGenericSensorTests(sensorType,
     });
   }, `${sensorType.name}: Test that onerror is sent when permissions are not granted.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 560});
     sensorObject.start();
 
@@ -115,7 +115,7 @@ function runGenericSensorTests(sensorType,
     });
   }, `${sensorType.name}: Test that onerror is send when start() call has failed.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType();
     sensorObject.start();
 
@@ -125,7 +125,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that no pending configuration left after start() failure.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 560});
     sensorObject.start();
 
@@ -144,7 +144,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that frequency is capped to allowed maximum.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType();
     sensorObject.start();
     let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
@@ -163,7 +163,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that configuration is removed for a stopped sensor.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     const maxSupportedFrequency = 5;
     sensorProvider.setMaximumSupportedFrequency(maxSupportedFrequency);
     let sensorObject = new sensorType({frequency: 50});
@@ -184,7 +184,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that frequency is capped to the maximum supported from frequency.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     const minSupportedFrequency = 2;
     sensorProvider.setMinimumSupportedFrequency(minSupportedFrequency);
     let sensorObject = new sensorType({frequency: -1});
@@ -205,7 +205,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that frequency is limited to the minimum supported from frequency.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 60});
     assert_false(sensorObject.activated);
     sensorObject.start();
@@ -225,7 +225,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that sensor can be successfully created and its states are correct.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType();
     sensorObject.start();
 
@@ -244,7 +244,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that sensor can be constructed with default configuration.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
@@ -288,15 +288,15 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }
 
-  sensor_test(sensorProvider => checkOnReadingIsCalledAndReadingIsValid(sensorProvider),
+  sensor_test((t, sensorProvider) => checkOnReadingIsCalledAndReadingIsValid(sensorProvider),
   `${sensorType.name}: Test that onreading is called and sensor reading is valid (onchange reporting).`);
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     sensorProvider.setContinuousReportingMode();
     return checkOnReadingIsCalledAndReadingIsValid(sensorProvider);
   }, `${sensorType.name}: Test that onreading is called and sensor reading is valid (continuous reporting).`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
@@ -323,7 +323,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that sensor receives suspend / resume notifications when page\
  visibility changes.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
@@ -358,7 +358,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that sensor receives suspend / resume notifications when\
  cross-origin subframe is focused`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensor1 = new sensorType({frequency: 60});
     sensor1.start();
 
@@ -445,15 +445,15 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }
 
-  sensor_test(sensorProvider => checkFrequencyHintWorks(sensorProvider),
+  sensor_test((t, sensorProvider) => checkFrequencyHintWorks(sensorProvider),
   `${sensorType.name}: Test that frequency hint works (onchange reporting).`);
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     sensorProvider.setContinuousReportingMode();
     return checkFrequencyHintWorks(sensorProvider);
   }, `${sensorType.name}: Test that frequency hint works (continuous reporting).`);
 
-  promise_test(() => {
+  promise_test(t => {
     return new Promise((resolve,reject) => {
       let iframe = document.createElement('iframe');
       iframe.allow = featurePolicies.join(' \'none\'; ') + ' \'none\';';
@@ -481,7 +481,7 @@ function runGenericSensorTests(sensorType,
     });
   }, `${sensorType.name}: Test that sensor cannot be constructed within iframe disallowed to use feature policy.`);
 
-  promise_test(() => {
+  promise_test(t => {
     return new Promise((resolve,reject) => {
       let iframe = document.createElement('iframe');
       iframe.allow = featurePolicies.join(';') + ';';
@@ -509,7 +509,7 @@ function runGenericSensorTests(sensorType,
     });
   }, `${sensorType.name}: Test that sensor can be constructed within an iframe allowed to use feature policy.`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     let sensorObject = new sensorType({frequency: 60});
     let timestamp = 0;
     sensorObject.start();
@@ -553,7 +553,7 @@ function runGenericSensorTests(sensorType,
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that fresh reading is fetched on start().`);
 
-  sensor_test(async sensorProvider => {
+  sensor_test(async (t, sensorProvider) => {
     if (!expectedRemappedReadings) {
       // The sensorType does not represent a spatial sensor.
       return;

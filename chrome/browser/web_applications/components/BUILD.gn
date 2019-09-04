@@ -4,6 +4,8 @@
 
 source_set("components") {
   sources = [
+    "app_icon_manager.cc",
+    "app_icon_manager.h",
     "app_registrar.cc",
     "app_registrar.h",
     "app_registrar_observer.h",

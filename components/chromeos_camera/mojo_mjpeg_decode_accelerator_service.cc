@@ -11,14 +11,23 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/platform_file.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/bind_to_current_loop.h"
+#include "components/chromeos_camera/common/dmabuf.mojom.h"
+#include "components/chromeos_camera/dmabuf_utils.h"
+#include "media/base/bitstream_buffer.h"
+#include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -119,15 +128,16 @@ void MojoMjpegDecodeAcceleratorService::Decode(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("jpeg", "MojoMjpegDecodeAcceleratorService::Decode");
 
-  DCHECK_EQ(decode_cb_map_.count(input_buffer.id()), 0u);
-  if (decode_cb_map_.count(input_buffer.id()) != 0) {
+  DCHECK_EQ(mojo_cb_map_.count(input_buffer.id()), 0u);
+  if (mojo_cb_map_.count(input_buffer.id()) != 0) {
     NotifyDecodeStatus(
         input_buffer.id(),
         ::chromeos_camera::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT);
     return;
   }
 
-  decode_cb_map_[input_buffer.id()] = std::move(callback);
+  mojo_cb_map_[input_buffer.id()] =
+      base::BindOnce(std::move(callback), input_buffer.id());
 
   if (!VerifyDecodeParams(coded_size, &output_handle, output_buffer_size)) {
     NotifyDecodeStatus(
@@ -185,7 +195,6 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
     mojo::ScopedHandle output_handle,
     uint32_t output_buffer_size,
     DecodeWithFDCallback callback) {
-#if defined(OS_CHROMEOS)
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::PlatformFile input_fd;
   base::PlatformFile output_fd;
@@ -226,9 +235,51 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
 
   Decode(std::move(in_buffer), coded_size, std::move(output_scoped_handle),
          output_buffer_size, std::move(callback));
-#else
-  NOTREACHED();
-#endif
+}
+
+void MojoMjpegDecodeAcceleratorService::DecodeWithDmaBuf(
+    int32_t task_id,
+    mojo::ScopedHandle src_dmabuf_fd,
+    uint32_t src_size,
+    uint32_t src_offset,
+    mojom::DmaBufVideoFramePtr dst_frame,
+    DecodeWithDmaBufCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  TRACE_EVENT0("jpeg", __FUNCTION__);
+
+  if (src_size == 0) {
+    LOG(ERROR) << "Input buffer size should be positive";
+    std::move(callback).Run(
+        ::chromeos_camera::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT);
+    return;
+  }
+  mojo::PlatformHandle src_handle =
+      mojo::UnwrapPlatformHandle(std::move(src_dmabuf_fd));
+  if (!src_handle.is_valid()) {
+    LOG(ERROR) << "Invalid input DMA-buf FD";
+    std::move(callback).Run(
+        ::chromeos_camera::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT);
+    return;
+  }
+
+  const gfx::Size coded_size(base::checked_cast<int>(dst_frame->coded_width),
+                             base::checked_cast<int>(dst_frame->coded_height));
+  scoped_refptr<media::VideoFrame> frame = ConstructVideoFrame(
+      std::move(dst_frame->planes), dst_frame->format, coded_size);
+  if (!frame) {
+    LOG(ERROR) << "Failed to create video frame";
+    std::move(callback).Run(
+        ::chromeos_camera::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT);
+    return;
+  }
+
+  DCHECK_EQ(mojo_cb_map_.count(task_id), 0u);
+  mojo_cb_map_[task_id] = std::move(callback);
+
+  DCHECK(accelerator_);
+  accelerator_->Decode(task_id, src_handle.TakeFD(),
+                       base::strict_cast<size_t>(src_size),
+                       base::strict_cast<off_t>(src_offset), std::move(frame));
 }
 
 void MojoMjpegDecodeAcceleratorService::Uninitialize() {
@@ -241,16 +292,16 @@ void MojoMjpegDecodeAcceleratorService::NotifyDecodeStatus(
     ::chromeos_camera::MjpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  auto iter = decode_cb_map_.find(bitstream_buffer_id);
-  DCHECK(iter != decode_cb_map_.end());
-  if (iter == decode_cb_map_.end()) {
+  auto iter = mojo_cb_map_.find(bitstream_buffer_id);
+  DCHECK(iter != mojo_cb_map_.end());
+  if (iter == mojo_cb_map_.end()) {
     // Silently ignoring abnormal case.
     return;
   }
 
-  DecodeCallback decode_cb = std::move(iter->second);
-  decode_cb_map_.erase(iter);
-  std::move(decode_cb).Run(bitstream_buffer_id, error);
+  MojoCallback mojo_cb = std::move(iter->second);
+  mojo_cb_map_.erase(iter);
+  std::move(mojo_cb).Run(error);
 }
 
 }  // namespace chromeos_camera

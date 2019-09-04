@@ -8,9 +8,9 @@ namespace content {
 
 TestDocumentInterfaceBroker::TestDocumentInterfaceBroker(
     blink::mojom::DocumentInterfaceBroker* document_interface_broker,
-    blink::mojom::DocumentInterfaceBrokerRequest request)
+    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker> receiver)
     : real_broker_(document_interface_broker),
-      binding_(this, std::move(request)) {}
+      receiver_(this, std::move(receiver)) {}
 
 TestDocumentInterfaceBroker::~TestDocumentInterfaceBroker() {}
 
@@ -20,7 +20,7 @@ TestDocumentInterfaceBroker::GetForwardingInterface() {
 }
 
 void TestDocumentInterfaceBroker::Flush() {
-  binding_.FlushForTesting();
+  receiver_.FlushForTesting();
 }
 
 }  // namespace content

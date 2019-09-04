@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/web_applications/abstract_web_app_database.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -105,8 +106,32 @@ bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
 
 base::Optional<AppId> WebAppRegistrar::FindAppWithUrlInScope(
     const GURL& url) const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  const std::string url_path = url.spec();
+
+  base::Optional<AppId> best_app;
+  size_t best_path_length = 0U;
+  bool best_is_shortcut = true;
+
+  for (const WebApp& app : AllApps()) {
+    // TODO(crbug.com/915038): Implement and use WebApp::IsShortcut().
+    // TODO(crbug.com/910016): Treat shortcuts as PWAs.
+    bool app_is_shortcut = app.scope().is_empty();
+    if (app_is_shortcut && !best_is_shortcut)
+      continue;
+
+    const std::string app_path = app.scope().is_empty()
+                                     ? app.launch_url().Resolve(".").spec()
+                                     : app.scope().spec();
+    if ((app_path.size() > best_path_length ||
+         (best_is_shortcut && !app_is_shortcut)) &&
+        base::StartsWith(url_path, app_path, base::CompareCase::SENSITIVE)) {
+      best_app = app.app_id();
+      best_path_length = app_path.size();
+      best_is_shortcut = app_is_shortcut;
+    }
+  }
+
+  return best_app;
 }
 
 int WebAppRegistrar::CountUserInstalledApps() const {

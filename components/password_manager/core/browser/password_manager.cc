@@ -324,7 +324,7 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
     PasswordFormManagerInterface* manager = GetSubmittedManager();
     if (manager && manager->GetSubmittedForm()
                        ->form_data.is_gaia_with_skip_save_password_form) {
-      MaybeSavePasswordHash(*manager);
+      MaybeSavePasswordHash(manager);
     }
   }
 
@@ -429,17 +429,21 @@ void PasswordManager::OnUserModifiedNonPasswordField(
 void PasswordManager::ShowManualFallbackForSaving(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
+  PasswordFormManager* manager =
+      ProvisionallySaveForm(password_form.form_data, driver, true);
+
+  if (manager && password_form.form_data.is_gaia_with_skip_save_password_form) {
+    manager->GetMetricsRecorder()
+        ->set_user_typed_password_on_chrome_sign_in_page();
+  }
+
   if (!client_->GetPasswordStore()->IsAbleToSavePasswords() ||
       !client_->IsSavingAndFillingEnabled(password_form.origin) ||
       ShouldBlockPasswordForSameOriginButDifferentScheme(
           password_form.origin) ||
-      !client_->GetStoreResultFilter()->ShouldSave(password_form))
+      !client_->GetStoreResultFilter()->ShouldSave(password_form)) {
     return;
-
-  std::unique_ptr<PasswordFormManagerInterface> manager;
-  PasswordFormManager* matched_manager =
-      ProvisionallySaveForm(password_form.form_data, driver, true);
-  manager = matched_manager ? matched_manager->Clone() : nullptr;
+  }
 
   auto availability =
       manager ? PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess
@@ -456,7 +460,7 @@ void PasswordManager::ShowManualFallbackForSaving(
     bool is_update = manager->IsPasswordUpdate();
     manager->GetMetricsRecorder()->RecordShowManualFallbackForSaving(
         has_generated_password, is_update);
-    client_->ShowManualFallbackForSaving(std::move(manager),
+    client_->ShowManualFallbackForSaving(manager->Clone(),
                                          has_generated_password, is_update);
   } else {
     HideManualFallbackForSaving();
@@ -847,7 +851,7 @@ void PasswordManager::OnLoginSuccessful() {
   if (!able_to_save_passwords)
     return;
 
-  MaybeSavePasswordHash(*submitted_manager);
+  MaybeSavePasswordHash(submitted_manager);
 
   // TODO(https://crbug.com/831123): Implement checking whether to save with
   // PasswordFormManager.
@@ -904,13 +908,13 @@ void PasswordManager::OnLoginSuccessful() {
 }
 
 void PasswordManager::MaybeSavePasswordHash(
-    const PasswordFormManagerInterface& submitted_manager) {
+    PasswordFormManagerInterface* submitted_manager) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  const PasswordForm* submitted_form = submitted_manager->GetSubmittedForm();
   // When |username_value| is empty, it's not clear whether the submitted
   // credentials are really Gaia or enterprise credentials. Don't save
   // password hash in that case.
-  std::string username =
-      base::UTF16ToUTF8(submitted_manager.GetSubmittedForm()->username_value);
+  std::string username = base::UTF16ToUTF8(submitted_form->username_value);
   if (username.empty())
     return;
 
@@ -919,17 +923,20 @@ void PasswordManager::MaybeSavePasswordHash(
   if (!store)
     return;
 
-  const PasswordForm* password_form = submitted_manager.GetSubmittedForm();
-
   bool should_save_enterprise_pw =
       client_->GetStoreResultFilter()->ShouldSaveEnterprisePasswordHash(
-          *password_form);
+          *submitted_form);
   bool should_save_gaia_pw =
       client_->GetStoreResultFilter()->ShouldSaveGaiaPasswordHash(
-          *password_form);
+          *submitted_form);
 
   if (!should_save_enterprise_pw && !should_save_gaia_pw)
     return;
+
+  if (submitted_form->form_data.is_gaia_with_skip_save_password_form) {
+    submitted_manager->GetMetricsRecorder()
+        ->set_password_hash_saved_on_chrome_sing_in_page();
+  }
 
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
@@ -939,10 +946,10 @@ void PasswordManager::MaybeSavePasswordHash(
   // Canonicalizes username if it is an email.
   if (username.find('@') != std::string::npos)
     username = gaia::CanonicalizeEmail(username);
-  bool is_password_change = !password_form->new_password_element.empty();
+  bool is_password_change = !submitted_form->new_password_element.empty();
   const base::string16 password = is_password_change
-                                      ? password_form->new_password_value
-                                      : password_form->password_value;
+                                      ? submitted_form->new_password_value
+                                      : submitted_form->password_value;
 
   if (should_save_enterprise_pw) {
     store->SaveEnterprisePasswordHash(username, password);

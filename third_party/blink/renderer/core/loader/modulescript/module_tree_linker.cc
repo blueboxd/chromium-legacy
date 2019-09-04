@@ -342,6 +342,7 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
 void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   DCHECK(module_script);
 
+  // TODO(crbug.com/1000152): Replace ScriptState::Scope with v8::HandleScope
   ScriptState::Scope scope(modulator_->GetScriptState());
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {

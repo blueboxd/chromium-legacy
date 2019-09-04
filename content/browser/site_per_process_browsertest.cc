@@ -109,6 +109,7 @@
 #include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -6201,10 +6202,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params->routing_id = frame_routing_id;
     params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
     mojo::MakeRequest(&params->interface_bundle->interface_provider);
-    mojo::MakeRequest(
-        &params->interface_bundle->document_interface_broker_content);
-    mojo::MakeRequest(
-        &params->interface_bundle->document_interface_broker_blink);
+    ignore_result(params->interface_bundle->document_interface_broker_content
+                      .InitWithNewPipeAndPassReceiver());
+    ignore_result(params->interface_bundle->document_interface_broker_blink
+                      .InitWithNewPipeAndPassReceiver());
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = previous_routing_id;
@@ -6273,10 +6274,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params->routing_id = frame_routing_id;
     params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
     mojo::MakeRequest(&params->interface_bundle->interface_provider);
-    mojo::MakeRequest(
-        &params->interface_bundle->document_interface_broker_content);
-    mojo::MakeRequest(
-        &params->interface_bundle->document_interface_broker_blink);
+    ignore_result(params->interface_bundle->document_interface_broker_content
+                      .InitWithNewPipeAndPassReceiver());
+    ignore_result(params->interface_bundle->document_interface_broker_blink
+                      .InitWithNewPipeAndPassReceiver());
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = IPC::mojom::kRoutingIdNone;
@@ -14426,16 +14427,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Simulate a commit IPC.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
-  blink::mojom::DocumentInterfaceBrokerPtrInfo
-      document_interface_broker_content;
-  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
   static_cast<mojom::FrameHost*>(root->current_frame_host())
       ->DidCommitProvisionalLoad(
           std::move(params),
           mojom::DidCommitProvisionalLoadInterfaceParams::New(
               mojo::MakeRequest(&interface_provider),
-              mojo::MakeRequest(&document_interface_broker_content),
-              mojo::MakeRequest(&document_interface_broker_blink),
+              mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+                  .InitWithNewPipeAndPassReceiver(),
+              mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+                  .InitWithNewPipeAndPassReceiver(),
               mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
                   .InitWithNewPipeAndPassReceiver()));
 

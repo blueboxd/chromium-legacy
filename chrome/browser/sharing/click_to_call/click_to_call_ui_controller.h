@@ -48,9 +48,8 @@ class ClickToCallUiController
   base::string16 GetContentType() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
-
-  // Called by the ClickToCallDialogView when the help text got clicked.
-  void OnHelpTextClicked();
+  SharingFeatureName GetFeatureMetricsPrefix() const override;
+  base::string16 GetEducationWindowTitleText() const override;
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);

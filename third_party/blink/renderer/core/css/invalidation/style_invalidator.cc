@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -317,9 +318,12 @@ void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
   //   could apply to the descendants.
   // * there are invalidation sets attached to descendants then we need to
   //   clear the flags on the nodes, whether we use the sets or not.
-  if ((!WholeSubtreeInvalid() && HasInvalidationSets()) ||
+  if ((!WholeSubtreeInvalid() && HasInvalidationSets() &&
+       element.GetComputedStyle()) ||
       element.ChildNeedsStyleInvalidation()) {
     InvalidateChildren(element);
+  } else {
+    ClearPendingNthSiblingInvalidationSets();
   }
 
   element.ClearChildNeedsStyleInvalidation();

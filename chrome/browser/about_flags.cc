@@ -30,6 +30,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/permissions/permission_features.h"
@@ -1736,9 +1737,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-request-tablet-site", flag_descriptions::kRequestTabletSiteName,
      flag_descriptions::kRequestTabletSiteDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableRequestTabletSite)},
-    {"force-use-chrome-camera", flag_descriptions::kForceUseChromeCameraName,
-     flag_descriptions::kForceUseChromeCameraDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kForceUseChromeCamera)},
 #endif  // OS_CHROMEOS
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
@@ -2936,9 +2934,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
 
-    {"prefetch-redirect-error", flag_descriptions::kPrefetchRedirectErrorName,
-     flag_descriptions::kPrefetchRedirectErrorDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kPrefetchRedirectError)},
+    {"prefetch-privacy-changes", flag_descriptions::kPrefetchPrivacyChangesName,
+     flag_descriptions::kPrefetchPrivacyChangesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kPrefetchPrivacyChanges)},
 
     {"prefetch-main-resource-network-isolation-key",
      flag_descriptions::kPrefetchMainResourceNetworkIsolationKeyName,
@@ -4427,7 +4425,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kDecodeLossyWebPImagesToYUV)},
 
     {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
-     flag_descriptions::kDnsOverHttpsDescription, kOsAll,
+     flag_descriptions::kDnsOverHttpsDescription,
+     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
 
 #if defined(OS_ANDROID)
@@ -4565,9 +4564,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   }
 #endif  // OS_WIN
 
-  // TODO(crbug.com/988078): Make the DoH entry visible for non-enterprise
-  // users.
-  if (!strcmp("dns-over-https", entry.internal_name)) {
+  if (!strcmp("dns-over-https", entry.internal_name) &&
+      chrome_browser_net::ShouldDisableDohForManaged()) {
     return true;
   }
 

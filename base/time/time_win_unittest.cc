@@ -291,25 +291,29 @@ TEST(TimeTicks, FromQPCValue) {
   // of possible QPC tick values.
   std::vector<int64_t> test_cases;
   test_cases.push_back(0);
-  const int kNumAdvancements = 100;
-  int64_t ticks = 0;
-  int64_t ticks_increment = 10;
-  for (int i = 0; i < kNumAdvancements; ++i) {
-    test_cases.push_back(ticks);
-    ticks += ticks_increment;
-    ticks_increment = ticks_increment * 6 / 5;
+
+  // Build the test cases.
+  {
+    const int kNumAdvancements = 100;
+    int64_t ticks = 0;
+    int64_t ticks_increment = 10;
+    for (int i = 0; i < kNumAdvancements; ++i) {
+      test_cases.push_back(ticks);
+      ticks += ticks_increment;
+      ticks_increment = ticks_increment * 6 / 5;
+    }
+    test_cases.push_back(Time::kQPCOverflowThreshold - 1);
+    test_cases.push_back(Time::kQPCOverflowThreshold);
+    test_cases.push_back(Time::kQPCOverflowThreshold + 1);
+    ticks = Time::kQPCOverflowThreshold + 10;
+    ticks_increment = 10;
+    for (int i = 0; i < kNumAdvancements; ++i) {
+      test_cases.push_back(ticks);
+      ticks += ticks_increment;
+      ticks_increment = ticks_increment * 6 / 5;
+    }
+    test_cases.push_back(std::numeric_limits<int64_t>::max());
   }
-  test_cases.push_back(Time::kQPCOverflowThreshold - 1);
-  test_cases.push_back(Time::kQPCOverflowThreshold);
-  test_cases.push_back(Time::kQPCOverflowThreshold + 1);
-  ticks = Time::kQPCOverflowThreshold + 10;
-  ticks_increment = 10;
-  for (int i = 0; i < kNumAdvancements; ++i) {
-    test_cases.push_back(ticks);
-    ticks += ticks_increment;
-    ticks_increment = ticks_increment * 6 / 5;
-  }
-  test_cases.push_back(std::numeric_limits<int64_t>::max());
 
   // Test that the conversions using FromQPCValue() match those computed here
   // using simple floating-point arithmetic.  The floating-point math provides

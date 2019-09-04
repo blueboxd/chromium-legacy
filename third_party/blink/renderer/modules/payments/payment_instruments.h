@@ -27,7 +27,8 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit PaymentInstruments(const payments::mojom::blink::PaymentManagerPtr&);
+  explicit PaymentInstruments(
+      const mojo::Remote<payments::mojom::blink::PaymentManager>&);
 
   ScriptPromise deleteInstrument(ScriptState*, const String& instrument_key);
   ScriptPromise get(ScriptState*, const String& instrument_key);
@@ -61,7 +62,7 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   void onClearPaymentInstruments(ScriptPromiseResolver*,
                                  payments::mojom::blink::PaymentHandlerStatus);
 
-  const payments::mojom::blink::PaymentManagerPtr& manager_;
+  const mojo::Remote<payments::mojom::blink::PaymentManager>& manager_;
 
   mojo::Remote<mojom::blink::PermissionService> permission_service_;
 

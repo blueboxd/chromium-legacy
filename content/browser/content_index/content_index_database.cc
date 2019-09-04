@@ -4,10 +4,12 @@
 
 #include "content/browser/content_index/content_index_database.h"
 
+#include <set>
 #include <string>
 
 #include "base/barrier_closure.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
@@ -169,6 +171,15 @@ void ContentIndexDatabase::AddEntryOnCoreThread(
     // TODO(crbug.com/973844): Does this need a more specific error?
     std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR);
     content_index::RecordRegistrationBlocked(description->category);
+    return;
+  }
+
+  auto* service_worker_registration =
+      service_worker_context_->GetLiveRegistration(
+          service_worker_registration_id);
+  if (!service_worker_registration ||
+      !service_worker_registration->active_version()) {
+    std::move(callback).Run(blink::mojom::ContentIndexError::NO_SERVICE_WORKER);
     return;
   }
 
@@ -334,10 +345,12 @@ void ContentIndexDatabase::GetDescriptionsOnCoreThread(
   service_worker_context_->GetRegistrationUserDataByKeyPrefix(
       service_worker_registration_id, kEntryPrefix,
       base::BindOnce(&ContentIndexDatabase::DidGetDescriptions,
-                     weak_ptr_factory_core_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_core_.GetWeakPtr(),
+                     service_worker_registration_id, std::move(callback)));
 }
 
 void ContentIndexDatabase::DidGetDescriptions(
+    int64_t service_worker_registration_id,
     blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
@@ -356,10 +369,10 @@ void ContentIndexDatabase::DidGetDescriptions(
   std::vector<blink::mojom::ContentDescriptionPtr> descriptions;
   descriptions.reserve(data.size());
 
-  // TODO(crbug.com/973844): Clear the storage if there is data corruption.
   for (const auto& serialized_entry : data) {
     proto::ContentEntry entry;
     if (!entry.ParseFromString(serialized_entry)) {
+      ClearServiceWorkerDataOnCorruption(service_worker_registration_id);
       std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
                               /* descriptions= */ {});
       return;
@@ -367,9 +380,14 @@ void ContentIndexDatabase::DidGetDescriptions(
 
     auto description = DescriptionFromProto(entry.description());
     if (!description) {
-      std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
-                              /* descriptions= */ {});
-      return;
+      // Clear entry data.
+      service_worker_context_->ClearRegistrationUserData(
+          service_worker_registration_id,
+          {EntryKey(entry.description().id()),
+           IconsKey(entry.description().id())},
+          base::BindOnce(&content_index::RecordDatabaseOperationStatus,
+                         "ClearCorruptedData"));
+      continue;
     }
 
     descriptions.push_back(std::move(description));
@@ -410,10 +428,12 @@ void ContentIndexDatabase::GetIconsOnCoreThread(
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id, {IconsKey(description_id)},
       base::BindOnce(&ContentIndexDatabase::DidGetSerializedIcons,
-                     weak_ptr_factory_core_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_core_.GetWeakPtr(),
+                     service_worker_registration_id, std::move(callback)));
 }
 
 void ContentIndexDatabase::DidGetSerializedIcons(
+    int64_t service_worker_registration_id,
     ContentIndexContext::GetIconsCallback callback,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
@@ -429,7 +449,7 @@ void ContentIndexDatabase::DidGetSerializedIcons(
   DCHECK_EQ(data.size(), 1u);
   proto::SerializedIcons serialized_icons;
   if (!serialized_icons.ParseFromString(data.front())) {
-    // TODO(crbug.com/973844): Clear the storage if there is data corruption.
+    ClearServiceWorkerDataOnCorruption(service_worker_registration_id);
     std::move(callback).Run({});
     return;
   }
@@ -521,17 +541,26 @@ void ContentIndexDatabase::DidGetEntries(
 
   std::vector<ContentIndexEntry> entries;
   entries.reserve(user_data.size());
+  std::set<int64_t> corrupted_sw_ids;
 
   for (const auto& ud : user_data) {
     auto entry = EntryFromSerializedProto(ud.first, ud.second);
-    // TODO(crbug.com/973844): Clear the storage if there is data corruption.
     if (!entry) {
-      std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
-                              /* entries= */ {});
-      return;
+      corrupted_sw_ids.insert(ud.first);
+      continue;
     }
 
     entries.emplace_back(std::move(*entry));
+  }
+
+  if (!corrupted_sw_ids.empty()) {
+    // Remove soon-to-be-deleted entries.
+    base::EraseIf(entries, [&corrupted_sw_ids](const auto& entry) {
+      return corrupted_sw_ids.count(entry.service_worker_registration_id);
+    });
+
+    for (int64_t service_worker_registration_id : corrupted_sw_ids)
+      ClearServiceWorkerDataOnCorruption(service_worker_registration_id);
   }
 
   std::move(callback).Run(blink::mojom::ContentIndexError::NONE,
@@ -588,6 +617,16 @@ void ContentIndexDatabase::DidGetEntry(
   DCHECK_EQ(data.size(), 1u);
   std::move(callback).Run(
       EntryFromSerializedProto(service_worker_registration_id, data.front()));
+}
+
+void ContentIndexDatabase::ClearServiceWorkerDataOnCorruption(
+    int64_t service_worker_registration_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  service_worker_context_->ClearRegistrationUserDataByKeyPrefixes(
+      service_worker_registration_id, {kEntryPrefix, kIconPrefix},
+      base::BindOnce(&content_index::RecordDatabaseOperationStatus,
+                     "ClearCorruptedData"));
 }
 
 void ContentIndexDatabase::DeleteItem(int64_t service_worker_registration_id,

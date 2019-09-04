@@ -23,6 +23,5 @@ interface SmsReceiver {
   // to the caller's origin.
   // Returns the raw content of the received SMS.
   // |message| is only set if status == kSuccess.
-  Receive(mojo_base.mojom.TimeDelta timeout)
-    => (SmsStatus status, string? message);
+  Receive() => (SmsStatus status, string? message);
 };

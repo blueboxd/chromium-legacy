@@ -164,10 +164,6 @@ void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
 
 void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  ScriptState::Scope scope(
-      WorkerGlobalScope()->ScriptController()->GetScriptState());
-  Client().DidInitializeWorkerContext(
-      this, WorkerGlobalScope()->ScriptController()->GetContext());
   TRACE_EVENT_END0("ServiceWorker",
                    "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
 }
@@ -211,7 +207,11 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
   // metrics if the metrics are no longer referenced, and then merge
   // WillEvaluateClassicScript and WillEvaluateModuleScript for cleanup.
   worker_global_scope_->CountWorkerScript(script_size, cached_metadata_size);
-  Client().WillEvaluateScript();
+
+  ScriptState::Scope scope(
+      WorkerGlobalScope()->ScriptController()->GetScriptState());
+  Client().WillEvaluateScript(
+      WorkerGlobalScope()->ScriptController()->GetContext());
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
@@ -223,7 +223,10 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateModuleScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  Client().WillEvaluateScript();
+  ScriptState::Scope scope(
+      WorkerGlobalScope()->ScriptController()->GetScriptState());
+  Client().WillEvaluateScript(
+      WorkerGlobalScope()->ScriptController()->GetContext());
 }
 
 void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {

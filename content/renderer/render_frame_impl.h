@@ -64,6 +64,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -218,9 +219,10 @@ class CONTENT_EXPORT RenderFrameImpl
   static void CreateFrame(
       int routing_id,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
-      blink::mojom::DocumentInterfaceBrokerPtr
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
           document_interface_broker_content,
-      blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_blink,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
       int previous_routing_id,
@@ -246,7 +248,7 @@ class CONTENT_EXPORT RenderFrameImpl
         RenderViewImpl* render_view,
         int32_t routing_id,
         service_manager::mojom::InterfaceProviderPtr interface_provider,
-        blink::mojom::DocumentInterfaceBrokerPtr
+        mojo::Remote<blink::mojom::DocumentInterfaceBroker>
             document_interface_broker_content,
         mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
             browser_interface_broker,
@@ -259,7 +261,8 @@ class CONTENT_EXPORT RenderFrameImpl
     RenderViewImpl* render_view;
     int32_t routing_id;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
-    blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content;
+    mojo::Remote<blink::mojom::DocumentInterfaceBroker>
+        document_interface_broker_content;
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker;
     base::UnguessableToken devtools_frame_token;
@@ -991,7 +994,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Used in tests to override DocumentInterfaceBroker's methods
   void SetDocumentInterfaceBrokerForTesting(
-      blink::mojom::DocumentInterfaceBrokerPtr test_broker);
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker> test_broker);
 
   // Used in tests to install a fake WebURLLoaderFactory via
   // RenderViewTest::CreateFakeWebURLLoaderFactory().
@@ -1085,7 +1088,7 @@ class CONTENT_EXPORT RenderFrameImpl
       RenderViewImpl* render_view,
       int32_t routing_id,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
-      blink::mojom::DocumentInterfaceBrokerPtr
+      mojo::Remote<blink::mojom::DocumentInterfaceBroker>
           document_interface_broker_content,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
@@ -1608,7 +1611,8 @@ class CONTENT_EXPORT RenderFrameImpl
   service_manager::InterfaceProvider remote_interfaces_;
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
 
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_;
+  mojo::Remote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_;
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
   service_manager::BindSourceInfo local_info_;

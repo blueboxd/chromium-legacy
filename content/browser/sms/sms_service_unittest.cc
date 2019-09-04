@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/time/time.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -32,7 +31,6 @@
 
 using base::BindLambdaForTesting;
 using base::Optional;
-using base::TimeDelta;
 using blink::mojom::SmsReceiver;
 using blink::mojom::SmsStatus;
 using std::string;
@@ -91,8 +89,8 @@ class Service {
         }));
   }
 
-  void MakeRequest(TimeDelta timeout, SmsReceiver::ReceiveCallback callback) {
-    service_remote_->Receive(timeout, std::move(callback));
+  void MakeRequest(SmsReceiver::ReceiveCallback callback) {
+    service_remote_->Receive(std::move(callback));
   }
 
   void NotifyReceive(const GURL& url, const string& message) {
@@ -138,7 +136,6 @@ TEST_F(SmsServiceTest, Basic) {
   }));
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting(
           [&loop](SmsStatus status, const Optional<string>& sms) {
             EXPECT_EQ(SmsStatus::kSuccess, status);
@@ -166,7 +163,6 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
     }));
 
     service.MakeRequest(
-        TimeDelta::FromSeconds(10),
         BindLambdaForTesting(
             [&loop](SmsStatus status, const Optional<string>& sms) {
               EXPECT_EQ("first", sms.value());
@@ -187,7 +183,6 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
     }));
 
     service.MakeRequest(
-        TimeDelta::FromSeconds(10),
         BindLambdaForTesting(
             [&loop](SmsStatus status, const Optional<string>& sms) {
               EXPECT_EQ("second", sms.value());
@@ -219,7 +214,6 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
   }));
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting([&sms_status, &response, &sms_loop](
                                SmsStatus status, const Optional<string>& sms) {
         sms_status = status;
@@ -255,7 +249,6 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
   }));
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting([&sms_status, &response, &sms_loop](
                                SmsStatus status, const Optional<string>& sms) {
         sms_status = status;
@@ -291,7 +284,6 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
 
   // Make the first SMS request.
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting([&sms_status1, &response1, &sms1_loop](
                                SmsStatus status, const Optional<string>& sms) {
         sms_status1 = status;
@@ -302,7 +294,6 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
   // Make the second SMS request, and it will be canceled because the first SMS
   // request is still pending.
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting([&sms_status2, &response2, &sms2_loop](
                                SmsStatus status, const Optional<string>& sms) {
         sms_status2 = status;
@@ -346,7 +337,6 @@ TEST_F(SmsServiceTest, CleansUp) {
   base::RunLoop reload;
 
   service->Receive(
-      base::TimeDelta::FromSeconds(10),
       base::BindLambdaForTesting(
           [&reload](SmsStatus status, const base::Optional<std::string>& sms) {
             EXPECT_EQ(SmsStatus::kTimeout, status);
@@ -379,7 +369,6 @@ TEST_F(SmsServiceTest, PromptsDialog) {
   }));
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting(
           [&loop](SmsStatus status, const Optional<string>& sms) {
             EXPECT_EQ("hi", sms.value());
@@ -400,7 +389,6 @@ TEST_F(SmsServiceTest, Cancel) {
   base::RunLoop loop;
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting(
           [&loop](SmsStatus status, const Optional<string>& sms) {
             EXPECT_EQ(SmsStatus::kCancelled, status);
@@ -438,7 +426,6 @@ TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
   }));
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting(
           [&loop](SmsStatus status, const Optional<string>& sms) {
             loop.Quit();
@@ -469,7 +456,6 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
   }));
 
   service.MakeRequest(
-      TimeDelta::FromSeconds(10),
       BindLambdaForTesting(
           [&loop](SmsStatus status, const Optional<string>& sms) {
             loop.Quit();

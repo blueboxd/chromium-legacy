@@ -68,4 +68,8 @@ base::Optional<sync_pb::NigoriLocalData> NigoriStorageImpl::RestoreData() {
   return data;
 }
 
+void NigoriStorageImpl::ClearData() {
+  base::DeleteFile(path_, /*recursive=*/false);
+}
+
 }  // namespace syncer

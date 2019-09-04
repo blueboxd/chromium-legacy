@@ -359,13 +359,14 @@ void DeprecateSameSiteCookies(int process_id,
     switch (warning) {
       case net::CanonicalCookie::CookieInclusionStatus::
           WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
+      case net::CanonicalCookie::CookieInclusionStatus::
+          WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE:
         samesite_treated_as_lax_cookies = true;
         break;
       case net::CanonicalCookie::CookieInclusionStatus::
           WARN_SAMESITE_NONE_INSECURE:
         samesite_none_insecure_cookies = true;
         break;
-      // TODO(crbug.com/990439): Add messages for Lax-Allow-Unsafe intervention.
       default:
         break;
     }
@@ -375,6 +376,8 @@ void DeprecateSameSiteCookies(int process_id,
     }
   }
 
+  // TODO(crbug.com/990439): Do we need separate UseCounter metrics for
+  // Lax-allow-unsafe? We already have histograms in CanonicalCookie.
   if (samesite_treated_as_lax_cookies) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         frame, blink::mojom::WebFeature::kCookieNoSameSite);
@@ -1109,7 +1112,6 @@ StoragePartitionImpl::StoragePartitionImpl(
       relative_partition_path_(relative_partition_path),
       partition_domain_(partition_domain),
       special_storage_policy_(special_storage_policy),
-      network_context_client_binding_(this),
       deletion_helpers_running_(0) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
@@ -2279,10 +2281,9 @@ void StoragePartitionImpl::InitNetworkContext() {
       browser_context_, is_in_memory_, relative_partition_path_);
   DCHECK(network_context_);
 
-  network::mojom::NetworkContextClientPtr client_ptr;
-  network_context_client_binding_.Close();
-  network_context_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-  network_context_->SetClient(std::move(client_ptr));
+  network_context_client_receiver_.reset();
+  network_context_->SetClient(
+      network_context_client_receiver_.BindNewPipeAndPassRemote());
   network_context_.set_connection_error_handler(base::BindOnce(
       &StoragePartitionImpl::InitNetworkContext, weak_factory_.GetWeakPtr()));
 }

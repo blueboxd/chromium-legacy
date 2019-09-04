@@ -89,7 +89,7 @@ public class NotificationPermissionUpdater {
      * app was installed.
      */
     public void onClientAppUninstalled(Origin origin) {
-        if (!ChromeFeatureList.isEnabled(
+        if (ChromeFeatureList.isInitialized() && !ChromeFeatureList.isEnabled(
                 ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT)) {
             return;
         }

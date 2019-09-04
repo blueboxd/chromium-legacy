@@ -122,6 +122,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
@@ -2031,10 +2032,12 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   service_manager::mojom::InterfaceProviderPtr interface_provider(
       std::move(params->interface_bundle->interface_provider));
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content(
-      std::move(params->interface_bundle->document_interface_broker_content));
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink(
-      std::move(params->interface_bundle->document_interface_broker_blink));
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_content(std::move(
+          params->interface_bundle->document_interface_broker_content));
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink(
+          std::move(params->interface_bundle->document_interface_broker_blink));
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker(
           std::move(params->interface_bundle->browser_interface_broker));

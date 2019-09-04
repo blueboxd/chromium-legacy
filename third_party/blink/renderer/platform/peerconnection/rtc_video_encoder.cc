@@ -29,7 +29,6 @@
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_encoder_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -882,12 +881,6 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   }
 
   UseOutputBitstreamBufferId(bitstream_buffer_id);
-}
-
-std::unique_ptr<webrtc::VideoEncoder> CreateRTCVideoEncoder(
-    media::VideoCodecProfile profile,
-    media::GpuVideoAcceleratorFactories* gpu_factories) {
-  return std::make_unique<RTCVideoEncoder>(profile, gpu_factories);
 }
 
 RTCVideoEncoder::RTCVideoEncoder(

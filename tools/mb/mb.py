@@ -1109,8 +1109,7 @@ class MetaBuildWrapper(object):
       # This runs before the build, so we can't use isdir(f). But
       # isolate.py luckily requires data directories to end with '/', so we
       # can check for that.
-      # TODO(thakis): Use '../../' once crbug.com/997673 is fixed.
-      if not f.startswith('../') and f.endswith('/'):
+      if not f.startswith('../../') and f.endswith('/'):
         # Don't use self.PathJoin() -- all involved paths consistently use
         # forward slashes, so don't add one single backslash on Windows.
         err += '\n' + build_dir + '/' +  f

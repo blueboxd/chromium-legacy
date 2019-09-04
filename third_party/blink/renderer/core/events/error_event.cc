@@ -65,8 +65,7 @@ ErrorEvent::ErrorEvent(ScriptState* script_state,
       initializer->hasLineno() ? initializer->lineno() : 0,
       initializer->hasColno() ? initializer->colno() : 0, nullptr);
   if (initializer->hasError()) {
-    error_.Set(initializer->error().GetIsolate(),
-               initializer->error().V8Value());
+    error_.Set(script_state->GetIsolate(), initializer->error().V8Value());
   }
 }
 

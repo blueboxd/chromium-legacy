@@ -87,7 +87,7 @@ void PrefetchURLLoader::RecordPrefetchRedirectHistogram(
     PrefetchRedirect event) {
   // We only want to record prefetch vs prefetch redirects when we're not
   // experimenting with a request's redirect mode.
-  if (base::FeatureList::IsEnabled(blink::features::kPrefetchRedirectError))
+  if (base::FeatureList::IsEnabled(blink::features::kPrefetchPrivacyChanges))
     return;
 
   base::UmaHistogramEnumeration("Prefetch.Redirect", event);

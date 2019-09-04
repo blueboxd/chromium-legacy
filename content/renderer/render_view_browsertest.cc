@@ -61,6 +61,7 @@
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_keyboard.h"
 #include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
@@ -1036,11 +1037,14 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   int routing_id = kProxyRoutingId + 1;
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
-  blink::mojom::DocumentInterfaceBrokerPtr
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       stub_document_interface_broker_content;
-  mojo::MakeRequest(&stub_document_interface_broker_content);
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
-  mojo::MakeRequest(&stub_document_interface_broker_blink);
+  ignore_result(
+      stub_document_interface_broker_content.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      stub_document_interface_broker_blink;
+  ignore_result(
+      stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
@@ -1108,11 +1112,14 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   int routing_id = kProxyRoutingId + 1;
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
-  blink::mojom::DocumentInterfaceBrokerPtr
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       stub_document_interface_broker_content;
-  mojo::MakeRequest(&stub_document_interface_broker_content);
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
-  mojo::MakeRequest(&stub_document_interface_broker_blink);
+  ignore_result(
+      stub_document_interface_broker_content.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      stub_document_interface_broker_blink;
+  ignore_result(
+      stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       stub_browser_interface_broker;
   ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());

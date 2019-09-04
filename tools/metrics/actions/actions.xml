@@ -5334,37 +5334,44 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="DevTools_InspectAndroidPage">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevTools_InspectAndroidWebView">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevTools_InspectElement">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevTools_InspectRenderer">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevTools_InspectWorker">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevTools_ToggleConsole">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="DevTools_ToggleWindow">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
@@ -21973,12 +21980,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ToggleDevTools">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="ToggleDevToolsConsole">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 

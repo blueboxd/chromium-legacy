@@ -37,6 +37,7 @@
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -209,10 +210,11 @@ WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     TestWebFrameClient* client) {
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       scope, client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe()));
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe()));
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -223,10 +225,11 @@ WebLocalFrameImpl* CreateLocalChild(
     std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       scope, client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe()));
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe()));
   client->Bind(frame, std::move(self_owned));
   return frame;
 }
@@ -235,10 +238,11 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
                                      TestWebFrameClient* client) {
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
       client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
       &old_frame, FramePolicy()));
   client->Bind(frame, std::move(owned_client));
   std::unique_ptr<TestWebWidgetClient> widget_client;
@@ -279,10 +283,11 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
                                     TestWebWidgetClient* widget_client) {
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, FramePolicy(), client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
       previous_sibling, properties, FrameOwnerElementType::kIframe, nullptr));
   client->Bind(frame, std::move(owned_client));
 
@@ -343,10 +348,12 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   std::unique_ptr<TestWebFrameClient> owned_web_frame_client;
   web_frame_client =
       CreateDefaultClientIfNeeded(web_frame_client, owned_web_frame_client);
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
       web_view_, web_frame_client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), opener);
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
+      opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(

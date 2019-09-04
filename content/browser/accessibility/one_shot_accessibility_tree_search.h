@@ -23,9 +23,9 @@ class BrowserAccessibilityManager;
 typedef bool (*AccessibilityMatchPredicate)(BrowserAccessibility* start_element,
                                             BrowserAccessibility* this_element);
 
-#define DECLARE_ACCESSIBILITY_PREDICATE(PredicateName)    \
-  bool PredicateName(BrowserAccessibility* start_element, \
-                     BrowserAccessibility* this_element)
+#define DECLARE_ACCESSIBILITY_PREDICATE(PredicateName)                   \
+  CONTENT_EXPORT bool PredicateName(BrowserAccessibility* start_element, \
+                                    BrowserAccessibility* this_element)
 
 DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityArticlePredicate);
 DECLARE_ACCESSIBILITY_PREDICATE(AccessibilityBlockquotePredicate);

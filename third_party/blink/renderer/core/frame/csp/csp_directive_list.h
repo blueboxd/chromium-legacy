@@ -183,7 +183,6 @@ class CORE_EXPORT CSPDirectiveList
   void EnforceStrictMixedContentChecking(const String& name,
                                          const String& value);
   void EnableInsecureRequestsUpgrade(const String& name, const String& value);
-  void TreatAsPublicAddress(const String& name, const String& value);
   void RequireTrustedTypes(const String& name, const String& value);
 
   template <class CSPDirectiveType>
@@ -308,7 +307,6 @@ class CORE_EXPORT CSPDirectiveList
   bool strict_mixed_content_checking_enforced_;
 
   bool upgrade_insecure_requests_;
-  bool treat_as_public_address_;
 
   Member<MediaListDirective> plugin_types_;
   Member<SourceListDirective> base_uri_;

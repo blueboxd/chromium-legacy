@@ -105,6 +105,9 @@ _OS_SPECIFIC_FILTER['win'] = [
 _OS_SPECIFIC_FILTER['linux'] = [
     'ChromeDriverTestLegacy.testMouseMoveTo',
     'MobileEmulationCapabilityTest.testDoesntWaitWhenPageLoadStrategyIsNone',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1000530
+    'ChromeDriverTest.testActionsMouseMove',
+    'ChromeDriverTest.testActionsMouseDrag',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
@@ -116,6 +119,9 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
     'ChromeDriverTestLegacy.testMouseMoveTo',
     'MobileEmulationCapabilityTest.testDoesntWaitWhenPageLoadStrategyIsNone',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1000530
+    'ChromeDriverTest.testActionsMouseMove',
+    'ChromeDriverTest.testActionsMouseDrag',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [

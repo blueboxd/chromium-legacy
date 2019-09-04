@@ -125,7 +125,7 @@ OomInterventionConfig::OomInterventionConfig()
   is_navigate_ads_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kNavigateAdsParamName, true);
   is_purge_v8_memory_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
-      features::kOomIntervention, kPurgeV8MemoryParamName, false);
+      features::kOomIntervention, kPurgeV8MemoryParamName, true);
   should_detect_in_renderer_ = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kShouldDetectInRenderer, true);
 

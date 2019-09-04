@@ -127,11 +127,6 @@ bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
                     static_cast<unsigned long>(params.reserved_size));
       return false;
     }
-    if (params.reserved_size != PAGE_START(params.reserved_size)) {
-      error->Format("Reserved size 0x%08lx is not page-aligned",
-                    static_cast<unsigned long>(params.reserved_size));
-      return false;
-    }
   }
 
   // Check that the file offset is also properly page-aligned.

@@ -244,10 +244,17 @@ void FrecencyPredictor::Train(unsigned int target, unsigned int condition) {
 }
 
 std::map<unsigned int, float> FrecencyPredictor::Rank(unsigned int condition) {
-  std::map<unsigned int, float> result;
+  float total = 0.0f;
   for (auto& pair : targets_) {
     DecayScore(&pair.second);
-    result[pair.first] = pair.second.last_score;
+    total += pair.second.last_score;
+  }
+  if (total == 0.0f)
+    return {};
+
+  std::map<unsigned int, float> result;
+  for (auto& pair : targets_) {
+    result[pair.first] = pair.second.last_score / total;
   }
   return result;
 }

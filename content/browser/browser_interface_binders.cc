@@ -11,8 +11,8 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
-#include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/shared_worker_instance.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 

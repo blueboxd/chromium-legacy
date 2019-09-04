@@ -15,7 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/net_buildflags.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -44,12 +45,11 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
       content::GetNetworkService()->CreateNetworkContext(
           MakeRequest(&network_context_), CreateNetworkContextParams());
 
-      network::mojom::NetworkContextClientPtr client_ptr;
-      auto client_request = mojo::MakeRequest(&client_ptr);
-      mojo::MakeStrongBinding(
+      mojo::PendingRemote<network::mojom::NetworkContextClient> client_remote;
+      mojo::MakeSelfOwnedReceiver(
           std::make_unique<content::NetworkContextClientBase>(),
-          std::move(client_request));
-      network_context_->SetClient(std::move(client_ptr));
+          client_remote.InitWithNewPipeAndPassReceiver());
+      network_context_->SetClient(std::move(client_remote));
     }
     return network_context_.get();
   }

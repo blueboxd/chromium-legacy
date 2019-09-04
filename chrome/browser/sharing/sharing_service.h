@@ -25,7 +25,10 @@
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
 #include "chrome/browser/sharing/sharing_service_proxy_android.h"
+#else
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
 #endif  // defined(OS_ANDROID)
 
 namespace gcm {
@@ -39,6 +42,7 @@ class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
+class NotificationDisplayService;
 class SharingFCMHandler;
 class SharingMessageHandler;
 class SharingSyncPreference;
@@ -74,11 +78,12 @@ class SharingService : public KeyedService,
       gcm::GCMDriver* gcm_driver,
       syncer::DeviceInfoTracker* device_info_tracker,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::SyncService* sync_service);
+      syncer::SyncService* sync_service,
+      NotificationDisplayService* notification_display_service);
   ~SharingService() override;
 
   // Returns the device matching |guid|, or nullptr if no match was found.
-  std::unique_ptr<syncer::DeviceInfo> GetDeviceByGuid(
+  virtual std::unique_ptr<syncer::DeviceInfo> GetDeviceByGuid(
       const std::string& guid) const;
 
   // Returns a list of DeviceInfo that is available to receive messages.
@@ -166,6 +171,9 @@ class SharingService : public KeyedService,
 #if defined(OS_ANDROID)
   SharingServiceProxyAndroid sharing_service_proxy_android_{this};
 #endif  // defined(OS_ANDROID)
+
+  std::unique_ptr<SharedClipboardMessageHandler>
+      shared_clipboard_message_handler_;
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 

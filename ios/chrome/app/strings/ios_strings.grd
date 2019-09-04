@@ -137,30 +137,8 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCNAME_VOICE_SEARCH" desc="The accessibility label for the voice search button in the location bar [Length: unlimited]">
         Voice Search
       </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON" desc="Title of the button to accept sign in and navigate away from the confirmation screen. [Length: 20m] [iOS only]">
-        Ok, Got it
-      </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS" desc="Description of how to configure sync and Google services on the sign-in confirmation screen. [Length: unlimited]">
-        Manage Chrome Sync and personalization in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Settings<ph name="END_LINK">END_LINK</ph>
-      </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON" desc="Title of the button to scroll the confirmation screen when it is too small to show everything at once. [Length: 20m] [iOS only]">
         More
-      </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_DESCRIPTION" desc="Description of the Google services section on the sign-in confirmation screen. [Length: unlimited]">
-        Google may use your browsing history to personalize Search, ads, and other Google services.
-      </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_TITLE" desc="Title of the Google services section on the sign-in confirmation screen. [Length: 50em]">
-        Personalize Google services
-      </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_DESCRIPTION" desc="Description of the Chrome sync section on the sign-in confirmation screen. [Length: unlimited]">
-        Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices.
-      </message>
-      <!-- "Chrome sync" is the Google Cloud Based service used for sync. Thus this string resource is set to "Chrome sync" even for Chromium builds. -->
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_TITLE" desc="Title of the Chrome sync section on the sign-in confirmation screen. [Length: 50em]">
-        Chrome Sync
-      </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_TITLE" desc="Title of the screen confirming selection of an account. [Length: 10em] [iOS only]">
-        Hi, <ph name="FULL_ACCOUNT_NAME">$1<ex>Jane Doe</ex></ph>
       </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_UNDO_BUTTON" desc="Title of the button to undo sign-in. [Length: 20em] [iOS only]">
         Undo
@@ -173,9 +151,6 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON" desc="Title of the button to sign in. [Length: 20em] [iOS only]">
         Continue
-      </message>
-      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_NO_ACCOUNT_BUTTON" desc="Title of the button to sign in when there is no accounts on the device. [Length: 20em] [iOS only]">
-        Sign in
       </message>
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON" desc="Title of the button to skip the selection of an account. [Length: 20em] [iOS only]">
         Cancel
@@ -2068,9 +2043,6 @@ New Search
       </message>
       <message name="IDS_IOS_SIGNIN_PROMO_CONTINUE_AS" desc="Button that the user can press to login without asking the password and continue using Chrome with this acccount. [Length: 9em]">
         Continue as <ph name="NAME">$1<ex>John Doe</ex></ph>
-      </message>
-      <message name="IDS_IOS_SIGNIN_PROMO_NOT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe').">
-        Not <ph name="EMAIL">$1<ex>john.doe@example.com</ex>?</ph>
       </message>
       <message name="IDS_IOS_SIGNIN_PROMO_RECENT_TABS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get tabs shared between devices. [iOS only]">
         To get your tabs from your other devices, turn on sync.

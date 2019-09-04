@@ -10,12 +10,9 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/timer/mock_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/unified_consent/feature.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -84,7 +81,8 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
-// Returns the first TransparentLinkButton view in |mainView|.
+// Returns the first view in |mainView| with the accessibility identifier:
+// |accessibilityID|.
 UIView* FindViewWithAccessibilityID(UIView* mainView,
                                     NSString* accessibilityID) {
   NSMutableArray* views = [NSMutableArray array];
@@ -100,16 +98,13 @@ UIView* FindViewWithAccessibilityID(UIView* mainView,
   return nil;
 }
 
+// Returns the Settings link button to open the advanced sign-in settings view.
 UIButton* FindLinkButton(UIView* mainView) {
   UIView* view = FindViewWithAccessibilityID(
       mainView, kAdvancedSigninSettingsLinkIdentifier);
   EXPECT_NE(nil, view);
   return base::mac::ObjCCastStrict<UIButton>(view);
 }
-
-const bool kUnifiedConsentParam[] = {
-    false, true,
-};
 
 static std::unique_ptr<KeyedService> CreateFakeConsentAuditor(
     web::BrowserState* context) {
@@ -130,14 +125,6 @@ static std::unique_ptr<KeyedService> CreateFakeUnifiedConsentService(
 class ChromeSigninViewControllerTest
     : public PlatformTest,
       public ::testing::WithParamInterface<bool> {
- public:
-  ChromeSigninViewControllerTest()
-      : unified_consent_enabled_(GetParam()),
-        scoped_unified_consent_(
-            unified_consent_enabled_
-                ? unified_consent::UnifiedConsentFeatureState::kEnabled
-                : unified_consent::UnifiedConsentFeatureState::kDisabled) {}
-
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
@@ -174,22 +161,10 @@ class ChromeSigninViewControllerTest
                   dispatcher:nil];
     vc_delegate_ = [[FakeChromeSigninViewControllerDelegate alloc] init];
     vc_.delegate = vc_delegate_;
-    __block base::MockOneShotTimer* mock_timer_ptr = nullptr;
-    if (!unified_consent_enabled_) {
-      vc_.timerGenerator = ^std::unique_ptr<base::OneShotTimer>() {
-        auto mock_timer = std::make_unique<base::MockOneShotTimer>();
-        mock_timer_ptr = mock_timer.get();
-        return mock_timer;
-      };
-    }
     UIScreen* screen = [UIScreen mainScreen];
     UIWindow* window = [[UIWindow alloc] initWithFrame:screen.bounds];
     [window makeKeyAndVisible];
     [window addSubview:[vc_ view]];
-    if (!unified_consent_enabled_) {
-      ASSERT_TRUE(mock_timer_ptr);
-      mock_timer_ptr->Fire();
-    }
     window_ = window;
   }
 
@@ -271,46 +246,19 @@ class ChromeSigninViewControllerTest
   // then the consent is given. The list is ordered according to the position
   // on the screen.
   const std::vector<int> ExpectedConsentStringIds() const {
-    if (unified_consent_enabled_) {
-      return {
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE,
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE,
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE,
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS,
-      };
-    }
     return {
-        IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_TITLE,
-        IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_DESCRIPTION,
-        IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_TITLE,
-        IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_DESCRIPTION,
-        IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS,
+        IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE,
+        IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE,
+        IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE,
+        IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS,
     };
   }
 
   // Returns the white list of strings that can be displayed on screen but
   // should not be part of ExpectedConsentStringIds().
   NSSet<NSString*>* WhiteListLocalizedStrings() const {
-    if (unified_consent_enabled_) {
-      return [NSSet setWithObjects:@"Fake Foo 1", @"foo1@gmail.com", @"CANCEL",
-                                   @"YES, I'M IN", nil];
-    }
-    return [NSSet setWithObjects:@"Hi, Fake Foo 1", @"foo1@gmail.com",
-                                 @"OK, GOT IT", @"UNDO", nil];
-  }
-
-  int ConfirmationStringId() const {
-    if (unified_consent_enabled_) {
-      return IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
-    }
-    return IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
-  }
-
-  int SettingsConfirmationStringId() const {
-    if (unified_consent_enabled_) {
-      return IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS;
-    }
-    return IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS;
+    return [NSSet setWithObjects:@"Fake Foo 1", @"foo1@gmail.com", @"CANCEL",
+                                 @"YES, I'M IN", nil];
   }
 
   // Returns true if the primary button is visible and its tile is equal the
@@ -342,7 +290,7 @@ class ChromeSigninViewControllerTest
   }
 
   // Scrolls to the bottom if needed and returns once the primary button is
-  // found with the confirmation title (based on ConfirmationStringId()).
+  // found with the confirmation title.
   // The scroll is done without animation. Otherwise, the scroll view doesn't
   // scroll correctly inside WaitUntilConditionOrTimeout().
   void ScrollConsentViewToBottom() {
@@ -356,7 +304,8 @@ class ChromeSigninViewControllerTest
                                consent_scroll_view.contentInset.bottom);
         [consent_scroll_view setContentOffset:bottom_offset animated:NO];
       }
-      return IsPrimaryButtonVisibleWithTitle(ConfirmationStringId());
+      return IsPrimaryButtonVisibleWithTitle(
+          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON);
     };
     bool condition_met =
         WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
@@ -391,8 +340,6 @@ class ChromeSigninViewControllerTest
     EXPECT_TRUE(condition_met) << base::SysNSStringToUTF8(failureExplaination);
   }
 
-  bool unified_consent_enabled_;
-  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> context_;
   FakeChromeIdentity* identity_;
@@ -400,25 +347,20 @@ class ChromeSigninViewControllerTest
   ChromeSigninViewController* vc_;
   consent_auditor::FakeConsentAuditor* fake_consent_auditor_;
   signin::IdentityManager* identity_manager_;
-  base::MockOneShotTimer* mock_timer_ptr_ = nullptr;
   FakeChromeSigninViewControllerDelegate* vc_delegate_;
 };
-
-INSTANTIATE_TEST_SUITE_P(,
-                         ChromeSigninViewControllerTest,
-                         ::testing::ValuesIn(kUnifiedConsentParam));
 
 // Tests that all strings on the screen are either part of the consent string
 // list defined in FakeConsentAuditor::ExpectedConsentStringIds()), or are part
 // of the white list strings defined in
 // FakeConsentAuditor::WhiteListLocalizedStrings().
-TEST_P(ChromeSigninViewControllerTest, TestAllStrings) {
+TEST_F(ChromeSigninViewControllerTest, TestAllStrings) {
   WaitAndExpectAllStringsOnScreen();
 }
 
 // Tests when the user taps on "OK GOT IT", that RecordGaiaConsent() is called
 // with the expected list of string ids, and confirmation string id.
-TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
+TEST_F(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
   WaitAndExpectAllStringsOnScreen();
   [vc_.primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
   ConditionBlock condition = ^bool() {
@@ -428,7 +370,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
   const std::vector<int>& recorded_ids =
       fake_consent_auditor_->recorded_id_vectors().at(0);
   EXPECT_EQ(ExpectedConsentStringIds(), recorded_ids);
-  EXPECT_EQ(ConfirmationStringId(),
+  EXPECT_EQ(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON,
             fake_consent_auditor_->recorded_confirmation_ids().at(0));
   EXPECT_EQ(consent_auditor::ConsentStatus::GIVEN,
             fake_consent_auditor_->recorded_statuses().at(0));
@@ -441,7 +383,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
 }
 
 // Tests that RecordGaiaConsent() is not called when the user taps on UNDO.
-TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
+TEST_F(ChromeSigninViewControllerTest, TestRefusingConsent) {
   WaitAndExpectAllStringsOnScreen();
   [vc_.secondaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
   EXPECT_EQ(0ul, fake_consent_auditor_->recorded_id_vectors().size());
@@ -450,24 +392,19 @@ TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
 
 // Tests that RecordGaiaConsent() is called with the expected list of string
 // ids, and settings confirmation string id.
-TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
+TEST_F(ChromeSigninViewControllerTest, TestConsentWithSettings) {
   WaitAndExpectAllStringsOnScreen();
-  if (unified_consent_enabled_) {
-    UIButton* linkButton = FindLinkButton(vc_.view);
-    EXPECT_NE(nil, linkButton);
-    [linkButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-    ConditionBlock condition = ^bool() {
-      return this->vc_delegate_.didSigninCalled;
-    };
-    EXPECT_TRUE(
-        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
-  } else {
-    [vc_ signinConfirmationControllerDidTapSettingsLink:vc_.confirmationVC];
-  }
+  UIButton* linkButton = FindLinkButton(vc_.view);
+  EXPECT_NE(nil, linkButton);
+  [linkButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+  ConditionBlock condition = ^bool() {
+    return this->vc_delegate_.didSigninCalled;
+  };
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
   const std::vector<int>& recorded_ids =
       fake_consent_auditor_->recorded_id_vectors().at(0);
   EXPECT_EQ(ExpectedConsentStringIds(), recorded_ids);
-  EXPECT_EQ(SettingsConfirmationStringId(),
+  EXPECT_EQ(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS,
             fake_consent_auditor_->recorded_confirmation_ids().at(0));
   EXPECT_EQ(consent_auditor::ConsentStatus::GIVEN,
             fake_consent_auditor_->recorded_statuses().at(0));

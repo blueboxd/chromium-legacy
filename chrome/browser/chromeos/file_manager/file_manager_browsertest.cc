@@ -524,6 +524,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewFromDirectoryTree")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    DirectoryTree, /* directory_tree.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("directoryTreeHorizontalScroll"),
+                      TestCase("directoryTreeVerticalScroll")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
     FilesAppBrowserTest,
     ::testing::Values(
@@ -943,12 +949,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("metadataTeamDrives").EnableDriveFs(),
         TestCase("metadataLargeDrive").DisableDriveFs(),
         TestCase("metadataLargeDrive").EnableDriveFs()));
-
-WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    NavigationList, /* navigation_list.js */
-    FilesAppBrowserTest,
-    ::testing::Values(TestCase("navigationListHorizontalScroll"),
-                      TestCase("navigationListVerticalScroll")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Search, /* search.js */

@@ -33,9 +33,9 @@ export function testLargeChild(target) {
   // page reloads.
   document.body.scrollTo(0, 0);
   helpers.nextFrame(() => {
-    const largeChild = helpers.largeDiv("largeChild");
+    const largeChild = helpers.largeDiv('largeChild');
     target.appendChild(largeChild);
-    const child = helpers.div("child");
+    const child = helpers.div('child');
     target.appendChild(child);
 
     // Give the scroller time to settle.
@@ -53,11 +53,11 @@ export function testLargeChildComment(target) {
   // page reloads.
   document.body.scrollTo(0, 0);
   helpers.nextFrame(() => {
-    const largeChild = helpers.largeDiv("largeChild");
+    const largeChild = helpers.largeDiv('largeChild');
     target.appendChild(largeChild);
     // Ensure that non-element nodes don't cause problems.
-    target.appendChild(document.createComment("comment"));
-    target.appendChild(helpers.div("child"));
+    target.appendChild(document.createComment('comment'));
+    target.appendChild(helpers.div('child'));
 
     // Give the scroller time to settle.
     helpers.inNFrames(10, () => {
@@ -114,9 +114,9 @@ export function testScrollFromOffScreen(target) {
   helpers.nextFrame(() => {
     // The page is a large element (much bigger than the page)
     // followed by the scroller. We then scroll down to the scroller.
-    const largeSibling = helpers.largeDiv("large");
+    const largeSibling = helpers.largeDiv('large');
     target.before(largeSibling);
-    const child = helpers.div("child");
+    const child = helpers.div('child');
     target.appendChild(child);
 
     // Give the scroller time to settle.
@@ -130,18 +130,18 @@ export function testScrollFromOffScreen(target) {
 /**
  * Runs |test| with a <virtual-scroller>, waiting until the custom element is
  * defined.
-*/
+ */
 export function withVirtualScroller(test) {
   customElements.whenDefined('virtual-scroller').then(() => {
-    runTest("virtual-scroller", test);
+    runTest('virtual-scroller', test);
   });
 }
 
 /**
  * Runs |test| with a <div>.
-*/
+ */
 export function withDiv(test) {
-  runTest("div", test);
+  runTest('div', test);
 }
 
 function runTest(elementName, test) {

@@ -64,4 +64,24 @@ TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
   EXPECT_EQ(2u, after_count - before_count);
 }
 
+TEST_F(PendingInvalidationsTest, DescendantInvalidationOnDisplayNone) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      #a { display: none }
+      .a .b { color: green }
+    </style>
+    <div id="a">
+      <div class="b"></div>
+      <div class="b"></div>
+    </div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+
+  // We skip scheduling descendant invalidations on display:none elements.
+  GetDocument().getElementById("a")->setAttribute(html_names::kClassAttr, "a");
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+}
+
 }  // namespace blink

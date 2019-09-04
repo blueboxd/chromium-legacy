@@ -43,9 +43,9 @@ class MockFrameHost : public mojom::FrameHost {
     return std::move(last_interface_provider_request_);
   }
 
-  blink::mojom::DocumentInterfaceBrokerRequest
-  TakeLastDocumentInterfaceBrokerRequest() {
-    return std::move(last_document_interface_broker_request_);
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  TakeLastDocumentInterfaceBrokerReceiver() {
+    return std::move(last_document_interface_broker_receiver_);
   }
 
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
@@ -68,15 +68,15 @@ class MockFrameHost : public mojom::FrameHost {
     last_interface_provider_request_ = std::move(interface_provider_request);
   }
 
-  // Holds on to the request end of the DocumentInterfaceBroker interface whose
+  // Holds on to the receiver end of the DocumentInterfaceBroker interface whose
   // client end is bound to the corresponding RenderFrame's
   // |document_interface_broker_| to facilitate retrieving the most recent
-  // |document_interface_broker_request| in tests.
-  void PassLastDocumentInterfaceBrokerRequest(
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_request) {
-    last_document_interface_broker_request_ =
-        std::move(document_interface_broker_request);
+  // |document_interface_broker_receiver| in tests.
+  void PassLastDocumentInterfaceBrokerReceiver(
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_receiver) {
+    last_document_interface_broker_receiver_ =
+        std::move(document_interface_broker_receiver);
   }
 
   // Holds on to the request end of the BrowserInterfaceBroker interface whose
@@ -98,9 +98,10 @@ class MockFrameHost : public mojom::FrameHost {
     if (interface_params) {
       last_interface_provider_request_ =
           std::move(interface_params->interface_provider_request);
-      last_document_interface_broker_request_ =
-          blink::mojom::DocumentInterfaceBrokerRequest(std::move(
-              interface_params->document_interface_broker_content_request));
+      last_document_interface_broker_receiver_ =
+          mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
+              std::move(interface_params
+                            ->document_interface_broker_content_receiver));
       last_browser_interface_broker_receiver_ =
           std::move(interface_params->browser_interface_broker_receiver);
     }
@@ -226,8 +227,8 @@ class MockFrameHost : public mojom::FrameHost {
       last_commit_params_;
   service_manager::mojom::InterfaceProviderRequest
       last_interface_provider_request_;
-  blink::mojom::DocumentInterfaceBrokerRequest
-      last_document_interface_broker_request_;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      last_document_interface_broker_receiver_;
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       last_browser_interface_broker_receiver_;
 
@@ -251,8 +252,8 @@ TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
   mock_frame_host_->PassLastInterfaceProviderRequest(
       mock_render_thread->TakeInitialInterfaceProviderRequestForFrame(
           params.routing_id));
-  mock_frame_host_->PassLastDocumentInterfaceBrokerRequest(
-      mock_render_thread->TakeInitialDocumentInterfaceBrokerRequestForFrame(
+  mock_frame_host_->PassLastDocumentInterfaceBrokerReceiver(
+      mock_render_thread->TakeInitialDocumentInterfaceBrokerReceiverForFrame(
           params.routing_id));
   mock_frame_host_->PassLastBrowserInterfaceBrokerReceiver(
       mock_render_thread->TakeInitialBrowserInterfaceBrokerReceiverForFrame(
@@ -417,9 +418,9 @@ TestRenderFrame::TakeLastInterfaceProviderRequest() {
   return mock_frame_host_->TakeLastInterfaceProviderRequest();
 }
 
-blink::mojom::DocumentInterfaceBrokerRequest
-TestRenderFrame::TakeLastDocumentInterfaceBrokerRequest() {
-  return mock_frame_host_->TakeLastDocumentInterfaceBrokerRequest();
+mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+TestRenderFrame::TakeLastDocumentInterfaceBrokerReceiver() {
+  return mock_frame_host_->TakeLastDocumentInterfaceBrokerReceiver();
 }
 
 mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>

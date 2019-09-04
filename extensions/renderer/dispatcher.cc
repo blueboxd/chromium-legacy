@@ -322,7 +322,7 @@ void Dispatcher::DidCreateScriptContext(
       break;
     case Feature::BLESSED_EXTENSION_CONTEXT:
       // For service workers this is handled in
-      // DidInitializeServiceWorkerContextOnWorkerThread().
+      // WillEvaluateServiceWorkerOnWorkerThread().
       DCHECK(!context->IsForServiceWorker());
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Blessed", elapsed);
       break;
@@ -353,7 +353,7 @@ void Dispatcher::DidCreateScriptContext(
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
 }
 
-void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
+void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
     blink::WebServiceWorkerContextProxy* context_proxy,
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,

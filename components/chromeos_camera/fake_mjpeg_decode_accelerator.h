@@ -34,16 +34,21 @@ class FakeMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
   bool Initialize(MjpegDecodeAccelerator::Client* client) override;
   void Decode(media::BitstreamBuffer bitstream_buffer,
               scoped_refptr<media::VideoFrame> video_frame) override;
+  void Decode(int32_t task_id,
+              base::ScopedFD src_dmabuf_fd,
+              size_t src_size,
+              off_t src_offset,
+              scoped_refptr<media::VideoFrame> dst_frame) override;
   bool IsSupported() override;
 
  private:
   void DecodeOnDecoderThread(
-      int32_t bitstream_buffer_id,
+      int32_t task_id,
       scoped_refptr<media::VideoFrame> video_frame,
       std::unique_ptr<media::UnalignedSharedMemory> src_shm);
-  void NotifyError(int32_t bitstream_buffer_id, Error error);
-  void NotifyErrorOnClientThread(int32_t bitstream_buffer_id, Error error);
-  void OnDecodeDoneOnClientThread(int32_t input_buffer_id);
+  void NotifyError(int32_t task_id, Error error);
+  void NotifyErrorOnClientThread(int32_t task_id, Error error);
+  void OnDecodeDoneOnClientThread(int32_t task_id);
 
   // Task runner for calls to |client_|.
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;

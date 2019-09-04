@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("common") {
   sources = [
+    "dmabuf.mojom",
     "jpeg_encode_accelerator.mojom",
     "mjpeg_decode_accelerator.mojom",
   ]

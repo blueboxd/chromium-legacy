@@ -272,6 +272,7 @@ class MockNigoriStorage : public NigoriStorage {
 
   MOCK_METHOD1(StoreData, void(const sync_pb::NigoriLocalData&));
   MOCK_METHOD0(RestoreData, base::Optional<sync_pb::NigoriLocalData>());
+  MOCK_METHOD0(ClearData, void());
 };
 
 class NigoriSyncBridgeImplTest : public testing::Test {

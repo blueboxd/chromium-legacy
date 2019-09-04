@@ -289,6 +289,12 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK_NE(bytes_read, ERR_IO_PENDING);
 
+  // If you've reached this, you've either called "RunUntilComplete" or are
+  // using legacy "QuitCurrent*Deprecated". If this DCHECK fails, that probably
+  // means you've run "RunUntilRedirect" or "RunUntilAuthRequired" and haven't
+  // redirected/auth-challenged
+  DCHECK(on_complete_ || use_legacy_on_complete_);
+
   // If the request was cancelled in a redirect, it should not signal
   // OnReadCompleted. Note that |cancel_in_rs_| may be true due to
   // https://crbug.com/564848.

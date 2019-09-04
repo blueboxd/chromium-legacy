@@ -221,11 +221,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Returns the time when the sign in process started, or a null time if
   // signing in didn't happen during this session.
-  base::Time sign_in_start_time() const { return sign_in_start_time_; }
+  base::TimeTicks sign_in_start_time() const { return sign_in_start_time_; }
 
   // Returns the time when ARC was about to start, or a null time if ARC has not
   // been started yet.
-  base::Time arc_start_time() const { return arc_start_time_; }
+  base::TimeTicks arc_start_time() const { return arc_start_time_; }
 
   // Returns true if ARC requested to start.
   bool enable_requested() const { return enable_requested_; }
@@ -377,9 +377,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   std::unique_ptr<ArcFastAppReinstallStarter> fast_app_reinstall_starter_;
 
   // The time when the sign in process started.
-  base::Time sign_in_start_time_;
+  base::TimeTicks sign_in_start_time_;
   // The time when ARC was about to start.
-  base::Time arc_start_time_;
+  base::TimeTicks arc_start_time_;
   base::Closure attempt_user_exit_callback_;
 
   ArcAppIdProviderImpl app_id_provider_;

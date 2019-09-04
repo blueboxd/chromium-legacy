@@ -787,6 +787,7 @@ Decimal Decimal::FromString(const String& str) {
         }
 
         HandleCharAndBreak('0', kStateZero);
+        HandleCharAndBreak('.', kStateDot);
         return Nan();
 
       case kStateStart:

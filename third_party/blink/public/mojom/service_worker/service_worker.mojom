@@ -250,16 +250,19 @@ interface ServiceWorker {
                             mojo_base.mojom.TimeDelta timeout)
       => (ServiceWorkerEventStatus status);
   DispatchAbortPaymentEvent(
-      payments.mojom.PaymentHandlerResponseCallback result_of_abort_payment)
-          => (ServiceWorkerEventStatus status);
+      pending_remote<payments.mojom.PaymentHandlerResponseCallback>
+          result_of_abort_payment)
+      => (ServiceWorkerEventStatus status);
   DispatchCanMakePaymentEvent(
       payments.mojom.CanMakePaymentEventData event_data,
-      payments.mojom.PaymentHandlerResponseCallback result_of_can_make_payment)
-          => (ServiceWorkerEventStatus status);
+      pending_remote<payments.mojom.PaymentHandlerResponseCallback>
+          result_of_can_make_payment)
+      => (ServiceWorkerEventStatus status);
   DispatchPaymentRequestEvent(
       payments.mojom.PaymentRequestEventData request_data,
-      payments.mojom.PaymentHandlerResponseCallback response_callback)
-          => (ServiceWorkerEventStatus status);
+      pending_remote<payments.mojom.PaymentHandlerResponseCallback>
+          response_callback)
+      => (ServiceWorkerEventStatus status);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
       => (ServiceWorkerEventStatus status);
   // Ref: https://github.com/rknoll/content-index

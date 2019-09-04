@@ -139,7 +139,7 @@ class PaymentInstrumentParameter
 };
 
 PaymentInstruments::PaymentInstruments(
-    const payments::mojom::blink::PaymentManagerPtr& manager)
+    const mojo::Remote<payments::mojom::blink::PaymentManager>& manager)
     : manager_(manager) {}
 
 ScriptPromise PaymentInstruments::deleteInstrument(

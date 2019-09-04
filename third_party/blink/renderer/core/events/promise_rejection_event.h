@@ -21,10 +21,10 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
 
  public:
   static PromiseRejectionEvent* Create(
-      ScriptState* state,
+      ScriptState* script_state,
       const AtomicString& type,
       const PromiseRejectionEventInit* initializer) {
-    return MakeGarbageCollected<PromiseRejectionEvent>(state, type,
+    return MakeGarbageCollected<PromiseRejectionEvent>(script_state, type,
                                                        initializer);
   }
 

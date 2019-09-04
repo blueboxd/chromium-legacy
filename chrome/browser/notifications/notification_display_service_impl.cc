@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/permissions/permission_request_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharing/sharing_notification_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/ui_base_features.h"
@@ -138,6 +139,10 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
     AddNotificationHandler(
         NotificationHandler::Type::PERMISSION_REQUEST,
         std::make_unique<PermissionRequestNotificationHandler>());
+#endif
+#if !defined(OS_ANDROID)
+    AddNotificationHandler(NotificationHandler::Type::SHARING,
+                           std::make_unique<SharingNotificationHandler>());
 #endif
   }
 

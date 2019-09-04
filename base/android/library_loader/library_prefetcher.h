@@ -52,11 +52,6 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // collection is accurate.
   static void MadviseForResidencyCollection();
 
-  // Returns true for success.
-  static bool GetOrderedCodeInfo(std::string* filename,
-                                 size_t* start_offset,
-                                 size_t* size);
-
  private:
   // Returns the percentage of [start, end] currently resident in
   // memory, or -1 in case of error.

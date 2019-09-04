@@ -103,18 +103,6 @@ Polymer({
       readOnly: true,
     },
 
-    /**
-     * True if Chrome OS Kerberos support is enabled.
-     * @private
-     */
-    isKerberosEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isKerberosEnabled');
-      },
-      readOnly: true,
-    },
-
     /** @private */
     showParentalControls_: {
       type: Boolean,

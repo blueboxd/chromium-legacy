@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TEST_DOCUMENT_INTERFACE_BROKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TEST_DOCUMENT_INTERFACE_BROKER_H_
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-test-utils.h"
 

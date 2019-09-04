@@ -26,8 +26,6 @@ class NavigationLoaderInterceptor;
 
 // A class to provide interfaces to communicate with a BundledExchanges for
 // loading. Running on the UI thread.
-// TODO(crbug.com/966753): Add browser tests once core parts are submitted and
-// basic sequence can pass.
 class BundledExchangesHandle final {
  public:
   BundledExchangesHandle();

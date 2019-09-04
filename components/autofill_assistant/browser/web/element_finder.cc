@@ -148,8 +148,10 @@ void ElementFinder::SendResult(const ClientStatus& status) {
 }
 
 void ElementFinder::OnGetDocumentElement(
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::EvaluateResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to get document root element.";
     SendResult(status);
@@ -218,6 +220,7 @@ void ElementFinder::RecursiveFindElement(const std::string& object_id,
 
 void ElementFinder::OnQuerySelectorAll(
     size_t index,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   if (!result) {
     // It is possible for a document element to already exist, but not be
@@ -229,7 +232,8 @@ void ElementFinder::OnQuerySelectorAll(
     SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
     return;
   }
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(1) << __func__ << ": Failed to query selector " << index << " of "
              << selector_;
@@ -282,10 +286,11 @@ void ElementFinder::OnQuerySelectorAll(
 
 void ElementFinder::OnDescribeNodeForPseudoElement(
     dom::PseudoType pseudo_type,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
     DVLOG(1) << __func__ << " Failed to describe the node for pseudo element.";
-    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
+    SendResult(UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
 
@@ -310,6 +315,7 @@ void ElementFinder::OnDescribeNodeForPseudoElement(
 }
 
 void ElementFinder::OnResolveNodeForPseudoElement(
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (result && result->GetObject() && result->GetObject()->HasObjectId()) {
     element_result_->object_id = result->GetObject()->GetObjectId();
@@ -320,10 +326,11 @@ void ElementFinder::OnResolveNodeForPseudoElement(
 void ElementFinder::OnDescribeNode(
     const std::string& object_id,
     size_t index,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::DescribeNodeResult> result) {
   if (!result || !result->GetNode()) {
     DVLOG(1) << __func__ << " Failed to describe the node.";
-    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
+    SendResult(UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
 
@@ -354,7 +361,8 @@ void ElementFinder::OnDescribeNode(
         frame_name, node->GetContentDocument()->GetDocumentURL());
     if (!element_result_->container_frame_host) {
       DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
-      SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
+      SendResult(
+          UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
       return;
     }
   } else if (node->HasFrameId()) {
@@ -385,10 +393,11 @@ void ElementFinder::OnDescribeNode(
 
 void ElementFinder::OnResolveNode(
     size_t index,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<dom::ResolveNodeResult> result) {
   if (!result || !result->GetObject() || !result->GetObject()->HasObjectId()) {
     DVLOG(1) << __func__ << " Failed to resolve object id from backend id.";
-    SendResult(UnexpectedErrorStatus(__FILE__, __LINE__));
+    SendResult(UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
 

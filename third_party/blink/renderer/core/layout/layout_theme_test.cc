@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 #include <memory>
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -26,6 +28,16 @@ class LayoutThemeTest : public PageTestBase,
  protected:
   LayoutThemeTest() : ScopedCSSColorSchemeForTest(true) {}
   void SetHtmlInnerHTML(const char* html_content);
+
+  void SetUp() override {
+    WebTestSupport::SetMockThemeEnabledForTest(true);
+    PageTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    PageTestBase::TearDown();
+    WebTestSupport::SetMockThemeEnabledForTest(false);
+  }
 };
 
 void LayoutThemeTest::SetHtmlInnerHTML(const char* html_content) {
@@ -123,5 +135,39 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
   EXPECT_EQ(Color::kBlack,
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
+
+// Mock theming is done on LayoutThemeDefault which is not a base class for
+// LayoutThemeMac.
+#if !defined(OS_MACOSX)
+TEST_F(LayoutThemeTest, SystemColorWithColorScheme) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #dark {
+        color: buttonface;
+        color-scheme: dark;
+      }
+    </style>
+    <div id="dark"></div>
+  )HTML");
+
+  Element* dark_element = GetDocument().getElementById("dark");
+  ASSERT_TRUE(dark_element);
+
+  const ComputedStyle* style = dark_element->GetComputedStyle();
+  EXPECT_EQ(WebColorScheme::kLight, style->UsedColorScheme());
+  EXPECT_EQ(Color(0xc0, 0xc0, 0xc0),
+            style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  // Change color scheme to dark.
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhasesForTest();
+
+  style = dark_element->GetComputedStyle();
+  EXPECT_EQ(WebColorScheme::kDark, style->UsedColorScheme());
+  EXPECT_EQ(Color(0x80, 0x80, 0x80),
+            style->VisitedDependentColor(GetCSSPropertyColor()));
+}
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace blink

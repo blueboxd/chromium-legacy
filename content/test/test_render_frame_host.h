@@ -21,6 +21,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/page_transition_types.h"
 
 namespace net {
@@ -158,10 +159,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_content_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_blink_request,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_content_receiver,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_blink_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       bool same_document);
@@ -185,10 +186,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   static service_manager::mojom::InterfaceProviderRequest
   CreateStubInterfaceProviderRequest();
 
-  // Returns a pending DocumentInterfaceBrokerRequest that is safe to bind to an
-  // implementation, but will never receive any interface requests.
-  static blink::mojom::DocumentInterfaceBrokerRequest
-  CreateStubDocumentInterfaceBrokerRequest();
+  // Returns a pending PendingReceiver<DocumentInterfaceBroker> that is safe to
+  // bind to an implementation, but will never receive any interface requests.
+  static mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  CreateStubDocumentInterfaceBrokerReceiver();
 
   // Returns a PendingReceiver<BrowserInterfaceBroker> that is safe to bind to
   // an implementation, but will never receive any interface requests.

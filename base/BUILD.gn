@@ -3062,7 +3062,10 @@ test("base_unittests") {
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//build/config/compiler:noshadowing",
+  ]
 }
 
 action("build_date") {

@@ -210,6 +210,9 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     return;
   }
 
+  cras_client_stream_params_set_client_type(stream_params,
+                                            CRAS_CLIENT_TYPE_CHROME);
+
   if (UseCrasAec())
     cras_client_stream_params_enable_aec(stream_params);
 

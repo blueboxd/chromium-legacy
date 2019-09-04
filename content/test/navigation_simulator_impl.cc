@@ -345,13 +345,12 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   interface_provider_request_ = mojo::MakeRequest(&stub_interface_provider);
 
-  blink::mojom::DocumentInterfaceBrokerPtr
-      stub_document_interface_broker_content;
-  document_interface_broker_content_request_ =
-      mojo::MakeRequest(&stub_document_interface_broker_content);
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
-  document_interface_broker_blink_request_ =
-      mojo::MakeRequest(&stub_document_interface_broker_blink);
+  document_interface_broker_content_receiver_ =
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver();
+  document_interface_broker_blink_receiver_ =
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver();
   browser_interface_broker_receiver_ =
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
           .InitWithNewPipeAndPassReceiver();
@@ -601,8 +600,8 @@ void NavigationSimulatorImpl::Commit() {
 
   if (same_document_) {
     interface_provider_request_ = nullptr;
-    document_interface_broker_content_request_ = nullptr;
-    document_interface_broker_blink_request_ = nullptr;
+    document_interface_broker_content_receiver_.reset();
+    document_interface_broker_blink_receiver_.reset();
     browser_interface_broker_receiver_.reset();
   }
 
@@ -621,8 +620,8 @@ void NavigationSimulatorImpl::Commit() {
       false /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), std::move(interface_provider_request_),
-      std::move(document_interface_broker_content_request_),
-      std::move(document_interface_broker_blink_request_),
+      std::move(document_interface_broker_content_receiver_),
+      std::move(document_interface_broker_blink_receiver_),
       std::move(browser_interface_broker_receiver_), same_document_);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
@@ -750,8 +749,8 @@ void NavigationSimulatorImpl::CommitErrorPage() {
       false /* same_document */, true /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), std::move(interface_provider_request_),
-      std::move(document_interface_broker_content_request_),
-      std::move(document_interface_broker_blink_request_),
+      std::move(document_interface_broker_content_receiver_),
+      std::move(document_interface_broker_blink_receiver_),
       std::move(browser_interface_broker_receiver_), false /* same_document */);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
@@ -782,17 +781,15 @@ void NavigationSimulatorImpl::CommitSameDocument() {
       true /* same_document */, false /* failed_navigation */);
 
   interface_provider_request_ = nullptr;
-  document_interface_broker_content_request_ = nullptr;
-  document_interface_broker_blink_request_ = nullptr;
+  document_interface_broker_content_receiver_.reset();
+  document_interface_broker_blink_receiver_.reset();
   browser_interface_broker_receiver_.reset();
 
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), nullptr /* interface_provider_request_ */,
-      nullptr /* document_interface_broker_content_handle */,
-      nullptr /* document_interface_broker_blink_handle */,
-      mojo::PendingReceiver<
-          blink::mojom::
-              BrowserInterfaceBroker>() /* browser_interface_broker_receiver */,
+      mojo::NullReceiver() /* document_interface_broker_content_receiver */,
+      mojo::NullReceiver() /* document_interface_broker_blink_receiver */,
+      mojo::NullReceiver() /* browser_interface_broker_receiver */,
       true /* same_document */);
 
   // Same-document commits should never hit network-related stages of committing

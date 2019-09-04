@@ -9,11 +9,24 @@
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/dom_distiller/core/url_utils.h"
+#include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 
 namespace dom_distiller {
 
-const char kTestScheme[] = "myscheme";
+namespace {
+
+const GURL GetDistillerViewUrlFromUrl(const std::string& url) {
+  return url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url));
+}
+
+const GURL GetDistillerViewUrlFromEntryId(const std::string& id) {
+  return url_utils::GetDistillerViewUrlFromEntryId(kDomDistillerScheme, id);
+}
+
+}  // namespace
 
 class FakeViewRequestDelegate : public ViewRequestDelegate {
  public:
@@ -78,10 +91,10 @@ class DomDistillerViewerTest : public testing::Test {
 
  protected:
   std::unique_ptr<ViewerHandle> CreateViewRequest(
-      const std::string& path,
+      const GURL& url,
       ViewRequestDelegate* view_request_delegate) {
-    return viewer::CreateViewRequest(service_.get(), path,
-                                     view_request_delegate, gfx::Size());
+    return viewer::CreateViewRequest(service_.get(), url, view_request_delegate,
+                                     gfx::Size());
   }
 
   std::unique_ptr<TestDomDistillerService> service_;
@@ -94,9 +107,8 @@ TEST_F(DomDistillerViewerTest, TestCreatingViewUrlRequest) {
   EXPECT_CALL(*service_, ViewUrlImpl())
       .WillOnce(testing::Return(viewer_handle));
   EXPECT_CALL(*service_, ViewEntryImpl()).Times(0);
-  CreateViewRequest(
-      std::string("?") + kUrlKey + "=http%3A%2F%2Fwww.example.com%2F",
-      view_request_delegate.get());
+  CreateViewRequest(GetDistillerViewUrlFromUrl("http://www.example.com/"),
+                    view_request_delegate.get());
 }
 
 TEST_F(DomDistillerViewerTest, TestCreatingViewEntryRequest) {
@@ -106,7 +118,7 @@ TEST_F(DomDistillerViewerTest, TestCreatingViewEntryRequest) {
   EXPECT_CALL(*service_, ViewEntryImpl())
       .WillOnce(testing::Return(viewer_handle));
   EXPECT_CALL(*service_, ViewUrlImpl()).Times(0);
-  CreateViewRequest(std::string("?") + kEntryIdKey + "=abc-def",
+  CreateViewRequest(GetDistillerViewUrlFromEntryId("abc-def"),
                     view_request_delegate.get());
 }
 
@@ -116,19 +128,24 @@ TEST_F(DomDistillerViewerTest, TestCreatingInvalidViewRequest) {
   EXPECT_CALL(*service_, ViewEntryImpl()).Times(0);
   EXPECT_CALL(*service_, ViewUrlImpl()).Times(0);
   // Specify none of the required query parameters.
-  CreateViewRequest("?foo=bar", view_request_delegate.get());
+  CreateViewRequest(GURL(std::string(kDomDistillerScheme) + "://host?foo=bar"),
+                    view_request_delegate.get());
   // Specify both of the required query parameters.
-  CreateViewRequest("?" + std::string(kUrlKey) +
-                        "=http%3A%2F%2Fwww.example.com%2F&" +
-                        std::string(kEntryIdKey) + "=abc-def",
+  CreateViewRequest(net::AppendOrReplaceQueryParameter(
+                        GetDistillerViewUrlFromUrl("http://www.example.com/"),
+                        kEntryIdKey, "abc-def"),
                     view_request_delegate.get());
   // Specify an internal Chrome page.
-  CreateViewRequest("?" + std::string(kUrlKey) + "=chrome%3A%2F%2Fsettings%2F",
+  CreateViewRequest(GetDistillerViewUrlFromUrl("chrome://settings/"),
                     view_request_delegate.get());
   // Specify a recursive URL.
-  CreateViewRequest("?" + std::string(kUrlKey) + "=" +
-                        std::string(kTestScheme) + "%3A%2F%2Fabc-def%2F",
+  CreateViewRequest(GetDistillerViewUrlFromUrl(
+                        GetDistillerViewUrlFromEntryId("abc-def").spec()),
                     view_request_delegate.get());
+  // Specify a non-distilled URL.
+  CreateViewRequest(GURL("https://example.com"), view_request_delegate.get());
+  // Specify an empty URL.
+  CreateViewRequest(GURL(), view_request_delegate.get());
 }
 
 DistilledPagePrefs* TestDomDistillerService::GetDistilledPagePrefs() {

@@ -36,15 +36,6 @@ cca.bg.INITIAL_ASPECT_RATIO = 1.7777777777;
 cca.bg.TOPBAR_COLOR = '#000000';
 
 /**
- * Whether the main AppWindow is created. It's used in test to ensure that we
- * won't connect to the main.html target before the window is created, otherwise
- * the window might disappear.
- * @type {boolean}
- * @deprecated This flag would be removed after we migrate CCA Tast tests.
- */
-cca.bg.appWindowCreated = false;
-
-/**
  * It's used in test to ensure that we won't connect to the main.html target
  * before the window is created, otherwise the window might disappear.
  * @type {?function(): undefined}
@@ -89,7 +80,6 @@ cca.bg.create = function() {
         chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
         chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});
       });
-      cca.bg.appWindowCreated = true;
       if (cca.bg.onAppWindowCreatedForTesting !== null) {
         cca.bg.onAppWindowCreatedForTesting();
       }
@@ -97,4 +87,28 @@ cca.bg.create = function() {
   });
 };
 
+/**
+ * Handles messages from the test extension used in Tast.
+ * @param {*} message The message sent by the calling script.
+ * @param {!MessageSender} sender
+ * @param {function(*): void} sendResponse
+ * @return {boolean|undefined} True to indicate the response is sent
+ *     asynchronously.
+ */
+cca.bg.handleExternalMessageFromTest = function(message, sender, sendResponse) {
+  if (sender.id !== 'behllobkkfkfnphdnhnkndlbkcpglgmj') {
+    console.warn(`Unknown sender id: ${sender.id}`);
+    return;
+  }
+  switch (message.action) {
+    case 'SET_WINDOW_CREATED_CALLBACK':
+      cca.bg.onAppWindowCreatedForTesting = sendResponse;
+      return true;
+    default:
+      console.warn(`Unknown action: ${message.action}`);
+  }
+};
+
 chrome.app.runtime.onLaunched.addListener(cca.bg.create);
+chrome.runtime.onMessageExternal.addListener(
+    cca.bg.handleExternalMessageFromTest);

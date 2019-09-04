@@ -37,10 +37,9 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
     interface FeedSurfaceCreator {
         /**
          * Creates the {@link FeedSurfaceCoordinator} for the specified mode.
-         * @param isIncognito Whether it is in incognito mode.
          * @return The {@link FeedSurfaceCoordinator}.
          */
-        FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isIncognito);
+        FeedSurfaceCoordinator createFeedSurfaceCoordinator();
     }
 
     ExploreSurfaceCoordinator(ChromeActivity activity, ViewGroup parentView,
@@ -57,8 +56,8 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
                 ExploreSurfaceViewBinder::bind);
         mFeedSurfaceCreator = new FeedSurfaceCreator() {
             @Override
-            public FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isIncognito) {
-                return internalCreateFeedSurfaceCoordinator(isIncognito);
+            public FeedSurfaceCoordinator createFeedSurfaceCoordinator() {
+                return internalCreateFeedSurfaceCoordinator();
             }
         };
     }
@@ -82,21 +81,18 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         return false;
     }
 
-    private FeedSurfaceCoordinator internalCreateFeedSurfaceCoordinator(boolean isIncognito) {
+    private FeedSurfaceCoordinator internalCreateFeedSurfaceCoordinator() {
         if (mExploreSurfaceNavigationDelegate == null)
             mExploreSurfaceNavigationDelegate = new ExploreSurfaceNavigationDelegate(mActivity);
-        mExploreSurfaceNavigationDelegate.setIncognito(isIncognito);
 
         ExploreSurfaceActionHandler exploreSurfaceActionHandler =
                 new ExploreSurfaceActionHandler(mExploreSurfaceNavigationDelegate,
                         FeedProcessScopeFactory.getFeedConsumptionObserver(),
                         FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                        OfflinePageBridge.getForProfile(isIncognito
-                                        ? Profile.getLastUsedProfile().getOffTheRecordProfile()
-                                        : Profile.getLastUsedProfile()),
+                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
                         FeedProcessScopeFactory.getFeedLoggingBridge());
         return new FeedSurfaceCoordinator(
-                mActivity, null, null, null, exploreSurfaceActionHandler, isIncognito, this);
+                mActivity, null, null, null, exploreSurfaceActionHandler, false, this);
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.
         // TODO(crbug.com/982018): Hide signin promo UI in incognito mode.
     }

@@ -55,6 +55,10 @@
 #include "ui/base/ui_base_features.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#endif  // defined(OS_MACOSX)
+
 using content::BrowserThread;
 
 namespace {
@@ -308,6 +312,16 @@ void DesktopCaptureAccessHandler::HandleRequest(
   // If the device id wasn't specified then this is a screen capture request
   // (i.e. chooseDesktopMedia() API wasn't used to generate device id).
   if (request.requested_video_device_id.empty()) {
+#if defined(OS_MACOSX)
+    if (system_media_permissions::CheckSystemScreenCapturePermission() !=
+        system_media_permissions::SystemPermission::kAllowed) {
+      std::move(callback).Run(
+          blink::MediaStreamDevices(),
+          blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+          nullptr);
+      return;
+    }
+#endif
     ProcessScreenCaptureAccessRequest(web_contents, request,
                                       std::move(callback), extension);
     return;
@@ -340,6 +354,17 @@ void DesktopCaptureAccessHandler::HandleRequest(
         std::move(ui));
     return;
   }
+#if defined(OS_MACOSX)
+  if (media_id.type != content::DesktopMediaID::TYPE_WEB_CONTENTS &&
+      system_media_permissions::CheckSystemScreenCapturePermission() !=
+          system_media_permissions::SystemPermission::kAllowed) {
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+        nullptr);
+    return;
+  }
+#endif
 
   bool loopback_audio_supported = false;
 #if defined(USE_CRAS) || defined(OS_WIN)

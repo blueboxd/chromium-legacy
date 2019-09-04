@@ -156,6 +156,7 @@
 #include "third_party/blink/renderer/core/feature_policy/document_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -8113,6 +8114,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
+  visitor->Trace(navigation_initiator_);
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(isolated_world_csp_map_);
   visitor->Trace(find_in_page_root_);
@@ -8213,6 +8215,14 @@ bool Document::IsFocusAllowed() const {
     return true;
   return IsFeatureEnabled(
       mojom::FeaturePolicyFeature::kFocusWithoutUserActivation);
+}
+
+NavigationInitiatorImpl& Document::NavigationInitiator() {
+  if (!navigation_initiator_) {
+    navigation_initiator_ =
+        MakeGarbageCollected<NavigationInitiatorImpl>(*this);
+  }
+  return *navigation_initiator_;
 }
 
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
@@ -8362,37 +8372,6 @@ void Document::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
   isolated_world_csp_map_->erase(world_id);
 }
 
-void Document::SendViolationReport(
-    mojom::blink::CSPViolationParamsPtr violation_params) {
-  std::unique_ptr<SourceLocation> source_location =
-      std::make_unique<SourceLocation>(
-          violation_params->source_location->url,
-          violation_params->source_location->line_number,
-          violation_params->source_location->column_number, nullptr);
-
-  Vector<String> report_endpoints;
-  for (const WebString& end_point : violation_params->report_endpoints)
-    report_endpoints.push_back(end_point);
-
-  AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kSecurity,
-      mojom::ConsoleMessageLevel::kError, violation_params->console_message));
-  GetContentSecurityPolicy()->ReportViolation(
-      violation_params->directive,
-      ContentSecurityPolicy::GetDirectiveType(
-          violation_params->effective_directive),
-      violation_params->console_message, KURL(violation_params->blocked_url),
-      report_endpoints, violation_params->use_reporting_api,
-      violation_params->header,
-      static_cast<ContentSecurityPolicyHeaderType>(
-          violation_params->disposition),
-      ContentSecurityPolicy::ViolationType::kURLViolation,
-      std::move(source_location), nullptr /* LocalFrame */,
-      violation_params->after_redirect ? RedirectStatus::kFollowedRedirect
-                                       : RedirectStatus::kNoRedirect,
-      nullptr /* Element */);
-}
-
 bool Document::ChildrenCanHaveStyle() const {
   if (LayoutObject* view = GetLayoutView())
     return view->CanHaveChildren();
@@ -8520,10 +8499,6 @@ bool Document::IsAnimatedPropertyCounted(CSSPropertyID property) const {
 void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
   if (DocumentLoader* loader = Loader())
     loader->GetUseCounterHelper().ClearMeasurementForTesting(feature);
-}
-
-void Document::Dispose() {
-  navigation_initiator_receivers_.Clear();
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

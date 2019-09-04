@@ -35,9 +35,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
@@ -153,6 +151,7 @@ class LocalFrameView;
 class Location;
 class MediaQueryListListener;
 class MediaQueryMatcher;
+class NavigationInitiatorImpl;
 class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
@@ -258,11 +257,9 @@ class CORE_EXPORT Document : public ContainerNode,
                              public ExecutionContext,
                              public DocumentShutdownNotifier,
                              public SynchronousMutationNotifier,
-                             public Supplementable<Document>,
-                             public mojom::blink::NavigationInitiator {
+                             public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
-  USING_PRE_FINALIZER(Document, Dispose);
 
  public:
   // Factory for web-exposed Document constructor. The argument document must be
@@ -1499,12 +1496,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsLazyLoadPolicyEnforced() const;
   bool IsFocusAllowed() const;
 
-  void SendViolationReport(
-      mojom::blink::CSPViolationParamsPtr violation_params) override;
-  void BindNavigationInitiatorReceiver(
-      mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
-    navigation_initiator_receivers_.Add(this, std::move(receiver));
-  }
+  NavigationInitiatorImpl& NavigationInitiator();
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
@@ -1762,8 +1754,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element);
   void DisplayNoneChangedForFrame();
-
-  void Dispose();
 
   DocumentLifecycle lifecycle_;
 
@@ -2070,12 +2060,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // opposed to a PluginView.
   bool is_for_external_handler_ = false;
 
-  // A list of all the navigation_initiator receivers owned by this document.
-  // Used to report CSP violations that result from CSP blocking
-  // navigation requests that were initiated by this document.
-  mojo::ReceiverSet<mojom::blink::NavigationInitiator>
-      navigation_initiator_receivers_;
-
+  Member<NavigationInitiatorImpl> navigation_initiator_;
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 
   // Tracks which features have already been potentially violated in this

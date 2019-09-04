@@ -6694,6 +6694,21 @@
             ]
         }
     ],
+    "WebRTC-Audio-NetEqDecisionLogicSettings": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "estimate_dtx_delay:true,time_stretch_cn:true"
+                }
+            ]
+        }
+    ],
     "WebRTC-Audio-NetEqDelayHistogram": [
         {
             "platforms": [

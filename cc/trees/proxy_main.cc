@@ -39,7 +39,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       commit_waits_for_activation_(false),
       started_(false),
       defer_main_frame_update_(false),
-      defer_commits_(true) {
+      defer_commits_(false) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
   DCHECK(task_runner_provider_);
   DCHECK(IsMainThread());
@@ -201,15 +201,10 @@ void ProxyMain::BeginMainFrame(
   current_pipeline_stage_ = ANIMATE_PIPELINE_STAGE;
 
   // Check now if we should stop deferring commits due to a timeout. We
-  // may also stop deferring in BeginMainFrame, but maintain the status
-  // from this point to keep scroll in sync.
-  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    // Only record a reason of kTimeout if the timeout was set, otherwise
-    // record kNotDeferred, indicating that a timeout was never set.
-    StopDeferringCommits(commits_restart_time_.is_null()
-                             ? PaintHoldingCommitTrigger::kNotDeferred
-                             : PaintHoldingCommitTrigger::kTimeout);
-  }
+  // may also stop deferring in layer_tree_host_->BeginMainFrame, but update
+  // the status at this point to keep scroll in sync.
+  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_)
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
   skip_commit |= defer_commits_;
 
   if (!skip_commit) {
@@ -452,10 +447,14 @@ void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
     return;
 
   defer_main_frame_update_ = defer_main_frame_update;
-  if (defer_main_frame_update_)
+  if (defer_main_frame_update_) {
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
-  else
+  } else {
     TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
+  }
+
+  // Notify dependent systems that the deferral status has changed.
+  layer_tree_host_->OnDeferMainFrameUpdatesChanged(defer_main_frame_update_);
 
   // The impl thread needs to know that it should not issue BeginMainFrame.
   ImplThreadTaskRunner()->PostTask(
@@ -476,6 +475,9 @@ void ProxyMain::StartDeferringCommits(base::TimeDelta timeout) {
 
   defer_commits_ = true;
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
+
+  // Notify dependent systems that the deferral status has changed.
+  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
 }
 
 void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
@@ -485,6 +487,9 @@ void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   commits_restart_time_ = base::TimeTicks();
   TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
+
+  // Notify depended systems that the deferral status has changed.
+  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
 }
 
 bool ProxyMain::CommitRequested() const {

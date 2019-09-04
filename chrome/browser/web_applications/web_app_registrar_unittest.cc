@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -323,6 +324,121 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(app3_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre("3"));
+}
+
+TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
+  const GURL origin_scope("https://example.com/");
+  const GURL app1_scope("https://example.com/app");
+  const GURL app2_scope("https://example.com/app-two");
+  const GURL app3_scope("https://not-example.com/app");
+
+  auto app1 = std::make_unique<WebApp>("1");
+  app1->SetScope(app1_scope);
+  registrar().RegisterApp(std::move(app1));
+
+  base::Optional<AppId> app2_match =
+      registrar().FindAppWithUrlInScope(app2_scope);
+  DCHECK(app2_match);
+  EXPECT_EQ(*app2_match, "1");
+
+  base::Optional<AppId> app3_match =
+      registrar().FindAppWithUrlInScope(app3_scope);
+  EXPECT_FALSE(app3_match);
+
+  auto app2 = std::make_unique<WebApp>("2");
+  app2->SetScope(app2_scope);
+  registrar().RegisterApp(std::move(app2));
+
+  auto app3 = std::make_unique<WebApp>("3");
+  app3->SetScope(app3_scope);
+  registrar().RegisterApp(std::move(app3));
+
+  base::Optional<AppId> origin_match =
+      registrar().FindAppWithUrlInScope(origin_scope);
+  EXPECT_FALSE(origin_match);
+
+  base::Optional<AppId> app1_match =
+      registrar().FindAppWithUrlInScope(app1_scope);
+  DCHECK(app1_match);
+  EXPECT_EQ(*app1_match, "1");
+
+  app2_match = registrar().FindAppWithUrlInScope(app2_scope);
+  DCHECK(app2_match);
+  EXPECT_EQ(*app2_match, "2");
+
+  app3_match = registrar().FindAppWithUrlInScope(app3_scope);
+  DCHECK(app3_match);
+  EXPECT_EQ(*app3_match, "3");
+}
+
+TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
+  const GURL app1_page("https://example.com/app/page");
+  const GURL app2_page("https://example.com/app-two/page");
+  const GURL app3_page("https://not-example.com/app/page");
+
+  const GURL app1_launch("https://example.com/app/launch");
+  const GURL app2_launch("https://example.com/app-two/launch");
+  const GURL app3_launch("https://not-example.com/app/launch");
+
+  // Implicit scope "https://example.com/app/"
+  auto app1 = std::make_unique<WebApp>("1");
+  app1->SetLaunchUrl(app1_launch);
+  registrar().RegisterApp(std::move(app1));
+
+  base::Optional<AppId> app2_match =
+      registrar().FindAppWithUrlInScope(app2_page);
+  EXPECT_FALSE(app2_match);
+
+  base::Optional<AppId> app3_match =
+      registrar().FindAppWithUrlInScope(app3_page);
+  EXPECT_FALSE(app3_match);
+
+  auto app2 = std::make_unique<WebApp>("2");
+  app2->SetLaunchUrl(app2_launch);
+  registrar().RegisterApp(std::move(app2));
+
+  auto app3 = std::make_unique<WebApp>("3");
+  app3->SetLaunchUrl(app3_launch);
+  registrar().RegisterApp(std::move(app3));
+
+  base::Optional<AppId> app1_match =
+      registrar().FindAppWithUrlInScope(app1_page);
+  DCHECK(app1_match);
+  EXPECT_EQ(app1_match, base::Optional<AppId>("1"));
+
+  app2_match = registrar().FindAppWithUrlInScope(app2_page);
+  DCHECK(app2_match);
+  EXPECT_EQ(app2_match, base::Optional<AppId>("2"));
+
+  app3_match = registrar().FindAppWithUrlInScope(app3_page);
+  DCHECK(app3_match);
+  EXPECT_EQ(app3_match, base::Optional<AppId>("3"));
+}
+
+TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
+  const GURL app1_launch("https://example.com/app/specific/launch1");
+
+  const GURL app2_scope("https://example.com/app");
+  const GURL app2_page("https://example.com/app/specific/page2");
+
+  const GURL app3_launch("https://example.com/app/specific/launch3");
+
+  auto app1 = std::make_unique<WebApp>("1");
+  app1->SetLaunchUrl(app1_launch);
+  registrar().RegisterApp(std::move(app1));
+
+  auto app2 = std::make_unique<WebApp>("2");
+  app2->SetScope(app2_scope);
+  registrar().RegisterApp(std::move(app2));
+
+  auto app3 = std::make_unique<WebApp>("3");
+  app3->SetLaunchUrl(app3_launch);
+  registrar().RegisterApp(std::move(app3));
+
+  base::Optional<AppId> app2_match =
+      registrar().FindAppWithUrlInScope(app2_page);
+  DCHECK(app2_match);
+  EXPECT_EQ(app2_match, base::Optional<AppId>("2"));
 }
 
 TEST_F(WebAppRegistrarTest, DatabaseWriteAndDeleteAppsFail) {

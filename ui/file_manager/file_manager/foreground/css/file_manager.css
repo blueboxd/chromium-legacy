@@ -100,6 +100,7 @@ a:focus {
   display: flex;
   flex: 1 1 auto;
   margin-top: 8px;
+  position: relative;
 }
 
 .dialog-navigation-list-footer {
@@ -124,7 +125,11 @@ div.splitter {
   bottom: 0;
   flex: none;
   left: 0;
-  min-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;   /* TODO(adanilo): crbug.com/212268 still needed? */
+  right: 0;
+  top: 0;
 }
 
 #directory-tree .tree-row {
@@ -159,17 +164,6 @@ div.splitter {
   margin: 0 6px;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-#directory-tree .tree-item > .tree-row.ejectable {
-  position: inherit;
-}
-
-#directory-tree .tree-row.ejectable > .label {
-  left: 48px;
-  position: absolute;
-  right: 48px;
-  width: calc(100% - 48px - 40px - 3px);
 }
 
 #directory-tree .tree-row .rename-placeholder {
@@ -223,9 +217,7 @@ div.splitter {
   cursor: pointer;
   flex: none;
   height: 40px;
-  left: calc(100% - 40px - 3px);
-  position: absolute;
-  right: calc(100% - 40px - 3px);
+  position: relative;
   width: 40px;
   z-index: 1;  /* Make sure the icon is on upper layer than paper-ripple. */
 }

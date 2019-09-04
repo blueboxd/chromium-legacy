@@ -41,6 +41,7 @@
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
+#include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
 #include "ui/gl/gl_context.h"
@@ -287,8 +288,13 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     }
   } else if (video_profile_ >= VP8PROFILE_MIN &&
              video_profile_ <= VP8PROFILE_MAX) {
-    decoder_.reset(new VP8Decoder(
-        std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    if (supports_requests_) {
+      decoder_.reset(new VP8Decoder(
+          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+    } else {
+      decoder_.reset(new VP8Decoder(
+          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    }
   } else if (video_profile_ >= VP9PROFILE_MIN &&
              video_profile_ <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(

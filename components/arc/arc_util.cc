@@ -120,16 +120,6 @@ bool IsArcVmEnabled() {
       chromeos::switches::kEnableArcVm);
 }
 
-void EnableArcVmForTesting() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableArcVm);
-}
-
-void DisableArcVmForTesting() {
-  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-      chromeos::switches::kEnableArcVm);
-}
-
 bool ShouldArcAlwaysStart() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kArcStartMode))

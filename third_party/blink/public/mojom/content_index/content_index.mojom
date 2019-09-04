@@ -19,6 +19,9 @@ enum ContentIndexError {
 
   // An IO error occured while interacting with the database.
   STORAGE_ERROR,
+
+  // Service worker is missing or not activated yet.
+  NO_SERVICE_WORKER,
 };
 
 // These values are persisted and recorded, do not change or create gaps.

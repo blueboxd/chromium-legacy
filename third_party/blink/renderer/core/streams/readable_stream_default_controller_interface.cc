@@ -22,7 +22,7 @@ class ReadableStreamDefaultControllerWrapper final
   explicit ReadableStreamDefaultControllerWrapper(ScriptState* script_state,
                                                   ScriptValue controller)
       : ReadableStreamDefaultControllerInterface(script_state),
-        js_controller_(controller.GetIsolate(), controller.V8Value()) {
+        js_controller_(script_state->GetIsolate(), controller.V8Value()) {
     js_controller_.SetPhantom();
   }
 

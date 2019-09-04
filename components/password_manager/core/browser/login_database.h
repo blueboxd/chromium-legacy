@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -40,12 +41,14 @@ class SQLTableBuilder;
 extern const int kCurrentVersionNumber;
 extern const int kCompatibleVersionNumber;
 
+using IsAccountStore = util::StrongAlias<class IsAccountStoreTag, bool>;
+
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.
 class LoginDatabase : public PasswordStoreSync::MetadataStore {
  public:
-  LoginDatabase(const base::FilePath& db_path, bool is_account_store);
+  LoginDatabase(const base::FilePath& db_path, IsAccountStore is_account_store);
   ~LoginDatabase() override;
 
   // Returns whether this is the profile-scoped or the account-scoped storage:
@@ -53,7 +56,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   //        syncing users.
   // false: Profile-scoped store, which is used for local storage and for
   //        syncing users.
-  bool is_account_store() const { return is_account_store_; }
+  bool is_account_store() const { return is_account_store_.value(); }
 
   // Actually creates/opens the database. If false is returned, no other method
   // should be called.
@@ -310,7 +313,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   bool IsUsingCleanupMechanism() const;
 
   const base::FilePath db_path_;
-  const bool is_account_store_;
+  const IsAccountStore is_account_store_;
 
   mutable sql::Database db_;
   sql::MetaTable meta_table_;

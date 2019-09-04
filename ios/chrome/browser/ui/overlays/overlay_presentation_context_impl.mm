@@ -218,6 +218,15 @@ void OverlayPresentationContextImpl::ShowUIForPresentedRequest() {
   state->OverlayUIWasPresented();
 }
 
+void OverlayPresentationContextImpl::OverlayUIWasPresented() {
+  OverlayRequestUIState* state = GetRequestUIState(request_);
+  DCHECK(state);
+  UIView* overlay_view = state->coordinator().viewController.view;
+  DCHECK(overlay_view);
+  UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                  overlay_view);
+}
+
 void OverlayPresentationContextImpl::DismissPresentedUI(
     OverlayDismissalReason reason) {
   OverlayRequestUIState* state = GetRequestUIState(request_);
@@ -276,7 +285,11 @@ OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
     ~OverlayRequestCoordinatorDelegateImpl() = default;
 
 void OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
-    OverlayUIDidFinishPresentation(OverlayRequest* request) {}
+    OverlayUIDidFinishPresentation(OverlayRequest* request) {
+  DCHECK(request);
+  DCHECK_EQ(presentation_context_->request_, request);
+  presentation_context_->OverlayUIWasPresented();
+}
 
 void OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
     OverlayUIDidFinishDismissal(OverlayRequest* request) {

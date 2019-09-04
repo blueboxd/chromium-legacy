@@ -45,13 +45,13 @@ void PaymentAppContextImpl::Shutdown() {
 }
 
 void PaymentAppContextImpl::CreatePaymentManager(
-    payments::mojom::PaymentManagerRequest request) {
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&PaymentAppContextImpl::CreatePaymentManagerOnCoreThread,
-                     this, std::move(request)));
+                     this, std::move(receiver)));
 }
 
 void PaymentAppContextImpl::PaymentManagerHadConnectionError(
@@ -82,10 +82,10 @@ void PaymentAppContextImpl::CreatePaymentAppDatabaseOnCoreThread(
 }
 
 void PaymentAppContextImpl::CreatePaymentManagerOnCoreThread(
-    mojo::InterfaceRequest<payments::mojom::PaymentManager> request) {
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   auto payment_manager =
-      std::make_unique<PaymentManager>(this, std::move(request));
+      std::make_unique<PaymentManager>(this, std::move(receiver));
   payment_managers_[payment_manager.get()] = std::move(payment_manager);
 }
 

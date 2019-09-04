@@ -1078,6 +1078,41 @@ TEST_F(WebSocketChannelEventInterfaceTest, CloseAfterHandshake) {
   CreateChannelAndConnectSuccessfully();
 }
 
+// Do not close until browser has sent all pending frames.
+TEST_F(WebSocketChannelEventInterfaceTest, ShouldCloseWhileNoDataFrames) {
+  auto stream = std::make_unique<ReadableFakeWebSocketStream>();
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeClose, NOT_MASKED,
+       CLOSE_DATA(SERVER_ERROR, "Internal Server Error")}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  stream->PrepareReadFramesError(ReadableFakeWebSocketStream::SYNC,
+                                 ERR_CONNECTION_CLOSED);
+  set_stream(std::move(stream));
+  Checkpoint checkpoint;
+  {
+    InSequence s;
+    EXPECT_CALL(*event_interface_, OnAddChannelResponse(_, _));
+    EXPECT_CALL(*event_interface_, OnSendFlowControlQuotaAdded(_));
+    EXPECT_CALL(*event_interface_, HasPendingDataFrames())
+        .WillOnce(Return(false))
+        .WillOnce(Return(true))
+        .WillOnce(Return(true));
+    EXPECT_CALL(checkpoint, Call(1));
+#if DCHECK_IS_ON()
+    EXPECT_CALL(*event_interface_, HasPendingDataFrames())
+        .WillOnce(Return(false));
+#endif
+    EXPECT_CALL(*event_interface_, OnClosingHandshake());
+    EXPECT_CALL(*event_interface_,
+                OnDropChannel(true, kWebSocketErrorInternalServerError,
+                              "Internal Server Error"));
+  }
+
+  CreateChannelAndConnectSuccessfully();
+  checkpoint.Call(1);
+  ASSERT_EQ(CHANNEL_DELETED, channel_->ReadFrames());
+}
+
 // A remote server could close the connection immediately after sending the
 // handshake response (most likely a bug in the server).
 TEST_F(WebSocketChannelEventInterfaceTest, ConnectionCloseAfterHandshake) {

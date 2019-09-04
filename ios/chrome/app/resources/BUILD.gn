@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/ios/asset_catalog.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
+import("//ios/build/chrome_build.gni")
 import("//ios/chrome/app/resources/ios_chrome_repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
@@ -118,6 +119,14 @@ group("launchscreen_assets") {
     ":launchscreen_app_logo",
     ":launchscreen_brand_name",
   ]
+}
+
+if (ios_enable_multi_window) {
+  # Multi window requires both additional plist entries (handled in ../BUILD.gn) and
+  # an additional storyboard file.
+  bundle_data_ib_file("base_scene_storyboard") {
+    source = "BaseScene.storyboard"
+  }
 }
 
 bundle_data_ib_file("launchscreen_xib") {

@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_icon_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/external_web_app_manager.h"
@@ -116,6 +117,11 @@ FileHandlerManager& WebAppProvider::file_handler_manager() {
   return *file_handler_manager_;
 }
 
+AppIconManager& WebAppProvider::icon_manager() {
+  CheckIsConnected();
+  return *icon_manager_;
+}
+
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
   CheckIsConnected();
   return *system_web_app_manager_;
@@ -145,15 +151,18 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
   registrar_ = std::make_unique<WebAppRegistrar>(profile, database_.get());
   sync_manager_ = std::make_unique<WebAppSyncManager>();
-  icon_manager_ = std::make_unique<WebAppIconManager>(
-      profile, std::make_unique<FileUtilsWrapper>());
+  auto icon_manager = std::make_unique<WebAppIconManager>(
+      profile, *registrar_->AsWebAppRegistrar(),
+      std::make_unique<FileUtilsWrapper>());
   install_finalizer_ =
-      std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
+      std::make_unique<WebAppInstallFinalizer>(icon_manager.get());
+  icon_manager_ = std::move(icon_manager);
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
+  icon_manager_ = std::make_unique<extensions::BookmarkAppIconManager>(profile);
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
   file_handler_manager_ =

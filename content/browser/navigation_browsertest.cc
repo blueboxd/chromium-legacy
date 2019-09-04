@@ -55,6 +55,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
 #include "net/base/filename_util.h"
@@ -99,14 +100,14 @@ class InterceptAndCancelDidCommitProvisionalLoad
     return intercepted_requests_;
   }
 
-  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>&
-  intercepted_broker_content_requests() {
-    return intercepted_broker_content_requests_;
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>&
+  intercepted_broker_content_receivers() {
+    return intercepted_broker_content_receivers_;
   }
 
-  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>&
-  intercepted_broker_blink_requests() {
-    return intercepted_broker_blink_requests_;
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>&
+  intercepted_broker_blink_receivers() {
+    return intercepted_broker_blink_receivers_;
   }
 
  protected:
@@ -122,16 +123,16 @@ class InterceptAndCancelDidCommitProvisionalLoad
         *interface_params
             ? std::move((*interface_params)->interface_provider_request)
             : nullptr);
-    intercepted_broker_content_requests_.push_back(
+    intercepted_broker_content_receivers_.push_back(
         *interface_params
             ? std::move((*interface_params)
-                            ->document_interface_broker_content_request)
-            : nullptr);
-    intercepted_broker_blink_requests_.push_back(
+                            ->document_interface_broker_content_receiver)
+            : mojo::NullReceiver());
+    intercepted_broker_blink_receivers_.push_back(
         *interface_params
             ? std::move(
-                  (*interface_params)->document_interface_broker_blink_request)
-            : nullptr);
+                  (*interface_params)->document_interface_broker_blink_receiver)
+            : mojo::NullReceiver());
     if (loop_)
       loop_->Quit();
     // Do not send the message to the RenderFrameHostImpl.
@@ -145,10 +146,10 @@ class InterceptAndCancelDidCommitProvisionalLoad
       intercepted_messages_;
   std::vector<::service_manager::mojom::InterfaceProviderRequest>
       intercepted_requests_;
-  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>
-      intercepted_broker_content_requests_;
-  std::vector<blink::mojom::DocumentInterfaceBrokerRequest>
-      intercepted_broker_blink_requests_;
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
+      intercepted_broker_content_receivers_;
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
+      intercepted_broker_blink_receivers_;
   std::unique_ptr<base::RunLoop> loop_;
 };
 

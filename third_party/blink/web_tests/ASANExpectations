@@ -57,7 +57,6 @@ crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow.html [ Timeou
 crbug.com/464065 [ Linux ] media/track/css-cue-for-video-in-shadow-2.html [ Timeout ]
 crbug.com/572723 [ Linux ] http/tests/devtools/sources/debugger/debugger-completions-on-call-frame.js [ Timeout Pass ]
 crbug.com/700795 [ Linux ] http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Skip ]
-crbug.com/928941 [ Linux ] external/wpt/background-fetch/fetch.https.window.html [ Timeout ]
 
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]

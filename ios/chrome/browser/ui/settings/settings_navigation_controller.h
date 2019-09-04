@@ -49,10 +49,6 @@ extern NSString* const kSettingsDoneButtonId;
 @interface SettingsNavigationController
     : UINavigationController<ApplicationSettingsCommands>
 
-// Whether sync changes should be committed when the settings are being
-// dismissed. Defaults to YES.
-@property(nonatomic, assign) BOOL shouldCommitSyncChangesOnDismissal;
-
 // Creates a new SettingsTableViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
 // nil nor Off-the-Record. |delegate| may be nil.
@@ -76,13 +72,6 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
     newGoogleServicesController:(ios::ChromeBrowserState*)browserState
                        delegate:
                            (id<SettingsNavigationControllerDelegate>)delegate;
-
-// Creates a new SyncSettingsCollectionViewController and the chrome around
-// it. |browserState| is used to personalize some settings aspects and should
-// not be nil. |delegate| may be nil.
-+ (SettingsNavigationController*)
-     newSyncController:(ios::ChromeBrowserState*)browserState
-              delegate:(id<SettingsNavigationControllerDelegate>)delegate;
 
 // Creates a new SyncEncryptionPassphraseCollectionViewController and the chrome
 // around it. |browserState| is used to personalize some settings aspects and

@@ -211,7 +211,8 @@ class SharingServiceTest : public testing::Test {
           base::WrapUnique(sharing_device_registration_),
           base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
           &fake_gcm_driver_, &device_info_tracker_,
-          &fake_local_device_info_provider_, &test_sync_service_);
+          &fake_local_device_info_provider_, &test_sync_service_,
+          /* notification_display_service= */ nullptr);
     }
     return sharing_service_.get();
   }

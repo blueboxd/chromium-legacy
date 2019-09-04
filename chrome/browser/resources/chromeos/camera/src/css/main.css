@@ -229,6 +229,11 @@ body.tablet-landscape .actions-group {
   pointer-events: auto;
 }
 
+body:not(.streaming) #modes-group,
+body.taking #modes-group {
+  opacity: 0.38;
+}
+
 .mode-item {
   flex: 0 0 var(--mode-item-height);
   position: relative;

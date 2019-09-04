@@ -36,27 +36,12 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 namespace {
-
-// Gets the icon to use if the extension app icon is not available.
-gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
-  gfx::ImageSkia page_icon = browser->GetCurrentPageIcon().AsImageSkia();
-  if (!page_icon.isNull())
-    return page_icon;
-
-  // The extension icon may be loading still. Return a transparent icon rather
-  // than using a placeholder to avoid flickering.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
-  bitmap.eraseColor(SK_ColorTRANSPARENT);
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
 
 // Returns true if |app_url| and |page_url| are the same origin. To avoid
 // breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
@@ -211,16 +196,16 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (!contents)
-    return GetFallbackAppIcon(browser());
+    return GetFallbackAppIcon();
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(contents);
   if (!extensions_tab_helper)
-    return GetFallbackAppIcon(browser());
+    return GetFallbackAppIcon();
 
   const SkBitmap* icon_bitmap = extensions_tab_helper->GetExtensionAppIcon();
   if (!icon_bitmap)
-    return GetFallbackAppIcon(browser());
+    return GetFallbackAppIcon();
 
   return gfx::ImageSkia::CreateFrom1xBitmap(*icon_bitmap);
 }

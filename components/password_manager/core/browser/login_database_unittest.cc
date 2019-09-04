@@ -187,7 +187,7 @@ class LoginDatabaseTest : public testing::Test {
     file_ = temp_dir_.GetPath().AppendASCII("TestMetadataStoreMacDatabase");
     OSCryptMocker::SetUp();
 
-    db_.reset(new LoginDatabase(file_, /*is_account_store=*/false));
+    db_.reset(new LoginDatabase(file_, IsAccountStore(false)));
     ASSERT_TRUE(db_->Init());
   }
 
@@ -1797,7 +1797,7 @@ TEST_F(LoginDatabaseTest, EncryptionEnabled) {
   GenerateExamplePasswordForm(&password_form);
   base::FilePath file = temp_dir_.GetPath().AppendASCII("TestUnencryptedDB");
   {
-    LoginDatabase db(file, /*is_account_store=*/false);
+    LoginDatabase db(file, IsAccountStore(false));
     ASSERT_TRUE(db.Init());
     EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
   }
@@ -1818,7 +1818,7 @@ TEST_F(LoginDatabaseTest, EncryptionDisabled) {
   GenerateExamplePasswordForm(&password_form);
   base::FilePath file = temp_dir_.GetPath().AppendASCII("TestUnencryptedDB");
   {
-    LoginDatabase db(file, /*is_account_store=*/false);
+    LoginDatabase db(file, IsAccountStore(false));
     db.disable_encryption();
     ASSERT_TRUE(db.Init());
     EXPECT_EQ(AddChangeForForm(password_form), db.AddLogin(password_form));
@@ -1841,7 +1841,7 @@ TEST_F(LoginDatabaseTest, HandleObfuscationMix) {
 
   base::FilePath file = temp_dir_.GetPath().AppendASCII("TestUnencryptedDB");
   {
-    LoginDatabase db(file, /*is_account_store=*/false);
+    LoginDatabase db(file, IsAccountStore(false));
     ASSERT_TRUE(db.Init());
     // Add obfuscated (new) entries.
     PasswordForm password_form;
@@ -1862,7 +1862,7 @@ TEST_F(LoginDatabaseTest, HandleObfuscationMix) {
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
   {
-    LoginDatabase db(file, /*is_account_store=*/false);
+    LoginDatabase db(file, IsAccountStore(false));
     ASSERT_TRUE(db.Init());
     ASSERT_TRUE(db.GetAutofillableLogins(&forms));
   }
@@ -1900,7 +1900,7 @@ TEST(LoginDatabaseFailureTest, Init_NoCrashOnFailedRollback) {
 
   // Now try to init the database with the file. The test succeeds if it does
   // not crash.
-  LoginDatabase db(database_path, /*is_account_store=*/false);
+  LoginDatabase db(database_path, IsAccountStore(false));
   EXPECT_FALSE(db.Init());
 }
 
@@ -1975,7 +1975,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
   {
     // Assert that the database was successfully opened and updated
     // to current version.
-    LoginDatabase db(database_path_, /*is_account_store=*/false);
+    LoginDatabase db(database_path_, IsAccountStore(false));
     ASSERT_TRUE(db.Init());
 
     // Check that the contents was preserved.
@@ -2125,7 +2125,7 @@ PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
   form.signon_realm = origin.GetOrigin().spec();
 
   {
-    LoginDatabase db(database_path(), /*is_account_store=*/false);
+    LoginDatabase db(database_path(), IsAccountStore(false));
     EXPECT_TRUE(db.Init());
     EXPECT_EQ(db.AddLogin(form), AddChangeForForm(form));
   }
@@ -2162,7 +2162,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   auto form2 = AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
   auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
 
-  LoginDatabase db(database_path(), /*is_account_store=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(db.Init());
 
@@ -2215,7 +2215,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, PasswordRecoveryEnabledGetLogins) {
   auto form2 = AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
   auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
 
-  LoginDatabase db(database_path(), /*is_account_store=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
 
   testing_local_state().registry()->RegisterTimePref(prefs::kPasswordRecovery,
@@ -2248,7 +2248,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest,
   AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
   AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
 
-  LoginDatabase db(database_path(), /*is_account_store=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
 
   testing_local_state().registry()->RegisterTimePref(prefs::kPasswordRecovery,
@@ -2283,7 +2283,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest,
 
   OSCryptMocker::SetBackendLocked(true);
 
-  LoginDatabase db(database_path(), /*is_account_store=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
   ASSERT_TRUE(db.Init());
 
   testing_local_state().registry()->RegisterTimePref(prefs::kPasswordRecovery,
@@ -2319,7 +2319,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
   AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
 
   OSCryptMocker::SetBackendLocked(true);
-  LoginDatabase db(database_path(), /*is_account_store=*/false);
+  LoginDatabase db(database_path(), IsAccountStore(false));
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(db.Init());
   EXPECT_EQ(DatabaseCleanupResult::kEncryptionUnavailable,

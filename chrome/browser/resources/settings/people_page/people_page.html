@@ -272,8 +272,7 @@
                 prefs.settings.enable_screen_lock.value)]]"
             hidden="[[!pageVisibility.people.lockScreen]]"></cr-link-row>
 
-        <template is="dom-if" if="[[shouldShowAccountManager_(
-            isAccountManagerEnabled_, pageVisibility.people.googleAccounts)]]">
+        <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
           <cr-link-row id="account-manager-subpage-trigger" class="hr"
               on-click="onAccountManagerTap_"
               label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
@@ -287,8 +286,7 @@
             hidden="[[!pageVisibility.people.manageUsers]]">
         </cr-link-row>
 
-        <template is="dom-if" if="[[shouldShowKerberos_(
-            isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
+        <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
               label="$i18n{kerberosAccountsSubMenuLabel}">
@@ -375,8 +373,7 @@
           <settings-change-picture></settings-change-picture>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[shouldShowAccountManager_(
-          isAccountManagerEnabled_, pageVisibility.people.googleAccounts)]]">
+      <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
         <template is="dom-if" route-path="/accountManager">
           <settings-subpage
               associated-control="[[$$('#account-manager-subpage-trigger')]]"
@@ -385,8 +382,7 @@
           </settings-subpage>
         </template>
       </template>
-      <template is="dom-if" if="[[shouldShowKerberos_(
-          isKerberosEnabled_, pageVisibility.people.kerberosAccounts)]]">
+      <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
         <template is="dom-if" route-path="/kerberosAccounts">
           <settings-subpage
               associated-control="[[$$('#kerberos-accounts-subpage-trigger')]]"

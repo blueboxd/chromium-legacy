@@ -130,7 +130,7 @@ class PasswordStoreTest : public testing::Test {
 
   scoped_refptr<PasswordStoreDefault> CreatePasswordStore() {
     return new PasswordStoreDefault(std::make_unique<LoginDatabase>(
-        test_login_db_file_path(), /*is_account_store=*/false));
+        test_login_db_file_path(), password_manager::IsAccountStore(false)));
   }
 
  private:

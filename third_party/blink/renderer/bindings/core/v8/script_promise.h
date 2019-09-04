@@ -82,7 +82,7 @@ class CORE_EXPORT ScriptPromise final {
 
   v8::Local<v8::Value> V8Value() const { return promise_.V8Value(); }
 
-  v8::Isolate* GetIsolate() const { return promise_.GetIsolate(); }
+  v8::Isolate* GetIsolate() const { return script_state_->GetIsolate(); }
 
   bool IsEmpty() const { return promise_.IsEmpty(); }
 

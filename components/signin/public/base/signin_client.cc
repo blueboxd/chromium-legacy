@@ -14,3 +14,7 @@ void SigninClient::PreSignOut(
 void SigninClient::PreGaiaLogout(base::OnceClosure callback) {
   std::move(callback).Run();
 }
+
+bool SigninClient::IsNonEnterpriseUser(const std::string& username) {
+  return false;
+}

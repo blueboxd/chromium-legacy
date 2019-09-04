@@ -26,15 +26,6 @@ void RecordSMSSuccessTime(base::TimeDelta duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeSuccess", duration);
 }
 
-void RecordSMSRequestedTimeout(uint32_t timeout_seconds) {
-  UMA_HISTOGRAM_COUNTS_10000("Blink.Sms.Receive.RequestedTimeout",
-                             timeout_seconds);
-}
-
-void RecordSMSTimeoutExceededTime(base::TimeDelta duration) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeTimeoutExceeded", duration);
-}
-
 void RecordSMSCancelTime(base::TimeDelta duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeCancel", duration);
 }

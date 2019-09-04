@@ -13,11 +13,11 @@
 
 namespace network {
 
-TestNetworkContextClient::TestNetworkContextClient() : binding_(nullptr) {}
+TestNetworkContextClient::TestNetworkContextClient() : receiver_(nullptr) {}
 
 TestNetworkContextClient::TestNetworkContextClient(
-    mojom::NetworkContextClientRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::NetworkContextClient> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 TestNetworkContextClient::~TestNetworkContextClient() {}
 

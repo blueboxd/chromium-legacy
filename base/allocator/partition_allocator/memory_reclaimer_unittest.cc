@@ -9,7 +9,6 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,10 +61,6 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
 };
 
 TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      internal::kPartitionAllocPeriodicDecommit);
-
   StartReclaimer();
 
   EXPECT_EQ(GetExpectedTasksCount(),
@@ -76,14 +71,6 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
 TEST_F(PartitionAllocMemoryReclaimerTest, IsEnabledByDefault) {
   StartReclaimer();
   EXPECT_EQ(2u, task_environment_.GetPendingMainThreadTaskCount());
-}
-
-TEST_F(PartitionAllocMemoryReclaimerTest, CanBeDisabled) {
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      internal::kPartitionAllocPeriodicDecommit);
-  StartReclaimer();
-  EXPECT_EQ(0u, task_environment_.GetPendingMainThreadTaskCount());
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
@@ -117,33 +104,6 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
 
     EXPECT_LT(committed_after, committed_before);
     EXPECT_LE(committed_initially, committed_after);
-  }
-}
-
-TEST_F(PartitionAllocMemoryReclaimerTest, DeprecatedReclaim) {
-  PartitionRootGeneric* root = allocator_->root();
-
-  // Deprecated reclaim is disabled by default.
-  {
-    AllocateAndFree();
-    size_t committed_before = root->total_size_of_committed_pages;
-    PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
-    size_t committed_after = root->total_size_of_committed_pages;
-    EXPECT_EQ(committed_after, committed_before);
-
-    PartitionAllocMemoryReclaimer::Instance()->Reclaim();
-  }
-
-  // Deprecated reclaim works when periodic reclaim is disabled.
-  {
-    test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        internal::kPartitionAllocPeriodicDecommit);
-    AllocateAndFree();
-    size_t committed_before = root->total_size_of_committed_pages;
-    PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
-    size_t committed_after = root->total_size_of_committed_pages;
-    EXPECT_LT(committed_after, committed_before);
   }
 }
 

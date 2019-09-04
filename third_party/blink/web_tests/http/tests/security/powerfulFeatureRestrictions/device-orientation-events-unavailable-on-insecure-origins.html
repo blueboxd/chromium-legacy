@@ -36,7 +36,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     assert_false('ondeviceorientationabsolute' in window);
   }, 'Event interfaces and event handlers are not exposed on `window`.');
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     const FAKE_ACCELERATION_DATA = [1, 2, 3];
     const FAKE_LINEAR_ACCELERATION_DATA = [4, 5, 6];
     const FAKE_GYROSCOPE_DATA = [7, 8, 9];
@@ -47,14 +47,14 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     return waitForLackOfEvent('devicemotion');
   }, 'addEventListener() for `devicemotion` does not crash but the handler never fires.');
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
     setMockSensorDataForType(sensorProvider, 'RelativeOrientationEulerAngles', FAKE_ORIENTATION_DATA);
 
     return waitForLackOfEvent('deviceorientation');
   }, 'addEventListener() for `deviceorientation` does not crash but the handler never fires.');
 
-  sensor_test(sensorProvider => {
+  sensor_test((t, sensorProvider) => {
     const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
     setMockSensorDataForType(sensorProvider, 'AbsoluteOrientationEulerAngles', FAKE_ORIENTATION_DATA);
 

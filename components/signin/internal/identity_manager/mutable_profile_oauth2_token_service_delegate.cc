@@ -34,28 +34,6 @@ namespace {
 const char kAccountIdPrefix[] = "AccountId-";
 const size_t kAccountIdPrefixLength = 10;
 
-// Used to record token state transitions in histograms.
-// Do not change existing values, new values can only be added at the end.
-enum class TokenStateTransition {
-  // Update events.
-  kNoneToInvalid = 0,
-  kNoneToRegular,
-  kInvalidToRegular,
-  kRegularToInvalid,
-  kRegularToRegular,
-
-  // Revocation events.
-  kInvalidToNone,
-  kRegularToNone,
-
-  // Load events.
-  kLoadRegular,
-  kLoadInvalid,
-  kLoadInvalidNoTokenForPrimaryAccount,
-
-  kCount
-};
-
 // Enum for the Signin.LoadTokenFromDB histogram.
 // Do not modify, or add or delete other than directly before
 // NUM_LOAD_TOKEN_FROM_DB_STATUS.
@@ -88,14 +66,6 @@ enum class TokenRevocationRequestProgress {
   kMaxValue = kRequestSucceeded
 };
 
-// Adds a sample to the TokenStateTransition histogram. Encapsuled in a function
-// to reduce executable size, because histogram macros may generate a lot of
-// code.
-void RecordTokenStateTransition(TokenStateTransition transition) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.TokenStateTransition", transition,
-                            TokenStateTransition::kCount);
-}
-
 // Adds a sample to the TokenRevocationRequestProgress histogram. Encapsuled in
 // a function to reduce executable size, because histogram macros may generate a
 // lot of code.
@@ -103,42 +73,6 @@ void RecordRefreshTokenRevocationRequestEvent(
     TokenRevocationRequestProgress event) {
   UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevocationRequestProgress",
                             event);
-}
-
-// Record metrics when a token was updated.
-void RecordTokenChanged(const std::string& existing_token,
-                        const std::string& new_token) {
-  DCHECK_NE(existing_token, new_token);
-  DCHECK(!new_token.empty());
-  TokenStateTransition transition = TokenStateTransition::kCount;
-  if (existing_token.empty()) {
-    transition = (new_token == GaiaConstants::kInvalidRefreshToken)
-                     ? TokenStateTransition::kNoneToInvalid
-                     : TokenStateTransition::kNoneToRegular;
-  } else if (existing_token == GaiaConstants::kInvalidRefreshToken) {
-    transition = TokenStateTransition::kInvalidToRegular;
-  } else {
-    // Existing token is a regular token.
-    transition = (new_token == GaiaConstants::kInvalidRefreshToken)
-                     ? TokenStateTransition::kRegularToInvalid
-                     : TokenStateTransition::kRegularToRegular;
-  }
-  DCHECK_NE(TokenStateTransition::kCount, transition);
-  RecordTokenStateTransition(transition);
-}
-
-// Record metrics when a token was loaded.
-void RecordTokenLoaded(const std::string& token) {
-  RecordTokenStateTransition((token == GaiaConstants::kInvalidRefreshToken)
-                                 ? TokenStateTransition::kLoadInvalid
-                                 : TokenStateTransition::kLoadRegular);
-}
-
-// Record metrics when a token was revoked.
-void RecordTokenRevoked(const std::string& token) {
-  RecordTokenStateTransition((token == GaiaConstants::kInvalidRefreshToken)
-                                 ? TokenStateTransition::kInvalidToNone
-                                 : TokenStateTransition::kRegularToNone);
 }
 
 std::string ApplyAccountIdPrefix(const std::string& account_id) {
@@ -179,35 +113,15 @@ signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
 // Returns whether the token service should be migrated to Dice.
 // Migration can happen if the following conditions are met:
 // - Token service Dice migration is not already done,
-// - AccountTrackerService migration is done,
-// - All accounts in the AccountTrackerService are valid,
 // - Account consistency is DiceMigration or greater.
 // TODO(droger): Remove this code once Dice is fully enabled.
 bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
-                         PrefService* prefs,
-                         AccountTrackerService* account_tracker,
-                         const std::map<std::string, std::string>& db_tokens) {
-  AccountTrackerService::AccountIdMigrationState migration_state =
-      account_tracker->GetMigrationState();
-  if ((account_consistency == signin::AccountConsistencyMethod::kMirror) ||
-      !signin::DiceMethodGreaterOrEqual(
-          account_consistency,
-          signin::AccountConsistencyMethod::kDiceMigration) ||
-      (migration_state != AccountTrackerService::MIGRATION_DONE) ||
-      prefs->GetBoolean(prefs::kTokenServiceDiceCompatible)) {
-    return false;
-  }
-
-  // Do not migrate if some accounts are not valid.
-  for (auto iter = db_tokens.begin(); iter != db_tokens.end(); ++iter) {
-    const std::string& prefixed_account_id = iter->first;
-    CoreAccountId account_id = RemoveAccountIdPrefix(prefixed_account_id);
-    AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
-    if (!account_info.IsValid()) {
-      return false;
-    }
-  }
-  return true;
+                         PrefService* prefs) {
+  return (account_consistency != signin::AccountConsistencyMethod::kMirror) &&
+         signin::DiceMethodGreaterOrEqual(
+             account_consistency,
+             signin::AccountConsistencyMethod::kDiceMigration) &&
+         !prefs->GetBoolean(prefs::kTokenServiceDiceCompatible);
 }
 
 }  // namespace
@@ -580,8 +494,6 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_MISSING));
-    RecordTokenStateTransition(
-        TokenStateTransition::kLoadInvalidNoTokenForPrimaryAccount);
     FireRefreshTokenAvailable(loading_primary_account_id_);
   }
 
@@ -600,8 +512,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
     const std::map<std::string, std::string>& db_tokens) {
   std::string old_login_token;
   bool migrate_to_dice =
-      ShouldMigrateToDice(account_consistency_, client_->GetPrefs(),
-                          account_tracker_service_, db_tokens);
+      ShouldMigrateToDice(account_consistency_, client_->GetPrefs());
 
   {
     ScopedBatchChange batch(this);
@@ -692,8 +603,16 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           // Revoke old hosted domain accounts as part of Dice migration.
           AccountInfo account_info =
               account_tracker_service_->GetAccountInfo(account_id);
-          DCHECK(account_info.IsValid());
-          if (account_info.hosted_domain != kNoHostedDomainFound) {
+          bool is_hosted_domain = false;
+          if (account_info.hosted_domain.empty()) {
+            // The AccountInfo is incomplete. Use a conservative approximation.
+            is_hosted_domain =
+                !client_->IsNonEnterpriseUser(account_info.email);
+          } else {
+            is_hosted_domain =
+                (account_info.hosted_domain != kNoHostedDomainFound);
+          }
+          if (is_hosted_domain) {
             load_account = false;
             load_token_status =
                 LoadTokenFromDBStatus::TOKEN_REVOKED_DICE_MIGRATION;
@@ -716,11 +635,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             LoadTokenFromDBStatus::NUM_LOAD_TOKEN_FROM_DB_STATUS);
 
         if (load_account) {
-          RecordTokenLoaded(refresh_token);
           UpdateCredentialsInMemory(account_id, refresh_token);
           FireRefreshTokenAvailable(account_id);
         } else {
-          RecordTokenRevoked(refresh_token);
           RevokeCredentialsOnServer(refresh_token);
           ClearPersistedCredentials(account_id);
           FireRefreshTokenRevoked(account_id);
@@ -750,7 +667,6 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
   const std::string& existing_token = GetRefreshToken(account_id);
   if (existing_token != refresh_token) {
     ScopedBatchChange batch(this);
-    RecordTokenChanged(existing_token, refresh_token);
     UpdateCredentialsInMemory(account_id, refresh_token);
     PersistCredentials(account_id, refresh_token);
     FireRefreshTokenAvailable(account_id);
@@ -945,7 +861,6 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsImpl(
     VLOG(1) << "MutablePO2TS::RevokeCredentials for account_id=" << account_id;
     ScopedBatchChange batch(this);
     const std::string& token = refresh_tokens_[account_id].refresh_token;
-    RecordTokenRevoked(token);
     if (revoke_on_server)
       RevokeCredentialsOnServer(token);
     refresh_tokens_.erase(account_id);

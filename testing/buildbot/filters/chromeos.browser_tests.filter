@@ -20,9 +20,6 @@
 # TODO(crbug.com/977743): Enable this.
 -ManagementApiKioskTest.ManagementApi
 
-# TODO(crbug.com/990844): Enable this.
--MergeSessionTest.XHRNotThrottled/1
-
 # TODO(crbug.com/985390): Enable this.
 -OSSettingsPeoplePageAccountManagerTest.AllJsTests
 

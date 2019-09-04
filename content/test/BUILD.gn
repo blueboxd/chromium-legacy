@@ -42,6 +42,8 @@ jumbo_static_library("test_support") {
     "../browser/accessibility/accessibility_event_recorder_uia_win.cc",
     "../browser/accessibility/accessibility_event_recorder_uia_win.h",
     "../browser/accessibility/accessibility_event_recorder_win.cc",
+    "../browser/accessibility/test_browser_accessibility_delegate.cc",
+    "../browser/accessibility/test_browser_accessibility_delegate.h",
     "../browser/background_fetch/background_fetch_test_base.cc",
     "../browser/background_fetch/background_fetch_test_base.h",
     "../browser/background_fetch/background_fetch_test_browser_context.cc",
@@ -1037,6 +1039,7 @@ test("content_browsertests") {
     "../browser/web_contents/web_contents_impl_browsertest.cc",
     "../browser/web_contents/web_contents_view_aura_browsertest.cc",
     "../browser/web_contents_binding_set_browsertest.cc",
+    "../browser/web_package/bundled_exchanges_browsertest.cc",
     "../browser/web_package/signed_exchange_request_handler_browsertest.cc",
     "../browser/web_package/signed_exchange_subresource_prefetch_browsertest.cc",
     "../browser/webkit_browsertest.cc",
@@ -1227,6 +1230,7 @@ test("content_browsertests") {
       "$root_out_dir/content_shell.pak",
       "data/",
       "//media/test/data/",
+      "//services/test/data/",
     ]
   }
 
@@ -1500,8 +1504,6 @@ test("content_unittests") {
     "../browser/accessibility/browser_accessibility_unittest.cc",
     "../browser/accessibility/browser_accessibility_win_unittest.cc",
     "../browser/accessibility/one_shot_accessibility_tree_search_unittest.cc",
-    "../browser/accessibility/test_browser_accessibility_delegate.cc",
-    "../browser/accessibility/test_browser_accessibility_delegate.h",
     "../browser/appcache/appcache_database_unittest.cc",
     "../browser/appcache/appcache_disk_cache_unittest.cc",
     "../browser/appcache/appcache_group_unittest.cc",

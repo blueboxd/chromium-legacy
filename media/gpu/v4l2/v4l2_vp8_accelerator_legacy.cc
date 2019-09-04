@@ -32,7 +32,7 @@ void FillV4L2SegmentationHeader(const Vp8SegmentationHeader& vp8_sgmnt_hdr,
                              V4L2_VP8_SEGMNT_HDR_FLAG_UPDATE_MAP);
   SET_V4L2_SGMNT_HDR_FLAG_IF(update_segment_feature_data,
                              V4L2_VP8_SEGMNT_HDR_FLAG_UPDATE_FEATURE_DATA);
-#undef SET_V4L2_SPARM_FLAG_IF
+#undef SET_V4L2_SGMNT_HDR_FLAG_IF
   v4l2_sgmnt_hdr->segment_feature_mode = vp8_sgmnt_hdr.segment_feature_mode;
 
   SafeArrayMemcpy(v4l2_sgmnt_hdr->quant_update,
@@ -48,7 +48,7 @@ void FillV4L2LoopfilterHeader(const Vp8LoopFilterHeader& vp8_loopfilter_hdr,
   SET_V4L2_LF_HDR_FLAG_IF(loop_filter_adj_enable, V4L2_VP8_LF_HDR_ADJ_ENABLE);
   SET_V4L2_LF_HDR_FLAG_IF(mode_ref_lf_delta_update,
                           V4L2_VP8_LF_HDR_DELTA_UPDATE);
-#undef SET_V4L2_SGMNT_HDR_FLAG_IF
+#undef SET_V4L2_LF_HDR_FLAG_IF
 
 #define LF_HDR_TO_V4L2_LF_HDR(a) v4l2_lf_hdr->a = vp8_loopfilter_hdr.a;
   LF_HDR_TO_V4L2_LF_HDR(type);

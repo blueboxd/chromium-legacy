@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeRea
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -45,6 +46,10 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     // Actual amount is capped so it is at most half the screen width.
     private static final int PEEK_THRESHOLD_DP = 224;
 
+    // The history item count in the navigation sheet. If the count is equal or smaller,
+    // the sheet skips peek state and fully expands right away.
+    private static final int SKIP_PEEK_COUNT = 3;
+
     private final NavigationSheetView mContentView;
     private final View mToolbarView;
     private final LayoutInflater mLayoutInflater;
@@ -59,7 +64,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     };
 
     private final Handler mHandler = new Handler();
-    private final Runnable mSheetPeekRunnable;
+    private final Runnable mOpenSheetRunnable;
     private final float mPeekSheetThreshold;
 
     private final ModelList mModelList = new ModelList();
@@ -78,10 +83,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
             }
         }
     }
-
-    // Whether the navigation sheet is visible. Deemed true if it was requested to show even though
-    // it is not immediately visible. This is to avoid making repeated show/hide requests.
-    private boolean mSheetVisible;
 
     private boolean mForward;
 
@@ -117,14 +118,27 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         }, NavigationItemViewBinder::bind);
         ListView listview = (ListView) mContentView.findViewById(R.id.navigation_entries);
         listview.setAdapter(mModelAdapter);
-
-        mSheetPeekRunnable = () -> {
-            if (!isVisible()) peek(mForward);
+        mOpenSheetRunnable = () -> {
+            if (isHidden()) openSheet();
         };
-
         mPeekSheetThreshold =
                 Math.min(context.getResources().getDisplayMetrics().density * PEEK_THRESHOLD_DP,
                         parent.getWidth() / 2);
+    }
+
+    // Transition to either peeked or expanded state.
+    private void openSheet() {
+        NavigationHistory history = mDelegate.getHistory(mForward);
+        mMediator.populateEntries(history);
+        mBottomSheetController.get().requestShowContent(this, true);
+        mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
+        mSheetTriggered = true;
+        if (history.getEntryCount() <= SKIP_PEEK_COUNT) expandSheet();
+    }
+
+    private void expandSheet() {
+        mBottomSheetController.get().expandSheet();
+        GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Viewed", mForward);
     }
 
     // NavigationSheet
@@ -134,7 +148,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         if (mBottomSheetController.get() == null) return;
         mForward = forward;
         mShowCloseIndicator = showCloseIndicator;
-        setVisible(false);
         mSheetTriggered = false;
     }
 
@@ -144,8 +157,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         if (mShowCloseIndicator) return;
         if (overscroll > mPeekSheetThreshold) {
             if (isHidden() && Math.abs(delta) > 2.f) {
-                mHandler.removeCallbacks(mSheetPeekRunnable);
-                mHandler.postDelayed(mSheetPeekRunnable, PEEK_HOLD_DELAY_MS);
+                mHandler.removeCallbacks(mOpenSheetRunnable);
+                mHandler.postDelayed(mOpenSheetRunnable, PEEK_HOLD_DELAY_MS);
             }
         } else if (isPeeked()) {
             close(true);
@@ -155,27 +168,13 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     @Override
     public void release() {
         if (mBottomSheetController.get() == null) return;
-        mHandler.removeCallbacks(mSheetPeekRunnable);
-        // Show navigation sheet if released at peek state.
+        mHandler.removeCallbacks(mOpenSheetRunnable);
         if (mSheetTriggered) {
             GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Peeked", mForward);
         }
-        if (isPeeked()) {
-            mBottomSheetController.get().expandSheet();
-            GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Viewed", mForward);
-        }
-    }
 
-    /**
-     * Move the navigation sheet to peek state.
-     * @param forward {@code true} if the gesture is for navigating forward.
-     */
-    private void peek(boolean forward) {
-        mMediator.populateEntries(mDelegate.getHistory(forward));
-        mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
-        mBottomSheetController.get().requestShowContent(this, true);
-        setVisible(true);
-        mSheetTriggered = true;
+        // Show navigation sheet if released at peek state.
+        if (isPeeked()) expandSheet();
     }
 
     /**
@@ -184,22 +183,21 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
      */
     private void close(boolean animate) {
         if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
-        setVisible(false);
         mBottomSheetController.get().getBottomSheet().removeObserver(mSheetObserver);
         mMediator.clear();
     }
 
-    /**
-     * @return {@code true} if the sheet is in hidden state.
-     */
-    private boolean isHidden() {
-        return !isVisible() && getTargetOrCurrentState() == SheetState.HIDDEN;
+    @Override
+    public boolean isHidden() {
+        return getTargetOrCurrentState() == SheetState.HIDDEN;
     }
 
-    @Override
-    public boolean isPeeked() {
+    /**
+     * @return {@code true} if the sheet is in peeked state.
+     */
+    private boolean isPeeked() {
         if (mBottomSheetController.get() == null) return false;
-        return isVisible() && getTargetOrCurrentState() == SheetState.PEEK;
+        return getTargetOrCurrentState() == SheetState.PEEK;
     }
 
     private @SheetState int getTargetOrCurrentState() {
@@ -210,26 +208,11 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         return state != SheetState.NONE ? state : sheet.getSheetState();
     }
 
-    /**
-     * @return {@code true} if the sheet is in fully expanded state.
-     */
-    private boolean isExpanded() {
-        return isVisible() && getTargetOrCurrentState() == SheetState.FULL;
-    }
-
-    /**
-     * Set the visibility flag of the navigation sheet.
-     * @param visible {@code true} if the sheet becomes visible.
-     */
-    private void setVisible(boolean visible) {
-        mSheetVisible = visible;
-    }
-
-    /**
-     * @return {@code true} if the sheet is visible.
-     */
-    private boolean isVisible() {
-        return mSheetVisible;
+    @Override
+    public boolean isExpanded() {
+        if (mBottomSheetController.get() == null) return false;
+        int state = getTargetOrCurrentState();
+        return state == SheetState.HALF || state == SheetState.FULL;
     }
 
     // BottomSheetContent

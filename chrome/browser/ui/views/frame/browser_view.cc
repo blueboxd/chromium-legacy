@@ -41,6 +41,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -108,7 +109,7 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
-#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1406,7 +1407,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
 SharingDialog* BrowserView::ShowClickToCallDialog(
     content::WebContents* web_contents,
     ClickToCallUiController* controller) {
-  auto* dialog_view = new ClickToCallDialogView(
+  auto* dialog_view = new SharingDialogView(
       toolbar_button_provider()->GetAnchorView(), web_contents, controller);
 
   views::BubbleDialogDelegateView::CreateBubble(dialog_view)->Show();

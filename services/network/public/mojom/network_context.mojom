@@ -718,7 +718,7 @@ interface NetworkContextClient {
 // storage (e.g. cookies and cache).
 interface NetworkContext {
   // Sets a client for this network context.
-  SetClient(NetworkContextClient client);
+  SetClient(pending_remote<NetworkContextClient> client);
 
   // Creates a new URLLoaderFactory with the given |params|.
   CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,

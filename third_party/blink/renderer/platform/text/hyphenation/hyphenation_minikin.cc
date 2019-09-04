@@ -11,6 +11,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/hyphenation/hyphenation.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -48,21 +49,21 @@ StringView SkipLeadingSpaces(const StringView& text,
 
 using Hyphenator = android::Hyphenator;
 
-static mojom::blink::HyphenationPtr ConnectToRemoteService() {
-  mojom::blink::HyphenationPtr service;
+static mojo::Remote<mojom::blink::Hyphenation> ConnectToRemoteService() {
+  mojo::Remote<mojom::blink::Hyphenation> service;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service));
+      service.BindNewPipeAndPassReceiver());
   return service;
 }
 
-static const mojom::blink::HyphenationPtr& GetService() {
-  DEFINE_STATIC_LOCAL(mojom::blink::HyphenationPtr, service,
+static mojom::blink::Hyphenation* GetService() {
+  DEFINE_STATIC_LOCAL(mojo::Remote<mojom::blink::Hyphenation>, service,
                       (ConnectToRemoteService()));
-  return service;
+  return service.get();
 }
 
 bool HyphenationMinikin::OpenDictionary(const AtomicString& locale) {
-  const mojom::blink::HyphenationPtr& service = GetService();
+  mojom::blink::Hyphenation* service = GetService();
   base::File file;
   service->OpenDictionary(locale, &file);
   return OpenDictionary(std::move(file));

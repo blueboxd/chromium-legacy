@@ -41,4 +41,12 @@ extern const int kSubMenuFirstDeviceCommandId;
 // Command id for last device shown in submenu.
 extern const int kSubMenuLastDeviceCommandId;
 
+// The feature name prefix used in metrics name.
+enum class SharingFeatureName {
+  kUnknown,
+  kClickToCall,
+  kSharedClipboard,
+  kMaxValue = kSharedClipboard,
+};
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_CONSTANTS_H_

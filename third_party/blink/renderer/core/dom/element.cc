@@ -2116,23 +2116,24 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetElementData()->presentation_attribute_style_is_dirty_ = true;
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
-
-      if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
-          name == html_names::kRendersubtreeAttr &&
-          params.old_value != params.new_value) {
-        SpaceSplitString tokens(params.new_value.LowerASCII());
-        const bool should_be_activatable = tokens.Contains("activatable");
-        EnsureDisplayLockContext().SetActivatable(should_be_activatable);
-        const bool should_be_invisible = tokens.Contains("invisible");
-        if (should_be_invisible) {
-          if (!GetDisplayLockContext()->IsLocked())
-            GetDisplayLockContext()->StartAcquire();
-        } else {
-          // Getting unlocked.
-          if (GetDisplayLockContext()->IsLocked())
-            GetDisplayLockContext()->StartCommit();
-        }
+    } else if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+               name == html_names::kRendersubtreeAttr &&
+               params.old_value != params.new_value) {
+      SetNeedsStyleRecalc(kLocalStyleChange,
+                          StyleChangeReasonForTracing::FromAttribute(name));
+      SpaceSplitString tokens(params.new_value.LowerASCII());
+      const bool should_be_activatable = tokens.Contains("activatable");
+      EnsureDisplayLockContext().SetActivatable(should_be_activatable);
+      const bool should_be_invisible = tokens.Contains("invisible");
+      if (should_be_invisible) {
+        if (!GetDisplayLockContext()->IsLocked())
+          GetDisplayLockContext()->StartAcquire();
+      } else {
+        // Getting unlocked.
+        if (GetDisplayLockContext()->IsLocked())
+          GetDisplayLockContext()->StartCommit();
       }
+
     } else if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
                name == html_names::kInvisibleAttr &&
                params.old_value != params.new_value) {

@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -51,6 +52,7 @@ SharingServiceFactory::SharingServiceFactory()
   DependsOn(instance_id::InstanceIDProfileServiceFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(NotificationDisplayServiceFactory::GetInstance());
 }
 
 SharingServiceFactory::~SharingServiceFactory() = default;
@@ -75,6 +77,8 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   syncer::LocalDeviceInfoProvider* local_device_info_provider =
       DeviceInfoSyncServiceFactory::GetForProfile(profile)
           ->GetLocalDeviceInfoProvider();
+  NotificationDisplayService* notification_display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<SharingSyncPreference> sync_prefs =
       std::make_unique<SharingSyncPreference>(profile->GetPrefs());
@@ -92,11 +96,11 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       std::make_unique<SharingFCMHandler>(gcm_driver, fcm_sender.get(),
                                           sync_prefs.get());
 
-  return new SharingService(std::move(sync_prefs), std::move(vapid_key_manager),
-                            std::move(sharing_device_registration),
-                            std::move(fcm_sender), std::move(fcm_handler),
-                            gcm_driver, device_info_tracker,
-                            local_device_info_provider, sync_service);
+  return new SharingService(
+      std::move(sync_prefs), std::move(vapid_key_manager),
+      std::move(sharing_device_registration), std::move(fcm_sender),
+      std::move(fcm_handler), gcm_driver, device_info_tracker,
+      local_device_info_provider, sync_service, notification_display_service);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

@@ -8,30 +8,48 @@
 #include <string>
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
+#include "components/autofill_assistant/browser/devtools/devtools_client.h"
 
 namespace autofill_assistant {
 
 // Builds a ClientStatus appropriate for an unexpected error.
 //
 // This should only be used in situations where getting an error cannot be
-// anything but a bug in the client.
+// anything but a bug in the client and no devtools ReplyStatus is available.
 ClientStatus UnexpectedErrorStatus(const std::string& file, int line);
 
+// Builds a ClientStatus appropriate for an unexpected error in a devtools
+// response.
+//
+// This should only be used in situations where getting an error cannot be
+// anything but a bug in the client.
+ClientStatus UnexpectedDevtoolsErrorStatus(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    const std::string& file,
+    int line);
+
 // Builds a ClientStatus appropriate for a JavaScript error.
-ClientStatus JavaScriptErrorStatus(const std::string& file,
-                                   int line,
-                                   const runtime::ExceptionDetails* exception);
+ClientStatus JavaScriptErrorStatus(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    const std::string& file,
+    int line,
+    const runtime::ExceptionDetails* exception);
 
 // Makes sure that the given EvaluateResult exists, is successful and contains a
 // result.
 template <typename T>
-ClientStatus CheckJavaScriptResult(T* result, const char* file, int line) {
+ClientStatus CheckJavaScriptResult(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    T* result,
+    const char* file,
+    int line) {
   if (!result)
-    return JavaScriptErrorStatus(file, line, nullptr);
+    return JavaScriptErrorStatus(reply_status, file, line, nullptr);
   if (result->HasExceptionDetails())
-    return JavaScriptErrorStatus(file, line, result->GetExceptionDetails());
+    return JavaScriptErrorStatus(reply_status, file, line,
+                                 result->GetExceptionDetails());
   if (!result->GetResult())
-    return JavaScriptErrorStatus(file, line, nullptr);
+    return JavaScriptErrorStatus(reply_status, file, line, nullptr);
   return OkClientStatus();
 }
 

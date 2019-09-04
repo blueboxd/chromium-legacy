@@ -106,15 +106,13 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device) override;
 
   // Attaches the device identified by |guid| into the VM identified by
-  // |vm_name|. Note that this may detach the device from the default VM
-  // (=ARCVM) beforehand.
+  // |vm_name|.
   void AttachUsbDeviceToVm(const std::string& vm_name,
                            const std::string& guid,
                            base::OnceCallback<void(bool success)> callback);
 
   // Detaches the device identified by |guid| from the VM identified by
-  // |vm_name|. Note that this may attach the device (back) into the default VM
-  // (=ARCVM) as a result.
+  // |vm_name|.
   void DetachUsbDeviceFromVm(const std::string& vm_name,
                              const std::string& guid,
                              base::OnceCallback<void(bool success)> callback);
@@ -133,16 +131,6 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::vector<CrosUsbDeviceInfo> GetDevicesSharableWithCrostini() const;
 
  private:
-  void AttachUsbDeviceToVmInternal(
-      const std::string& vm_name,
-      const std::string& guid,
-      base::OnceCallback<void(bool success)> callback);
-
-  void DetachUsbDeviceFromVmInternal(
-      const std::string& vm_name,
-      const std::string& guid,
-      base::OnceCallback<void(bool success)> callback);
-
   // Called after USB device access has been checked.
   void OnDeviceChecked(device::mojom::UsbDeviceInfoPtr device,
                        bool hide_notification,

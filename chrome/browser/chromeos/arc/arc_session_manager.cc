@@ -336,7 +336,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   } else if (!sign_in_start_time_.is_null()) {
     arc_sign_in_timer_.Stop();
 
-    UpdateProvisioningTiming(base::Time::Now() - sign_in_start_time_,
+    UpdateProvisioningTiming(base::TimeTicks::Now() - sign_in_start_time_,
                              provisioning_successful, profile_);
     UpdateProvisioningResultUMA(result, profile_);
     if (!provisioning_successful)
@@ -930,7 +930,7 @@ void ArcSessionManager::OnAndroidManagementChecked(
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
       VLOG(1) << "Starting ARC for first sign in.";
-      sign_in_start_time_ = base::Time::Now();
+      sign_in_start_time_ = base::TimeTicks::Now();
       arc_sign_in_timer_.Start(
           FROM_HERE, kArcSignInTimeout,
           base::Bind(&ArcSessionManager::OnArcSignInTimeout,
@@ -1007,7 +1007,7 @@ void ArcSessionManager::StartArc() {
   for (auto& observer : observer_list_)
     observer.OnArcStarted();
 
-  arc_start_time_ = base::Time::Now();
+  arc_start_time_ = base::TimeTicks::Now();
   provisioning_reported_ = false;
 
   std::string locale;

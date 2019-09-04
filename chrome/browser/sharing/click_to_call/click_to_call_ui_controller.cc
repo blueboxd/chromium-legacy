@@ -10,14 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/common/url_constants.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -125,11 +124,6 @@ void ClickToCallUiController::OnAppChosen(const App& app) {
                                                          web_contents());
 }
 
-void ClickToCallUiController::OnHelpTextClicked() {
-  ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents()),
-                   GURL(chrome::kSyncLearnMoreURL));
-}
-
 SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
   if (!HasSendFailed()) {
     // Only left clicks open a dialog.
@@ -152,6 +146,15 @@ base::string16 ClickToCallUiController::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
+}
+
+SharingFeatureName ClickToCallUiController::GetFeatureMetricsPrefix() const {
+  return SharingFeatureName::kClickToCall;
+}
+
+base::string16 ClickToCallUiController::GetEducationWindowTitleText() const {
+  return l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

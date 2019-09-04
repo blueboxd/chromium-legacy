@@ -103,15 +103,18 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       base::TimeDelta timeout,
       DispatchPeriodicSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+          pending_response_callback,
       DispatchAbortPaymentEventCallback callback) override;
   void DispatchCanMakePaymentEvent(
       payments::mojom::CanMakePaymentEventDataPtr event_data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+          pending_response_callback,
       DispatchCanMakePaymentEventCallback callback) override;
   void DispatchPaymentRequestEvent(
       payments::mojom::PaymentRequestEventDataPtr event_data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+          pending_response_callback,
       DispatchPaymentRequestEventCallback callback) override;
   void DispatchExtendableMessageEvent(
       blink::mojom::ExtendableMessageEventPtr event,

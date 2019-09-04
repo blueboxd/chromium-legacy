@@ -15,6 +15,7 @@
 #include "content/browser/payments/payment_app_database.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 
 namespace content {
@@ -61,7 +62,8 @@ class CONTENT_EXPORT PaymentAppContextImpl
 
   // Create a PaymentManager that is owned by this. Call on the UI
   // thread.
-  void CreatePaymentManager(payments::mojom::PaymentManagerRequest request);
+  void CreatePaymentManager(
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   // Called by PaymentManager objects so that they can
   // be deleted. Call on the core thread.
@@ -81,7 +83,7 @@ class CONTENT_EXPORT PaymentAppContextImpl
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
   void CreatePaymentManagerOnCoreThread(
-      mojo::InterfaceRequest<payments::mojom::PaymentManager> request);
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   void ShutdownOnCoreThread();
 

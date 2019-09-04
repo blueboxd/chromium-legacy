@@ -259,6 +259,17 @@
         'use_swarming': True,
         'os_type': 'android',
       },
+      'Android WebView P (dbg)': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'webview_bot_all_gtests',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
       'Android arm Builder (dbg)': {
         'additional_compile_targets': [
           'dump_syms',
@@ -648,6 +659,17 @@
         'test_suites': {
           'isolated_scripts': 'memory_infra_isolated_scripts',
         },
+      },
+      'android-bfcache-rel': {
+        'mixins': [
+          'kitkat',
+          'hammerhead',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'bfcache_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        }
       },
       'android-pie-x86-fyi-rel': {
         'mixins': [

@@ -423,17 +423,20 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       base::TimeDelta timeout,
       DispatchPeriodicSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
-      payments::mojom::blink::PaymentHandlerResponseCallbackPtr
+      mojo::PendingRemote<
+          payments::mojom::blink::PaymentHandlerResponseCallback>
           response_callback,
       DispatchAbortPaymentEventCallback callback) override;
   void DispatchCanMakePaymentEvent(
       payments::mojom::blink::CanMakePaymentEventDataPtr event_data,
-      payments::mojom::blink::PaymentHandlerResponseCallbackPtr
+      mojo::PendingRemote<
+          payments::mojom::blink::PaymentHandlerResponseCallback>
           response_callback,
       DispatchCanMakePaymentEventCallback callback) override;
   void DispatchPaymentRequestEvent(
       payments::mojom::blink::PaymentRequestEventDataPtr event_data,
-      payments::mojom::blink::PaymentHandlerResponseCallbackPtr
+      mojo::PendingRemote<
+          payments::mojom::blink::PaymentHandlerResponseCallback>
           response_callback,
       DispatchPaymentRequestEventCallback callback) override;
   void DispatchCookieChangeEvent(
@@ -493,7 +496,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   HashMap<int, DispatchSyncEventCallback> sync_event_callbacks_;
   HashMap<int, DispatchPeriodicSyncEventCallback>
       periodic_sync_event_callbacks_;
-  HashMap<int, payments::mojom::blink::PaymentHandlerResponseCallbackPtr>
+  HashMap<int,
+          mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>>
       abort_payment_result_callbacks_;
   HashMap<int, DispatchCanMakePaymentEventCallback>
       abort_payment_event_callbacks_;
@@ -517,9 +521,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // Maps for response callbacks.
   // These are mapped from an event id to the Mojo interface pointer which is
   // passed from the relevant DispatchSomeEvent() method.
-  HashMap<int, payments::mojom::blink::PaymentHandlerResponseCallbackPtr>
+  HashMap<int,
+          mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>>
       can_make_payment_result_callbacks_;
-  HashMap<int, payments::mojom::blink::PaymentHandlerResponseCallbackPtr>
+  HashMap<int,
+          mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>>
       payment_response_callbacks_;
   HashMap<int, mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>>
       fetch_response_callbacks_;

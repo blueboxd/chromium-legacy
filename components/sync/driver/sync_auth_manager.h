@@ -60,6 +60,10 @@ class SyncAuthManager : public signin::IdentityManager::Observer {
   // callbacks, even if there is an active account afterwards.
   void RegisterForAuthNotifications();
 
+  // Returns whether all relevant account information as returned by
+  // GetActiveAccountInfo() has been fully loaded.
+  bool IsActiveAccountInfoFullyLoaded() const;
+
   // Returns the account which should be used when communicating with the Sync
   // server. Note that this account may not be blessed for Sync-the-feature.
   SyncAccountInfo GetActiveAccountInfo() const;
@@ -107,6 +111,7 @@ class SyncAuthManager : public signin::IdentityManager::Observer {
       const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(
       const CoreAccountId& account_id) override;
+  void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
@@ -122,6 +127,7 @@ class SyncAuthManager : public signin::IdentityManager::Observer {
   // DetermineAccountToUse) if necessary, and notifies observers of any changes
   // (sign-in/sign-out/"primary" bit change). Note that changing from one
   // account to another is exposed to observers as a sign-out + sign-in.
+  // Returns whether the syncing account was updated.
   bool UpdateSyncAccountIfNecessary();
 
   // Invalidates any current access token, which means invalidating it with the

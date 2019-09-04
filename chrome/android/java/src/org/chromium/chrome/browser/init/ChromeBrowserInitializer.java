@@ -447,9 +447,6 @@ public class ChromeBrowserInitializer {
         FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
 
         ModuleInstaller.getInstance().recordStartupTime();
-
-        PostTask.postTask(
-                TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);
     }
 
     private ActivityStateListener createActivityStateListener() {

@@ -405,27 +405,33 @@ static v8::MaybeLocal<v8::String> TrustedTypesCodeGenerationCheck(
 static v8::MaybeLocal<v8::String> CodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> source) {
-  bool allowed_by_csp =
-      source->IsString() && ContentSecurityPolicyCodeGenerationCheck(
-                                context, source.As<v8::String>());
   // Without trusted types, we decide based on CSP.
   if (!RequireTrustedTypesCheck(ToExecutionContext(context))) {
-    if (allowed_by_csp)
-      return source.As<v8::String>();
-    return v8::MaybeLocal<v8::String>();
+    bool allowed_by_csp =
+        source->IsString() && ContentSecurityPolicyCodeGenerationCheck(
+                                  context, source.As<v8::String>());
+    return allowed_by_csp ? source.As<v8::String>()
+                          : v8::MaybeLocal<v8::String>();
   }
 
-  // With Trusted Types, we pass when either CSP or TT allow the value.
+  // With Trusted Types, we pass when both CSP and TT allow the value.
   // We will always run the TT check because of reporting, and because a
   // default policy might want to modify the string.
-  v8::MaybeLocal<v8::String> trusted_types_string =
-      TrustedTypesCodeGenerationCheck(context, source);
-  if (allowed_by_csp || !trusted_types_string.IsEmpty()) {
-    if (trusted_types_string.IsEmpty()) {
-      return source.As<v8::String>();
-    }
+  v8::Local<v8::String> trusted_types_string;
+  if (TrustedTypesCodeGenerationCheck(context, source)
+          .ToLocal(&trusted_types_string) &&
+      ContentSecurityPolicyCodeGenerationCheck(context, trusted_types_string)) {
     return trusted_types_string;
   }
+
+  // TODO(ssanfilippo) returning an empty local covers two different messages:
+  //
+  //  * The source was not a string or TrustedScript.
+  //  * TT or CSP has rejected this source.
+  //
+  // We need to patch the V8 callback to differentiate these two. For now,
+  // rejected TSs are passed through. CSP reports are still sent as side-effect.
+  // See crbug.com/992424.
   return v8::MaybeLocal<v8::String>();
 }
 

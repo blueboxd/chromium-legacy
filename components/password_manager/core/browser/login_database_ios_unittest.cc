@@ -30,7 +30,7 @@ class LoginDatabaseIOSTest : public PlatformTest {
     base::FilePath login_db_path =
         temp_dir_.GetPath().AppendASCII("temp_login.db");
     login_db_.reset(new password_manager::LoginDatabase(
-        login_db_path, /*is_account_store=*/false));
+        login_db_path, password_manager::IsAccountStore(false)));
     login_db_->Init();
   }
 

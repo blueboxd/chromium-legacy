@@ -43,6 +43,7 @@
 #include "media/mojo/services/watch_time_recorder.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,8 +100,9 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
 
 // returns a valid handle that can be passed to WebLocalFrame constructor
 mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
-  blink::mojom::DocumentInterfaceBrokerPtrInfo info;
-  return mojo::MakeRequest(&info).PassMessagePipe();
+  return mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+      .InitWithNewPipeAndPassReceiver()
+      .PassPipe();
 }
 
 class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {

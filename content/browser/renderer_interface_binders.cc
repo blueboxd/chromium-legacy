@@ -180,12 +180,12 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(CreateWebSocketConnector));
 
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](payments::mojom::PaymentManagerRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::Bind(
+      [](mojo::PendingReceiver<payments::mojom::PaymentManager> receiver,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetPaymentAppContext()
-            ->CreatePaymentManager(std::move(request));
+            ->CreatePaymentManager(std::move(receiver));
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,

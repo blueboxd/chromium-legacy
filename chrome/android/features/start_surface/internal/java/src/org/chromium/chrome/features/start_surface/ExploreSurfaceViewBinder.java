@@ -45,16 +45,11 @@ class ExploreSurfaceViewBinder {
 
     public static void bind(PropertyModel model, ViewHolder view, PropertyKey propertyKey) {
         if (propertyKey == IS_EXPLORE_SURFACE_VISIBLE) {
-            setVisibility(view, model, model.get(IS_EXPLORE_SURFACE_VISIBLE));
+            setVisibility(view, model,
+                    model.get(IS_EXPLORE_SURFACE_VISIBLE) && model.get(IS_SHOWING_OVERVIEW));
         } else if (propertyKey == IS_SHOWING_OVERVIEW) {
-            if (!model.get(IS_EXPLORE_SURFACE_VISIBLE)) return;
-
-            if (model.get(IS_SHOWING_OVERVIEW)) {
-                // Set the initial state if the explore surface is selected previously.
-                setVisibility(view, model, true);
-            } else {
-                setVisibility(view, model, false);
-            }
+            setVisibility(view, model,
+                    model.get(IS_EXPLORE_SURFACE_VISIBLE) && model.get(IS_SHOWING_OVERVIEW));
         }
     }
 

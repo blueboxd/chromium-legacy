@@ -104,8 +104,7 @@ class RespondWithCallbacks
       : browser_context_(browser_context),
         event_type_(event_type),
         service_worker_version_(service_worker_version),
-        invoke_payment_app_callback_(std::move(callback)),
-        binding_(this) {
+        invoke_payment_app_callback_(std::move(callback)) {
     request_id_ = service_worker_version->StartRequest(
         event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -121,18 +120,15 @@ class RespondWithCallbacks
       : browser_context_(browser_context),
         event_type_(event_type),
         service_worker_version_(service_worker_version),
-        payment_event_result_callback_(std::move(callback)),
-        binding_(this) {
+        payment_event_result_callback_(std::move(callback)) {
     request_id_ = service_worker_version->StartRequest(
         event_type, base::BindOnce(&RespondWithCallbacks::OnErrorStatus,
                                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  payments::mojom::PaymentHandlerResponseCallbackPtr
-  CreateInterfacePtrAndBind() {
-    payments::mojom::PaymentHandlerResponseCallbackPtr callback_proxy;
-    binding_.Bind(mojo::MakeRequest(&callback_proxy));
-    return callback_proxy;
+  mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   void OnResponseForPaymentRequest(
@@ -247,7 +243,8 @@ class RespondWithCallbacks
   scoped_refptr<ServiceWorkerVersion> service_worker_version_;
   PaymentAppProvider::InvokePaymentAppCallback invoke_payment_app_callback_;
   PaymentAppProvider::PaymentEventResultCallback payment_event_result_callback_;
-  mojo::Binding<payments::mojom::PaymentHandlerResponseCallback> binding_;
+  mojo::Receiver<payments::mojom::PaymentHandlerResponseCallback> receiver_{
+      this};
 
   base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_{this};
 
@@ -294,7 +291,7 @@ void DispatchAbortPaymentEvent(
       active_version, std::move(callback));
 
   active_version->endpoint()->DispatchAbortPaymentEvent(
-      invocation_callbacks->CreateInterfacePtrAndBind(),
+      invocation_callbacks->BindNewPipeAndPassRemote(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
 
@@ -323,7 +320,7 @@ void DispatchCanMakePaymentEvent(
       active_version, std::move(callback));
 
   active_version->endpoint()->DispatchCanMakePaymentEvent(
-      std::move(event_data), invocation_callbacks->CreateInterfacePtrAndBind(),
+      std::move(event_data), invocation_callbacks->BindNewPipeAndPassRemote(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
 
@@ -357,7 +354,7 @@ void DispatchPaymentRequestEvent(
       active_version, std::move(callback));
 
   active_version->endpoint()->DispatchPaymentRequestEvent(
-      std::move(event_data), invocation_callbacks->CreateInterfacePtrAndBind(),
+      std::move(event_data), invocation_callbacks->BindNewPipeAndPassRemote(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
 

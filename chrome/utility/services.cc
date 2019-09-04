@@ -70,8 +70,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "components/services/pdf_compositor/pdf_compositor_impl.h"
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/pdf_compositor_impl.h"  // nogncheck
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -97,7 +97,6 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
 
   // Directives support.
   virtual void SetSandboxFlags(SandboxFlags) = 0;
-  virtual void SetAddressSpace(network::mojom::IPAddressSpace) = 0;
   virtual void SetRequireTrustedTypes() = 0;
   virtual void AddInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
 
@@ -185,7 +184,6 @@ class CORE_EXPORT ContentSecurityPolicy
     kStyleSrc,
     kStyleSrcAttr,
     kStyleSrcElem,
-    kTreatAsPublicAddress,
     kUndefined,
     kUpgradeInsecureRequests,
     kWorkerSrc,
@@ -412,7 +410,6 @@ class CORE_EXPORT ContentSecurityPolicy
   const KURL FallbackUrlForPlugin() const;
 
   void EnforceSandboxFlags(SandboxFlags);
-  void TreatAsPublicAddress();
   void RequireTrustedTypes();
   bool IsRequireTrustedTypes() const { return require_trusted_types_; }
   String EvalDisabledErrorMessage() const;
@@ -564,7 +561,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // State flags used to configure the environment after parsing a policy.
   SandboxFlags sandbox_mask_;
-  bool treat_as_public_address_;
   bool require_trusted_types_;
   String disable_eval_error_message_;
   WebInsecureRequestPolicy insecure_request_policy_;

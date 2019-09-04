@@ -5,9 +5,12 @@
 #include "components/chromeos_camera/fake_mjpeg_decode_accelerator.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 
 namespace chromeos_camera {
 
@@ -58,8 +61,17 @@ void FakeMjpegDecodeAccelerator::Decode(
                      std::move(video_frame), base::Passed(&src_shm)));
 }
 
+void FakeMjpegDecodeAccelerator::Decode(
+    int32_t task_id,
+    base::ScopedFD src_dmabuf_fd,
+    size_t src_size,
+    off_t src_offset,
+    scoped_refptr<media::VideoFrame> dst_frame) {
+  NOTIMPLEMENTED();
+}
+
 void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
-    int32_t bitstream_buffer_id,
+    int32_t task_id,
     scoped_refptr<media::VideoFrame> video_frame,
     std::unique_ptr<media::UnalignedSharedMemory> src_shm) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
@@ -73,32 +85,29 @@ void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
   client_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread,
-                     weak_factory_.GetWeakPtr(), bitstream_buffer_id));
+                     weak_factory_.GetWeakPtr(), task_id));
 }
 
 bool FakeMjpegDecodeAccelerator::IsSupported() {
   return true;
 }
 
-void FakeMjpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                             Error error) {
+void FakeMjpegDecodeAccelerator::NotifyError(int32_t task_id, Error error) {
   client_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeMjpegDecodeAccelerator::NotifyErrorOnClientThread,
-                     weak_factory_.GetWeakPtr(), bitstream_buffer_id, error));
+                     weak_factory_.GetWeakPtr(), task_id, error));
 }
 
-void FakeMjpegDecodeAccelerator::NotifyErrorOnClientThread(
-    int32_t bitstream_buffer_id,
-    Error error) {
+void FakeMjpegDecodeAccelerator::NotifyErrorOnClientThread(int32_t task_id,
+                                                           Error error) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
-  client_->NotifyError(bitstream_buffer_id, error);
+  client_->NotifyError(task_id, error);
 }
 
-void FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread(
-    int32_t input_buffer_id) {
+void FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread(int32_t task_id) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
-  client_->VideoFrameReady(input_buffer_id);
+  client_->VideoFrameReady(task_id);
 }
 
 }  // namespace chromeos_camera

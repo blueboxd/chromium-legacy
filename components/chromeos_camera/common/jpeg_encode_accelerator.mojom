@@ -4,6 +4,7 @@
 
 module chromeos_camera.mojom;
 
+import "components/chromeos_camera/common/dmabuf.mojom";
 import "media/mojo/mojom/media_types.mojom";
 
 // Encode errors (see components/chromeos_camera/jpeg_encode_accelerator.h).
@@ -15,13 +16,6 @@ enum EncodeStatus {
   INACCESSIBLE_OUTPUT_BUFFER,
   PARSE_IMAGE_FAILED,
   PLATFORM_FAILURE,
-};
-
-struct DmaBufPlane {
-  handle fd_handle;
-  int32 stride;
-  uint32 offset;
-  uint32 size;
 };
 
 // GPU process interface exposed to the browser for encoding JPEG images.

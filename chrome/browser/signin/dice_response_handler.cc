@@ -40,8 +40,6 @@ namespace {
 // The UMA histograms that logs events related to Dice responses.
 const char kDiceResponseHeaderHistogram[] = "Signin.DiceResponseHeader";
 const char kDiceTokenFetchResultHistogram[] = "Signin.DiceTokenFetchResult";
-const char kChromePrimaryAccountStateOnWebSignoutHistogram[] =
-    "Signin.ChromePrimaryAccountStateOnWebSignout";
 
 // Used for UMA. Do not reorder, append new values at the end.
 enum DiceResponseHeader {
@@ -70,21 +68,6 @@ enum DiceTokenFetchResult {
   kFetchTimeout = 3,
 
   kDiceTokenFetchResultCount
-};
-
-// Used for UMA. Do not reorder, append new values at the end.
-enum ChromePrimaryAccountStateInGaiaCookies {
-  // The user is not authenticated in Chrome.
-  kNoChromePrimaryAccount = 0,
-  // The user is authenticated in Chrome with the first Gaia account.
-  kChromePrimaryAccountIsFirstGaiaAccount = 1,
-  // The user is authenticated in Chrome with another Gaia account.
-  kChromePrimaryAccountIsSecondaryGaiaAccount = 2,
-  // The user is authenticated in Chrome with an account that is not in Gaia
-  // cookies.
-  kChromePrimaryAccountIsNotInGaiaAccounts = 3,
-
-  kChromePrimaryAccountStateInGaiaCookiesCount
 };
 
 class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
@@ -142,12 +125,6 @@ void RecordDiceResponseHeader(DiceResponseHeader header) {
 void RecordDiceFetchTokenResult(DiceTokenFetchResult result) {
   UMA_HISTOGRAM_ENUMERATION(kDiceTokenFetchResultHistogram, result,
                             kDiceTokenFetchResultCount);
-}
-
-void RecordGaiaSignoutMetrics(ChromePrimaryAccountStateInGaiaCookies state) {
-  UMA_HISTOGRAM_ENUMERATION(kChromePrimaryAccountStateOnWebSignoutHistogram,
-                            state,
-                            kChromePrimaryAccountStateInGaiaCookiesCount);
 }
 
 }  // namespace
@@ -339,10 +316,6 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
     if (signed_out_account == primary_account) {
       primary_account_signed_out = true;
       RecordDiceResponseHeader(kSignoutPrimary);
-      RecordGaiaSignoutMetrics(
-          (account_info.session_index == 0)
-              ? kChromePrimaryAccountIsFirstGaiaAccount
-              : kChromePrimaryAccountIsSecondaryGaiaAccount);
 
       if (account_consistency_ == signin::AccountConsistencyMethod::kDice) {
         // Put the account in error state.
@@ -372,12 +345,8 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
     }
   }
 
-  if (!primary_account_signed_out) {
+  if (!primary_account_signed_out)
     RecordDiceResponseHeader(kSignoutSecondary);
-    RecordGaiaSignoutMetrics(primary_account.empty()
-                                 ? kNoChromePrimaryAccount
-                                 : kChromePrimaryAccountIsNotInGaiaAccounts);
-  }
 }
 
 void DiceResponseHandler::DeleteTokenFetcher(DiceTokenFetcher* token_fetcher) {

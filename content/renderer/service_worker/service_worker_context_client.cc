@@ -260,7 +260,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   proxy_->BindControllerServiceWorker(controller_receiver_.PassPipe());
 }
 
-void ServiceWorkerContextClient::WillEvaluateScript() {
+void ServiceWorkerContextClient::WillEvaluateScript(
+    v8::Local<v8::Context> v8_context) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
 
@@ -275,6 +276,11 @@ void ServiceWorkerContextClient::WillEvaluateScript() {
            start_timing_->script_evaluation_start_time);
 
   instance_host_->OnScriptEvaluationStart();
+
+  DCHECK(proxy_);
+  GetContentClient()->renderer()->WillEvaluateServiceWorkerOnWorkerThread(
+      proxy_, v8_context, service_worker_version_id_, service_worker_scope_,
+      script_url_);
 }
 
 void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
@@ -308,17 +314,6 @@ void ServiceWorkerContextClient::WillInitializeWorkerContext() {
   GetContentClient()
       ->renderer()
       ->WillInitializeServiceWorkerContextOnWorkerThread();
-}
-
-void ServiceWorkerContextClient::DidInitializeWorkerContext(
-    blink::WebServiceWorkerContextProxy* context_proxy,
-    v8::Local<v8::Context> v8_context) {
-  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  GetContentClient()
-      ->renderer()
-      ->DidInitializeServiceWorkerContextOnWorkerThread(
-          context_proxy, v8_context, service_worker_version_id_,
-          service_worker_scope_, script_url_);
 }
 
 void ServiceWorkerContextClient::WillDestroyWorkerContext(

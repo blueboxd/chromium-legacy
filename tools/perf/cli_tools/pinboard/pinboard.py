@@ -36,11 +36,14 @@ TZ = 'America/Los_Angeles'  # MTV-time.
 # Only these are exported and uploaded to the Cloud Storage dataset.
 MEASUREMENTS = set([
     'memory:chrome:renderer_processes:reported_by_chrome:v8:effective_size',
-    'timeToFirstContentfulPaint',
-    'timeToFirstMeaningfulPaint',
-    'timeToInteractive',
+    'JavaScript:duration',
+    'Optimize:duration',
+    'Optimize-Background:duration',
     'Total:duration',
     'V8-Only:duration',
+    'Total-Main-Thread:duration',
+    'V8-Only-Main-Thread:duration',
+    'total:500ms_window:renderer_eqt:v8'
 ])
 
 # Compute averages over a fixed set of active stories. These may need to be

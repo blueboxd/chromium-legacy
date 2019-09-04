@@ -1536,6 +1536,7 @@
       type_name: "Vector<AtomicString>",
       default_value: "Vector<AtomicString, 0>()",
       field_template: "external",
+      priority: "High",
     },
     {
       name: "column-fill",
@@ -5210,11 +5211,7 @@
       default_value: "Color::kBlack",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      style_builder_custom_functions: ['value'],
-      style_builder_template: "visited_color",
-      style_builder_template_args: {
-        initial_color: "ComputedStyleInitialValues::InitialColor",
-      },
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
     },
     {

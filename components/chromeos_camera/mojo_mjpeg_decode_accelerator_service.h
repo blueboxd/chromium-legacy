@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -36,7 +38,10 @@ class MojoMjpegDecodeAcceleratorService
       ::chromeos_camera::MjpegDecodeAccelerator::Error error) override;
 
  private:
-  using DecodeCallbackMap = std::unordered_map<int32_t, DecodeCallback>;
+  // A common wrapper type for Mojo callbacks of Decode* functions.
+  using MojoCallback = base::OnceCallback<void(
+      ::chromeos_camera::MjpegDecodeAccelerator::Error)>;
+  using MojoCallbackMap = std::map<int32_t, MojoCallback>;
 
   // This constructor internally calls
   // GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories() to
@@ -58,6 +63,12 @@ class MojoMjpegDecodeAcceleratorService
                     mojo::ScopedHandle output_fd,
                     uint32_t output_buffer_size,
                     DecodeWithFDCallback callback) override;
+  void DecodeWithDmaBuf(int32_t task_id,
+                        mojo::ScopedHandle src_dmabuf_fd,
+                        uint32_t src_size,
+                        uint32_t src_offset,
+                        mojom::DmaBufVideoFramePtr dst_frame,
+                        DecodeWithDmaBufCallback callback) override;
   void Uninitialize() override;
 
   void NotifyDecodeStatus(
@@ -67,8 +78,8 @@ class MojoMjpegDecodeAcceleratorService
   const std::vector<GpuMjpegDecodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
-  // A map from bitstream_buffer_id to DecodeCallback.
-  DecodeCallbackMap decode_cb_map_;
+  // A map from |task_id| to MojoCallback.
+  MojoCallbackMap mojo_cb_map_;
 
   std::unique_ptr<::chromeos_camera::MjpegDecodeAccelerator> accelerator_;
 

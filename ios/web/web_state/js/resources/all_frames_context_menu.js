@@ -103,7 +103,11 @@ __gCrWeb['findElementAtPointInPageCoordinates'] = function(requestId, x, y) {
         x: x - element.offsetLeft,
         y: y - element.offsetTop
       };
-      element.contentWindow.postMessage(payload, element.src);
+      // The message will not be sent if |targetOrigin| is null, so use * which
+      // allows the message to be delievered to the contentWindow regardless of
+      // the origin.
+      var targetOrigin = element.src || '*';
+      element.contentWindow.postMessage(payload, targetOrigin);
       return;
     }
 

@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -138,7 +139,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkService* network_service() { return network_service_; }
 
-  mojom::NetworkContextClient* client() { return client_.get(); }
+  mojom::NetworkContextClient* client() {
+    return client_.is_bound() ? client_.get() : nullptr;
+  }
 
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
@@ -163,7 +166,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
   // mojom::NetworkContext implementation:
-  void SetClient(mojom::NetworkContextClientPtr client) override;
+  void SetClient(
+      mojo::PendingRemote<mojom::NetworkContextClient> client) override;
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                               mojom::URLLoaderFactoryParamsPtr params) override;
   void ResetURLLoaderFactories() override;
@@ -457,7 +461,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkService* const network_service_;
 
-  mojom::NetworkContextClientPtr client_;
+  mojo::Remote<mojom::NetworkContextClient> client_;
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
 

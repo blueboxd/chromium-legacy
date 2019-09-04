@@ -566,12 +566,20 @@ LayerTreeHost::DeferMainFrameUpdate() {
   return std::make_unique<ScopedDeferMainFrameUpdate>(this);
 }
 
+void LayerTreeHost::OnDeferMainFrameUpdatesChanged(bool defer_status) {
+  client_->OnDeferMainFrameUpdatesChanged(defer_status);
+}
+
 void LayerTreeHost::StartDeferringCommits(base::TimeDelta timeout) {
   proxy_->StartDeferringCommits(timeout);
 }
 
 void LayerTreeHost::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   proxy_->StopDeferringCommits(trigger);
+}
+
+void LayerTreeHost::OnDeferCommitsChanged(bool defer_status) {
+  client_->OnDeferCommitsChanged(defer_status);
 }
 
 DISABLE_CFI_PERF

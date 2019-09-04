@@ -181,7 +181,7 @@ class ChromeContentRendererClient
   void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   void WillInitializeServiceWorkerContextOnWorkerThread() override;
-  void DidInitializeServiceWorkerContextOnWorkerThread(
+  void WillEvaluateServiceWorkerOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,

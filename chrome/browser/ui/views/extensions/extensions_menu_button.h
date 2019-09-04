@@ -18,7 +18,6 @@ class ExtensionsMenuItemView;
 
 namespace views {
 class Button;
-class ImageButton;
 }  // namespace views
 
 class ExtensionsMenuButton : public HoverButton,
@@ -37,11 +36,6 @@ class ExtensionsMenuButton : public HoverButton,
   static const char kClassName[];
 
  private:
-  // views::Button:
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
   // views::ButtonListener:
   const char* GetClassName() const override;
   void ButtonPressed(Button* sender, const ui::Event& event) override;
@@ -54,11 +48,6 @@ class ExtensionsMenuButton : public HoverButton,
   void UpdateState() override;
   bool IsMenuRunning() const override;
 
-  // Configures the secondary (right-hand-side) view of this HoverButton.
-  void ConfigureSecondaryView();
-
-  bool IsPinned();
-
   Browser* const browser_;
 
   // The container containing this view.
@@ -66,10 +55,6 @@ class ExtensionsMenuButton : public HoverButton,
 
   // Responsible for executing the extension's actions.
   ToolbarActionViewController* const controller_;
-
-  ToolbarActionsModel* const model_;
-
-  views::ImageButton* pin_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
 };

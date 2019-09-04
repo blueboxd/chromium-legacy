@@ -63,9 +63,14 @@
   self.mediator =
       [[AppLauncherAlertOverlayMediator alloc] initWithRequest:self.request];
   self.mediator.consumer = self.alertViewController;
-  [self.baseViewController presentViewController:self.alertViewController
-                                        animated:animated
-                                      completion:nil];
+  __weak __typeof__(self) weakSelf = self;
+  [self.baseViewController
+      presentViewController:self.alertViewController
+                   animated:animated
+                 completion:^{
+                   weakSelf.delegate->OverlayUIDidFinishPresentation(
+                       weakSelf.request);
+                 }];
   self.started = YES;
 }
 

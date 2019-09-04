@@ -550,24 +550,26 @@ INSTANTIATE_TEST_SUITE_P(LinkLoaderModulePreloadTest,
                          LinkLoaderModulePreloadTest,
                          testing::ValuesIn(kModulePreloadTestParams));
 
-class LinkLoaderTestPrefetchRedirect
+class LinkLoaderTestPrefetchPrivacyChanges
+
     : public testing::Test,
       public testing::WithParamInterface<bool> {
  public:
-  LinkLoaderTestPrefetchRedirect() : redirect_mode_is_error_(GetParam()) {}
+  LinkLoaderTestPrefetchPrivacyChanges()
+      : privacy_changes_enabled_(GetParam()) {}
   void SetUp() override {
     std::vector<base::Feature> enable_features;
     std::vector<base::Feature> disabled_features;
     if (GetParam()) {
-      enable_features.push_back(features::kPrefetchRedirectError);
+      enable_features.push_back(features::kPrefetchPrivacyChanges);
     } else {
-      disabled_features.push_back(features::kPrefetchRedirectError);
+      disabled_features.push_back(features::kPrefetchPrivacyChanges);
     }
     feature_list_.InitWithFeatures(enable_features, disabled_features);
   }
 
  protected:
-  const bool redirect_mode_is_error_;
+  const bool privacy_changes_enabled_;
   ScopedTestingPlatformSupport<TestingPlatformSupportWithNetworkHintsMock>
       platform_;
 
@@ -575,11 +577,11 @@ class LinkLoaderTestPrefetchRedirect
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(LinkLoaderTestPrefetchRedirect,
-                         LinkLoaderTestPrefetchRedirect,
-                         testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(LinkLoaderTestPrefetchPrivacyChanges,
+                         LinkLoaderTestPrefetchPrivacyChanges,
+                         testing::Values(false, true));
 
-TEST_P(LinkLoaderTestPrefetchRedirect, PrefetchRedirect) {
+TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
   Persistent<MockLinkLoaderClient> loader_client =
@@ -598,12 +600,16 @@ TEST_P(LinkLoaderTestPrefetchRedirect, PrefetchRedirect) {
   Resource* resource = loader->GetResourceForTesting();
   EXPECT_TRUE(resource);
 
-  if (redirect_mode_is_error_) {
+  if (privacy_changes_enabled_) {
     EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
               network::mojom::RedirectMode::kError);
+    EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
+              network::mojom::ReferrerPolicy::kNever);
   } else {
     EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
               network::mojom::RedirectMode::kFollow);
+    EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
+              network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
   }
 
   platform_->GetURLLoaderMockFactory()->UnregisterAllURLsAndClearMemoryCache();

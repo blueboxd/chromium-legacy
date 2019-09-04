@@ -4409,10 +4409,18 @@
       'services_unittests': {},
       'ozone_unittests': {},
       'ozone_x11_unittests': {},
-      'content_unittests': {
+      'headless_content_unittests': {
         'args': [
           '--ozone-platform=headless',
         ],
+        'test': 'content_unittests',
+      },
+      'x11_content_unittests': {
+        'experiment_percentage': 100,
+        'args': [
+          '--ozone-platform=x11',
+        ],
+        'test': 'content_unittests',
       },
     },
 

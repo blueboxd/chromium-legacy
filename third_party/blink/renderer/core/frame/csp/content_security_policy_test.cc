@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -98,34 +97,6 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade().Contains(
         secure_origin->Host().Impl()->GetHash()));
   }
-}
-
-TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
-  ScopedAddressSpaceForTest address_space(false);
-  execution_context->SetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
-            execution_context->AddressSpace());
-
-  csp->DidReceiveHeader("treat-as-public-address",
-                        kContentSecurityPolicyHeaderTypeEnforce,
-                        kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
-            execution_context->AddressSpace());
-}
-
-TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
-  ScopedAddressSpaceForTest address_space(true);
-  execution_context->SetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
-            execution_context->AddressSpace());
-
-  csp->DidReceiveHeader("treat-as-public-address",
-                        kContentSecurityPolicyHeaderTypeEnforce,
-                        kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
-            execution_context->AddressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
@@ -1011,8 +982,6 @@ TEST_F(ContentSecurityPolicyTest, DirectiveType) {
       {ContentSecurityPolicy::DirectiveType::kStyleSrc, "style-src"},
       {ContentSecurityPolicy::DirectiveType::kStyleSrcAttr, "style-src-attr"},
       {ContentSecurityPolicy::DirectiveType::kStyleSrcElem, "style-src-elem"},
-      {ContentSecurityPolicy::DirectiveType::kTreatAsPublicAddress,
-       "treat-as-public-address"},
       {ContentSecurityPolicy::DirectiveType::kUpgradeInsecureRequests,
        "upgrade-insecure-requests"},
       {ContentSecurityPolicy::DirectiveType::kWorkerSrc, "worker-src"},

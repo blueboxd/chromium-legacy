@@ -4,6 +4,7 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
+import("//ui/file_manager/base/gn/js_test_gen_html.gni")
 
 js_type_check("closure_compile_module") {
   closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
@@ -124,7 +125,7 @@ js_library("scheduler") {
   ]
 }
 
-js_unit_tests("unit_tests") {
+js_test_gen_html("js_test_gen_html") {
   closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
   deps = [
     ":cache_unittest",
@@ -138,6 +139,6 @@ group("closure_compile") {
   testonly = true
   deps = [
     ":closure_compile_module",
-    ":unit_tests_type_check",
+    ":js_test_gen_html_type_check_auto",
   ]
 }

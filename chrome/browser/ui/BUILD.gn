@@ -2027,8 +2027,6 @@ jumbo_split_static_library("ui") {
       "user_manager.h",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
-      "views/message_center/popups_only_ui_delegate.cc",
-      "views/message_center/popups_only_ui_delegate.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
       "views/profiles/profile_menu_view.cc",
@@ -3040,8 +3038,8 @@ jumbo_split_static_library("ui") {
       "views/send_tab_to_self/send_tab_to_self_icon_view.h",
       "views/session_crashed_bubble_view.cc",
       "views/session_crashed_bubble_view.h",
-      "views/sharing/click_to_call/click_to_call_dialog_view.cc",
-      "views/sharing/click_to_call/click_to_call_dialog_view.h",
+      "views/sharing/sharing_dialog_view.cc",
+      "views/sharing/sharing_dialog_view.h",
       "views/sharing/sharing_icon_view.cc",
       "views/sharing/sharing_icon_view.h",
       "views/simple_message_box_views.cc",
@@ -3549,6 +3547,8 @@ jumbo_split_static_library("ui") {
     if (is_chromeos) {
       sources += [
         "app_icon_loader_delegate.h",
+        "app_list/app_service_app_icon_loader.cc",
+        "app_list/app_service_app_icon_loader.h",
         "app_list/app_service_app_item.cc",
         "app_list/app_service_app_item.h",
         "app_list/app_service_app_model_builder.cc",

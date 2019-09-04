@@ -646,8 +646,10 @@ void NetworkContext::CreateURLLoaderFactory(
       std::move(request), &cors_origin_access_list_, nullptr));
 }
 
-void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {
-  client_ = std::move(client);
+void NetworkContext::SetClient(
+    mojo::PendingRemote<mojom::NetworkContextClient> client) {
+  client_.reset();
+  client_.Bind(std::move(client));
 }
 
 void NetworkContext::CreateURLLoaderFactory(

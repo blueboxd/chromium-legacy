@@ -85,18 +85,6 @@ class SequenceManagerImpl;
 // for tests. TODO(https://crbug.com/891670/) remove this class.
 class BASE_EXPORT MessageLoop {
  public:
-  // DEPRECATED: Use MessagePumpType instead
-  using Type = MessagePumpType;
-
-  // DEPRECATED: Use MessagePumpType::* instead
-  static constexpr Type TYPE_DEFAULT = Type::DEFAULT;
-  static constexpr Type TYPE_UI = Type::UI;
-  static constexpr Type TYPE_CUSTOM = Type::CUSTOM;
-  static constexpr Type TYPE_IO = Type::IO;
-#if defined(OS_ANDROID)
-  static constexpr Type TYPE_JAVA = Type::JAVA;
-#endif  // defined(OS_ANDROID)
-
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it
   // is typical to make use of the current thread's MessageLoop instance.
   explicit MessageLoop(MessagePumpType type = MessagePumpType::DEFAULT);

@@ -25,8 +25,8 @@ export function div(id) {
  */
 export function largeDiv(id) {
   const large = div(id);
-  large.style.height = "5000px";
-  large.style.border = "solid";
+  large.style.height = '5000px';
+  large.style.border = 'solid';
   return large;
 }
 
@@ -60,7 +60,7 @@ export function withElement(name, callback) {
  *
  * This includes a hack to wait 1s to give the virtual-scroller
  * elements time to settle.
-*/
+ */
 export function stopWaiting() {
   setTimeout(() => {
     document.documentElement.classList.remove('reftest-wait');
@@ -81,7 +81,7 @@ export function words(n) {
 /**
  * Allow the next |n| frames to end and then call |callback| ASAP in
  * the following frame.
-*/
+ */
 export function inNFrames(n, callback) {
   if (n == 0) {
     window.setTimeout(callback, 0);
@@ -95,7 +95,7 @@ export function inNFrames(n, callback) {
 /**
  * Allow the current frame to end and then call |callback| asap in the
  * next frame.
-*/
+ */
 export function nextFrame(callback) {
   inNFrames(1, callback);
 }

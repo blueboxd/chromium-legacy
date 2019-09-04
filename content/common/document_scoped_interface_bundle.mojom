@@ -15,8 +15,10 @@ struct DocumentScopedInterfaceBundle {
 
   // The DocumentInterfaceBroker through which the RenderFrame can access
   // interfaces exposed by its RenderFrameHost
-  blink.mojom.DocumentInterfaceBroker document_interface_broker_content;
-  blink.mojom.DocumentInterfaceBroker document_interface_broker_blink;
+  pending_remote<blink.mojom.DocumentInterfaceBroker>
+      document_interface_broker_content;
+  pending_remote<blink.mojom.DocumentInterfaceBroker>
+      document_interface_broker_blink;
 
   // The BrowserInterfaceBroker through which the RenderFrame can access
   // interfaces exposed by its RenderFrameHost

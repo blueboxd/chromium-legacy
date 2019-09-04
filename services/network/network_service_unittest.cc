@@ -21,6 +21,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/escape.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -1520,8 +1522,8 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
 class ClearSiteDataNetworkContextClient : public TestNetworkContextClient {
  public:
   explicit ClearSiteDataNetworkContextClient(
-      mojom::NetworkContextClientRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<mojom::NetworkContextClient> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~ClearSiteDataNetworkContextClient() override = default;
 
   void OnClearSiteData(uint32_t process_id,
@@ -1549,7 +1551,7 @@ class ClearSiteDataNetworkContextClient : public TestNetworkContextClient {
  private:
   int on_clear_site_data_counter_ = 0;
   std::string last_on_clear_site_data_header_value_;
-  mojo::Binding<mojom::NetworkContextClient> binding_;
+  mojo::Receiver<mojom::NetworkContextClient> receiver_;
 };
 
 // Check that |NetworkServiceNetworkDelegate| handles Clear-Site-Data header
@@ -1567,10 +1569,10 @@ TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkContextCient) {
 
   // With |NetworkContextCient|. The request should go through
   // |ClearSiteDataNetworkContextClient| and complete.
-  mojom::NetworkContextClientPtr client_ptr;
+  mojo::PendingRemote<mojom::NetworkContextClient> client_remote;
   auto client_impl = std::make_unique<ClearSiteDataNetworkContextClient>(
-      mojo::MakeRequest(&client_ptr));
-  network_context_->SetClient(std::move(client_ptr));
+      client_remote.InitWithNewPipeAndPassReceiver());
+  network_context_->SetClient(std::move(client_remote));
   url = https_server()->GetURL("/bar");
   url = AddQuery(url, "header", kClearCookiesHeader);
   EXPECT_EQ(0, client_impl->on_clear_site_data_counter());
@@ -1585,10 +1587,10 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
   const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
   CreateNetworkContext();
 
-  mojom::NetworkContextClientPtr client_ptr;
+  mojo::PendingRemote<mojom::NetworkContextClient> client_remote;
   auto client_impl = std::make_unique<ClearSiteDataNetworkContextClient>(
-      mojo::MakeRequest(&client_ptr));
-  network_context_->SetClient(std::move(client_ptr));
+      client_remote.InitWithNewPipeAndPassReceiver());
+  network_context_->SetClient(std::move(client_remote));
 
   // |passed_header_value| are only checked if |should_call_client| is true.
   const struct TestCase {

@@ -113,6 +113,7 @@ public class SideSlideLayout extends ViewGroup {
 
         @Override
         public void onAnimationEnd(Animation animation) {
+            mArrowView.setFaded(false, false);
             mArrowView.setVisibility(View.INVISIBLE);
             if (mNavigating) {
                 if (mListener != null) mListener.onNavigate(mIsForward);
@@ -266,6 +267,7 @@ public class SideSlideLayout extends ViewGroup {
         mIsBeingDragged = true;
         mWillNavigate = false;
         initializeOffset();
+        mArrowView.setFaded(false, false);
         return true;
     }
 
@@ -316,6 +318,23 @@ public class SideSlideLayout extends ViewGroup {
         int targetDiff = (int) (slingshotDist * dragPercent + extraMove);
         int targetX = mOriginalOffset + (mIsForward ? -targetDiff : targetDiff);
         setTargetOffsetLeftAndRight(targetX - mCurrentTargetOffset);
+    }
+
+    /**
+     * Update arrow bubble transparency as navigation sheet state changes.
+     * @param faded {@code true} if arrow bubble should fade out.
+     * @param animate {@code true} if animation is needed.
+     */
+    void fadeArrow(boolean faded, boolean animate) {
+        mArrowView.setFaded(faded, animate);
+    }
+
+    /**
+     * Hide arrow bubble by making it fade away at the current position.
+     */
+    void hideArrow() {
+        mNavigating = false;
+        startHidingAnimation(mNavigateListener);
     }
 
     private boolean willNavigate() {

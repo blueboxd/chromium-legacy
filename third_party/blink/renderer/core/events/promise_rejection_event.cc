@@ -10,16 +10,15 @@
 namespace blink {
 
 PromiseRejectionEvent::PromiseRejectionEvent(
-    ScriptState* state,
+    ScriptState* script_state,
     const AtomicString& type,
     const PromiseRejectionEventInit* initializer)
-    : Event(type, initializer), world_(&state->World()) {
+    : Event(type, initializer), world_(&script_state->World()) {
   DCHECK(initializer->hasPromise());
   promise_.Set(initializer->promise().GetIsolate(),
                initializer->promise().V8Value());
   if (initializer->hasReason()) {
-    reason_.Set(initializer->reason().GetIsolate(),
-                initializer->reason().V8Value());
+    reason_.Set(script_state->GetIsolate(), initializer->reason().V8Value());
   }
 }
 

@@ -828,7 +828,8 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     if (!skip_click_dispatch && mouse_target &&
         event_type == WebInputEvent::kPointerUp) {
       mouse_event_manager_->DispatchMouseClickIfNeeded(
-          mouse_target, mouse_event, canvas_region_id);
+          mouse_target, mouse_event, canvas_region_id,
+          pointer_event->pointerId(), pointer_event->pointerType());
     }
   }
 

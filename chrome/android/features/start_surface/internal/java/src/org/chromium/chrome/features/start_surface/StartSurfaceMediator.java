@@ -5,15 +5,17 @@
 package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_SELECTED_TAB_POSITION;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.FEED_SURFACE_COORDINATOR;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_BOTTOM_BAR_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
@@ -21,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
@@ -57,6 +60,7 @@ class StartSurfaceMediator
     private final boolean mOnlyShowExploreSurface;
     @Nullable
     private TabSwitcher.Controller mSecondaryTasksSurfaceController;
+    private boolean mIsIncognito;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             OverlayVisibilityHandler overlayVisibilityHandler,
@@ -92,6 +96,7 @@ class StartSurfaceMediator
                         }
                     });
 
+            mIsIncognito = tabModelSelector.isIncognitoSelected();
             tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
@@ -100,18 +105,24 @@ class StartSurfaceMediator
             });
 
             // Set the initial state.
-            updateIncognitoMode(tabModelSelector.isIncognitoSelected());
 
-            // Show explore surface if in TWO PANES mode and last visible pane was explore.
+            // Show explore surface if not in incognito and either in SINGLE PANES mode
+            // or in TWO PANES mode with last visible pane explore.
+            boolean shouldShowExploreSurface =
+                    (onlyShowExploreSurface || ReturnToStartSurfaceUtil.shouldShowExploreSurface())
+                    && !mIsIncognito;
+            setExploreSurfaceVisibility(shouldShowExploreSurface);
             if (!onlyShowExploreSurface) {
-                boolean shouldShowExploreSurface =
-                        ReturnToStartSurfaceUtil.shouldShowExploreSurface();
-                mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, shouldShowExploreSurface);
-                mPropertyModel.set(
-                        BOTTOM_BAR_SELECTED_TAB_POSITION, (shouldShowExploreSurface ? 1 : 0));
+                mPropertyModel.set(BOTTOM_BAR_HEIGHT,
+                        ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                                R.dimen.ss_bottom_bar_height));
+                mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, !mIsIncognito);
+
+                // Margin the bottom of the Tab grid to save space for the bottom bar when visible.
+                mController.setBottomControlsHeight(
+                        mIsIncognito ? 0 : mPropertyModel.get(BOTTOM_BAR_HEIGHT));
             }
         }
-
         mController.addOverviewModeObserver(this);
     }
 
@@ -137,7 +148,7 @@ class StartSurfaceMediator
                 && mSecondaryTasksSurfaceController.overviewVisible()) {
             assert mOnlyShowExploreSurface;
 
-            mSecondaryTasksSurfaceController.hideOverview(false);
+            setSecondaryTasksSurfaceVisibility(false);
         }
         mController.hideOverview(animate);
     }
@@ -150,7 +161,11 @@ class StartSurfaceMediator
             // panes) available when mPropertyModel != null.
             if (mOnlyShowExploreSurface) {
                 RecordUserAction.record("StartSurface.SinglePane");
-                mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
+                if (mIsIncognito) {
+                    setSecondaryTasksSurfaceVisibility(true);
+                } else {
+                    setExploreSurfaceVisibility(true);
+                }
             } else {
                 RecordUserAction.record("StartSurface.TwoPanes");
                 String defaultOnUserActionString = mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
@@ -165,8 +180,7 @@ class StartSurfaceMediator
             if (mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
                     && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
                 mPropertyModel.set(FEED_SURFACE_COORDINATOR,
-                        mFeedSurfaceCreator.createFeedSurfaceCoordinator(
-                                mPropertyModel.get(IS_INCOGNITO)));
+                        mFeedSurfaceCreator.createFeedSurfaceCoordinator());
             }
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         }
@@ -177,10 +191,12 @@ class StartSurfaceMediator
     @Override
     public boolean onBackPressed() {
         if (mSecondaryTasksSurfaceController != null
-                && mSecondaryTasksSurfaceController.overviewVisible()) {
+                && mSecondaryTasksSurfaceController.overviewVisible()
+                // Secondary tasks surface is used as the main surface in incognito mode.
+                && !mIsIncognito) {
             assert mOnlyShowExploreSurface;
 
-            mSecondaryTasksSurfaceController.hideOverview(false);
+            setSecondaryTasksSurfaceVisibility(false);
             setExploreSurfaceVisibility(true);
             return true;
         }
@@ -239,7 +255,7 @@ class StartSurfaceMediator
         }
 
         setExploreSurfaceVisibility(false);
-        mSecondaryTasksSurfaceController.showOverview(false);
+        setSecondaryTasksSurfaceVisibility(true);
         RecordUserAction.record("StartSurface.SinglePane.MoreTabs");
     }
 
@@ -247,35 +263,41 @@ class StartSurfaceMediator
     private void setExploreSurfaceVisibility(boolean isVisible) {
         if (isVisible == mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) return;
 
-        if (isVisible && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
-            mPropertyModel.set(FEED_SURFACE_COORDINATOR,
-                    mFeedSurfaceCreator.createFeedSurfaceCoordinator(
-                            mPropertyModel.get(IS_INCOGNITO)));
+        if (isVisible && mPropertyModel.get(IS_SHOWING_OVERVIEW)
+                && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
+            mPropertyModel.set(
+                    FEED_SURFACE_COORDINATOR, mFeedSurfaceCreator.createFeedSurfaceCoordinator());
         }
 
         mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, isVisible);
 
-        // Update the 'BOTTOM_BAR_SELECTED_TAB_POSITION' property to reflect the change. This is
-        // needed when clicking back button on the explore surface.
-        mPropertyModel.set(BOTTOM_BAR_SELECTED_TAB_POSITION, isVisible ? 1 : 0);
-        ReturnToStartSurfaceUtil.setExploreSurfaceVisibleLast(isVisible);
+        if (!mOnlyShowExploreSurface) {
+            // Update the 'BOTTOM_BAR_SELECTED_TAB_POSITION' property to reflect the change. This is
+            // needed when clicking back button on the explore surface.
+            mPropertyModel.set(BOTTOM_BAR_SELECTED_TAB_POSITION, isVisible ? 1 : 0);
+            ReturnToStartSurfaceUtil.setExploreSurfaceVisibleLast(isVisible);
+        }
     }
 
     private void updateIncognitoMode(boolean isIncognito) {
-        if (isIncognito == mPropertyModel.get(IS_INCOGNITO)) return;
+        if (isIncognito == mIsIncognito) return;
+        mIsIncognito = isIncognito;
 
-        mPropertyModel.set(IS_INCOGNITO, isIncognito);
+        if (mOnlyShowExploreSurface) {
+            setExploreSurfaceVisibility(!mIsIncognito);
+            setSecondaryTasksSurfaceVisibility(
+                    mIsIncognito && mPropertyModel.get(IS_SHOWING_OVERVIEW));
+        } else {
+            mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, !mIsIncognito);
 
-        // Set invisible to remove the view from it's parent if it was showing and destroy the feed
-        // surface coordinator (no matter it was shown or not).
-        boolean wasShown = mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
-                && mPropertyModel.get(FEED_SURFACE_COORDINATOR) != null;
-        if (wasShown) setExploreSurfaceVisibility(false);
-        destroyFeedSurfaceCoordinator();
+            // Set bottom controls height to 0 when bottom bar is hidden in incogito mode
+            mController.setBottomControlsHeight(
+                    mIsIncognito ? 0 : mPropertyModel.get(BOTTOM_BAR_HEIGHT));
 
-        // Set visible if it was shown, which will build the new feed surface coordinator according
-        // to the new incognito state.
-        if (wasShown) setExploreSurfaceVisibility(true);
+            // Hide explore surface if going incognito. When returning to normal mode, we
+            // always show the Home Pane, so the Explore Pane stays hidden.
+            if (mIsIncognito) setExploreSurfaceVisibility(false);
+        }
     }
 
     private void destroyFeedSurfaceCoordinator() {
@@ -283,5 +305,18 @@ class StartSurfaceMediator
                 mPropertyModel.get(FEED_SURFACE_COORDINATOR);
         if (feedSurfaceCoordinator != null) feedSurfaceCoordinator.destroy();
         mPropertyModel.set(FEED_SURFACE_COORDINATOR, null);
+    }
+
+    private void setSecondaryTasksSurfaceVisibility(boolean isVisible) {
+        assert mOnlyShowExploreSurface;
+        if (isVisible) {
+            if (mSecondaryTasksSurfaceController == null) {
+                mSecondaryTasksSurfaceController = mSecondaryTasksSurfaceInitializer.initialize();
+            }
+            mSecondaryTasksSurfaceController.showOverview(false);
+        } else {
+            if (mSecondaryTasksSurfaceController == null) return;
+            mSecondaryTasksSurfaceController.hideOverview(false);
+        }
     }
 }

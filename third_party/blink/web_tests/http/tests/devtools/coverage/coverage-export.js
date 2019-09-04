@@ -7,7 +7,7 @@
   await TestRunner.loadModule('coverage_test_runner');
   await TestRunner.navigatePromise(TestRunner.url('resources/basic-coverage.html'));
 
-  CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.startCoverage();
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
   const report = JSON.parse(await CoverageTestRunner.exportReport());

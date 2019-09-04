@@ -99,6 +99,11 @@ cr.define('settings', function() {
   let pageVisibility;
 
   const showOSSettings = loadTimeData.getBoolean('showOSSettings');
+  const isAccountManagerEnabled =
+      loadTimeData.valueExists('isAccountManagerEnabled') &&
+      loadTimeData.getBoolean('isAccountManagerEnabled');
+  const isKerberosEnabled = loadTimeData.valueExists('isKerberosEnabled') &&
+      loadTimeData.getBoolean('isKerberosEnabled');
 
   if (loadTimeData.getBoolean('isGuest')) {
     // "if not chromeos" and "if chromeos" in two completely separate blocks
@@ -168,8 +173,8 @@ cr.define('settings', function() {
       autofill: true,
       people: {
         lockScreen: showOSSettings,
-        kerberosAccounts: showOSSettings,
-        googleAccounts: showOSSettings,
+        kerberosAccounts: showOSSettings && isKerberosEnabled,
+        googleAccounts: showOSSettings && isAccountManagerEnabled,
         manageUsers: showOSSettings,
       },
       onStartup: true,

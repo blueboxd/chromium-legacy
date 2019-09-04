@@ -7,8 +7,6 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/mac/foundation_util.h"
-#include "components/unified_consent/feature.h"
-#include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
@@ -70,21 +68,13 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Assumes that the identity chooser is visible.
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(grey_accessibilityID(userEmail),
-                                            grey_kindOfClass(
-                                                [IdentityChooserCell class]),
-                                            grey_sufficientlyVisible(), nil)]
-        performAction:grey_tap()];
-  } else {
-    // Sign in to |userEmail|.
-    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(userEmail)]
-        performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
-        performAction:grey_tap()];
-  }
+  // Assumes that the identity chooser is visible.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(userEmail),
+                                          grey_kindOfClass(
+                                              [IdentityChooserCell class]),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
 }
 
 + (void)tapSettingsLink {
@@ -110,17 +100,9 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   // If the matcher fails, then the scroll view should be scrolled to the
   // bottom.
   // Once to the bottom, the consent can be confirmed.
-  id<GREYMatcher> confirmationScrollViewMatcher = nil;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    confirmationScrollViewMatcher =
-        grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
-  } else {
-    confirmationScrollViewMatcher = grey_allOf(
-        grey_ancestor(
-            grey_accessibilityID(kSigninConfirmationCollectionViewId)),
-        grey_kindOfClass([UICollectionView class]), nil);
-  }
+  id<GREYMatcher> confirmationScrollViewMatcher =
+      grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
       assertWithMatcher:ContentViewSmallerThanScrollView()
@@ -140,9 +122,6 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 }
 
 + (void)tapAddAccountButton {
-  GREYAssertTrue(unified_consent::IsUnifiedConsentFeatureEnabled(),
-                 @"-[SigninEarlGreyUI tapAddAccountButton] is not available "
-                 @"without UnifiedConsent flag");
   id<GREYMatcher> confirmationScrollViewMatcher =
       grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

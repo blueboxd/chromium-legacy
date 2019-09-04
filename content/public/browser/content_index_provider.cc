@@ -18,6 +18,14 @@ ContentIndexEntry::ContentIndexEntry(
 
 ContentIndexEntry::ContentIndexEntry(ContentIndexEntry&& other) = default;
 
+ContentIndexEntry& ContentIndexEntry::operator=(ContentIndexEntry&& other) {
+  service_worker_registration_id = other.service_worker_registration_id;
+  description = std::move(other.description);
+  launch_url = std::move(other.launch_url);
+  registration_time = other.registration_time;
+  return *this;
+}
+
 ContentIndexEntry::~ContentIndexEntry() = default;
 
 ContentIndexProvider::ContentIndexProvider() = default;

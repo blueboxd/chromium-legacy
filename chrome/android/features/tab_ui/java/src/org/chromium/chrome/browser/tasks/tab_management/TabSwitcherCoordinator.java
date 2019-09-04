@@ -150,11 +150,6 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
     }
 
     @Override
-    public void setBottomControlsHeight(int bottomControlsHeight) {
-        mMediator.setBottomControlsHeight(bottomControlsHeight);
-    }
-
-    @Override
     public boolean prepareOverview() {
         boolean quick = mMediator.prepareOverview();
         mTabListCoordinator.prepareOverview();

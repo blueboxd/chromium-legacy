@@ -17,12 +17,16 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/image_processor_factory.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#include "media/gpu/linux/platform_video_frame_utils.h"
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 namespace media {
 namespace test {
@@ -136,14 +140,14 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
         output_layout, gfx::Rect(output_image.Size()), output_image.Size(),
         base::TimeDelta(), false /* zero_initialize_memory*/);
   } else {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     LOG_ASSERT(image_processor_->output_storage_type() ==
                VideoFrame::STORAGE_DMABUFS);
     return CreatePlatformVideoFrame(
         output_layout.format(), output_layout.coded_size(),
         gfx::Rect(output_image.Size()), output_image.Size(), base::TimeDelta(),
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     return nullptr;
   }
 }

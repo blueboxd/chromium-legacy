@@ -403,10 +403,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int new_routing_id,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_content_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_blink_request,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_content_receiver,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_blink_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::WebTreeScopeType scope,
@@ -842,13 +842,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request);
 
-  // Binds content and blink request ends of the DocumentInterfaceProvider
+  // Binds content and blink receiver ends of the DocumentInterfaceProvider
   // interface through which services provided by this RenderFrameHost are
   // exposed to the corresponding RenderFrame. The caller is responsible for
   // plumbing the client ends to the the renderer process.
-  void BindDocumentInterfaceBrokerRequest(
-      blink::mojom::DocumentInterfaceBrokerRequest content_request,
-      blink::mojom::DocumentInterfaceBrokerRequest blink_request);
+  void BindDocumentInterfaceBrokerReceiver(
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          content_receiver,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          blink_receiver);
 
   // Binds the receiver end of the BrowserInterfaceBroker interface through
   // which services provided by this RenderFrameHost are exposed to the
@@ -2207,14 +2209,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       document_scoped_interface_provider_binding_;
 
-  // Bindings for the DocumentInterfaceBroker through which this
+  // Receivers for the DocumentInterfaceBroker through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
   // active document in the corresponding RenderFrame. Because of the type
   // difference between content and blink, two separate pipes are used.
-  mojo::Binding<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_content_binding_;
-  mojo::Binding<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink_binding_;
+  mojo::Receiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_content_receiver_{this};
+  mojo::Receiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink_receiver_{this};
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
@@ -2339,6 +2341,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::circular_deque<size_t> cookie_no_samesite_deprecation_url_hashes_;
   base::circular_deque<size_t>
       cookie_samesite_none_insecure_deprecation_url_hashes_;
+  base::circular_deque<size_t> cookie_lax_allow_unsafe_deprecation_url_hashes_;
 
   // The lifecycle state of the frame.
   blink::mojom::FrameLifecycleState frame_lifecycle_state_ =

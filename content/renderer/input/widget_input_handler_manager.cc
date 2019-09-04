@@ -317,8 +317,17 @@ void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
 
 void WidgetInputHandlerManager::LogInputTimingUMA() {
   if (!have_emitted_uma_) {
-    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming2",
-                              current_lifecycle_state_);
+    InitialInputTiming lifecycle_state = InitialInputTiming::kBeforeLifecycle;
+    if (!(renderer_deferral_state_ &
+          (unsigned)RenderingDeferralBits::kDeferMainFrameUpdates)) {
+      if (renderer_deferral_state_ &
+          (unsigned)RenderingDeferralBits::kDeferCommits) {
+        lifecycle_state = InitialInputTiming::kBeforeCommit;
+      } else {
+        lifecycle_state = InitialInputTiming::kAfterCommit;
+      }
+    }
+    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming2", lifecycle_state);
     have_emitted_uma_ = true;
   }
 }
@@ -343,16 +352,16 @@ void WidgetInputHandlerManager::DispatchEvent(
   if (!event_is_move)
     LogInputTimingUMA();
 
-  // Drop input if we have not yet displayed anything, unless it's a move event.
+  // Drop input if we are deferring a rendring pipeline phase, unless it's a
+  // move event.
   // We don't want users interacting with stuff they can't see, so we drop it.
   // We allow moves because we need to keep the current pointer location up
   // to date. Tests can allow pre-commit input through the
   // "allow-pre-commit-input" command line flag.
   // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
   // it seems, because they sometimes crash on seeing a scroll update/end
-  // without a begin. Scrolling doesn't seem dangerous.
-  if (current_lifecycle_state_ < InitialInputTiming::kAfterCommit &&
-      !allow_early_input_for_testing_ && !event_is_move) {
+  // without a begin. Scrolling, pinch-zoom etc. don't seem dangerous.
+  if (renderer_deferral_state_ && !allow_pre_commit_input_ && !event_is_move) {
     if (callback) {
       std::move(callback).Run(
           InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
@@ -478,18 +487,25 @@ void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
 }
 
 void WidgetInputHandlerManager::DidNavigate() {
-  current_lifecycle_state_ = InitialInputTiming::kBeforeLifecycle;
+  renderer_deferral_state_ = 0;
   have_emitted_uma_ = false;
 }
 
-void WidgetInputHandlerManager::BeginMainFrame() {
-  if (current_lifecycle_state_ == InitialInputTiming::kBeforeLifecycle)
-    current_lifecycle_state_ = InitialInputTiming::kBeforeCommit;
+void WidgetInputHandlerManager::OnDeferMainFrameUpdatesChanged(bool status) {
+  if (status) {
+    renderer_deferral_state_ |=
+        (unsigned)RenderingDeferralBits::kDeferMainFrameUpdates;
+  } else {
+    renderer_deferral_state_ &=
+        ~(unsigned)RenderingDeferralBits::kDeferMainFrameUpdates;
+  }
 }
 
-void WidgetInputHandlerManager::CompositorDidCommit() {
-  if (current_lifecycle_state_ == InitialInputTiming::kBeforeCommit)
-    current_lifecycle_state_ = InitialInputTiming::kAfterCommit;
+void WidgetInputHandlerManager::OnDeferCommitsChanged(bool status) {
+  if (status)
+    renderer_deferral_state_ |= (unsigned)RenderingDeferralBits::kDeferCommits;
+  else
+    renderer_deferral_state_ &= ~(unsigned)RenderingDeferralBits::kDeferCommits;
 }
 
 void WidgetInputHandlerManager::InitOnInputHandlingThread(

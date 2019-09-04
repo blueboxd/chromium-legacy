@@ -4,15 +4,10 @@
 
 package org.chromium.base.library_loader;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
@@ -20,8 +15,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -33,27 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @MainDex
 @JNINamespace("base::android")
 public class LibraryPrefetcher {
-    /**
-     * Used to pass ordered code info back from native.
-     */
-    final static class OrderedCodeInfo {
-        public final String filename;
-        public final long startOffset;
-        public final long length;
-
-        @CalledByNative("OrderedCodeInfo")
-        public OrderedCodeInfo(String filename, long startOffset, long length) {
-            this.filename = filename;
-            this.startOffset = startOffset;
-            this.length = length;
-        }
-
-        @Override
-        public String toString() {
-            return "filename = " + filename + " startOffset = " + startOffset
-                    + " length = " + length;
-        }
-    }
 
     private static final String TAG = "LibraryPrefetcher";
     // One-way switch that becomes true once
@@ -104,40 +76,6 @@ public class LibraryPrefetcher {
         });
     }
 
-    // May pin Chrome's code to memory, on platforms that support it.
-    @SuppressLint("WrongConstant")
-    public static void maybePinOrderedCodeInMemory() {
-        try (TraceEvent e = TraceEvent.scoped("LibraryPrefetcher::maybePinOrderedCodeInMemory")) {
-            OrderedCodeInfo info = LibraryPrefetcherJni.get().getOrderedCodeInfo();
-            if (info == null) return;
-            TraceEvent.instant("pinOrderedCodeInMemory", info.toString());
-
-            Context context = ContextUtils.getApplicationContext();
-            Object pinner = context.getSystemService("pinner");
-            if (pinner == null) {
-                Log.w(TAG, "Cannot get PinnerService.");
-                return;
-            }
-
-            // Reflection is required because the method is neither visible in the platform, nor
-            // available everywhere.
-            try {
-                Method pinRangeFromFile = pinner.getClass().getMethod(
-                        "pinRangeFromFile", String.class, int.class, int.class);
-                boolean ok = (Boolean) pinRangeFromFile.invoke(
-                        pinner, info.filename, (int) info.startOffset, (int) info.length);
-                if (!ok) {
-                    Log.e(TAG, "Not allowed to call the method, should not happen");
-                } else {
-                    Log.i(TAG, "Successfully pinned ordered code");
-                }
-            } catch (
-                    NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-                Log.w(TAG, "Error invoking the method. " + ex.getMessage());
-            }
-        }
-    }
-
     @NativeMethods
     interface Natives {
         // Finds the ranges corresponding to the native library pages, forks a new
@@ -151,9 +89,5 @@ public class LibraryPrefetcher {
 
         // Periodically logs native library residency from this thread.
         void periodicallyCollectResidency();
-
-        // Returns the range within a file of the ordered code section, or null if this is not
-        // available.
-        OrderedCodeInfo getOrderedCodeInfo();
     }
 }

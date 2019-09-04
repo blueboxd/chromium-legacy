@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/sync_device_info/device_info.h"
@@ -63,6 +64,9 @@ class SharingUiController {
   virtual int GetRequiredDeviceCapabilities() = 0;
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
+  // Get the name of the feature to be used as a prefix for the metric name.
+  virtual SharingFeatureName GetFeatureMetricsPrefix() const = 0;
+  virtual base::string16 GetEducationWindowTitleText() const = 0;
 
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
@@ -102,6 +106,9 @@ class SharingUiController {
     devices_ = std::move(devices);
   }
   void MaybeShowErrorDialog();
+
+  // Called by the SharingDialogView when the help text got clicked.
+  void OnHelpTextClicked();
 
  protected:
   virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;

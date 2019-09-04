@@ -52,7 +52,7 @@ class CONTENT_EXPORT SmsService
                  const std::string& sms) override;
 
   // blink::mojom::SmsReceiver:
-  void Receive(base::TimeDelta timeout, ReceiveCallback) override;
+  void Receive(ReceiveCallback) override;
 
  private:
   void OpenInfoBar(const std::string& one_time_code);

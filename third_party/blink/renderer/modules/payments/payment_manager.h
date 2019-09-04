@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_MANAGER_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -36,7 +37,7 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   void OnServiceConnectionError();
 
   Member<ServiceWorkerRegistration> registration_;
-  payments::mojom::blink::PaymentManagerPtr manager_;
+  mojo::Remote<payments::mojom::blink::PaymentManager> manager_;
   Member<PaymentInstruments> instruments_;
   String user_hint_;
 

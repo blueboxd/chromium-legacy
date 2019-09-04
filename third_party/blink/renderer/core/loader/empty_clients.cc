@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "cc/layers/layer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -129,21 +130,19 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
 mojom::blink::DocumentInterfaceBroker*
 EmptyLocalFrameClient::GetDocumentInterfaceBroker() {
   if (!document_interface_broker_.is_bound())
-    mojo::MakeRequest(&document_interface_broker_);
+    ignore_result(document_interface_broker_.BindNewPipeAndPassReceiver());
   return document_interface_broker_.get();
 }
 
 mojo::ScopedMessagePipeHandle
 EmptyLocalFrameClient::SetDocumentInterfaceBrokerForTesting(
     mojo::ScopedMessagePipeHandle blink_handle) {
-  mojom::blink::DocumentInterfaceBrokerPtr test_broker(
-      mojom::blink::DocumentInterfaceBrokerPtrInfo(
-          std::move(blink_handle),
-          mojom::blink::DocumentInterfaceBroker::Version_));
+  mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker> test_broker(
+      std::move(blink_handle), mojom::blink::DocumentInterfaceBroker::Version_);
 
   mojo::ScopedMessagePipeHandle real_handle =
-      document_interface_broker_.PassInterface().PassHandle();
-  document_interface_broker_ = std::move(test_broker);
+      document_interface_broker_.Unbind().PassPipe();
+  document_interface_broker_.Bind(std::move(test_broker));
 
   return real_handle;
 }

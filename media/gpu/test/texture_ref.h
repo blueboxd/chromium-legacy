@@ -9,6 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "media/gpu/buildflags.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -44,9 +45,9 @@ class TextureRef : public base::RefCounted<TextureRef> {
 
   uint32_t texture_id_;
   base::OnceClosure no_longer_needed_cb_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   scoped_refptr<VideoFrame> frame_;
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   THREAD_CHECKER(thread_checker_);
 };
 

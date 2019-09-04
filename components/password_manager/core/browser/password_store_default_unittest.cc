@@ -51,8 +51,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 // A mock LoginDatabase that simulates a failing Init() method.
 class BadLoginDatabase : public LoginDatabase {
  public:
-  BadLoginDatabase()
-      : LoginDatabase(base::FilePath(), /*is_account_store=*/false) {}
+  BadLoginDatabase() : LoginDatabase(base::FilePath(), IsAccountStore(false)) {}
   ~BadLoginDatabase() override {}
 
   // LoginDatabase:
@@ -110,7 +109,7 @@ PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
   OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(std::make_unique<LoginDatabase>(
-      test_login_db_file_path(), /*is_account_store=*/false));
+      test_login_db_file_path(), IsAccountStore(false)));
 }
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(

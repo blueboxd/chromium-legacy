@@ -29,6 +29,7 @@ struct CONTENT_EXPORT ContentIndexEntry {
                     const GURL& launch_url,
                     base::Time registration_time);
   ContentIndexEntry(ContentIndexEntry&& other);
+  ContentIndexEntry& operator=(ContentIndexEntry&& other);
   ~ContentIndexEntry();
 
   // Part of the key for an entry since different service workers can use the

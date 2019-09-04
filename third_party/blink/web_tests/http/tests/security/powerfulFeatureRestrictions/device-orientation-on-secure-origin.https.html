@@ -17,7 +17,7 @@ test(() => {
   assert_true('DeviceMotionEventRotationRate' in window);
 }, 'Event handlers as well as interfaces are exposed on `window`.');
 
-sensor_test(async sensorProvider => {
+sensor_test(async (t, sensorProvider) => {
   const FAKE_ACCELERATION_DATA = [1, 2, 3];
   const FAKE_LINEAR_ACCELERATION_DATA = [4, 5, 6];
   const FAKE_GYROSCOPE_DATA = [7, 8, 9];
@@ -46,7 +46,7 @@ sensor_test(async sensorProvider => {
   }));
 }, 'DeviceMotionEvent fires.');
 
-sensor_test(async sensorProvider => {
+sensor_test(async (t, sensorProvider) => {
   const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
   setMockSensorDataForType(sensorProvider, 'RelativeOrientationEulerAngles', FAKE_ORIENTATION_DATA);
 
@@ -58,7 +58,7 @@ sensor_test(async sensorProvider => {
   }));
 }, 'DeviceOrientationEvent fires.');
 
-sensor_test(async sensorProvider => {
+sensor_test(async (t, sensorProvider) => {
   const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
   setMockSensorDataForType(sensorProvider, 'AbsoluteOrientationEulerAngles', FAKE_ORIENTATION_DATA);
 

@@ -88,7 +88,7 @@ runGenericSensorTests(
     verifyQuatSensorReading,
     ['accelerometer', 'gyroscope', 'magnetometer']);
 
-sensor_test(sensorProvider => {
+sensor_test((t, sensorProvider) => {
   return checkPopulateMatrix(
       sensorProvider,
       AbsoluteOrientationSensor);
@@ -100,7 +100,7 @@ runGenericSensorTests(
     verifyQuatSensorReading,
     ['accelerometer', 'gyroscope']);
 
-sensor_test(sensorProvider => {
+sensor_test((t, sensorProvider) => {
   return checkPopulateMatrix(
       sensorProvider,
       RelativeOrientationSensor);

@@ -5103,35 +5103,35 @@
   "UnsafeEventsReportingEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "UnsafeEventsReportingEnabled": false },
-    "pref_mappings": [ { "pref": "policy.unsafe_events_reporting",
+    "pref_mappings": [ { "pref": "safebrowsing.unsafe_events_reporting",
                          "local_state": true } ]
   },
 
   "BlockLargeFileTransfer": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "BlockLargeFileTransfer": 0 },
-    "pref_mappings": [ { "pref": "policy.block_large_file_transfers",
+    "pref_mappings": [ { "pref": "safebrowsing.block_large_file_transfers",
                          "local_state": true } ]
   },
 
   "DelayDeliveryUntilVerdict": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "DelayDeliveryUntilVerdict": 0 },
-    "pref_mappings": [ { "pref": "policy.delay_delivery_until_verdict",
+    "pref_mappings": [ { "pref": "safebrowsing.delay_delivery_until_verdict",
                          "local_state": true } ]
   },
 
   "AllowPasswordProtectedFiles": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "AllowPasswordProtectedFiles": 0 },
-    "pref_mappings": [ { "pref": "policy.allow_password_protected_files",
+    "pref_mappings": [ { "pref": "safebrowsing.allow_password_protected_files",
                          "local_state": true } ]
   },
 
   "CheckContentCompliance": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "CheckContentCompliance": 0 },
-    "pref_mappings": [ { "pref": "policy.check_content_compliance",
+    "pref_mappings": [ { "pref": "safebrowsing.check_content_compliance",
                          "local_state": true } ]
   },
 
@@ -5139,6 +5139,9 @@
   },
 
   "DomainsToNotCheckComplianceOfUploadedContent": {
+  },
+
+  "DomainsToCheckForMalwareOfUploadedContent": {
   },
 
   "RendererCodeIntegrityEnabled": {

@@ -28,6 +28,8 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
   void GetVoices(std::vector<VoiceData>* out_voices) override;
 
   // Methods called from Java via JNI.
+  void RequestTtsStop(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   void VoicesChanged(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
   void OnEndEvent(JNIEnv* env,

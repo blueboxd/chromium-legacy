@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/metrics/metrics_service.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -341,6 +342,10 @@ void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
 #else
   NOTREACHED();
 #endif
+}
+
+bool ChromeSigninClient::IsNonEnterpriseUser(const std::string& username) {
+  return policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
 }
 
 void ChromeSigninClient::SetURLLoaderFactoryForTest(

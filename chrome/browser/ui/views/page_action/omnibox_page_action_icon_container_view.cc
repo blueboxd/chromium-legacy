@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
-#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -104,7 +104,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
                   ClickToCallUiController::GetOrCreateFromWebContents(
                       contents));
             }),
-            base::BindRepeating(ClickToCallDialogView::GetAsBubble));
+            base::BindRepeating(SharingDialogView::GetAsBubble));
         page_action_icons_.push_back(click_to_call_icon_view_);
         break;
       case PageActionIconType::kSharedClipboard:
@@ -115,8 +115,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
                   SharedClipboardUiController::GetOrCreateFromWebContents(
                       contents));
             }),
-            // TODO(yasmo): create shared clipboard dialog view.
-            base::BindRepeating(ClickToCallDialogView::GetAsBubble));
+            base::BindRepeating(SharingDialogView::GetAsBubble));
         page_action_icons_.push_back(shared_clipboard_icon_view_);
         break;
       case PageActionIconType::kLocalCardMigration:

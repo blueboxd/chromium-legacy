@@ -260,6 +260,13 @@ class PasswordFormMetricsRecorder
     kMaxValue = kNoSavedCredentialsAndBlacklistedBySmartBubble,
   };
 
+  // Records whether a password hash was saved or not on Chrome sign-in page.
+  enum class ChromeSignInPageHashSaved {
+    kPasswordTypedHashNotSaved = 0,
+    kHashSaved = 1,
+    kMaxValue = kHashSaved,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -386,6 +393,14 @@ class PasswordFormMetricsRecorder
       bool is_blacklisted,
       const std::vector<InteractionsStats>& interactions_stats);
 
+  void set_user_typed_password_on_chrome_sign_in_page() {
+    user_typed_password_on_chrome_sign_in_page_ = true;
+  }
+
+  void set_password_hash_saved_on_chrome_sing_in_page() {
+    password_hash_saved_on_chrome_sing_in_page_ = true;
+  }
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -468,6 +483,9 @@ class PasswordFormMetricsRecorder
   bool recorded_first_filling_result_ = false;
 
   bool recorded_wait_for_username_reason_ = false;
+
+  bool user_typed_password_on_chrome_sign_in_page_ = false;
+  bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
   base::Optional<FillingAssistance> filling_assistance_;
 

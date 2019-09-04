@@ -20,6 +20,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
@@ -285,16 +286,16 @@ MockRenderThread::TakeInitialInterfaceProviderRequestForFrame(
   return interface_provider_request;
 }
 
-blink::mojom::DocumentInterfaceBrokerRequest
-MockRenderThread::TakeInitialDocumentInterfaceBrokerRequestForFrame(
+mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+MockRenderThread::TakeInitialDocumentInterfaceBrokerReceiverForFrame(
     int32_t routing_id) {
   auto it =
-      frame_routing_id_to_initial_document_broker_requests_.find(routing_id);
-  if (it == frame_routing_id_to_initial_document_broker_requests_.end())
-    return nullptr;
-  auto document_broker_request = std::move(it->second);
-  frame_routing_id_to_initial_document_broker_requests_.erase(it);
-  return document_broker_request;
+      frame_routing_id_to_initial_document_broker_receivers_.find(routing_id);
+  if (it == frame_routing_id_to_initial_document_broker_receivers_.end())
+    return mojo::NullReceiver();
+  auto document_broker_receiver = std::move(it->second);
+  frame_routing_id_to_initial_document_broker_receivers_.erase(it);
+  return document_broker_receiver;
 }
 
 mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
@@ -331,17 +332,20 @@ void MockRenderThread::OnCreateChildFrame(
   params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
 
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker;
-  frame_routing_id_to_initial_document_broker_requests_.emplace(
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker;
+  frame_routing_id_to_initial_document_broker_receivers_.emplace(
       params_reply->child_routing_id,
-      mojo::MakeRequest(&document_interface_broker));
+      document_interface_broker.InitWithNewPipeAndPassReceiver());
   params_reply->document_interface_broker_content_handle =
-      document_interface_broker.PassInterface().PassHandle().release();
+      document_interface_broker.PassPipe().release();
 
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink;
-  mojo::MakeRequest(&document_interface_broker_blink);
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink;
+  ignore_result(
+      document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
   params_reply->document_interface_broker_blink_handle =
-      document_interface_broker_blink.PassInterface().PassHandle().release();
+      document_interface_broker_blink.PassPipe().release();
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -397,10 +401,11 @@ void MockRenderThread::OnCreateWindow(
       mojo::MakeRequest(
           &reply->main_frame_interface_bundle->interface_provider));
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker;
-  frame_routing_id_to_initial_document_broker_requests_.emplace(
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker;
+  frame_routing_id_to_initial_document_broker_receivers_.emplace(
       reply->main_frame_route_id,
-      mojo::MakeRequest(&document_interface_broker));
+      document_interface_broker.InitWithNewPipeAndPassReceiver());
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -410,7 +415,7 @@ void MockRenderThread::OnCreateWindow(
   reply->main_frame_interface_bundle->document_interface_broker_content =
       std::move(document_interface_broker);
 
-  mojo::MakeRequest(&document_interface_broker);
+  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
   reply->main_frame_interface_bundle->document_interface_broker_blink =
       std::move(document_interface_broker);
 

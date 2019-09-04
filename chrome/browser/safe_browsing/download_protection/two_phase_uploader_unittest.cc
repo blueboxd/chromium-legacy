@@ -19,6 +19,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_context.h"
@@ -81,12 +82,13 @@ class TwoPhaseUploaderTest : public testing::Test {
             network::NetworkService::GetNetworkServiceForTesting());
 
     // A NetworkContextClient is needed for uploads to work.
-    network::mojom::NetworkContextClientPtr network_context_client_ptr;
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
     network_context_client_ =
         std::make_unique<network::TestNetworkContextClient>(
-            mojo::MakeRequest(&network_context_client_ptr));
+            network_context_client_remote.InitWithNewPipeAndPassReceiver());
     shared_url_loader_factory_->network_context()->SetClient(
-        std::move(network_context_client_ptr));
+        std::move(network_context_client_remote));
   }
 
  protected:

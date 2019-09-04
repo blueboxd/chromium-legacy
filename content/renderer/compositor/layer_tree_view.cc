@@ -218,6 +218,14 @@ void LayerTreeView::BeginMainFrame(const viz::BeginFrameArgs& args) {
   delegate_->BeginMainFrame(args.frame_time);
 }
 
+void LayerTreeView::OnDeferMainFrameUpdatesChanged(bool status) {
+  delegate_->OnDeferMainFrameUpdatesChanged(status);
+}
+
+void LayerTreeView::OnDeferCommitsChanged(bool status) {
+  delegate_->OnDeferCommitsChanged(status);
+}
+
 void LayerTreeView::BeginMainFrameNotExpectedSoon() {
   web_main_thread_scheduler_->BeginFrameNotExpectedSoon();
 }

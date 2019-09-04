@@ -41,6 +41,9 @@
 
 using l10n_util::GetNSString;
 
+NSString* const kManageSyncCellAccessibilityIdentifier =
+    @"ManageSyncCellAccessibilityIdentifier";
+
 typedef NSArray<TableViewItem*>* ItemArray;
 
 namespace {
@@ -407,6 +410,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
           UITableViewCellAccessoryDisclosureIndicator;
       self.manageSyncItem.title =
           GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
+      self.manageSyncItem.accessibilityIdentifier =
+          kManageSyncCellAccessibilityIdentifier;
       [model addItem:self.manageSyncItem
           toSectionWithIdentifier:SyncSectionIdentifier];
       needsUpdate = YES;

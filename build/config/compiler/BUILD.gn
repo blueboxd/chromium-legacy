@@ -1514,21 +1514,16 @@ config("default_warnings") {
 
         if (llvm_force_head_revision) {
           cflags += [
-            # TODO(thakis): Check how often this fires, then decide if we want
-            # to clean up the codebase or just disable this. Doesn't seem super
-            # useful, likely just want to disable.
-            # https://crbug.com/999871
-            "-Wno-error=c99-designator",
+            # TODO(https://crbug.com/999871): Decide if we want to clean up the
+            # codebase or just disable this.  Doesn't seem super useful, but
+            # also fires in only 4 files.
+            "-Wno-c99-designator",
 
-            # See https://crbug.com/999871 for this one too -- but we can't
-            # roll in -Wno-reorder :/ Need to fix this before the next roll
-            # somehow.
-            "-Wno-error=reorder",
+            # This is a side effect of -Wc99-designator; easier to clean up.
+            "-Wno-reorder-init-list",
 
             # TODO(https://crbug.com/999886): Clean up, enable.
-            # If roling this in, use -Wno-final-dtor-non-final-class instead
-            # of the -Wno-error form.
-            "-Wno-error=final-dtor-non-final-class",
+            "-Wno-final-dtor-non-final-class",
           ]
         }
       }

@@ -585,7 +585,6 @@ ChannelState WebSocketChannel::ReadFrames() {
     return CHANNEL_ALIVE;
   }
 
-  // TODO(yoichio): Add test for this case.
   if (!InClosingState() && has_received_close_frame_) {
     DCHECK(!event_interface_->HasPendingDataFrames());
     // We've been waiting for the client to consume the frames before

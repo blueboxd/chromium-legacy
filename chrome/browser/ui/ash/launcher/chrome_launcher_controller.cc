@@ -18,6 +18,7 @@
 #include "ash/public/cpp/window_animation_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/app_service_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
@@ -1168,34 +1170,44 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
     launcher_controller_helper_->set_profile(profile_);
   }
 
-  // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
-  // image is associated with a profile (its loader requires the profile).
-  // Since icon size changes are possible, the icon could be requested to be
-  // reloaded. However - having it not multi profile aware would cause problems
-  // if the icon cache gets deleted upon user switch.
-  std::unique_ptr<AppIconLoader> chrome_app_icon_loader =
-      std::make_unique<extensions::ChromeAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_MEDIUM,
-          base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd), this);
-  app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
+  bool app_service_enabled =
+      base::FeatureList::IsEnabled(features::kAppServiceShelf);
 
-  if (arc::IsArcAllowedForProfile(profile_)) {
-    std::unique_ptr<AppIconLoader> arc_app_icon_loader =
-        std::make_unique<ArcAppIconLoader>(
+  if (app_service_enabled) {
+    std::unique_ptr<AppIconLoader> app_service_app_icon_loader =
+        std::make_unique<AppServiceAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
-    app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
-  }
+    app_icon_loaders_.push_back(std::move(app_service_app_icon_loader));
+  } else {
+    // TODO(skuhne): The AppIconLoaderImpl has the same problem. Each loaded
+    // image is associated with a profile (its loader requires the profile).
+    // Since icon size changes are possible, the icon could be requested to be
+    // reloaded. However - having it not multi profile aware would cause
+    // problems if the icon cache gets deleted upon user switch.
+    std::unique_ptr<AppIconLoader> chrome_app_icon_loader =
+        std::make_unique<extensions::ChromeAppIconLoader>(
+            profile_, extension_misc::EXTENSION_ICON_MEDIUM,
+            base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd), this);
+    app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
 
-  std::unique_ptr<AppIconLoader> internal_app_icon_loader =
-      std::make_unique<InternalAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
-  app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
+    if (arc::IsArcAllowedForProfile(profile_)) {
+      std::unique_ptr<AppIconLoader> arc_app_icon_loader =
+          std::make_unique<ArcAppIconLoader>(
+              profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
+      app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
+    }
 
-  if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
-    std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
-        std::make_unique<CrostiniAppIconLoader>(
+    std::unique_ptr<AppIconLoader> internal_app_icon_loader =
+        std::make_unique<InternalAppIconLoader>(
             profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
-    app_icon_loaders_.push_back(std::move(crostini_app_icon_loader));
+    app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
+
+    if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
+      std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
+          std::make_unique<CrostiniAppIconLoader>(
+              profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
+      app_icon_loaders_.push_back(std::move(crostini_app_icon_loader));
+    }
   }
 
   pref_change_registrar_.Init(profile()->GetPrefs());

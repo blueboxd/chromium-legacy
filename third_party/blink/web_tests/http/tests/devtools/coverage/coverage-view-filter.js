@@ -6,7 +6,7 @@
   TestRunner.addResult(`Tests the filter is properly applied to coverage list view.\n`);
   await TestRunner.loadModule('coverage_test_runner');
 
-  CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.startCoverage();
   await TestRunner.navigatePromise(TestRunner.url('resources/basic-coverage.html'));
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();

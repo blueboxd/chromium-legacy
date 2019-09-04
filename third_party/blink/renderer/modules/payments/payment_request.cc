@@ -362,12 +362,13 @@ void ValidateAndConvertTotal(const PaymentItem* input,
 }
 
 // Parses Android Pay data to avoid parsing JSON in the browser.
-void SetAndroidPayMethodData(const ScriptValue& input,
+void SetAndroidPayMethodData(v8::Isolate* isolate,
+                             const ScriptValue& input,
                              PaymentMethodDataPtr& output,
                              ExceptionState& exception_state) {
   AndroidPayMethodData* android_pay = AndroidPayMethodData::Create();
-  V8AndroidPayMethodData::ToImpl(input.GetIsolate(), input.V8Value(),
-                                 android_pay, exception_state);
+  V8AndroidPayMethodData::ToImpl(isolate, input.V8Value(), android_pay,
+                                 exception_state);
   if (exception_state.HadException())
     return;
 
@@ -416,7 +417,7 @@ void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
   // data asynchronously. Do not throw exceptions here.
   if (supported_method == kGooglePayMethod ||
       supported_method == kAndroidPayMethod) {
-    SetAndroidPayMethodData(input, output, exception_state);
+    SetAndroidPayMethodData(isolate, input, output, exception_state);
     if (exception_state.HadException())
       exception_state.ClearException();
   }
@@ -621,7 +622,6 @@ void ValidateAndConvertPaymentMethodData(
           execution_context.GetIsolate(),
           payment_method_data->supportedMethod(), payment_method_data->data(),
           output.back(), exception_state);
-
       if (exception_state.HadException())
         continue;
 
@@ -982,7 +982,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
   ExceptionState exception_state(v8::Isolate::GetCurrent(),
                                  ExceptionState::kConstructionContext,
                                  "PaymentDetailsUpdate");
-  V8PaymentDetailsUpdate::ToImpl(details_script_value.GetIsolate(),
+  V8PaymentDetailsUpdate::ToImpl(resolver->GetScriptState()->GetIsolate(),
                                  details_script_value.V8Value(), details,
                                  exception_state);
   if (exception_state.HadException()) {

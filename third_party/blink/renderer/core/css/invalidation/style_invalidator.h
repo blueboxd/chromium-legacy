@@ -81,8 +81,9 @@ class CORE_EXPORT StyleInvalidator {
   void PushNthSiblingInvalidationSets(SiblingData& sibling_data) {
     for (const auto* invalidation_set : pending_nth_sets_)
       sibling_data.PushInvalidationSet(*invalidation_set);
-    pending_nth_sets_.resize(0);
+    ClearPendingNthSiblingInvalidationSets();
   }
+  void ClearPendingNthSiblingInvalidationSets() { pending_nth_sets_.resize(0); }
 
   PendingInvalidationMap& pending_invalidation_map_;
   using DescendantInvalidationSets = Vector<const InvalidationSet*, 16>;

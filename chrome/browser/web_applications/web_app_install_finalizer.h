@@ -49,8 +49,8 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                      std::unique_ptr<WebApp> web_app,
                      bool success);
 
+  WebAppIconManager* const icon_manager_;
   WebAppRegistrar* registrar_ = nullptr;
-  WebAppIconManager* icon_manager_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 

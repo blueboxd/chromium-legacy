@@ -676,15 +676,6 @@ class DirectoryItem extends cr.ui.TreeItem {
     // Add the eject button as the last element of the tree row content.
     const parent = rowElement.querySelector('.label').parentElement;
     assert(parent).appendChild(ejectButton);
-
-    // Mark the tree row element with CSS class .ejectable.
-    rowElement.classList.add('ejectable');
-
-    // Disable paper-ripple on this rowElement, crbug.com/965382.
-    const rowRipple = rowElement.querySelector('paper-ripple');
-    if (rowRipple) {
-      rowRipple.setAttribute('style', 'visibility:hidden');
-    }
   }
 
   /**

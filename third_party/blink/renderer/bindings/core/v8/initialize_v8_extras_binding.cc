@@ -55,7 +55,7 @@ class CountUseForBindings : public ScriptFunction {
   ScriptValue Call(ScriptValue value) override {
     String string_id;
     if (!value.ToString(string_id)) {
-      V8ThrowException::ThrowTypeError(value.GetIsolate(),
+      V8ThrowException::ThrowTypeError(GetScriptState()->GetIsolate(),
                                        "countUse requires a string argument");
       return ScriptValue();
     }
@@ -68,7 +68,7 @@ class CountUseForBindings : public ScriptFunction {
                      });
 
     if (it == std::end(web_feature_id_name_lookup_table)) {
-      V8ThrowException::ThrowTypeError(value.GetIsolate(),
+      V8ThrowException::ThrowTypeError(GetScriptState()->GetIsolate(),
                                        "unknown use counter");
       return ScriptValue();
     }

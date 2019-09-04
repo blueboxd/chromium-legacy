@@ -18,6 +18,7 @@ class InstallManager;
 class InstallFinalizer;
 class AppRegistrar;
 class FileHandlerManager;
+class AppIconManager;
 class WebAppPolicyManager;
 class WebAppAudioFocusIdMap;
 class WebAppUiManager;
@@ -47,6 +48,9 @@ class WebAppProviderBase : public KeyedService {
   virtual WebAppAudioFocusIdMap& audio_focus_id_map() = 0;
 
   virtual FileHandlerManager& file_handler_manager() = 0;
+
+  // Implements fetching of app icons.
+  virtual AppIconManager& icon_manager() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };

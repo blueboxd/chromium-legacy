@@ -237,7 +237,7 @@ class FileGrid extends cr.ui.Grid {
    * @override
    */
   mergeItems(beginIndex, endIndex) {
-    super.mergeItems(beginIndex, endIndex);
+    cr.ui.List.prototype.mergeItems.call(this, beginIndex, endIndex);
 
     const afterFiller = this.afterFiller_;
     const columns = this.columns;

@@ -8,25 +8,26 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 class Browser;
-
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 namespace web_app {
 
 class AppRegistrar;
+class WebAppProvider;
 
 // Class to encapsulate logic to control the browser UI for
 // web apps.
 // App information is obtained from the AppRegistrar.
+// Icon information is obtained from the AppIconManager.
 // Note: Much of the functionality in HostedAppBrowserController
 // will move to this class.
 class WebAppBrowserController : public AppBrowserController {
@@ -51,8 +52,15 @@ class WebAppBrowserController : public AppBrowserController {
   bool IsHostedApp() const override;
 
  private:
-  AppRegistrar& registrar_;
+  const AppRegistrar& registrar() const;
+
+  void OnReadIcon(SkBitmap bitmap);
+
+  WebAppProvider& provider_;
   const AppId app_id_;
+  mutable base::Optional<gfx::ImageSkia> app_icon_;
+
+  mutable base::WeakPtrFactory<WebAppBrowserController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppBrowserController);
 };

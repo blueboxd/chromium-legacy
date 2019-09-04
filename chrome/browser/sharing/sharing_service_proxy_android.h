@@ -8,7 +8,6 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
-#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
 class SharingService;
@@ -18,10 +17,6 @@ class SharingServiceProxyAndroid {
  public:
   explicit SharingServiceProxyAndroid(SharingService* sharing_service);
   ~SharingServiceProxyAndroid();
-
-  SharedClipboardMessageHandler* shared_clipboard_message_handler() {
-    return &shared_clipboard_message_handler_;
-  }
 
   ClickToCallMessageHandler* click_to_call_message_handler() {
     return &click_to_call_message_handler_;
@@ -40,7 +35,6 @@ class SharingServiceProxyAndroid {
 
  private:
   SharingService* sharing_service_ = nullptr;
-  SharedClipboardMessageHandler shared_clipboard_message_handler_;
   ClickToCallMessageHandler click_to_call_message_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingServiceProxyAndroid);

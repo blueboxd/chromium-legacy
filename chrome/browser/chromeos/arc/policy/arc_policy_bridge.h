@@ -189,7 +189,7 @@ class ArcPolicyBridge : public KeyedService,
   std::string update_notification_policies_hash_;
   // The time of the policy update notification sent when the policy with hash
   // equal to |update_notification_policy_hash_| was active.
-  base::Time update_notification_time_;
+  base::TimeTicks update_notification_time_;
   // Whether the UMA metric for the successfully obtained compliance report
   // since the most recent policy update notificaton was already reported.
   bool compliance_since_update_timing_reported_ = false;

@@ -53,7 +53,12 @@ interface NavigationSheet {
         public void release() {}
 
         @Override
-        public boolean isPeeked() {
+        public boolean isHidden() {
+            return true;
+        }
+
+        @Override
+        public boolean isExpanded() {
             return false;
         }
     };
@@ -79,7 +84,12 @@ interface NavigationSheet {
     void release();
 
     /**
-     * {@code true} if navigation sheet is in peeked state.
+     * @param {@code true} if navigation sheet is in hidden state.
      */
-    boolean isPeeked();
+    boolean isHidden();
+
+    /**
+     * @param {@code true} if navigation sheet is in expanded (half/full) state.
+     */
+    boolean isExpanded();
 }

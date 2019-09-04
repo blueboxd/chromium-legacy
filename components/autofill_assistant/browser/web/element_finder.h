@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
+#include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 
@@ -61,20 +62,26 @@ class ElementFinder : public WebControllerWorker {
 
  private:
   void SendResult(const ClientStatus& status);
-  void OnGetDocumentElement(std::unique_ptr<runtime::EvaluateResult> result);
+  void OnGetDocumentElement(const DevtoolsClient::ReplyStatus& reply_status,
+                            std::unique_ptr<runtime::EvaluateResult> result);
   void RecursiveFindElement(const std::string& object_id, size_t index);
   void OnQuerySelectorAll(
       size_t index,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnDescribeNodeForPseudoElement(
       dom::PseudoType pseudo_type,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<dom::DescribeNodeResult> result);
   void OnResolveNodeForPseudoElement(
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<dom::ResolveNodeResult> result);
   void OnDescribeNode(const std::string& object_id,
                       size_t index,
+                      const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<dom::DescribeNodeResult> result);
   void OnResolveNode(size_t index,
+                     const DevtoolsClient::ReplyStatus& reply_status,
                      std::unique_ptr<dom::ResolveNodeResult> result);
   content::RenderFrameHost* FindCorrespondingRenderFrameHost(
       std::string name,

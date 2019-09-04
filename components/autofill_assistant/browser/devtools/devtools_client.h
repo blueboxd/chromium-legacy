@@ -44,7 +44,8 @@ class DevtoolsClient : public MessageDispatcher,
   void SendMessage(
       const char* method,
       std::unique_ptr<base::Value> params,
-      base::OnceCallback<void(const base::Value&)> callback) override;
+      base::OnceCallback<void(const ReplyStatus&, const base::Value&)> callback)
+      override;
   void SendMessage(const char* method,
                    std::unique_ptr<base::Value> params,
                    base::OnceClosure callback) override;
@@ -64,13 +65,15 @@ class DevtoolsClient : public MessageDispatcher,
     Callback();
     Callback(Callback&& other);
     explicit Callback(base::OnceClosure callback);
-    explicit Callback(base::OnceCallback<void(const base::Value&)> callback);
+    explicit Callback(base::OnceCallback<void(const ReplyStatus&,
+                                              const base::Value&)> callback);
     ~Callback();
 
     Callback& operator=(Callback&& other);
 
     base::OnceClosure callback;
-    base::OnceCallback<void(const base::Value&)> callback_with_result;
+    base::OnceCallback<void(const ReplyStatus&, const base::Value&)>
+        callback_with_result;
   };
 
   template <typename CallbackType>
@@ -81,7 +84,8 @@ class DevtoolsClient : public MessageDispatcher,
                             const base::DictionaryValue& message_dict);
   void DispatchMessageReplyWithResultTask(
       std::unique_ptr<base::Value> owning_message,
-      base::OnceCallback<void(const base::Value&)> callback,
+      base::OnceCallback<void(const ReplyStatus&, const base::Value&)> callback,
+      const ReplyStatus& reply_status,
       const base::Value* result_dict);
   bool DispatchEvent(std::unique_ptr<base::Value> owning_message,
                      const base::DictionaryValue& message_dict);
@@ -91,6 +95,8 @@ class DevtoolsClient : public MessageDispatcher,
   void DispatchEventTask(std::unique_ptr<base::Value> owning_message,
                          const EventHandler* event_handler,
                          const base::DictionaryValue* result_dict);
+  void FillReplyStatusFromErrorDict(ReplyStatus* status,
+                                    const base::DictionaryValue& error_dict);
 
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   scoped_refptr<base::SequencedTaskRunner> browser_main_thread_;

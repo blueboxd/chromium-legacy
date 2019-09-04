@@ -1091,7 +1091,8 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRThrottle) {
   EXPECT_TRUE(fake_google_.IsPageRequested());
 }
 
-IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRNotThrottled) {
+// TODO(https://crbug.com/990844): Re-enable once flakiness is fixed.
+IN_PROC_BROWSER_TEST_P(MergeSessionTest, DISABLED_XHRNotThrottled) {
   StartNewUserSession(/*wait_for_merge=*/false,
                       /*is_under_advanced_protection=*/false);
 

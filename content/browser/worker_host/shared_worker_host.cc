@@ -102,6 +102,14 @@ SharedWorkerHost::~SharedWorkerHost() {
     // Attempt to notify the worker before disconnecting.
     if (worker_)
       worker_->Terminate();
+
+    // Notify the service that each client still connected will be removed and
+    // that the worker will terminate.
+    for (const auto& client : clients_) {
+      service_->NotifyClientRemoved(instance_, client.client_process_id,
+                                    client.frame_id);
+    }
+    service_->NotifyWorkerTerminating(instance_);
   } else {
     // Tell clients that this worker failed to start.
     for (const ClientInfo& info : clients_)
@@ -237,6 +245,15 @@ void SharedWorkerHost::Start(
   // Monitor the lifetime of the worker.
   worker_.set_disconnect_handler(base::BindOnce(
       &SharedWorkerHost::OnWorkerConnectionLost, weak_factory_.GetWeakPtr()));
+
+  // Notify the service that the worker was started and that some clients were
+  // already connected.
+  service_->NotifyWorkerStarted(instance_, worker_process_id_,
+                                devtools_worker_token);
+  for (const auto& client : clients_) {
+    service_->NotifyClientAdded(instance_, client.client_process_id,
+                                client.frame_id);
+  }
 }
 
 //  This is similar to
@@ -425,6 +442,12 @@ void SharedWorkerHost::AddClient(
       &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
+
+  // Notify that a new client was added now. If the worker is not started, the
+  // Start() function will handle sending a notification for each existing
+  // client.
+  if (started_)
+    service_->NotifyClientAdded(instance_, client_process_id, frame_id);
 }
 
 void SharedWorkerHost::SetAppCacheHandle(
@@ -456,6 +479,12 @@ void SharedWorkerHost::OnClientConnectionLost() {
   // We'll get a notification for each dropped connection.
   for (auto it = clients_.begin(); it != clients_.end(); ++it) {
     if (!it->client.is_connected()) {
+      // Notify the service that a client was removed while the worker was
+      // running.
+      if (started_) {
+        service_->NotifyClientRemoved(instance_, it->client_process_id,
+                                      it->frame_id);
+      }
       clients_.erase(it);
       break;
     }

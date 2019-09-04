@@ -668,6 +668,8 @@ TEST_F(DecimalTest, FromString) {
   EXPECT_EQ(Encode(3, 0, kPositive), FromString("+3"));
   EXPECT_EQ(Encode(0, 3, kPositive), FromString("0E3"));
   EXPECT_EQ(Encode(5, -1, kPositive), FromString(".5"));
+  EXPECT_EQ(Encode(5, -1, kPositive), FromString("+.5"));
+  EXPECT_EQ(Encode(5, -1, kNegative), FromString("-.5"));
   EXPECT_EQ(Encode(100, 0, kPositive), FromString("100"));
   EXPECT_EQ(Encode(100, 0, kNegative), FromString("-100"));
   EXPECT_EQ(Encode(123, -2, kPositive), FromString("1.23"));

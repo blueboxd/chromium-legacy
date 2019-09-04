@@ -65,7 +65,8 @@ TEST_F(ScopedThreadPriorityTest, NestedScope) {
     EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetCurrentThreadPriority());
     {
-      ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+      ScopedThreadMayLoadLibraryOnBackgroundThread nested_priority_boost(
+          FROM_HERE);
       EXPECT_EQ(ThreadPriority::NORMAL,
                 PlatformThread::GetCurrentThreadPriority());
     }

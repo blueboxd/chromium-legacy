@@ -56,10 +56,11 @@ TEST_F(FrecencyPredictorTest, RecordAndRankSimple) {
   predictor_->Train(4u, kCondition);
   predictor_->Train(6u, kCondition);
 
-  EXPECT_THAT(
-      predictor_->Rank(kCondition),
-      UnorderedElementsAre(Pair(2u, FloatEq(0.125f)), Pair(4u, FloatEq(0.25f)),
-                           Pair(6u, FloatEq(0.5f))));
+  const float total = 0.5f + 0.25f + 0.125f;
+  EXPECT_THAT(predictor_->Rank(kCondition),
+              UnorderedElementsAre(Pair(2u, FloatEq(0.125f / total)),
+                                   Pair(4u, FloatEq(0.25f / total)),
+                                   Pair(6u, FloatEq(0.5f / total))));
 }
 
 TEST_F(FrecencyPredictorTest, RecordAndRankComplex) {
@@ -70,11 +71,12 @@ TEST_F(FrecencyPredictorTest, RecordAndRankComplex) {
   predictor_->Train(2u, kCondition);
 
   // Ranks should be deterministic.
+  const float total = 0.53125f + 0.3125f + 0.125f;
   for (int i = 0; i < 3; ++i) {
     EXPECT_THAT(predictor_->Rank(kCondition),
-                UnorderedElementsAre(Pair(2u, FloatEq(0.53125f)),
-                                     Pair(4u, FloatEq(0.3125f)),
-                                     Pair(6u, FloatEq(0.125f))));
+                UnorderedElementsAre(Pair(2u, FloatEq(0.53125f / total)),
+                                     Pair(4u, FloatEq(0.3125f / total)),
+                                     Pair(6u, FloatEq(0.125f / total))));
   }
 }
 

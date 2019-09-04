@@ -494,7 +494,7 @@ void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,
   const std::string policies_hash = GetPoliciesHash(GetCurrentJSONPolicies());
   if (policies_hash != update_notification_policies_hash_) {
     update_notification_policies_hash_ = policies_hash;
-    update_notification_time_ = base::Time::Now();
+    update_notification_time_ = base::TimeTicks::Now();
     compliance_since_update_timing_reported_ = false;
   }
 
@@ -574,12 +574,13 @@ void ArcPolicyBridge::UpdateComplianceReportMetrics(
   if (!is_arc_plus_plus_report_successful || reported_policies_hash.empty())
     return;
 
-  const base::Time now = base::Time::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   ArcSessionManager* const session_manager = ArcSessionManager::Get();
 
   if (reported_policies_hash == initial_policies_hash_ &&
       !first_compliance_timing_reported_) {
-    const base::Time sign_in_start_time = session_manager->sign_in_start_time();
+    const base::TimeTicks sign_in_start_time =
+        session_manager->sign_in_start_time();
     if (!sign_in_start_time.is_null()) {
       UpdateFirstComplianceSinceSignInTiming(now - sign_in_start_time);
     } else {

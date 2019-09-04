@@ -1083,8 +1083,8 @@ void ServiceWorkerGlobalScope::RespondToAbortPaymentEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(abort_payment_result_callbacks_.Contains(event_id));
-  payments::mojom::blink::PaymentHandlerResponseCallbackPtr result_callback =
-      abort_payment_result_callbacks_.Take(event_id);
+  mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>
+      result_callback = abort_payment_result_callbacks_.Take(event_id);
   result_callback->OnResponseForAbortPayment(payment_aborted);
 }
 
@@ -1113,8 +1113,8 @@ void ServiceWorkerGlobalScope::RespondToCanMakePaymentEvent(
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(can_make_payment_result_callbacks_.Contains(event_id));
-  payments::mojom::blink::PaymentHandlerResponseCallbackPtr result_callback =
-      can_make_payment_result_callbacks_.Take(event_id);
+  mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>
+      result_callback = can_make_payment_result_callbacks_.Take(event_id);
   result_callback->OnResponseForCanMakePayment(can_make_payment);
 }
 
@@ -1143,8 +1143,8 @@ void ServiceWorkerGlobalScope::RespondToPaymentRequestEvent(
                           TRACE_ID_LOCAL(payment_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(payment_response_callbacks_.Contains(payment_event_id));
-  payments::mojom::blink::PaymentHandlerResponseCallbackPtr response_callback =
-      payment_response_callbacks_.Take(payment_event_id);
+  mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>
+      response_callback = payment_response_callbacks_.Take(payment_event_id);
   response_callback->OnResponseForPaymentRequest(std::move(response));
 }
 
@@ -1801,13 +1801,17 @@ void ServiceWorkerGlobalScope::DispatchPeriodicSyncEvent(
 }
 
 void ServiceWorkerGlobalScope::DispatchAbortPaymentEvent(
-    payments::mojom::blink::PaymentHandlerResponseCallbackPtr response_callback,
+    mojo::PendingRemote<payments::mojom::blink::PaymentHandlerResponseCallback>
+        response_callback,
     DispatchAbortPaymentEventCallback callback) {
   DCHECK(IsContextThread());
   int event_id = timeout_timer_->StartEvent(
       CreateAbortCallback(&abort_payment_event_callbacks_));
   abort_payment_event_callbacks_.Set(event_id, std::move(callback));
-  abort_payment_result_callbacks_.Set(event_id, std::move(response_callback));
+  abort_payment_result_callbacks_.Set(
+      event_id,
+      mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>(
+          std::move(response_callback)));
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerGlobalScope::DispatchAbortPaymentEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
@@ -1830,14 +1834,17 @@ void ServiceWorkerGlobalScope::DispatchAbortPaymentEvent(
 
 void ServiceWorkerGlobalScope::DispatchCanMakePaymentEvent(
     payments::mojom::blink::CanMakePaymentEventDataPtr event_data,
-    payments::mojom::blink::PaymentHandlerResponseCallbackPtr response_callback,
+    mojo::PendingRemote<payments::mojom::blink::PaymentHandlerResponseCallback>
+        response_callback,
     DispatchCanMakePaymentEventCallback callback) {
   DCHECK(IsContextThread());
   int event_id = timeout_timer_->StartEvent(
       CreateAbortCallback(&can_make_payment_event_callbacks_));
   can_make_payment_event_callbacks_.Set(event_id, std::move(callback));
-  can_make_payment_result_callbacks_.Set(event_id,
-                                         std::move(response_callback));
+  can_make_payment_result_callbacks_.Set(
+      event_id,
+      mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>(
+          std::move(response_callback)));
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerGlobalScope::DispatchCanMakePaymentEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
@@ -1862,13 +1869,17 @@ void ServiceWorkerGlobalScope::DispatchCanMakePaymentEvent(
 
 void ServiceWorkerGlobalScope::DispatchPaymentRequestEvent(
     payments::mojom::blink::PaymentRequestEventDataPtr event_data,
-    payments::mojom::blink::PaymentHandlerResponseCallbackPtr response_callback,
+    mojo::PendingRemote<payments::mojom::blink::PaymentHandlerResponseCallback>
+        response_callback,
     DispatchPaymentRequestEventCallback callback) {
   DCHECK(IsContextThread());
   int event_id = timeout_timer_->StartEvent(
       CreateAbortCallback(&payment_request_event_callbacks_));
   payment_request_event_callbacks_.Set(event_id, std::move(callback));
-  payment_response_callbacks_.Set(event_id, std::move(response_callback));
+  payment_response_callbacks_.Set(
+      event_id,
+      mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>(
+          std::move(response_callback)));
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerGlobalScope::DispatchPaymentRequestEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,

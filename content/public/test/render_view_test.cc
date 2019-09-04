@@ -39,6 +39,7 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -426,13 +427,14 @@ void RenderViewTest::SetUp() {
       mojo::MakeRequest(
           &view_params->main_frame_interface_bundle->interface_provider));
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo info;
-  mojo::MakeRequest(&info);
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker;
+  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
   view_params->main_frame_interface_bundle->document_interface_broker_content =
-      std::move(info);
-  mojo::MakeRequest(&info);
+      std::move(document_interface_broker);
+  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
   view_params->main_frame_interface_bundle->document_interface_broker_blink =
-      std::move(info);
+      std::move(document_interface_broker);
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   // Ignoring the returned PendingReceiver because it is not bound to anything

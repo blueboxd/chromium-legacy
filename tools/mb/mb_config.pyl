@@ -77,6 +77,7 @@
     'chromium.android.fyi': {
       'Memory Infra Tester': 'android_release_thumb_bot',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
+      'android-bfcache-rel': 'android_release_bot_minimal_symbols',
     },
 
     'chromium.chromedriver': {

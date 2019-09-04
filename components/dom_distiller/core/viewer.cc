@@ -250,17 +250,17 @@ const std::string GetJavaScript() {
 
 std::unique_ptr<ViewerHandle> CreateViewRequest(
     DomDistillerServiceInterface* dom_distiller_service,
-    const std::string& path,
+    const GURL& url,
     ViewRequestDelegate* view_request_delegate,
     const gfx::Size& render_view_size) {
-  std::string entry_id =
-      url_utils::GetValueForKeyInUrlPathQuery(path, kEntryIdKey);
+  if (!url_utils::IsDistilledPage(url)) {
+    return nullptr;
+  }
+  std::string entry_id = url_utils::GetValueForKeyInUrl(url, kEntryIdKey);
   bool has_valid_entry_id = !entry_id.empty();
   entry_id = base::ToUpperASCII(entry_id);
 
-  std::string requested_url_str =
-      url_utils::GetValueForKeyInUrlPathQuery(path, kUrlKey);
-  GURL requested_url(requested_url_str);
+  GURL requested_url(url_utils::GetOriginalUrlFromDistillerUrl(url));
   bool has_valid_url = url_utils::IsUrlDistillable(requested_url);
 
   if (has_valid_entry_id && has_valid_url) {

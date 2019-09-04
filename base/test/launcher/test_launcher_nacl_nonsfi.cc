@@ -10,13 +10,14 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_switches.h"
@@ -144,9 +145,9 @@ int TestLauncherNonSfiMain(const std::string& test_binary) {
 
   TestTimeouts::Initialize();
 
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
 #if defined(OS_POSIX)
-  FileDescriptorWatcher file_descriptor_watcher(message_loop.task_runner());
+  FileDescriptorWatcher file_descriptor_watcher(executor.task_runner());
 #endif
 
   NonSfiUnitTestPlatformDelegate platform_delegate;

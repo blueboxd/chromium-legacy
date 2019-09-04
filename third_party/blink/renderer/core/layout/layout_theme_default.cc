@@ -73,8 +73,12 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
   constexpr Color kDefaultMenuColor(0xfff7f7f7);
 
   if (css_value_id == CSSValueID::kButtonface) {
-    if (UseMockTheme())
-      return Color(0xc0, 0xc0, 0xc0);
+    if (UseMockTheme()) {
+      if (color_scheme == WebColorScheme::kLight)
+        return Color(0xc0, 0xc0, 0xc0);
+      else
+        return Color(0x80, 0x80, 0x80);
+    }
     return kDefaultButtonGrayColor;
   }
   if (css_value_id == CSSValueID::kMenu)

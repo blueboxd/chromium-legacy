@@ -70,39 +70,39 @@ class PrefetchBrowserTest
   DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTest);
 };
 
-class PrefetchBrowserTestRedirectMode
+class PrefetchBrowserTestPrivacyChanges
     : public PrefetchBrowserTestBase,
       public testing::WithParamInterface<bool> {
  public:
-  PrefetchBrowserTestRedirectMode()
-      : redirect_mode_is_error_(GetParam()),
+  PrefetchBrowserTestPrivacyChanges()
+      : privacy_changes_enabled_(GetParam()),
         cross_origin_server_(std::make_unique<net::EmbeddedTestServer>(
             net::EmbeddedTestServer::TYPE_HTTPS)) {}
-  ~PrefetchBrowserTestRedirectMode() override = default;
+  ~PrefetchBrowserTestPrivacyChanges() override = default;
 
   void SetUp() override {
     std::vector<base::Feature> enable_features;
     std::vector<base::Feature> disabled_features;
-    if (redirect_mode_is_error_) {
-      enable_features.push_back(blink::features::kPrefetchRedirectError);
+    if (privacy_changes_enabled_) {
+      enable_features.push_back(blink::features::kPrefetchPrivacyChanges);
     } else {
-      disabled_features.push_back(blink::features::kPrefetchRedirectError);
+      disabled_features.push_back(blink::features::kPrefetchPrivacyChanges);
     }
     feature_list_.InitWithFeatures(enable_features, disabled_features);
     PrefetchBrowserTestBase::SetUp();
   }
 
  protected:
-  const bool redirect_mode_is_error_;
+  const bool privacy_changes_enabled_;
   std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestRedirectMode);
+  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestPrivacyChanges);
 };
 
-IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestPrivacyChanges, RedirectNotFollowed) {
   const char* prefetch_path = "/prefetch.html";
   const char* redirect_path = "/redirect.html";
   const char* destination_path = "/destination.html";
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
   EXPECT_EQ(1, main_page_counter->GetRequestCount());
 
   NavigateToURLAndWaitTitle(destination_url, "Prefetch Target");
-  EXPECT_EQ(redirect_mode_is_error_ ? 1 : 2,
+  EXPECT_EQ(privacy_changes_enabled_ ? 1 : 2,
             destination_counter->GetRequestCount());
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
@@ -832,8 +832,8 @@ INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
                          PrefetchBrowserTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
 
-INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTestRedirectMode,
-                         PrefetchBrowserTestRedirectMode,
+INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTestPrivacyChanges,
+                         PrefetchBrowserTestPrivacyChanges,
                          testing::Values(false, true));
 
 }  // namespace content

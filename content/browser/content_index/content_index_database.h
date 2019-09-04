@@ -127,12 +127,14 @@ class CONTENT_EXPORT ContentIndexDatabase {
 
   // GetDescriptions Callbacks.
   void DidGetDescriptions(
+      int64_t service_worker_registration_id,
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
       const std::vector<std::string>& data,
       blink::ServiceWorkerStatusCode status);
 
   // GetIcons Callbacks.
-  void DidGetSerializedIcons(ContentIndexContext::GetIconsCallback callback,
+  void DidGetSerializedIcons(int64_t service_worker_registration_id,
+                             ContentIndexContext::GetIconsCallback callback,
                              const std::vector<std::string>& data,
                              blink::ServiceWorkerStatusCode status);
   void DidDeserializeIcons(ContentIndexContext::GetIconsCallback callback,
@@ -166,6 +168,10 @@ class CONTENT_EXPORT ContentIndexDatabase {
       blink::ServiceWorkerStatusCode service_worker_status);
   void DidDispatchEvent(const url::Origin& origin,
                         blink::ServiceWorkerStatusCode service_worker_status);
+
+  // Clears all the content index related data in a service worker.
+  void ClearServiceWorkerDataOnCorruption(
+      int64_t service_worker_registration_id);
 
   // Callbacks on the UI thread to notify |provider_| of updates.
   void NotifyProviderContentAdded(std::vector<ContentIndexEntry> entries);

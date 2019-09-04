@@ -864,7 +864,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, OneMetricReportedOnStartup) {
+// TODO(https://crbug.com/1000455) Flaky on CrOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_OneMetricReportedOnStartup DISABLED_OneMetricReportedOnStartup
+#else
+#define MAYBE_OneMetricReportedOnStartup OneMetricReportedOnStartup
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       MAYBE_OneMetricReportedOnStartup) {
   // Set different data so that we get a full update.
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",

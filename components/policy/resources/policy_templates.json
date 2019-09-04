@@ -17263,7 +17263,7 @@
       'owners': ['drubery@chromium.org', 'chrome-safebrowsing-team@chromium.org'],
       'schema': {
         'type': 'integer',
-        'enum': [0, 1, 2],
+        'enum': [0, 1, 2, 3, 4],
       },
       'items': [
         {
@@ -17280,7 +17280,17 @@
           'name': 'SendDownloads',
           'value': 2,
           'caption': '''Send user downloads for scanning'''
-        }
+        },
+        {
+          'name': 'SendUploads',
+          'value': 3,
+          'caption': '''Send user uploads for scanning'''
+        },
+        {
+          'name': 'SendUploadsAndDownloads',
+          'value': 4,
+          'caption': '''Send user uploads and downloads for scanning'''
+        },
       ],
       'supported_on': ['chrome.*:78-', 'chrome_os:78-'],
       'future': True,
@@ -17296,6 +17306,10 @@
       If set to 'Forbids the scanning of files.', users will be forbidden from scanning their downloads. This differs from the default, since certain users (e.g. Advanced Protection users) are able to send their downloads for scanning. This setting will prevent these users from scanning.
 
       If set to 'Send user downloads for scanning', users downloads will be sent over the network to Safe Browsing for malware scanning.
+
+      If set to 'Send user uploads for scanning', users uploads will be sent over the network to Safe Browsing for malware scanning.
+
+      If set to 'Send user uploads and downloads for scanning', behaves according to the rules described under 'Send user uploads for scanning' and 'Send user downloads for scanning'.
 
       See the <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME">DelayDeliveryUntilVerdict</ph> and <ph name="UNSAFE_EVENTS_REPORTING_ENABLED">UnsafeEventsReportingEnabled</ph> policies for details of how the results of scanning are displayed to the user and admin.'''
     },
@@ -17588,6 +17602,30 @@
       'desc': '''If this policy is enabled or left unset, then Renderer Code Integrity is enabled. This should only be disabled if compatibility issues are encountered with third party software that must run inside Chrome's renderer processes.
 
       Disabling this policy has a detrimental effect on Chrome's security and stability as unknown and potentially hostile code will be allowed to load inside Chrome's renderer processes. See https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies for more info.''',
+    },
+    {
+      # TODO(rogerta): Use a custom policy handler to show in chrome://policy that this policy depends on the state of SendFilesForMalwareCheck.
+      'name': 'DomainsToCheckForMalwareOfUploadedContent',
+      'owners': ['rogerta@chromium.org', 'drubery@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value': ['my-awesome-domain.com', 'my-auxiliary-domain.com'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 600,
+      'supported_on': ['chrome.*:78-'],
+      'future': True,
+      'caption': '''List of domains for which uploaded content needs to be checked for malware''',
+      'tags': [],
+      'desc': '''List of domains for which uploaded content needs to be checked for malware.  This policy is used only if <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph> is set to a value allowing or enforcing malware checks for uploads.
+
+      If this policy is not set or set to an empty list of domains, no uploaded content is checked for malware.
+      '''
     },
   ],
 
@@ -18387,6 +18425,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 599,
+  'highest_id_currently_used': 600,
   'highest_atomic_group_id_currently_used': 37
 }

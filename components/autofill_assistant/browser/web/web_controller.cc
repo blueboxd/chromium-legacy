@@ -229,8 +229,10 @@ void AppendWaitForDocumentReadyStateFunction(std::string* out) {
 template <typename T>
 void OnWaitForDocumentReadyState(
     base::OnceCallback<void(const ClientStatus&, DocumentReadyState)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<T> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   DVLOG_IF(1, !status.ok())
       << __func__ << " Failed to get document ready state.";
   int ready_state;
@@ -340,8 +342,10 @@ void WebController::OnScrollIntoView(
     std::unique_ptr<ElementFinder::Result> target_element,
     base::OnceCallback<void(const ClientStatus&)> callback,
     ClickAction::ClickType click_type,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to scroll the element.";
     std::move(callback).Run(status);
@@ -378,8 +382,10 @@ void WebController::OnScrollIntoView(
 
 void WebController::OnClickJS(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to click (javascript) the element.";
   }
@@ -436,11 +442,13 @@ void WebController::OnDispatchPressMouseEvent(
     base::OnceCallback<void(const ClientStatus&)> callback,
     int x,
     int y,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
   if (!result) {
     DVLOG(1) << __func__
              << " Failed to dispatch mouse left button pressed event.";
-    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
+    std::move(callback).Run(
+        UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
 
@@ -458,16 +466,25 @@ void WebController::OnDispatchPressMouseEvent(
 
 void WebController::OnDispatchReleaseMouseEvent(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<input::DispatchMouseEventResult> result) {
+  if (!result) {
+    DVLOG(1) << __func__ << " Failed to dispatch release mouse event.";
+    std::move(callback).Run(
+        UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
+    return;
+  }
   std::move(callback).Run(OkClientStatus());
 }
 
 void WebController::OnDispatchTouchEventStart(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<input::DispatchTouchEventResult> result) {
   if (!result) {
     DVLOG(1) << __func__ << " Failed to dispatch touch start event.";
-    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
+    std::move(callback).Run(
+        UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
 
@@ -484,8 +501,14 @@ void WebController::OnDispatchTouchEventStart(
 
 void WebController::OnDispatchTouchEventEnd(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<input::DispatchTouchEventResult> result) {
-  DCHECK(result);
+  if (!result) {
+    DVLOG(1) << __func__ << " Failed to dispatch touch end event.";
+    std::move(callback).Run(
+        UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
+    return;
+  }
   std::move(callback).Run(OkClientStatus());
 }
 
@@ -522,9 +545,10 @@ void WebController::WaitForWindowHeightChange(
 
 void WebController::OnWaitForWindowHeightChange(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::EvaluateResult> result) {
   std::move(callback).Run(
-      CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__));
 }
 
 void WebController::GetDocumentReadyState(
@@ -672,8 +696,10 @@ void WebController::OnWaitDocumentToBecomeInteractiveForFocusElement(
 
 void WebController::OnFocusElement(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   DVLOG_IF(1, !status.ok()) << __func__ << " Failed to focus on element.";
   std::move(callback).Run(status);
 }
@@ -728,8 +754,7 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
     const autofill::FormFieldData& form_field) {
   if (form_data.fields.empty()) {
     DVLOG(1) << __func__ << " Failed to get form data to fill form.";
-    std::move(callback).Run(
-        UnexpectedErrorStatus(__FILE__, __LINE__));  // unexpected
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -737,8 +762,7 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
       ContentAutofillDriver::GetForRenderFrameHost(container_frame_host);
   if (!driver) {
     DVLOG(1) << __func__ << " Failed to get the autofill driver.";
-    std::move(callback).Run(
-        UnexpectedErrorStatus(__FILE__, __LINE__));  // unexpected
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
     return;
   }
 
@@ -812,8 +836,10 @@ void WebController::OnFindElementForSelectOption(
 
 void WebController::OnSelectOption(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to select option.";
     std::move(callback).Run(status);
@@ -821,7 +847,8 @@ void WebController::OnSelectOption(
   }
   bool found;
   if (!SafeGetBool(result->GetResult(), &found)) {
-    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
+    std::move(callback).Run(
+        UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
   if (!found) {
@@ -870,8 +897,10 @@ void WebController::OnFindElementForHighlightElement(
 
 void WebController::OnHighlightElement(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   DVLOG_IF(1, !status.ok()) << __func__ << " Failed to highlight element.";
   std::move(callback).Run(status);
 }
@@ -921,9 +950,11 @@ void WebController::OnFindElementForGetFieldValue(
 
 void WebController::OnGetValueAttribute(
     base::OnceCallback<void(bool, const std::string&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::string value;
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   // Read the result returned from Javascript code.
   DVLOG_IF(1, !status.ok())
       << __func__ << "Failed to get attribute value: " << status;
@@ -1090,9 +1121,10 @@ void WebController::OnFindElementForSetFieldValue(
 
 void WebController::OnSetValueAttribute(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::move(callback).Run(
-      CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__));
 }
 
 void WebController::SetAttribute(
@@ -1149,9 +1181,10 @@ void WebController::OnFindElementForSetAttribute(
 
 void WebController::OnSetAttribute(
     base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   std::move(callback).Run(
-      CheckJavaScriptResult(result.get(), __FILE__, __LINE__));
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__));
 }
 
 void WebController::SendKeyboardInput(
@@ -1219,8 +1252,10 @@ void WebController::GetVisualViewport(
 
 void WebController::OnGetVisualViewport(
     base::OnceCallback<void(bool, const RectF&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::EvaluateResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok() || !result->GetResult()->HasValue() ||
       !result->GetResult()->GetValue()->is_list() ||
       result->GetResult()->GetValue()->GetList().size() != 4u) {
@@ -1282,8 +1317,10 @@ void WebController::OnFindElementForPosition(
 
 void WebController::OnGetElementPositionResult(
     base::OnceCallback<void(bool, const RectF&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok() || !result->GetResult()->HasValue() ||
       !result->GetResult()->GetValue()->is_list() ||
       result->GetResult()->GetValue()->GetList().size() != 4u) {
@@ -1327,8 +1364,10 @@ void WebController::OnFindElementForGetOuterHtml(
 
 void WebController::OnGetOuterHtml(
     base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(2) << __func__ << " Failed to get HTML content for GetOuterHtml";
     std::move(callback).Run(status, "");
@@ -1358,8 +1397,10 @@ void WebController::OnWaitForDocumentToBecomeInteractive(
     int remaining_rounds,
     std::string object_id,
     base::OnceCallback<void(bool)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
-  ClientStatus status = CheckJavaScriptResult(result.get(), __FILE__, __LINE__);
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok() || remaining_rounds <= 0) {
     DVLOG(1) << __func__
              << " Failed to wait for the document to become interactive with "

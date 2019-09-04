@@ -500,21 +500,30 @@ void ServiceWorkerStorage::UpdateToActiveState(
 }
 
 void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
-    ServiceWorkerRegistration* registration) {
+    ServiceWorkerRegistration* registration,
+    StatusCallback callback) {
   DCHECK(registration);
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
-  if (IsDisabled())
+  if (IsDisabled()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
+  }
 
-  database_task_runner_->PostTask(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      database_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ServiceWorkerDatabase::UpdateLastCheckTime,
+                     base::Unretained(database_.get()), registration->id(),
+                     registration->scope().GetOrigin(),
+                     registration->last_update_check()),
       base::BindOnce(
-          base::IgnoreResult(&ServiceWorkerDatabase::UpdateLastCheckTime),
-          base::Unretained(database_.get()), registration->id(),
-          registration->scope().GetOrigin(),
-          registration->last_update_check()));
+          [](StatusCallback callback, ServiceWorkerDatabase::Status status) {
+            std::move(callback).Run(DatabaseStatusToStatusCode(status));
+          },
+          std::move(callback)));
 }
 
 void ServiceWorkerStorage::UpdateNavigationPreloadEnabled(
@@ -1185,6 +1194,11 @@ void ServiceWorkerStorage::LazyInitializeForTest() {
   loop.Run();
 }
 
+void ServiceWorkerStorage::SetPurgingCompleteCallbackForTest(
+    base::OnceClosure callback) {
+  purging_complete_callback_for_test_ = std::move(callback);
+}
+
 void ServiceWorkerStorage::LazyInitialize(base::OnceClosure callback) {
   DCHECK(state_ == STORAGE_STATE_UNINITIALIZED ||
          state_ == STORAGE_STATE_INITIALIZING)
@@ -1766,8 +1780,13 @@ void ServiceWorkerStorage::StartPurgingResources(
 }
 
 void ServiceWorkerStorage::ContinuePurgingResources() {
-  if (purgeable_resource_ids_.empty() || is_purge_pending_)
+  if (is_purge_pending_)
     return;
+  if (purgeable_resource_ids_.empty()) {
+    if (purging_complete_callback_for_test_)
+      std::move(purging_complete_callback_for_test_).Run();
+    return;
+  }
 
   // Do one at a time until we're done, use RunSoon to avoid recursion when
   // DoomEntry returns immediately.

@@ -1401,11 +1401,21 @@ const CSSValue* Color::CSSValueFromComputedStyleInternal(
 }
 
 void Color::ApplyInitial(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInitial));
+    return;
+  }
   blink::Color color = ComputedStyleInitialValues::InitialColor();
   state.Style()->SetColor(color);
 }
 
 void Color::ApplyInherit(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInherit));
+    return;
+  }
   blink::Color color = state.ParentStyle()->GetColor();
   if (state.ParentStyle()->IsColorInternalText())
     state.Style()->SetIsColorInternalText(true);
@@ -1414,6 +1424,10 @@ void Color::ApplyInherit(StyleResolverState& state) const {
 }
 
 void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedColorValue(&value);
+    return;
+  }
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
@@ -2821,8 +2835,32 @@ const CSSValue* InternalEffectiveZoom::ParseSingleValue(
   return css_property_parser_helpers::ConsumeNumber(range, value_range);
 }
 
+void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedVisitedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInitial));
+    return;
+  }
+  auto color = ComputedStyleInitialValues::InitialColor();
+  state.Style()->SetInternalVisitedColor(color);
+}
+
+void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedVisitedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInherit));
+    return;
+  }
+  auto color = state.ParentStyle()->GetColor();
+  state.Style()->SetInternalVisitedColor(color);
+}
+
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedVisitedColorValue(&value);
+    return;
+  }
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {

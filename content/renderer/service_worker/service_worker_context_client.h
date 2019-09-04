@@ -128,12 +128,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy,
       scoped_refptr<base::SequencedTaskRunner> worker_task_runner) override;
-  void WillEvaluateScript() override;
+  void WillEvaluateScript(v8::Local<v8::Context> v8_context) override;
   void DidEvaluateScript(bool success) override;
   void WillInitializeWorkerContext() override;
-  void DidInitializeWorkerContext(
-      blink::WebServiceWorkerContextProxy* context_proxy,
-      v8::Local<v8::Context> v8_context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void WorkerContextDestroyed() override;
   void CountFeature(blink::mojom::WebFeature feature) override;

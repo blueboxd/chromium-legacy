@@ -11,20 +11,10 @@
 #include "base/android/library_loader/library_prefetcher.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/base_jni_headers/LibraryPrefetcher_jni.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 
 namespace base {
 namespace android {
-
-namespace {
-
-// Whether to pin code in memory. Pinning happens in Java, but is controlled
-// from here, to obtain the range.
-const Feature kPinOrderedCodeInMemory{"PinOrderedCodeInMemory",
-                                      FEATURE_ENABLED_BY_DEFAULT};
-
-}  // namespace
 
 static void JNI_LibraryPrefetcher_ForkAndPrefetchNativeLibrary(JNIEnv* env) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
@@ -48,28 +38,6 @@ static void JNI_LibraryPrefetcher_PeriodicallyCollectResidency(JNIEnv* env) {
 #else
   LOG(WARNING) << "Collecting residency is not supported.";
 #endif
-}
-
-static ScopedJavaLocalRef<jobject> JNI_LibraryPrefetcher_GetOrderedCodeInfo(
-    JNIEnv* env) {
-#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  if (!FeatureList::IsEnabled(kPinOrderedCodeInMemory))
-    return {};
-
-  std::string filename;
-  size_t start_offset, size;
-  bool ok = NativeLibraryPrefetcher::GetOrderedCodeInfo(&filename,
-                                                        &start_offset, &size);
-  if (!ok)
-    return {};
-
-  auto java_filename = ConvertUTF8ToJavaString(env, filename);
-  return Java_OrderedCodeInfo_Constructor(env, java_filename,
-                                          static_cast<jlong>(start_offset),
-                                          static_cast<jlong>(size));
-#else
-  return {};
-#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)
 }
 
 }  // namespace android

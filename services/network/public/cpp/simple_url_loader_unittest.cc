@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -587,10 +588,11 @@ class SimpleURLLoaderTestBase {
     network_service_ptr->SetClient(std::move(network_service_client_ptr),
                                    network::mojom::NetworkServiceParams::New());
 
-    network::mojom::NetworkContextClientPtr network_context_client_ptr;
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
     network_context_client_ = std::make_unique<TestNetworkContextClient>(
-        mojo::MakeRequest(&network_context_client_ptr));
-    network_context_->SetClient(std::move(network_context_client_ptr));
+        network_context_client_remote.InitWithNewPipeAndPassReceiver());
+    network_context_->SetClient(std::move(network_context_client_remote));
 
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();

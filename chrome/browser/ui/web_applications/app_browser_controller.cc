@@ -27,6 +27,8 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -232,6 +234,19 @@ void AppBrowserController::OnTabInserted(content::WebContents* contents) {
 }
 
 void AppBrowserController::OnTabRemoved(content::WebContents* contents) {}
+
+gfx::ImageSkia AppBrowserController::GetFallbackAppIcon() const {
+  gfx::ImageSkia page_icon = browser()->GetCurrentPageIcon().AsImageSkia();
+  if (!page_icon.isNull())
+    return page_icon;
+
+  // The icon may be loading still. Return a transparent icon rather
+  // than using a placeholder to avoid flickering.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
+  bitmap.eraseColor(SK_ColorTRANSPARENT);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
 
 void AppBrowserController::SetInitialURL(const GURL& initial_url) {
   DCHECK(initial_url_.is_empty());

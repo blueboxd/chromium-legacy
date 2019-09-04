@@ -109,6 +109,11 @@ void TtsPlatformImplAndroid::GetVoices(std::vector<VoiceData>* out_voices) {
   }
 }
 
+void TtsPlatformImplAndroid::RequestTtsStop(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj) {
+  TtsController::GetInstance()->Stop();
+}
+
 void TtsPlatformImplAndroid::VoicesChanged(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
   TtsController::GetInstance()->VoicesChanged();

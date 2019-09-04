@@ -233,40 +233,42 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidRTCCertificate) {
 using CryptoKeyPair = std::pair<CryptoKey*, CryptoKey*>;
 
 template <typename T>
-T ConvertCryptoResult(const ScriptValue&);
+T ConvertCryptoResult(v8::Isolate*, const ScriptValue&);
 template <>
-CryptoKey* ConvertCryptoResult<CryptoKey*>(const ScriptValue& value) {
-  return V8CryptoKey::ToImplWithTypeCheck(value.GetIsolate(), value.V8Value());
+CryptoKey* ConvertCryptoResult<CryptoKey*>(v8::Isolate* isolate,
+                                           const ScriptValue& value) {
+  return V8CryptoKey::ToImplWithTypeCheck(isolate, value.V8Value());
 }
 template <>
-CryptoKeyPair ConvertCryptoResult<CryptoKeyPair>(const ScriptValue& value) {
+CryptoKeyPair ConvertCryptoResult<CryptoKeyPair>(v8::Isolate* isolate,
+                                                 const ScriptValue& value) {
   NonThrowableExceptionState exception_state;
-  Dictionary dictionary(value.GetIsolate(), value.V8Value(), exception_state);
+  Dictionary dictionary(isolate, value.V8Value(), exception_state);
   v8::Local<v8::Value> private_key, public_key;
   EXPECT_TRUE(dictionary.Get("publicKey", public_key));
   EXPECT_TRUE(dictionary.Get("privateKey", private_key));
-  return std::make_pair(
-      V8CryptoKey::ToImplWithTypeCheck(value.GetIsolate(), public_key),
-      V8CryptoKey::ToImplWithTypeCheck(value.GetIsolate(), private_key));
+  return std::make_pair(V8CryptoKey::ToImplWithTypeCheck(isolate, public_key),
+                        V8CryptoKey::ToImplWithTypeCheck(isolate, private_key));
 }
 template <>
-DOMException* ConvertCryptoResult<DOMException*>(const ScriptValue& value) {
-  return V8DOMException::ToImplWithTypeCheck(value.GetIsolate(),
-                                             value.V8Value());
+DOMException* ConvertCryptoResult<DOMException*>(v8::Isolate* isolate,
+                                                 const ScriptValue& value) {
+  return V8DOMException::ToImplWithTypeCheck(isolate, value.V8Value());
 }
 template <>
 WebVector<unsigned char> ConvertCryptoResult<WebVector<unsigned char>>(
+    v8::Isolate* isolate,
     const ScriptValue& value) {
   WebVector<unsigned char> vector;
-  if (DOMArrayBuffer* buffer = V8ArrayBuffer::ToImplWithTypeCheck(
-          value.GetIsolate(), value.V8Value())) {
+  if (DOMArrayBuffer* buffer =
+          V8ArrayBuffer::ToImplWithTypeCheck(isolate, value.V8Value())) {
     vector.Assign(reinterpret_cast<const unsigned char*>(buffer->Data()),
                   buffer->ByteLength());
   }
   return vector;
 }
 template <>
-bool ConvertCryptoResult<bool>(const ScriptValue& value) {
+bool ConvertCryptoResult<bool>(v8::Isolate*, const ScriptValue& value) {
   return value.V8Value()->IsTrue();
 }
 
@@ -279,7 +281,8 @@ class WebCryptoResultAdapter : public ScriptFunction {
 
  private:
   ScriptValue Call(ScriptValue value) final {
-    function_.Run(ConvertCryptoResult<T>(value));
+    function_.Run(
+        ConvertCryptoResult<T>(GetScriptState()->GetIsolate(), value));
     return ScriptValue::From(GetScriptState(), ToV8UndefinedGenerator());
   }
 

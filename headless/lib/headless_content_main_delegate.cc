@@ -156,6 +156,10 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 
+  // When running headless there is no need to suppress input until content
+  // is ready for display (because it isn't displayed to users).
+  command_line->AppendSwitch(::switches::kAllowPreCommitInput);
+
   content::Profiling::ProcessStarted();
 
   SetContentClient(&content_client_);

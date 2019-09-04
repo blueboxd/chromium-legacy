@@ -90,7 +90,7 @@ std::unique_ptr<LoginDatabase> CreateLoginDatabaseForProfileStorage(
   base::FilePath login_db_file_path =
       profile_path.Append(kLoginDataForProfileFileName);
   return std::make_unique<LoginDatabase>(login_db_file_path,
-                                         /*is_account_store=*/false);
+                                         IsAccountStore(false));
 }
 
 std::unique_ptr<LoginDatabase> CreateLoginDatabaseForAccountStorage(
@@ -98,7 +98,7 @@ std::unique_ptr<LoginDatabase> CreateLoginDatabaseForAccountStorage(
   base::FilePath login_db_file_path =
       profile_path.Append(kLoginDataForAccountFileName);
   return std::make_unique<LoginDatabase>(login_db_file_path,
-                                         /*is_account_store=*/true);
+                                         IsAccountStore(true));
 }
 
 }  // namespace password_manager

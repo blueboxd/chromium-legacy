@@ -344,11 +344,11 @@ bool RenderViewHostImpl::CreateRenderView(
         mojom::DocumentScopedInterfaceBundle::New();
     main_rfh->BindInterfaceProviderRequest(mojo::MakeRequest(
         &params->main_frame_interface_bundle->interface_provider));
-    main_rfh->BindDocumentInterfaceBrokerRequest(
-        mojo::MakeRequest(&params->main_frame_interface_bundle
-                               ->document_interface_broker_content),
-        mojo::MakeRequest(&params->main_frame_interface_bundle
-                               ->document_interface_broker_blink));
+    main_rfh->BindDocumentInterfaceBrokerReceiver(
+        params->main_frame_interface_bundle->document_interface_broker_content
+            .InitWithNewPipeAndPassReceiver(),
+        params->main_frame_interface_bundle->document_interface_broker_blink
+            .InitWithNewPipeAndPassReceiver());
     main_rfh->BindBrowserInterfaceBrokerReceiver(
         params->main_frame_interface_bundle->browser_interface_broker
             .InitWithNewPipeAndPassReceiver());

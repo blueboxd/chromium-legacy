@@ -55,7 +55,7 @@ gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilitiesInternal(
   capabilities.supported_profiles =
       DXVAVideoDecodeAccelerator::GetSupportedProfiles(gpu_preferences,
                                                        workarounds);
-#elif BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+#elif BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   VideoDecodeAccelerator::SupportedProfiles vda_profiles;
 #if BUILDFLAG(USE_V4L2_CODEC)
   vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();

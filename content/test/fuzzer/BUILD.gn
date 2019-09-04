@@ -257,3 +257,19 @@ fuzzer_test("speech_audio_encoder_fuzzer") {
     "//third_party/flac",
   ]
 }
+
+fuzzer_test("browser_accessibility_fuzzer") {
+  sources = [
+    "browser_accessibility_fuzzer.cc",
+  ]
+  deps = [
+    "//content/app:both_for_content_tests",
+    "//content/browser:browser",
+    "//content/browser:browser",
+    "//content/public/browser:browser_sources",
+    "//content/test:test_support",
+    "//mojo/core/embedder",
+    "//services/network:test_support",
+    "//storage/browser:test_support",
+  ]
+}

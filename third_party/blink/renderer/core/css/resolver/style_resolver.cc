@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/resolver/style_animator.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
@@ -1886,6 +1887,8 @@ void StyleResolver::ApplyMatchedHighPriorityProperties(
     apply_inherited_only = false;
   }
 
+  ApplyCascadedColorValue(state);
+
   // If our font got dirtied, go ahead and update it now.
   UpdateFont(state);
 
@@ -2295,6 +2298,69 @@ void StyleResolver::Trace(blink::Visitor* visitor) {
 
 bool StyleResolver::IsForcedColorsModeEnabled() const {
   return GetDocument().InForcedColorsMode();
+}
+
+void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled())
+    return;
+
+  if (const CSSValue* color_value = state.GetCascadedColorValue()) {
+    state.SetCascadedColorValue(nullptr);
+    const auto* identifier_value = DynamicTo<CSSIdentifierValue>(color_value);
+    if (identifier_value) {
+      switch (identifier_value->GetValueID()) {
+        case CSSValueID::kCurrentcolor:
+          // As per the spec, 'color: currentColor' is treated as 'color:
+          // inherit'
+        case CSSValueID::kInherit:
+          if (state.ParentStyle()->IsColorInternalText())
+            state.Style()->SetIsColorInternalText(true);
+          else
+            state.Style()->SetColor(state.ParentStyle()->GetColor());
+          break;
+        case CSSValueID::kInitial:
+          state.Style()->SetColor(ComputedStyleInitialValues::InitialColor());
+          break;
+        default:
+          identifier_value = nullptr;
+          break;
+      }
+    }
+    if (!identifier_value) {
+      state.Style()->SetColor(
+          StyleBuilderConverter::ConvertColor(state, *color_value));
+    }
+  }
+
+  if (const CSSValue* visited_color_value =
+          state.GetCascadedVisitedColorValue()) {
+    state.SetCascadedVisitedColorValue(nullptr);
+    const auto* identifier_value =
+        DynamicTo<CSSIdentifierValue>(visited_color_value);
+    if (identifier_value) {
+      switch (identifier_value->GetValueID()) {
+        case CSSValueID::kCurrentcolor:
+          // As per the spec, 'color: currentColor' is treated as 'color:
+          // inherit'
+        case CSSValueID::kInherit:
+          state.Style()->SetInternalVisitedColor(
+              state.ParentStyle()->GetColor());
+          break;
+        case CSSValueID::kInitial:
+          state.Style()->SetInternalVisitedColor(
+              ComputedStyleInitialValues::InitialColor());
+          break;
+        default:
+          identifier_value = nullptr;
+          break;
+      }
+    }
+    if (!identifier_value) {
+      state.Style()->SetInternalVisitedColor(
+          StyleBuilderConverter::ConvertColor(state, *visited_color_value,
+                                              true));
+    }
+  }
 }
 
 }  // namespace blink

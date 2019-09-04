@@ -38,6 +38,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
     : public base::RefCountedThreadSafe<WidgetInputHandlerManager>,
       public ui::InputHandlerProxyClient,
       public base::SupportsWeakPtr<WidgetInputHandlerManager> {
+  // Used in UMA metrics reporting. Do not re-order, and rename the metric if
+  // additional states are required.
   enum class InitialInputTiming {
     // Input comes before lifecycle update
     kBeforeLifecycle = 0,
@@ -46,6 +48,15 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
     // Input comes only after commit
     kAfterCommit = 2,
     kMaxValue = kAfterCommit
+  };
+
+  // For use in bitfields to keep track of what, if anything, the rendering
+  // pipeline is currently deferring. Input is suppressed if anything is
+  // being deferred, and we use the combination of states to correctly report
+  // UMA for input that is suppressed.
+  enum class RenderingDeferralBits {
+    kDeferMainFrameUpdates = 1,
+    kDeferCommits = 2
   };
 
  public:
@@ -111,21 +122,21 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void FallbackCursorModeSetCursorVisibility(bool visible);
 
   // Called when the RenderWidget is notified of a navigation. Resets
-  // the input handler to suppress input until a frame is presented, and
-  // resets the UMA recorder for time of first input.
+  // the renderer pipeline deferral status, and resets the UMA recorder for
+  // time of first input.
   void DidNavigate();
 
-  // Called to inform us of a lifecycle update
-  void BeginMainFrame();
+  // Called to inform us when the system starts or stops main frame updates.
+  void OnDeferMainFrameUpdatesChanged(bool);
 
-  // Called to inform us the the compositor has committed a frame.
-  void CompositorDidCommit();
+  // Called to inform us when the system starts or stops deferring commits.
+  void OnDeferCommitsChanged(bool);
 
-  // Allow web tests to have input events processed before a frame is
-  // committed.
-  // TODO(schenney): Fix this somehow, forcing web_tests to wait for
-  // hit test regions like other test infrastructure.
-  void AllowEarlyInputForTesting() { allow_early_input_for_testing_ = true; }
+  // Allow tests, headless etc. to have input events processed before the
+  // compositor is ready to commit frames.
+  // TODO(schenney): Fix this somehow, forcing all tests to wait for
+  // hit test regions.
+  void AllowPreCommitInput() { allow_pre_commit_input_ = true; }
 
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
@@ -203,21 +214,21 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // WebWidget (Popups, Plugins).
   bool uses_input_handler_ = false;
 
-  // State tracking which lifecycle and commit events we have seen.
-  // We suppress all events until the user can see the content based on this
-  // lifecycle state. Events are suppressed when the lifecycle state is
-  // InitialInputTiming::kBeforeLifecycle or InitialInputTiming::kBeforeCommit.
+  // State tracking which parts of the rendering pipeline are currently
+  // deferred. We use this state to suppress all events until the user can see
+  // the content; that is, while rendering stages are being deferred and
+  // this value is zero.
   // Move events are still processed to allow tracking of mouse position.
   // Metrics also report the lifecycle state when the first non-move event is
   // seen.
-  InitialInputTiming current_lifecycle_state_ =
-      InitialInputTiming::kBeforeLifecycle;
+  // This is a bitfield, using the bit values from RenderingDeferralBits.
+  unsigned renderer_deferral_state_ = 0;
 
-  // Allow input suspension to be disabled for tests that do not wait for the
-  // first commit. Over time, these tests should be fixed so that this flag
-  // can be removed. crbug.com/987626
-  // Currently set true for all code, while crbug/994288 is investigated.
-  bool allow_early_input_for_testing_ = true;
+  // Allow input suppression to be disabled for tests and non-browser uses
+  // of chromium that do not wait for the first commit, or that may never
+  // commit. Over time, tests should be fixed so they provide additional
+  // coverage for input suppression: crbug.com/987626
+  bool allow_pre_commit_input_ = false;
 
   // Control of UMA. We emit one UMA metric per navigation telling us
   // whether any non-move input arrived before we starting updating the page or

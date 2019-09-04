@@ -20,9 +20,9 @@
 #include "media/gpu/test/video_player/test_vda_video_decoder.h"
 #include "media/gpu/test/video_player/video.h"
 
-#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/linux/platform_video_frame_pool.h"
-#endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
@@ -163,12 +163,12 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
   LOG_ASSERT(!decoder_) << "Can't create decoder: already created";
 
   if (decoder_client_config_.use_vd) {
-#if defined(OS_CHROMEOS) && (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     decoder_ = ChromeosVideoDecoderFactory::Create(
         base::ThreadTaskRunnerHandle::Get(),
         std::make_unique<PlatformVideoFramePool>(),
         std::make_unique<VideoFrameConverter>());
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   } else {
     // The video decoder client expects decoders to use the VD interface. We
     // can use the TestVDAVideoDecoder wrapper here to test VDA-based video

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -123,7 +124,7 @@ TabModel* GetNormalTabModel() {
       performAction:grey_tap()];
   // Open "Data from Chrome sync".
   id<GREYMatcher> manageSyncScrollViewMatcher =
-      grey_accessibilityID(@"manage_sync_settings_view_controller");
+      grey_accessibilityID(kManageSyncTableViewAccessibilityIdentifier);
   id<GREYMatcher> dataFromChromeSyncMatcher = [self
       cellMatcherWithTitleID:IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE
                 detailTextID:

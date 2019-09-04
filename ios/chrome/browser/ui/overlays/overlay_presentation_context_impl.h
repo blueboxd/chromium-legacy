@@ -82,6 +82,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // Shows the UI for the presented request using the container coordinator.
   void ShowUIForPresentedRequest();
 
+  // Called when the UI for |request_| has finished being presented.
+  void OverlayUIWasPresented();
+
   // Dismisses the UI for the presented request for |reason|.
   void DismissPresentedUI(OverlayDismissalReason reason);
 

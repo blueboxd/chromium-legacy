@@ -1225,6 +1225,7 @@ ServiceWorkerDatabase::DeleteUserDataForAllRegistrationsByKeyPrefix(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUncommittedResourceIds(
     std::set<int64_t>* ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return ReadResourceIds(service_worker_internals::kUncommittedResIdKeyPrefix,
                          ids);
 }
@@ -1232,6 +1233,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUncommittedResourceIds(
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::WriteUncommittedResourceIds(
     const std::set<int64_t>& ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   leveldb::WriteBatch batch;
   Status status = WriteResourceIdsInBatch(
       service_worker_internals::kUncommittedResIdKeyPrefix, ids, &batch);
@@ -1242,12 +1244,14 @@ ServiceWorkerDatabase::WriteUncommittedResourceIds(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetPurgeableResourceIds(
     std::set<int64_t>* ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return ReadResourceIds(service_worker_internals::kPurgeableResIdKeyPrefix,
                          ids);
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ClearPurgeableResourceIds(
     const std::set<int64_t>& ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return STATUS_OK;
@@ -1263,6 +1267,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ClearPurgeableResourceIds(
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::PurgeUncommittedResourceIds(
     const std::set<int64_t>& ids) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return STATUS_OK;
@@ -1400,6 +1405,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
 
 bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
     ServiceWorkerDatabase::Status status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status == STATUS_ERROR_NOT_FOUND)
     return true;
   if (status == STATUS_OK && state_ == DATABASE_STATE_UNINITIALIZED)
@@ -1410,6 +1416,7 @@ bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadNextAvailableId(
     const char* id_key,
     int64_t* next_avail_id) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(id_key);
   DCHECK(next_avail_id);
 
@@ -1435,6 +1442,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationData(
     int64_t registration_id,
     const GURL& origin,
     RegistrationData* registration) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(registration);
 
   const std::string key = CreateRegistrationKey(registration_id, origin);
@@ -1456,6 +1464,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationData(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     const std::string& serialized,
     RegistrationData* out) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(out);
   ServiceWorkerRegistrationData data;
   if (!data.ParseFromString(serialized))
@@ -1550,6 +1559,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
 void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
     const RegistrationData& registration,
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
 
   // The registration id and version id should be bumped before this.
@@ -1605,6 +1615,7 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
     const RegistrationData& registration,
     std::vector<ResourceRecord>* resources) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(resources->empty());
 
   Status status = STATUS_OK;
@@ -1653,6 +1664,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseResourceRecord(
     const std::string& serialized,
     ServiceWorkerDatabase::ResourceRecord* out) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(out);
   ServiceWorkerResourceRecord record;
   if (!record.ParseFromString(serialized))
@@ -1707,6 +1719,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(
     int64_t version_id,
     std::vector<int64_t>* newly_purgeable_resources,
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
 
   Status status = STATUS_OK;
@@ -1830,6 +1843,7 @@ ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::DeleteUserDataForRegistration(
     int64_t registration_id,
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
   Status status = STATUS_OK;
   const std::string prefix = CreateUserDataKeyPrefix(registration_id);
@@ -1857,6 +1871,7 @@ ServiceWorkerDatabase::DeleteUserDataForRegistration(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
     int64_t* db_version) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   std::string value;
   Status status = LevelDBStatusToServiceWorkerDBStatus(
       db_->Get(leveldb::ReadOptions(),
@@ -1889,6 +1904,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
   DCHECK_NE(DATABASE_STATE_DISABLED, state_);
 
@@ -1909,6 +1925,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
 void ServiceWorkerDatabase::BumpNextRegistrationIdIfNeeded(
     int64_t used_id,
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
   if (next_avail_registration_id_ <= used_id) {
     next_avail_registration_id_ = used_id + 1;
@@ -1920,6 +1937,7 @@ void ServiceWorkerDatabase::BumpNextRegistrationIdIfNeeded(
 void ServiceWorkerDatabase::BumpNextResourceIdIfNeeded(
     int64_t used_id,
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
   if (next_avail_resource_id_ <= used_id) {
     next_avail_resource_id_ = used_id + 1;
@@ -1931,6 +1949,7 @@ void ServiceWorkerDatabase::BumpNextResourceIdIfNeeded(
 void ServiceWorkerDatabase::BumpNextVersionIdIfNeeded(
     int64_t used_id,
     leveldb::WriteBatch* batch) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(batch);
   if (next_avail_version_id_ <= used_id) {
     next_avail_version_id_ = used_id + 1;
@@ -1940,11 +1959,13 @@ void ServiceWorkerDatabase::BumpNextVersionIdIfNeeded(
 }
 
 bool ServiceWorkerDatabase::IsOpen() {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return db_ != nullptr;
 }
 
 void ServiceWorkerDatabase::Disable(const base::Location& from_here,
                                     Status status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK) {
     DLOG(ERROR) << "Failed at: " << from_here.ToString()
                 << " with error: " << StatusToString(status);
@@ -1956,6 +1977,7 @@ void ServiceWorkerDatabase::Disable(const base::Location& from_here,
 
 void ServiceWorkerDatabase::HandleOpenResult(const base::Location& from_here,
                                              Status status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountOpenDatabaseResult(status);
@@ -1963,6 +1985,7 @@ void ServiceWorkerDatabase::HandleOpenResult(const base::Location& from_here,
 
 void ServiceWorkerDatabase::HandleReadResult(const base::Location& from_here,
                                              Status status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountReadDatabaseResult(status);
@@ -1970,12 +1993,14 @@ void ServiceWorkerDatabase::HandleReadResult(const base::Location& from_here,
 
 void ServiceWorkerDatabase::HandleWriteResult(const base::Location& from_here,
                                               Status status) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK)
     Disable(from_here, status);
   ServiceWorkerMetrics::CountWriteDatabaseResult(status);
 }
 
 bool ServiceWorkerDatabase::IsDatabaseInMemory() const {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return path_.empty();
 }
 

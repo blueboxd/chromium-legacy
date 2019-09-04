@@ -237,10 +237,12 @@ class WebController {
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback);
   void OnClickJS(base::OnceCallback<void(const ClientStatus&)> callback,
+                 const DevtoolsClient::ReplyStatus& reply_status,
                  std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnScrollIntoView(std::unique_ptr<ElementFinder::Result> target_element,
                         base::OnceCallback<void(const ClientStatus&)> callback,
                         ClickAction::ClickType click_type,
+                        const DevtoolsClient::ReplyStatus& reply_status,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
   void TapOrClickOnCoordinates(
       ElementPositionGetter* getter_to_release,
@@ -253,21 +255,26 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       int x,
       int y,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchReleaseMouseEvent(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnDispatchTouchEventStart(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnDispatchTouchEventEnd(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<input::DispatchTouchEventResult> result);
   void OnFindElementForCheck(base::OnceCallback<void(bool)> callback,
                              const ClientStatus& status,
                              std::unique_ptr<ElementFinder::Result> result);
   void OnWaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
 
   // Find the element given by |selector|. If multiple elements match
@@ -303,6 +310,7 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
   void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSelectOption(
       const std::string& selected_option,
@@ -310,6 +318,7 @@ class WebController {
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForHighlightElement(
       base::OnceCallback<void(const ClientStatus&)> callback,
@@ -317,6 +326,7 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnHighlightElement(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetFieldValue(
       base::OnceCallback<void(bool, const std::string&)> callback,
@@ -324,6 +334,7 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetValueAttribute(
       base::OnceCallback<void(bool, const std::string&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void InternalSetFieldValue(
       const Selector& selector,
@@ -358,6 +369,7 @@ class WebController {
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnSetAttribute(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSendKeyboardInput(
       const Selector& selector,
@@ -373,6 +385,7 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnSetValueAttribute(
       base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForGetOuterHtml(
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
@@ -381,6 +394,7 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnGetOuterHtml(base::OnceCallback<void(const ClientStatus&,
                                               const std::string&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForPosition(
       base::OnceCallback<void(bool, const RectF&)> callback,
@@ -388,9 +402,11 @@ class WebController {
       std::unique_ptr<ElementFinder::Result> result);
   void OnGetVisualViewport(
       base::OnceCallback<void(bool, const RectF&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
   void OnGetElementPositionResult(
       base::OnceCallback<void(bool, const RectF&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Creates a new instance of DispatchKeyEventParams for the specified type and
@@ -410,6 +426,7 @@ class WebController {
       int remaining_rounds,
       std::string object_id,
       base::OnceCallback<void(bool)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForWaitForDocumentReadyState(
       DocumentReadyState min_ready_state,

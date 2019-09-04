@@ -142,30 +142,6 @@ Polymer({
       readOnly: true,
     },
 
-    /**
-     * True if Chrome OS Account Manager is enabled.
-     * @private
-     */
-    isAccountManagerEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isAccountManagerEnabled');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * True if Chrome OS Kerberos support is enabled.
-     * @private
-     */
-    isKerberosEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('isKerberosEnabled');
-      },
-      readOnly: true,
-    },
-
     /** @private */
     showParentalControls_: {
       type: Boolean,
@@ -236,7 +212,7 @@ Polymer({
     let useProfileNameAndIcon = true;
     // <if expr="chromeos">
     if (!loadTimeData.getBoolean('showOSSettings') &&
-        this.isAccountManagerEnabled_) {
+        loadTimeData.getBoolean('isAccountManagerEnabled')) {
       // If this is SplitSettings and we have the Google Account manager,
       // prefer the GAIA name and icon.
       useProfileNameAndIcon = false;
@@ -523,18 +499,6 @@ Polymer({
   /** @private */
   onManageOtherPeople_: function() {
     settings.navigateTo(settings.routes.ACCOUNTS);
-  },
-
-  /** @private */
-  shouldShowAccountManager_: function() {
-    return this.isAccountManagerEnabled_ &&
-        this.pageVisibility.people.googleAccounts;
-  },
-
-  /** @private */
-  shouldShowKerberos_: function() {
-    return this.isKerberosEnabled_ &&
-        this.pageVisibility.people.kerberosAccounts;
   },
   // </if>
 

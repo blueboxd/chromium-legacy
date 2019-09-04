@@ -13,9 +13,11 @@
 
 #if defined(OS_LINUX)
 #include <libdrm/drm_fourcc.h>
+#endif  // defined(OS_LINUX)
 
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 namespace media {
 namespace test {
@@ -46,7 +48,8 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
     const gfx::Size& size,
     gfx::BufferUsage buffer_usage) {
   scoped_refptr<TextureRef> texture_ref;
-#if defined(OS_CHROMEOS)
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   texture_ref = TextureRef::Create(texture_id, std::move(no_longer_needed_cb));
   LOG_ASSERT(texture_ref);
   // We set visible size to coded_size. The correct visible rectangle is set
@@ -54,28 +57,29 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
   texture_ref->frame_ =
       CreatePlatformVideoFrame(pixel_format, size, gfx::Rect(size), size,
                                base::TimeDelta(), buffer_usage);
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
   return texture_ref;
 }
 
 gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   auto handle = CreateGpuMemoryBufferHandle(frame_.get());
   DCHECK(!handle.is_null());
   return handle;
 #else
   return gfx::GpuMemoryBufferHandle();
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 }
 
 scoped_refptr<VideoFrame> TextureRef::ExportVideoFrame(
     gfx::Rect visible_rect) const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   return VideoFrame::WrapVideoFrame(*frame_, frame_->format(), visible_rect,
                                     visible_rect.size());
 #else
   return nullptr;
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 }
 
 }  // namespace test

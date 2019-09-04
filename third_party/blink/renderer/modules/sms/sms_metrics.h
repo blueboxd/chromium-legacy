@@ -29,13 +29,6 @@ void RecordSMSOutcome(SMSReceiverOutcome outcome,
 // receives the SMS and presses continue to move on with the verification flow.
 void RecordSMSSuccessTime(base::TimeDelta duration);
 
-// Records the timeout value specified with the API is called. The value of 0
-// indicates that no value was specified.
-void RecordSMSRequestedTimeout(uint32_t timeout_seconds);
-
-// Records the time from when the API is called to when the user gets timed out.
-void RecordSMSTimeoutExceededTime(base::TimeDelta duration);
-
 // Records the time from when the API is called to when the user presses the
 // cancel button to abort SMS retrieval.
 void RecordSMSCancelTime(base::TimeDelta duration);

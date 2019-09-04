@@ -52,7 +52,8 @@ class MockSharingService : public SharingService {
                        /* gcm_driver= */ nullptr,
                        /* device_info_tracker= */ nullptr,
                        /* local_device_info_provider= */ nullptr,
-                       /* sync_service */ nullptr) {}
+                       /* sync_service= */ nullptr,
+                       /* notification_display_service= */ nullptr) {}
 
   ~MockSharingService() override = default;
 

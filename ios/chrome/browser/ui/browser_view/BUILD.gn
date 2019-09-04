@@ -34,7 +34,6 @@ source_set("browser_view") {
     "//components/signin/ios/browser:active_state_manager",
     "//components/strings",
     "//components/translate/core/browser",
-    "//components/unified_consent",
     "//components/url_formatter",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/strings",

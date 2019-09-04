@@ -235,7 +235,8 @@ void ProfileSyncService::Initialize() {
   // If sync is disabled permanently, clean up old data that may be around (e.g.
   // crash during signout).
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
-      HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN)) {
+      (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
+       auth_manager_->IsActiveAccountInfoFullyLoaded())) {
     StopImpl(CLEAR_DATA);
   }
 

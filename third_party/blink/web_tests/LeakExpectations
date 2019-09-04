@@ -91,9 +91,19 @@ crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer
 crbug.com/996235 [ Linux ] media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Leak ]
 crbug.com/996235 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Leak ]
 
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Leak ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js  [ Leak ]
-crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-filesystem-a11y-test.js [ Leak ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/application-panel/app-manifest-view-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/basic-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/console-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/devices-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/memory/heap-profiler-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js  [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-filesystem-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/settings/geolocations-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Leak Pass ]
+crbug.com/1000512 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Leak Pass ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #

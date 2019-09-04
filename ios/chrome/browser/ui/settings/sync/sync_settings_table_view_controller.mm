@@ -619,11 +619,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                                      ACCESS_POINT_UNKNOWN]
         baseViewController:self];
   } else if (ShouldShowSyncSettings(syncState)) {
-    if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-      [self.dispatcher showGoogleServicesSettingsFromViewController:self];
-    } else {
-      [self.dispatcher showSyncSettingsFromViewController:self];
-    }
+    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
   }

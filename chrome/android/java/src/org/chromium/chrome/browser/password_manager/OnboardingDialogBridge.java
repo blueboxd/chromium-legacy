@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.password_manager;
 
+import static org.chromium.chrome.browser.ChromeFeatureList.PASSWORD_MANAGER_ONBOARDING_ANDROID;
+import static org.chromium.chrome.browser.ChromeFeatureList.getFieldTrialParamByFeature;
+
 import android.content.res.Resources;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -17,6 +20,12 @@ public class OnboardingDialogBridge {
     private long mNativeOnboardingDialogView;
     private final PasswordManagerDialogCoordinator mOnboardingDialog;
     private final Resources mResources;
+    /** Experiment parameter. */
+    private static final String EXPERIMENT_PARAMETER = "story";
+    /** Story centered on password safety and leak detection. */
+    private static final String ILLUSTRATION_01 = "safety";
+    /** Story centered on availability on multiple devices. */
+    private static final String ILLUSTRATION_02 = "access";
 
     private OnboardingDialogBridge(WindowAndroid windowAndroid, long nativeOnboardingDialogView) {
         mNativeOnboardingDialogView = nativeOnboardingDialogView;
@@ -33,11 +42,27 @@ public class OnboardingDialogBridge {
         return new OnboardingDialogBridge(windowAndroid, nativeDialog);
     }
 
+    /**
+     * Choose the illustration shown based on an experiment parameter.
+     * By default we show the story centered on not having to remember your password.
+     */
+    private int getDrawableResourceFromFeature() {
+        String story = getFieldTrialParamByFeature(
+                PASSWORD_MANAGER_ONBOARDING_ANDROID, EXPERIMENT_PARAMETER);
+        switch (story) {
+            case ILLUSTRATION_01:
+                return R.drawable.password_manager_onboarding_illustration01;
+            case ILLUSTRATION_02:
+                return R.drawable.password_manager_onboarding_illustration02;
+            default:
+                return R.drawable.password_manager_onboarding_illustration03;
+        }
+    }
+
     @CalledByNative
     public void showDialog(String onboardingTitle, String onboardingDetails) {
         mOnboardingDialog.showDialog(onboardingTitle, onboardingDetails,
-                R.drawable.password_manager_onboarding_illustration01,
-                mResources.getString(R.string.continue_button),
+                getDrawableResourceFromFeature(), mResources.getString(R.string.continue_button),
                 mResources.getString(R.string.cancel), this::onClick);
     }
 

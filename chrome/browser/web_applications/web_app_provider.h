@@ -29,6 +29,7 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
+class AppIconManager;
 class ExternalWebAppManager;
 class FileHandlerManager;
 class InstallFinalizer;
@@ -41,7 +42,6 @@ class WebAppUiManager;
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
 class WebAppDatabase;
-class WebAppIconManager;
 class WebAppSyncManager;
 
 // Connects Web App features, such as the installation of default and
@@ -74,6 +74,7 @@ class WebAppProvider : public WebAppProviderBase {
   WebAppUiManager& ui_manager() override;
   WebAppAudioFocusIdMap& audio_focus_id_map() override;
   FileHandlerManager& file_handler_manager() override;
+  AppIconManager& icon_manager() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncManager& sync_manager() { return *sync_manager_; }
@@ -111,13 +112,13 @@ class WebAppProvider : public WebAppProviderBase {
   // New extension-independent subsystems:
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
-  std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppSyncManager> sync_manager_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
   std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
   std::unique_ptr<FileHandlerManager> file_handler_manager_;
+  std::unique_ptr<AppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;

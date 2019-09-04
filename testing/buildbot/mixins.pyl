@@ -546,6 +546,14 @@
       },
     },
   },
+  'pie_fleet': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'PQ3A.190801.002',
+        'device_os_flavor': 'google',
+      },
+    },
+  },
   'shamu': {
     # Nexus 6
     'swarming': {

@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 
@@ -155,10 +156,10 @@ class CONTENT_EXPORT FrameTree {
       int new_routing_id,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_content_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_blink_request,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_content_receiver,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_blink_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::WebTreeScopeType scope,

@@ -194,9 +194,9 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
     return false;
   }
 
-  // If the PrefetchRedirectError feature is enabled, the request's redirect
+  // If the PrefetchPrivacyChanges feature is enabled, the request's redirect
   // mode must be |kError|.
-  if (base::FeatureList::IsEnabled(blink::features::kPrefetchRedirectError) &&
+  if (base::FeatureList::IsEnabled(blink::features::kPrefetchPrivacyChanges) &&
       resource_request.redirect_mode != network::mojom::RedirectMode::kError) {
     return false;
   }

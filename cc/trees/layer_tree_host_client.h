@@ -95,6 +95,12 @@ class LayerTreeHostClient {
   virtual void WillUpdateLayers() = 0;
   virtual void DidUpdateLayers() = 0;
 
+  // Notification that the proxy started or stopped deferring main frame updates
+  virtual void OnDeferMainFrameUpdatesChanged(bool) = 0;
+
+  // Notification that the proxy started or stopped deferring commits.
+  virtual void OnDeferCommitsChanged(bool) = 0;
+
   // Visual frame-based updates to the state of the LayerTreeHost are expected
   // to happen only in calls to LayerTreeHostClient::UpdateLayerTreeHost, which
   // should mutate/invalidate the layer tree or other page parameters as

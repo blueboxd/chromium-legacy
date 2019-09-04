@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/worker_host/shared_worker_instance.h"
+#include "content/public/browser/shared_worker_instance.h"
 
 #include <memory>
 

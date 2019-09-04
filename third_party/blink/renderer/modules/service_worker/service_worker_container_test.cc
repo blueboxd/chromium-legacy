@@ -106,9 +106,9 @@ class ExpectDOMException : public ScriptValueTest {
 
   ~ExpectDOMException() override = default;
 
-  void operator()(ScriptState* state, ScriptValue value) const override {
+  void operator()(ScriptState* script_state, ScriptValue value) const override {
     DOMException* exception = V8DOMException::ToImplWithTypeCheck(
-        value.GetIsolate(), value.V8Value());
+        script_state->GetIsolate(), value.V8Value());
     EXPECT_TRUE(exception) << "the value should be a DOMException";
     if (!exception)
       return;
@@ -129,9 +129,9 @@ class ExpectTypeError : public ScriptValueTest {
 
   ~ExpectTypeError() override = default;
 
-  void operator()(ScriptState* state, ScriptValue value) const override {
-    v8::Isolate* isolate = value.GetIsolate();
-    v8::Local<v8::Context> context = state->GetContext();
+  void operator()(ScriptState* script_state, ScriptValue value) const override {
+    v8::Isolate* isolate = script_state->GetIsolate();
+    v8::Local<v8::Context> context = script_state->GetContext();
     v8::Local<v8::Object> error_object =
         value.V8Value()->ToObject(context).ToLocalChecked();
     v8::Local<v8::Value> name =

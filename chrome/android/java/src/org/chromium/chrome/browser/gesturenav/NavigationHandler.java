@@ -130,7 +130,7 @@ public class NavigationHandler {
     public void onTouchEvent(int action) {
         if (action == MotionEvent.ACTION_UP) {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
-                mSideSlideLayout.release(!mNavigationSheet.isPeeked());
+                mSideSlideLayout.release(mNavigationSheet.isHidden());
                 mNavigationSheet.release();
             } else if (mState == GestureState.GLOW && mGlowEffect != null) {
                 mGlowEffect.release();
@@ -226,6 +226,12 @@ public class NavigationHandler {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             mSideSlideLayout.pull(delta);
             mNavigationSheet.onScroll(delta, mSideSlideLayout.getOverscroll());
+
+            mSideSlideLayout.fadeArrow(!mNavigationSheet.isHidden(), /* animate= */ true);
+            if (mNavigationSheet.isExpanded()) {
+                mSideSlideLayout.hideArrow();
+                mState = GestureState.NONE;
+            }
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.onScroll(-delta);
         }
@@ -255,7 +261,7 @@ public class NavigationHandler {
     public void release(boolean allowNav) {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
-            mSideSlideLayout.release(allowNav && !mNavigationSheet.isPeeked());
+            mSideSlideLayout.release(allowNav && mNavigationSheet.isHidden());
             mNavigationSheet.release();
         } else if (mState == GestureState.GLOW && mGlowEffect != null) {
             mGlowEffect.release();

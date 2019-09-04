@@ -51,7 +51,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
 #endif
       inside_draw_(false),
       defer_main_frame_update_(false),
-      defer_commits_(true),
+      defer_commits_(false),
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
@@ -266,14 +266,18 @@ void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   if (defer_main_frame_update_ == defer_main_frame_update)
     return;
 
-  if (defer_main_frame_update)
+  if (defer_main_frame_update) {
     TRACE_EVENT_ASYNC_BEGIN0("cc", "SingleThreadProxy::SetDeferMainFrameUpdate",
                              this);
-  else
+  } else {
     TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferMainFrameUpdate",
                            this);
+  }
 
   defer_main_frame_update_ = defer_main_frame_update;
+
+  // Notify dependent systems that the deferral status has changed.
+  layer_tree_host_->OnDeferMainFrameUpdatesChanged(defer_main_frame_update_);
 
   // The scheduler needs to know that it should not issue BeginMainFrame.
   scheduler_on_impl_thread_->SetDeferBeginMainFrame(defer_main_frame_update_);
@@ -291,6 +295,9 @@ void SingleThreadProxy::StartDeferringCommits(base::TimeDelta timeout) {
 
   defer_commits_ = true;
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
+
+  // Notify dependent systems that the deferral status has changed.
+  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
 }
 
 void SingleThreadProxy::StopDeferringCommits(
@@ -301,6 +308,9 @@ void SingleThreadProxy::StopDeferringCommits(
   commits_restart_time_ = base::TimeTicks();
   UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
+
+  // Notify dependent systems that the deferral status has changed.
+  layer_tree_host_->OnDeferCommitsChanged(defer_commits_);
 }
 
 bool SingleThreadProxy::CommitRequested() const {
@@ -808,19 +818,16 @@ void SingleThreadProxy::BeginMainFrame(
   // a commit here.
   commit_requested_ = true;
 
+  // Check now if we should stop deferring commits. Do this before
+  // DoBeginMainFrame because the latter updates scroll offsets, which
+  // we should avoid if deferring commits.
+  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_)
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
+
   DoBeginMainFrame(begin_frame_args);
 
   // New commits requested inside UpdateLayers should be respected.
   commit_requested_ = false;
-
-  // Check now if we should stop deferring commits
-  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    // Only record a reason of kTimeout if the timeout was set, otherwise
-    // record kNotDeferred, indicating that a timeout was never set.
-    StopDeferringCommits(commits_restart_time_.is_null()
-                             ? PaintHoldingCommitTrigger::kNotDeferred
-                             : PaintHoldingCommitTrigger::kTimeout);
-  }
 
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
@@ -847,12 +854,16 @@ void SingleThreadProxy::BeginMainFrame(
 
 void SingleThreadProxy::DoBeginMainFrame(
     const viz::BeginFrameArgs& begin_frame_args) {
-  // The impl-side scroll deltas may be manipulated directly via the
-  // InputHandler on the UI thread and the scale deltas may change when they are
-  // clamped on the impl thread.
-  std::unique_ptr<ScrollAndScaleSet> scroll_info =
-      host_impl_->ProcessScrollDeltas();
-  layer_tree_host_->ApplyScrollAndScale(scroll_info.get());
+  // Only update scroll deltas if we are going to commit the frame, otherwise
+  // scroll offsets get confused.
+  if (!defer_commits_) {
+    // The impl-side scroll deltas may be manipulated directly via the
+    // InputHandler on the UI thread and the scale deltas may change when they
+    // are clamped on the impl thread.
+    std::unique_ptr<ScrollAndScaleSet> scroll_info =
+        host_impl_->ProcessScrollDeltas();
+    layer_tree_host_->ApplyScrollAndScale(scroll_info.get());
+  }
 
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);

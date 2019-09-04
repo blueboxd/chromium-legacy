@@ -17,6 +17,7 @@ aggregate_vector_icons("components_vector_icons") {
     "check_circle.icon",
     "close.icon",
     "close_rounded.icon",
+    "devices.icon",
     "edit.icon",
     "error.icon",
     "ethernet.icon",

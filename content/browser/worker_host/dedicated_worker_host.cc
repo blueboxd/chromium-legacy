@@ -343,7 +343,11 @@ void DedicatedWorkerHost::CreateWebUsbService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
-  // TODO(nhiroki): Check if |ancestor_render_frame_host| is valid.
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
   GetContentClient()->browser()->CreateWebUsbService(ancestor_render_frame_host,
                                                      std::move(receiver));
 }
@@ -351,12 +355,11 @@ void DedicatedWorkerHost::CreateWebUsbService(
 void DedicatedWorkerHost::CreateWebSocketConnector(
     mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
   if (!ancestor_render_frame_host) {
-    // In some cases |ancestor_render_frame_host| can be null. In such cases
-    // the worker will soon be terminated too, so let's abort the connection.
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
     receiver.ResetWithReason(network::mojom::WebSocket::kInsufficientResources,
                              "The parent frame has already been gone.");
     return;
@@ -378,6 +381,7 @@ void DedicatedWorkerHost::CreateNestedDedicatedWorker(
 
 void DedicatedWorkerHost::BindFileSystemManager(
     mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* worker_process_host = GetProcessHost();
   if (!worker_process_host)
     return;
@@ -389,7 +393,11 @@ void DedicatedWorkerHost::CreateIdleManager(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
-  // TODO(nhiroki): Check if |ancestor_render_frame_host| is valid.
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
   if (!ancestor_render_frame_host->IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
@@ -412,7 +420,7 @@ RenderFrameHostImpl* DedicatedWorkerHost::GetAncestorRenderFrameHost() {
 namespace {
 // A factory for creating DedicatedWorkerHosts. Its lifetime is managed by
 // the renderer over mojo via a StrongBinding. This lives on the UI thread.
-class DedicatedWorkerHostFactoryImpl
+class DedicatedWorkerHostFactoryImpl final
     : public blink::mojom::DedicatedWorkerHostFactory {
  public:
   DedicatedWorkerHostFactoryImpl(int creator_process_id,

@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "cc/paint/paint_canvas.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -432,7 +433,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   WebTextCheckClient* text_check_client_;
 
   service_manager::InterfaceProvider interface_provider_;
-  mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
+  mojo::Remote<mojom::blink::DocumentInterfaceBroker>
+      document_interface_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyLocalFrameClient);
 };

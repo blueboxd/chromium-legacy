@@ -21,7 +21,6 @@ import androidx.browser.customtabs.CustomTabsIntent;
 /** Implementation of the {@link NativePageNavigationDelegate} for the explore surface. */
 class ExploreSurfaceNavigationDelegate implements NativePageNavigationDelegate {
     private final Context mContext;
-    private boolean mIsInCognito;
 
     ExploreSurfaceNavigationDelegate(Context context) {
         mContext = context;
@@ -43,18 +42,12 @@ class ExploreSurfaceNavigationDelegate implements NativePageNavigationDelegate {
         CustomTabsIntent customTabsIntent = builder.build();
         customTabsIntent.intent.setPackage(mContext.getPackageName());
         customTabsIntent.intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB,
-                (windowOpenDisposition == WindowOpenDisposition.OFF_THE_RECORD || mIsInCognito)
-                        ? true
-                        : false);
+                (windowOpenDisposition == WindowOpenDisposition.OFF_THE_RECORD) ? true : false);
         customTabsIntent.intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
         customTabsIntent.launchUrl(mContext, Uri.parse(loadUrlParams.getUrl()));
 
         // TODO(crbug.com/982018): Return the opened tab and make sure it is opened in incoginito
         // mode accordingly (note that payment window supports incognito mode).
         return null;
-    }
-
-    public void setIncognito(boolean isIncognito) {
-        mIsInCognito = isIncognito;
     }
 }

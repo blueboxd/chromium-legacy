@@ -56,7 +56,7 @@ void SmsService::Create(
   new SmsService(provider, host, std::move(receiver));
 }
 
-void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
+void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (callback_) {
     std::move(callback).Run(blink::mojom::SmsStatus::kCancelled, base::nullopt);

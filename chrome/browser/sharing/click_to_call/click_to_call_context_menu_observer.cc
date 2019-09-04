@@ -61,7 +61,8 @@ void ClickToCallContextMenuObserver::BuildMenu(
   controller_->UpdateDevices();
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  LogClickToCallDevicesToShow(kSharingClickToCallUiContextMenu, devices.size());
+  LogSharingDevicesToShow(controller_->GetFeatureMetricsPrefix(),
+                          kSharingUiContextMenu, devices.size());
   if (devices.empty())
     return;
 
@@ -145,8 +146,8 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   if (chosen_device_index >= static_cast<int>(devices.size()))
     return;
 
-  LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
-                                    chosen_device_index);
+  LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
+                                kSharingUiContextMenu, chosen_device_index);
 
   controller_->OnDeviceSelected(phone_number_, *devices[chosen_device_index],
                                 *entry_point_);

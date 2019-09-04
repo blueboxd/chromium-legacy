@@ -81,7 +81,6 @@ class OutsideSettingsCSPDelegate final
   // off-the-main-thread shared worker/service worker top-level script fetch.
   // https://crbug.com/924041 https://crbug.com/924043
   void SetSandboxFlags(SandboxFlags) override {}
-  void SetAddressSpace(network::mojom::IPAddressSpace) override {}
   void SetRequireTrustedTypes() override {}
   void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
   void DisableEval(const String& error_message) override {}

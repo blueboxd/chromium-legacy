@@ -530,42 +530,53 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 // Tests that Dice migration does not happen if an account is invalid. In
 // particular, no hosted domain tokens are revoked.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
-       DiceNoMigrationOnInvalidAccount) {
+       DiceMigrationWithMissingHostedDomain) {
   ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
   InitializeOAuth2ServiceDelegate(
       signin::AccountConsistencyMethod::kDiceMigration);
   oauth2_service_delegate_->RevokeAllCredentials();
 
-  // Add account info to the account tracker.
-  AccountInfo primary_account = CreateTestAccountInfo(
-      "primary_account", true /* is_hosted_domain*/, true /* is_valid*/);
-  AccountInfo secondary_account = CreateTestAccountInfo(
-      "secondary_account", false /* is_hosted_domain*/, false /* is_valid*/);
-  account_tracker_service_.SeedAccountInfo(primary_account);
-  account_tracker_service_.SeedAccountInfo(secondary_account);
+  // Add incomplete accounts info to the account tracker.
+  AccountInfo account_info_consummer;
+  account_info_consummer.account_id = "consummer";
+  account_info_consummer.gaia = "consummer";
+  // gmail.com is known as a non-enterprise domain.
+  account_info_consummer.email = "consummer@gmail.com";
+  account_tracker_service_.SeedAccountInfo(account_info_consummer);
+
+  AccountInfo account_info_enterprise;
+  account_info_enterprise.account_id = "enterprise";
+  account_info_enterprise.gaia = "enterprise";
+  account_info_enterprise.email = "enterprise@email.com";
+  account_tracker_service_.SeedAccountInfo(account_info_enterprise);
 
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
+  AddAuthTokenManually("AccountId-" + account_info_consummer.account_id.id,
                        "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.account_id.id,
+  AddAuthTokenManually("AccountId-" + account_info_enterprise.account_id.id,
                        "refresh_token");
-  oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
+  oauth2_service_delegate_->LoadCredentials(account_info_consummer.account_id);
   base::RunLoop().RunUntilIdle();
 
+  // Only the enterprise token is revoked.
   EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_EQ(2, token_available_count_);
-  EXPECT_EQ(0, token_revoked_count_);
+  EXPECT_EQ(1, token_available_count_);
+  EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(1, end_batch_changes_);
-  EXPECT_EQ(2, auth_error_changed_count_);
+  EXPECT_EQ(1, auth_error_changed_count_);
+  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(
+      account_info_enterprise.account_id));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
-      primary_account.account_id));
-  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
-      secondary_account.account_id));
+      account_info_consummer.account_id));
+  EXPECT_EQ("refresh_token",
+            oauth2_service_delegate_
+                ->refresh_tokens_[account_info_consummer.account_id]
+                .refresh_token);
   EXPECT_EQ(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
       oauth2_service_delegate_->load_credentials_state());
 
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
 
 // Tests that the migration happened after loading consummer accounts.
@@ -913,6 +924,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
+  pref_service_.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   std::map<std::string, std::string> tokens;
   const CoreAccountId account_id("account_id");

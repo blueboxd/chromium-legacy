@@ -201,10 +201,18 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
 };
 
 // FrecencyPredictor ranks targets according to their frecency, and
-// can only be used for zero-state predictions. This predictor allows for
-// frecency-based rankings with different configuration to that of the ranker's
-// FrecencyStore. If frecency-based rankings with the same configuration as the
-// store are needed, the DefaultPredictor should be used instead.
+// can only be used for zero-state predictions. This predictor has two
+// key differences from the DefaultPredictor:
+//
+//  1. The decay coefficient for ranking can be set separately from the
+//     RecurrenceRanker's target_decay parameter used for storage.
+//
+//  2. The scores returned by FrecencyPredictor::Rank are normalized to sum to
+//     1 (if there is at least one result). This is not the case for
+//     DefaultPredictor::Rank.
+//
+// If neither of the above differences are required, it is more efficient to
+// use DefaultPredictor.
 class FrecencyPredictor : public RecurrencePredictor {
  public:
   FrecencyPredictor(const FrecencyPredictorConfig& config,

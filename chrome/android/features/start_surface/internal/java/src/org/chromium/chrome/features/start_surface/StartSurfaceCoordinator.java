@@ -5,14 +5,12 @@
 package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
@@ -193,7 +191,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         }
 
         mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
-        if (mSurfaceMode == SurfaceMode.TWO_PANES) createAndSetBottomBar();
+
+        if (mSurfaceMode == SurfaceMode.TWO_PANES) {
+            mBottomBarCoordinator = new BottomBarCoordinator(
+                    mActivity, mActivity.getCompositorViewHolder(), mPropertyModel);
+        }
 
         int toolbarHeight =
                 mActivity.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
@@ -215,19 +217,6 @@ public class StartSurfaceCoordinator implements StartSurface {
                 exploreSurfaceContainer,
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? mTasksSurface.getContainerView() : null,
                 mPropertyModel);
-    }
-
-    private void createAndSetBottomBar() {
-        // Margin the bottom of the Tab grid to save space for the bottom bar.
-        int bottomBarHeight =
-                ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                        R.dimen.ss_bottom_bar_height);
-        mTasksSurface.getTabListDelegate().setBottomControlsHeight(bottomBarHeight);
-        mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomBarHeight);
-
-        // Create the bottom bar.
-        mBottomBarCoordinator = new BottomBarCoordinator(
-                mActivity, mActivity.getCompositorViewHolder(), mPropertyModel);
     }
 
     private TabSwitcher.Controller initializeSecondaryTasksSurface() {

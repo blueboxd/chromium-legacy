@@ -9,8 +9,6 @@ source_set("cells") {
   sources = [
     "account_control_item.h",
     "account_control_item.mm",
-    "legacy_account_control_item.h",
-    "legacy_account_control_item.mm",
     "signin_promo_view.h",
     "signin_promo_view.mm",
     "signin_promo_view_configurator.h",
@@ -25,7 +23,6 @@ source_set("cells") {
   deps = [
     "//base",
     "//build:branding_buildflags",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/collection_view/cells",
@@ -48,7 +45,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_control_item_unittest.mm",
-    "legacy_account_control_item_unittest.mm",
     "signin_promo_view_unittest.mm",
     "table_view_account_item_unittest.mm",
   ]
@@ -61,8 +57,6 @@ source_set("unit_tests") {
     "//components/pref_registry",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
-    "//components/unified_consent",
-    "//components/unified_consent:test_support",
     "//components/version_info",
     "//ios/chrome/app/strings:ios_chromium_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",

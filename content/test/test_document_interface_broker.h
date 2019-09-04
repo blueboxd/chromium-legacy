@@ -7,7 +7,8 @@
 
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-test-utils.h"
 
 namespace content {
@@ -20,14 +21,14 @@ class TestDocumentInterfaceBroker
  public:
   TestDocumentInterfaceBroker(
       blink::mojom::DocumentInterfaceBroker* document_interface_broker,
-      blink::mojom::DocumentInterfaceBrokerRequest request);
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker> receiver);
   ~TestDocumentInterfaceBroker() override;
   blink::mojom::DocumentInterfaceBroker* GetForwardingInterface() override;
   void Flush();
 
  private:
   blink::mojom::DocumentInterfaceBroker* real_broker_;
-  mojo::Binding<DocumentInterfaceBroker> binding_;
+  mojo::Receiver<DocumentInterfaceBroker> receiver_;
 };
 
 }  // namespace content

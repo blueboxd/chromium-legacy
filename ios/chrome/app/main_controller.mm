@@ -39,7 +39,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/ukm/ios/features.h"
-#include "components/unified_consent/feature.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -1638,7 +1637,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
   self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
       initWithBrowserState:_mainBrowserState
                 dispatcher:self.mainBVC.dispatcher];
@@ -1718,26 +1716,6 @@ enum class EnterTabSwitcherSnapshotResult {
   _settingsNavigationController = [SettingsNavigationController
       newGoogleServicesController:originalBrowserState
                          delegate:self];
-  [baseViewController presentViewController:_settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-// TODO(crbug.com/779791) : Remove show settings commands from MainController.
-- (void)showSyncSettingsFromViewController:
-    (UIViewController*)baseViewController {
-  // When unified consent feather is enabled,
-  // |showGoogleServicesSettingsFromViewController:| should be called.
-  DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
-  if (_settingsNavigationController) {
-    [_settingsNavigationController
-        showSyncSettingsFromViewController:baseViewController];
-    return;
-  }
-  _settingsNavigationController =
-      [SettingsNavigationController newSyncController:_mainBrowserState
-                                             delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];

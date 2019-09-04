@@ -113,6 +113,9 @@ extern const char kCheckContentCompliance[];
 // List of domains where Chrome should check compliance of downloaded files.
 extern const char kDomainsToCheckComplianceOfDownloadedContent[];
 
+// List of domains where Chrome should check for malware of uploaded files.
+extern const char kDomainsToCheckForMalwareOfUploadedContent[];
+
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -166,6 +169,8 @@ enum SendFilesForMalwareCheckValues {
   DO_NOT_SCAN = 0,
   SEND_FILES_DISABLED = 1,
   SEND_DOWNLOADS = 2,
+  SEND_UPLOADS = 3,
+  SEND_UPLOADS_AND_DOWNLOADS = 4,
 };
 
 // Enum representing possible values of the CheckContentCompliance policy. This

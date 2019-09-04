@@ -31,6 +31,11 @@ enum class SystemPermission {
 SystemPermission CheckSystemAudioCapturePermission();
 SystemPermission CheckSystemVideoCapturePermission();
 
+// On 10.15 and above: returns the system permission.
+// On 10.14 and below: returns |SystemPermission::kAllowed|, since there are no
+// system screen capture permissions.
+SystemPermission CheckSystemScreenCapturePermission();
+
 // On 10.14 and above: requests system permission and returns. When requesting
 // permission, the OS will show a user dialog and respond asynchronously. At the
 // response, |callback| is posted with |traits|.

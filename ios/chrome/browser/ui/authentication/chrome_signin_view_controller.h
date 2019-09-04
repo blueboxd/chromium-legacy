@@ -12,7 +12,6 @@
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
 #import "ios/chrome/browser/signin/constants.h"
-#include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 
 @protocol ApplicationCommands;
 @class ChromeIdentity;
@@ -73,8 +72,7 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 // this class uses the presentation controller. Therefore the presentation style
 // cannot be changed after the init. The style is set to
 // UIModalPresentationFormSheet by the init method.
-@interface ChromeSigninViewController
-    : UIViewController<SigninConfirmationViewControllerDelegate>
+@interface ChromeSigninViewController : UIViewController
 
 @property(nonatomic, weak) id<ChromeSigninViewControllerDelegate> delegate;
 
@@ -83,9 +81,6 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @property(nonatomic, assign) ShouldClearData shouldClearData;
 
 @property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
-
-// Sign-in conformation view controller.
-@property(nonatomic, readonly) SigninConfirmationViewController* confirmationVC;
 
 // Designated initializer.
 // * |browserState| is the current browser state.

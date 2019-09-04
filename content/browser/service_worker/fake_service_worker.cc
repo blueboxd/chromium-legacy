@@ -168,24 +168,33 @@ void FakeServiceWorker::DispatchPeriodicSyncEvent(
 }
 
 void FakeServiceWorker::DispatchAbortPaymentEvent(
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+        pending_response_callback,
     DispatchAbortPaymentEventCallback callback) {
+  mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
+      response_callback(std::move(pending_response_callback));
   response_callback->OnResponseForAbortPayment(true);
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchCanMakePaymentEvent(
     payments::mojom::CanMakePaymentEventDataPtr event_data,
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+        pending_response_callback,
     DispatchCanMakePaymentEventCallback callback) {
+  mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
+      response_callback(std::move(pending_response_callback));
   response_callback->OnResponseForCanMakePayment(true);
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchPaymentRequestEvent(
     payments::mojom::PaymentRequestEventDataPtr event_data,
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojo::PendingRemote<payments::mojom::PaymentHandlerResponseCallback>
+        pending_response_callback,
     DispatchPaymentRequestEventCallback callback) {
+  mojo::Remote<payments::mojom::PaymentHandlerResponseCallback>
+      response_callback(std::move(pending_response_callback));
   response_callback->OnResponseForPaymentRequest(
       payments::mojom::PaymentHandlerResponse::New());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);

@@ -138,7 +138,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
         {chromeos::features::kCrostiniUsbSupport,
          chromeos::features::kCrostiniUsbAllowUnsupported},
         {});
-    arc::EnableArcVmForTesting();
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
@@ -157,7 +156,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    arc::DisableArcVmForTesting();
     scoped_feature_list_.Reset();
     crostini_test_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
@@ -194,6 +192,13 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
     }
     EXPECT_TRUE(devices.front().sharable_with_crostini);
     return devices.front();
+  }
+
+  static bool IsSharedWithCrostini(
+      const chromeos::CrosUsbDeviceInfo& device_info) {
+    const auto it = device_info.vm_sharing_info.find(
+        crostini::kCrostiniDefaultVmName);
+    return it != device_info.vm_sharing_info.end() && it->second.shared;
   }
 
  protected:
@@ -699,62 +704,6 @@ TEST_F(CrosUsbDetectorTest, AttachDeviceToVmSetsGuestPort) {
   EXPECT_EQ(0U, *crostini_info.guest_port);
 }
 
-TEST_F(CrosUsbDetectorTest, DeviceGetsAutoAttachedToArcVmOnConnect) {
-  cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
-  ConnectToDeviceManager();
-  base::RunLoop().RunUntilIdle();
-
-  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
-      0, 1, kManufacturerName, kProductName_1, "002");
-  device_manager_.AddDevice(device_1);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, usb_device_observer_.notify_count());
-  EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info[arc::kArcVmName].shared);
-}
-
-TEST_F(CrosUsbDetectorTest, AttachingDeviceToCrostiniDetachesItFromArcVm) {
-  ConnectToDeviceManager();
-  base::RunLoop().RunUntilIdle();
-
-  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
-      0, 1, kManufacturerName, kProductName_1, "002");
-  device_manager_.AddDevice(device_1);
-  base::RunLoop().RunUntilIdle();
-
-  auto device_info = GetSingleDeviceInfo();
-  EXPECT_TRUE(device_info.vm_sharing_info[arc::kArcVmName].shared);
-
-  cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
-  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device_info.guid);
-  EXPECT_EQ(2, usb_device_observer_.notify_count());
-
-  device_info = GetSingleDeviceInfo();
-  EXPECT_EQ(1U, device_info.vm_sharing_info.size());
-  EXPECT_TRUE(
-      device_info.vm_sharing_info[crostini::kCrostiniDefaultVmName].shared);
-}
-
-TEST_F(CrosUsbDetectorTest, DetachingDeviceFromCrostiniAttachesItToArcVm) {
-  ConnectToDeviceManager();
-  base::RunLoop().RunUntilIdle();
-
-  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
-      0, 1, kManufacturerName, kProductName_1, "002");
-  device_manager_.AddDevice(device_1);
-  base::RunLoop().RunUntilIdle();
-
-  auto device_info = GetSingleDeviceInfo();
-  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device_info.guid);
-  cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
-  DetachDeviceFromVm(crostini::kCrostiniDefaultVmName, device_info.guid);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(2, usb_device_observer_.notify_count());
-  device_info = GetSingleDeviceInfo();
-  EXPECT_EQ(1U, device_info.vm_sharing_info.size());
-  EXPECT_TRUE(device_info.vm_sharing_info[arc::kArcVmName].shared);
-}
-
 TEST_F(CrosUsbDetectorTest, AttachingAlreadyAttachedDeviceIsANoOp) {
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
@@ -765,7 +714,7 @@ TEST_F(CrosUsbDetectorTest, AttachingAlreadyAttachedDeviceIsANoOp) {
   base::RunLoop().RunUntilIdle();
 
   auto device_info = GetSingleDeviceInfo();
-  EXPECT_TRUE(device_info.vm_sharing_info[arc::kArcVmName].shared);
+  EXPECT_EQ(0U, device_info.vm_sharing_info.size());
 
   AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device_info.guid);
   cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
@@ -773,8 +722,7 @@ TEST_F(CrosUsbDetectorTest, AttachingAlreadyAttachedDeviceIsANoOp) {
   EXPECT_EQ(0, usb_device_observer_.notify_count());
   device_info = GetSingleDeviceInfo();
   EXPECT_EQ(1U, device_info.vm_sharing_info.size());
-  EXPECT_TRUE(
-      device_info.vm_sharing_info[crostini::kCrostiniDefaultVmName].shared);
+  EXPECT_TRUE(IsSharedWithCrostini(device_info));
 }
 
 TEST_F(CrosUsbDetectorTest, DeviceCanBeAttachedToArcVmWhenCrostiniIsDisabled) {
@@ -787,6 +735,7 @@ TEST_F(CrosUsbDetectorTest, DeviceCanBeAttachedToArcVmWhenCrostiniIsDisabled) {
   device_manager_.AddDevice(device_1);
   base::RunLoop().RunUntilIdle();
 
+  AttachDeviceToVm(arc::kArcVmName, GetSingleDeviceInfo().guid);
   EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info[arc::kArcVmName].shared);
 }
 
@@ -799,48 +748,24 @@ TEST_F(CrosUsbDetectorTest, SharedDevicesGetAttachedOnStartup) {
   device_manager_.AddDevice(device_1);
   base::RunLoop().RunUntilIdle();
 
-  const auto device = GetSingleDeviceInfo();
-  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device.guid);
-  base::RunLoop().RunUntilIdle();
-
-  cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
-  cros_usb_detector_->ConnectSharedDevicesOnVmStartup(arc::kArcVmName);
-  base::RunLoop().RunUntilIdle();
-  // Starting ARCVM should be a no-op here as the device was already shared with
-  // Crostini.
-  EXPECT_EQ(0, usb_device_observer_.notify_count());
-
   cros_usb_detector_->ConnectSharedDevicesOnVmStartup(
       crostini::kCrostiniDefaultVmName);
   base::RunLoop().RunUntilIdle();
-  // The device was already attached to Crostini.
+  // No device is shared with Crostini, yet.
   EXPECT_EQ(0, usb_device_observer_.notify_count());
+  auto device = GetSingleDeviceInfo();
+  EXPECT_EQ(0U, device.vm_sharing_info.size());
 
-  DetachDeviceFromVm(crostini::kCrostiniDefaultVmName, device.guid);
-  cros_usb_detector_->ConnectSharedDevicesOnVmStartup(arc::kArcVmName);
-  EXPECT_EQ(2, usb_device_observer_.notify_count());
-  EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info[arc::kArcVmName].shared);
-}
-
-TEST_F(CrosUsbDetectorTest, DevicesDontGetAutoAttachedToArcVmWhenDisabled) {
-  arc::DisableArcVmForTesting();
-  ConnectToDeviceManager();
+  device = GetSingleDeviceInfo();
+  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device.guid);
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsSharedWithCrostini(GetSingleDeviceInfo()));
 
-  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
-      0, 1, kManufacturerName, kProductName_1, "002");
-  device_manager_.AddDevice(device_1);
+  cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
+  cros_usb_detector_->ConnectSharedDevicesOnVmStartup(
+      crostini::kCrostiniDefaultVmName);
   base::RunLoop().RunUntilIdle();
-
-  auto device_info = GetSingleDeviceInfo();
-  EXPECT_TRUE(device_info.vm_sharing_info.empty());
-
-  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device_info.guid);
-  device_info = GetSingleDeviceInfo();
-  EXPECT_TRUE(
-      device_info.vm_sharing_info[crostini::kCrostiniDefaultVmName].shared);
-
-  // Detaching shouldn't auto-attach to ARCVM either when ARCVM is disabled.
-  DetachDeviceFromVm(crostini::kCrostiniDefaultVmName, device_info.guid);
-  EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info.empty());
+  // Attaching an already attached device is a no-op currently.
+  EXPECT_EQ(0, usb_device_observer_.notify_count());
+  EXPECT_TRUE(IsSharedWithCrostini(GetSingleDeviceInfo()));
 }

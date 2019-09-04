@@ -32,37 +32,42 @@ class ProtectedMemoryTest : public ::testing::Test {
   Lock lock;
 };
 
-PROTECTED_MEMORY_SECTION ProtectedMemory<int> init;
+PROTECTED_MEMORY_SECTION ProtectedMemory<int> g_init;
 
 TEST_F(ProtectedMemoryTest, Initializer) {
-  static ProtectedMemory<int>::Initializer I(&init, 4);
-  EXPECT_EQ(*init, 4);
+  static ProtectedMemory<int>::Initializer I(&g_init, 4);
+  EXPECT_EQ(*g_init, 4);
 }
 
-PROTECTED_MEMORY_SECTION ProtectedMemory<Data> data;
+PROTECTED_MEMORY_SECTION ProtectedMemory<Data> g_data;
 
 TEST_F(ProtectedMemoryTest, Basic) {
-  AutoWritableMemory writer = AutoWritableMemory::Create(data);
-  data->foo = 5;
-  EXPECT_EQ(data->foo, 5);
+  AutoWritableMemory writer = AutoWritableMemory::Create(g_data);
+  g_data->foo = 5;
+  EXPECT_EQ(g_data->foo, 5);
 }
 
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 #if PROTECTED_MEMORY_ENABLED
 TEST_F(ProtectedMemoryTest, ReadOnlyOnStart) {
-  EXPECT_DEATH({ data->foo = 6; AutoWritableMemory::Create(data); }, "");
+  EXPECT_DEATH(
+      {
+        g_data->foo = 6;
+        AutoWritableMemory::Create(g_data);
+      },
+      "");
 }
 
 TEST_F(ProtectedMemoryTest, ReadOnlyAfterSetWritable) {
-  { AutoWritableMemory writer = AutoWritableMemory::Create(data); }
-  EXPECT_DEATH({ data->foo = 7; }, "");
+  { AutoWritableMemory writer = AutoWritableMemory::Create(g_data); }
+  EXPECT_DEATH({ g_data->foo = 7; }, "");
 }
 
 TEST_F(ProtectedMemoryTest, AssertMemoryIsReadOnly) {
-  AssertMemoryIsReadOnly(&data->foo);
-  { AutoWritableMemory::Create(data); }
-  AssertMemoryIsReadOnly(&data->foo);
+  AssertMemoryIsReadOnly(&g_data->foo);
+  { AutoWritableMemory::Create(g_data); }
+  AssertMemoryIsReadOnly(&g_data->foo);
 
   ProtectedMemory<Data> writable_data;
   EXPECT_DCHECK_DEATH({ AssertMemoryIsReadOnly(&writable_data->foo); });

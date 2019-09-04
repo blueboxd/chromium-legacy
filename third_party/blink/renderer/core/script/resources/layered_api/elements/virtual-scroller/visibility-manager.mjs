@@ -207,8 +207,8 @@ export class VisibilityManager {
         // which would involve an unknown number of forced layouts, we
         // come back next frame and try to make it better. We know we can
         // stop when we didn't hide or reveal any elements.
-        if (this.#syncRevealed(newRevealed) +
-            this.#syncObserved(newObserved) > 0) {
+        if (this.#syncRevealed(newRevealed) + this.#syncObserved(newObserved) >
+            0) {
           this.scheduleSync();
         }
       }

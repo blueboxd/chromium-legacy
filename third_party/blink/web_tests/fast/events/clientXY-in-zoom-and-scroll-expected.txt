@@ -5,10 +5,10 @@ PASS event.pageX is 100
 PASS event.pageY is 100
 
 Just zoomed
-PASS event.clientX is 83
-PASS event.clientY is 83
-PASS event.pageX is 83
-PASS event.pageY is 83
+FAIL event.clientX should be 83. Was 83.33332824707031.
+FAIL event.clientY should be 83. Was 83.33332824707031.
+FAIL event.pageX should be 83. Was 83.33332824707031.
+FAIL event.pageY should be 83. Was 83.33332824707031.
 
 Just scrolled
 PASS event.clientX is 100
@@ -17,10 +17,10 @@ PASS event.pageX is 150
 PASS event.pageY is 150
 
 Zoomed and scrolled
-PASS event.clientX is 83
-PASS event.clientY is 83
-PASS event.pageX is 133
-PASS event.pageY is 133
+FAIL event.clientX should be 83. Was 83.33332824707031.
+FAIL event.clientY should be 83. Was 83.33332824707031.
+FAIL event.pageX should be 133. Was 133.33332443237305.
+FAIL event.pageY should be 133. Was 133.33332443237305.
 
 RTL and scrolled
 PASS event.clientX is 100

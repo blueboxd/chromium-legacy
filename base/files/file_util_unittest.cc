@@ -2577,8 +2577,11 @@ TEST_F(FileUtilTest, GetUniquePathTest) {
   EXPECT_EQ(base_path, GetUniquePath(base_path));
 
   // Create the file.
-  File file(base_path, File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
-  EXPECT_TRUE(PathExists(base_path));
+  {
+    File file(base_path,
+              File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
+    EXPECT_TRUE(PathExists(base_path));
+  }
 
   static const FilePath::CharType* const kExpectedNames[] = {
       FILE_PATH_LITERAL("Unique_Base_Name (1).txt"),

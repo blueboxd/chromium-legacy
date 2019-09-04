@@ -304,6 +304,8 @@ jumbo_source_set("browser_sources") {
     "session_storage_namespace.h",
     "session_storage_usage_info.h",
     "shared_cors_origin_access_list.h",
+    "shared_worker_instance.cc",
+    "shared_worker_instance.h",
     "shared_worker_service.h",
     "site_instance.h",
     "site_isolation_policy.cc",

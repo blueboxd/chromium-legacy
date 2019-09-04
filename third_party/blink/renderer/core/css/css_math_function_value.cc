@@ -41,7 +41,7 @@ CSSMathFunctionValue* CSSMathFunctionValue::Create(
 CSSMathFunctionValue* CSSMathFunctionValue::Create(const Length& length,
                                                    float zoom) {
   DCHECK(length.IsCalculated());
-  auto calc = length.GetCalculationValue().Zoom(zoom);
+  auto calc = length.GetCalculationValue().Zoom(1.0 / zoom);
   return Create(CSSMathExpressionNode::Create(*calc), calc->GetValueRange());
 }
 

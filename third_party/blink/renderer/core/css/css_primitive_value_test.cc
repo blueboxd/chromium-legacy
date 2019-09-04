@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
 namespace blink {
 namespace {
@@ -76,6 +77,29 @@ TEST(CSSPrimitiveValueTest, IsResolution) {
   EXPECT_FALSE(Create({5.0, UnitType::kDegrees})->IsResolution());
   EXPECT_TRUE(Create({5.0, UnitType::kDotsPerPixel})->IsResolution());
   EXPECT_TRUE(Create({5.0, UnitType::kDotsPerCentimeter})->IsResolution());
+}
+
+// https://crbug.com/999875
+TEST(CSSPrimitiveValueTest, Zooming) {
+  // Tests that the conversion CSSPrimitiveValue -> Length -> CSSPrimitiveValue
+  // yields the same value under zooming.
+
+  UnitValue a = {100, UnitType::kPixels};
+  UnitValue b = {10, UnitType::kPercentage};
+  CSSPrimitiveValue* original = CreateAddition(a, b);
+
+  CSSToLengthConversionData conversion_data;
+  conversion_data.SetZoom(0.5);
+
+  Length length = original->ConvertToLength(conversion_data);
+  EXPECT_TRUE(length.IsCalculated());
+  EXPECT_EQ(50.0, length.GetPixelsAndPercent().pixels);
+  EXPECT_EQ(10.0, length.GetPixelsAndPercent().percent);
+
+  CSSPrimitiveValue* converted =
+      CSSPrimitiveValue::CreateFromLength(length, conversion_data.Zoom());
+  EXPECT_TRUE(converted->IsMathFunctionValue());
+  EXPECT_EQ("calc(10% + 100px)", converted->CustomCSSText());
 }
 
 }  // namespace

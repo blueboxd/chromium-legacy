@@ -9,6 +9,8 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.Promise;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.ShareRequestMethod;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -35,16 +37,19 @@ public class TwaSharingController {
     private final CustomTabActivityNavigationController mNavigationController;
     private final WebApkPostShareTargetNavigator mPostNavigator;
     private final TrustedWebActivityVerifier mVerifier;
+    private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     @Inject
     public TwaSharingController(CustomTabActivityTabProvider tabProvider,
             CustomTabActivityNavigationController navigationController,
             WebApkPostShareTargetNavigator postNavigator,
-            TrustedWebActivityVerifier verifier) {
+            TrustedWebActivityVerifier verifier,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         mTabProvider = tabProvider;
         mNavigationController = navigationController;
         mPostNavigator = postNavigator;
         mVerifier = verifier;
+        mUmaRecorder = umaRecorder;
     }
 
     /**
@@ -67,10 +72,15 @@ public class TwaSharingController {
             }
             WebApkInfo.ShareTarget target = toShareTargetInternal(shareTarget);
             if (target.isShareMethodPost()) {
-                return sendPost(shareData, target);
+                boolean success = sendPost(shareData, target);
+                if (success) {
+                    mUmaRecorder.recordShareTargetRequest(ShareRequestMethod.POST);
+                }
+                return success;
             }
 
             mNavigationController.navigate(computeStartUrlForGETShareTarget(shareData, target));
+            mUmaRecorder.recordShareTargetRequest(ShareRequestMethod.GET);
             return true;
         });
     }

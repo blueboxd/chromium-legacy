@@ -47,7 +47,7 @@ PaymentMethodChangeEvent::PaymentMethodChangeEvent(
                                 init),
       method_name_(init->methodName()) {
   if (init->hasMethodDetails()) {
-    method_details_.Set(init->methodDetails().GetIsolate(),
+    method_details_.Set(script_state->GetIsolate(),
                         init->methodDetails().V8Value());
   }
 }

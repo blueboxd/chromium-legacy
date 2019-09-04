@@ -262,10 +262,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mShowTabsInMruOrder = feature.equals("twopanes") || feature.equals("single");
     }
 
-    void setBottomControlsHeight(int bottomControlsHeight) {
-        mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
-    }
-
     /**
      * Set the handler of the Grid Dialog so that it can be directly controlled.
      * @param tabGridDialogResetHandler The handler of the Grid Dialog
@@ -480,6 +476,11 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         onTabSelecting(mTabModelSelector.getCurrentTabId());
 
         return true;
+    }
+
+    @Override
+    public void setBottomControlsHeight(int bottomControlsHeight) {
+        mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
     }
 
     /**

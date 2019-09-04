@@ -6,8 +6,8 @@
 #define SERVICES_NETWORK_TEST_TEST_NETWORK_CONTEXT_CLIENT_H_
 
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace network {
@@ -17,7 +17,8 @@ namespace network {
 class TestNetworkContextClient : public network::mojom::NetworkContextClient {
  public:
   TestNetworkContextClient();
-  explicit TestNetworkContextClient(mojom::NetworkContextClientRequest request);
+  explicit TestNetworkContextClient(
+      mojo::PendingReceiver<mojom::NetworkContextClient> receiver);
   ~TestNetworkContextClient() override;
 
   void set_upload_files_invalid(bool upload_files_invalid) {
@@ -95,7 +96,7 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
 #endif
 
  private:
-  mojo::Binding<mojom::NetworkContextClient> binding_;
+  mojo::Receiver<mojom::NetworkContextClient> receiver_;
   bool upload_files_invalid_ = false;
   bool ignore_last_upload_file_ = false;
 };

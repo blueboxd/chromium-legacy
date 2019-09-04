@@ -36,7 +36,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/trees/paint_holding_commit_trigger.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -4136,6 +4135,8 @@ void LocalFrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
 
 void LocalFrameView::BeginLifecycleUpdates() {
   // Avoid pumping frames for the initially empty document.
+  // TODO(schenney): This seems pointless because main frame updates do occur
+  // for pages like about:blank, at least according to log messages.
   if (!GetFrame().Loader().StateMachine()->CommittedFirstRealDocumentLoad())
     return;
   lifecycle_updates_throttled_ = false;
@@ -4153,41 +4154,33 @@ void LocalFrameView::BeginLifecycleUpdates() {
   ScheduleAnimation();
   SetIntersectionObservationState(kRequired);
 
-  // The compositor will "defer commits" for the main frame until we
-  // explicitly request them.
+  // Non-main-frame lifecycle and commit deferral are controlled by their
+  // main frame.
   if (!GetFrame().IsMainFrame())
     return;
+
+  Document* document = GetFrame().GetDocument();
+  ChromeClient& chrome_client = GetFrame().GetPage()->GetChromeClient();
 
   // Determine if we want to defer commits to the compositor once lifecycle
   // updates start. Doing so allows us to update the page lifecycle but not
   // present the results to screen until we see first contentful paint is
   // available or until a timer expires.
   // This is enabled only if kAvoidFlashBetweenNavigation is enabled, and
-  // the document loading is a regular HTML served over HTTP/HTTPs.
-  Document* document = GetFrame().GetDocument();
-  ChromeClient& chrome_client = GetFrame().GetPage()->GetChromeClient();
-  if (document && base::FeatureList::IsEnabled(
-                      blink::features::kAvoidFlashBetweenNavigation)) {
-    if (document->DeferredCompositorCommitIsAllowed()) {
-      // Only defer commits once. This method gets called multiple times,
-      // and we do not want to defer a second time if we have already done
-      // so once and resumed commits already.
-      if (!have_deferred_commits_) {
-        chrome_client.StartDeferringCommits(
-            GetFrame(), GetCommitDelayForAvoidFlashBetweenNavigation());
-        have_deferred_commits_ = true;
-      }
-      // We do not StopDeferringCommits in cases where we have already started.
-      // A previously started deferral may not have completed yet, and we do
-      // not want to stop it prematurely.
-    } else {
-      chrome_client.StopDeferringCommits(
-          GetFrame(), cc::PaintHoldingCommitTrigger::kDisallowed);
-    }
-  } else {
-    chrome_client.StopDeferringCommits(
-        GetFrame(), cc::PaintHoldingCommitTrigger::kFeatureDisabled);
+  // the document loading is regular HTML served over HTTP/HTTPs.
+  // And only defer commits once. This method gets called multiple times,
+  // and we do not want to defer a second time if we have already done
+  // so once and resumed commits already.
+  if (document &&
+      base::FeatureList::IsEnabled(
+          blink::features::kAvoidFlashBetweenNavigation) &&
+      document->DeferredCompositorCommitIsAllowed() &&
+      !have_deferred_commits_) {
+    chrome_client.StartDeferringCommits(
+        GetFrame(), GetCommitDelayForAvoidFlashBetweenNavigation());
+    have_deferred_commits_ = true;
   }
+
   chrome_client.BeginLifecycleUpdates(GetFrame());
 }
 

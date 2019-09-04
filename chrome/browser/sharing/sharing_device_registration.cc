@@ -222,11 +222,7 @@ bool SharingDeviceRegistration::IsClickToCallSupported() const {
 }
 
 bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
-#if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
-#else
-  return false;
-#endif
 }
 
 void SharingDeviceRegistration::SetDeviceCapabilityForTesting(

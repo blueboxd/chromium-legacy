@@ -9,16 +9,16 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/test/image.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-#if defined(OS_CHROMEOS)
-#include "media/base/scopedfd_helper.h"
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 namespace media {
 namespace test {
@@ -121,7 +121,7 @@ bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
 bool CopyVideoFrame(const VideoFrame* src_frame,
                     scoped_refptr<VideoFrame> dst_frame) {
   LOG_ASSERT(src_frame->IsMappable());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   // If |dst_frame| is a Dmabuf-backed VideoFrame, we need to map its underlying
   // buffer into memory. We use a VideoFrameMapper to create a memory-based
   // VideoFrame that refers to the |dst_frame|'s buffer.
@@ -135,7 +135,7 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
       return false;
     }
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   LOG_ASSERT(dst_frame->IsMappable());
   LOG_ASSERT(src_frame->format() == dst_frame->format());
 
@@ -208,14 +208,14 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
 
   scoped_refptr<VideoFrame> dst_frame;
   switch (dst_storage_type) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_DMABUFS:
       dst_frame = CreatePlatformVideoFrame(
           dst_layout.format(), dst_layout.coded_size(),
           src_frame->visible_rect(), src_frame->visible_rect().size(),
           src_frame->timestamp(), gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
       break;
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:
       // Create VideoFrame, which allocates and owns data.
       dst_frame = VideoFrame::CreateFrameWithLayout(

@@ -60,6 +60,16 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     }
 
     @Override
+    public boolean closeAllTabsRequest(boolean incognito) {
+        if (getActiveLayout() == mStaticLayout && !incognito) {
+            startShowing(DeviceClassManager.enableAccessibilityLayout() ? mOverviewListLayout
+                                                                        : mOverviewLayout,
+                    /* animate= */ false);
+        }
+        return super.closeAllTabsRequest(incognito);
+    }
+
+    @Override
     protected LayoutManagerTabModelObserver createTabModelObserver() {
         return new LayoutManagerTabModelObserver() {
             @Override

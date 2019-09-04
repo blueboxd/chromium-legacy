@@ -462,14 +462,14 @@ function sensorMocks() {
 }
 
 function sensor_test(func, name, properties) {
-  promise_test(async () => {
+  promise_test(async t => {
     const sensorProvider = sensorMocks();
 
     // Clean up and reset mock sensor stubs asynchronously, so that the blink
     // side closes its proxies and notifies JS sensor objects before new test is
     // started.
     try {
-      await func(sensorProvider);
+      await func(t, sensorProvider);
     } finally {
       sensorProvider.reset();
       await new Promise(resolve => { setTimeout(resolve, 0); });

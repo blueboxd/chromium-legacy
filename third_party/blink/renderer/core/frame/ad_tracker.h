@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_AD_TRACKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_AD_TRACKER_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"

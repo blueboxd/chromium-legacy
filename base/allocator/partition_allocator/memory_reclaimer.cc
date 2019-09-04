@@ -13,22 +13,6 @@
 
 namespace base {
 
-namespace internal {
-
-// TODO(crbug.com/942512): Remove the feature after the M77 branch.
-const Feature kPartitionAllocPeriodicDecommit{"PartitionAllocPeriodicDecommit",
-                                              FEATURE_ENABLED_BY_DEFAULT};
-
-}  // namespace internal
-
-namespace {
-
-bool IsDeprecatedDecommitEnabled() {
-  return !FeatureList::IsEnabled(internal::kPartitionAllocPeriodicDecommit);
-}
-
-}  // namespace
-
 constexpr TimeDelta PartitionAllocMemoryReclaimer::kStatsRecordingTimeDelta;
 
 // static
@@ -62,9 +46,6 @@ void PartitionAllocMemoryReclaimer::Start(
     AutoLock lock(lock_);
     DCHECK(!partitions_.empty());
   }
-
-  if (!FeatureList::IsEnabled(internal::kPartitionAllocPeriodicDecommit))
-    return;
 
   // This does not need to run on the main thread, however there are a few
   // reasons to do it there:
@@ -120,13 +101,6 @@ void PartitionAllocMemoryReclaimer::Reclaim() {
   has_called_reclaim_ = true;
   if (timer.is_supported())
     total_reclaim_thread_time_ += timer.Elapsed();
-}
-
-void PartitionAllocMemoryReclaimer::DeprecatedReclaim() {
-  if (!IsDeprecatedDecommitEnabled())
-    return;
-
-  Reclaim();
 }
 
 void PartitionAllocMemoryReclaimer::RecordStatistics() {

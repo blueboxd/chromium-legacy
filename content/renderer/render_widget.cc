@@ -567,7 +567,7 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
       main_thread_scheduler, uses_input_handler);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAllowPreCommitInput))
-    widget_input_handler_manager_->AllowEarlyInputForTesting();
+    widget_input_handler_manager_->AllowPreCommitInput();
 
   show_callback_ = std::move(show_callback);
 
@@ -1115,11 +1115,22 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
     input_event_queue_->DispatchRafAlignedInput(frame_time);
   }
 
-  // The input handler wants to know about the main frame for metric purposes.
-  DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->BeginMainFrame();
-
   GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
+}
+
+void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {
+  // The input handler wants to know about the mainframe update status to
+  // enable/disable input and for metrics.
+  if (widget_input_handler_manager_)
+    widget_input_handler_manager_->OnDeferMainFrameUpdatesChanged(
+        deferral_state);
+}
+
+void RenderWidget::OnDeferCommitsChanged(bool deferral_state) {
+  // The input handler wants to know about the commit status for metric purposes
+  // and to enable/disable input.
+  if (widget_input_handler_manager_)
+    widget_input_handler_manager_->OnDeferCommitsChanged(deferral_state);
 }
 
 void RenderWidget::DidBeginMainFrame() {
@@ -1197,11 +1208,6 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // NOTE: Tests may break if this event is renamed or moved. See
   // tab_capture_performancetest.cc.
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
-
-  // The input handler wants to know about the commit for metric purposes
-  // and to resume input if suspended pending a frame.
-  DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->CompositorDidCommit();
 
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();

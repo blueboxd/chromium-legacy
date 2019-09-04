@@ -60,12 +60,12 @@ class IsolatedWorldCSPDelegate final
   }
 
   // Isolated world CSPs don't support these directives: "sandbox",
-  // "treat-as-public-address", "trusted-types" and "upgrade-insecure-requests".
+  // "trusted-types" and "upgrade-insecure-requests".
+  //
   // These directives depend on ExecutionContext for their implementation and
   // since isolated worlds don't have their own ExecutionContext, these are not
   // supported.
   void SetSandboxFlags(SandboxFlags) override {}
-  void SetAddressSpace(network::mojom::IPAddressSpace) override {}
   void SetRequireTrustedTypes() override {}
   void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
 

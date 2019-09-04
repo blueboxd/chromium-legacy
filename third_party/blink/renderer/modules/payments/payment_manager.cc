@@ -45,14 +45,13 @@ PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
   DCHECK(registration);
 
   if (ExecutionContext* context = registration->GetExecutionContext()) {
-    auto request = mojo::MakeRequest(
-        &manager_, context->GetTaskRunner(TaskType::kUserInteraction));
     if (auto* interface_provider = context->GetInterfaceProvider()) {
-      interface_provider->GetInterface(std::move(request));
+      interface_provider->GetInterface(manager_.BindNewPipeAndPassReceiver(
+          context->GetTaskRunner(TaskType::kUserInteraction)));
     }
   }
 
-  manager_.set_connection_error_handler(WTF::Bind(
+  manager_.set_disconnect_handler(WTF::Bind(
       &PaymentManager::OnServiceConnectionError, WrapWeakPersistent(this)));
   manager_->Init(registration_->GetExecutionContext()->Url(),
                  registration_->scope());

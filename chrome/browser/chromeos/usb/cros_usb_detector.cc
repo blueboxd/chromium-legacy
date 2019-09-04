@@ -38,29 +38,6 @@ static CrosUsbDetector* g_cros_usb_detector = nullptr;
 
 const char kNotifierUsb[] = "crosusb.connected";
 
-// ARCVM (Android VM) is considered as the "default" VM here, when it's enabled,
-// in the sense that the Android runtime is enabled by default on Chrome OS and
-// is always running. Android also has its own mechanisms/permissions ultimately
-// relying on Chrome OS for granting access to the USB devices attached in
-// ARCVM/ARC++. This means that unclaimed devices get auto-attached to ARCVM on
-// connect until the user decides otherwise by e.g. disconnecting them or
-// explicitly sharing them with another VM such as Crostini.
-// Note that attaching a device to a VM makes it visible by the guest kernel in
-// that VM but doesn't actually claim/open the device by itself, i.e. a device
-// attached in a VM (and not open there) can still be opened outside that VM.
-const char* const kDefaultVmName = arc::kArcVmName;
-
-// Returns whether the default VM is enabled. See declaration of
-// |kDefaultVmName|.
-bool IsDefaultVmEnabled() {
-  return arc::IsArcVmEnabled();
-}
-
-// Helper free function used with BindOnce() below for convenience.
-void IgnoreBool(base::OnceClosure closure, bool) {
-  std::move(closure).Run();
-}
-
 void RecordNotificationClosure(CrosUsbNotificationClosed disposition) {
   UMA_HISTOGRAM_ENUMERATION("CrosUsb.NotificationClosed", disposition);
 }
@@ -358,15 +335,6 @@ void CrosUsbDetector::OnDeviceChecked(
   available_device_info_.emplace(device_info->guid, device_info.Clone());
   SignalUsbDeviceObservers();
 
-  if (IsDefaultVmEnabled()) {
-    if (has_supported_interface || !has_blocked_interface) {
-      // USB devices not claimed by Chrome OS get automatically attached to the
-      // default VM. Note that this relies on the underlying VM (ARCVM) having
-      // its own permission model to restrict access to the device.
-      AttachUsbDeviceToVm(kDefaultVmName, new_device.guid, base::DoNothing());
-    }
-  }
-
   // Some devices should not trigger the notification.
   if (!new_device.sharable_with_crostini || hide_notification ||
       !ShouldShowNotification(*device_info)) {
@@ -397,8 +365,7 @@ void CrosUsbDetector::OnDeviceRemoved(
   for (const auto& device : usb_devices_) {
     if (device.guid == guid) {
       for (const auto& sharing_info_pair : device.vm_sharing_info) {
-        DetachUsbDeviceFromVmInternal(sharing_info_pair.first, guid,
-                                      base::DoNothing());
+        DetachUsbDeviceFromVm(sharing_info_pair.first, guid, base::DoNothing());
       }
     }
   }
@@ -422,19 +389,10 @@ void CrosUsbDetector::ConnectSharedDevicesOnVmStartup(
     const std::string& vm_name) {
   // Reattach shared devices when the VM becomes available.
   for (auto& device : usb_devices_) {
-    bool is_shared = false;
-    bool is_shared_with_this_vm = false;
     for (const auto& sharing_pair : device.vm_sharing_info) {
-      if (sharing_pair.second.shared) {
-        is_shared = true;
-        if (sharing_pair.first == vm_name) {
-          is_shared_with_this_vm = true;
-          break;
-        }
+      if (sharing_pair.second.shared && sharing_pair.first == vm_name) {
+        AttachUsbDeviceToVm(vm_name, device.guid, base::DoNothing());
       }
-    }
-    if (is_shared_with_this_vm || (vm_name == kDefaultVmName && !is_shared)) {
-      AttachUsbDeviceToVm(vm_name, device.guid, base::DoNothing());
     }
   }
 }
@@ -454,22 +412,6 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
       break;
     }
   }
-  if (!IsDefaultVmEnabled() || vm_name == kDefaultVmName) {
-    AttachUsbDeviceToVmInternal(vm_name, guid, std::move(callback));
-    return;
-  }
-  auto attach_internal = base::BindOnce(
-      &CrosUsbDetector::AttachUsbDeviceToVmInternal,
-      weak_ptr_factory_.GetWeakPtr(), vm_name, guid, std::move(callback));
-  DetachUsbDeviceFromVm(
-      kDefaultVmName, guid,
-      base::BindOnce(&IgnoreBool, std::move(attach_internal)));
-}
-
-void CrosUsbDetector::AttachUsbDeviceToVmInternal(
-    const std::string& vm_name,
-    const std::string& guid,
-    base::OnceCallback<void(bool success)> callback) {
   auto it = available_device_info_.find(guid);
   if (it == available_device_info_.end()) {
     return;
@@ -487,23 +429,6 @@ void CrosUsbDetector::AttachUsbDeviceToVmInternal(
 }
 
 void CrosUsbDetector::DetachUsbDeviceFromVm(
-    const std::string& vm_name,
-    const std::string& guid,
-    base::OnceCallback<void(bool success)> callback) {
-  if (!IsDefaultVmEnabled() || vm_name == kDefaultVmName) {
-    DetachUsbDeviceFromVmInternal(vm_name, guid, std::move(callback));
-    return;
-  }
-  auto attach_to_default_vm =
-      base::BindOnce(&CrosUsbDetector::AttachUsbDeviceToVmInternal,
-                     weak_ptr_factory_.GetWeakPtr(), kDefaultVmName, guid,
-                     std::move(callback));
-  DetachUsbDeviceFromVmInternal(
-      vm_name, guid,
-      base::BindOnce(&IgnoreBool, std::move(attach_to_default_vm)));
-}
-
-void CrosUsbDetector::DetachUsbDeviceFromVmInternal(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback) {

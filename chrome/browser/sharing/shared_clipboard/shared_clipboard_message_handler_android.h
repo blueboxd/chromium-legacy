@@ -6,24 +6,23 @@
 #define CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_MESSAGE_HANDLER_ANDROID_H_
 
 #include "base/macros.h"
-#include "chrome/browser/sharing/sharing_message_handler.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler.h"
 
 class SharingService;
 
-// Handles incoming messages for the shared clipboard feature.
-class SharedClipboardMessageHandler : public SharingMessageHandler {
+class SharedClipboardMessageHandlerAndroid
+    : public SharedClipboardMessageHandler {
  public:
-  explicit SharedClipboardMessageHandler(SharingService* sharing_service);
-  ~SharedClipboardMessageHandler() override;
-
-  // SharingMessageHandler implementation:
-  void OnMessage(
-      const chrome_browser_sharing::SharingMessage& message) override;
+  explicit SharedClipboardMessageHandlerAndroid(
+      SharingService* sharing_service);
+  ~SharedClipboardMessageHandlerAndroid() override;
 
  private:
-  SharingService* sharing_service_ = nullptr;
+  // SharedClipboardMessageHandler implementation.
+  void ShowNotification(
+      std::unique_ptr<syncer::DeviceInfo> device_info) override;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedClipboardMessageHandler);
+  DISALLOW_COPY_AND_ASSIGN(SharedClipboardMessageHandlerAndroid);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_MESSAGE_HANDLER_ANDROID_H_

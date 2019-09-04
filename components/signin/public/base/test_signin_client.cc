@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,4 +125,8 @@ void TestSigninClient::SetReadyForDiceMigration(bool ready) {
 
 void TestSigninClient::SetDiceMigrationCompleted() {
   is_dice_migration_completed_ = true;
+}
+
+bool TestSigninClient::IsNonEnterpriseUser(const std::string& email) {
+  return gaia::ExtractDomainName(email) == "gmail.com";
 }

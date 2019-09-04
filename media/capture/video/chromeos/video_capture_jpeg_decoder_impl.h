@@ -94,10 +94,10 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
   base::OnceClosure decode_done_closure_;
 
   // Next id for input BitstreamBuffer.
-  int32_t next_bitstream_buffer_id_;
+  int32_t next_task_id_;
 
   // The id for current input BitstreamBuffer being decoded.
-  int32_t in_buffer_id_;
+  int32_t task_id_;
 
   // Shared memory to store JPEG stream buffer. The input BitstreamBuffer is
   // backed by this.

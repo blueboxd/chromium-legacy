@@ -23,7 +23,6 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/shared_worker_host.h"
-#include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -31,6 +30,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/shared_worker_instance.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -67,6 +67,14 @@ SharedWorkerServiceImpl::~SharedWorkerServiceImpl() {
   worker_hosts_.clear();
 }
 
+void SharedWorkerServiceImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SharedWorkerServiceImpl::RemoveObserver(const Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool SharedWorkerServiceImpl::TerminateWorker(
     const GURL& url,
     const std::string& name,
@@ -79,6 +87,7 @@ bool SharedWorkerServiceImpl::TerminateWorker(
     DestroyHost(worker_host);
     return true;
   }
+
   return false;
 }
 
@@ -169,7 +178,38 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   worker_hosts_.erase(worker_hosts_.find(host));
+}
+
+void SharedWorkerServiceImpl::NotifyWorkerStarted(
+    const SharedWorkerInstance& instance,
+    int worker_process_id,
+    const base::UnguessableToken& dev_tools_token) {
+  for (Observer& observer : observers_)
+    observer.OnWorkerStarted(instance, worker_process_id, dev_tools_token);
+}
+
+void SharedWorkerServiceImpl::NotifyWorkerTerminating(
+    const SharedWorkerInstance& instance) {
+  for (Observer& observer : observers_)
+    observer.OnBeforeWorkerTerminated(instance);
+}
+
+void SharedWorkerServiceImpl::NotifyClientAdded(
+    const SharedWorkerInstance& instance,
+    int client_process_id,
+    int frame_id) {
+  for (Observer& observer : observers_)
+    observer.OnClientAdded(instance, client_process_id, frame_id);
+}
+
+void SharedWorkerServiceImpl::NotifyClientRemoved(
+    const SharedWorkerInstance& instance,
+    int client_process_id,
+    int frame_id) {
+  for (Observer& observer : observers_)
+    observer.OnClientRemoved(instance, client_process_id, frame_id);
 }
 
 void SharedWorkerServiceImpl::CreateWorker(

@@ -270,13 +270,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UserDeletedEntryDispatchesEvent) {
   EXPECT_TRUE(GetAllItems().empty());
 }
 
-// Flaky almost universally.  http://crbug.com/998049
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_MetricsCollected DISABLED_MetricsCollected
-#else
-#define MAYBE_MetricsCollected MetricsCollected
-#endif
-IN_PROC_BROWSER_TEST_F(ContentIndexTest, MAYBE_MetricsCollected) {
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, MetricsCollected) {
   // Inititally there is no content.
   {
     base::HistogramTester histogram_tester;
@@ -290,10 +284,23 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, MAYBE_MetricsCollected) {
     base::HistogramTester histogram_tester;
     ukm::TestAutoSetUkmRecorder ukm_recorder;
 
-    RunScript("AddContent('my-id-1')");
-    RunScript("AddContent('my-id-2')");
-    base::RunLoop()
-        .RunUntilIdle();  // Wait for the provider to get the content.
+    {
+      base::RunLoop run_loop;
+      ukm_recorder.SetOnAddEntryCallback(
+          ukm::builders::ContentIndex_Added::kEntryName,
+          run_loop.QuitClosure());
+      RunScript("AddContent('my-id-1')");
+      run_loop.Run();
+    }
+    {
+      base::RunLoop run_loop;
+      ukm_recorder.SetOnAddEntryCallback(
+          ukm::builders::ContentIndex_Added::kEntryName,
+          run_loop.QuitClosure());
+      RunScript("AddContent('my-id-2')");
+      run_loop.Run();
+    }
+
     histogram_tester.ExpectBucketCount(
         "ContentIndex.ContentAdded", blink::mojom::ContentCategory::ARTICLE, 2);
 
@@ -317,9 +324,13 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, MAYBE_MetricsCollected) {
     base::HistogramTester histogram_tester;
     ukm::TestAutoSetUkmRecorder ukm_recorder;
 
+    base::RunLoop run_loop;
+    ukm_recorder.SetOnAddEntryCallback(
+        ukm::builders::ContentIndex_DeletedByUser::kEntryName,
+        run_loop.QuitClosure());
     provider()->RemoveItem(offline_items().at("my-id-1").id);
     EXPECT_EQ(RunScript("waitForMessageFromServiceWorker()"), "my-id-1");
-    base::RunLoop().RunUntilIdle();
+    run_loop.Run();
 
     histogram_tester.ExpectBucketCount("ContentIndex.ContentDeleteEvent.Find",
                                        blink::ServiceWorkerStatusCode::kOk, 1);

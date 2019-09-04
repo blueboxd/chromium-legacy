@@ -46,7 +46,9 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/base/features.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -2474,7 +2476,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // Test deduplication of SameSite cookie deprecation messages.
 // TODO(crbug.com/976475): This test is flaky.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       DISABLED_SameSiteCookieDeprecationMessages) {
+                       DISABLED_DeduplicateSameSiteCookieDeprecationMessages) {
 #if defined(OS_ANDROID)
   // TODO(crbug.com/974701): This test is broken on Android that is
   // Marshmallow or older.
@@ -2517,6 +2519,72 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_EQ(3u, console_observer.messages().size());
   EXPECT_EQ(console_observer.messages()[1], console_observer.messages()[2]);
+}
+
+// Enable SameSiteByDefaultCookies to test deprecation messages for
+// Lax-allow-unsafe.
+class RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitWithFeatures({features::kCookieDeprecationMessages,
+                                    net::features::kSameSiteByDefaultCookies},
+                                   {});
+    RenderFrameHostImplBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSameSiteByDefaultCookiesBrowserTest,
+                       DisplaySameSiteCookieDeprecationMessages) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ConsoleObserverDelegate console_observer(web_contents, "*");
+  web_contents->SetDelegate(&console_observer);
+
+  // Test deprecation messages for SameSiteByDefault.
+  // Set a cookie without SameSite on b.com, then access it in a cross-site
+  // context.
+  base::Time set_cookie_time = base::Time::Now();
+  GURL url =
+      embedded_test_server()->GetURL("x.com", "/set-cookie?nosamesite=1");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // Message does not appear in same-site context (main frame is x).
+  ASSERT_EQ(0u, console_observer.messages().size());
+  url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(x())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // Message appears in cross-site context (a framing x).
+  EXPECT_EQ(1u, console_observer.messages().size());
+
+  // Test deprecation messages for CookiesWithoutSameSiteMustBeSecure.
+  // Set a cookie with SameSite=None but without Secure.
+  url = embedded_test_server()->GetURL(
+      "c.com", "/set-cookie?samesitenoneinsecure=1;SameSite=None");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // The 1 message from before, plus the (different) message for setting the
+  // SameSite=None insecure cookie.
+  EXPECT_EQ(2u, console_observer.messages().size());
+
+  // Test deprecation messages for Lax-allow-unsafe.
+  url = embedded_test_server()->GetURL("a.com",
+                                       "/form_that_posts_cross_site.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  // Submit the form to make a cross-site POST request to x.com.
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell(), "document.getElementById('text-form').submit()"));
+  form_post_observer.Wait();
+
+  // The test should not take more than 2 minutes.
+  ASSERT_LT(base::Time::Now() - set_cookie_time, net::kLaxAllowUnsafeMaxAge);
+  EXPECT_EQ(3u, console_observer.messages().size());
+
+  // Check that the messages were all distinct.
+  EXPECT_NE(console_observer.messages()[0], console_observer.messages()[1]);
+  EXPECT_NE(console_observer.messages()[0], console_observer.messages()[2]);
+  EXPECT_NE(console_observer.messages()[1], console_observer.messages()[2]);
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

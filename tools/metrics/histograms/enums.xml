@@ -8050,12 +8050,20 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromePrimaryAccountStateInGaiaCookies">
+  <obsolete>
+    Deprecated as of 09/2019.
+  </obsolete>
   <int value="0" label="No Chrome primary account."/>
   <int value="1"
       label="Chrome primary account is the first account in Gaia cookies."/>
   <int value="2"
       label="Chrome primary account is another account in Gaia cookies."/>
   <int value="3" label="Chrome primary account is not in Gaia cookies."/>
+</enum>
+
+<enum name="ChromeSignInPageHashSaved">
+  <int value="0" label="A password was typed, a hash is not saved"/>
+  <int value="1" label="A hash is saved"/>
 </enum>
 
 <enum name="ChromiumAndroidLinkerBrowserState">
@@ -11653,6 +11661,38 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Failed VM Stopped"/>
   <int value="3" label="Failed VM Started"/>
   <int value="4" label="Failed Architecture mismatch"/>
+</enum>
+
+<enum name="CrostiniResult">
+  <int value="0" label="SUCCESS"/>
+  <int value="4" label="CREATE_DISK_IMAGE_FAILED"/>
+  <int value="5" label="VM_START_FAILED"/>
+  <int value="6" label="VM_STOP_FAILED"/>
+  <int value="7" label="DESTROY_DISK_IMAGE_FAILED"/>
+  <int value="8" label="LIST_VM_DISKS_FAILED"/>
+  <int value="9" label="CLIENT_ERROR"/>
+  <int value="11" label="CONTAINER_DOWNLOAD_TIMED_OUT"/>
+  <int value="12" label="CONTAINER_CREATE_CANCELLED"/>
+  <int value="13" label="CONTAINER_CREATE_FAILED"/>
+  <int value="14" label="CONTAINER_START_CANCELLED"/>
+  <int value="15" label="CONTAINER_START_FAILED"/>
+  <int value="17" label="INSTALL_LINUX_PACKAGE_FAILED"/>
+  <int value="18" label="BLOCKING_OPERATION_ALREADY_ACTIVE"/>
+  <int value="19" label="UNINSTALL_PACKAGE_FAILED"/>
+  <int value="20" label="SSHFS_MOUNT_ERROR"/>
+  <int value="21" label="OFFLINE_WHEN_UPGRADE_REQUIRED"/>
+  <int value="22" label="LOAD_COMPONENT_FAILED"/>
+  <int value="27" label="CROSTINI_UNINSTALLER_RUNNING"/>
+  <int value="29" label="UNKNOWN_ERROR"/>
+  <int value="30" label="CONTAINER_EXPORT_IMPORT_FAILED"/>
+  <int value="31" label="CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED"/>
+  <int value="32" label="CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED"/>
+  <int value="33" label="CONTAINER_EXPORT_IMPORT_FAILED_ARCHITECTURE"/>
+  <int value="34" label="NOT_ALLOWED"/>
+  <int value="35" label="CONTAINER_EXPORT_IMPORT_FAILED_SPACE"/>
+  <int value="36" label="GET_CONTAINER_SSH_KEYS_FAILED"/>
+  <int value="37" label="CONTAINER_EXPORT_IMPORT_CANCELLED"/>
+  <int value="38" label="RESTART_ABORTED"/>
 </enum>
 
 <enum name="CrostiniSetupResult">
@@ -17931,8 +17971,9 @@ Called by update_net_error_codes.py.-->
   <int value="595" label="CaretHighlightEnabled"/>
   <int value="596" label="MonoAudioEnabled"/>
   <int value="597" label="AutoclickEnabled"/>
-  <int value="598" label="RendererCodeIntegrity"/>
+  <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
+  <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -36062,6 +36103,7 @@ from previous Chrome versions.
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="21055794" label="OpenXR:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
+  <int value="24124916" label="PrefetchPrivacyChanges:enabled"/>
   <int value="26875005" label="disable-explicit-dma-fences"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="29212695" label="OfflineIndicator:enabled"/>
@@ -36662,7 +36704,6 @@ from previous Chrome versions.
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
   <int value="880510010" label="enable-permissions-bubbles"/>
   <int value="884106779" label="supervised-user-safesites"/>
-  <int value="885357190" label="force-use-chrome-camera"/>
   <int value="885971656" label="EnablePlayStoreAppSearch:enabled"/>
   <int value="886907524" label="autoplay-policy"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
@@ -36759,6 +36800,7 @@ from previous Chrome versions.
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
+  <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
   <int value="1043334401" label="disable-slimming-paint-invalidation"/>
   <int value="1044928476"
@@ -37025,7 +37067,6 @@ from previous Chrome versions.
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
   <int value="1375165388" label="LazyFrameLoading:enabled"/>
   <int value="1376437124" label="show-cert-link"/>
-  <int value="1376535351" label="PrefetchRedirectError:enabled"/>
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
@@ -37146,7 +37187,6 @@ from previous Chrome versions.
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1563255033" label="memlog-stack-mode"/>
-  <int value="1566084951" label="PrefetchRedirectError:disabled"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
   <int value="1570178909" label="NewOverviewLayout:enabled"/>
@@ -55349,6 +55389,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SigninTokenStateTransition">
+  <obsolete>
+    Deprecated as of 09/2019.
+  </obsolete>
   <int value="0" label="None to Invalid"/>
   <int value="1" label="None to Regular"/>
   <int value="2" label="Invalid to Regular"/>
@@ -62986,6 +63029,11 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Success"/>
   <int value="1" label="UnknownFailure"/>
   <int value="2" label="Canceled"/>
+</enum>
+
+<enum name="WebShareTargetMethod">
+  <int value="0" label="GET"/>
+  <int value="1" label="POST"/>
 </enum>
 
 <enum name="WebsiteSettingsAction">

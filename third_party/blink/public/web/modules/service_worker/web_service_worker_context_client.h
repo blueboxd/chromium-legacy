@@ -129,7 +129,10 @@ class WebServiceWorkerContextClient {
   // This means all setup is finally complete: the script has been loaded, the
   // worker thread has started, the script has been passed to the worker thread,
   // and CSP and ReferrerPolicy information has been set on the worker thread.
-  virtual void WillEvaluateScript() {}
+  //
+  // |v8_context| is the V8 context of the worker and is used to support
+  // service workers in Chrome extensions.
+  virtual void WillEvaluateScript(v8::Local<v8::Context> v8_context) {}
 
   // Called when initial script evaluation finished for the main script.
   // |success| is true if the evaluation completed with no uncaught exception.
@@ -138,23 +141,6 @@ class WebServiceWorkerContextClient {
   // Called when the worker context is going to be initialized. This is the
   // initial method call after creating the worker scheduler.
   virtual void WillInitializeWorkerContext() {}
-
-  // Called when the worker context is initialized. This is probably called
-  // after WorkerContextStarted(). (WorkerThread::InitializeOnWorkerThread()
-  // calls WorkerContextStarted() via
-  // WorkerReportingProxy::DidCreateWorkerGlobalScope(),
-  // and then initializes the worker context if "needed" and calls
-  // DidInitializeWorkerContext(), but it's not clear when the context would
-  // already be initialized.)
-  //
-  // |context_proxy| is valid until WillDestroyWorkerContext() is called.
-  //
-  // This function is used to support service workers in Chrome extensions.
-  //
-  // TODO(nhiroki): Can you clarify this code and comment?
-  virtual void DidInitializeWorkerContext(
-      WebServiceWorkerContextProxy* context_proxy,
-      v8::Local<v8::Context> v8_context) {}
 
   // WorkerGlobalScope is about to be destroyed. The client should clear
   // the WebServiceWorkerGlobalScopeProxy when this is called.

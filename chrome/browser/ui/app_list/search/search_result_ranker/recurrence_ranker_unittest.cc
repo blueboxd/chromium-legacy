@@ -459,9 +459,12 @@ TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
   ranker.RemoveTarget("E");
   ranker.RenameTarget("E", "A");
 
-  EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.09375f)),
-                                                  Pair("B", FloatEq(0.125f)),
-                                                  Pair("C", FloatEq(0.25f))));
+  // E with score 0.5 not yet removed from model.
+  const float total = 0.09375f + 0.125f + 0.25f + 0.5f;
+  EXPECT_THAT(ranker.Rank(),
+              UnorderedElementsAre(Pair("A", FloatEq(0.09375f / total)),
+                                   Pair("B", FloatEq(0.125f / total)),
+                                   Pair("C", FloatEq(0.25f / total))));
   ExpectErrors(/* fresh_model_created = */ true,
                /* using_fake_predictor = */ false);
 }

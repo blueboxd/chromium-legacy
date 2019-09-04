@@ -76,6 +76,15 @@ void MojoMjpegDecodeAccelerator::Decode(
                                    base::Unretained(this)));
 }
 
+void MojoMjpegDecodeAccelerator::Decode(
+    int32_t task_id,
+    base::ScopedFD src_dmabuf_fd,
+    size_t src_size,
+    off_t src_offset,
+    scoped_refptr<media::VideoFrame> dst_frame) {
+  NOTIMPLEMENTED();
+}
+
 bool MojoMjpegDecodeAccelerator::IsSupported() {
   return true;
 }
@@ -116,7 +125,7 @@ void MojoMjpegDecodeAccelerator::OnDecodeAck(
 void MojoMjpegDecodeAccelerator::OnLostConnectionToJpegDecoder() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   OnDecodeAck(
-      kInvalidBitstreamBufferId,
+      kInvalidTaskId,
       ::chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
 }
 

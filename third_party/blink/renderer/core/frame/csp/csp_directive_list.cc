@@ -133,7 +133,6 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
       has_sandbox_policy_(false),
       strict_mixed_content_checking_enforced_(false),
       upgrade_insecure_requests_(false),
-      treat_as_public_address_(false),
       require_sri_for_(RequireSRIForToken::kNone),
       use_reporting_api_(false) {}
 
@@ -1233,22 +1232,6 @@ void CSPDirectiveList::ApplySandboxPolicy(const String& name,
     policy_->ReportInvalidSandboxFlags(invalid_tokens);
 }
 
-void CSPDirectiveList::TreatAsPublicAddress(const String& name,
-                                            const String& value) {
-  if (IsReportOnly()) {
-    policy_->ReportInvalidInReportOnly(name);
-    return;
-  }
-  if (treat_as_public_address_) {
-    policy_->ReportDuplicateDirective(name);
-    return;
-  }
-  treat_as_public_address_ = true;
-  policy_->TreatAsPublicAddress();
-  if (!value.IsEmpty())
-    policy_->ReportValueForEmptyDirective(name, value);
-}
-
 void CSPDirectiveList::RequireTrustedTypes(const String& name,
                                            const String& value) {
   if (trusted_types_) {
@@ -1360,9 +1343,6 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
     SetCSPDirective<SourceListDirective>(name, value, manifest_src_);
   } else if (type == ContentSecurityPolicy::DirectiveType::kNavigateTo) {
     SetCSPDirective<SourceListDirective>(name, value, navigate_to_);
-  } else if (type ==
-             ContentSecurityPolicy::DirectiveType::kTreatAsPublicAddress) {
-    TreatAsPublicAddress(name, value);
   } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo &&
              base::FeatureList::IsEnabled(network::features::kReporting)) {
     ParseReportTo(name, value);

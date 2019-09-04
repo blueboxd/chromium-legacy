@@ -14,14 +14,28 @@ ClientStatus UnexpectedErrorStatus(const std::string& file, int line) {
   return status;
 }
 
-ClientStatus JavaScriptErrorStatus(const std::string& file,
-                                   int line,
-                                   const runtime::ExceptionDetails* exception) {
-  ClientStatus status(UNEXPECTED_JS_ERROR);
-  auto* info = status.mutable_details()->mutable_unexpected_error_info();
-  info->set_source_file(file);
-  info->set_source_line_number(line);
+ClientStatus UnexpectedDevtoolsErrorStatus(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    const std::string& file,
+    int line) {
+  ClientStatus status = UnexpectedErrorStatus(file, line);
+  if (!reply_status.is_ok()) {
+    auto* info = status.mutable_details()->mutable_unexpected_error_info();
+    info->set_devtools_error_code(reply_status.error_code);
+    info->set_devtools_error_message(reply_status.error_message);
+  }
+  return status;
+}
+
+ClientStatus JavaScriptErrorStatus(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    const std::string& file,
+    int line,
+    const runtime::ExceptionDetails* exception) {
+  ClientStatus status = UnexpectedDevtoolsErrorStatus(reply_status, file, line);
+  status.set_proto_status(UNEXPECTED_JS_ERROR);
   if (exception) {
+    auto* info = status.mutable_details()->mutable_unexpected_error_info();
     if (exception->HasException() &&
         exception->GetException()->HasClassName()) {
       info->set_js_exception_classname(

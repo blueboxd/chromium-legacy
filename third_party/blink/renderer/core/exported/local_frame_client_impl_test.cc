@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,12 +112,11 @@ TEST_F(LocalFrameClientImplTest, UserAgentOverride) {
 }
 
 TEST_F(LocalFrameClientImplTest, TestDocumentInterfaceBrokerOverride) {
-  mojom::blink::DocumentInterfaceBrokerPtr doc;
+  mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker> doc;
   FrameHostTestDocumentInterfaceBroker frame_interface_broker(
       &MainFrame()->GetFrame()->GetDocumentInterfaceBroker(),
-      mojo::MakeRequest(&doc));
-  MainFrame()->GetFrame()->SetDocumentInterfaceBrokerForTesting(
-      doc.PassInterface().PassHandle());
+      doc.InitWithNewPipeAndPassReceiver());
+  MainFrame()->GetFrame()->SetDocumentInterfaceBrokerForTesting(doc.PassPipe());
 
   mojo::Remote<mojom::blink::FrameHostTestInterface> frame_test;
   MainFrame()

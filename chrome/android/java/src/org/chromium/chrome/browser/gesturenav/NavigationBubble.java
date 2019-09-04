@@ -28,6 +28,10 @@ import org.chromium.chrome.browser.util.ColorUtils;
 public class NavigationBubble extends LinearLayout {
     private static final int COLOR_TRANSITION_DURATION_MS = 250;
 
+    private static final float FADE_ALPHA = 0.5f;
+
+    private static final int FADE_DURATION_MS = 400;
+
     private final ValueAnimator mColorAnimator;
     private final int mBlue;
     private final int mBlack;
@@ -54,6 +58,9 @@ public class NavigationBubble extends LinearLayout {
     private TextView mText;
     private ImageView mIcon;
     private AnimationListener mListener;
+
+    // True if arrow bubble is faded out.
+    private boolean mArrowFaded;
 
     /**
      * Constructor for inflating from XML.
@@ -161,5 +168,17 @@ public class NavigationBubble extends LinearLayout {
      */
     public TextView getTextView() {
         return mText;
+    }
+
+    /**
+     * Fade out the arrow bubble.
+     * @param faded {@code true} if the bubble should be faded.
+     * @param animate {@code true} if animation is needed.
+     */
+    public void setFaded(boolean faded, boolean animate) {
+        if (faded == mArrowFaded) return;
+        assert mIcon != null;
+        animate().alpha(faded ? FADE_ALPHA : 1.f).setDuration(animate ? FADE_DURATION_MS : 0);
+        mArrowFaded = faded;
     }
 }

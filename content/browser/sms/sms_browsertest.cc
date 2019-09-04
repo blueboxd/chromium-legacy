@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   // Test that SMS content can be retrieved after navigator.sms.receive().
   std::string script = R"(
     (async () => {
-      let sms = await navigator.sms.receive({timeout: 60});
+      let sms = await navigator.sms.receive();
       return sms.content;
     }) ();
   )";
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
   std::string script = R"(
     // kicks off the sms receiver, adding the service
     // to the observer's list.
-    navigator.sms.receive({timeout: 60});
+    navigator.sms.receive();
     true
   )";
 
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
       base::WrapUnique(provider));
 
   std::string script = R"(
-    navigator.sms.receive({timeout: 60});
+    navigator.sms.receive();
     true
   )";
 
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
   NavigateToURL(tab2, url);
 
   std::string script = R"(
-    navigator.sms.receive({timeout: 60}).then(({content}) => {
+    navigator.sms.receive().then(({content}) => {
       sms = content;
     });
     true
@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   NavigateToURL(tab2, url2);
 
   std::string script = R"(
-    navigator.sms.receive({timeout: 60}).then(({content}) => {
+    navigator.sms.receive().then(({content}) => {
       sms = content;
     });
     true;
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
   std::string script = R"(
     // kicks off an sms receiver call, but deliberately leaves it hanging.
-    navigator.sms.receive({timeout: 60});
+    navigator.sms.receive();
     true
   )";
 
@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
                                         ukm_loop.QuitClosure());
 
   std::string script = R"(
-    navigator.sms.receive({timeout: 60}).catch(({name}) => {
+    navigator.sms.receive().catch(({name}) => {
       error = name;
     });
     true;

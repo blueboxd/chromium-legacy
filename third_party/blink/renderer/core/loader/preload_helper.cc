@@ -483,9 +483,6 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
-    if (base::FeatureList::IsEnabled(features::kPrefetchRedirectError)) {
-      resource_request.SetRedirectMode(network::mojom::RedirectMode::kError);
-    }
 
     // TODO(domfarolino): When SplitCache is enabled by default and we can
     // remove this feature check, also remove the exceptions in
@@ -499,6 +496,14 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     resource_request.SetReferrerPolicy(params.referrer_policy);
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));
+
+    if (base::FeatureList::IsEnabled(features::kPrefetchPrivacyChanges)) {
+      resource_request.SetRedirectMode(network::mojom::RedirectMode::kError);
+      resource_request.SetReferrerPolicy(
+          network::mojom::ReferrerPolicy::kNever);
+      // TODO(domfarolino): Implement more privacy-preserving prefetch changes.
+      // See crbug.com/988956.
+    }
 
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kLink;

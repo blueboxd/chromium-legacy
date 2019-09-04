@@ -112,14 +112,19 @@ const char kSafeBrowsingRealTimeLookupEnabled[] =
     "safebrowsing.real_time_lookup_enabled";
 const char kSafeBrowsingSendFilesForMalwareCheck[] =
     "safebrowsing.send_files_for_malware_check";
-const char kUnsafeEventsReportingEnabled[] = "policy.unsafe_events_reporting";
-const char kBlockLargeFileTransfer[] = "policy.block_large_file_transfers";
-const char kDelayDeliveryUntilVerdict[] = "policy.delay_delivery_until_verdict";
+const char kUnsafeEventsReportingEnabled[] =
+    "safebrowsing.unsafe_events_reporting";
+const char kBlockLargeFileTransfer[] =
+    "safebrowsing.block_large_file_transfers";
+const char kDelayDeliveryUntilVerdict[] =
+    "safebrowsing.delay_delivery_until_verdict";
 const char kAllowPasswordProtectedFiles[] =
-    "policy.allow_password_protected_files";
-const char kCheckContentCompliance[] = "policy.check_content_compliance";
+    "safebrowsing.allow_password_protected_files";
+const char kCheckContentCompliance[] = "safebrowsing.check_content_compliance";
 const char kDomainsToCheckComplianceOfDownloadedContent[] =
-    "policy.domains_to_check_compliance_of_downloaded_content";
+    "safebrowsing.domains_to_check_compliance_of_downloaded_content";
+const char kDomainsToCheckForMalwareOfUploadedContent[] =
+    "safebrowsing.domains_to_check_for_malware_of_uploaded_content";
 
 }  // namespace prefs
 

@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -80,16 +79,9 @@ using l10n_util::GetNSStringF;
         forState:UIControlStateNormal];
     signinPromoView.accessibilityLabel =
         GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
-    if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-      [signinPromoView.secondaryButton
-          setTitle:GetNSString(IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT)
-          forState:UIControlStateNormal];
-    } else {
-      [signinPromoView.secondaryButton
-          setTitle:GetNSStringF(IDS_IOS_SIGNIN_PROMO_NOT,
-                                SysNSStringToUTF16(self.userEmail))
-          forState:UIControlStateNormal];
-    }
+    [signinPromoView.secondaryButton
+        setTitle:GetNSString(IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT)
+        forState:UIControlStateNormal];
     UIImage* image = self.userImage;
     if (!image) {
       image = ios::GetChromeBrowserProvider()

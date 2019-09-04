@@ -741,7 +741,7 @@ void KerberosCredentialsManager::DoValidateActivePrincipal(
     found |= response.accounts(n).principal_name() == active_principal;
 
   if (!found) {
-    LOG(ERROR) << "Active principal got removed. Restoring.";
+    VLOG(1) << "Active principal got removed. Restoring.";
     if (response.accounts_size() > 0)
       SetActivePrincipalName(response.accounts(0).principal_name());
     else
@@ -803,8 +803,8 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
     NotifyRequiresLoginPassword(false);
 
     // https://crbug.com/963824: The active principal is empty if there are no
-    // accounts, so no need to remove accounts. It would just up the daemon
-    // unnecessarily.
+    // accounts, so no need to remove accounts. It would just start up the
+    // daemon unnecessarily.
     if (!GetActivePrincipalName().empty())
       RemoveAllManagedAccountsExcept({});
     return;

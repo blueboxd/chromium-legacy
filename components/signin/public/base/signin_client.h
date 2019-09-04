@@ -98,6 +98,11 @@ class SigninClient : public KeyedService {
 
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}
+
+  // Checks whether a user is known to be non-enterprise. Domains such as
+  // gmail.com and googlemail.com are known to not be managed. Also returns
+  // false if the username is empty.
+  virtual bool IsNonEnterpriseUser(const std::string& username);
 };
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_CLIENT_H_

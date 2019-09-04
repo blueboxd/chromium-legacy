@@ -11,8 +11,6 @@
 (function() {
 'use strict';
 
-const mojom = chromeos.networkConfig.mojom;
-
 Polymer({
   is: 'network-proxy-input',
 

@@ -2414,17 +2414,6 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       if (auto* owner = frame_view.GetLayoutEmbeddedContent())
         owner->SetShouldCheckForPaintInvalidation();
     }
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // For pre-CompositeAfterPaint this is done during compositing update.
-      // This is before PrePaintTreeWalk because it will update main thread
-      // scrolling reasons.
-      frame_view.GetScrollableArea()->UpdateCompositorScrollAnimations();
-      if (const auto* animating_scrollable_areas =
-              frame_view.AnimatingScrollableAreas()) {
-        for (auto scrollable_area : *animating_scrollable_areas)
-          scrollable_area->UpdateCompositorScrollAnimations();
-      }
-    }
   });
 
   {
@@ -2483,6 +2472,12 @@ void LocalFrameView::RunPaintLifecyclePhase() {
                          paint_artifact_compositor_->NeedsUpdate();
     PushPaintArtifactToCompositor();
     ForAllNonThrottledLocalFrameViews([this](LocalFrameView& frame_view) {
+      frame_view.GetScrollableArea()->UpdateCompositorScrollAnimations();
+      if (const auto* animating_scrollable_areas =
+              frame_view.AnimatingScrollableAreas()) {
+        for (PaintLayerScrollableArea* area : *animating_scrollable_areas)
+          area->UpdateCompositorScrollAnimations();
+      }
       DocumentAnimations::UpdateAnimations(
           frame_view.GetLayoutView()->GetDocument(),
           DocumentLifecycle::kPaintClean, paint_artifact_compositor_.get());

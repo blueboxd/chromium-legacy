@@ -209,6 +209,9 @@ class Receiver {
   // acknowledgement from the Remote is received.
   void FlushForTesting() { internal_state_.FlushForTesting(); }
 
+  // Exposed for testing, should not generally be used.
+  void EnableTestingMode() { internal_state_.EnableTestingMode(); }
+
   // Allows test code to swap the interface implementation.
   ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
     return internal_state_.SwapImplForTesting(new_impl);

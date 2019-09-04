@@ -74,11 +74,13 @@ void CardUnmaskPromptViewAndroid::OnUserInput(
     const JavaParamRef<jstring>& cvc,
     const JavaParamRef<jstring>& month,
     const JavaParamRef<jstring>& year,
-    jboolean should_store_locally) {
+    jboolean should_store_locally,
+    jboolean enable_fido_auth) {
   controller_->OnUnmaskPromptAccepted(
       base::android::ConvertJavaStringToUTF16(env, cvc),
       base::android::ConvertJavaStringToUTF16(env, month),
-      base::android::ConvertJavaStringToUTF16(env, year), should_store_locally);
+      base::android::ConvertJavaStringToUTF16(env, year), should_store_locally,
+      enable_fido_auth);
 }
 
 void CardUnmaskPromptViewAndroid::OnNewCardLinkClicked(

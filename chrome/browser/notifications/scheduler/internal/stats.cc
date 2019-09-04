@@ -140,6 +140,15 @@ void LogNotificationShow(const NotificationData& notification_data,
     LogHistogramEnumWithSuffix(kIhnrActionButtonEventHistogram,
                                ActionButtonEvent::kShown, client_type);
   }
+
+  LogNotificationLifeCycleEvent(NotificationLifeCycleEvent::kShown,
+                                client_type);
+}
+
+void LogNotificationLifeCycleEvent(NotificationLifeCycleEvent event,
+                                   SchedulerClientType client_type) {
+  LogHistogramEnumWithSuffix(
+      "Notifications.Scheduler.NotificationLifeCycleEvent", event, client_type);
 }
 
 void LogPngIconConverterEncodeResult(bool success) {

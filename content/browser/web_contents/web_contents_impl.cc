@@ -7275,9 +7275,7 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
     return;
 
   content::SSLStatus ssl_status = entry->GetSSL();
-  bool is_cert_error = net::IsCertStatusError(ssl_status.cert_status) &&
-                       !net::IsCertStatusMinorError(ssl_status.cert_status);
-  if (!is_cert_error)
+  if (!net::IsCertStatusError(ssl_status.cert_status))
     return;
 
   GetMainFrame()->AddMessageToConsole(

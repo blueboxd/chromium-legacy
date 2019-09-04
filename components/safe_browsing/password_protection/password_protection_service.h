@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -106,13 +107,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     LoginReputationClientRequest::TriggerType trigger_type,
                     bool password_field_exists);
 
+#if defined(ON_FOCUS_PING_ENABLED)
   virtual void MaybeStartPasswordFieldOnFocusRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
       const GURL& password_form_action,
       const GURL& password_form_frame_url,
       const std::string& hosted_domain);
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   virtual void MaybeStartProtectedPasswordEntryRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
@@ -124,6 +128,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Records a Chrome Sync event that sync password reuse was detected.
   virtual void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) = 0;
+#endif
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
@@ -136,6 +141,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // (6) Its hostname is a dotless domain.
   static bool CanGetReputationOfURL(const GURL& url);
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
@@ -154,6 +160,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Shows chrome://reset-password interstitial.
   virtual void ShowInterstitial(content::WebContents* web_contens,
                                 ReusedPasswordAccountType password_type) = 0;
+#endif
 
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    ReusedPasswordAccountType password_type,
@@ -184,6 +191,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
   virtual void MaybeReportPasswordReuseDetected(
       content::WebContents* web_contents,
@@ -194,7 +202,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Called when a protected password change is detected. Must be called on
   // UI thread.
   virtual void ReportPasswordChanged() = 0;
-
+#endif
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   static ReusedPasswordType GetPasswordProtectionReusedPasswordType(
@@ -329,13 +337,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual AccountInfo GetSignedInNonSyncAccount(
       const std::string& username) const = 0;
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   virtual bool IsUnderAdvancedProtection() = 0;
+#endif
 
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
   virtual void MaybeLogPasswordReuseLookupEvent(
@@ -343,9 +354,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome,
       PasswordType password_type,
       const LoginReputationClientResponse*) = 0;
+#endif
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
 
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
@@ -356,6 +369,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool CanShowInterstitial(RequestOutcome reason,
                                    ReusedPasswordAccountType password_type,
                                    const GURL& main_frame_url) = 0;
+#endif
 
  private:
   friend class PasswordProtectionServiceTest;
@@ -395,6 +409,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome reason,
       PasswordType password_type);
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Get the content area size of current browsing window.
   virtual gfx::Size GetCurrentContentAreaSize() const = 0;
 
@@ -403,6 +418,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
       mojom::PhishingDetectorPtr* phishing_detector);
+#endif
 
   // The username of the account which password has been reused on. It is only
   // set once a modal warning or interstitial is verified to be shown.

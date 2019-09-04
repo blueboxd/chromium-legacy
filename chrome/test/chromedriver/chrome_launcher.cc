@@ -819,7 +819,7 @@ Status ProcessExtension(const std::string& extension,
 
   if (is_crx_file) {
     crx_file::VerifierResult result =
-        crx_file::Verify(extension_crx, crx_file::VerifierFormat::CRX2_OR_CRX3,
+        crx_file::Verify(extension_crx, crx_file::VerifierFormat::CRX3,
                          {} /** required_key_hashes */,
                          {} /** required_file_hash */, &public_key_base64, &id);
     if (result != crx_file::VerifierResult::OK_FULL) {

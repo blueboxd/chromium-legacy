@@ -15,7 +15,9 @@ class AutofillProvider;
 // This class forwards AutofillHandler calls to AutofillProvider.
 class AutofillHandlerProxy : public AutofillHandler {
  public:
-  AutofillHandlerProxy(AutofillDriver* driver, AutofillProvider* provider);
+  AutofillHandlerProxy(AutofillDriver* driver,
+                       LogManager* log_manager,
+                       AutofillProvider* provider);
   ~AutofillHandlerProxy() override;
 
   void OnFocusNoLongerOnForm() override;

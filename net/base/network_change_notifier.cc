@@ -72,41 +72,6 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
   std::unique_ptr<SystemDnsConfigChangeNotifier> dns_config_notifier_;
 };
 
-// NetworkState is thread safe.
-//
-// TODO(crbug.com/971411): Remove once HostResolverManager converted to directly
-// use SystemDnsConfigChangeNotifier.
-class NetworkState : public base::RefCountedThreadSafe<NetworkState> {
- public:
-  NetworkState() = default;
-
-  void GetDnsConfig(DnsConfig* config) const {
-    base::AutoLock lock(lock_);
-    *config = dns_config_;
-  }
-
-  bool SetDnsConfig(const DnsConfig& dns_config) {
-    base::AutoLock lock(lock_);
-    dns_config_ = dns_config;
-    bool was_set = set_;
-    set_ = true;
-    return was_set;
-  }
-
-  void ClearDnsConfigForTesting() {
-    base::AutoLock lock(lock_);
-    set_ = false;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<NetworkState>;
-  ~NetworkState() = default;
-
-  mutable base::Lock lock_;
-  DnsConfig dns_config_;
-  bool set_ = false;
-};
-
 }  // namespace
 
 // static
@@ -205,9 +170,6 @@ class NetworkChangeNotifier::SystemDnsConfigObserver
   void OnSystemDnsConfigChanged(base::Optional<DnsConfig> config) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    bool was_set = network_state_->SetDnsConfig(config.value_or(DnsConfig()));
-    DCHECK_EQ(initial_config_received_, was_set);
-
     if (initial_config_received_) {
       NotifyObserversOfDNSChange();
     } else {
@@ -216,20 +178,8 @@ class NetworkChangeNotifier::SystemDnsConfigObserver
     }
   }
 
-  scoped_refptr<const NetworkState> network_state() { return network_state_; }
-
-  void ClearDnsConfigForTesting() {
-    initial_config_received_ = false;
-    network_state_->ClearDnsConfigForTesting();
-  }
-
  private:
   bool initial_config_received_ = false;
-
-  // TODO(crbug.com/971411): Remove once HostResolverManager converted to
-  // directly use SystemDnsConfigChangeNotifier.
-  scoped_refptr<NetworkState> network_state_ =
-      base::MakeRefCounted<NetworkState>();
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -440,14 +390,11 @@ NetworkChangeNotifier::GetDefaultNetwork() {
 }
 
 // static
-void NetworkChangeNotifier::GetDnsConfig(DnsConfig* config) {
-  if (!g_network_change_notifier) {
-    *config = DnsConfig();
-  } else {
-    scoped_refptr<const NetworkState> network_state =
-        g_network_change_notifier->system_dns_config_observer_->network_state();
-    network_state->GetDnsConfig(config);
-  }
+SystemDnsConfigChangeNotifier*
+NetworkChangeNotifier::GetSystemDnsConfigNotifier() {
+  if (g_network_change_notifier)
+    return g_network_change_notifier->GetCurrentSystemDnsConfigNotifier();
+  return nullptr;
 }
 
 // static
@@ -808,6 +755,12 @@ NetworkChangeNotifier::GetCurrentDefaultNetwork() const {
   return kInvalidNetworkHandle;
 }
 
+SystemDnsConfigChangeNotifier*
+NetworkChangeNotifier::GetCurrentSystemDnsConfigNotifier() {
+  DCHECK(system_dns_config_notifier_);
+  return system_dns_config_notifier_;
+}
+
 // static
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChange() {
   if (g_network_change_notifier &&
@@ -870,22 +823,6 @@ void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
     g_network_change_notifier->NotifyObserversOfSpecificNetworkChangeImpl(
         type, network);
   }
-}
-
-// static
-void NetworkChangeNotifier::SetDnsConfigForTesting(const DnsConfig& config) {
-  if (g_network_change_notifier) {
-    g_network_change_notifier->system_dns_config_observer_
-        ->OnSystemDnsConfigChanged(config);
-  }
-}
-
-// static
-void NetworkChangeNotifier::ClearDnsConfigForTesting() {
-  if (!g_network_change_notifier)
-    return;
-  g_network_change_notifier->system_dns_config_observer_
-      ->ClearDnsConfigForTesting();
 }
 
 void NetworkChangeNotifier::StopSystemDnsConfigNotifier() {

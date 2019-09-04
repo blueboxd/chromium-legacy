@@ -8,7 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -22,7 +23,8 @@ class MockMojoMediaStreamDispatcherHost
   MockMojoMediaStreamDispatcherHost();
   ~MockMojoMediaStreamDispatcherHost() override;
 
-  mojom::blink::MediaStreamDispatcherHostPtr CreateInterfacePtrAndBind();
+  mojo::PendingRemote<mojom::blink::MediaStreamDispatcherHost>
+  CreatePendingRemoteAndBind();
 
   void GenerateStream(
       int32_t request_id,
@@ -71,7 +73,7 @@ class MockMojoMediaStreamDispatcherHost
   WTF::Vector<MediaStreamDevice> audio_devices_;
   WTF::Vector<MediaStreamDevice> video_devices_;
   GenerateStreamCallback generate_stream_cb_;
-  mojo::Binding<mojom::blink::MediaStreamDispatcherHost> binding_;
+  mojo::Receiver<mojom::blink::MediaStreamDispatcherHost> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockMojoMediaStreamDispatcherHost);
 };

@@ -24,10 +24,6 @@ crbug.com/628697 [ win debug ] ContextLost_WebGLContextLostFromQuantity [ Skip ]
 crbug.com/497411 [ mountainlion debug ] ContextLost_WebGLContextLostFromSelectElement [ Skip ]
 crbug.com/498149 [ lion debug ] ContextLost_WebGLContextLostFromSelectElement [ Skip ]
 
-# Flaky on Mac
-crbug.com/999327 [ mac ] ContextLost_WebGLBlockedAfterJSNavigation [ Skip ]
-crbug.com/999327 [ mac ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
-
 # Too difficult to make this test work on Mac and Android for now. Disabling
 # GLES3 support at the GL bindings level doesn't work there yet.
 crbug.com/923134 [ mac ] ContextLost_WebGL2Blocked [ Skip ]

@@ -1461,8 +1461,9 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
   if (image)
     canvas2d_bridge_->DrawFullImage(image->PaintImageForCurrentFrame());
 
-  RestoreCanvasMatrixClipStack(canvas2d_bridge_->Canvas());
-  canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(canvas2d_bridge_->Canvas());
+  RestoreCanvasMatrixClipStack(canvas2d_bridge_->DrawingCanvas());
+  canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(
+      canvas2d_bridge_->DrawingCanvas());
   UpdateMemoryUsage();
 }
 

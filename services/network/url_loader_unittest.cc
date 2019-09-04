@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
@@ -2628,7 +2629,10 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::ClientCertificateResponderPtr client_cert_responder) override {
+      mojo::PendingRemote<mojom::ClientCertificateResponder>
+          client_cert_responder_remote) override {
+    mojo::Remote<mojom::ClientCertificateResponder> client_cert_responder(
+        std::move(client_cert_responder_remote));
     switch (certificate_response_) {
       case CertificateResponse::INVALID:
         NOTREACHED();

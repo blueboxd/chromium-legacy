@@ -68,6 +68,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -723,12 +724,13 @@ bool IsMainFrameRequest(int process_id, int routing_id) {
 // a mojo connection error occurs).
 class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
  public:
-  SSLClientAuthDelegate(network::mojom::ClientCertificateResponderPtrInfo
-                            client_cert_responder_info,
-                        content::ResourceContext* resource_context,
-                        WebContents::Getter web_contents_getter,
-                        const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
-      : client_cert_responder_(std::move(client_cert_responder_info)),
+  SSLClientAuthDelegate(
+      mojo::PendingRemote<network::mojom::ClientCertificateResponder>
+          client_cert_responder_remote,
+      content::ResourceContext* resource_context,
+      WebContents::Getter web_contents_getter,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
+      : client_cert_responder_(std::move(client_cert_responder_remote)),
         ssl_client_auth_handler_(std::make_unique<SSLClientAuthHandler>(
             GetContentClient()->browser()->CreateClientCertStore(
                 resource_context),
@@ -738,7 +740,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(client_cert_responder_);
     ssl_client_auth_handler_->SelectCertificate();
-    client_cert_responder_.set_connection_error_handler(base::BindOnce(
+    client_cert_responder_.set_disconnect_handler(base::BindOnce(
         &SSLClientAuthDelegate::DeleteSelf, base::Unretained(this)));
   }
 
@@ -777,18 +779,19 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   }
 
  private:
-  network::mojom::ClientCertificateResponderPtr client_cert_responder_;
+  mojo::Remote<network::mojom::ClientCertificateResponder>
+      client_cert_responder_;
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 };
 
 void CreateSSLClientAuthDelegateOnIO(
-    network::mojom::ClientCertificateResponderPtrInfo
-        client_cert_responder_info,
+    mojo::PendingRemote<network::mojom::ClientCertificateResponder>
+        client_cert_responder_remote,
     content::ResourceContext* resource_context,
     WebContents::Getter web_contents_getter,
     scoped_refptr<net::SSLCertRequestInfo> cert_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  new SSLClientAuthDelegate(std::move(client_cert_responder_info),
+  new SSLClientAuthDelegate(std::move(client_cert_responder_remote),
                             resource_context, std::move(web_contents_getter),
                             cert_info);  // deletes self
 }
@@ -798,8 +801,8 @@ void OnCertificateRequestedContinuation(
     uint32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    network::mojom::ClientCertificateResponderPtrInfo
-        client_cert_responder_info,
+    mojo::PendingRemote<network::mojom::ClientCertificateResponder>
+        client_cert_responder_remote,
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
   if (!web_contents_getter) {
     web_contents_getter =
@@ -807,9 +810,9 @@ void OnCertificateRequestedContinuation(
   }
   WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents) {
-    DCHECK(client_cert_responder_info);
-    network::mojom::ClientCertificateResponderPtr client_cert_responder(
-        std::move(client_cert_responder_info));
+    DCHECK(client_cert_responder_remote);
+    mojo::Remote<network::mojom::ClientCertificateResponder>
+        client_cert_responder(std::move(client_cert_responder_remote));
     client_cert_responder->CancelRequest();
     return;
   }
@@ -817,7 +820,7 @@ void OnCertificateRequestedContinuation(
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateSSLClientAuthDelegateOnIO,
-                     std::move(client_cert_responder_info),
+                     std::move(client_cert_responder_remote),
                      web_contents->GetBrowserContext()->GetResourceContext(),
                      std::move(web_contents_getter), cert_info));
 }
@@ -1636,28 +1639,27 @@ void StoragePartitionImpl::OnCertificateRequested(
     uint32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    network::mojom::ClientCertificateResponderPtr cert_responder) {
+    mojo::PendingRemote<network::mojom::ClientCertificateResponder>
+        cert_responder) {
   // Use |window_id| if it's provided.
   if (window_id) {
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       OnCertificateRequestedContinuation(
           process_id, routing_id, request_id, cert_info,
-          cert_responder.PassInterface(),
-          GetWebContentsFromRegistry(*window_id));
+          std::move(cert_responder), GetWebContentsFromRegistry(*window_id));
     } else {
       base::PostTaskAndReplyWithResult(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&GetWebContentsFromRegistry, *window_id),
           base::BindOnce(&OnCertificateRequestedContinuation, process_id,
                          routing_id, request_id, cert_info,
-                         cert_responder.PassInterface()));
+                         std::move(cert_responder)));
     }
     return;
   }
 
   OnCertificateRequestedContinuation(process_id, routing_id, request_id,
-                                     cert_info, cert_responder.PassInterface(),
-                                     {});
+                                     cert_info, std::move(cert_responder), {});
 }
 
 void StoragePartitionImpl::OnSSLCertificateError(

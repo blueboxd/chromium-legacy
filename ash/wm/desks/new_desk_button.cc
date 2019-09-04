@@ -90,7 +90,7 @@ void NewDeskButton::UpdateButtonState() {
           AshColorProvider::ControlsLayerType::kInactiveControlBackground,
           AshColorProvider::AshColorMode::kDark);
   const SkColor disabled_background_color =
-      AshColorProvider::Get()->GetDisabledColor(background_color);
+      AshColorProvider::GetDisabledColor(background_color);
   SetBackground(views::CreateRoundedRectBackground(
       enabled ? background_color : disabled_background_color, kCornerRadius));
 }

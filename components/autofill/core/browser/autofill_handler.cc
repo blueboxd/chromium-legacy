@@ -6,6 +6,7 @@
 
 #include "base/containers/adapters.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -49,7 +50,9 @@ bool CachedFormNeedsUpdate(const FormData& live_form,
 
 using base::TimeTicks;
 
-AutofillHandler::AutofillHandler(AutofillDriver* driver) : driver_(driver) {}
+AutofillHandler::AutofillHandler(AutofillDriver* driver,
+                                 LogManager* log_manager)
+    : driver_(driver), log_manager_(log_manager) {}
 
 AutofillHandler::~AutofillHandler() = default;
 
@@ -293,7 +296,7 @@ bool AutofillHandler::ParseForm(const FormData& form,
     }
   }
 
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(log_manager_);
 
   // Hold the parsed_form_structure we intend to return. We can use this to
   // reference the form_signature when transferring ownership below.

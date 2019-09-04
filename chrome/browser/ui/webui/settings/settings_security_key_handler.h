@@ -166,6 +166,10 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
   base::WeakPtrFactory<SecurityKeysCredentialHandler> weak_factory_{this};
 };
 
+// SecurityKeysBioEnrollmentHandler processes messages from the "Manage
+// fingerprints" dialog of the "Security Keys" settings subpage. An instance of
+// this class is created for each settings tab and is destroyed when the tab is
+// closed. See SecurityKeysBioEnrollProxy about the interface.
 class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
  public:
   SecurityKeysBioEnrollmentHandler();
@@ -179,6 +183,7 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
     kReady,
     kEnumerating,
     kEnrolling,
+    kDeleting,
     kCancelling,
   };
 
@@ -200,6 +205,9 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
   void HandleStartEnrolling(const base::ListValue* args);
   void OnEnrollingResponse(device::BioEnrollmentSampleStatus, uint8_t);
   void OnEnrollmentFinished(device::CtapDeviceResponseCode);
+
+  void HandleDelete(const base::ListValue* args);
+  void OnDelete(device::CtapDeviceResponseCode);
 
   void HandleCancel(const base::ListValue* args);
   void OnEnrollCancel(device::CtapDeviceResponseCode);

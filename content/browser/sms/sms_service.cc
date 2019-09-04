@@ -70,10 +70,6 @@ void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
   sms_provider_->AddObserver(this);
 
   callback_ = std::move(callback);
-  // The |timer_| is owned by |this|, so it is safe to hold raw pointers to
-  // |this| here in the callback.
-  timer_.Start(FROM_HERE, timeout,
-               base::BindOnce(&SmsService::OnTimeout, base::Unretained(this)));
 
   sms_provider_->Retrieve();
 }
@@ -86,12 +82,10 @@ bool SmsService::OnReceive(const url::Origin& origin,
     return false;
 
   DCHECK(!sms_);
-  DCHECK(timer_.IsRunning());
   DCHECK(!start_time_.is_null());
 
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
-  timer_.Stop();
   sms_provider_->RemoveObserver(this);
 
   sms_ = sms;
@@ -123,17 +117,6 @@ void SmsService::Process(blink::mojom::SmsStatus status,
   CleanUp();
 }
 
-void SmsService::OnTimeout() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DCHECK(callback_);
-  DCHECK(!timer_.IsRunning());
-
-  std::move(callback_).Run(blink::mojom::SmsStatus::kTimeout, base::nullopt);
-
-  CleanUp();
-}
-
 void SmsService::OnConfirm() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -155,7 +138,6 @@ void SmsService::OnCancel() {
 }
 
 void SmsService::CleanUp() {
-  timer_.Stop();
   callback_.Reset();
   sms_.reset();
   start_time_ = base::TimeTicks();

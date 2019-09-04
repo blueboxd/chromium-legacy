@@ -238,7 +238,8 @@ if (is_cros_chrome_sdk) {
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
     # To disable a specific test, add it the following list and cite a bug.
-    tast_disabled_tests = []
+    # TODO(crbug.com/1000351): Enable crostini.SanityArtifact.
+    tast_disabled_tests = [ "crostini.SanityArtifact" ]
   }
 
   tast_test("chrome_all_tast_tests_informational") {

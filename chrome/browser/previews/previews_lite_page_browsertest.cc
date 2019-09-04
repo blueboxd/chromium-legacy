@@ -2288,6 +2288,10 @@ class CoinFlipHoldbackExperimentBrowserTest
 
   ~CoinFlipHoldbackExperimentBrowserTest() override = default;
 
+  // Doesn't work with the NavThrottle impl since the coin flip event is
+  // recorded multiple times.
+  bool UseURLLoaderImplementation() const override { return true; }
+
   void SetUp() override {
     PreviewsLitePageAndPageHintsBrowserTest::SetUp();
     ukm_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
@@ -2383,22 +2387,49 @@ class CoinFlipHoldbackExperimentBrowserTest
     EXPECT_EQ(want_ukm_coin_flip_holdback_result,
               static_cast<int>(previews_data->coin_flip_holdback_result()));
 
-    if (want_lite_page_redirect_committed || want_resource_loading_committed) {
-      // Navigate to a non-preview page to trigger the UKM PLM Observer to
-      // record.
-      ui_test_utils::NavigateToURL(browser(), GURL("http://nopreviews"));
-      base::RunLoop().RunUntilIdle();
-      content::WaitForLoadStop(GetWebContents());
+    ValidateUKM(want_lite_page_redirect_committed,
+                want_resource_loading_committed,
+                want_ukm_coin_flip_holdback_result, want_ukm_previews_likely);
+  }
 
+  void ValidateUKM(bool want_lite_page_redirect_committed,
+                   bool want_resource_loading_committed,
+                   int want_ukm_coin_flip_holdback_result,
+                   bool want_ukm_previews_likely) {
+    if (!want_lite_page_redirect_committed &&
+        !want_resource_loading_committed) {
+      return;
+    }
+
+    if (want_ukm_coin_flip_holdback_result ==
+        static_cast<int>(previews::CoinFlipHoldbackResult::kNotSet)) {
+      return;
+    }
+
+    {
+      using UkmEntry = ukm::builders::PreviewsCoinFlip;
+      auto entries = ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+      // EXPECT_EQ(1u, entries.size());
+      for (auto* entry : entries) {
+        ukm_recorder_->ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
+                                         want_ukm_coin_flip_holdback_result);
+      }
+    }
+
+    // Navigate to a non-preview page to trigger the UKM PLM Observer to
+    // record.
+    ui_test_utils::NavigateToURL(browser(), GURL("http://nopreviews"));
+    base::RunLoop().RunUntilIdle();
+    content::WaitForLoadStop(GetWebContents());
+
+    {
       using UkmEntry = ukm::builders::Previews;
       auto entries = ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName);
-      ASSERT_EQ(1u, entries.size());
-      auto* entry = entries.at(0);
-
-      ukm_recorder_->ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
-                                       want_ukm_coin_flip_holdback_result);
-      ukm_recorder_->ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName,
-                                       want_ukm_previews_likely ? 1 : 0);
+      EXPECT_EQ(1u, entries.size());
+      for (auto* entry : entries) {
+        ukm_recorder_->ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName,
+                                         want_ukm_previews_likely ? 1 : 0);
+      }
     }
   }
 

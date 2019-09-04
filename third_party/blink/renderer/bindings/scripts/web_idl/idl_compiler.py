@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import functools
 import itertools
 
 from .callback_function import CallbackFunction
@@ -101,40 +102,85 @@ class IdlCompiler(object):
         return Database(self._db)
 
     def _propagate_extattrs_per_idl_fragment(self):
+        def propagate_extattr(extattr_key_and_attr_name,
+                              bag=None,
+                              default_value=None,
+                              only_to_members_of_partial_or_mixin=True,
+                              ir=None):
+            """
+            Given |extattr_key| and |attr_name|, this function works like below.
+
+              extattr = ir.extended_attributes.get(extattr_key)
+              ir.exposure.attr_name(extattr's contents)          # [1]
+
+            |bag| selects either of code_generator_info or exposure.  |apply_to|
+            defined below performs the second line above [1].
+            """
+            extattr_key, attr_name = extattr_key_and_attr_name
+            extattr = ir.extended_attributes.get(extattr_key)
+            if extattr is None:
+                return
+
+            def apply_to(x):
+                set_func = getattr(getattr(x, bag), attr_name)
+                if extattr.has_values:
+                    for value in extattr.values:
+                        set_func(value)
+                    if not extattr.values and default_value:
+                        set_func(default_value)
+                elif extattr.has_arguments:
+                    for left, right in extattr.arguments:
+                        set_func(left, right)
+                else:
+                    assert False
+
+            apply_to(ir)
+
+            if not hasattr(ir, 'iter_all_members'):
+                return
+            if (only_to_members_of_partial_or_mixin
+                    and ((hasattr(ir, 'is_partial') and ir.is_partial) or
+                         (hasattr(ir, 'is_mixin') and ir.is_mixin))):
+                return
+            for member in ir.iter_all_members():
+                apply_to(member)
+
         def process_interface_like(ir):
             ir = make_copy(ir)
 
-            implemented_as = ir.extended_attributes.get('ImplementedAs')
-            if implemented_as:
-                ir.code_generator_info.set_receiver_implemented_as(
-                    implemented_as.value)
-            map(process_member_like, ir.attributes)
-            map(process_member_like, ir.constants)
-            map(process_member_like, ir.operations)
+            propagate = functools.partial(propagate_extattr, ir=ir)
+            propagate(('ImplementedAs', 'set_receiver_implemented_as'),
+                      bag='code_generator_info',
+                      only_to_members_of_partial_or_mixin=False)
+            propagate_to_exposure(propagate)
+
+            map(process_member_like, ir.iter_all_members())
 
             self._ir_map.add(ir)
 
-        def process_member_like(prop):
-            implemented_as = prop.extended_attributes.get('ImplementedAs')
-            if implemented_as:
-                prop.code_generator_info.set_property_implemented_as(
-                    implemented_as.value)
+        def process_member_like(ir):
+            propagate = functools.partial(propagate_extattr, ir=ir)
+            propagate(('ImplementedAs', 'set_property_implemented_as'),
+                      bag='code_generator_info')
+            propagate_to_exposure(propagate)
 
-        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
-        old_mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
-        old_partial_interfaces = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.PARTIAL_INTERFACE)
-        old_partial_mixins = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+        def propagate_to_exposure(propagate):
+            propagate = functools.partial(propagate, bag='exposure')
+            propagate(('Exposed', 'add_global_name_and_feature'))
+            propagate(('RuntimeEnabled', 'add_runtime_enabled_feature'))
+            propagate(('ContextEnabled', 'add_context_enabled_feature'))
+            propagate(('SecureContext', 'set_only_in_secure_contexts'),
+                      default_value=True)
+
+        old_irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.INTERFACE_MIXIN,
+            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_DICTIONARY)
 
         self._ir_map.move_to_new_phase()
 
-        map(process_interface_like, old_interfaces.itervalues())
-        map(process_interface_like, old_mixins.itervalues())
-        for partials in old_partial_interfaces.itervalues():
-            map(process_interface_like, partials)
-        for partials in old_partial_mixins.itervalues():
-            map(process_interface_like, partials)
+        map(process_interface_like, old_irs)
 
     def _merge_partial_interfaces(self):
         old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)

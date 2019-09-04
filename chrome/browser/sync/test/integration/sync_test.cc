@@ -310,6 +310,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
 
 #if defined(OS_CHROMEOS)
   cl->AppendSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests);
+  cl->AppendSwitch(chromeos::switches::kDisableArcOptInVerification);
   arc::SetArcAvailableCommandLineForTesting(cl);
 #endif
 }

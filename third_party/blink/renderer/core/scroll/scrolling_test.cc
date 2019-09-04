@@ -165,7 +165,7 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameVisualViewporUserScrollCallBack) {
 // Test that the callback of user scroll will be executed when the animation
 // finishes at ScrollAnimator::TickAnimation for root frame user scroll at both
 // the layout and visual viewport.
-TEST_F(ScrollAnimatorSimTest, TestRootFrameBothViewporsUserScrollCallBack) {
+TEST_F(ScrollAnimatorSimTest, TestRootFrameBothViewportsUserScrollCallBack) {
   GetDocument().GetFrame()->GetSettings()->SetScrollAnimatorEnabled(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 500));
   SimRequest request("https://example.com/test.html", "text/html");

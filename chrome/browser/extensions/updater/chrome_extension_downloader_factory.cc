@@ -63,10 +63,7 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
       delegate, content::GetSystemConnector(),
-      extensions::GetPolicyVerifierFormat(
-          extensions::ExtensionPrefs::Get(profile)
-              ->InsecureExtensionUpdatesEnabled()),
-      profile->GetPath());
+      extensions::GetPolicyVerifierFormat(), profile->GetPath());
 
   // NOTE: It is not obvious why it is OK to pass raw pointers to the token
   // service and identity manager here. The logic is as follows:

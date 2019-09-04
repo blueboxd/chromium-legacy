@@ -715,7 +715,6 @@ jumbo_component("base") {
     "synchronization/lock.h",
     "synchronization/lock_impl.h",
     "synchronization/lock_impl_win.cc",
-    "synchronization/spin_wait.h",
     "synchronization/waitable_event.h",
     "synchronization/waitable_event_mac.cc",
     "synchronization/waitable_event_watcher.h",
@@ -877,6 +876,7 @@ jumbo_component("base") {
     "task_runner_util.h",
     "template_util.h",
     "test/malloc_wrapper.h",
+    "test/spin_wait.h",
     "third_party/cityhash/city.cc",
     "third_party/cityhash/city.h",
     "third_party/icu/icu_utf.cc",
@@ -3243,6 +3243,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/AccessedByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
+      "android/java/src/org/chromium/base/annotations/CheckDiscard.java",
       "android/java/src/org/chromium/base/annotations/DoNotInline.java",
       "android/java/src/org/chromium/base/annotations/JNIAdditionalImport.java",
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
@@ -3309,10 +3310,6 @@ if (is_android) {
       "*/NativeLibraries.class",
       "*/NativeLibraries##*.class",
     ]
-
-    if (!is_java_debug && !dcheck_always_on) {
-      proguard_configs = [ "android/proguard/dcheck_is_off.flags" ]
-    }
   }
 
   android_aidl("base_java_aidl") {
@@ -3373,6 +3370,7 @@ if (is_android) {
       "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_core_java",
+      "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit",
       "//third_party/ub-uiautomator:ub_uiautomator_java",
     ]

@@ -19,6 +19,7 @@
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
+#include "chromecast/media/base/monotonic_clock.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
@@ -56,7 +57,6 @@ namespace media {
 namespace {
 const char kDefaultDeviceId[] = "";
 const int64_t kDelayUs = 123;
-const int64_t kDelayTimestampUs = 123456789;
 const double kDefaultVolume = 1.0f;
 
 int on_more_data_call_count_ = 0;
@@ -919,11 +919,12 @@ TEST_F(CastAudioOutputStreamTest, AudioDelay) {
   FakeAudioDecoder* audio_decoder = GetAudioDecoder();
   ASSERT_TRUE(audio_decoder);
   audio_decoder->set_rendering_delay(
-      CmaBackend::AudioDecoder::RenderingDelay(kDelayUs, kDelayTimestampUs));
-
+      CmaBackend::AudioDecoder::RenderingDelay(kDelayUs, MonotonicClockNow()));
   ::media::MockAudioSourceCallback source_callback;
   const base::TimeDelta delay(base::TimeDelta::FromMicroseconds(kDelayUs));
-  EXPECT_CALL(source_callback, OnMoreData(delay, _, _, _))
+  // OnMoreData can be called with a shorter delay than the rendering delay in
+  // order to prefetch audio data faster.
+  EXPECT_CALL(source_callback, OnMoreData(testing::Le(delay), _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
 
   stream->Start(&source_callback);

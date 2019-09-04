@@ -66,6 +66,10 @@ struct CryptographerDataWithPendingKeys {
 // delayed until after it can be decrypted.
 class Cryptographer {
  public:
+  // Deserialization.
+  static Cryptographer CreateFromCryptographerDataWithPendingKeys(
+      const CryptographerDataWithPendingKeys& serialized_state);
+
   Cryptographer();
   Cryptographer(const Cryptographer& other);
   ~Cryptographer();
@@ -208,6 +212,11 @@ class Cryptographer {
   bool ImportNigoriKey(const std::string& serialized_nigori_key);
 
  private:
+  // Initializes cryptographer with completely provided state.
+  Cryptographer(NigoriKeyBag key_bag,
+                const std::string& default_nigori_name,
+                std::unique_ptr<sync_pb::EncryptedData> pending_keys);
+
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag|.
   // Does not update the default nigori.

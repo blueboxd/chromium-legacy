@@ -79,8 +79,11 @@ gfx::Rect GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
 }
 
 gfx::Rect GetDisplayBoundsWithShelf(aura::Window* window) {
-  if (!Shell::Get()->display_manager()->IsInUnifiedMode())
-    return window->GetRootWindow()->bounds();
+  if (!Shell::Get()->display_manager()->IsInUnifiedMode()) {
+    return display::Screen::GetScreen()
+        ->GetDisplayNearestWindow(window)
+        .bounds();
+  }
 
   // In Unified Mode, the display that should contain the shelf depends on the
   // current shelf alignment.

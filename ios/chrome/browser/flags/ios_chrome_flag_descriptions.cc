@@ -149,6 +149,21 @@ const char kDetectMainThreadFreezeDescription[] =
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
+const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
+    "Make cardholder name editable in dialog during credit card upload";
+const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
+    "If enabled, in certain situations when offering credit card upload to "
+    "Google Payments, the cardholder name can be edited within the "
+    "offer-to-save dialog, which is prefilled with the name from the signed-in "
+    "Google Account.";
+
+const char kEnableAutofillCreditCardUploadEditableExpirationDateName[] =
+    "Make expiration date editable in dialog during credit card upload";
+const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
+    "If enabled, if a credit card's expiration date was not detected when "
+    "offering card upload to Google Payments, the offer-to-save dialog "
+    "displays an expiration date selector.";
+
 const char kEnableAutofillSaveCardShowNoThanksName[] =
     "Show explicit decline option in credit card save prompts";
 const char kEnableAutofillSaveCardShowNoThanksDescription[] =

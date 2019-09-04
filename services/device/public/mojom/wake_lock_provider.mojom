@@ -27,7 +27,8 @@ interface WakeLockProvider {
   // Notifies the caller if no wake lock of type |type| is currently activated.
   // If it is activated then the caller is notified on each deactivation event
   // after this call.
-  NotifyOnWakeLockDeactivation(WakeLockType type, WakeLockObserver observer);
+  NotifyOnWakeLockDeactivation(WakeLockType type,
+                               pending_remote<WakeLockObserver> observer);
 
   // Test-only method that returns the number of activated wake locks of type
   // |type|.

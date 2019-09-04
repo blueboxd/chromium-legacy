@@ -154,6 +154,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
   MOCK_METHOD0(GetMetricsRecorder, PasswordManagerMetricsRecorder*());
   MOCK_CONST_METHOD0(IsNewTabPage, bool());
+  MOCK_CONST_METHOD0(GetPasswordSyncState, SyncState());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
@@ -902,6 +903,8 @@ TEST_F(PasswordManagerTest, FormSubmit) {
 TEST_F(PasswordManagerTest, OnboardingSimple) {
   // Test that a plain form submit results in showing the onboarding
   // if the |kShouldShow| state is set.
+  ON_CALL(client_, GetPasswordSyncState())
+      .WillByDefault(Return(SyncState::SYNCING_NORMAL_ENCRYPTION));
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);
@@ -929,8 +932,42 @@ TEST_F(PasswordManagerTest, OnboardingSimple) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
+TEST_F(PasswordManagerTest, OnboardingPasswordSyncDisabled) {
+  // Tests that the onboarding is not shown when password sync is disabled.
+  ON_CALL(client_, GetPasswordSyncState()).WillByDefault(Return(NOT_SYNCING));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  prefs_->SetInteger(
+      prefs::kPasswordManagerOnboardingState,
+      static_cast<int>(metrics_util::OnboardingState::kShouldShow));
+
+  PasswordForm form(MakeSimpleForm());
+  std::vector<PasswordForm> observed = {form};
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
+      .WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form);
+
+  EXPECT_CALL(client_, ShowOnboarding(_)).Times(0);
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
 TEST_F(PasswordManagerTest, OnboardingPasswordUpdate) {
   // Tests that the onboarding is not shown on password update.
+  ON_CALL(client_, GetPasswordSyncState())
+      .WillByDefault(Return(SYNCING_NORMAL_ENCRYPTION));
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);

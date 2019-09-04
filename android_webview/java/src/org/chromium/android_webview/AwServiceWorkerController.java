@@ -11,7 +11,7 @@ import android.content.Context;
  */
 public class AwServiceWorkerController {
     private AwServiceWorkerClient mServiceWorkerClient;
-    private AwContentsNetworkClient mServiceWorkerNetworkClient;
+    private AwContentsIoThreadClient mServiceWorkerIoThreadClient;
     private AwContentsBackgroundThreadClient mServiceWorkerBackgroundThreadClient;
     private AwServiceWorkerSettings mServiceWorkerSettings;
     private AwBrowserContext mBrowserContext;
@@ -35,20 +35,20 @@ public class AwServiceWorkerController {
         mServiceWorkerClient = client;
         if (client != null) {
             mServiceWorkerBackgroundThreadClient = new ServiceWorkerBackgroundThreadClientImpl();
-            mServiceWorkerNetworkClient = new ServiceWorkerNetworkClientImpl();
-            AwContentsStatics.setServiceWorkerNetworkClient(
-                    mServiceWorkerNetworkClient, mBrowserContext);
+            mServiceWorkerIoThreadClient = new ServiceWorkerIoThreadClientImpl();
+            AwContentsStatics.setServiceWorkerIoThreadClient(
+                    mServiceWorkerIoThreadClient, mBrowserContext);
         } else {
             mServiceWorkerBackgroundThreadClient = null;
-            mServiceWorkerNetworkClient = null;
-            AwContentsStatics.setServiceWorkerNetworkClient(null, mBrowserContext);
+            mServiceWorkerIoThreadClient = null;
+            AwContentsStatics.setServiceWorkerIoThreadClient(null, mBrowserContext);
         }
     }
 
     // Helper classes implementations
 
-    private class ServiceWorkerNetworkClientImpl extends AwContentsNetworkClient {
-        // All methods are called on any thread.
+    private class ServiceWorkerIoThreadClientImpl extends AwContentsIoThreadClient {
+        // All methods are called on the IO thread.
 
         @Override
         public int getCacheMode() {

@@ -143,7 +143,7 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   auto callback =
       WTF::Bind(&QueryStorageUsageAndQuotaCallback, WrapPersistent(resolver));
   GetQuotaHost(execution_context)
-      .QueryStorageUsageAndQuota(
+      ->QueryStorageUsageAndQuota(
           WrapRefCounted(security_origin), mojom::StorageType::kTemporary,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0,
@@ -177,15 +177,15 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
   resolver->Resolve(status == PermissionStatus::GRANTED);
 }
 
-mojom::blink::QuotaDispatcherHost& StorageManager::GetQuotaHost(
+mojom::blink::QuotaDispatcherHost* StorageManager::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
     ConnectToQuotaDispatcherHost(
         execution_context,
-        mojo::MakeRequest(&quota_host_, execution_context->GetTaskRunner(
-                                            TaskType::kMiscPlatformAPI)));
+        quota_host_.BindNewPipeAndPassReceiver(
+            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
-  return *quota_host_;
+  return quota_host_.get();
 }
 
 STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorNotSupported,

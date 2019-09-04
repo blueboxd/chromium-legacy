@@ -17,12 +17,14 @@ namespace autofill {
 
 class AutofillField;
 class AutofillScanner;
+class LogManager;
 
 class CreditCardField : public FormField {
  public:
-  CreditCardField();
+  explicit CreditCardField(LogManager* log_manager);
   ~CreditCardField() override;
-  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
+                                          LogManager* log_manager);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -47,7 +49,8 @@ class CreditCardField : public FormField {
   // |scanner| advances if this returns true.
   // Prepaid debit cards do not count as gift cards, since they can be used like
   // a credit card.
-  static bool IsGiftCardField(AutofillScanner* scanner);
+  static bool IsGiftCardField(AutofillScanner* scanner,
+                              LogManager* log_manager);
 
   // Parses the expiration month/year/date fields. Returns true if it finds
   // something new.
@@ -61,6 +64,8 @@ class CreditCardField : public FormField {
   // Returns whether the expiration has been set for this credit card field.
   // It can be either a date or both the month and the year.
   bool HasExpiration() const;
+
+  LogManager* log_manager_;  // Optional.
 
   AutofillField* cardholder_;  // Optional.
 

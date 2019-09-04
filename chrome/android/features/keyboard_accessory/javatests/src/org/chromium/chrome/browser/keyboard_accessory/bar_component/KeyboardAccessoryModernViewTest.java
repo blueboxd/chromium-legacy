@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
@@ -162,6 +163,7 @@ public class KeyboardAccessoryModernViewTest {
                                                                      public void onTabLayoutUnbound(
                                                                              TabLayout tabs) {}
                                                                  }))
+                            .with(DISABLE_ANIMATIONS_FOR_TESTING, true)
                             .build();
             ViewStub viewStub =
                     mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);

@@ -27,9 +27,6 @@ public class EmptyBottomSheetObserver implements BottomSheetObserver {
     public void onSheetOffsetChanged(float heightFraction, float offsetPx) {}
 
     @Override
-    public void onTransitionPeekToHalf(float transitionFraction) {}
-
-    @Override
     public void onSheetStateChanged(int newState) {}
 
     @Override

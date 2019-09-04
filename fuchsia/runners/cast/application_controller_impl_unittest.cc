@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -59,7 +59,8 @@ class ApplicationControllerImplTest
   }
 
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
-  base::MessageLoopForIO message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   MockFrame frame_;
   fidl::Binding<chromium::cast::ApplicationControllerReceiver>

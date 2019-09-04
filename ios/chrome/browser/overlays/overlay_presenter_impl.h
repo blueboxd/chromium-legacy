@@ -52,6 +52,7 @@ class OverlayPresenterImpl : public BrowserObserver,
       OverlayPresentationContext* presentation_context) override;
   void AddObserver(OverlayPresenterObserver* observer) override;
   void RemoveObserver(OverlayPresenterObserver* observer) override;
+  bool IsShowingOverlayUI() const override;
 
  private:
   // Private constructor used by the container.

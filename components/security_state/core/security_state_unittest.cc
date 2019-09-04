@@ -457,21 +457,17 @@ TEST(SecurityStateTest, CryptoWithNoCertificateErrors) {
   EXPECT_FALSE(helper.HasMajorCertificateError());
 }
 
-// Tests that minor certificate errors are properly ignored.
-TEST(SecurityStateTest, MinorCertificateErrors) {
-  TestSecurityStateHelper helper;
-  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
-                         net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
-  EXPECT_FALSE(helper.HasMajorCertificateError());
-
-  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
-                         net::CERT_STATUS_NO_REVOCATION_MECHANISM);
-  EXPECT_FALSE(helper.HasMajorCertificateError());
-}
-
 // Tests that major certificate errors are detected.
 TEST(SecurityStateTest, MajorCertificateErrors) {
   TestSecurityStateHelper helper;
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+  EXPECT_TRUE(helper.HasMajorCertificateError());
+
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_NO_REVOCATION_MECHANISM);
+  EXPECT_TRUE(helper.HasMajorCertificateError());
+
   helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
                          net::CERT_STATUS_REVOKED);
   EXPECT_TRUE(helper.HasMajorCertificateError());

@@ -14,7 +14,6 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -270,11 +269,6 @@ ChromeSyncClient::GetSendTabToSelfSyncService() {
 sync_sessions::SessionSyncService* ChromeSyncClient::GetSessionSyncService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return SessionSyncServiceFactory::GetForProfile(profile_);
-}
-
-autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return autofill::PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
 base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {

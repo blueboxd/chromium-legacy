@@ -19,40 +19,6 @@
 
 namespace ash {
 
-namespace {
-
-// Ink drop mask that masks non-standard shape of CustomShapeButton.
-class CustomShapeInkDropMask : public views::InkDropMask {
- public:
-  CustomShapeInkDropMask(const gfx::Size& layer_size,
-                         const CustomShapeButton* button);
-
- private:
-  // InkDropMask:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-
-  const CustomShapeButton* const button_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomShapeInkDropMask);
-};
-
-CustomShapeInkDropMask::CustomShapeInkDropMask(const gfx::Size& layer_size,
-                                               const CustomShapeButton* button)
-    : views::InkDropMask(layer_size), button_(button) {}
-
-void CustomShapeInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
-  cc::PaintFlags flags;
-  flags.setAlpha(255);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
-
-  ui::PaintRecorder recorder(context, layer()->size());
-  recorder.canvas()->DrawPath(button_->CreateCustomShapePath(layer()->bounds()),
-                              flags);
-}
-
-}  // namespace
-
 CustomShapeButton::CustomShapeButton(views::ButtonListener* listener)
     : ImageButton(listener) {
   TrayPopupUtils::ConfigureTrayPopupButton(this);
@@ -84,11 +50,6 @@ CustomShapeButton::CreateInkDropHighlight() const {
       UnifiedSystemTrayView::GetBackgroundColor());
 }
 
-std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()
-    const {
-  return std::make_unique<CustomShapeInkDropMask>(size(), this);
-}
-
 const char* CustomShapeButton::GetClassName() const {
   return "CustomShapeButton";
 }
@@ -102,7 +63,7 @@ void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
           kUnifiedMenuButtonColor);
   flags.setColor(GetEnabled()
                      ? button_color
-                     : AshColorProvider::Get()->GetDisabledColor(button_color));
+                     : AshColorProvider::GetDisabledColor(button_color));
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);

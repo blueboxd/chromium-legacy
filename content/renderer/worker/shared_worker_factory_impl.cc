@@ -11,13 +11,6 @@
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 
 namespace content {
-// static
-void SharedWorkerFactoryImpl::CreateForRequest(
-    blink::mojom::SharedWorkerFactoryRequest request) {
-  // Implicit conversion to
-  // mojo::PendingReceiver<blink::mojom::SharedWorkerFactory>.
-  Create(std::move(request));
-}
 
 // static
 void SharedWorkerFactoryImpl::Create(

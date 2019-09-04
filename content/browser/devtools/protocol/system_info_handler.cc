@@ -288,8 +288,10 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
   }
 
   void OnGpuInfoUpdate() override {
-    if (GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable())
+    if (GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable() &&
+        GpuDataManagerImpl::GetInstance()->IsDx12VulkanVersionAvailable()) {
       UnregisterAndSendResponse();
+    }
   }
 
   void OnGpuProcessCrashed(base::TerminationStatus exit_code) override {

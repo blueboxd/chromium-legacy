@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
@@ -215,13 +214,13 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
     CompletionCallback completion_callback)
-    : FidoRequestHandler(
+    : FidoRequestHandlerBase(
           connector,
           fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
-              GetTransportsAllowedByRP(request)),
-          std::move(completion_callback)),
+              GetTransportsAllowedByRP(request))),
+      completion_callback_(std::move(completion_callback)),
       request_(std::move(request)) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
@@ -352,16 +351,16 @@ void GetAssertionRequestHandler::HandleResponse(
     state_ = State::kFinished;
     CancelActiveAuthenticators(authenticator->GetId());
     if (status != CtapDeviceResponseCode::kSuccess) {
-      OnAuthenticatorResponse(
-          authenticator, WinCtapDeviceResponseCodeToGetAssertionStatus(status),
-          base::nullopt);
+      std::move(completion_callback_)
+          .Run(WinCtapDeviceResponseCodeToGetAssertionStatus(status),
+               base::nullopt, authenticator);
       return;
     }
     DCHECK(responses_.empty());
     responses_.emplace_back(std::move(*response));
-    OnAuthenticatorResponse(
-        authenticator, WinCtapDeviceResponseCodeToGetAssertionStatus(status),
-        std::move(responses_));
+    std::move(completion_callback_)
+        .Run(WinCtapDeviceResponseCodeToGetAssertionStatus(status),
+             std::move(responses_), authenticator);
     return;
   }
 #endif
@@ -375,9 +374,9 @@ void GetAssertionRequestHandler::HandleResponse(
       ConvertDeviceResponseCode(status);
   if (!maybe_result) {
     if (state_ == State::kWaitingForSecondTouch) {
-      OnAuthenticatorResponse(authenticator,
-                              GetAssertionStatus::kAuthenticatorResponseInvalid,
-                              base::nullopt);
+      std::move(completion_callback_)
+          .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
+               authenticator);
     } else {
       FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
                       << " from " << authenticator->GetDisplayName();
@@ -392,16 +391,17 @@ void GetAssertionRequestHandler::HandleResponse(
     FIDO_LOG(ERROR) << "Failing assertion request due to status "
                     << static_cast<int>(status) << " from "
                     << authenticator->GetDisplayName();
-    OnAuthenticatorResponse(authenticator, *maybe_result, base::nullopt);
+    std::move(completion_callback_)
+        .Run(*maybe_result, base::nullopt, authenticator);
     return;
   }
 
   if (!response || !ResponseValid(*authenticator, request_, *response)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
-    OnAuthenticatorResponse(authenticator,
-                            GetAssertionStatus::kAuthenticatorResponseInvalid,
-                            base::nullopt);
+    std::move(completion_callback_)
+        .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
     return;
   }
 
@@ -409,9 +409,9 @@ void GetAssertionRequestHandler::HandleResponse(
   const size_t num_responses = response->num_credentials().value_or(1);
   if (num_responses == 0 ||
       (num_responses > 1 && !request_.allow_list.empty())) {
-    OnAuthenticatorResponse(authenticator,
-                            GetAssertionStatus::kAuthenticatorResponseInvalid,
-                            base::nullopt);
+    std::move(completion_callback_)
+        .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
     return;
   }
 
@@ -429,8 +429,8 @@ void GetAssertionRequestHandler::HandleResponse(
 
   ReportGetAssertionResponseTransport(authenticator);
 
-  OnAuthenticatorResponse(authenticator, GetAssertionStatus::kSuccess,
-                          std::move(responses_));
+  std::move(completion_callback_)
+      .Run(GetAssertionStatus::kSuccess, std::move(responses_), authenticator);
 }
 
 void GetAssertionRequestHandler::HandleNextResponse(
@@ -446,18 +446,18 @@ void GetAssertionRequestHandler::HandleNextResponse(
     FIDO_LOG(ERROR) << "Failing assertion request due to status "
                     << static_cast<int>(status) << " from "
                     << authenticator->GetDisplayName();
-    OnAuthenticatorResponse(authenticator,
-                            GetAssertionStatus::kAuthenticatorResponseInvalid,
-                            base::nullopt);
+    std::move(completion_callback_)
+        .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
     return;
   }
 
   if (!ResponseValid(*authenticator, request_, *response)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
-    OnAuthenticatorResponse(authenticator,
-                            GetAssertionStatus::kAuthenticatorResponseInvalid,
-                            base::nullopt);
+    std::move(completion_callback_)
+        .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
     return;
   }
 
@@ -474,8 +474,8 @@ void GetAssertionRequestHandler::HandleNextResponse(
 
   ReportGetAssertionResponseTransport(authenticator);
 
-  OnAuthenticatorResponse(authenticator, GetAssertionStatus::kSuccess,
-                          std::move(responses_));
+  std::move(completion_callback_)
+      .Run(GetAssertionStatus::kSuccess, std::move(responses_), authenticator);
 }
 
 void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {

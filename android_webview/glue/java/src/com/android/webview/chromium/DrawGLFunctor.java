@@ -11,6 +11,7 @@ import android.view.View;
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Simple Java abstraction and wrapper for the native DrawGLFunctor flow.
@@ -26,7 +27,7 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
     private long mNativeDrawGLFunctor;
 
     public DrawGLFunctor(long viewContext, WebViewDelegate webViewDelegate) {
-        mNativeDrawGLFunctor = nativeCreateGLFunctor(viewContext);
+        mNativeDrawGLFunctor = DrawGLFunctorJni.get().createGLFunctor(viewContext);
         mWebViewDelegate = webViewDelegate;
     }
 
@@ -80,15 +81,18 @@ class DrawGLFunctor implements AwContents.NativeDrawGLFunctor {
     @Override
     public void destroy() {
         assert mNativeDrawGLFunctor != 0;
-        nativeDestroyGLFunctor(mNativeDrawGLFunctor);
+        DrawGLFunctorJni.get().destroyGLFunctor(mNativeDrawGLFunctor);
         mNativeDrawGLFunctor = 0;
     }
 
     public static void setChromiumAwDrawGLFunction(long functionPointer) {
-        nativeSetChromiumAwDrawGLFunction(functionPointer);
+        DrawGLFunctorJni.get().setChromiumAwDrawGLFunction(functionPointer);
     }
 
-    private static native long nativeCreateGLFunctor(long viewContext);
-    private static native void nativeDestroyGLFunctor(long functor);
-    private static native void nativeSetChromiumAwDrawGLFunction(long functionPointer);
+    @NativeMethods
+    interface Natives {
+        long createGLFunctor(long viewContext);
+        void destroyGLFunctor(long functor);
+        void setChromiumAwDrawGLFunction(long functionPointer);
+    }
 }

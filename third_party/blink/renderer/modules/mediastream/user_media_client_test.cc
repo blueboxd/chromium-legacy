@@ -491,10 +491,8 @@ class UserMediaClientTest : public ::testing::Test {
     user_media_processor_ = MakeGarbageCollected<UserMediaProcessorUnderTest>(
         base::WrapUnique(msd_observer),
         std::move(user_media_processor_host_proxy), &state_);
-    blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
-        mock_dispatcher_host_.CreateInterfacePtrAndBind();
     user_media_processor_->set_media_stream_dispatcher_host_for_testing(
-        std::move(dispatcher_host));
+        mock_dispatcher_host_.CreatePendingRemoteAndBind());
 
     user_media_client_impl_ = MakeGarbageCollected<UserMediaClientUnderTest>(
         user_media_processor_, &state_);

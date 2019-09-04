@@ -225,7 +225,7 @@ int FolderClippedIconDimensionForType(ash::AppListConfigType type) {
   return FolderClippedIconDimensionForType(ash::AppListConfigType::kShared);
 }
 
-int ItemIconInFolderDimensionForType(ash::AppListConfigType type) {
+int ItemIconInFolderIconDimensionForType(ash::AppListConfigType type) {
   switch (type) {
     case ash::AppListConfigType::kShared:
     case ash::AppListConfigType::kLarge:
@@ -237,7 +237,21 @@ int ItemIconInFolderDimensionForType(ash::AppListConfigType type) {
   }
 
   NOTREACHED();
-  return ItemIconInFolderDimensionForType(ash::AppListConfigType::kShared);
+  return ItemIconInFolderIconDimensionForType(ash::AppListConfigType::kShared);
+}
+
+int ItemIconInFolderIconMarginForType(ash::AppListConfigType type) {
+  switch (type) {
+    case ash::AppListConfigType::kShared:
+    case ash::AppListConfigType::kLarge:
+    case ash::AppListConfigType::kMedium:
+      return 4;
+    case ash::AppListConfigType::kSmall:
+      return 2;
+  }
+
+  NOTREACHED();
+  return ItemIconInFolderIconMarginForType(ash::AppListConfigType::kShared);
 }
 
 }  // namespace
@@ -288,7 +302,8 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       folder_background_radius_(12),
       folder_bubble_color_(SkColorSetA(gfx::kGoogleGrey100, 0x7A)),
       item_icon_in_folder_icon_dimension_(
-          ItemIconInFolderDimensionForType(type)),
+          ItemIconInFolderIconDimensionForType(type)),
+      item_icon_in_folder_icon_margin_(ItemIconInFolderIconMarginForType(type)),
       folder_dropping_circle_radius_(folder_bubble_radius_),
       folder_dropping_delay_(0),
       folder_background_color_(gfx::kGoogleGrey100),
@@ -395,6 +410,10 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
       folder_bubble_color_(base_config.folder_bubble_color_),
       item_icon_in_folder_icon_dimension_(
           MinScale(base_config.item_icon_in_folder_icon_dimension_,
+                   scale_x,
+                   inner_tile_scale_y)),
+      item_icon_in_folder_icon_margin_(
+          MinScale(base_config.item_icon_in_folder_icon_margin_,
                    scale_x,
                    inner_tile_scale_y)),
       folder_dropping_circle_radius_(

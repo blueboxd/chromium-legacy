@@ -60,6 +60,8 @@ class TestAppRegistrar : public AppRegistrar {
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
   web_app::LaunchContainer GetAppLaunchContainer(
       const web_app::AppId& app_id) const override;
+  void SetAppLaunchContainer(const AppId& app_id,
+                             LaunchContainer launch_container) override;
   std::vector<AppId> GetAppIds() const override;
 
  private:

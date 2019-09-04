@@ -74,10 +74,10 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
   if (&animation == &animation_to_add)
     return false;
 
-  if (animation.pending())
+  if (animation.NeedsCompositorTimeSync())
     return true;
 
-  switch (animation.CalculateAnimationPlayState()) {
+  switch (animation.GetPlayState()) {
     case Animation::kIdle:
       return false;
     case Animation::kRunning:

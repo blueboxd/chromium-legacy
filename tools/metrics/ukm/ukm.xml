@@ -6556,6 +6556,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="coin_flip_result">
+    <obsolete>
+      Replaced by the PreviewsCoinFlip event in M78.
+    </obsolete>
     <summary>
       Set to 0 if there was no attempted preview for this page load, or the coin
       flip holdback is disabled in this session. Set to 1 if a preview was
@@ -6687,6 +6690,24 @@ be describing additional metrics about the same event.
     </obsolete>
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="PreviewsCoinFlip" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <summary>
+    Coin flip experiment metrics associated with a Preview page load. See
+    //components/previews/. This is recorded as a separate event from Previews
+    so that it can be recorded earlier than commit which happens in some cases.
+  </summary>
+  <metric name="coin_flip_result" enum="PreviewsCoinFlipResult">
+    <summary>
+      Set to 0 if there was no attempted preview for this page load, or the coin
+      flip holdback is disabled in this session. Set to 1 if a preview was
+      attempted and was allowed to proceed by the coin flip. Set to 2 if a
+      preview would have been attempted but was held back by the coin flip. Note
+      that a non-zero value in this field implies previews_likely.
     </summary>
   </metric>
 </event>
@@ -7140,6 +7161,39 @@ be describing additional metrics about the same event.
       The final Site Engagement score for the page before it is closed or
       another navigation occurs. Score is between 0.0 and 100.0; this metric is
       rounded down to a multiple of 10 to limit granularity.
+    </summary>
+  </metric>
+</event>
+
+<event name="Sharing.ClickToCall">
+  <owner>knollr@chromium.org</owner>
+  <summary>
+    Collected when a user finishes a Click to Call journey.
+  </summary>
+  <metric name="EntryPoint" enum="SharingClickToCallEntryPoint">
+    <summary>
+      Specifies the entry point of the user journey (i.e. left click, right
+      click, text selection).
+    </summary>
+  </metric>
+  <metric name="HasApps" enum="Boolean">
+    <summary>
+      Boolean value indicating whether any (&gt;0) apps are available that the
+      call could be sent to.
+    </summary>
+  </metric>
+  <metric name="HasDevices" enum="Boolean">
+    <summary>
+      Boolean value indicating whether any (&gt;0) devices are available that
+      the call could be sent to. These belong to the same account and are
+      running Android.
+    </summary>
+  </metric>
+  <metric name="Selection" enum="SharingClickToCallSelection">
+    <summary>
+      Whether the user selected a device, an app or nothing (i.e. dismissal) in
+      the user interface. For some entry points this might always be the same
+      value (e.g. right clicks always select devices).
     </summary>
   </metric>
 </event>

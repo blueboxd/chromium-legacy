@@ -6,16 +6,14 @@ package org.chromium.weblayer;
 
 import android.net.Uri;
 
-import org.chromium.weblayer_private.BrowserControllerImpl;
-
 public final class NavigationController {
-    private BrowserControllerImpl mBrowserController;
+    private BrowserController mBrowserController;
 
-    NavigationController(BrowserControllerImpl browserController) {
+    NavigationController(BrowserController browserController) {
         mBrowserController = browserController;
     }
 
     public void navigate(Uri uri) {
-        mBrowserController.navigate(uri.toString());
+        mBrowserController.navigate(uri);
     }
 }

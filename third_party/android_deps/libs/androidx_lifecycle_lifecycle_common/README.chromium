@@ -3,8 +3,8 @@ Short Name: lifecycle-common
 URL: https://developer.android.com/topic/libraries/architecture/index.html
 Version: 2.0.0
 License: Apache Version 2.0
-License File: NOT_SHIPPED
-Security Critical: no
+License File: LICENSE
+Security Critical: yes
 
 Description:
 Android Lifecycle-Common

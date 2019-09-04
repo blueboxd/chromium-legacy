@@ -404,7 +404,13 @@
   },
 
   "ExternalPrintServers": {
-    "note": "This policy will be added in R-78"
+    "os": ["chromeos"],
+    "test_policy": {
+      "ExternalPrintServers": {
+        "url": "https://example.com/policyfile",
+        "hash": "deadbeefdeadbeefdeadbeef"
+      }
+    }
   },
 
   "NativePrinters": {
@@ -1178,11 +1184,7 @@
   },
 
   "ExtensionAllowInsecureUpdates": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "ExtensionAllowInsecureUpdates": true },
-    "pref_mappings": [
-      { "pref": "extension_updates.insecure_extension_updates_enabled" }
-    ]
+    "note": "Deprecated since Chrome 78."
   },
 
   "ExtensionInstallBlacklist": {

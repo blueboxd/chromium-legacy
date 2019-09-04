@@ -184,7 +184,7 @@ public class TrustedWebActivityClientTest {
                     NotificationUmaTracker.getInstance());
         });
 
-        mResponseHandler.mNotifyNotification.waitForCallback();
+        mResponseHandler.mNotifyNotification.waitForFirst();
     }
 
     /**
@@ -197,7 +197,7 @@ public class TrustedWebActivityClientTest {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> mClient.cancelNotification(SCOPE, NOTIFICATION_TAG, NOTIFICATION_ID));
 
-        mResponseHandler.mCancelNotification.waitForCallback();
+        mResponseHandler.mCancelNotification.waitForFirst();
 
         Assert.assertEquals(mResponseHandler.mNotificationTag, NOTIFICATION_TAG);
         Assert.assertEquals(mResponseHandler.mNotificationId, NOTIFICATION_ID);

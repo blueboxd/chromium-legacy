@@ -1240,9 +1240,7 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
-  if ((result == OK ||
-       (IsCertificateError(result) &&
-        IsCertStatusMinorError(server_cert_verify_result_.cert_status)))) {
+  if (result == OK) {
     int ct_result = VerifyCT();
     TransportSecurityState::PKPStatus pin_validity =
         context_->transport_security_state()->CheckPublicKeyPins(
@@ -1269,7 +1267,6 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
 
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
-      !IsCertStatusMinorError(server_cert_verify_result_.cert_status) &&
       context_->transport_security_state()->ShouldSSLErrorsBeFatal(
           host_and_port_.host());
 

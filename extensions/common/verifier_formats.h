@@ -17,10 +17,8 @@ namespace extensions {
 crx_file::VerifierFormat GetWebstoreVerifierFormat(bool test_publisher_enabled);
 
 // Returns the default format requirement for installing an extension that
-// is force-installed by policy. |insecure_updates_enabled| indicates
-// whether an enterprise has chosen, via corporate policy, to allow insecure
-// update mechanisms.
-crx_file::VerifierFormat GetPolicyVerifierFormat(bool insecure_updates_enabled);
+// is force-installed by policy.
+crx_file::VerifierFormat GetPolicyVerifierFormat();
 
 // Returns the default format requirement for installing an extension that
 // is installed from an external source.

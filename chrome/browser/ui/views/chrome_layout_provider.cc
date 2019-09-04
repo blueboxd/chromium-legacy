@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/material_refresh_layout_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/shadow_value.h"
 
 namespace {
 
@@ -45,7 +45,7 @@ ChromeLayoutProvider* ChromeLayoutProvider::Get() {
 // static
 std::unique_ptr<views::LayoutProvider>
 ChromeLayoutProvider::CreateLayoutProvider() {
-  return std::make_unique<MaterialRefreshLayoutProvider>();
+  return std::make_unique<ChromeLayoutProvider>();
 }
 
 gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
@@ -68,7 +68,7 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
                  ? gfx::Insets(kHarmonyLayoutUnit / 2, kHarmonyLayoutUnit / 2)
                  : LayoutProvider::GetInsetsMetric(metric);
     case INSETS_BOOKMARKS_BAR_BUTTON:
-      return touch_ui ? gfx::Insets(8, 12) : gfx::Insets(6);
+      return touch_ui ? gfx::Insets(8, 10) : gfx::Insets(6);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
     case INSETS_TAB_GROUP_TITLE_CHIP:
@@ -94,7 +94,7 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kVisibleMargin - kHarmonyLayoutUnit / 4;
     }
     case views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING:
-      return kHarmonyLayoutUnit / 4;
+      return 6;
     case views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL:
       return kHarmonyLayoutUnit * 3 / 2;
     case views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT: {
@@ -195,4 +195,43 @@ ChromeLayoutProvider::GetControlLabelGridAlignment() const {
 
 bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
   return false;
+}
+
+int ChromeLayoutProvider::GetCornerRadiusMetric(
+    views::EmphasisMetric emphasis_metric,
+    const gfx::Size& size) const {
+  switch (emphasis_metric) {
+    case views::EMPHASIS_NONE:
+      NOTREACHED();
+      return 0;
+    case views::EMPHASIS_LOW:
+    case views::EMPHASIS_MEDIUM:
+      return 4;
+    case views::EMPHASIS_HIGH:
+      return 8;
+    case views::EMPHASIS_MAXIMUM:
+      return std::min(size.width(), size.height()) / 2;
+  }
+}
+
+int ChromeLayoutProvider::GetShadowElevationMetric(
+    views::EmphasisMetric emphasis_metric) const {
+  switch (emphasis_metric) {
+    case views::EMPHASIS_NONE:
+      NOTREACHED();
+      return 0;
+    case views::EMPHASIS_LOW:
+      return 1;
+    case views::EMPHASIS_MEDIUM:
+      return 2;
+    case views::EMPHASIS_HIGH:
+      return 3;
+    case views::EMPHASIS_MAXIMUM:
+      return 16;
+  }
+}
+
+gfx::ShadowValues ChromeLayoutProvider::MakeShadowValues(int elevation,
+                                                         SkColor color) const {
+  return gfx::ShadowValue::MakeRefreshShadowValues(elevation, color);
 }

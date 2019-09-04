@@ -21,6 +21,8 @@
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/renderer/top_level_blame_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
@@ -244,8 +246,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   TopLevelBlameContext top_level_blame_context_;
 
-  blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
-  scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
+  mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host_remote_;
+  mojo::SharedRemote<blink::mojom::CodeCacheHost> code_cache_host_;
 
   std::unique_ptr<blink::WebTransmissionEncodingInfoHandler>
       web_transmission_encoding_info_handler_;

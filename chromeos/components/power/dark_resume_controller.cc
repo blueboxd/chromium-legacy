@@ -5,6 +5,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
@@ -26,7 +27,6 @@ constexpr base::TimeDelta DarkResumeController::kDarkResumeWakeLockCheckTimeout;
 DarkResumeController::DarkResumeController(
     service_manager::Connector* connector)
     : connector_(connector),
-      wake_lock_observer_binding_(this),
       dark_resume_hard_timeout_(kDefaultDarkResumeHardTimeout) {
   DCHECK(!dark_resume_hard_timeout_.is_zero());
   connector_->BindInterface(device::mojom::kServiceName,
@@ -81,7 +81,7 @@ void DarkResumeController::OnWakeLockDeactivated(
 }
 
 bool DarkResumeController::IsDarkResumeStateSetForTesting() const {
-  return block_suspend_token_ && wake_lock_observer_binding_.is_bound();
+  return block_suspend_token_ && wake_lock_observer_receiver_.is_bound();
 }
 
 base::TimeDelta DarkResumeController::GetHardTimeoutForTesting() const {
@@ -92,7 +92,7 @@ bool DarkResumeController::IsDarkResumeStateClearedForTesting() const {
   return !weak_ptr_factory_.HasWeakPtrs() &&
          !wake_lock_check_timer_.IsRunning() &&
          !hard_timeout_timer_.IsRunning() && !block_suspend_token_ &&
-         !wake_lock_observer_binding_.is_bound();
+         !wake_lock_observer_receiver_.is_bound();
 }
 
 void DarkResumeController::HandleDarkResumeWakeLockCheckTimeout() {
@@ -103,10 +103,9 @@ void DarkResumeController::HandleDarkResumeWakeLockCheckTimeout() {
   // this calls back immediately, else whenever the wake lock is deactivated.
   // The device will be suspended on a deactivation notification i.e. in
   // OnDeactivation.
-  device::mojom::WakeLockObserverPtr observer;
-  wake_lock_observer_binding_.Bind(mojo::MakeRequest(&observer));
   wake_lock_provider_->NotifyOnWakeLockDeactivation(
-      device::mojom::WakeLockType::kPreventAppSuspension, std::move(observer));
+      device::mojom::WakeLockType::kPreventAppSuspension,
+      wake_lock_observer_receiver_.BindNewPipeAndPassRemote());
 
   // Schedule task that will tell the power daemon to re-suspend after a dark
   // resume irrespective of any state. This is a last resort timeout to ensure
@@ -137,7 +136,7 @@ void DarkResumeController::ClearDarkResumeState() {
 
   // This automatically invalidates any WakeLockObserver and associated callback
   // in this case OnDeactivation.
-  wake_lock_observer_binding_.Close();
+  wake_lock_observer_receiver_.reset();
 
   // Stops timer and invalidates HandleDarkResumeWakeLockCheckTimeout.
   wake_lock_check_timer_.Stop();

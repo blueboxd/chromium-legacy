@@ -313,7 +313,7 @@ void ContentPasswordManagerDriver::ShowTouchToFill() {
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if defined(ON_FOCUS_PING_ENABLED)
   client_->CheckSafeBrowsingReputation(form_action, frame_url);
 #endif
 }

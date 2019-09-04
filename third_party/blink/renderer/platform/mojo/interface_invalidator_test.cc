@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -69,12 +69,12 @@ class PingServiceImplBase : public mojo::test::blink::PingService {
 class PingServiceImpl : public PingServiceImplBase {
  public:
   PingServiceImpl(
-      mojo::InterfaceRequest<mojo::test::blink::PingService> request,
+      mojo::PendingReceiver<mojo::test::blink::PingService> receiver,
       bool send_response = true)
       : PingServiceImplBase(send_response),
         error_handler_called_(false),
-        binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(
+        receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(
         base::BindOnce(DoSetFlag, &error_handler_called_));
   }
 
@@ -82,11 +82,13 @@ class PingServiceImpl : public PingServiceImplBase {
 
   bool error_handler_called() { return error_handler_called_; }
 
-  mojo::Binding<mojo::test::blink::PingService>* binding() { return &binding_; }
+  mojo::Receiver<mojo::test::blink::PingService>* receiver() {
+    return &receiver_;
+  }
 
  private:
   bool error_handler_called_;
-  mojo::Binding<mojo::test::blink::PingService> binding_;
+  mojo::Receiver<mojo::test::blink::PingService> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
 };
@@ -267,7 +269,7 @@ TEST_F(InterfaceInvalidatorTest, InvalidateErroredPtr) {
   wptr.set_connection_error_handler(
       base::BindLambdaForTesting([&] { called++; }));
 
-  impl.binding()->Close();
+  impl.receiver()->reset();
   base::RunLoop().RunUntilIdle();
   invalidator.reset();
   base::RunLoop().RunUntilIdle();

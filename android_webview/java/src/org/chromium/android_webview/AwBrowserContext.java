@@ -13,6 +13,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.content_public.browser.ContentViewStatics;
 
@@ -96,8 +97,8 @@ public class AwBrowserContext {
 
     public AwQuotaManagerBridge getQuotaManagerBridge() {
         if (mQuotaManagerBridge == null) {
-            mQuotaManagerBridge =
-                    new AwQuotaManagerBridge(nativeGetQuotaManagerBridge(mNativeAwBrowserContext));
+            mQuotaManagerBridge = new AwQuotaManagerBridge(
+                    AwBrowserContextJni.get().getQuotaManagerBridge(mNativeAwBrowserContext));
         }
         return mQuotaManagerBridge;
     }
@@ -141,7 +142,7 @@ public class AwBrowserContext {
     private static AwBrowserContext sInstance;
     public static AwBrowserContext getDefault() {
         if (sInstance == null) {
-            sInstance = nativeGetDefaultJava();
+            sInstance = AwBrowserContextJni.get().getDefaultJava();
         }
         return sInstance;
     }
@@ -158,6 +159,9 @@ public class AwBrowserContext {
         return new AwBrowserContext(sharedPreferences, nativeAwBrowserContext, isDefault);
     }
 
-    private static native AwBrowserContext nativeGetDefaultJava();
-    private static native long nativeGetQuotaManagerBridge(long nativeAwBrowserContext);
+    @NativeMethods
+    interface Natives {
+        AwBrowserContext getDefaultJava();
+        long getQuotaManagerBridge(long nativeAwBrowserContext);
+    }
 }

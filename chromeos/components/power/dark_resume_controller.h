@@ -13,7 +13,8 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -102,8 +103,9 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   // after a dark resume.
   base::UnguessableToken block_suspend_token_;
 
-  // The binding used to implement device::mojom::WakeLockObserver.
-  mojo::Binding<device::mojom::WakeLockObserver> wake_lock_observer_binding_;
+  // The receiver used to implement device::mojom::WakeLockObserver.
+  mojo::Receiver<device::mojom::WakeLockObserver> wake_lock_observer_receiver_{
+      this};
 
   // Timer used to schedule HandleDarkResumeWakeLockCheckTimeout.
   base::OneShotTimer wake_lock_check_timer_;

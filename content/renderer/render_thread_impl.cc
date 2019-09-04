@@ -760,9 +760,8 @@ void RenderThreadImpl::Init() {
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
 
-  registry->AddInterface(
-      base::BindRepeating(&SharedWorkerFactoryImpl::CreateForRequest),
-      base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(base::BindRepeating(&SharedWorkerFactoryImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
@@ -2017,7 +2016,15 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
 void RenderThreadImpl::DestroyView(int32_t view_id) {
   RenderViewImpl* view = RenderViewImpl::FromRoutingID(view_id);
   DCHECK(view);
-  view->Destroy();
+
+  // This IPC can be called from re-entrant contexts. We can't destroy a
+  // RenderViewImpl while references still exist on the stack, so we dispatch a
+  // non-nestable task. This method is called exactly once by the browser
+  // process, and is used to release ownership of the corresponding
+  // RenderViewImpl instance. https://crbug.com/1000035.
+  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&RenderViewImpl::Destroy, base::Unretained(view)));
 }
 
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {

@@ -55,8 +55,6 @@
 
 namespace blink {
 
-using mojom::blink::BlobPtr;
-using mojom::blink::BlobPtrInfo;
 using mojom::blink::BytesProvider;
 using mojom::blink::DataElement;
 using mojom::blink::DataElementBlob;
@@ -193,8 +191,8 @@ void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
   // Skip zero-byte items, as they don't matter for the contents of the blob.
   if (length == 0)
     return;
-  elements_.push_back(DataElement::NewBlob(DataElementBlob::New(
-      data_handle->CloneBlobPtr().PassInterface(), offset, length)));
+  elements_.push_back(DataElement::NewBlob(
+      DataElementBlob::New(data_handle->CloneBlobRemote(), offset, length)));
 }
 
 void BlobData::AppendFileSystemURL(const KURL& url,
@@ -308,10 +306,10 @@ scoped_refptr<BlobDataHandle> BlobDataHandle::Create(
     const String& uuid,
     const String& type,
     uint64_t size,
-    mojom::blink::BlobPtrInfo blob_info) {
-  if (blob_info.is_valid()) {
+    mojo::PendingRemote<mojom::blink::Blob> blob_remote) {
+  if (blob_remote.is_valid()) {
     return base::AdoptRef(
-        new BlobDataHandle(uuid, type, size, std::move(blob_info)));
+        new BlobDataHandle(uuid, type, size, std::move(blob_remote)));
   }
   return base::AdoptRef(new BlobDataHandle(uuid, type, size));
 }
@@ -320,8 +318,8 @@ BlobDataHandle::BlobDataHandle()
     : uuid_(WTF::CreateCanonicalUUIDString()),
       size_(0),
       is_single_unknown_size_file_(false) {
-  GetThreadSpecificRegistry()->Register(MakeRequest(&blob_info_), uuid_, "", "",
-                                        {});
+  GetThreadSpecificRegistry()->Register(
+      blob_remote_.InitWithNewPipeAndPassReceiver(), uuid_, "", "", {});
 }
 
 BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, uint64_t size)
@@ -331,9 +329,9 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, uint64_t size)
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {
   TRACE_EVENT0("Blob", "Registry::RegisterBlob");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE("Storage.Blob.RegisterBlobTime");
-  GetThreadSpecificRegistry()->Register(MakeRequest(&blob_info_), uuid_,
-                                        type_.IsNull() ? "" : type_, "",
-                                        data->ReleaseElements());
+  GetThreadSpecificRegistry()->Register(
+      blob_remote_.InitWithNewPipeAndPassReceiver(), uuid_,
+      type_.IsNull() ? "" : type_, "", data->ReleaseElements());
 }
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
@@ -345,55 +343,55 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
       is_single_unknown_size_file_(false) {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Storage.Blob.GetBlobFromUUIDTime");
-  GetThreadSpecificRegistry()->GetBlobFromUUID(MakeRequest(&blob_info_), uuid_);
+  GetThreadSpecificRegistry()->GetBlobFromUUID(
+      blob_remote_.InitWithNewPipeAndPassReceiver(), uuid_);
 }
 
-BlobDataHandle::BlobDataHandle(const String& uuid,
-                               const String& type,
-                               uint64_t size,
-                               BlobPtrInfo blob_info)
+BlobDataHandle::BlobDataHandle(
+    const String& uuid,
+    const String& type,
+    uint64_t size,
+    mojo::PendingRemote<mojom::blink::Blob> blob_remote)
     : uuid_(uuid.IsolatedCopy()),
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),
       is_single_unknown_size_file_(false),
-      blob_info_(std::move(blob_info)) {
-  DCHECK(blob_info_.is_valid());
+      blob_remote_(std::move(blob_remote)) {
+  DCHECK(blob_remote_.is_valid());
 }
 
 BlobDataHandle::~BlobDataHandle() {
 }
 
-BlobPtr BlobDataHandle::CloneBlobPtr() {
-  MutexLocker locker(blob_info_mutex_);
-  if (!blob_info_.is_valid())
-    return nullptr;
-  BlobPtr blob, blob_clone;
-  blob.Bind(std::move(blob_info_));
-  blob->Clone(MakeRequest(&blob_clone));
-  blob_info_ = blob.PassInterface();
+mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
+  MutexLocker locker(blob_remote_mutex_);
+  if (!blob_remote_.is_valid())
+    return mojo::NullRemote();
+  mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
+  mojo::PendingRemote<mojom::blink::Blob> blob_clone;
+  blob->Clone(blob_clone.InitWithNewPipeAndPassReceiver());
+  blob_remote_ = blob.Unbind();
   return blob_clone;
 }
 
 network::mojom::blink::DataPipeGetterPtr BlobDataHandle::AsDataPipeGetter() {
-  MutexLocker locker(blob_info_mutex_);
-  if (!blob_info_.is_valid())
+  MutexLocker locker(blob_remote_mutex_);
+  if (!blob_remote_.is_valid())
     return nullptr;
   network::mojom::blink::DataPipeGetterPtr result;
-  BlobPtr blob;
-  blob.Bind(std::move(blob_info_));
+  mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
   blob->AsDataPipeGetter(MakeRequest(&result));
-  blob_info_ = blob.PassInterface();
+  blob_remote_ = blob.Unbind();
   return result;
 }
 
 void BlobDataHandle::ReadAll(
     mojo::ScopedDataPipeProducerHandle pipe,
     mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
-  MutexLocker locker(blob_info_mutex_);
-  BlobPtr blob;
-  blob.Bind(std::move(blob_info_));
+  MutexLocker locker(blob_remote_mutex_);
+  mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
   blob->ReadAll(std::move(pipe), std::move(client));
-  blob_info_ = blob.PassInterface();
+  blob_remote_ = blob.Unbind();
 }
 
 void BlobDataHandle::ReadRange(
@@ -401,11 +399,10 @@ void BlobDataHandle::ReadRange(
     uint64_t length,
     mojo::ScopedDataPipeProducerHandle pipe,
     mojo::PendingRemote<mojom::blink::BlobReaderClient> client) {
-  MutexLocker locker(blob_info_mutex_);
-  BlobPtr blob;
-  blob.Bind(std::move(blob_info_));
+  MutexLocker locker(blob_remote_mutex_);
+  mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
   blob->ReadRange(offset, length, std::move(pipe), std::move(client));
-  blob_info_ = blob.PassInterface();
+  blob_remote_ = blob.Unbind();
 }
 
 // static

@@ -69,9 +69,8 @@ void CollapseButton::OnEnabledChanged() {
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(
                kUnifiedMenuExpandIcon,
-               GetEnabled()
-                   ? icon_color
-                   : AshColorProvider::Get()->GetDisabledColor(icon_color)));
+               GetEnabled() ? icon_color
+                            : AshColorProvider::GetDisabledColor(icon_color)));
 }
 
 }  // namespace ash

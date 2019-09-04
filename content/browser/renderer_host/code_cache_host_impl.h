@@ -14,7 +14,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
 
@@ -51,7 +51,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
       int render_process_id,
       scoped_refptr<CacheStorageContextImpl> cache_storage_context,
       scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context,
-      blink::mojom::CodeCacheHostRequest request);
+      mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver);
 
  private:
   // blink::mojom::CodeCacheHost implementation.

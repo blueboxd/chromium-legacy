@@ -31,6 +31,10 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetIconId() const override;
   void InfoBarDismissed() override;
 
+  // This function is the equivalent of GetMessageText(), but for the portion of
+  // the infobar below the 'message' title.
+  base::string16 GetDescriptionText() const;
+
  private:
   security_state::SafetyTipStatus safety_tip_status_;
   GURL url_;

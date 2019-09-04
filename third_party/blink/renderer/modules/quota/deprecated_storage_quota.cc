@@ -152,7 +152,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
                             WrapPersistent(success_callback),
                             WrapPersistent(error_callback));
   GetQuotaHost(execution_context)
-      .QueryStorageUsageAndQuota(
+      ->QueryStorageUsageAndQuota(
           WrapRefCounted(security_origin), storage_type,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0,
@@ -188,22 +188,21 @@ void DeprecatedStorageQuota::requestQuota(
   }
 
   GetQuotaHost(&execution_context)
-      .RequestStorageQuota(
+      ->RequestStorageQuota(
           WrapRefCounted(security_origin), storage_type, new_quota_in_bytes,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0));
 }
 
-mojom::blink::QuotaDispatcherHost& DeprecatedStorageQuota::GetQuotaHost(
+mojom::blink::QuotaDispatcherHost* DeprecatedStorageQuota::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
     ConnectToQuotaDispatcherHost(
         execution_context,
-        mojo::MakeRequest(&quota_host_,
-                          execution_context->GetTaskRunner(
-                              blink::TaskType::kInternalDefault)));
+        quota_host_.BindNewPipeAndPassReceiver(execution_context->GetTaskRunner(
+            blink::TaskType::kInternalDefault)));
   }
-  return *quota_host_;
+  return quota_host_.get();
 }
 
 }  // namespace blink

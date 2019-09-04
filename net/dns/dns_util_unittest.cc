@@ -5,6 +5,7 @@
 #include "net/dns/dns_util.h"
 
 #include "base/stl_util.h"
+#include "net/dns/public/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -132,6 +133,70 @@ TEST_F(DNSUtilTest, GetURLFromTemplateWithoutParameters) {
   EXPECT_EQ("https://dnsserver.example.net/dns-query",
             GetURLFromTemplateWithoutParameters(
                 "https://dnsserver.example.net/dns-query{?dns}"));
+}
+
+TEST_F(DNSUtilTest, GetDohUpgradeServersFromDotHostname) {
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers =
+      GetDohUpgradeServersFromDotHostname("", std::vector<std::string>());
+  EXPECT_EQ(0u, doh_servers.size());
+
+  doh_servers = GetDohUpgradeServersFromDotHostname("unrecognized",
+                                                    std::vector<std::string>());
+  EXPECT_EQ(0u, doh_servers.size());
+
+  doh_servers = GetDohUpgradeServersFromDotHostname(
+      "family-filter-dns.cleanbrowsing.org", std::vector<std::string>());
+  EXPECT_EQ(1u, doh_servers.size());
+  EXPECT_EQ("https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+            doh_servers[0].server_template);
+
+  doh_servers = GetDohUpgradeServersFromDotHostname(
+      "family-filter-dns.cleanbrowsing.org",
+      std::vector<std::string>({"CleanBrowsingFamily"}));
+  EXPECT_EQ(0u, doh_servers.size());
+}
+
+TEST_F(DNSUtilTest, GetDohUpgradeServersFromNameservers) {
+  std::vector<IPEndPoint> nameservers;
+  // Cloudflare upgradeable IPs
+  IPAddress dns_ip0(1, 0, 0, 1);
+  IPAddress dns_ip1;
+  EXPECT_TRUE(dns_ip1.AssignFromIPLiteral("2606:4700:4700::1111"));
+  // SafeBrowsing family filter upgradeable IP
+  IPAddress dns_ip2;
+  EXPECT_TRUE(dns_ip2.AssignFromIPLiteral("2a0d:2a00:2::"));
+  // SafeBrowsing security filter upgradeable IP
+  IPAddress dns_ip3(185, 228, 169, 9);
+  // None-upgradeable IP
+  IPAddress dns_ip4(1, 2, 3, 4);
+
+  nameservers.push_back(IPEndPoint(dns_ip0, dns_protocol::kDefaultPort));
+  nameservers.push_back(IPEndPoint(dns_ip1, dns_protocol::kDefaultPort));
+  nameservers.push_back(IPEndPoint(dns_ip2, 54));
+  nameservers.push_back(IPEndPoint(dns_ip3, dns_protocol::kDefaultPort));
+  nameservers.push_back(IPEndPoint(dns_ip4, dns_protocol::kDefaultPort));
+
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers =
+      GetDohUpgradeServersFromNameservers(std::vector<IPEndPoint>(),
+                                          std::vector<std::string>());
+  EXPECT_EQ(0u, doh_servers.size());
+
+  doh_servers = GetDohUpgradeServersFromNameservers(nameservers,
+                                                    std::vector<std::string>());
+  EXPECT_EQ(3u, doh_servers.size());
+  EXPECT_EQ("https://chrome.cloudflare-dns.com/dns-query",
+            doh_servers[0].server_template);
+  EXPECT_EQ("https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+            doh_servers[1].server_template);
+  EXPECT_EQ("https://doh.cleanbrowsing.org/doh/security-filter{?dns}",
+            doh_servers[2].server_template);
+
+  doh_servers = GetDohUpgradeServersFromNameservers(
+      nameservers, std::vector<std::string>(
+                       {"CleanBrowsingSecure", "Cloudflare", "Unexpected"}));
+  EXPECT_EQ(1u, doh_servers.size());
+  EXPECT_EQ("https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+            doh_servers[0].server_template);
 }
 
 }  // namespace net

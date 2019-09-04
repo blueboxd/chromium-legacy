@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
 class OverlayResponse;
@@ -15,6 +16,7 @@ class OverlayResponse;
 // Tab helper that handles the WebStateDelegate implementation.
 class WebStateDelegateTabHelper
     : public web::WebStateDelegate,
+      public web::WebStateObserver,
       public web::WebStateUserData<WebStateDelegateTabHelper> {
  public:
   ~WebStateDelegateTabHelper() override;
@@ -35,6 +37,9 @@ class WebStateDelegateTabHelper
   explicit WebStateDelegateTabHelper(web::WebState* web_state);
   friend class web::WebStateUserData<WebStateDelegateTabHelper>;
   WEB_STATE_USER_DATA_KEY_DECL();
+
+  // WebStateObserver:
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // Callback for HTTP authentication dialogs.
   void OnHTTPAuthOverlayFinished(web::WebStateDelegate::AuthCallback callback,

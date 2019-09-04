@@ -1511,13 +1511,14 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
 }
 
+// Returns whether this item contains only spaces that can hang.
 bool NGLineBreaker::ShouldHangTraillingSpaces(const NGInlineItem& item) {
   if (!item.Length())
     return false;
 
   const ComputedStyle& style = *item.Style();
-  if (!auto_wrap_ || (!style.CollapseWhiteSpace() &&
-                      style.WhiteSpace() == EWhiteSpace::kBreakSpaces))
+  if (!style.AutoWrap() || (!style.CollapseWhiteSpace() &&
+                            style.WhiteSpace() == EWhiteSpace::kBreakSpaces))
     return false;
 
   const String& text = Text();

@@ -85,6 +85,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -883,6 +884,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
       {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
+      {"pointerAccelerationLabel", IDS_SETTINGS_POINTER_ACCELERATION_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kPointersStrings,
                           base::size(kPointersStrings));
@@ -1028,6 +1030,10 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
+
+  html_source->AddBoolean(
+      "allowDisableMouseAcceleration",
+      base::FeatureList::IsEnabled(features::kAllowDisableMouseAcceleration));
 
   static constexpr LocalizedString kStorageStrings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
@@ -1653,10 +1659,15 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
       "secondaryUserBannerText",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
                                  base::ASCIIToUTF16(primary_user_email)));
+  html_source->AddString("browserSettingsBannerText",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_BROWSER_SETTINGS_BANNER,
+                             base::ASCIIToUTF16(chrome::kChromeUISettingsURL)));
   html_source->AddString(
-      "browserSettingsBannerText",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_BROWSER_SETTINGS_BANNER,
-                                 base::ASCIIToUTF16("chrome://settings")));
+      "osSettingsBannerText",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_OS_SETTINGS_BANNER,
+          base::ASCIIToUTF16(chrome::kChromeUIOSSettingsURL)));
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
 

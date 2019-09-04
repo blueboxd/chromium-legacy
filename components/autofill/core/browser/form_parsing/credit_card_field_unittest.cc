@@ -33,7 +33,8 @@ class CreditCardFieldTestBase {
   // |field_|.
   void Parse() {
     AutofillScanner scanner(list_);
-    std::unique_ptr<FormField> field = CreditCardField::Parse(&scanner);
+    std::unique_ptr<FormField> field =
+        CreditCardField::Parse(&scanner, nullptr);
     field_ = std::unique_ptr<CreditCardField>(
         static_cast<CreditCardField*>(field.release()));
   }
@@ -43,7 +44,7 @@ class CreditCardFieldTestBase {
 
     AutofillScanner scanner(list_);
     while (!scanner.IsEnd()) {
-      field = CreditCardField::Parse(&scanner);
+      field = CreditCardField::Parse(&scanner, nullptr);
       field_ = std::unique_ptr<CreditCardField>(
           static_cast<CreditCardField*>(field.release()));
       if (field_ == nullptr) {

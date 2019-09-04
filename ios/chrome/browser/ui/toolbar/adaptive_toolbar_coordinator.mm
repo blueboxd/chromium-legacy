@@ -38,8 +38,8 @@
 
 #pragma mark - ChromeCoordinator
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  return [super initWithBaseViewController:nil browserState:browserState];
+- (instancetype)initWithBrowser:(Browser*)browser {
+  return [super initWithBaseViewController:nil browser:browser];
 }
 
 - (void)start {

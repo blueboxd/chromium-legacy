@@ -9,7 +9,6 @@
 #include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -165,8 +164,6 @@ bool CreateThreadInternal(size_t stack_size,
             "create_thread_last_error", debug::CrashKeySize::Size32);
         debug::SetCrashKeyString(last_error_crash_key,
                                  base::NumberToString(last_error));
-        debug::Alias(&last_error);
-        debug::DumpWithoutCrashing();
         break;
     }
 

@@ -45,8 +45,7 @@ bool IsContextSecureForWebState(web::WebState* web_state) {
 
   const web::SSLStatus& ssl = nav_item->GetSSL();
   return nav_item->GetURL().SchemeIsCryptographic() && ssl.certificate &&
-         (!net::IsCertStatusError(ssl.cert_status) ||
-          net::IsCertStatusMinorError(ssl.cert_status));
+         !net::IsCertStatusError(ssl.cert_status);
 }
 
 std::unique_ptr<base::Value> ParseJson(NSString* json_string) {

@@ -67,8 +67,6 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -218,7 +216,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 
   GetBrowserInterfaceBrokerProxy()->GetInterface(
-      mojo::MakeRequest(&code_cache_host_info_));
+      code_cache_host_remote_.InitWithNewPipeAndPassReceiver());
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
@@ -963,12 +961,12 @@ RendererBlinkPlatformImpl::GetGpuFactories() {
 
 blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
   if (!code_cache_host_) {
-    code_cache_host_ = blink::mojom::ThreadSafeCodeCacheHostPtr::Create(
-        std::move(code_cache_host_info_),
+    code_cache_host_ = mojo::SharedRemote<blink::mojom::CodeCacheHost>(
+        std::move(code_cache_host_remote_),
         base::CreateSequencedTaskRunner(
             {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
   }
-  return **code_cache_host_;
+  return *code_cache_host_;
 }
 
 }  // namespace content

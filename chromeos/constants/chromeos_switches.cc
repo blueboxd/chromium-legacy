@@ -318,6 +318,11 @@ const char kFakeDriveFsLauncherChrootPath[] =
 const char kFakeDriveFsLauncherSocketPath[] =
     "fake-drivefs-launcher-socket-path";
 
+// Fingerprint sensor location indicates the physical sensor's location. The
+// value is a string with possible values: "power-button-top-left",
+// "keyboard-top-right", "keyboard-bottom-right".
+const char kFingerprintSensorLocation[] = "fingerprint-sensor-location";
+
 // Forces Chrome to use CertVerifyProcBuiltin for verification of server
 // certificates, ignoring the status of
 // net::features::kCertVerifierBuiltinFeature.

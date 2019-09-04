@@ -8,6 +8,7 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.Executor;
@@ -92,8 +93,8 @@ public class AwProxyController {
             return "Executor must not be null";
         }
 
-        String result =
-                nativeSetProxyOverride(urlSchemes, proxyUrls, bypassRules, listener, executor);
+        String result = AwProxyControllerJni.get().setProxyOverride(
+                AwProxyController.this, urlSchemes, proxyUrls, bypassRules, listener, executor);
         if (result.equals("")) {
             // In case operation is successful, log UMA data on SetProxyOverride
             // Proxy scheme filter
@@ -137,7 +138,7 @@ public class AwProxyController {
             return "Executor must not be null";
         }
 
-        nativeClearProxyOverride(listener, executor);
+        AwProxyControllerJni.get().clearProxyOverride(AwProxyController.this, listener, executor);
         // Log UMA data on ClearProxyOverride
         RecordHistogram.recordBooleanHistogram("Android.WebView.ClearProxyOverride", true);
         return "";
@@ -149,7 +150,10 @@ public class AwProxyController {
         executor.execute(listener);
     }
 
-    private native String nativeSetProxyOverride(String[] urlSchemes, String[] proxyUrls,
-            String[] bypassRules, Runnable listener, Executor executor);
-    private native void nativeClearProxyOverride(Runnable listener, Executor executor);
+    @NativeMethods
+    interface Natives {
+        String setProxyOverride(AwProxyController caller, String[] urlSchemes, String[] proxyUrls,
+                String[] bypassRules, Runnable listener, Executor executor);
+        void clearProxyOverride(AwProxyController caller, Runnable listener, Executor executor);
+    }
 }

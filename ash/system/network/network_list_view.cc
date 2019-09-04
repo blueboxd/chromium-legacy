@@ -385,14 +385,14 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
     return nullptr;
 
   views::ImageView* icon = new views::ImageView;
+  const SkColor icon_color = GetIconColor();
   icon->SetPreferredSize(gfx::Size(kMenuIconSize, kMenuIconSize));
   icon->EnableCanvasFlippingForRTLUI(true);
   PowerStatus::BatteryImageInfo icon_info;
   icon_info.charge_percent = info.battery_percentage;
   icon->SetImage(PowerStatus::GetBatteryImage(
       icon_info, kMobileNetworkBatteryIconSize,
-      AshColorProvider::Get()->GetDisabledColor(GetIconColor()),
-      GetIconColor()));
+      AshColorProvider::GetSecondToneColor(icon_color), icon_color));
 
   // Show the numeric battery percentage on hover.
   icon->set_tooltip_text(base::FormatPercent(info.battery_percentage));

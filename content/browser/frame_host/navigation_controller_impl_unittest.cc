@@ -2832,6 +2832,33 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   EXPECT_EQ(controller.GetEntryAtIndex(4)->GetURL(), url4);
 }
 
+// Test that RemoveEntryAtIndex can handle an index that refers to a transient
+// entry.
+TEST_F(NavigationControllerTest, RemoveTransientByIndex) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url0("http://foo/0");
+  const GURL transient_url("http://foo/transient");
+
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
+
+  std::unique_ptr<NavigationEntry> transient_entry =
+      std::make_unique<NavigationEntryImpl>();
+  transient_entry->SetURL(transient_url);
+  controller.SetTransientEntry(std::move(transient_entry));
+
+  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_TRUE(controller.GetTransientEntry());
+  EXPECT_EQ(controller.GetTransientEntry(), controller.GetEntryAtIndex(1));
+
+  EXPECT_TRUE(controller.RemoveEntryAtIndex(1));
+
+  EXPECT_EQ(controller.GetEntryCount(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
+  EXPECT_FALSE(controller.GetTransientEntry());
+}
+
 // Test that Reload initiates a new navigation to a transient entry's URL.
 TEST_F(NavigationControllerTest, ReloadTransient) {
   NavigationControllerImpl& controller = controller_impl();

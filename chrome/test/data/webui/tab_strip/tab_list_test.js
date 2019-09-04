@@ -237,4 +237,17 @@ suite('TabList', () => {
     assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
     assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
   });
+
+  test('moves tab elements when tabs move', () => {
+    const tabElementsBeforeMove = getUnpinnedTabs();
+    const tabToMove = currentWindow.tabs[0];
+    callbackRouter.onMoved.dispatchEvent(tabToMove.id, {
+      toIndex: 2,
+      windowId: currentWindow.id,
+    });
+    const tabElementsAfterMove = getUnpinnedTabs();
+    assertEquals(tabElementsBeforeMove[0], tabElementsAfterMove[2]);
+    assertEquals(tabElementsBeforeMove[1], tabElementsAfterMove[0]);
+    assertEquals(tabElementsBeforeMove[2], tabElementsAfterMove[1]);
+  });
 });

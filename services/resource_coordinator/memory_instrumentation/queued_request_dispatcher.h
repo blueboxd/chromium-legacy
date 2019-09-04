@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 #include "services/resource_coordinator/memory_instrumentation/graph.h"
@@ -27,12 +26,12 @@ class QueuedRequestDispatcher {
   using RequestGlobalMemoryDumpInternalCallback = base::OnceCallback<
       void(bool, uint64_t, memory_instrumentation::mojom::GlobalMemoryDumpPtr)>;
   using ChromeCallback = base::RepeatingCallback<void(
-      base::ProcessId,
+      mojom::ClientProcess*,
       bool,
       uint64_t,
       std::unique_ptr<base::trace_event::ProcessMemoryDump>)>;
   using OsCallback =
-      base::RepeatingCallback<void(base::ProcessId, bool, OSMemDumpMap)>;
+      base::RepeatingCallback<void(mojom::ClientProcess*, bool, OSMemDumpMap)>;
   using VmRegions =
       base::flat_map<base::ProcessId,
                      std::vector<memory_instrumentation::mojom::VmRegionPtr>>;
@@ -41,14 +40,14 @@ class QueuedRequestDispatcher {
     ClientInfo(mojom::ClientProcess* client,
                base::ProcessId pid,
                mojom::ProcessType process_type,
-               base::Optional<std::string> service_name);
+               std::vector<std::string> service_names);
     ClientInfo(ClientInfo&& other);
     ~ClientInfo();
 
-    mojom::ClientProcess* const client;
+    mojom::ClientProcess* client;
     const base::ProcessId pid;
     const mojom::ProcessType process_type;
-    const base::Optional<std::string> service_name;
+    std::vector<std::string> service_names;
   };
 
   // Sets up the parameters of the queued |request| using |clients| and then

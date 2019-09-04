@@ -258,8 +258,8 @@ URLRegistry& Blob::Registry() const {
   return instance;
 }
 
-mojom::blink::BlobPtr Blob::AsMojoBlob() {
-  return blob_data_handle_->CloneBlobPtr();
+mojo::PendingRemote<mojom::blink::Blob> Blob::AsMojoBlob() {
+  return blob_data_handle_->CloneBlobRemote();
 }
 
 // static

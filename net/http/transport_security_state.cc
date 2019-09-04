@@ -42,6 +42,9 @@
 
 namespace net {
 
+const base::Feature kEnforceCTForNewCerts{"EnforceCTForNewCerts",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 
 #include "net/http/transport_security_state_ct_policies.inc"
@@ -67,10 +70,6 @@ const size_t kReportCacheKeyLength = 16;
 //   1: Unless a delegate says otherwise, require CT.
 int g_ct_required_for_testing = 0;
 
-// Controls whether or not Certificate Transparency should be enforced for
-// newly-issued certificates.
-const base::Feature kEnforceCTForNewCerts{"EnforceCTForNewCerts",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 // The date (as the number of seconds since the Unix Epoch) to enforce CT for
 // new certificates.
 constexpr base::FeatureParam<int> kEnforceCTForNewCertsDate{

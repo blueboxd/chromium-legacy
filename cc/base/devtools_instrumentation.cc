@@ -6,6 +6,27 @@
 
 namespace cc {
 namespace devtools_instrumentation {
+namespace {
+
+void RecordMicrosecondTimesUmaByDecodeType(
+    const std::string& metric_prefix,
+    base::TimeDelta duration,
+    base::TimeDelta min,
+    base::TimeDelta max,
+    uint32_t bucket_count,
+    ScopedImageDecodeTask::DecodeType decode_type_) {
+  switch (decode_type_) {
+    case ScopedImageDecodeTask::kSoftware:
+      UmaHistogramCustomMicrosecondsTimes(metric_prefix + ".Software", duration,
+                                          min, max, bucket_count);
+      break;
+    case ScopedImageDecodeTask::kGpu:
+      UmaHistogramCustomMicrosecondsTimes(metric_prefix + ".Gpu", duration, min,
+                                          max, bucket_count);
+      break;
+  }
+}
+}  // namespace
 
 namespace internal {
 constexpr const char CategoryName::CategoryName::kTimeline[];
@@ -52,48 +73,33 @@ ScopedImageDecodeTask::~ScopedImageDecodeTask() {
   base::TimeDelta min = base::TimeDelta::FromMicroseconds(1);
   base::TimeDelta max = base::TimeDelta::FromMilliseconds(1000);
   auto duration = base::TimeTicks::Now() - start_time_;
-  if (image_type_ == ImageType::kWebP) {
-    switch (decode_type_) {
-      case kSoftware:
-        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-            "Renderer4.ImageDecodeTaskDurationUs.WebP.Software", duration, min,
-            max, bucket_count);
-        break;
-      case kGpu:
-        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-            "Renderer4.ImageDecodeTaskDurationUs.WebP.Gpu", duration, min, max,
-            bucket_count);
-        break;
-    }
+  switch (image_type_) {
+    case ImageType::kWebP:
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.WebP", duration, min, max,
+          bucket_count, decode_type_);
+      break;
+    case ImageType::kJpeg:
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.Jpeg", duration, min, max,
+          bucket_count, decode_type_);
+      break;
+    case ImageType::kOther:
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.Other", duration, min, max,
+          bucket_count, decode_type_);
+      break;
   }
   switch (task_type_) {
     case kInRaster:
-      switch (decode_type_) {
-        case kSoftware:
-          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-              "Renderer4.ImageDecodeTaskDurationUs.Software", duration, min,
-              max, bucket_count);
-          break;
-        case kGpu:
-          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-              "Renderer4.ImageDecodeTaskDurationUs.Gpu", duration, min, max,
-              bucket_count);
-          break;
-      }
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs", duration, min, max,
+          bucket_count, decode_type_);
       break;
     case kOutOfRaster:
-      switch (decode_type_) {
-        case kSoftware:
-          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-              "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Software",
-              duration, min, max, bucket_count);
-          break;
-        case kGpu:
-          UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-              "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Gpu", duration,
-              min, max, bucket_count);
-          break;
-      }
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster", duration, min, max,
+          bucket_count, decode_type_);
       break;
   }
 }

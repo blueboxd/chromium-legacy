@@ -22,6 +22,14 @@ enum GetCameraAppDeviceStatus {
   ERROR_INVALID_ID = 2,
 };
 
+// The purpose of this capture is to help the camera device decide optimal
+// configurations.
+enum CaptureIntent {
+  DEFAULT = 0,
+  VIDEO_RECORD = 1,
+  STILL_CAPTURE = 2,
+};
+
 // Interface to let Chrome Camera App (Remote) get specific CameraAppDevice from
 // Chrome (Receiver).
 interface CameraAppDeviceProvider {
@@ -83,4 +91,10 @@ interface CameraAppDevice {
   // previously will be cleared and |is_success| will return false.
   SetFpsRange(gfx.mojom.Size resolution, gfx.mojom.Range fps_range)
       => (bool is_success);
+
+  // Sets the intent for the upcoming capture session. The underlying video
+  // capture device should configure the streams accordingly. Returns an empty
+  // response after the intent is set, which could be used to sequence the
+  // other calls such as getUserMedia().
+  SetCaptureIntent(CaptureIntent intent) => ();
 };

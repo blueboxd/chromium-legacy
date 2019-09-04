@@ -27,25 +27,24 @@ PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
     const PaymentRequestEventInit* initializer) {
   return MakeGarbageCollected<PaymentRequestEvent>(
-      type, initializer, payments::mojom::blink::PaymentHandlerHostPtrInfo(),
-      nullptr, nullptr);
+      type, initializer, mojo::NullRemote(), nullptr, nullptr);
 }
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
     const PaymentRequestEventInit* initializer,
-    payments::mojom::blink::PaymentHandlerHostPtrInfo host_info,
+    mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
   return MakeGarbageCollected<PaymentRequestEvent>(
-      type, initializer, std::move(host_info), respond_with_observer,
+      type, initializer, std::move(host), respond_with_observer,
       wait_until_observer);
 }
 
 PaymentRequestEvent::PaymentRequestEvent(
     const AtomicString& type,
     const PaymentRequestEventInit* initializer,
-    payments::mojom::blink::PaymentHandlerHostPtrInfo host_info,
+    mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),
@@ -62,11 +61,11 @@ PaymentRequestEvent::PaymentRequestEvent(
                      : HeapVector<Member<PaymentDetailsModifier>>()),
       instrument_key_(initializer->instrumentKey()),
       observer_(respond_with_observer) {
-  if (!host_info.is_valid())
+  if (!host.is_valid())
     return;
 
-  payment_handler_host_.Bind(std::move(host_info));
-  payment_handler_host_.set_connection_error_handler(WTF::Bind(
+  payment_handler_host_.Bind(std::move(host));
+  payment_handler_host_.set_disconnect_handler(WTF::Bind(
       &PaymentRequestEvent::OnHostConnectionError, WrapWeakPersistent(this)));
 }
 

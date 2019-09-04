@@ -21,6 +21,8 @@
 
 namespace ui_devtools {
 
+class TracingAgent;
+
 class UI_DEVTOOLS_EXPORT UiDevToolsServer
     : public network::server::HttpServer::Delegate {
  public:
@@ -67,6 +69,9 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
 
   int port() const { return port_; }
 
+  TracingAgent* tracing_agent() { return tracing_agent_; }
+  void set_tracing_agent(TracingAgent* agent) { tracing_agent_ = agent; }
+
  private:
   UiDevToolsServer(int port, const net::NetworkTrafficAnnotationTag tag);
 
@@ -96,6 +101,8 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   const int port_;
 
   const net::NetworkTrafficAnnotationTag tag_;
+
+  TracingAgent* tracing_agent_ = nullptr;
 
   // The server (owned by Chrome for now)
   static UiDevToolsServer* devtools_server_;

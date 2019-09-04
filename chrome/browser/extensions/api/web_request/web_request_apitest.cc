@@ -2527,7 +2527,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
 // An extension should be able to modify the request header for service worker
 // script by using WebRequest API.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerScript) {
+//
+// Disabled due to https://crbug.com/995763.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       DISABLED_ServiceWorkerScript) {
   // The extension to be used in this test adds foo=bar request header.
   const char kScriptPath[] = "/echoheader_service_worker.js";
   int served_service_worker_count = 0;

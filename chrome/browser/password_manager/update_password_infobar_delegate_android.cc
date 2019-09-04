@@ -40,9 +40,9 @@ void UpdatePasswordInfoBarDelegate::Create(
 
 UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogUpdateUIDismissalReason(infobar_response_);
-  passwords_state_.form_manager()
-      ->GetMetricsRecorder()
-      ->RecordUIDismissalReason(infobar_response_);
+  if (auto* recorder = passwords_state_.form_manager()->GetMetricsRecorder()) {
+    recorder->RecordUIDismissalReason(infobar_response_);
+  }
 }
 
 base::string16 UpdatePasswordInfoBarDelegate::GetBranding() const {
@@ -74,10 +74,11 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
   if (is_smartlock_branding_enabled)
     SetDetailsMessage(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER));
 
-  // TODO(melandory): Add histograms, crbug.com/577129
-  form_to_update->GetMetricsRecorder()->RecordPasswordBubbleShown(
-      form_to_update->GetCredentialSource(),
-      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+  if (auto* recorder = form_to_update->GetMetricsRecorder()) {
+    recorder->RecordPasswordBubbleShown(
+        form_to_update->GetCredentialSource(),
+        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
+  }
 
   passwords_state_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));

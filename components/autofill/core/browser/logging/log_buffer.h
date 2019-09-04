@@ -212,6 +212,11 @@ LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, T&& value) {
 
 LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, Attrib&& attrib);
 
+// Highlights the first |needle| in |haystack| by wrapping it in <b> tags.
+LogBuffer HighlightValue(base::StringPiece haystack, base::StringPiece needle);
+LogBuffer HighlightValue(base::StringPiece16 haystack,
+                         base::StringPiece16 needle);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_BUFFER_H_

@@ -30,6 +30,10 @@ void PageAnimator::Trace(blink::Visitor* visitor) {
 void PageAnimator::ServiceScriptedAnimations(
     base::TimeTicks monotonic_animation_start_time) {
   base::AutoReset<bool> servicing(&servicing_animations_, true);
+
+  // Once we are inside a frame's lifecycle, the AnimationClock should hold its
+  // time value until the end of the frame.
+  Clock().SetAllowedToDynamicallyUpdateTime(false);
   Clock().UpdateTime(monotonic_animation_start_time);
 
   HeapVector<Member<Document>, 32> documents;
@@ -84,7 +88,7 @@ void PageAnimator::ServiceScriptedAnimations(
   page_->GetValidationMessageClient().LayoutOverlay();
 }
 
-void PageAnimator::RunPostAnimationFrameCallbacks() {
+void PageAnimator::PostAnimate() {
   HeapVector<Member<Document>, 32> documents;
   for (Frame* frame = page_->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
@@ -92,8 +96,21 @@ void PageAnimator::RunPostAnimationFrameCallbacks() {
       documents.push_back(To<LocalFrame>(frame)->GetDocument());
   }
 
+  // Run the post-animation frame callbacks. See
+  // https://github.com/WICG/requestPostAnimationFrame
   for (auto& document : documents)
     document->RunPostAnimationFrameCallbacks();
+
+  // If we don't have an imminently incoming frame, we need to let the
+  // AnimationClock update its own time to properly service out-of-lifecycle
+  // events such as setInterval (see https://crbug.com/995806). This isn't a
+  // perfect heuristic, but at the very least we know that if there is a pending
+  // RAF we will be getting a new frame and thus don't need to unlock the clock.
+  bool next_frame_has_raf = false;
+  for (auto& document : documents)
+    next_frame_has_raf |= document->NextFrameHasPendingRAF();
+  if (!next_frame_has_raf)
+    Clock().SetAllowedToDynamicallyUpdateTime(true);
 }
 
 void PageAnimator::SetSuppressFrameRequestsWorkaroundFor704763Only(

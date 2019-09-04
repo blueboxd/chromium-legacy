@@ -99,6 +99,7 @@ class PaymentsClient {
     UnmaskResponseDetails();
     UnmaskResponseDetails(const UnmaskResponseDetails& other);
     ~UnmaskResponseDetails();
+    UnmaskResponseDetails& operator=(const UnmaskResponseDetails& other);
 
     UnmaskResponseDetails& with_real_pan(std::string r) {
       real_pan = r;
@@ -106,7 +107,7 @@ class PaymentsClient {
     }
 
     std::string real_pan;
-    base::Value fido_creation_options;
+    base::Optional<base::Value> fido_creation_options;
   };
 
   // Information required to either opt-in or opt-out a user for FIDO

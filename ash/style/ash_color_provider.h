@@ -53,6 +53,9 @@ class ASH_EXPORT AshColorProvider {
 
     // Base layer is opaque.
     kOpaque,
+
+    // Base layer is red. e.g, the "sign out" button inside status area.
+    kRed,
   };
 
   // Types of Controls layer.
@@ -94,6 +97,14 @@ class ASH_EXPORT AshColorProvider {
 
   static AshColorProvider* Get();
 
+  // Gets the disabled color on |enabled_color|. It can be disabled background,
+  // an disabled icon, etc.
+  static SkColor GetDisabledColor(SkColor enabled_color);
+
+  // Gets the color of second tone on the given |color_of_first_tone|. e.g,
+  // power status icon inside status area is a dual tone icon.
+  static SkColor GetSecondToneColor(SkColor color_of_first_tone);
+
   // Gets color of Shield layer. See details at the corresponding function of
   // Base layer.
   SkColor DeprecatedGetShieldLayerColor(ShieldLayerType type,
@@ -131,10 +142,6 @@ class ASH_EXPORT AshColorProvider {
   // Gets the attributes of ripple on |bg_color|. |bg_color| is the background
   // color of the UI element that wants to show inkdrop.
   RippleAttributes GetRippleAttributes(SkColor bg_color) const;
-
-  // Gets the disabled color on |enabled_color|. It can be disabled background,
-  // an disabled icon, etc.
-  SkColor GetDisabledColor(SkColor enabled_color) const;
 
   AshColorMode color_mode() const { return color_mode_; }
 

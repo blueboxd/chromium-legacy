@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
@@ -423,7 +424,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
             ui::PageTransition transition) {
         web::NavigationManager::WebLoadParams params(replacementURL);
         params.transition_type = transition;
-        UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        UrlLoadingServiceFactory::GetForBrowserState(
+            self.browser->GetBrowserState())
             ->Load(UrlLoadParams::InCurrentTab(params));
         [self cancelOmniboxEdit];
       };

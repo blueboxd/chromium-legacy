@@ -211,7 +211,14 @@ TEST_F(BrowserViewTest, RepeatedAccelerators) {
 #endif  // !defined(OS_MACOSX)
 
 // Test that bookmark bar view becomes invisible when closing the browser.
-TEST_F(BrowserViewTest, BookmarkBarInvisibleOnShutdown) {
+// TODO(https://crbug.com/1000251): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_BookmarkBarInvisibleOnShutdown \
+  DISABLED_BookmarkBarInvisibleOnShutdown
+#else
+#define MAYBE_BookmarkBarInvisibleOnShutdown BookmarkBarInvisibleOnShutdown
+#endif
+TEST_F(BrowserViewTest, MAYBE_BookmarkBarInvisibleOnShutdown) {
   BookmarkBarView::DisableAnimationsForTesting(true);
 
   Browser* browser = browser_view()->browser();

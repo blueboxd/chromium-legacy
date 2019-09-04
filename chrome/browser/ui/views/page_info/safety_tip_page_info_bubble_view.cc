@@ -43,12 +43,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   // created over it, etc).
   set_close_on_deactivate(false);
 
-  size_t offset;
-  const base::string16 safety_tip_name =
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_NAME);
-  const base::string16 title_text = l10n_util::GetStringFUTF16(
-      safety_tips::GetSafetyTipTitleId(safety_tip_status), safety_tip_name,
-      &offset);
+  const base::string16 title_text = l10n_util::GetStringUTF16(
+      safety_tips::GetSafetyTipTitleId(safety_tip_status));
   set_window_title(title_text);
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -67,9 +63,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
       gfx::Font::Weight::NORMAL);
 
   auto new_title = std::make_unique<views::StyledLabel>(title_text, nullptr);
-  new_title->AddStyleRange(
-      gfx::Range(offset, offset + safety_tip_name.length()), name_style);
-  new_title->AddStyleRange(gfx::Range(0, title_text.length()), base_style);
+  new_title->AddStyleRange(gfx::Range(0, title_text.length()), name_style);
   GetBubbleFrameView()->SetTitleView(std::move(new_title));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();

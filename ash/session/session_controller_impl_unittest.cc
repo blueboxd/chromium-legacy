@@ -16,7 +16,6 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -612,14 +611,6 @@ class CanSwitchUserTest : public AshTestBase {
       switch_callback_hit_count_++;
   }
 
-  // Methods needed to test with overview mode.
-  bool StartOverview() {
-    return Shell::Get()->overview_controller()->StartOverview();
-  }
-  bool InOverviewSession() const {
-    return Shell::Get()->overview_controller()->InOverviewSession();
-  }
-
   // Various counter accessors.
   int stop_capture_callback_hit_count() const {
     return stop_capture_callback_hit_count_;
@@ -764,18 +755,6 @@ TEST_F(CanSwitchUserTest, BothActiveAccepted) {
   EXPECT_EQ(1, switch_callback_hit_count());
   EXPECT_EQ(1, stop_capture_callback_hit_count());
   EXPECT_EQ(1, stop_share_callback_hit_count());
-}
-
-// Test that overview mode is dismissed before switching user profile.
-TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
-  EXPECT_EQ(0, switch_callback_hit_count());
-  gfx::Rect bounds(0, 0, 100, 100);
-  std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
-  ASSERT_TRUE(StartOverview());
-  ASSERT_TRUE(InOverviewSession());
-  SwitchUser(CanSwitchUserTest::NO_DIALOG);
-  ASSERT_FALSE(InOverviewSession());
-  EXPECT_EQ(1, switch_callback_hit_count());
 }
 
 using SessionControllerImplUnblockTest = NoSessionAshTestBase;

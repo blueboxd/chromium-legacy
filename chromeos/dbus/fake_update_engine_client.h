@@ -60,25 +60,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
 
   // Sets the default UpdateEngineClient::Status. GetLastStatus() returns the
   // value set here if |status_queue_| is empty.
-  void set_default_status(const UpdateEngineClient::Status& status) {
-    default_status_ = status;
-  }
-
-  // Sets the EOL status.
-  void set_end_of_life_status(const update_engine::EndOfLifeStatus& status) {
-    end_of_life_status_ = status;
-  }
-
-  // Sets the number of milestones until EOL.
-  void set_number_of_milestones(const int32_t& number_of_milestones) {
-    number_of_milestones_ = number_of_milestones;
-  }
+  void set_default_status(const UpdateEngineClient::Status& status);
 
   // Sets a value returned by RequestUpdateCheck().
   void set_update_check_result(
-      const UpdateEngineClient::UpdateCheckResult& result) {
-    update_check_result_ = result;
-  }
+      const UpdateEngineClient::UpdateCheckResult& result);
 
   void set_can_rollback_check_result(bool result) {
       can_rollback_stub_result_ = result;
@@ -110,8 +96,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
   int request_update_check_call_count_;
   int rollback_call_count_;
   int can_rollback_call_count_;
-  update_engine::EndOfLifeStatus end_of_life_status_;
-  base::Optional<int32_t> number_of_milestones_;
 };
 
 }  // namespace chromeos

@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
@@ -33,14 +35,14 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   static PaymentRequestEvent* Create(
       const AtomicString& type,
       const PaymentRequestEventInit*,
-      payments::mojom::blink::PaymentHandlerHostPtrInfo host_info,
+      mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
       RespondWithObserver*,
       WaitUntilObserver*);
 
   PaymentRequestEvent(
       const AtomicString& type,
       const PaymentRequestEventInit*,
-      payments::mojom::blink::PaymentHandlerHostPtrInfo host_info,
+      mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
       RespondWithObserver*,
       WaitUntilObserver*);
   ~PaymentRequestEvent() override;
@@ -82,7 +84,8 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
   Member<ScriptPromiseResolver> change_payment_method_resolver_;
   Member<RespondWithObserver> observer_;
-  payments::mojom::blink::PaymentHandlerHostPtr payment_handler_host_;
+  mojo::Remote<payments::mojom::blink::PaymentHandlerHost>
+      payment_handler_host_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestEvent);
 };

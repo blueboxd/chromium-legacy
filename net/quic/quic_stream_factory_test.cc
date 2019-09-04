@@ -187,12 +187,11 @@ class QuicHttpStreamPeer {
   }
 };
 
-// TestConnectionMigrationSocketFactory will vend sockets with incremental port
-// number.
-class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
+// TestMigrationSocketFactory will vend sockets with incremental port number.
+class TestMigrationSocketFactory : public MockClientSocketFactory {
  public:
-  TestConnectionMigrationSocketFactory() : next_source_port_num_(1u) {}
-  ~TestConnectionMigrationSocketFactory() override {}
+  TestMigrationSocketFactory() : next_source_port_num_(1u) {}
+  ~TestMigrationSocketFactory() override {}
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
@@ -208,7 +207,7 @@ class TestConnectionMigrationSocketFactory : public MockClientSocketFactory {
  private:
   uint16_t next_source_port_num_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestConnectionMigrationSocketFactory);
+  DISALLOW_COPY_AND_ASSIGN(TestMigrationSocketFactory);
 };
 
 class QuicStreamFactoryTestBase : public WithTaskEnvironment {
@@ -277,7 +276,8 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     mock_ncn->SetConnectedNetworksList(connected_networks);
     test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
     test_params_.quic_params.migrate_sessions_early_v2 = true;
-    socket_factory_.reset(new TestConnectionMigrationSocketFactory);
+    test_params_.quic_params.allow_port_migration = false;
+    socket_factory_.reset(new TestMigrationSocketFactory);
     Initialize();
   }
 
@@ -834,6 +834,9 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   void TestOnNetworkDisconnectedNoOpenStreams(bool migrate_idle_sessions);
   void TestOnNetworkMadeDefaultNoOpenStreams(bool migrate_idle_sessions);
   void TestOnNetworkDisconnectedNonMigratableStream(bool migrate_idle_sessions);
+
+  // Port migrations.
+  void TestSimplePortMigrationOnPathDegrading();
 
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   std::unique_ptr<MockHostResolverBase> host_resolver_;
@@ -4052,6 +4055,195 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
       ->NotifyNetworkMadeDefault(kNewNetworkForTests);
 
   task_runner->FastForwardBy(next_task_delay);
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  // Verify that the session is still alive.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  stream.reset();
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(quic_data2.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
+}
+
+// Verifies that port migration can be attempted and succeed when path degrading
+// is detected, even if NetworkHandle is not supported.
+TEST_P(QuicStreamFactoryTest, MigratePortOnPathDegrading_WithoutNetworkHandle) {
+  test_params_.quic_params.allow_port_migration = true;
+  socket_factory_.reset(new TestMigrationSocketFactory);
+  Initialize();
+
+  TestSimplePortMigrationOnPathDegrading();
+}
+
+// Verifies that port migration can be attempted on the default network and
+// succeed when path degrading is detected. NetworkHandle is supported.
+TEST_P(QuicStreamFactoryTest, MigratePortOnPathDegrading_WithNetworkHandle) {
+  scoped_mock_network_change_notifier_.reset(
+      new ScopedMockNetworkChangeNotifier());
+  MockNetworkChangeNotifier* mock_ncn =
+      scoped_mock_network_change_notifier_->mock_network_change_notifier();
+  mock_ncn->ForceNetworkHandlesSupported();
+  mock_ncn->SetConnectedNetworksList({kDefaultNetworkForTests});
+  test_params_.quic_params.allow_port_migration = true;
+  socket_factory_.reset(new TestMigrationSocketFactory);
+  Initialize();
+
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkMadeDefault(kDefaultNetworkForTests);
+
+  TestSimplePortMigrationOnPathDegrading();
+}
+
+// Verifies that port migration can be attempted on the default network and
+// succeed when path degrading is detected.
+// NetworkHandle is supported. Migration on network change is also enabled.
+// No additional network migration is triggered post port migration.
+TEST_P(QuicStreamFactoryTest, MigratePortOnPathDegrading_WithMigration) {
+  scoped_mock_network_change_notifier_.reset(
+      new ScopedMockNetworkChangeNotifier());
+  MockNetworkChangeNotifier* mock_ncn =
+      scoped_mock_network_change_notifier_->mock_network_change_notifier();
+  mock_ncn->ForceNetworkHandlesSupported();
+  mock_ncn->SetConnectedNetworksList({kDefaultNetworkForTests});
+  // Enable migration on network change.
+  test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
+  test_params_.quic_params.allow_port_migration = true;
+  socket_factory_.reset(new TestMigrationSocketFactory);
+  Initialize();
+
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkMadeDefault(kDefaultNetworkForTests);
+
+  TestSimplePortMigrationOnPathDegrading();
+}
+
+void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner so that we can control time.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+
+  int packet_number = 1;
+  MockQuicData quic_data1(version_);
+  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
+  if (VersionUsesQpack(version_.transport_version)) {
+    quic_data1.AddWrite(SYNCHRONOUS,
+                        ConstructInitialSettingsPacket(packet_number++));
+  }
+  quic_data1.AddWrite(
+      SYNCHRONOUS,
+      ConstructGetRequestPacket(packet_number++,
+                                GetNthClientInitiatedBidirectionalStreamId(0),
+                                true, true));
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the second socket data provider that is used after migration.
+  // The response to the earlier request is read on the new socket.
+  MockQuicData quic_data2(version_);
+  // Connectivity probe to be sent on the new path.
+  quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(
+                                       packet_number++, true));
+  quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  // Connectivity probe to receive from the server.
+  quic_data2.AddRead(ASYNC,
+                     server_maker_.MakeConnectivityProbingPacket(1, false));
+  // Ping packet to send after migration is completed.
+  quic_data2.AddWrite(ASYNC, client_maker_.MakeAckAndPingPacket(
+                                 packet_number++, false, 1, 1, 1));
+  quic_data2.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          2, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  quic_data2.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeAckAndRstPacket(
+          packet_number++, false, GetNthClientInitiatedBidirectionalStreamId(0),
+          quic::QUIC_STREAM_CANCELLED, 2, 2, 1, true));
+  quic_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(), NetworkIsolationKey(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // Cause the connection to report path degrading to the session.
+  // Session will start to probe a different port.
+  session->connection()->OnPathDegradingTimeout();
+
+  // Next connectivity probe is scheduled to be sent in 2 *
+  // kDefaultRTTMilliSecs.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  base::TimeDelta next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs),
+            next_task_delay);
+
+  // The connection should still be alive, and not marked as going away.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+  EXPECT_EQ(ERR_IO_PENDING, stream->ReadResponseHeaders(callback_.callback()));
+
+  // Resume quic data and a connectivity probe response will be read on the new
+  // socket.
+  quic_data2.Resume();
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // There should be pending tasks, the nearest one will complete
+  // migration to the new port.
+  EXPECT_EQ(2u, task_runner->GetPendingTaskCount());
+  next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta(), next_task_delay);
+  task_runner->FastForwardBy(next_task_delay);
+
+  // Response headers are received over the new port.
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Now there is one pending task to send connectivity probe and has been
+  // cancelled due to successful migration.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs),
+            next_task_delay);
+  task_runner->FastForwardBy(next_task_delay);
+
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
   // Verify that the session is still alive.

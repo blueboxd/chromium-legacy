@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_SERIALIZED_BLOB_MOJOM_TRAITS_H_
 
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -38,9 +39,9 @@ struct PLATFORM_EXPORT
     return input->size();
   }
 
-  static blink::mojom::blink::BlobPtr blob(
+  static mojo::PendingRemote<blink::mojom::blink::Blob> blob(
       const scoped_refptr<blink::BlobDataHandle>& input) {
-    return input->CloneBlobPtr();
+    return input->CloneBlobRemote();
   }
 
   static bool Read(blink::mojom::blink::SerializedBlob::DataView,

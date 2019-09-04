@@ -5,11 +5,14 @@
 #include "ash/system/power/power_button_menu_view.h"
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/power/power_button_menu_item_view.h"
 #include "ash/system/power/power_button_menu_metrics_type.h"
 #include "ash/system/user/login_status.h"
@@ -33,6 +36,14 @@ constexpr int kMenuViewRoundRectRadiusDp = 16;
 
 // Horizontal padding between two menu items.
 constexpr int kPaddingBetweenMenuItems = 8;
+
+SkColor GetMenuBackgroundColor() {
+  return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+      app_list_features::IsBackgroundBlurEnabled()
+          ? AshColorProvider::BaseLayerType::kTransparentWithBlur
+          : AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+      kPowerButtonMenuBackgroundColor);
+}
 
 }  // namespace
 
@@ -220,7 +231,7 @@ void PowerButtonMenuView::OnPaint(gfx::Canvas* canvas) {
   SkPath path;
   path.addRoundRect(gfx::RectToSkRect(gfx::Rect(size())), kRadius);
   canvas->ClipPath(path, true);
-  canvas->DrawColor(SK_ColorWHITE);
+  canvas->DrawColor(GetMenuBackgroundColor());
 }
 
 gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {

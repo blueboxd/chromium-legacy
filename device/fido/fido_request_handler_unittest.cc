@@ -18,7 +18,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_device_authenticator.h"
-#include "device/fido/fido_request_handler.h"
+#include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_task.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -54,15 +54,13 @@ enum class FakeTaskResponse : uint8_t {
 
 // FidoRequestHandler that automatically starts discovery but does nothing on
 // DispatchRequest().
-class EmptyRequestHandler
-    : public FidoRequestHandler<bool, std::vector<uint8_t>> {
+class EmptyRequestHandler : public FidoRequestHandlerBase {
  public:
   EmptyRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
                       test::FakeFidoDiscoveryFactory* fake_discovery_factory)
-      : FidoRequestHandler(nullptr /* connector */,
-                           fake_discovery_factory,
-                           protocols,
-                           CompletionCallback()) {
+      : FidoRequestHandlerBase(nullptr /* connector */,
+                               fake_discovery_factory,
+                               protocols) {
     Start();
   }
   ~EmptyRequestHandler() override = default;
@@ -229,17 +227,19 @@ class FakeFidoTask : public FidoTask {
   base::WeakPtrFactory<FakeFidoTask> weak_factory_{this};
 };
 
-class FakeFidoRequestHandler
-    : public FidoRequestHandler<bool, std::vector<uint8_t>> {
+class FakeFidoRequestHandler : public FidoRequestHandlerBase {
  public:
+  using CompletionCallback =
+      base::OnceCallback<void(bool,
+                              base::Optional<std::vector<uint8_t>>,
+                              const FidoAuthenticator*)>;
+
   FakeFidoRequestHandler(service_manager::Connector* connector,
                          test::FakeFidoDiscoveryFactory* fake_discovery_factory,
                          const base::flat_set<FidoTransportProtocol>& protocols,
                          CompletionCallback callback)
-      : FidoRequestHandler(connector,
-                           fake_discovery_factory,
-                           protocols,
-                           std::move(callback)) {
+      : FidoRequestHandlerBase(connector, fake_discovery_factory, protocols),
+        completion_callback_(std::move(callback)) {
     Start();
   }
   FakeFidoRequestHandler(test::FakeFidoDiscoveryFactory* fake_discovery_factory,
@@ -281,14 +281,17 @@ class FakeFidoRequestHandler
       return;
     }
 
-    if (!is_complete()) {
-      CancelActiveAuthenticators(authenticator->GetId());
+    if (!completion_callback_) {
+      return;
     }
-    OnAuthenticatorResponse(authenticator,
-                            status == CtapDeviceResponseCode::kSuccess,
-                            std::move(response));
+
+    CancelActiveAuthenticators(authenticator->GetId());
+    std::move(completion_callback_)
+        .Run(status == CtapDeviceResponseCode::kSuccess, std::move(response),
+             authenticator);
   }
 
+  CompletionCallback completion_callback_;
   base::WeakPtrFactory<FakeFidoRequestHandler> weak_factory_{this};
 };
 
@@ -386,7 +389,6 @@ TEST_F(FidoRequestHandlerTest, TestSingleDeviceSuccess) {
   discovery()->AddDevice(std::move(device));
   callback().WaitForCallback();
   EXPECT_TRUE(callback().status());
-  EXPECT_TRUE(request_handler->is_complete());
 }
 
 // Tests a scenario where two unresponsive authenticators are connected and
@@ -447,7 +449,6 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
   discovery()->AddDevice(std::move(device1));
 
   callback().WaitForCallback();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_TRUE(callback().status());
 }
 
@@ -487,7 +488,6 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
 
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_TRUE(callback().status());
 }
 
@@ -546,7 +546,6 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
 
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_FALSE(callback().status());
 }
 
@@ -585,7 +584,6 @@ TEST_F(FidoRequestHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_FALSE(callback().status());
 }
 
@@ -611,7 +609,6 @@ TEST_F(FidoRequestHandlerTest,
 
   task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_FALSE(callback().status());
 }
 
@@ -644,7 +641,6 @@ TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
       false /* has_recognized_mac_touch_id_credential */);
 
   callback().WaitForCallback();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_TRUE(callback().status());
 }
 

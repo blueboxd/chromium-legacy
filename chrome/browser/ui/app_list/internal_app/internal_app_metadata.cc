@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -78,8 +79,8 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
             /*show_in_launcher=*/false, InternalAppName::kContinueReading,
             /*searchable_string_resource_id=*/0},
 
-           {kReleaseNotesAppId, IDS_RELEASE_NOTES_NOTIFICATION_TITLE,
-            IDR_RELEASE_NOTES_APP_192,
+           {chromeos::default_web_apps::kReleaseNotesAppId,
+            IDS_RELEASE_NOTES_NOTIFICATION_TITLE, IDR_RELEASE_NOTES_APP_192,
             /*recommendable=*/true,
             /*searchable=*/false,
             /*show_in_launcher=*/false, InternalAppName::kReleaseNotes,
@@ -147,8 +148,9 @@ const std::vector<InternalApp>& GetInternalAppList(const Profile* profile) {
 
 bool IsSuggestionChip(const std::string& app_id) {
   // App IDs for internal apps which should only be shown as suggestion chips.
-  static const char* kSuggestionChipIds[] = {kInternalAppIdContinueReading,
-                                             kReleaseNotesAppId};
+  static const char* kSuggestionChipIds[] = {
+      kInternalAppIdContinueReading,
+      chromeos::default_web_apps::kReleaseNotesAppId};
 
   for (size_t i = 0; i < base::size(kSuggestionChipIds); ++i) {
     if (base::LowerCaseEqualsASCII(app_id, kSuggestionChipIds[i]))
@@ -231,7 +233,7 @@ void OpenInternalApp(const std::string& app_id,
     } else {
       plugin_vm::ShowPluginVmLauncherView(profile);
     }
-  } else if (app_id == kReleaseNotesAppId) {
+  } else if (app_id == chromeos::default_web_apps::kReleaseNotesAppId) {
     base::RecordAction(
         base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
     chrome::LaunchReleaseNotes(profile);

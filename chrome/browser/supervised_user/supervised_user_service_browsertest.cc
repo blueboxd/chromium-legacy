@@ -13,23 +13,36 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_test_base.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-using SupervisedUserServiceTestSupervised = SupervisedUserTestBase;
+class SupervisedUserServiceTestSupervised
+    : public MixinBasedInProcessBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
+  }
+
+ private:
+  chromeos::LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
+      embedded_test_server()};
+};
 
 // unsupervised tests
 using SupervisedUserServiceTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, LocalPolicies) {
-  Profile* profile = SupervisedUserTestBase::GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
   EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict),
@@ -39,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, LocalPolicies) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
-  Profile* profile = SupervisedUserTestBase::GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   EXPECT_TRUE(prefs->IsUserModifiablePreference(prefs::kProfileName));
 
@@ -52,8 +65,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
-  LogInUser(LogInType::kChild);
-  Profile* profile = GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
   EXPECT_EQ(prefs->GetInteger(prefs::kForceYouTubeRestrict),
@@ -64,9 +76,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
-  LogInUser(LogInType::kChild);
-
-  Profile* profile = GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   PrefService* prefs = profile->GetPrefs();
   std::string original_name = prefs->GetString(prefs::kProfileName);
 

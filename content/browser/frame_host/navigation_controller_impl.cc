@@ -2378,10 +2378,19 @@ void NavigationControllerImpl::SetNeedsReload(NeedsReloadType type) {
 }
 
 void NavigationControllerImpl::RemoveEntryAtIndexInternal(int index) {
-  DCHECK(index < GetEntryCount());
-  DCHECK(index != last_committed_entry_index_);
+  DCHECK_LT(index, GetEntryCount());
+  DCHECK_NE(index, last_committed_entry_index_);
+
+  const bool was_transient = index == transient_entry_index_;
 
   DiscardNonCommittedEntries();
+
+  if (was_transient) {
+    // There's nothing left to do if the index referred to a transient entry
+    // that we just discarded.
+    DCHECK(!GetTransientEntry());
+    return;
+  }
 
   entries_.erase(entries_.begin() + index);
   if (last_committed_entry_index_ > index)

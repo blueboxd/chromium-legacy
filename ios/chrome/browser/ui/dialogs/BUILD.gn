@@ -52,6 +52,8 @@ source_set("dialogs_internal") {
   sources = [
     "dialog_presenter.h",
     "dialog_presenter.mm",
+    "java_script_dialog_metrics.cc",
+    "java_script_dialog_metrics.h",
     "java_script_dialog_presenter_impl.h",
     "java_script_dialog_presenter_impl.mm",
     "nsurl_protection_space_util.h",

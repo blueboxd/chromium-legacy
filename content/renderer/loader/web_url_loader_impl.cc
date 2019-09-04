@@ -246,9 +246,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  // Minor errors don't lower the security style to WebSecurityStyleInsecure.
-  if (net::IsCertStatusError(info.cert_status) &&
-      !net::IsCertStatusMinorError(info.cert_status)) {
+  if (net::IsCertStatusError(info.cert_status)) {
     response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
   } else {
     response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
@@ -1041,8 +1039,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
   response->SetHasMajorCertificateErrors(
-      net::IsCertStatusError(info.cert_status) &&
-      !net::IsCertStatusMinorError(info.cert_status));
+      net::IsCertStatusError(info.cert_status));
   response->SetCTPolicyCompliance(info.ct_policy_compliance);
   response->SetIsLegacyTLSVersion(info.is_legacy_tls_version);
   response->SetAppCacheID(info.appcache_id);

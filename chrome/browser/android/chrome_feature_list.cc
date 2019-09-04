@@ -16,6 +16,7 @@
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -54,6 +55,7 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
+    &autofill::features::kAutofillCreditCardAuthentication,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
@@ -157,12 +159,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kOverlayNewLayout,
     &kPayWithGoogleV1,
     &kPhotoPickerVideoSupport,
-    &kProgressBarThrottleFeature,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kReorderBookmarks,
     &kRevampedContextMenu,
-    &kSearchReadyOmniboxFeature,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
     &kServiceManagerForBackgroundPrefetch,
@@ -219,6 +219,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordEditingAndroid,
     &password_manager::features::kLeakDetection,
     &safe_browsing::kCaptureSafetyNetId,
+    &safe_browsing::kSendOnFocusPing,
     &signin::kMiceFeature,
     &switches::kSyncManualStartAndroid,
     &switches::kSyncSendTabToSelf,
@@ -501,9 +502,6 @@ const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
 const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kProgressBarThrottleFeature{
-    "ProgressBarThrottle", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -515,9 +513,6 @@ const base::Feature kReorderBookmarks{"ReorderBookmarks",
 
 const base::Feature kRevampedContextMenu{"RevampedContextMenu",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSearchReadyOmniboxFeature{
-    "SearchReadyOmnibox", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kServiceManagerForBackgroundPrefetch{
     "ServiceManagerForBackgroundPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};

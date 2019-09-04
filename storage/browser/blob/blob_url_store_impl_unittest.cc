@@ -77,7 +77,7 @@ class BlobURLStoreImplTest : public testing::Test {
 
   void RegisterURL(BlobURLStore* store, BlobPtr blob, const GURL& url) {
     base::RunLoop loop;
-    store->Register(std::move(blob), url, loop.QuitClosure());
+    store->Register(blob.PassInterface(), url, loop.QuitClosure());
     loop.Run();
   }
 

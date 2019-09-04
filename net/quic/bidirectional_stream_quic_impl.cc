@@ -86,8 +86,8 @@ void BidirectionalStreamQuicImpl::Start(
 
   int rv = session_->RequestStream(
       use_early_data,
-      base::Bind(&BidirectionalStreamQuicImpl::OnStreamReady,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&BidirectionalStreamQuicImpl::OnStreamReady,
+                     weak_factory_.GetWeakPtr()),
       traffic_annotation);
   if (rv == ERR_IO_PENDING)
     return;
@@ -144,8 +144,8 @@ int BidirectionalStreamQuicImpl::ReadData(IOBuffer* buffer, int buffer_len) {
 
   int rv = stream_->ReadBody(
       buffer, buffer_len,
-      base::Bind(&BidirectionalStreamQuicImpl::OnReadDataComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&BidirectionalStreamQuicImpl::OnReadDataComplete,
+                     weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {
     read_buffer_ = buffer;
     read_buffer_len_ = buffer_len;
@@ -193,8 +193,8 @@ void BidirectionalStreamQuicImpl::SendvData(
 
   int rv = stream_->WritevStreamData(
       buffers, lengths, end_stream,
-      base::Bind(&BidirectionalStreamQuicImpl::OnSendDataComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&BidirectionalStreamQuicImpl::OnSendDataComplete,
+                     weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -321,8 +321,8 @@ void BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete(int rv) {
 void BidirectionalStreamQuicImpl::ReadInitialHeaders() {
   int rv = stream_->ReadInitialHeaders(
       &initial_headers_,
-      base::Bind(&BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&BidirectionalStreamQuicImpl::OnReadInitialHeadersComplete,
+                     weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING)
     OnReadInitialHeadersComplete(rv);
@@ -331,8 +331,9 @@ void BidirectionalStreamQuicImpl::ReadInitialHeaders() {
 void BidirectionalStreamQuicImpl::ReadTrailingHeaders() {
   int rv = stream_->ReadTrailingHeaders(
       &trailing_headers_,
-      base::Bind(&BidirectionalStreamQuicImpl::OnReadTrailingHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &BidirectionalStreamQuicImpl::OnReadTrailingHeadersComplete,
+          weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING)
     OnReadTrailingHeadersComplete(rv);

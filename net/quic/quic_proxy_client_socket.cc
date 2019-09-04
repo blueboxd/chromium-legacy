@@ -181,9 +181,10 @@ int QuicProxyClientSocket::Read(IOBuffer* buf,
     return 0;
   }
 
-  int rv = stream_->ReadBody(buf, buf_len,
-                             base::Bind(&QuicProxyClientSocket::OnReadComplete,
-                                        weak_factory_.GetWeakPtr()));
+  int rv =
+      stream_->ReadBody(buf, buf_len,
+                        base::BindOnce(&QuicProxyClientSocket::OnReadComplete,
+                                       weak_factory_.GetWeakPtr()));
 
   if (rv == ERR_IO_PENDING) {
     read_callback_ = std::move(callback);
@@ -229,8 +230,8 @@ int QuicProxyClientSocket::Write(
 
   int rv = stream_->WriteStreamData(
       quic::QuicStringPiece(buf->data(), buf_len), false,
-      base::Bind(&QuicProxyClientSocket::OnWriteComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicProxyClientSocket::OnWriteComplete,
+                     weak_factory_.GetWeakPtr()));
   if (rv == OK)
     return buf_len;
 
@@ -326,8 +327,8 @@ int QuicProxyClientSocket::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
   return auth_->MaybeGenerateAuthToken(
       &request_,
-      base::Bind(&QuicProxyClientSocket::OnIOComplete,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&QuicProxyClientSocket::OnIOComplete,
+                     weak_factory_.GetWeakPtr()),
       net_log_);
 }
 
@@ -381,8 +382,8 @@ int QuicProxyClientSocket::DoReadReply() {
 
   int rv = stream_->ReadInitialHeaders(
       &response_header_block_,
-      base::Bind(&QuicProxyClientSocket::OnReadResponseHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicProxyClientSocket::OnReadResponseHeadersComplete,
+                     weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING)
     return ERR_IO_PENDING;
   if (rv < 0)

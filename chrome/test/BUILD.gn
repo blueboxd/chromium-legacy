@@ -678,7 +678,6 @@ if (!is_android) {
       "//components/sync:test_support_model",
       "//components/sync_device_info:test_support",
       "//components/translate/core/common",
-      "//content/public/common:buildflags",
       "//content/test:test_support",
       "//crypto:platform",
       "//crypto:test_support",
@@ -1401,13 +1400,13 @@ if (!is_android) {
         "//components/exo:test_support",
         "//components/prefs",
         "//components/user_manager:test_support",
-        "//content/public/common:feature_h264_with_openh264_ffmpeg",
         "//mojo/core/embedder",
         "//services/audio/public/cpp:test_support",
         "//services/network/public/mojom",
         "//services/preferences/public/cpp",
         "//services/preferences/public/mojom",
         "//services/service_manager/public/cpp",
+        "//third_party/blink/public/common",
         "//ui/events/devices:test_support",
         "//url",
       ]
@@ -2493,8 +2492,6 @@ if (!is_android) {
         "../browser/supervised_user/logged_in_user_mixin.h",
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
-        "../browser/supervised_user/supervised_user_test_base.cc",
-        "../browser/supervised_user/supervised_user_test_base.h",
         "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
       ]
     }
@@ -3327,6 +3324,7 @@ test("unit_tests") {
       "../browser/ui/sync/sync_promo_ui_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_utils_unittest.cc",
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
+      "../browser/ui/webui/devtools_ui_data_source_unittest.cc",
       "../browser/ui/webui/favicon_source_unittest.cc",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
@@ -5587,9 +5585,6 @@ if (!is_android) {
           ]
           deps += [ "//build/config/linux/gtk" ]
         }
-      }
-      if (!is_chromeos) {
-        sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]
       }
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]

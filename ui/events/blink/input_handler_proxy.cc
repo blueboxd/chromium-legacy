@@ -173,7 +173,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_or_pinch_(false),
-      is_first_gesture_scroll_update_(false),
+      has_seen_first_gesture_scroll_update_after_begin_(false),
+      last_injected_gesture_was_begin_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)),
       compositor_touch_action_enabled_(
@@ -267,11 +268,16 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
         gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
         gesture_event.GetType() ==
             blink::WebGestureEvent::kGestureScrollUpdate &&
-        is_first_gesture_scroll_update_;
+        !has_seen_first_gesture_scroll_update_after_begin_;
+
     if (gesture_event.GetType() ==
-        blink::WebGestureEvent::kGestureScrollUpdate) {
-      is_first_gesture_scroll_update_ = false;
+        blink::WebGestureEvent::kGestureScrollBegin) {
+      has_seen_first_gesture_scroll_update_after_begin_ = false;
+    } else if (gesture_event.GetType() ==
+               blink::WebGestureEvent::kGestureScrollUpdate) {
+      has_seen_first_gesture_scroll_update_after_begin_ = true;
     }
+
     if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel ||
         scroll_update_has_blocking_wheel_source || synchronous_input_handler_) {
       // 1. Gesture events was already delayed by blocking events in rAF aligned
@@ -313,19 +319,12 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   current_overscroll_params_.reset();
 
-  blink::WebGestureEvent::Type type = event_with_callback->event().GetType();
-  if (type == blink::WebGestureEvent::kGestureScrollUpdate) {
-    EnsureScrollUpdateLatencyComponent(
-        &monitored_latency_info, event_with_callback->event().TimeStamp());
-  }
-
   InputHandlerProxy::EventDisposition disposition = RouteToTypeSpecificHandler(
       event_with_callback->event(), original_latency_info);
 
+  blink::WebGestureEvent::Type type = event_with_callback->event().GetType();
   switch (type) {
     case blink::WebGestureEvent::kGestureScrollBegin:
-      is_first_gesture_scroll_update_ = true;
-      FALLTHROUGH;
     case blink::WebGestureEvent::kGesturePinchBegin:
     case blink::WebGestureEvent::kGestureScrollUpdate:
     case blink::WebGestureEvent::kGesturePinchUpdate:
@@ -367,32 +366,6 @@ void InputHandlerProxy::DispatchSingleInputEvent(
                                     std::move(current_overscroll_params_));
 }
 
-// Scroll updates injected from within the renderer process will not have a
-// scroll update component, since those are added to the latency info
-// in the browser process before being dispatched to the renderer.
-void InputHandlerProxy::EnsureScrollUpdateLatencyComponent(
-    LatencyInfo* monitored_latency_info,
-    base::TimeTicks original_timestamp) {
-  // Currently we only expect LatencyInfo's of type SCROLLBAR to get into
-  // this state, but there are a few exceptions (i.e. GestureScrollUpdates
-  // that are coalesced with GesturePinchUpdates via
-  // CompositorThreadEventQueue::Queue/CoalesceScrollAndPinch).
-  // TODO(dlibby): Update that codepath and turn this into a DCHECK when there
-  // is a missing scroll update component.
-  if (monitored_latency_info->source_event_type() !=
-      ui::SourceEventType::SCROLLBAR)
-    return;
-
-  // Add a scroll update component to the latency info if one doesn't exist,
-  // based on whether or not this is the first scroll update we've seen in a
-  // gesture sequence.
-  monitored_latency_info->AddLatencyNumberWithTimestamp(
-      (is_first_gesture_scroll_update_)
-          ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
-          : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-      original_timestamp);
-}
-
 void InputHandlerProxy::DispatchQueuedInputEvents() {
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
@@ -411,6 +384,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     const base::TimeTicks original_timestamp) {
   gfx::Vector2dF scroll_delta(pointer_result.scroll_offset.x(),
                               pointer_result.scroll_offset.y());
+
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
       GenerateInjectedScrollGesture(
           type, original_timestamp, blink::WebGestureDevice::kScrollbar,
@@ -438,6 +412,24 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   // when the gesture is handled.
   DCHECK(!scrollbar_latency_info.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, nullptr));
+
+  if (type == WebInputEvent::Type::kGestureScrollBegin) {
+    last_injected_gesture_was_begin_ = true;
+  } else {
+    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
+      // For injected GSUs, add a scroll update component to the latency info
+      // so that it is properly classified as a scroll. If the last injected
+      // gesture was a GSB, then this GSU is the first scroll update - mark
+      // the LatencyInfo as such.
+      scrollbar_latency_info.AddLatencyNumberWithTimestamp(
+          (last_injected_gesture_was_begin_)
+              ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
+              : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          original_timestamp);
+    }
+
+    last_injected_gesture_was_begin_ = false;
+  }
 
   std::unique_ptr<EventWithCallback> gesture_event_with_callback_update =
       std::make_unique<EventWithCallback>(
@@ -542,10 +534,15 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
                                        mouse_event.PositionInWidget(),
                                        pointer_result, original_latency_info,
                                        mouse_event.TimeStamp());
-          InjectScrollbarGestureScroll(
-              WebInputEvent::Type::kGestureScrollUpdate,
-              mouse_event.PositionInWidget(), pointer_result,
-              original_latency_info, mouse_event.TimeStamp());
+
+          // Don't need to inject GSU if the scroll offset is zero (this can
+          // be the case where mouse down occurs on the thumb).
+          if (!pointer_result.scroll_offset.IsZero()) {
+            InjectScrollbarGestureScroll(
+                WebInputEvent::Type::kGestureScrollUpdate,
+                mouse_event.PositionInWidget(), pointer_result,
+                original_latency_info, mouse_event.TimeStamp());
+          }
 
           // Drop the mousedown for now as the gesture event equivalent for this
           // has already been added to the CompositorThreadEventQueue and will

@@ -37,8 +37,6 @@ class TabStyle {
     // The area inside the tab where children can be rendered, used to clip
     // child views. Does not have to be the same shape as the border.
     kInteriorClip,
-    // The outline of the tab, used for occlusion in certain special situations.
-    kExteriorClip,
     // The path used for focus rings.
     kHighlight,
   };
@@ -103,7 +101,7 @@ class TabStyle {
   virtual TabColors CalculateColors() const = 0;
 
   // Paints the tab.
-  virtual void PaintTab(gfx::Canvas* canvas, const SkPath& clip) const = 0;
+  virtual void PaintTab(gfx::Canvas* canvas) const = 0;
 
   // Sets the center of the radial highlight in the hover animation.
   virtual void SetHoverLocation(const gfx::Point& location) = 0;

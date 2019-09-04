@@ -929,12 +929,15 @@ TEST_P(ArcDefaultAppTest, IsUnknownDefaultApps) {
 }
 
 TEST_P(ArcAppModelBuilderTest, IsUnknownSyncTest) {
+  app_instance()->SendRefreshPackageList(
+      ArcAppTest::ClonePackages(fake_packages()));
+
   const std::string sync_package_name = "com.google.fakesyncpack";
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
   // Check that this is indeed unknown before adding to sync.
-  EXPECT_TRUE(prefs->IsUnknownPackage(sync_package_name));
+  ASSERT_TRUE(prefs->IsUnknownPackage(sync_package_name));
 
   // Add to sync, then check unknown.
   auto data_list = syncer::SyncDataList();

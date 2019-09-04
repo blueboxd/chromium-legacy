@@ -23,9 +23,8 @@ namespace {
 
 const size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
 const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
-
-// TODO(drubery): Once the server side has a public-facing URL, set it here.
-const char kSbBinaryUploadUrl[] = "";
+const char kSbBinaryUploadUrl[] =
+    "https://safebrowsing.google.com/safebrowsing/uploads/webprotect";
 
 }  // namespace
 

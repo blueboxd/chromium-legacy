@@ -80,11 +80,12 @@ bool FieldCanFitDataForFieldType(int max_length, ServerFieldType type) {
 }  // namespace
 
 // static
-std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner,
+                                                  LogManager* log_manager) {
   if (scanner->IsEnd())
     return nullptr;
 
-  auto credit_card_field = std::make_unique<CreditCardField>();
+  auto credit_card_field = std::make_unique<CreditCardField>(log_manager);
   size_t saved_cursor = scanner->SaveCursor();
   int nb_unknown_fields = 0;
 
@@ -93,12 +94,13 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   // the bottom of the loop.
   for (int fields = 0; !scanner->IsEnd(); ++fields) {
     // Ignore gift card fields.
-    if (IsGiftCardField(scanner))
+    if (IsGiftCardField(scanner, log_manager))
       break;
 
     if (!credit_card_field->cardholder_) {
       if (ParseField(scanner, base::UTF8ToUTF16(kNameOnCardRe),
-                     &credit_card_field->cardholder_)) {
+                     &credit_card_field->cardholder_,
+                     {log_manager, "kNameOnCardRe"})) {
         continue;
       }
 
@@ -110,7 +112,8 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       // expiration date (which usually appears at the end).
       if (fields > 0 && !credit_card_field->expiration_month_ &&
           ParseField(scanner, base::UTF8ToUTF16(kNameOnCardContextualRe),
-                     &credit_card_field->cardholder_)) {
+                     &credit_card_field->cardholder_,
+                     {log_manager, "kNameOnCardContextualRe"})) {
         continue;
       }
     } else if (!credit_card_field->cardholder_last_) {
@@ -120,7 +123,8 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       // the end).
       if (!credit_card_field->expiration_month_ &&
           ParseField(scanner, base::UTF8ToUTF16(kLastNameRe),
-                     &credit_card_field->cardholder_last_)) {
+                     &credit_card_field->cardholder_last_,
+                     {log_manager, "kLastNameRe"})) {
         continue;
       }
     }
@@ -144,9 +148,9 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     const int kMatchNumTelAndPwd =
         MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE | MATCH_PASSWORD;
     if (!credit_card_field->verification_ &&
-        ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardCvcRe),
-                            kMatchNumTelAndPwd,
-                            &credit_card_field->verification_)) {
+        ParseFieldSpecifics(
+            scanner, base::UTF8ToUTF16(kCardCvcRe), kMatchNumTelAndPwd,
+            &credit_card_field->verification_, {log_manager, "kCardCvcRe"})) {
       // A couple of sites have multiple verification codes right after another.
       // Allow the classification of these codes one by one.
       AutofillField* const saved_cvv = credit_card_field->verification_;
@@ -160,7 +164,8 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
         scanner->RewindTo(scanner->SaveCursor() - 2);
         if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardCvcRe),
                                 kMatchNumTelAndPwd,
-                                &credit_card_field->verification_)) {
+                                &credit_card_field->verification_,
+                                {log_manager, "kCardCvcRe"})) {
           // Reset the current cvv (The verification parse overwrote it).
           credit_card_field->verification_ = saved_cvv;
           // Put the scanner back to the field right after the current cvv.
@@ -182,7 +187,8 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
     // doesn't have bad side effects.
     AutofillField* current_number_field;
     if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardNumberRe),
-                            kMatchNumTelAndPwd, &current_number_field)) {
+                            kMatchNumTelAndPwd, &current_number_field,
+                            {log_manager, "kCardNumberRe"})) {
       // Avoid autofilling any credit card number field having very low or high
       // |start_index| on the HTML form.
       size_t start_index = 0;
@@ -348,25 +354,30 @@ bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
 }
 
 // static
-bool CreditCardField::IsGiftCardField(AutofillScanner* scanner) {
+bool CreditCardField::IsGiftCardField(AutofillScanner* scanner,
+                                      LogManager* log_manager) {
   if (scanner->IsEnd())
     return false;
 
   size_t saved_cursor = scanner->SaveCursor();
-  if (ParseField(scanner, base::UTF8ToUTF16(kDebitCardRe), nullptr)) {
+  if (ParseField(scanner, base::UTF8ToUTF16(kDebitCardRe), nullptr,
+                 {log_manager, "kDebitCardRe"})) {
     scanner->RewindTo(saved_cursor);
     return false;
   }
-  if (ParseField(scanner, base::UTF8ToUTF16(kDebitGiftCardRe), nullptr)) {
+  if (ParseField(scanner, base::UTF8ToUTF16(kDebitGiftCardRe), nullptr,
+                 {log_manager, "kDebitGiftCardRe"})) {
     scanner->RewindTo(saved_cursor);
     return false;
   }
 
-  return ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr);
+  return ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr,
+                    {log_manager, "kGiftCardRe"});
 }
 
-CreditCardField::CreditCardField()
-    : cardholder_(nullptr),
+CreditCardField::CreditCardField(LogManager* log_manager)
+    : log_manager_(log_manager),
+      cardholder_(nullptr),
       cardholder_last_(nullptr),
       type_(nullptr),
       verification_(nullptr),
@@ -450,18 +461,21 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   const int kMatchCCType = MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE |
                            MATCH_SELECT | MATCH_SEARCH;
   if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kExpirationMonthRe),
-                          kMatchCCType, &expiration_month_) &&
+                          kMatchCCType, &expiration_month_,
+                          {log_manager_, "kExpirationMonthRe"}) &&
       ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kExpirationYearRe),
-                          kMatchCCType, &expiration_year_)) {
+                          kMatchCCType, &expiration_year_,
+                          {log_manager_, "kExpirationYearRe"})) {
     return true;
   }
 
   // If that fails, look for just MM and/or YY(YY).
   scanner->RewindTo(month_year_saved_cursor);
   if (ParseFieldSpecifics(scanner, base::ASCIIToUTF16("^mm$"), kMatchCCType,
-                          &expiration_month_) &&
+                          &expiration_month_, {log_manager_, "^mm$"}) &&
       ParseFieldSpecifics(scanner, base::ASCIIToUTF16("^(yy|yyyy)$"),
-                          kMatchCCType, &expiration_year_)) {
+                          kMatchCCType, &expiration_year_,
+                          {log_manager_, "^(yy|yyyy)$"})) {
     return true;
   }
 
@@ -476,9 +490,9 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
     return false;
 
   // Try to look for a 2-digit year expiration date.
-  if (ParseFieldSpecifics(scanner,
-                          base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
-                          kMatchCCType, &expiration_date_)) {
+  if (ParseFieldSpecifics(
+          scanner, base::UTF8ToUTF16(kExpirationDate2DigitYearRe), kMatchCCType,
+          &expiration_date_, {log_manager_, "kExpirationDate2DigitYearRe"})) {
     exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
     expiration_month_ = nullptr;
     return true;
@@ -486,7 +500,8 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
 
   // Try to look for a generic expiration date field. (2 or 4 digit year)
   if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kExpirationDateRe),
-                          kMatchCCType, &expiration_date_)) {
+                          kMatchCCType, &expiration_date_,
+                          {log_manager_, "kExpirationDateRe"})) {
     // If such a field exists, but it cannot fit a 4-digit year expiration
     // date, then the likely possibility is that it is a 2-digit year expiration
     // date.
@@ -501,9 +516,9 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   // Try to look for a 4-digit year expiration date.
   if (FieldCanFitDataForFieldType(current_field_max_length,
                                   CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) &&
-      ParseFieldSpecifics(scanner,
-                          base::UTF8ToUTF16(kExpirationDate4DigitYearRe),
-                          kMatchCCType, &expiration_date_)) {
+      ParseFieldSpecifics(
+          scanner, base::UTF8ToUTF16(kExpirationDate4DigitYearRe), kMatchCCType,
+          &expiration_date_, {log_manager_, "kExpirationDate4DigitYearRe"})) {
     expiration_month_ = nullptr;
     return true;
   }

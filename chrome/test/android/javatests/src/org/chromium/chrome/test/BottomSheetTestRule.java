@@ -34,26 +34,14 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         /** A {@link CallbackHelper} that can wait for the bottom sheet to be opened. */
         public final CallbackHelper mOpenedCallbackHelper = new CallbackHelper();
 
-        /** A {@link CallbackHelper} that can wait for the onTransitionPeekToHalf event. */
-        public final CallbackHelper mPeekToHalfCallbackHelper = new CallbackHelper();
-
         /** A {@link CallbackHelper} that can wait for the onOffsetChanged event. */
         public final CallbackHelper mOffsetChangedCallbackHelper = new CallbackHelper();
 
         /** A {@link CallbackHelper} that can wait for the onSheetContentChanged event. */
         public final CallbackHelper mContentChangedCallbackHelper = new CallbackHelper();
 
-        /** The last value that the onTransitionPeekToHalf event sent. */
-        private float mLastPeekToHalfValue;
-
         /** The last value that the onOffsetChanged event sent. */
         private float mLastOffsetChangedValue;
-
-        @Override
-        public void onTransitionPeekToHalf(float fraction) {
-            mLastPeekToHalfValue = fraction;
-            mPeekToHalfCallbackHelper.notifyCalled();
-        }
 
         @Override
         public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
@@ -74,11 +62,6 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         @Override
         public void onSheetContentChanged(BottomSheetContent newContent) {
             mContentChangedCallbackHelper.notifyCalled();
-        }
-
-        /** @return The last value passed in to {@link #onTransitionPeekToHalf(float)}. */
-        public float getLastPeekToHalfValue() {
-            return mLastPeekToHalfValue;
         }
 
         /** @return The last value passed in to {@link #onSheetOffsetChanged(float)}. */

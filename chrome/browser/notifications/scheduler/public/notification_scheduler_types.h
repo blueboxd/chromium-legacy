@@ -49,29 +49,33 @@ enum class SchedulerClientType {
 enum class UserFeedback {
   // No user feedback yet.
   kNoFeedback = 0,
-  // The user taps the helpful button, potentially a strong indicator of user's
-  // positive preference on the notification.
+  // The user taps the helpful button. By default, generates positive
+  // ImpressionResult and may increase the notification display frequency.
   kHelpful = 1,
-  // The user taps the unhelpful button, potentially a strong indicator of
-  // user's negative preference on the notification.
+  // The user taps the unhelpful button. By default, generates negative
+  // ImpressionResult and may decrease the notification display frequency.
   kNotHelpful = 2,
-  // The user clicks the notification.
+  // The user clicks the notification. By default, generates positive
+  // ImpressionResult and may increase the notification display frequency.
   kClick = 3,
-  // The user clicks the body of the notification.
+  // The user dismisses notification. Only consecutive dismisses generates
+  // ImpressionResult.
+  // By default, generates neutral impression result and will not change the
+  // notification display frequency.
   kDismiss = 4,
   // The user has no interaction with the notification for a while.
   kIgnore = 5,
   kMaxValue = kIgnore
 };
 
-// The user impression of a particular notification, which may impact the
+// The user impression result of a particular notification, which may impact the
 // notification display frenquency.
 enum class ImpressionResult {
   // Invalid user impression.
   kInvalid = 0,
   // Positive user impression that the user may like the notification.
   kPositive = 1,
-  // Positive user impression that the user may dislike the notification.
+  // Negative user impression that the user may dislike the notification.
   kNegative = 2,
   // The feedback is neutral to the user.
   kNeutral = 3,
@@ -144,6 +148,9 @@ struct UserActionData {
 };
 
 // Categorizes type of notification icons.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
 enum class IconType {
   kUnknownType = 0,
   kSmallIcon = 1,

@@ -30,7 +30,7 @@ class NameFieldTest : public testing::Test {
 
   // Downcast for tests.
   static std::unique_ptr<NameField> Parse(AutofillScanner* scanner) {
-    std::unique_ptr<FormField> field = NameField::Parse(scanner);
+    std::unique_ptr<FormField> field = NameField::Parse(scanner, nullptr);
     return std::unique_ptr<NameField>(static_cast<NameField*>(field.release()));
   }
 

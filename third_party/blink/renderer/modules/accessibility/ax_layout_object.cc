@@ -102,6 +102,17 @@
 
 using blink::WebLocalizedString;
 
+namespace {
+bool IsNeutralWithinTable(blink::AXObject* obj) {
+  if (!obj)
+    return false;
+  ax::mojom::Role role = obj->RoleValue();
+  return role == ax::mojom::Role::kGroup ||
+         role == ax::mojom::Role::kGenericContainer ||
+         role == ax::mojom::Role::kIgnored;
+}
+}  // namespace
+
 namespace blink {
 
 using namespace html_names;
@@ -2835,15 +2846,12 @@ static ax::mojom::Role DecideRoleFromSiblings(
 }
 
 ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
-  AXObject* parent = ParentObjectUnignored();
-  if (!parent)
-    return ax::mojom::Role::kGenericContainer;
+  AXObject* parent = ParentObject();
+  while (IsNeutralWithinTable(parent))
+    parent = parent->ParentObject();
 
-  if (parent->RoleValue() == ax::mojom::Role::kGroup) {
-    parent = parent->ParentObjectUnignored();
-    if (!parent)
-      return ax::mojom::Role::kGenericContainer;
-  }
+  if (!parent || !parent->IsTableLikeRole())
+    return ax::mojom::Role::kGenericContainer;
 
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
     return ax::mojom::Role::kLayoutTableRow;
@@ -2857,22 +2865,19 @@ ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
 ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
   DCHECK(layout_object_);
 
-  AXObject* parent = ParentObjectUnignored();
+  AXObject* parent = ParentObject();
   if (!parent || !parent->IsTableRowLikeRole())
     return ax::mojom::Role::kGenericContainer;
 
-  AXObject* grandparent = parent->ParentObjectUnignored();
-  if (grandparent && grandparent->RoleValue() == ax::mojom::Role::kGroup)
-    grandparent = grandparent->ParentObjectUnignored();
-
+  // Ensure table container.
+  AXObject* grandparent = parent->ParentObject();
+  while (IsNeutralWithinTable(grandparent))
+    grandparent = grandparent->ParentObject();
   if (!grandparent || !grandparent->IsTableLikeRole())
     return ax::mojom::Role::kGenericContainer;
 
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTableRow)
     return ax::mojom::Role::kLayoutTableCell;
-
-  if (!parent->IsTableRowLikeRole())
-    return ax::mojom::Role::kGenericContainer;
 
   if (!GetNode() || !GetNode()->HasTagName(kThTag))
     return ax::mojom::Role::kCell;

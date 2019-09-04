@@ -946,11 +946,10 @@ void ShelfView::CalculateIdealBounds() {
   // ScrollableShelfView.
   if (!is_overflow_mode() && !chromeos::switches::ShouldShowScrollableShelf()) {
     // Now add the necessary padding to center app icons.
-    const gfx::Size screen_size =
-        screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow())
-            .size();
-    const int screen_size_primary =
-        shelf()->PrimaryAxisValue(screen_size.width(), screen_size.height());
+    const gfx::Rect display_bounds =
+        screen_util::GetDisplayBoundsWithShelf(GetWidget()->GetNativeWindow());
+    const int display_size_primary = shelf()->PrimaryAxisValue(
+        display_bounds.size().width(), display_bounds.size().height());
 
     const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
     const int icons_size = GetSizeOfAppIcons(number_of_visible_apps(),
@@ -959,14 +958,15 @@ void ShelfView::CalculateIdealBounds() {
 
     if (app_centering_strategy.center_on_screen) {
       // This is how far the first icon needs to be from the screen edge.
-      padding_for_centering = (screen_size_primary - icons_size) / 2;
+      padding_for_centering = (display_size_primary - icons_size) / 2;
 
-      // Let's see how far this view is from the edge of the screen to
+      // Let's see how far this view is from the edge of this display to
       // compute how much extra padding is needed.
       gfx::Point origin = gfx::Point(0, 0);
       views::View::ConvertPointToScreen(this, &origin);
-
-      padding_for_centering -= origin.x();
+      padding_for_centering -= shelf_->IsHorizontalAlignment()
+                                   ? (origin.x() - display_bounds.x())
+                                   : (origin.y() - display_bounds.y());
     } else {
       padding_for_centering =
           (available_size_for_app_icons - icons_size) / 2;

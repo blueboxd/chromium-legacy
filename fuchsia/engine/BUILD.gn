@@ -10,12 +10,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
-declare_args() {
-  # Enables Vulkan in WebEngine (has effect only for context instances that have
-  # Vulkan loader service in the service directory).
-  web_engine_enable_vulkan = false
-}
-
 config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
 }
@@ -54,6 +48,7 @@ repack("web_engine_pak") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/browser/tracing:resources",
+    "//gpu/command_buffer/service",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
@@ -71,6 +66,7 @@ component("web_engine_core") {
     ":mojom",
     ":web_engine_pak",
     "//base",
+    "//base:base_static",
     "//components/version_info",
     "//content/public/app:both",
     "//content/public/browser",
@@ -80,6 +76,7 @@ component("web_engine_core") {
     "//fuchsia/base",
     "//fuchsia/base:message_port",
     "//fuchsia/base:modular",
+    "//gpu/command_buffer/service",
     "//media/fuchsia/cdm/service",
     "//media/fuchsia/mojom",
     "//mojo/public/cpp/bindings",
@@ -93,6 +90,7 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk:web",
     "//third_party/widevine/cdm:headers",
     "//ui/aura",
+    "//ui/base",
     "//ui/base/ime",
     "//ui/display",
     "//ui/ozone",
@@ -163,9 +161,6 @@ component("web_engine_core") {
     ":*",
     "//fuchsia/runners:cast_runner_browsertests__exec",
   ]
-  if (web_engine_enable_vulkan) {
-    defines = [ "WEB_ENGINE_ENABLE_VULKAN" ]
-  }
 }
 
 executable("web_engine_exe") {

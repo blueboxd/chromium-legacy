@@ -19,10 +19,12 @@ namespace autofill {
 
 class AutofillField;
 class AutofillScanner;
+class LogManager;
 
 class AddressField : public FormField {
  public:
-  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
+                                          LogManager* log_manager);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -52,7 +54,7 @@ class AddressField : public FormField {
   static const int kCityMatchType;
   static const int kStateMatchType;
 
-  AddressField();
+  explicit AddressField(LogManager* log_manager);
 
   bool ParseCompany(AutofillScanner* scanner);
   bool ParseAddressLines(AutofillScanner* scanner);
@@ -74,7 +76,8 @@ class AddressField : public FormField {
       AutofillScanner* scanner,
       const base::string16& pattern,
       int match_type,
-      AutofillField** match);
+      AutofillField** match,
+      const RegExLogging& logging);
 
   // Run matches on the name and label separately. If the return result is
   // RESULT_MATCH_NAME_LABEL, then |scanner| advances and the field is set.
@@ -83,6 +86,7 @@ class AddressField : public FormField {
   ParseNameLabelResult ParseNameAndLabelForCity(AutofillScanner* scanner);
   ParseNameLabelResult ParseNameAndLabelForState(AutofillScanner* scanner);
 
+  LogManager* log_manager_;
   AutofillField* company_;
   AutofillField* address1_;
   AutofillField* address2_;

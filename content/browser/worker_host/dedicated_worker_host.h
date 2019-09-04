@@ -125,17 +125,11 @@ class DedicatedWorkerHost final
   void CreateWebUsbService(
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
-  // TODO(https://crbug.com/955171): Remove these methods and use
-  // CreateWebSocketConnector directly once |this| uses
-  // service_manager::BinderMap instead of |registry_|.
-  void CreateWebSocketConnectorForRequest(
-      blink::mojom::WebSocketConnectorRequest request);
-
   void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
 
   void CreateNestedDedicatedWorker(
-      blink::mojom::DedicatedWorkerHostFactoryRequest request);
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
   // May return a nullptr.
   RenderFrameHostImpl* GetAncestorRenderFrameHost();

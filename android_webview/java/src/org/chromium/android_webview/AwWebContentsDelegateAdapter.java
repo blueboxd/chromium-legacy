@@ -226,7 +226,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 }
                 mCompleted = true;
                 if (results == null) {
-                    nativeFilesSelectedInChooser(
+                    AwWebContentsDelegateJni.get().filesSelectedInChooser(
                             processId, renderId, modeFlags, null, null);
                     return;
                 }
@@ -348,7 +348,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
 
         @Override
         protected void onPostExecute(String[] result) {
-            nativeFilesSelectedInChooser(mProcessId, mRenderId, mModeFlags, mFilePaths, result);
+            AwWebContentsDelegateJni.get().filesSelectedInChooser(
+                    mProcessId, mRenderId, mModeFlags, mFilePaths, result);
         }
 
         /**

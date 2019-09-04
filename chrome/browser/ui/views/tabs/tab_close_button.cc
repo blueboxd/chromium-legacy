@@ -128,9 +128,9 @@ gfx::Size TabCloseButton::CalculatePreferredSize() const {
 }
 
 std::unique_ptr<views::InkDropMask> TabCloseButton::CreateInkDropMask() const {
-  gfx::Rect bounds = GetContentsBounds();
   return std::make_unique<views::CircleInkDropMask>(
-      size(), GetMirroredRect(bounds).CenterPoint(), bounds.width() / 2);
+      size(), GetMirroredRect(GetContentsBounds()).CenterPoint(),
+      GetWidth() / 2);
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {

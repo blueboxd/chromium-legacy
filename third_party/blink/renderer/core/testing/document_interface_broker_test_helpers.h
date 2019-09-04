@@ -44,9 +44,9 @@ class FrameHostTestDocumentInterfaceBroker
  public:
   FrameHostTestDocumentInterfaceBroker(
       mojom::blink::DocumentInterfaceBroker* document_interface_broker,
-      mojom::blink::DocumentInterfaceBrokerRequest request)
+      mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker> receiver)
       : TestDocumentInterfaceBroker(document_interface_broker,
-                                    std::move(request)) {}
+                                    std::move(receiver)) {}
 
   void GetFrameHostTestInterface(
       mojo::PendingReceiver<mojom::blink::FrameHostTestInterface> receiver)

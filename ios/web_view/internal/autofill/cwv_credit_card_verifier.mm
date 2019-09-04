@@ -179,7 +179,8 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 
   _unmaskingController->OnUnmaskPromptAccepted(
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
-      base::SysNSStringToUTF16(expirationYear), storeLocally);
+      base::SysNSStringToUTF16(expirationYear), storeLocally,
+      /*enable_fido_auth=*/false);
 }
 
 - (BOOL)isCVCValid:(NSString*)CVC {

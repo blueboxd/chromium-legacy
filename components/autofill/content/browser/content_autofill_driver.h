@@ -30,6 +30,7 @@ namespace autofill {
 
 class AutofillClient;
 class AutofillProvider;
+class LogManager;
 
 // Class that drives autofill flow in the browser process based on
 // communication from the renderer and from the external world. There is one
@@ -173,6 +174,8 @@ class ContentAutofillDriver : public AutofillDriver,
   std::unique_ptr<AutofillExternalDelegate> autofill_external_delegate_;
 
   KeyPressHandlerManager key_press_handler_manager_;
+
+  LogManager* const log_manager_;
 
   mojo::AssociatedReceiver<mojom::AutofillDriver> receiver_{this};
 

@@ -442,8 +442,8 @@ VideoTrackRecorder::VideoTrackRecorder(
   DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeVideo);
 
   initialize_encoder_callback_ = WTF::BindRepeating(
-      &VideoTrackRecorder::InitializeEncoder, weak_ptr_factory_.GetWeakPtr(),
-      codec, on_encoded_video_callback, bits_per_second);
+      &VideoTrackRecorder::InitializeEncoder, WrapWeakPersistent(this), codec,
+      on_encoded_video_callback, bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
   ConnectToTrack(media::BindToCurrentLoop(WTF::BindRepeating(
@@ -508,7 +508,7 @@ void VideoTrackRecorder::InitializeEncoder(
     encoder_ = VEAEncoder::Create(
         on_encoded_video_callback,
         media::BindToCurrentLoop(WTF::BindRepeating(
-            &VideoTrackRecorder::OnError, weak_ptr_factory_.GetWeakPtr())),
+            &VideoTrackRecorder::OnError, WrapWeakPersistent(this))),
         bits_per_second, vea_profile, input_size, main_task_runner_);
   } else {
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", false);

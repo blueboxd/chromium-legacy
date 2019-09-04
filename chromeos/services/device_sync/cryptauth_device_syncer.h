@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 
 namespace cryptauthv2 {
 class ClientMetadata;
@@ -16,8 +17,6 @@ class ClientAppMetadata;
 namespace chromeos {
 
 namespace device_sync {
-
-class CryptAuthDeviceSyncResult;
 
 // Implements the client end of the CryptAuth v2 DeviceSync protocol, which
 // consists of three to four request/response interactions with the CryptAuth
@@ -68,8 +67,10 @@ class CryptAuthDeviceSyncer {
  public:
   virtual ~CryptAuthDeviceSyncer();
 
+  // The DeviceSync result is passed by value so that the device syner can be
+  // deleted before the result is processed.
   using DeviceSyncAttemptFinishedCallback =
-      base::OnceCallback<void(const CryptAuthDeviceSyncResult&)>;
+      base::OnceCallback<void(CryptAuthDeviceSyncResult)>;
 
   // Starts the CryptAuth v2 DeviceSync flow.
   // |client_metadata|: Information about the DeviceSync attempt--such as

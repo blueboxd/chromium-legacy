@@ -85,7 +85,6 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
         ssl.security_style == web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
       // HTTPS with major errors
       icon_id = ICON_STATE_ERROR;
-      DCHECK(!net::IsCertStatusMinorError(ssl.cert_status));
       summary.assign(
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_SUMMARY));
       details.assign(

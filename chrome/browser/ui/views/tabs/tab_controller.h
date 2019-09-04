@@ -11,7 +11,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
-class SkPath;
 class Tab;
 class TabGroupVisualData;
 class TabGroupId;
@@ -39,9 +38,6 @@ class TabController {
 
   // Returns true if the close button for the given tab is forced to be hidden.
   virtual bool ShouldHideCloseButtonForTab(Tab* tab) const = 0;
-
-  // Returns true if ShouldPaintTab() could return a non-empty clip path.
-  virtual bool MaySetClip() = 0;
 
   // Selects the tab. |event| is the event that causes |tab| to be selected.
   virtual void SelectTab(Tab* tab, const ui::Event& event) = 0;
@@ -112,12 +108,6 @@ class TabController {
 
   // Returns true if the hover card is showing for the given tab.
   virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;
-
-  // Returns whether |tab| needs to be painted. When this returns true, |clip|
-  // is set to the path which should be clipped out of the current tab's region
-  // (for hit testing or painting), if any.  |clip| is only non-empty when
-  // stacking tabs; if it is empty, no clipping is needed.
-  virtual bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) = 0;
 
   // Returns the background offset used by inactive tabs to match the frame
   // image.

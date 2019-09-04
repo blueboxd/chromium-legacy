@@ -27,7 +27,6 @@ class Textfield;
 namespace ash {
 class LoginButton;
 enum class EasyUnlockIconId;
-struct LoginUserInfo;
 
 // Contains a textfield instance with a submit button. The user can type a
 // password into the textfield and hit enter to submit.
@@ -85,8 +84,8 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   void SetEasyUnlockIcon(EasyUnlockIconId id,
                          const base::string16& accessibility_label);
 
-  // Updates accessibility information for |user|.
-  void UpdateForUser(const LoginUserInfo& user);
+  // Set the textfield name used for accessibility.
+  void SetAccessibleName(const base::string16& name);
 
   // Enable or disable focus on the child elements (ie, password field and
   // submit button).

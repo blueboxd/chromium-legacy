@@ -22,21 +22,31 @@ class LoggedInUserMixin {
  public:
   enum class LogInType { kRegular, kChild };
 
-  LoggedInUserMixin(InProcessBrowserTestMixinHost* host,
+  LoggedInUserMixin(InProcessBrowserTestMixinHost* mixin_host,
                     LogInType type,
-                    net::EmbeddedTestServer* embedded_test_server);
+                    net::EmbeddedTestServer* embedded_test_server,
+                    bool should_launch_browser = true);
   ~LoggedInUserMixin();
+
+  // Helper function for refactoring common setup code.
+  // Call this function in your test class's SetUpOnMainThread() after calling
+  // MixinBasedInProcessBrowserTest::SetUpOnMainThread().
+  // This functions does the following:
+  // * Reroute all requests to localhost.
+  // * Log in as regular or child account depending on the |type| argument
+  // passed to the constructor.
+  // * Call InProcessBrowserTest::SelectFirstBrowser() so that browser()
+  // returns a non-null browser instance. Note: This call will only be effective
+  // if should_launch_browser was set to true in the constructor.
+  void SetUpOnMainThreadHelper(net::RuleBasedHostResolverProc* host_resolver,
+                               InProcessBrowserTest* test_base,
+                               bool issue_any_scope_token = false);
 
   // Log in as regular or child account depending on the |type| argument passed
   // to the constructor.
   // * If |issue_any_scope_token|, FakeGaiaMixin will issue a special all-access
   // token associated with the test refresh token. Only matters for child login.
   void LogInUser(bool issue_any_scope_token = false);
-
-  // By default, LoginManagerMixin will set up user session manager not to
-  // launch browser as part of user session setup - use this to override that
-  // behavior.
-  void set_should_launch_browser(bool value);
 
  private:
   LoginManagerMixin::TestUserInfo user_;

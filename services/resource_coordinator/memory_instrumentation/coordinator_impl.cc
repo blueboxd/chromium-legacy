@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -28,6 +27,7 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/service_manager/public/cpp/identity.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
@@ -59,9 +59,16 @@ class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
 
 }  // namespace
 
-CoordinatorImpl::CoordinatorImpl()
+
+// static
+CoordinatorImpl* CoordinatorImpl::GetInstance() {
+  return g_coordinator_impl;
+}
+
+CoordinatorImpl::CoordinatorImpl(service_manager::Connector* connector)
     : next_dump_id_(0),
       client_process_timeout_(base::TimeDelta::FromSeconds(15)) {
+  process_map_ = std::make_unique<ProcessMap>(connector);
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
   base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
@@ -75,40 +82,35 @@ CoordinatorImpl::~CoordinatorImpl() {
   g_coordinator_impl = nullptr;
 }
 
-// static
-CoordinatorImpl* CoordinatorImpl::GetInstance() {
-  return g_coordinator_impl;
+base::ProcessId CoordinatorImpl::GetProcessIdForClientIdentity(
+    service_manager::Identity identity) const {
+  DCHECK(identity.IsValid());
+  return process_map_->GetProcessId(identity);
 }
 
-void CoordinatorImpl::BindController(
-    mojo::PendingReceiver<mojom::CoordinatorController> receiver) {
-  controller_receiver_.Bind(std::move(receiver));
+std::map<base::ProcessId, std::vector<std::string>>
+CoordinatorImpl::ComputePidToServiceNamesMap() const {
+  return process_map_->ComputePidToServiceNamesMap();
 }
 
-void CoordinatorImpl::RegisterHeapProfiler(
-    mojo::PendingRemote<mojom::HeapProfiler> profiler,
-    mojo::PendingReceiver<mojom::HeapProfilerHelper> helper_receiver) {
+service_manager::Identity CoordinatorImpl::GetClientIdentityForCurrentRequest()
+    const {
+  return bindings_.dispatch_context();
+}
+
+void CoordinatorImpl::BindCoordinatorRequest(
+    mojom::CoordinatorRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  heap_profiler_.Bind(std::move(profiler));
-  heap_profiler_helper_receiver_.Bind(std::move(helper_receiver));
+  bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
 
-void CoordinatorImpl::RegisterClientProcess(
-    mojo::PendingReceiver<mojom::Coordinator> receiver,
-    mojo::PendingRemote<mojom::ClientProcess> client_process,
-    mojom::ProcessType process_type,
-    base::ProcessId process_id,
-    const base::Optional<std::string>& service_name) {
+void CoordinatorImpl::BindHeapProfilerHelperRequest(
+    mojom::HeapProfilerHelperRequest request,
+    const service_manager::BindSourceInfo& source_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  mojo::Remote<mojom::ClientProcess> process(std::move(client_process));
-  coordinator_receivers_.Add(this, std::move(receiver), process_id);
-  process.set_disconnect_handler(
-      base::BindOnce(&CoordinatorImpl::UnregisterClientProcess,
-                     base::Unretained(this), process_id));
-  auto result = clients_.emplace(
-      process_id, std::make_unique<ClientInfo>(std::move(process), process_type,
-                                               service_name));
-  DCHECK(result.second);
+  bindings_heap_profiler_helper_.AddBinding(this, std::move(request),
+                                            source_info.identity);
 }
 
 void CoordinatorImpl::RequestGlobalMemoryDump(
@@ -194,6 +196,12 @@ void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
                                   base::BindOnce(adapter, std::move(callback)));
 }
 
+void CoordinatorImpl::RegisterHeapProfiler(
+    mojom::HeapProfilerPtr heap_profiler) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  heap_profiler_ = std::move(heap_profiler);
+}
+
 void CoordinatorImpl::GetVmRegionsForHeapProfiler(
     const std::vector<base::ProcessId>& pids,
     GetVmRegionsForHeapProfilerCallback callback) {
@@ -203,12 +211,13 @@ void CoordinatorImpl::GetVmRegionsForHeapProfiler(
       std::make_unique<QueuedVmRegionRequest>(dump_guid, std::move(callback));
   in_progress_vm_region_requests_[dump_guid] = std::move(request);
 
+  auto names_for_pid = ComputePidToServiceNamesMap();
   std::vector<QueuedRequestDispatcher::ClientInfo> clients;
-  for (const auto& entry : clients_) {
-    const base::ProcessId pid = entry.first;
-    clients.emplace_back(entry.second->client.get(), pid,
-                         entry.second->process_type,
-                         entry.second->service_name);
+  for (const auto& kv : clients_) {
+    auto client_identity = kv.second->identity;
+    const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
+    clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type,
+                         std::move(names_for_pid[pid]));
   }
 
   QueuedVmRegionRequest* request_ptr =
@@ -221,7 +230,24 @@ void CoordinatorImpl::GetVmRegionsForHeapProfiler(
   FinalizeVmRegionDumpIfAllManagersReplied(dump_guid);
 }
 
-void CoordinatorImpl::UnregisterClientProcess(base::ProcessId process_id) {
+void CoordinatorImpl::RegisterClientProcess(
+    mojom::ClientProcessPtr client_process_ptr,
+    mojom::ProcessType process_type) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  mojom::ClientProcess* client_process = client_process_ptr.get();
+  client_process_ptr.set_connection_error_handler(
+      base::BindOnce(&CoordinatorImpl::UnregisterClientProcess,
+                     weak_ptr_factory_.GetWeakPtr(), client_process));
+  auto identity = GetClientIdentityForCurrentRequest();
+  auto client_info = std::make_unique<ClientInfo>(
+      std::move(identity), std::move(client_process_ptr), process_type);
+  auto iterator_and_inserted =
+      clients_.emplace(client_process, std::move(client_info));
+  DCHECK(iterator_and_inserted.second);
+}
+
+void CoordinatorImpl::UnregisterClientProcess(
+    mojom::ClientProcess* client_process) {
   QueuedRequest* request = GetCurrentRequest();
   if (request != nullptr) {
     // Check if we are waiting for an ack from this client process.
@@ -232,9 +258,9 @@ void CoordinatorImpl::UnregisterClientProcess(base::ProcessId process_id) {
       // increment the iterator in advance while keeping a reference to the
       // current element.
       std::set<QueuedRequest::PendingResponse>::iterator current = it++;
-      if (current->process_id != process_id)
+      if (current->client != client_process)
         continue;
-      RemovePendingResponse(process_id, current->type);
+      RemovePendingResponse(client_process, current->type);
       request->failed_memory_dump_count++;
     }
     FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -245,7 +271,7 @@ void CoordinatorImpl::UnregisterClientProcess(base::ProcessId process_id) {
     auto it = request->pending_responses.begin();
     while (it != request->pending_responses.end()) {
       auto current = it++;
-      if (*current == process_id) {
+      if (*current == client_process) {
         request->pending_responses.erase(current);
       }
     }
@@ -262,7 +288,7 @@ void CoordinatorImpl::UnregisterClientProcess(base::ProcessId process_id) {
             weak_ptr_factory_.GetWeakPtr(), pair.second->dump_guid));
   }
 
-  size_t num_deleted = clients_.erase(process_id);
+  size_t num_deleted = clients_.erase(client_process);
   DCHECK(num_deleted == 1);
 }
 
@@ -353,12 +379,19 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   if (request == nullptr)
     return;
 
+  auto names_for_pid = ComputePidToServiceNamesMap();
   std::vector<QueuedRequestDispatcher::ClientInfo> clients;
-  for (const auto& entry : clients_) {
-    const base::ProcessId pid = entry.first;
-    clients.emplace_back(entry.second->client.get(), pid,
-                         entry.second->process_type,
-                         entry.second->service_name);
+  for (const auto& kv : clients_) {
+    auto client_identity = kv.second->identity;
+    const base::ProcessId pid = GetProcessIdForClientIdentity(client_identity);
+    if (pid == base::kNullProcessId) {
+      VLOG(1) << "Couldn't find a PID for client "
+              << client_identity.ToString();
+      continue;
+    }
+
+    clients.emplace_back(kv.second->client.get(), pid, kv.second->process_type,
+                         std::move(names_for_pid[pid]));
   }
 
   auto chrome_callback =
@@ -411,7 +444,7 @@ QueuedRequest* CoordinatorImpl::GetCurrentRequest() {
 }
 
 void CoordinatorImpl::OnChromeMemoryDumpResponse(
-    base::ProcessId process_id,
+    mojom::ClientProcess* client,
     bool success,
     uint64_t dump_guid,
     std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_memory_dump) {
@@ -422,14 +455,13 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
     return;
   }
 
-  RemovePendingResponse(process_id, ResponseType::kChromeDump);
+  RemovePendingResponse(client, ResponseType::kChromeDump);
 
-  if (!base::Contains(clients_, process_id)) {
+  if (!clients_.count(client)) {
     VLOG(1) << "Received a memory dump response from an unregistered client";
     return;
   }
-
-  auto* response = &request->responses[process_id];
+  auto* response = &request->responses[client];
   response->chrome_dump = std::move(chrome_memory_dump);
 
   if (!success) {
@@ -441,7 +473,7 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
 }
 
 void CoordinatorImpl::OnOSMemoryDumpResponse(uint64_t dump_guid,
-                                             base::ProcessId process_id,
+                                             mojom::ClientProcess* client,
                                              bool success,
                                              OSMemDumpMap os_dumps) {
   using ResponseType = QueuedRequest::PendingResponse::Type;
@@ -451,14 +483,14 @@ void CoordinatorImpl::OnOSMemoryDumpResponse(uint64_t dump_guid,
     return;
   }
 
-  RemovePendingResponse(process_id, ResponseType::kOSDump);
+  RemovePendingResponse(client, ResponseType::kOSDump);
 
-  if (!base::Contains(clients_, process_id)) {
+  if (!clients_.count(client)) {
     VLOG(1) << "Received a memory dump response from an unregistered client";
     return;
   }
 
-  request->responses[process_id].os_dumps = std::move(os_dumps);
+  request->responses[client].os_dumps = std::move(os_dumps);
 
   if (!success) {
     request->failed_memory_dump_count++;
@@ -469,7 +501,7 @@ void CoordinatorImpl::OnOSMemoryDumpResponse(uint64_t dump_guid,
 }
 
 void CoordinatorImpl::OnOSMemoryDumpForVMRegions(uint64_t dump_guid,
-                                                 base::ProcessId process_id,
+                                                 mojom::ClientProcess* client,
                                                  bool success,
                                                  OSMemDumpMap os_dumps) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -477,10 +509,10 @@ void CoordinatorImpl::OnOSMemoryDumpForVMRegions(uint64_t dump_guid,
   DCHECK(request_it != in_progress_vm_region_requests_.end());
 
   QueuedVmRegionRequest* request = request_it->second.get();
-  auto it = request->pending_responses.find(process_id);
+  auto it = request->pending_responses.find(client);
   DCHECK(it != request->pending_responses.end());
   request->pending_responses.erase(it);
-  request->responses[process_id].os_dumps = std::move(os_dumps);
+  request->responses[client].os_dumps = std::move(os_dumps);
 
   FinalizeVmRegionDumpIfAllManagersReplied(request->dump_guid);
 }
@@ -531,14 +563,14 @@ void CoordinatorImpl::OnDumpProcessesForTracing(
 }
 
 void CoordinatorImpl::RemovePendingResponse(
-    base::ProcessId process_id,
+    mojom::ClientProcess* client,
     QueuedRequest::PendingResponse::Type type) {
   QueuedRequest* request = GetCurrentRequest();
   if (request == nullptr) {
     NOTREACHED() << "No current dump request.";
     return;
   }
-  auto it = request->pending_responses.find({process_id, type});
+  auto it = request->pending_responses.find({client, type});
   if (it == request->pending_responses.end()) {
     VLOG(1) << "Unexpected memory dump response";
     return;
@@ -572,13 +604,12 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
 }
 
 CoordinatorImpl::ClientInfo::ClientInfo(
-    mojo::Remote<mojom::ClientProcess> client,
-    mojom::ProcessType process_type,
-    base::Optional<std::string> service_name)
-    : client(std::move(client)),
-      process_type(process_type),
-      service_name(std::move(service_name)) {}
-
-CoordinatorImpl::ClientInfo::~ClientInfo() = default;
+    const service_manager::Identity& identity,
+    mojom::ClientProcessPtr client,
+    mojom::ProcessType process_type)
+    : identity(identity),
+      client(std::move(client)),
+      process_type(process_type) {}
+CoordinatorImpl::ClientInfo::~ClientInfo() {}
 
 }  // namespace memory_instrumentation

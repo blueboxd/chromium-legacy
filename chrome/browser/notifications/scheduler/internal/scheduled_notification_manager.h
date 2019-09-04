@@ -29,6 +29,7 @@ class ScheduledNotificationManager {
   using Notifications =
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
   using InitCallback = base::OnceCallback<void(bool)>;
+  using ScheduleCallback = base::OnceCallback<void(bool)>;
 
   // Delegate that receives events from the manager.
   class Delegate {
@@ -56,7 +57,8 @@ class ScheduledNotificationManager {
 
   // Adds a new notification.
   virtual void ScheduleNotification(
-      std::unique_ptr<NotificationParams> notification_params) = 0;
+      std::unique_ptr<NotificationParams> notification_params,
+      ScheduleCallback callback) = 0;
 
   // Displays a notification, the scheduled notification will be removed from
   // storage, then Delegate::DisplayNotification() should be invoked.

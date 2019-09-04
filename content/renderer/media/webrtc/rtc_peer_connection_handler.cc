@@ -37,7 +37,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_util.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"

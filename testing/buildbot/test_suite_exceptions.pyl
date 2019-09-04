@@ -16,13 +16,6 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
-  'android_smoke_tests': {
-    'remove_from': [
-      # Enable on CQ when stable on CI.
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-    ],
-  },
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.

@@ -467,8 +467,7 @@ TEST(SecurityStateContentUtilsTest, MixedContentExplanations) {
 TEST(SecurityStateContentUtilsTest, CertErrorContentExplanations) {
   // Test a modern configuration with a key exchange group.
   security_state::VisibleSecurityState visible_security_state;
-  visible_security_state.cert_status =
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.cert_status = 0;
   visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,
@@ -545,8 +544,7 @@ TEST(SecurityStateContentUtilsTest, CertErrorContentExplanations) {
 TEST(SecurityStateContentUtilsTest, MixedContentAndCertErrorExplanations) {
   // Test a modern configuration with a key exchange group.
   security_state::VisibleSecurityState visible_security_state;
-  visible_security_state.cert_status =
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  visible_security_state.cert_status = 0;
   visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   net::SSLConnectionStatusSetCipherSuite(
       0xcca8 /* TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */,

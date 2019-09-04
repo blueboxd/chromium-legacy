@@ -407,6 +407,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
@@ -429,6 +430,9 @@
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
+#if BUILDFLAG(DFMIFY_DEV_UI)
+#include "chrome/browser/android/dev_ui/dev_ui_url_handler.h"
+#endif  // BUILDFLAG(DFMIFY_DEV_UI)
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
@@ -3393,11 +3397,17 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   // Handler to rewrite chrome://newtab on Android.
   handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
                           BrowserURLHandler::null_handler());
-#else
+#if BUILDFLAG(DFMIFY_DEV_UI)
+  // Handler to rewrite chrome:// URLs in the DevUI DFM, if not installed.
+  handler->AddHandlerPair(&chrome::android::HandleDfmifiedDevUiPageURL,
+                          BrowserURLHandler::null_handler());
+#endif  // BUILDFLAG(DFMIFY_DEV_UI)
+
+#else   // defined(OS_ANDROID)
   // Handler to rewrite chrome://newtab for InstantExtended.
   handler->AddHandlerPair(&search::HandleNewTabURLRewrite,
                           &search::HandleNewTabURLReverseRewrite);
-#endif
+#endif  // defined(OS_ANDROID)
 
   // chrome: & friends.
   handler->AddHandlerPair(&ChromeContentBrowserClient::HandleWebUI,

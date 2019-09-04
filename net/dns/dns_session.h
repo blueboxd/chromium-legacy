@@ -41,9 +41,6 @@ class StreamSocket;
 // fallback queries is not taken into account.
 const int kAutomaticModeFailureLimit = 10;
 
-// Amount to scale a successful DoH probe RTT when setting a new seed timeout.
-const double kDohProbeTimeMultiplier = 1.5;
-
 // Session parameters and state shared between DNS transactions.
 // Ref-counted so that DnsClient::Request can keep working in absence of
 // DnsClient. A DnsSession must be recreated when DnsConfig changes.
@@ -115,13 +112,9 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // Record the latest DoH probe state.
   void SetProbeSuccess(unsigned doh_server_index, bool success);
 
-  // Record how long it took to receive a response from the server. If
-  // |is_probe| and the underlying |ServerStats::rtt_histogram| has not been
-  // populated by real query times yet, update the seed value for the histogram
-  // to a scaled version of |rtt|.
+  // Record how long it took to receive a response from the server.
   void RecordRTT(unsigned server_index,
                  bool is_doh_server,
-                 bool is_probe,
                  base::TimeDelta rtt);
 
   // Return the timeout for the next query. |attempt| counts from 0 and is used

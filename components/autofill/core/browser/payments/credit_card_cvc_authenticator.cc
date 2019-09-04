@@ -11,6 +11,11 @@
 
 namespace autofill {
 
+CreditCardCVCAuthenticator::CVCAuthenticationResponse::
+    CVCAuthenticationResponse() {}
+CreditCardCVCAuthenticator::CVCAuthenticationResponse::
+    ~CVCAuthenticationResponse() {}
+
 CreditCardCVCAuthenticator::CreditCardCVCAuthenticator(AutofillClient* client)
     : client_(client) {}
 
@@ -37,12 +42,18 @@ void CreditCardCVCAuthenticator::OnFullCardRequestSucceeded(
     const CreditCard& card,
     const base::string16& cvc) {
   requester_->OnCVCAuthenticationComplete(
-      /*did_succeed=*/true, &card, cvc,
-      full_card_request.GetFIDOCreationOptions());
+      CVCAuthenticationResponse()
+          .with_did_succeed(true)
+          .with_card(&card)
+          .with_cvc(cvc)
+          .with_creation_options(
+              std::move(full_card_request.unmask_response_details()
+                            .fido_creation_options)));
 }
 
 void CreditCardCVCAuthenticator::OnFullCardRequestFailed() {
-  requester_->OnCVCAuthenticationComplete(/*did_succeed=*/false);
+  requester_->OnCVCAuthenticationComplete(
+      CVCAuthenticationResponse().with_did_succeed(false));
 }
 
 void CreditCardCVCAuthenticator::ShowUnmaskPrompt(

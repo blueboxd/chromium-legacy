@@ -44,8 +44,7 @@ std::unique_ptr<ServicesDelegate> ServicesDelegate::CreateForTest(
 ServicesDelegateDesktop::ServicesDelegateDesktop(
     SafeBrowsingService* safe_browsing_service,
     ServicesDelegate::ServicesCreator* services_creator)
-    : safe_browsing_service_(safe_browsing_service),
-      services_creator_(services_creator) {
+    : ServicesDelegate(safe_browsing_service, services_creator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -206,35 +205,6 @@ void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-void ServicesDelegateDesktop::CreatePasswordProtectionService(
-    Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = password_protection_service_map_.find(profile);
-  DCHECK(it == password_protection_service_map_.end());
-  std::unique_ptr<ChromePasswordProtectionService> service =
-      std::make_unique<ChromePasswordProtectionService>(safe_browsing_service_,
-                                                        profile);
-  password_protection_service_map_[profile] = std::move(service);
-}
-
-void ServicesDelegateDesktop::RemovePasswordProtectionService(
-    Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = password_protection_service_map_.find(profile);
-  if (it != password_protection_service_map_.end())
-    password_protection_service_map_.erase(it);
-}
-
-PasswordProtectionService*
-ServicesDelegateDesktop::GetPasswordProtectionService(Profile* profile) const {
-  DCHECK(profile);
-  auto it = password_protection_service_map_.find(profile);
-  return it != password_protection_service_map_.end() ? it->second.get()
-                                                      : nullptr;
-}
-
 // Only implemented on Android.
 void ServicesDelegateDesktop::CreateTelemetryService(Profile* profile) {}
 
@@ -244,34 +214,6 @@ void ServicesDelegateDesktop::RemoveTelemetryService() {}
 // Only meaningful on Android.
 TelemetryService* ServicesDelegateDesktop::GetTelemetryService() const {
   return nullptr;
-}
-
-void ServicesDelegateDesktop::CreateVerdictCacheManager(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  DCHECK(it == cache_manager_map_.end());
-  auto cache_manager = std::make_unique<VerdictCacheManager>(
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS),
-      HostContentSettingsMapFactory::GetForProfile(profile));
-  cache_manager_map_[profile] = std::move(cache_manager);
-}
-
-void ServicesDelegateDesktop::RemoveVerdictCacheManager(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  if (it != cache_manager_map_.end())
-    cache_manager_map_.erase(it);
-}
-
-VerdictCacheManager* ServicesDelegateDesktop::GetVerdictCacheManager(
-    Profile* profile) const {
-  DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  DCHECK(it != cache_manager_map_.end());
-  return it->second.get();
 }
 
 void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {

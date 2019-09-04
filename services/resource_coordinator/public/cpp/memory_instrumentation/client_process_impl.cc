@@ -13,39 +13,43 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
 
 // static
-void ClientProcessImpl::CreateInstance(
-    mojo::PendingReceiver<mojom::ClientProcess> receiver,
-    mojo::PendingRemote<mojom::Coordinator> coordinator,
-    bool is_browser_process) {
+void ClientProcessImpl::CreateInstance(const Config& config) {
   static ClientProcessImpl* instance = nullptr;
   if (!instance) {
-    instance = new ClientProcessImpl(
-        std::move(receiver), std::move(coordinator), is_browser_process,
-        /*initialize_memory_instrumentation=*/true);
+    instance = new ClientProcessImpl(config);
   } else {
     NOTREACHED();
   }
 }
 
-ClientProcessImpl::ClientProcessImpl(
-    mojo::PendingReceiver<mojom::ClientProcess> receiver,
-    mojo::PendingRemote<mojom::Coordinator> coordinator,
-    bool is_browser_process,
-    bool initialize_memory_instrumentation)
-    : receiver_(this, std::move(receiver)) {
-  if (initialize_memory_instrumentation) {
+ClientProcessImpl::ClientProcessImpl(const Config& config)
+    : binding_(this), process_type_(config.process_type), task_runner_() {
+  // |config.connector| can be null in tests.
+  if (config.connector) {
+    config.connector->BindInterface(config.service_name,
+                                    mojo::MakeRequest(&coordinator_));
+    mojom::ClientProcessPtr process;
+    binding_.Bind(mojo::MakeRequest(&process));
+    coordinator_->RegisterClientProcess(std::move(process),
+                                        config.process_type);
+
     // Initialize the public-facing MemoryInstrumentation helper.
-    MemoryInstrumentation::CreateInstance(std::move(coordinator));
+    MemoryInstrumentation::CreateInstance(config.connector,
+                                          config.service_name);
   } else {
-    coordinator_.Bind(std::move(coordinator));
+    config.coordinator_for_testing->BindCoordinatorRequest(
+        mojo::MakeRequest(&coordinator_), service_manager::BindSourceInfo());
   }
 
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -54,18 +58,20 @@ ClientProcessImpl::ClientProcessImpl(
   // base::MemoryDumpManager that it is special and should coordinate periodic
   // dumps for tracing. Remove this once the periodic dump scheduler is moved
   // from base to the service. MDM should not care about being the coordinator.
+  bool is_coordinator_process =
+      config.process_type == mojom::ProcessType::BROWSER;
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
       base::BindRepeating(
           &ClientProcessImpl::RequestGlobalMemoryDump_NoCallback,
           base::Unretained(this)),
-      is_browser_process);
+      is_coordinator_process);
 
   tracing_observer_ = std::make_unique<TracingObserver>(
       base::trace_event::TraceLog::GetInstance(),
       base::trace_event::MemoryDumpManager::GetInstance());
 }
 
-ClientProcessImpl::~ClientProcessImpl() = default;
+ClientProcessImpl::~ClientProcessImpl() {}
 
 void ClientProcessImpl::RequestChromeMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
@@ -118,15 +124,7 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
     return;
   }
 
-  // NOTE: If this ClientProcessImpl was responsible for initializing the
-  // global MemoryInstrumentation object, its Coordinator pipe was passed along
-  // to that object, and |coordinator_| is unbound.
-  mojom::Coordinator* coordinator = nullptr;
-  if (coordinator_)
-    coordinator = coordinator_.get();
-  else
-    coordinator = MemoryInstrumentation::GetInstance()->GetCoordinator();
-  coordinator->RequestGlobalMemoryDumpAndAppendToTrace(
+  coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(
       dump_type, level_of_detail,
       mojom::Coordinator::RequestGlobalMemoryDumpAndAppendToTraceCallback());
 }
@@ -172,6 +170,15 @@ void ClientProcessImpl::PerformOSMemoryDump(OSMemoryDumpArgs args) {
   }
   std::move(args.callback).Run(global_success, std::move(results));
 }
+
+ClientProcessImpl::Config::Config(service_manager::Connector* connector,
+                                  const std::string& service_name,
+                                  mojom::ProcessType process_type)
+    : connector(connector),
+      service_name(service_name),
+      process_type(process_type) {}
+
+ClientProcessImpl::Config::~Config() {}
 
 ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs() = default;
 ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs(OSMemoryDumpArgs&&) =

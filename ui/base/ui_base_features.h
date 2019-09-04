@@ -36,7 +36,6 @@ extern const base::Feature kUiCompositorScrollWithLayers;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsNotificationIndicatorEnabled();
 
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
-COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiOopRasterizationEnabled();
 
 #if defined(OS_WIN)
 COMPONENT_EXPORT(UI_BASE_FEATURES)

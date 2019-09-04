@@ -180,6 +180,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
   // TODO(vasilyt): Need to figure out why partial swap isn't working
   capabilities_.supports_post_sub_buffer = false;
+  capabilities_.max_frames_pending = 2;
 }
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(

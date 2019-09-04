@@ -4,13 +4,19 @@
 
 package org.chromium.weblayer.shell;
 
-import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.text.InputType;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -25,13 +31,26 @@ import java.io.File;
 /**
  * Activity for managing the Demo Shell.
  */
-public class WebLayerShellActivity extends Activity {
+public class WebLayerShellActivity extends FragmentActivity {
     private static final String TAG = "WebLayerShell";
 
-    private WebLayer mWebLayer;
     private Profile mProfile;
     private BrowserController mBrowserController;
     private EditText mUrlView;
+
+    public static class ShellFragment extends Fragment {
+        private BrowserController mBrowserController;
+
+        ShellFragment(BrowserController browserController) {
+            mBrowserController = browserController;
+        }
+
+        @Override
+        public View onCreateView(
+                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            return mBrowserController.onCreateView();
+        }
+    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -42,6 +61,11 @@ public class WebLayerShellActivity extends Activity {
         if (!CommandLine.isInitialized()) {
             ((WebLayerShellApplication) getApplication()).initCommandLine();
         }
+
+        LinearLayout mainView = new LinearLayout(this);
+        int viewId = View.generateViewId();
+        mainView.setId(viewId);
+        setContentView(mainView);
 
         mUrlView = new EditText(this);
         mUrlView.setSelectAllOnFocus(true);
@@ -60,7 +84,12 @@ public class WebLayerShellActivity extends Activity {
         });
 
         mProfile = WebLayer.getInstance().createProfile(new File(""));
-        mBrowserController = new BrowserController(this, mProfile);
+        mBrowserController = mProfile.createBrowserController(this);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(viewId, new ShellFragment(mBrowserController));
+        transaction.commit();
+
         mBrowserController.setTopView(mUrlView);
         loadUrl("http://google.com");
         mBrowserController.addObserver(new BrowserObserver() {
@@ -69,6 +98,13 @@ public class WebLayerShellActivity extends Activity {
                 mUrlView.setText(uri.toString());
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mProfile != null) mProfile.destroy();
+        if (mBrowserController != null) mBrowserController.destroy();
+        super.onDestroy();
     }
 
     @Override

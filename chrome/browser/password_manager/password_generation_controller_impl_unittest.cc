@@ -353,6 +353,12 @@ TEST_F(PasswordGenerationControllerTest,
   base::HistogramTester histogram_tester;
 
   EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(true));
+  controller()->OnAutomaticGenerationAvailable(
+      mock_password_manager_driver_.get(), GetTestGenerationUIData1(),
+      gfx::RectF(100, 20));
+
+  EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(false));
   controller()->GeneratedPasswordAccepted(
       ASCIIToUTF16("t3stp@ssw0rd"), mock_password_manager_driver_->AsWeakPtr(),
@@ -380,6 +386,14 @@ TEST_F(PasswordGenerationControllerTest,
        RecordsGeneratedPasswordAcceptedManual) {
   base::HistogramTester histogram_tester;
 
+  InitializeManualGeneration(ASCIIToUTF16("t3stp@ssw0rd"));
+  controller()->OnGenerationRequested(PasswordGenerationType::kManual);
+
+  EXPECT_CALL(mock_dialog_factory(), Run)
+      .WillOnce(Return(ByMove(std::move(mock_dialog_))));
+  controller()->ShowManualGenerationDialog(mock_password_manager_driver_.get(),
+                                           GetTestGenerationUIData1());
+
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(false));
   controller()->GeneratedPasswordAccepted(
@@ -390,6 +404,7 @@ TEST_F(PasswordGenerationControllerTest,
       "KeyboardAccessory.GenerationDialogChoice.Manual",
       GenerationDialogChoice::kAccepted, 1);
 }
+
 TEST_F(PasswordGenerationControllerTest,
        RecordsGeneratedPasswordRejectedManual) {
   base::HistogramTester histogram_tester;

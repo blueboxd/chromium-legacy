@@ -504,6 +504,14 @@ const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
 // result in scrolling up instead of the more common scrolling down.
 const char kMouseReverseScroll[] = "settings.mouse.reverse_scroll";
 
+// A boolean pref set to true if mouse acceleration is enabled. When disabled
+// only simple linear scaling is applied based on sensitivity.
+const char kMouseAcceleration[] = "settings.mouse.acceleration";
+
+// A boolean pref set to true if touchpad acceleration is enabled. When
+// disabled only simple linear scaling is applied based on sensitivity.
+const char kTouchpadAcceleration[] = "settings.touchpad.acceleration";
+
 // A integer pref for the touchpad sensitivity.
 const char kMouseSensitivity[] = "settings.mouse.sensitivity2";
 
@@ -986,6 +994,10 @@ const char kLastRsuDeviceIdUploaded[] = "rsu.last_rsu_device_id_uploaded";
 // Boolean that determines whether to show a banner in OS Settings that links
 // to Browser settings.
 const char kSettingsShowBrowserBanner[] = "settings.cros.show_browser_banner";
+
+// Boolean user profile pref that determines whether to show a banner in browser
+// settings that links to OS settings.
+const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
@@ -1278,9 +1290,6 @@ const char kPrintPreviewUseSystemDefaultPrinter[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-// List of external print servers configured by policy.
-const char kExternalPrintServers[] = "printing.external_print_servers";
-
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =
     "native_printing.recommended_printers";

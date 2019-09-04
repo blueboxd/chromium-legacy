@@ -16,9 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/common/buildflags.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -29,6 +27,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -187,7 +186,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        RunsAudioVideoWebRTCCallInTwoTabsH264) {
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
-  if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
         "Skipping WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsH264 "
         "(test \"OK\")";

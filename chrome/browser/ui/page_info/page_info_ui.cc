@@ -310,8 +310,6 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
       FALLTHROUGH;
-    case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
-      FALLTHROUGH;
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       switch (identity_info.connection_status) {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
@@ -475,9 +473,6 @@ int PageInfoUI::GetIdentityIconID(PageInfo::SiteIdentityStatus status) {
     case PageInfo::SITE_IDENTITY_STATUS_CERT:
     case PageInfo::SITE_IDENTITY_STATUS_EV_CERT:
       resource_id = IDR_PAGEINFO_GOOD;
-      break;
-    case PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
-      resource_id = IDR_PAGEINFO_WARNING_MINOR;
       break;
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
       resource_id = IDR_PAGEINFO_WARNING_MAJOR;

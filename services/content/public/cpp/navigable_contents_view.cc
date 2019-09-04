@@ -22,8 +22,6 @@
 #endif  // defined(TOOLKIT_VIEWS)
 
 #if defined(USE_AURA)
-#include "ui/aura/client/focus_change_observer.h"  // nogncheck
-#include "ui/aura/client/focus_client.h"           // nogncheck
 #include "ui/aura/layout_manager.h"  // nogncheck
 #include "ui/aura/window.h"          // nogncheck
 #endif
@@ -77,25 +75,14 @@ class LocalWindowLayoutManager : public aura::LayoutManager {
 
 // Owns an Aura window which parents another Aura window in the same process,
 // corresponding to a web contents view hosted in the process.
-class LocalViewHost : public views::NativeViewHost,
-                      public aura::WindowObserver,
-                      public aura::client::FocusChangeObserver {
+class LocalViewHost : public views::NativeViewHost {
  public:
   LocalViewHost(aura::Window* window, NavigableContents* contents)
       : window_(window), contents_(contents) {
     window_->SetLayoutManager(new LocalWindowLayoutManager(window_));
-    window_->AddObserver(this);
-
-    // We set focus behavior to |ALWAYS| to ensure that we receive window focus
-    // change events when our hosted WebContents takes focus. We utilize this
-    // change event to keep LocalViewHost and WebContents focus state in sync.
-    SetFocusBehavior(FocusBehavior::ALWAYS);
   }
 
-  ~LocalViewHost() override {
-    if (!window_destroyed_)
-      window_->RemoveObserver(this);
-  }
+  ~LocalViewHost() override = default;
 
   // views::View:
   void AddedToWidget() override {
@@ -116,53 +103,9 @@ class LocalViewHost : public views::NativeViewHost,
     }
   }
 
-  // aura::WindowObserver:
-  void OnWindowAddedToRootWindow(aura::Window* window) override {
-    // Once our |window_| has been added to its root window, we can obtain a
-    // reference to the root window's focus client which we observe to detect
-    // window focus changed events.
-    auto* focus_client = aura::client::GetFocusClient(window_);
-    if (focus_client)
-      focus_client->AddObserver(this);
-  }
-
-  void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                      aura::Window* root_window) override {
-    // We need to stop observing the root window's focus client before our
-    // |window_| is removed. Otherwise, we will leak a pointer to LocalViewHost
-    // to the focus client that will persist even after LocalViewHost is
-    // destroyed. This will cause a crash when the focus client attempts to
-    // notify our destroyed instance of focus changed events.
-    auto* focus_client = aura::client::GetFocusClient(window_);
-    if (focus_client)
-      focus_client->RemoveObserver(this);
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    window_->RemoveObserver(this);
-    window_destroyed_ = true;
-  }
-
-  // aura::client::FocusChangeObserver:
-  void OnWindowFocused(aura::Window* gained_focus,
-                       aura::Window* lost_focus) override {
-    // We need to ensure that LocalViewHost's focus state is synced with that of
-    // |window_|. This only needs to be done when gaining focus and when
-    // LocalViewHost doesn't already have focus.
-    if (!gained_focus || HasFocus())
-      return;
-
-    // When the window gaining focus is contained within |window_|, we need to
-    // request focus on LocalHostView to remain in sync.
-    if (window_->Contains(gained_focus))
-      RequestFocus();
-  }
-
  private:
   aura::Window* const window_;
   NavigableContents* const contents_;
-
-  bool window_destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LocalViewHost);
 };

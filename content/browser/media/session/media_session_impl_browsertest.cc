@@ -2700,8 +2700,15 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   }
 }
 
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/1000400): Re-enable this test.
+#define MAYBE_PositionStateRouteWithOnePlayer \
+  DISABLED_PositionStateRouteWithOnePlayer
+#else
+#define MAYBE_PositionStateRouteWithOnePlayer PositionStateRouteWithOnePlayer
+#endif
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
-                       PositionStateRouteWithOnePlayer) {
+                       MAYBE_PositionStateRouteWithOnePlayer) {
   NavigateToURL(shell(), embedded_test_server()->GetURL(
                              "example.com", "/media/session/position.html"));
 

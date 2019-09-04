@@ -4483,6 +4483,9 @@
     <message name="IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL" desc="In Device Settings, the text next to the checkbox to set reverse scrolling.">
       Reverse scrolling
     </message>
+    <message name="IDS_SETTINGS_POINTER_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable mouse or touchpad acceleration.">
+      Pointer acceleration
+    </message>
     <!-- Keyboard -->
     <message name="IDS_SETTINGS_KEYBOARD_KEY_SEARCH" desc="In Device Settings, the label and dropdown list item for the Search key.">
       Search

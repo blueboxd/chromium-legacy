@@ -12,6 +12,7 @@
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_file_system_permission_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 
@@ -48,7 +49,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   const storage::FileSystemURL& swap_url() const { return swap_url_; }
 
   void Write(uint64_t offset,
-             blink::mojom::BlobPtr data,
+             mojo::PendingRemote<blink::mojom::Blob> data,
              WriteCallback callback) override;
   void WriteStream(uint64_t offset,
                    mojo::ScopedDataPipeConsumerHandle stream,
@@ -57,8 +58,8 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void Truncate(uint64_t length, TruncateCallback callback) override;
   void Close(CloseCallback callback) override;
 
-  void set_skip_quarantine_service_for_testing() {
-    skip_quarantine_service_for_testing_ = true;
+  void SetSkipQuarantineCheckForTesting() {
+    skip_quarantine_check_for_testing_ = true;
   }
 
   using HashCallback = base::OnceCallback<void(base::File::Error error,
@@ -76,7 +77,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   struct WriteState;
 
   void WriteImpl(uint64_t offset,
-                 blink::mojom::BlobPtr data,
+                 mojo::PendingRemote<blink::mojom::Blob> data,
                  WriteCallback callback);
   void DoWriteBlob(WriteCallback callback,
                    uint64_t position,
@@ -95,8 +96,8 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
                        quarantine::mojom::QuarantineFileResult result);
 
   // Quarantine checks only apply to native local paths.
-  bool can_skip_quarantine_check() {
-    return skip_quarantine_service_for_testing_ ||
+  bool CanSkipQuarantineCheck() const {
+    return skip_quarantine_check_for_testing_ ||
            url().type() != storage::kFileSystemTypeNativeLocal;
   }
 
@@ -130,7 +131,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   storage::FileSystemURL swap_url_;
   State state_ = State::kOpen;
 
-  bool skip_quarantine_service_for_testing_ = false;
+  bool skip_quarantine_check_for_testing_ = false;
 
   // Keeps track of user activation state at creation time for SafeBrowsing
   // checks.

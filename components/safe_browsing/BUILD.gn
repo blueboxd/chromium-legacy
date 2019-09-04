@@ -139,6 +139,7 @@ if (!is_ios) {
 
     deps = [
       "//base:base",
+      "//components/safe_browsing:buildflags",
     ]
   }
 
@@ -188,5 +189,4 @@ if (!is_ios) {
       "//testing/gtest",
     ]
   }
-
 }

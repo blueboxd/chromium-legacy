@@ -310,11 +310,10 @@ bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
 void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_->PostTask(
-      FROM_HERE,
-      WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
-                WrapWeakPersistent(this),
-                WTF::Bind(&RequestSucceeded,
-                          WrapWeakPersistent(current_request_.Get()))));
+      FROM_HERE, WTF::Bind(&ApplyConstraintsProcessor::CleanupRequest,
+                           WrapWeakPersistent(this),
+                           WTF::Bind(&RequestSucceeded,
+                                     WrapPersistent(current_request_.Get()))));
 }
 
 void ApplyConstraintsProcessor::ApplyConstraintsFailed(
@@ -324,7 +323,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsFailed(
       FROM_HERE,
       WTF::Bind(
           &ApplyConstraintsProcessor::CleanupRequest, WrapWeakPersistent(this),
-          WTF::Bind(&RequestFailed, WrapWeakPersistent(current_request_.Get()),
+          WTF::Bind(&RequestFailed, WrapPersistent(current_request_.Get()),
                     String(failed_constraint_name),
                     String("Cannot satisfy constraints"))));
 }
@@ -335,7 +334,7 @@ void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
       FROM_HERE,
       WTF::Bind(
           &ApplyConstraintsProcessor::CleanupRequest, WrapWeakPersistent(this),
-          WTF::Bind(&RequestFailed, WrapWeakPersistent(current_request_.Get()),
+          WTF::Bind(&RequestFailed, WrapPersistent(current_request_.Get()),
                     String(), message)));
 }
 

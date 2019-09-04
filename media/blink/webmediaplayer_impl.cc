@@ -614,9 +614,9 @@ void WebMediaPlayerImpl::ExitedFullscreen() {
     MaybeSendOverlayInfoToDecoder();
 }
 
-void WebMediaPlayerImpl::BecameDominantVisibleContent(bool isDominant) {
+void WebMediaPlayerImpl::BecameDominantVisibleContent(bool is_dominant) {
   if (observer_)
-    observer_->OnBecameDominantVisibleContent(isDominant);
+    observer_->OnBecameDominantVisibleContent(is_dominant);
 }
 
 void WebMediaPlayerImpl::SetIsEffectivelyFullscreen(

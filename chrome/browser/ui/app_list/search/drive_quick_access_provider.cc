@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/drive_quick_access_provider.h"
 
 #include <memory>
+#include <utility>
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_result.h"
@@ -19,18 +20,49 @@ constexpr int kMaxItems = 5;
 DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
     : profile_(profile),
       drive_service_(
-          drive::DriveIntegrationServiceFactory::GetForProfile(profile)),
-      weak_factory_(this) {
+          drive::DriveIntegrationServiceFactory::GetForProfile(profile)) {
   DCHECK(profile_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Warm up the cache.
+  AppListShown();
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
 
 void DriveQuickAccessProvider::Start(const base::string16& query) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug.com/959679): Add latency metrics.
   ClearResultsSilently();
-  if (!query.empty() || !drive_service_)
+  // Results are launched via DriveFS, so DriveFS must be mounted.
+  if (!query.empty() || !drive_service_ || !drive_service_->IsMounted())
     return;
+
+  // If there are no items in the cache, the previous call may have failed so
+  // retry. We return no results in this case, because waiting for the new
+  // results would introduce too much latency.
+  if (results_cache_.empty()) {
+    GetQuickAccessItems();
+    return;
+  }
+
+  SearchProvider::Results results;
+  for (const auto& result : results_cache_) {
+    results.emplace_back(std::make_unique<DriveQuickAccessResult>(
+        drive_service_->GetMountPointPath().Append(result.path),
+        result.confidence, profile_));
+  }
+  SwapResults(&results);
+}
+
+void DriveQuickAccessProvider::AppListShown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!drive_service_)
+    return;
+  GetQuickAccessItems();
+}
+
+void DriveQuickAccessProvider::GetQuickAccessItems() {
   drive_service_->GetQuickAccessItems(
       kMaxItems,
       base::BindOnce(&DriveQuickAccessProvider::OnGetQuickAccessItems,
@@ -40,18 +72,12 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
 void DriveQuickAccessProvider::OnGetQuickAccessItems(
     drive::FileError error,
     std::vector<drive::QuickAccessItem> drive_results) {
-  // Results are launched via DriveFS, so DriveFS must be mounted.
-  if (!drive_service_ || !drive_service_->IsMounted())
-    return;
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug.com/959679): Add score distribution metrics.
-  SearchProvider::Results results;
-  for (const auto& result : drive_results) {
-    results.emplace_back(std::make_unique<DriveQuickAccessResult>(
-        drive_service_->GetMountPointPath().Append(result.path),
-        result.confidence, profile_));
-  }
-  SwapResults(&results);
+  // An empty |drive_results| is likely caused by a failed call to ItemSuggest,
+  // so don't replace the cache.
+  if (!drive_results.empty())
+    results_cache_ = std::move(drive_results);
 }
 
 }  // namespace app_list

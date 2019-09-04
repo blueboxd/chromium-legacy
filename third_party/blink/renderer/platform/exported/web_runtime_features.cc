@@ -168,6 +168,10 @@ void WebRuntimeFeatures::EnableDatabase(bool enable) {
   RuntimeEnabledFeatures::SetDatabaseEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableDecodeJpeg420ImagesToYUV(bool enable) {
+  RuntimeEnabledFeatures::SetDecodeJpeg420ImagesToYUVEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(bool enable) {
   RuntimeEnabledFeatures::SetDecodeLossyWebPImagesToYUVEnabled(enable);
 }
@@ -607,6 +611,10 @@ void WebRuntimeFeatures::EnableExperimentalProductivityFeatures(bool enable) {
 
 void WebRuntimeFeatures::EnableDisplayCutoutAPI(bool enable) {
   RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableDocumentPolicy(bool enable) {
+  RuntimeEnabledFeatures::SetDocumentPolicyEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableAutoplayIgnoresWebAudio(bool enable) {

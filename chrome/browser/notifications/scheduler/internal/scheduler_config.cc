@@ -26,10 +26,6 @@ constexpr base::TimeDelta kDefaultDimissDuration = base::TimeDelta::FromDays(7);
 constexpr base::TimeDelta kDefaultBackgroundTaskWindowDuration =
     base::TimeDelta::FromHours(1);
 
-// Default randomized time window to distribute load from user actions.
-constexpr base::TimeDelta kDefaultBackgroundTaskMinInterval =
-    base::TimeDelta::FromMinutes(10);
-
 // static
 std::unique_ptr<SchedulerConfig> SchedulerConfig::Create() {
   return std::make_unique<SchedulerConfig>();
@@ -44,8 +40,7 @@ SchedulerConfig::SchedulerConfig()
       suppression_duration(kDefaultSuppressionDuration),
       dismiss_count(3),
       dismiss_duration(kDefaultDimissDuration),
-      background_task_window_duration(kDefaultBackgroundTaskWindowDuration),
-      background_task_min_interval(kDefaultBackgroundTaskMinInterval) {
+      background_task_window_duration(kDefaultBackgroundTaskWindowDuration) {
   // TODO(xingliu): Add constructor using finch data.
 }
 

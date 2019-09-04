@@ -30,6 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils.ErrorType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -60,6 +61,7 @@ public class CardUnmaskPrompt
     private final TextView mNewCardLink;
     private final TextView mErrorMessage;
     private final CheckBox mStoreLocallyCheckbox;
+    private final CheckBox mUseScreenlockCheckbox;
     private final ImageView mStoreLocallyTooltipIcon;
     private PopupWindow mStoreLocallyTooltipPopup;
     private final ViewGroup mControlsContainer;
@@ -99,8 +101,10 @@ public class CardUnmaskPrompt
          * @param month The value the user selected for expiration month, if any.
          * @param year The value the user selected for expiration month, if any.
          * @param shouldStoreLocally The state of the "Save locally?" checkbox at the time.
+         * @param enableFidoAuth The value the user selected for the use lockscreen checkbox.
          */
-        void onUserInput(String cvc, String month, String year, boolean shouldStoreLocally);
+        void onUserInput(String cvc, String month, String year, boolean shouldStoreLocally,
+                boolean enableFidoAuth);
 
         /**
          * Called when the "New card?" link has been clicked.
@@ -161,6 +165,13 @@ public class CardUnmaskPrompt
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(canStoreLocally && defaultToStoringLocally);
+        mUseScreenlockCheckbox = (CheckBox) v.findViewById(R.id.use_screenlock_checkbox);
+        if (canStoreLocally
+                || !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.AUTOFILL_CREDIT_CARD_AUTHENTICATION)) {
+            mUseScreenlockCheckbox.setVisibility(View.GONE);
+            mUseScreenlockCheckbox.setChecked(false);
+        }
         mStoreLocallyTooltipIcon = (ImageView) v.findViewById(R.id.store_locally_tooltip_icon);
         mStoreLocallyTooltipIcon.setOnClickListener(this);
         if (!canStoreLocally) v.findViewById(R.id.store_locally_container).setVisibility(View.GONE);
@@ -548,7 +559,8 @@ public class CardUnmaskPrompt
             mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
                     mMonthInput.getText().toString(),
                     Integer.toString(AutofillUiUtils.getFourDigitYear(mYearInput)),
-                    mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked());
+                    mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked(),
+                    mUseScreenlockCheckbox.isChecked());
         } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }

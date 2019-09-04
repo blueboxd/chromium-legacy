@@ -192,13 +192,13 @@ class BlobURLTest : public testing::Test {
     storage::MockBlobRegistryDelegate delegate;
     storage::BlobURLStoreImpl url_store(GetStorageContext(), &delegate);
 
-    blink::mojom::BlobPtr blob_ptr;
+    mojo::PendingRemote<blink::mojom::Blob> blob_remote;
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*GetHandleFromBuilder()),
-        MakeRequest(&blob_ptr));
+        blob_remote.InitWithNewPipeAndPassReceiver());
 
     base::RunLoop loop;
-    url_store.Register(std::move(blob_ptr), url, loop.QuitClosure());
+    url_store.Register(std::move(blob_remote), url, loop.QuitClosure());
     loop.Run();
 
     network::mojom::URLLoaderFactoryPtr url_loader_factory;

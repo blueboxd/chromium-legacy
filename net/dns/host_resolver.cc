@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_util.h"
@@ -133,7 +134,8 @@ HostResolver::CreateStandaloneContextResolver(
 
   return std::make_unique<ContextHostResolver>(
       std::make_unique<HostResolverManager>(
-          std::move(options).value_or(ManagerOptions()), net_log),
+          std::move(options).value_or(ManagerOptions()),
+          NetworkChangeNotifier::GetSystemDnsConfigNotifier(), net_log),
       std::move(cache));
 }
 

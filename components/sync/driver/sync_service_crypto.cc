@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
@@ -151,9 +152,7 @@ base::Time SyncServiceCrypto::GetExplicitPassphraseTime() const {
 
 bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_.cached_passphrase_type ==
-             PassphraseType::FROZEN_IMPLICIT_PASSPHRASE ||
-         state_.cached_passphrase_type == PassphraseType::CUSTOM_PASSPHRASE;
+  return IsExplicitPassphrase(state_.cached_passphrase_type);
 }
 
 void SyncServiceCrypto::EnableEncryptEverything() {
@@ -195,8 +194,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
 
   // SetEncryptionPassphrase() should never be called if we are currently
   // encrypted with an explicit passphrase.
-  DCHECK(state_.cached_passphrase_type == PassphraseType::KEYSTORE_PASSPHRASE ||
-         state_.cached_passphrase_type == PassphraseType::IMPLICIT_PASSPHRASE);
+  DCHECK(!IsExplicitPassphrase(state_.cached_passphrase_type));
 
   state_.engine->SetEncryptionPassphrase(passphrase);
 }

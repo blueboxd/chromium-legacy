@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -30,6 +31,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/system_dns_config_change_notifier.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -85,7 +87,7 @@ class URLRequestContext;
 class NET_EXPORT HostResolverManager
     : public NetworkChangeNotifier::IPAddressObserver,
       public NetworkChangeNotifier::ConnectionTypeObserver,
-      public NetworkChangeNotifier::DNSObserver {
+      public SystemDnsConfigChangeNotifier::Observer {
  public:
   using MdnsListener = HostResolver::MdnsListener;
   using ResolveHostRequest = HostResolver::ResolveHostRequest;
@@ -110,8 +112,10 @@ class NET_EXPORT HostResolverManager
   // the resolver will run at once. This upper-bounds the total number of
   // outstanding DNS transactions (not counting retransmissions and retries).
   //
-  // |net_log| must remain valid for the life of the HostResolverManager.
+  // |net_log| and |system_dns_config_notifier|, if non-null, must remain valid
+  // for the life of the HostResolverManager.
   HostResolverManager(const HostResolver::ManagerOptions& options,
+                      SystemDnsConfigChangeNotifier* system_dns_config_notifier,
                       NetLog* net_log);
 
   // If any completion callbacks are pending when the resolver is destroyed,
@@ -427,9 +431,8 @@ class NET_EXPORT HostResolverManager
   void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) override;
 
-  // NetworkChangeNotifier::DNSObserver:
-  void OnDNSChanged() override;
-  void OnInitialDNSConfigRead() override;
+  // SystemDnsConfigChangeNotifier::Observer:
+  void OnSystemDnsConfigChanged(base::Optional<DnsConfig> config) override;
 
   void UpdateJobsForChangedConfig();
 
@@ -464,6 +467,8 @@ class NET_EXPORT HostResolverManager
 
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;
+
+  SystemDnsConfigChangeNotifier* system_dns_config_notifier_;
 
   // False if IPv6 should not be attempted and assumed unreachable when on a
   // WiFi connection. See https://crbug.com/696569 for further context.

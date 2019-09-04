@@ -30,7 +30,6 @@
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
-#include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -104,7 +103,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_coordinator_service.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
@@ -138,6 +136,7 @@
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -1522,16 +1521,10 @@ void BrowserMainLoop::InitializeMojo() {
 
   // Registers the browser process as a memory-instrumentation client, so
   // that data for the browser process will be available in memory dumps.
-  mojo::PendingRemote<memory_instrumentation::mojom::Coordinator> coordinator;
-  mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess> process;
-  auto process_receiver = process.InitWithNewPipeAndPassReceiver();
-  GetMemoryInstrumentationCoordinatorController()->RegisterClientProcess(
-      coordinator.InitWithNewPipeAndPassReceiver(), std::move(process),
-      memory_instrumentation::mojom::ProcessType::BROWSER,
-      base::GetCurrentProcId(), /*service_name=*/base::nullopt);
-  memory_instrumentation::ClientProcessImpl::CreateInstance(
-      std::move(process_receiver), std::move(coordinator),
-      /*is_browser_process=*/true);
+  memory_instrumentation::ClientProcessImpl::Config config(
+      GetSystemConnector(), resource_coordinator::mojom::kServiceName,
+      memory_instrumentation::mojom::ProcessType::BROWSER);
+  memory_instrumentation::ClientProcessImpl::CreateInstance(config);
 
   // Start startup tracing through TracingController's interface. TraceLog has
   // been enabled in content_main_runner where threads are not available. Now We

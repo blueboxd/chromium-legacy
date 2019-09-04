@@ -133,6 +133,17 @@
         display: none;
       }
 
+      /* The default implementation of the actionable list item makes the entire
+      list item row a button such that clicking anywhere will activate the
+      action of the list item. The input method list behaves differently in that
+      clicking the list item sets that item as the input method, and the
+      selected list item should not react to selection after being selected.
+      Set the cursor to auto to override the default implementation which would
+      otherwise make the entire row appear clickable when it is not. */
+      div.list-item.selected[actionable] {
+        cursor: auto;
+      }
+
       #restartButton {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
@@ -195,9 +206,11 @@
         <template is="dom-repeat"
             items="[[languages.inputMethods.enabled]]">
           <div class$="list-item [[getInputMethodItemClass_(
-                  item.id, languages.inputMethods.currentId)]]"
-              on-click="onInputMethodTap_" on-keypress="onInputMethodTap_"
-              actionable tabindex="0">
+              item.id, languages.inputMethods.currentId)]]"
+              actionable on-click="onInputMethodTap_"
+              on-keypress="onInputMethodTap_" on-mousedown="onMouseDown_"
+              tabindex$="[[getInputMethodTabIndex_(
+                  item.id, languages.inputMethods.currentId)]]">
             <div class="start">
               <div class="display-name">[[item.displayName]]</div>
               <div class="explain-selected"

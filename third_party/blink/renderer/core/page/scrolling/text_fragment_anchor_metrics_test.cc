@@ -356,11 +356,6 @@ TEST_P(TextFragmentRelatedMetricTest, DoubleHashUseCounter) {
   const int kUncounted = 0;
   const int kCounted = 1;
 
-  // When the TextFragmentAnchors feature is on, we should avoid counting a
-  // ##targetText directive as a use of double-hash in this case. When it's
-  // off, we expect to count it.
-  const int kCountedOnlyIfDisabled = !GetParam() ? kCounted : kUncounted;
-
   Vector<std::pair<String, int>> test_cases = {
       {"", kUncounted},
       {"#element", kUncounted},
@@ -371,10 +366,14 @@ TEST_P(TextFragmentRelatedMetricTest, DoubleHashUseCounter) {
       {"#element#", kCounted},
       {"#foo#bar#", kCounted},
       {"#foo%23", kUncounted},
-      {"#element##targetText=doesntexist", kCountedOnlyIfDisabled},
-      {"#element##targetText=doesntexist#", kCountedOnlyIfDisabled},
-      {"#element##targetText=page", kCountedOnlyIfDisabled},
-      {"#element##targetText=page#", kCountedOnlyIfDisabled},
+      {"#element##targetText=doesntexist", kUncounted},
+      {"#element##targetText=doesntexist#", kUncounted},
+      {"#element##targetText=page", kUncounted},
+      {"#element##targetText=page#", kUncounted},
+      {"##targetText=doesntexist", kUncounted},
+      {"##targetText=doesntexist#", kUncounted},
+      {"##targetText=page", kUncounted},
+      {"##targetText=page#", kUncounted},
       {"#targetText=doesntexist", kUncounted},
       {"#targetText=page", kUncounted}};
 

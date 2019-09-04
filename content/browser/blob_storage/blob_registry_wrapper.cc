@@ -73,14 +73,6 @@ void BlobRegistryWrapper::Bind(
                        std::make_unique<BindingDelegate>(process_id));
 }
 
-void BlobRegistryWrapper::BindForRequest(
-    int process_id,
-    blink::mojom::BlobRegistryRequest request) {
-  // Implicit conversion |request| to
-  // mojo::PendingReceiver<blink::mojom::BlobRegistry>.
-  Bind(process_id, std::move(request));
-}
-
 BlobRegistryWrapper::~BlobRegistryWrapper() {}
 
 void BlobRegistryWrapper::InitializeOnIOThread(

@@ -27,29 +27,26 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-
-#include <memory>
-
-namespace network {
-namespace mojom {
-enum class IPAddressSpace : int32_t;
-}
-}  // namespace network
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
 class ContentSecurityPolicy;
 class FeaturePolicy;
+class PolicyValue;
 class SecurityOrigin;
 struct ParsedFeaturePolicyDeclaration;
 
@@ -59,11 +56,6 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 // enabled.
 enum class ReportOptions { kReportOnFailure, kDoNotReport };
 enum class FeatureEnabledState { kDisabled, kReportOnly, kEnabled };
-
-namespace mojom {
-enum class FeaturePolicyDisposition : int32_t;
-enum class FeaturePolicyFeature : int32_t;
-}
 
 // Defines the security properties (such as the security origin, content
 // security policy, and other restrictions) of an environment in which

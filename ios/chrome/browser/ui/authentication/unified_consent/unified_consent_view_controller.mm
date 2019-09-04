@@ -25,6 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kAdvancedSigninSettingsLinkIdentifier =
+    @"AdvancedSigninSettingsLinkIdentifier";
 NSString* const kUnifiedConsentScrollViewIdentifier =
     @"kUnifiedConsentScrollViewIdentifier";
 
@@ -392,7 +394,10 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
                                             }];
     [self.settingsLinkController
         setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
-    [self.settingsLinkController addLinkWithRange:range url:URL];
+    [self.settingsLinkController
+        addLinkWithRange:range
+                     url:URL
+         accessibilityID:kAdvancedSigninSettingsLinkIdentifier];
   }
 }
 

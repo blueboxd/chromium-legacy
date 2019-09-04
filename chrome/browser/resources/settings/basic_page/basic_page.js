@@ -12,6 +12,7 @@ Polymer({
   behaviors: [
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
+    PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -88,6 +89,13 @@ Polymer({
     showSecondaryUserBanner_: {
       type: Boolean,
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
+    },
+
+    /** @private */
+    showOSSettingsBanner_: {
+      type: Boolean,
+      computed: 'computeShowOSSettingsBanner_(' +
+          'prefs.settings.cros.show_os_banner.value, currentRoute_)',
     },
     // </if>
 
@@ -217,6 +225,28 @@ Polymer({
   computeShowSecondaryUserBanner_: function() {
     return !this.hasExpandedSection_ &&
         loadTimeData.getBoolean('isSecondaryUser');
+  },
+
+  /**
+   * @return {boolean|undefined}
+   * @private
+   */
+  computeShowOSSettingsBanner_: function() {
+    // this.prefs is implicitly used by this.getPref() below.
+    if (!this.prefs || !this.currentRoute_) {
+      return;
+    }
+    const showPref = /** @type {boolean} */ (
+        this.getPref('settings.cros.show_os_banner').value);
+
+    // Banner only shows on the main page because direct navigations to a
+    // sub-page are unlikely to be due to a user looking for an OS setting.
+    return showPref && !this.currentRoute_.isSubpage();
+  },
+
+  /** @private */
+  onOSSettingsBannerClosed_: function() {
+    this.setPrefValue('settings.cros.show_os_banner', false);
   },
   // </if>
 

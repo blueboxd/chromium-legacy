@@ -3266,7 +3266,7 @@ TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
   EXPECT_EQ(0, observer.metrics_change_count());
 }
 
-// Tests that shelf bounds is updated properly after overview animation.
+// Tests that shelf bounds are updated properly after overview animation.
 TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   // Run overview animations.
   ui::ScopedAnimationDurationScaleMode regular_animations(
@@ -3277,6 +3277,13 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   const gfx::Rect bottom_shelf_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
 
+  const int shelf_size = bottom_shelf_bounds.height();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Rect left_shelf_bounds =
+      gfx::Rect(display_bounds.x(), display_bounds.y(), shelf_size,
+                display_bounds.height());
+
   // Change alignment during overview enter animation.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   {
@@ -3285,7 +3292,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
     waiter.Wait();
   }
-  EXPECT_NE(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+  ShelfAnimationWaiter(left_shelf_bounds).WaitTillDoneAnimating();
+  EXPECT_EQ(left_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
 
   // Change alignment during overview exit animation.
   {
@@ -3294,7 +3302,54 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
     waiter.Wait();
   }
+  ShelfAnimationWaiter(bottom_shelf_bounds).WaitTillDoneAnimating();
   EXPECT_EQ(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+}
+
+// Tests that the shelf on a second display is properly centered.
+TEST_F(ShelfLayoutManagerTest, ShelfRemainsCenteredOnSecondDisplay) {
+  // Create two displays.
+  UpdateDisplay("600x400,1000x700");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(2U, root_windows.size());
+
+  Shelf* shelf_1 = Shelf::ForWindow(root_windows[0]);
+  Shelf* shelf_2 = Shelf::ForWindow(root_windows[1]);
+  EXPECT_NE(shelf_1, shelf_2);
+  EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
+            shelf_2->GetWindow()->GetRootWindow());
+
+  ShelfView* shelf_view_1 = shelf_1->GetShelfViewForTesting();
+  ShelfView* shelf_view_2 = shelf_2->GetShelfViewForTesting();
+
+  const display::Display display_1 =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  const display::Display display_2 =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+  EXPECT_NE(display_1, display_2);
+
+  // Add an app shortcut.
+  ShelfController* controller = Shell::Get()->shelf_controller();
+  const std::string app_id("app_id");
+  ShelfItem item;
+  item.type = TYPE_PINNED_APP;
+  item.id = ShelfID(app_id);
+  controller->model()->Add(item);
+  gfx::Point app_center_1 = shelf_1->GetShelfViewForTesting()
+                                ->first_visible_button_for_testing()
+                                ->bounds()
+                                .CenterPoint();
+  views::View::ConvertPointToScreen(shelf_view_1, &app_center_1);
+
+  gfx::Point app_center_2 = shelf_2->GetShelfViewForTesting()
+                                ->first_visible_button_for_testing()
+                                ->bounds()
+                                .CenterPoint();
+  views::View::ConvertPointToScreen(shelf_view_2, &app_center_2);
+
+  // The app icon should be at the horizontal center of each display.
+  EXPECT_EQ(display_1.bounds().CenterPoint().x(), app_center_1.x());
+  EXPECT_EQ(display_2.bounds().CenterPoint().x(), app_center_2.x());
 }
 
 }  // namespace ash

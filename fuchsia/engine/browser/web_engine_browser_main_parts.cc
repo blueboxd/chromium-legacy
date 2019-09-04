@@ -10,12 +10,14 @@
 #include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/main_function_params.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_screen.h"
 #include "fuchsia/engine/common.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 
@@ -41,6 +43,17 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   }
 
   display::Screen::SetScreenInstance(screen_.get());
+
+  // If Vulkan is not enabled then disable hardware acceleration. Otherwise gpu
+  // process will be restarted several times trying to initialize GL before
+  // falling back to software compositing.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseVulkan)) {
+    content::GpuDataManager* gpu_data_manager =
+        content::GpuDataManager::GetInstance();
+    DCHECK(gpu_data_manager);
+    gpu_data_manager->DisableHardwareAcceleration();
+  }
 
   DCHECK(!browser_context_);
   browser_context_ = std::make_unique<WebEngineBrowserContext>(

@@ -650,9 +650,7 @@ void ShelfLayoutManager::OnOverviewModeStarting() {
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   suspend_visibility_update_ = false;
-  UpdateVisibilityState();
-  LayoutShelf();
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  OnVisibilityUpdateResumed(/*animate=*/true);
 }
 
 void ShelfLayoutManager::OnOverviewModeEnding(
@@ -662,9 +660,7 @@ void ShelfLayoutManager::OnOverviewModeEnding(
 
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
   suspend_visibility_update_ = false;
-  UpdateVisibilityState();
-  LayoutShelf();
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  OnVisibilityUpdateResumed(/*animate=*/true);
 }
 
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
@@ -782,9 +778,7 @@ void ShelfLayoutManager::OnLocaleChanged() {
 void ShelfLayoutManager::OnScreenCopiedBeforeRotation() {
   if (suspend_visibility_update_) {
     suspend_visibility_update_ = false;
-    UpdateVisibilityState();
-    LayoutShelf();
-    MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+    OnVisibilityUpdateResumed(/*animate=*/false);
   }
 }
 
@@ -978,8 +972,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       status_animation_setter.AddObserver(observer);
 
     gfx::Rect shelf_bounds = target_bounds.shelf_bounds;
-    ::wm::ConvertRectToScreen(shelf_widget_->GetNativeWindow()->parent(),
-                              &shelf_bounds);
     shelf_widget_->SetBounds(shelf_bounds);
 
     GetLayer(nav_widget)->SetOpacity(target_bounds.opacity);
@@ -999,23 +991,17 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
 
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
     status_bounds.Offset(target_bounds.shelf_bounds.OffsetFromOrigin());
-    ::wm::ConvertRectToScreen(status_widget->GetNativeWindow()->parent(),
-                              &status_bounds);
     status_widget->SetBounds(status_bounds);
 
     gfx::Vector2d nav_offset = target_bounds.shelf_bounds.OffsetFromOrigin();
     gfx::Rect nav_bounds = target_bounds.nav_bounds_in_shelf;
     nav_bounds.Offset(nav_offset);
-    ::wm::ConvertRectToScreen(nav_widget->GetNativeWindow()->parent(),
-                              &nav_bounds);
     nav_widget->SetBounds(nav_bounds);
 
     gfx::Vector2d hotseat_offset =
         target_bounds.shelf_bounds.OffsetFromOrigin();
     gfx::Rect hotseat_bounds = target_bounds.hotseat_bounds_in_shelf;
     hotseat_bounds.Offset(hotseat_offset);
-    ::wm::ConvertRectToScreen(hotseat_widget->GetNativeWindow()->parent(),
-                              &hotseat_bounds);
     hotseat_widget->SetBounds(hotseat_bounds);
 
     // Do not update the work area when the alignment changes to BOTTOM_LOCKED
@@ -1906,6 +1892,19 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
         AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
   }
   previous_workspace_window_state_ = current_workspace_window_state;
+}
+
+void ShelfLayoutManager::OnVisibilityUpdateResumed(bool animate) {
+  DCHECK(!suspend_visibility_update_);
+
+  UpdateVisibilityState();
+
+  TargetBounds target_bounds;
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  UpdateBoundsAndOpacity(target_bounds, animate, nullptr);
+
+  MaybeUpdateShelfBackground(animate ? AnimationChangeType::ANIMATE
+                                     : AnimationChangeType::IMMEDIATE);
 }
 
 }  // namespace ash

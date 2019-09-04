@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -33,7 +34,7 @@ public class JsReplyProxy {
     public void postMessage(@NonNull final String message) {
         if (mNativeJsReplyProxy == 0) return;
         PostTask.runOrPostTask(UiThreadTaskTraits.USER_VISIBLE,
-                () -> nativePostMessage(mNativeJsReplyProxy, message));
+                () -> JsReplyProxyJni.get().postMessage(mNativeJsReplyProxy, message));
     }
 
     @CalledByNative
@@ -46,5 +47,8 @@ public class JsReplyProxy {
         mNativeJsReplyProxy = 0;
     }
 
-    private static native void nativePostMessage(long nativeJsReplyProxy, String message);
+    @NativeMethods
+    interface Natives {
+        void postMessage(long nativeJsReplyProxy, String message);
+    }
 }

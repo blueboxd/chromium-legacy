@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
+class Browser;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class BrowserContainerViewController;
@@ -41,8 +42,8 @@ class ChromeBrowserState;
 // webUsageSuspended property for this BVC will be based on |model|, and future
 // changes to |model|'s suspension state should be made through this BVC
 // instead of directly on the model.
-- (instancetype)initWithTabModel:(TabModel*)model
-                      browserState:(ios::ChromeBrowserState*)browserState
+// TODO(crbug.com/992582): Remove references to model objects from this class.
+- (instancetype)initWithBrowser:(Browser*)browser
                  dependencyFactory:
                      (BrowserViewControllerDependencyFactory*)factory
         applicationCommandEndpoint:
@@ -75,10 +76,10 @@ class ChromeBrowserState;
 // Returns whether or not text to speech is playing.
 @property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
 
-// Returns the TabModel passed to the initializer.
+// The Browser's TabModel.
 @property(nonatomic, weak, readonly) TabModel* tabModel;
 
-// Returns the ios::ChromeBrowserState passed to the initializer.
+// The Browser's ChromeBrowserState.
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 
 // Whether the receiver is currently the primary BVC.

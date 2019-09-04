@@ -82,16 +82,21 @@ const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if defined(ON_FOCUS_PING_ENABLED) || \
+    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 safe_browsing::PasswordProtectionService*
 StubPasswordManagerClient::GetPasswordProtectionService() const {
   return nullptr;
 }
+#endif
 
+#if defined(ON_FOCUS_PING_ENABLED)
 void StubPasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {}
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
     const std::string& username,

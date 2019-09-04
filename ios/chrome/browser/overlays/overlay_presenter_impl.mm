@@ -107,6 +107,10 @@ void OverlayPresenterImpl::RemoveObserver(OverlayPresenterObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool OverlayPresenterImpl::IsShowingOverlayUI() const {
+  return presenting_;
+}
+
 #pragma mark - Private
 
 #pragma mark Accessors

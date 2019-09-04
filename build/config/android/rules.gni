@@ -2816,6 +2816,9 @@ if (enable_java_templates) {
         if (_enable_main_dex_list) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
+        if (!dcheck_always_on && (!defined(testonly) || !testonly)) {
+          proguard_configs += [ "//build/android/dcheck_is_off.flags" ]
+        }
         if (!_is_bundle_module) {
           proguard_mapping_path = _proguard_mapping_path
         }

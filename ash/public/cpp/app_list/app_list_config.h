@@ -125,6 +125,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int item_icon_in_folder_icon_dimension() const {
     return item_icon_in_folder_icon_dimension_;
   }
+  int item_icon_in_folder_icon_margin() const {
+    return item_icon_in_folder_icon_margin_;
+  }
   int folder_dropping_circle_radius() const {
     return folder_dropping_circle_radius_;
   }
@@ -337,6 +340,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The dimension of the item icon in folder icon.
   const int item_icon_in_folder_icon_dimension_;
+
+  // The margin between item icons inside a folder icon.
+  const int item_icon_in_folder_icon_margin_;
 
   // Radius of the circle, in which if entered, show folder dropping preview
   // UI.

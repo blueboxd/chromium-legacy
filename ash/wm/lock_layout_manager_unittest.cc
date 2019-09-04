@@ -373,7 +373,7 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
   // for the primary shelf, so it should not influence the screen bounds.
   window->SetBoundsInScreen(gfx::Rect(0, 0, 30, 40), GetSecondaryDisplay());
 
-  target_bounds = gfx::Rect(300, 0, 400, 500);
+  target_bounds = gfx::Rect(600, 0, 400, 500);
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(target_bounds, window->GetBoundsInScreen());
 }

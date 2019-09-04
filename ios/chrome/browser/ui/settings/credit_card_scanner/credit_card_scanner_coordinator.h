@@ -7,9 +7,28 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol CreditCardConsumer;
+
 // The coordinator for the Credit Card Scanner screen.
 API_AVAILABLE(ios(13.0))
 @interface CreditCardScannerCoordinator : ChromeCoordinator
+
+// Initializes with the Credit Card consumer.
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                        creditCardConsumer:
+                            (id<CreditCardConsumer>)creditCardConsumer
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 @end
 

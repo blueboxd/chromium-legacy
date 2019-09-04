@@ -1563,11 +1563,17 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the sign-in screen.">
         Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
       </message>
+      <message name="IDS_ASH_LOGIN_POD_SMART_CARD_PIN_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the security token PIN input field of a user pod on the sign-in screen.">
+        Smart card PIN for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
+      </message>
       <message name="IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the submit button on login screen.">
         Submit
       </message>
       <message name="IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the back button on login screen.">
         Back
+      </message>
+      <message name="IDS_ASH_LOGIN_START_SMART_CARD_AUTH_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the button that starts the smart card based user authentication.">
+        Sign in with smart card
       </message>
       <message name="IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the delete button of the PIN keyboard.">
         Delete

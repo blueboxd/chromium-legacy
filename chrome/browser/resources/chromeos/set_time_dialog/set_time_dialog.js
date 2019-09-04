@@ -318,7 +318,7 @@ Polymer({
   /**
    * Called when the done button is clicked. Child accounts need parental
    * approval to change time, which requires an extra step after the button is
-   * clicked. This method notifyies the dialog delegate to start the approval
+   * clicked. This method notifies the dialog delegate to start the approval
    * step, once the approval is granted the 'validation-complete' event is
    * triggered invoking saveAndClose_. For regular accounts, this step is
    * skipped and saveAndClose_ is called immediately after the button click.
@@ -331,7 +331,11 @@ Polymer({
   /** @private */
   saveAndClose_: function() {
     this.applyTime_();
-    this.browserProxy_.setTimezone(this.selectedTimezone_);
+    // Timezone change should only be applied when the UI displays timezone
+    // setting. Otherwise |selectedTimezone_| will be empty/invalid.
+    if (this.isTimezoneVisible_) {
+      this.browserProxy_.setTimezone(this.selectedTimezone_);
+    }
     this.browserProxy_.dialogClose();
   },
 });

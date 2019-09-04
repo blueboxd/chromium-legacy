@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Used by notification scheduler to display the notification in Android UI.
@@ -52,6 +53,18 @@ public class DisplayAgent {
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_ACTION_BUTTON_ID";
     private static final String EXTRA_SCHEDULER_CLIENT_TYPE =
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_SCHEDULER_CLIENT_TYPE ";
+
+    /**
+     * Contains icon info on the notification.
+     */
+    private static class IconBundle {
+        // TODO(hesen): Support Android resource ID.
+        public final Bitmap bitmap;
+
+        public IconBundle(Bitmap bitmap) {
+            this.bitmap = bitmap;
+        }
+    }
 
     /**
      * Contains button info on the notification.
@@ -74,14 +87,12 @@ public class DisplayAgent {
     private static class NotificationData {
         public final String title;
         public final String message;
-        public final Bitmap icon;
+        public HashMap<Integer /*@IconType*/, IconBundle> icons = new HashMap<>();
         public ArrayList<Button> buttons = new ArrayList<>();
 
-        private NotificationData(String title, String message, Bitmap icon) {
-            // TODO(xingliu): Populate custom data.
+        private NotificationData(String title, String message) {
             this.title = title;
             this.message = message;
-            this.icon = icon;
         }
     }
 
@@ -92,9 +103,14 @@ public class DisplayAgent {
     }
 
     @CalledByNative
-    private static NotificationData buildNotificationData(
-            String title, String message, Bitmap icon) {
-        return new NotificationData(title, message, icon);
+    private static void addIconWithBitmap(
+            NotificationData notificationData, @IconType int type, Bitmap bitmap) {
+        notificationData.icons.put(type, new IconBundle(bitmap));
+    }
+
+    @CalledByNative
+    private static NotificationData buildNotificationData(String title, String message) {
+        return new NotificationData(title, message);
     }
 
     /**
@@ -208,8 +224,12 @@ public class DisplayAgent {
         builder.setContentTitle(notificationData.title);
         builder.setContentText(notificationData.message);
 
-        // TODO(xingliu): Use the icon from native. Support big icon.
+        // TODO(hesen): Support setting small icon from native with Android resource Id.
         builder.setSmallIcon(R.drawable.ic_chrome);
+
+        if (notificationData.icons.containsKey(IconType.LARGE_ICON)) {
+            builder.setLargeIcon(notificationData.icons.get(IconType.LARGE_ICON).bitmap);
+        }
 
         // Default content click behavior.
         Intent contentIntent = buildIntent(

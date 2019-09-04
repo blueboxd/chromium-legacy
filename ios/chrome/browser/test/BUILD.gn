@@ -17,6 +17,7 @@ source_set("perf_test_support") {
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",

@@ -282,18 +282,8 @@ void DnsSession::SetProbeSuccess(unsigned doh_server_index, bool success) {
 
 void DnsSession::RecordRTT(unsigned server_index,
                            bool is_doh_server,
-                           bool is_probe,
                            base::TimeDelta rtt) {
   ServerStats* stats = GetServerStats(server_index, is_doh_server);
-  // If the histogram has not yet been populated beyond the initial seed values
-  // and this was a probe query, replace the seed values with a multiple of
-  // the probe's RTT.
-  if (is_probe && stats->rtt_histogram->TotalCount() == kNumSeeds) {
-    DCHECK(is_doh_server);
-    doh_server_stats_[server_index].first = std::make_unique<ServerStats>(
-        rtt * kDohProbeTimeMultiplier, rtt_buckets_.Pointer());
-    return;
-  }
 
   // Jacobson/Karels algorithm for TCP.
   // Using parameters: alpha = 1/8, delta = 1/4, beta = 4

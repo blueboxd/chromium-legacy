@@ -694,9 +694,25 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void CancelAllRequests(int net_error);
   void NotifyRequestsOfConfirmation(int net_error);
 
-  ProbingResult StartProbeNetwork(NetworkChangeNotifier::NetworkHandle network,
+  // Probe on <network, peer_address>.
+  // If <network, peer_addres> is identical to the current path, the probe
+  // is sent on a different port.
+  ProbingResult StartProbing(NetworkChangeNotifier::NetworkHandle network,
+                             const quic::QuicSocketAddress& peer_address,
+                             const NetLogWithSource& migration_net_log);
+
+  // Perform a few checks before StartProbing. If any of those checks fails,
+  // StartProbing will be skipped.
+  ProbingResult MaybeStartProbing(NetworkChangeNotifier::NetworkHandle network,
                                   const quic::QuicSocketAddress& peer_address,
                                   const NetLogWithSource& migration_net_log);
+
+  // Helper method to perform a few checks and initiate connection migration
+  // attempt when path degrading is detected.
+  void MaybeMigrateToAlternateNetworkOnPathDegrading();
+
+  // Helper method to initiate a port migration on path degrading is detected.
+  void MaybeMigrateToDifferentPortOnPathDegrading();
 
   // Called when there is only one possible working network: |network|, If any
   // error encountered, this session will be closed.
@@ -706,18 +722,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   //  - If now on the default network, cancel timer to migrate back to default
   //    network.
   void MigrateNetworkImmediately(NetworkChangeNotifier::NetworkHandle network);
-
-  // Called when probe |network| succeeded.
-  void OnProbeNetworkSucceeded(
-      NetworkChangeNotifier::NetworkHandle network,
-      const quic::QuicSocketAddress& peer_address,
-      const quic::QuicSocketAddress& self_address,
-      std::unique_ptr<DatagramClientSocket> socket,
-      std::unique_ptr<QuicChromiumPacketWriter> writer,
-      std::unique_ptr<QuicChromiumPacketReader> reader);
-  // Called when probe |network| failed.
-  void OnProbeNetworkFailed(NetworkChangeNotifier::NetworkHandle network,
-                            const quic::QuicSocketAddress& peer_address);
 
   void StartMigrateBackToDefaultNetworkTimer(base::TimeDelta delay);
   void CancelMigrateBackToDefaultNetworkTimer();

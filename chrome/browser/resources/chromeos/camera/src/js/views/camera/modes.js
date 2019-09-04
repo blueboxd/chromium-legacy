@@ -128,6 +128,7 @@ cca.views.camera.Modes = function(
       resolutionConfig: videoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, true),
       nextMode: 'photo-mode',
+      captureIntent: cros.mojom.CaptureIntent.VIDEO_RECORD,
     },
     'photo-mode': {
       captureFactory: () => new cca.views.camera.Photo(
@@ -136,6 +137,7 @@ cca.views.camera.Modes = function(
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'square-mode',
+      captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
     },
     'square-mode': {
       captureFactory: () => new cca.views.camera.Square(
@@ -144,6 +146,7 @@ cca.views.camera.Modes = function(
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'portrait-mode',
+      captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
     },
     'portrait-mode': {
       captureFactory: () => new cca.views.camera.Portrait(
@@ -159,6 +162,7 @@ cca.views.camera.Modes = function(
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'photo-mode',
+      captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
     },
   };
 
@@ -288,6 +292,15 @@ cca.views.camera.Modes.prototype.getResolutionCandidatesV1 = function(
     mode, deviceId) {
   return this.allModes_[mode].v1Config(deviceId).map(
       (constraints) => [null, [constraints]]);
+};
+
+/**
+ * Gets capture intent for the given mode.
+ * @param {string} mode
+ * @return {cros.mojom.CaptureIntent} Capture intent for the given mode.
+ */
+cca.views.camera.Modes.prototype.getCaptureIntent = function(mode) {
+  return this.allModes_[mode].captureIntent;
 };
 
 /**

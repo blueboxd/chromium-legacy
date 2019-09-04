@@ -130,9 +130,9 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 class NavigationURLLoaderImplTest : public testing::Test {
  public:
   NavigationURLLoaderImplTest()
-      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        network_change_notifier_(
-            net::test::MockNetworkChangeNotifier::Create()) {
+      : network_change_notifier_(
+            net::test::MockNetworkChangeNotifier::Create()),
+        task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
     // Because the network service is enabled we need a system Connector or
     // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
@@ -295,10 +295,10 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
  protected:
-  BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       network_change_notifier_;
+  BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };

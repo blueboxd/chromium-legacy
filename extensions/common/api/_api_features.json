@@ -146,21 +146,6 @@
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"]
   },
-  "declarativeNetRequest.addDynamicRules": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
-  "declarativeNetRequest.removeDynamicRules": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
-  "declarativeNetRequest.getDynamicRules": {
-    "dependencies": ["permission:declarativeNetRequest"],
-    "contexts": ["blessed_extension"],
-    "channel": "trunk"
-  },
   "declarativeNetRequest.getMatchedRules": {
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"],
@@ -217,7 +202,8 @@
   },
   "fileSystem": {
     "dependencies": ["permission:fileSystem"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "guestViewInternal": [
     {
@@ -271,7 +257,6 @@
   "management": [{
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": false,
     "default_parent": true
   }, {
     "channel": "stable",
@@ -425,12 +410,14 @@
   },
   "printerProvider": {
     "dependencies": ["permission:printerProvider"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "printerProviderInternal": {
     "internal": true,
     "dependencies": ["permission:printerProvider"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "runtime": {
     "channel": "stable",
@@ -443,8 +430,10 @@
     "contexts": [
       "blessed_extension",
       "lock_screen_extension"
-    ],
-    "disallow_for_service_workers": false
+    ]
+  },
+  "runtime.getBackgroundPage": {
+    "disallow_for_service_workers": true
   },
   "runtime.getManifest": {
     "contexts": [
@@ -464,13 +453,11 @@
       "unblessed_extension",
       "web_page"
     ],
-    "disallow_for_service_workers": false,
     "matches": ["<all_urls>"]
   },
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": false
+    "contexts": ["blessed_extension"]
   },
   "runtime.getURL": {
     "contexts": [
@@ -478,8 +465,7 @@
       "lock_screen_extension",
       "unblessed_extension",
       "content_script"
-    ],
-    "disallow_for_service_workers": false
+    ]
   },
   "runtime.id": {
     "contexts": [
@@ -487,8 +473,7 @@
       "lock_screen_extension",
       "unblessed_extension",
       "content_script"
-    ],
-    "disallow_for_service_workers": false
+    ]
   },
   "runtime.lastError": {
     "contexts": "all",
@@ -501,8 +486,7 @@
       "lock_screen_extension",
       "unblessed_extension",
       "content_script"
-    ],
-    "disallow_for_service_workers": false
+    ]
   },
   "runtime.onConnectNative": {
     "dependencies": ["permission:nativeMessaging"],
@@ -514,8 +498,7 @@
       "lock_screen_extension",
       "unblessed_extension",
       "content_script"
-    ],
-    "disallow_for_service_workers": false
+    ]
   },
   "runtime.sendMessage": {
     // Everything except WebUI.
@@ -527,13 +510,11 @@
       "unblessed_extension",
       "web_page"
     ],
-    "disallow_for_service_workers": false,
     "matches": ["<all_urls>"]
   },
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": false
+    "contexts": ["blessed_extension"]
   },
   "serial": {
     "dependencies": ["permission:serial"],
@@ -557,8 +538,7 @@
   },
   "storage": {
     "dependencies": ["permission:storage"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
-    "disallow_for_service_workers": false
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],
@@ -566,7 +546,8 @@
   },
   "system.display": [{
     "dependencies": ["permission:system.display"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   }, {
     "channel": "stable",
     "contexts": ["webui"],
@@ -607,8 +588,7 @@
       "content_script",
       "lock_screen_extension",
       "unblessed_extension"
-    ],
-    "disallow_for_service_workers": false
+    ]
   }, {
     "channel": "stable",
     "contexts": ["webui"],
@@ -637,14 +617,12 @@
   },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
-    "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": false
+    "contexts": ["blessed_extension"]
   },
   "webRequestInternal": [{
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension"],
-    "disallow_for_service_workers": false
+    "contexts": ["blessed_extension"]
   }, {
     // webview uses webRequestInternal API.
     "channel": "stable",

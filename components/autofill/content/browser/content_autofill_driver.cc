@@ -41,7 +41,8 @@ ContentAutofillDriver::ContentAutofillDriver(
     AutofillProvider* provider)
     : render_frame_host_(render_frame_host),
       autofill_manager_(nullptr),
-      key_press_handler_manager_(this) {
+      key_press_handler_manager_(this),
+      log_manager_(client->GetLogManager()) {
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
@@ -332,7 +333,8 @@ void ContentAutofillDriver::RemoveHandler(
 }
 
 void ContentAutofillDriver::SetAutofillProvider(AutofillProvider* provider) {
-  autofill_handler_ = std::make_unique<AutofillHandlerProxy>(this, provider);
+  autofill_handler_ =
+      std::make_unique<AutofillHandlerProxy>(this, log_manager_, provider);
   GetAutofillAgent()->SetUserGestureRequired(false);
   GetAutofillAgent()->SetSecureContextRequired(true);
   GetAutofillAgent()->SetFocusRequiresScroll(false);

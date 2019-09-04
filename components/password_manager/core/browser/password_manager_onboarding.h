@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_ONBOARDING_H_
 
 #include "base/util/type_safety/strong_alias.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -13,8 +14,8 @@ class PrefService;
 
 namespace password_manager {
 
-using PasswordUpdateBool = util::StrongAlias<class IsPasswordUpdateTag, bool>;
-using BlacklistedBool = util::StrongAlias<class IsBlacklistedTag, bool>;
+using PasswordUpdateBool = util::StrongAlias<class PasswordUpdateBoolTag, bool>;
+using BlacklistedBool = util::StrongAlias<class BlacklistedBoolTag, bool>;
 
 // The onboarding won't be shown if there are this many
 // saved credentials or more.
@@ -68,13 +69,17 @@ void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
 
 // Return true if the password manager onboarding experience should be shown to
 // the user. Conditions (all must apply):
-//      1. The set of credentials is not blacklisted.
-//      2. We are dealing with a new set of credentials.
-//      3. |kPasswordManagerOnboardingState| is |kShouldShow|.
-//      4. The PasswordManagerOnboardingAndroid feature is enabled.
+//      1. The user is syncing passwords. This is a temporary cutoff to allow
+//         us to experiment with different strings talking about features
+//         available when syncing.
+//      2. The set of credentials is not blacklisted.
+//      3. We are dealing with a new set of credentials.
+//      4. |kPasswordManagerOnboardingState| is |kShouldShow|.
+//      5. The PasswordManagerOnboardingAndroid feature is enabled.
 bool ShouldShowOnboarding(PrefService* prefs,
                           PasswordUpdateBool is_password_update,
-                          BlacklistedBool is_blacklisted);
+                          BlacklistedBool is_blacklisted,
+                          SyncState sync_state);
 
 }  // namespace password_manager
 

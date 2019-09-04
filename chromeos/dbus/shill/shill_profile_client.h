@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "chromeos/dbus/shill/fake_shill_simulated_result.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
 namespace base {
@@ -88,6 +89,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillProfileClient {
 
     // Remove all profile entries.
     virtual void ClearProfiles() = 0;
+
+    // Makes DeleteEntry succeed, fail, or timeout.
+    virtual void SetSimulateDeleteResult(
+        FakeShillSimulatedResult delete_result) = 0;
 
    protected:
     virtual ~TestInterface() {}

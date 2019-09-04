@@ -936,7 +936,7 @@ class DnsOverHttpsProbeRunner {
     // the ServerStats have not been updated yet.
     session_->RecordServerSuccess(doh_server_index, true /* is_doh_server */);
     session_->RecordRTT(doh_server_index, true /* is_doh_server */,
-                        true /* is_probe */, base::TimeTicks::Now() - start);
+                        base::TimeTicks::Now() - start);
     session_->SetProbeSuccess(doh_server_index, true /* success */);
     probe_stats_[doh_server_index] = nullptr;
   }
@@ -1263,7 +1263,7 @@ class DnsTransactionImpl : public DnsTransaction,
     const DnsAttempt* attempt = attempts_[attempt_number].get();
     if (record_rtt && attempt->GetResponse()) {
       session_->RecordRTT(attempt->server_index(), secure_ /* is_doh_server */,
-                          false /* is_probe */, base::TimeTicks::Now() - start);
+                          base::TimeTicks::Now() - start);
     }
     if (callback_.is_null())
       return;

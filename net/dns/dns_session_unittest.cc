@@ -275,9 +275,9 @@ TEST_F(DnsSessionTest, HistogramTimeoutLong) {
 // test for https://crbug.com/753568.
 TEST_F(DnsSessionTest, NegativeRtt) {
   Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  session_->RecordRTT(0, false /* is_doh_server */, false /* is_probe */,
+  session_->RecordRTT(0, false /* is_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1));
-  session_->RecordRTT(0, true /* is_doh_server */, false /* is_probe */,
+  session_->RecordRTT(0, true /* is_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1));
 }
 
@@ -321,21 +321,6 @@ TEST_F(DnsSessionTest, DohProbeNonConsecutiveFailures) {
 
   session_->RecordServerFailure(1, true /* is_doh_server */);
   EXPECT_FALSE(session_->HasAvailableDohServer());
-}
-
-TEST_F(DnsSessionTest, DohProbeRtt) {
-  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  base::TimeDelta probe_time = base::TimeDelta::FromMilliseconds(300);
-  session_->RecordRTT(1, true /* is_doh_server */, true /* is_probe */,
-                      probe_time);
-
-  // Only the DoH server that had the successful probe should have an updated
-  // histogram.
-  base::TimeDelta delta =
-      session_->NextDohTimeout(1) - probe_time * kDohProbeTimeMultiplier;
-  EXPECT_LE(delta.InMilliseconds(), 10);
-  delta = session_->NextDohTimeout(0) - config_.timeout;
-  EXPECT_GE(delta.InMilliseconds(), 10);
 }
 
 }  // namespace

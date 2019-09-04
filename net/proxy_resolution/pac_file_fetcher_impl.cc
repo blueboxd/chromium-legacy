@@ -269,11 +269,6 @@ void PacFileFetcherImpl::OnSSLCertificateError(URLRequest* request,
                                                const SSLInfo& ssl_info,
                                                bool fatal) {
   DCHECK_EQ(request, cur_request_.get());
-  // Revocation check failures are not fatal.
-  if (IsCertStatusMinorError(ssl_info.cert_status)) {
-    request->ContinueDespiteLastError();
-    return;
-  }
   LOG(WARNING) << "SSL certificate error when fetching PAC script, aborting.";
   // Certificate errors are in same space as net errors.
   result_code_ = net_error;

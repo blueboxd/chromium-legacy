@@ -267,8 +267,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   if (ssl_info.has_value() &&
       (url_loader_options_ &
        network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
-      net::IsCertStatusError(ssl_info->cert_status) &&
-      !net::IsCertStatusMinorError(ssl_info->cert_status)) {
+      net::IsCertStatusError(ssl_info->cert_status)) {
     ssl_info_ = ssl_info;
   }
 
@@ -369,8 +368,7 @@ void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
   if (ssl_info_) {
     DCHECK((url_loader_options_ &
             network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
-           net::IsCertStatusError(ssl_info_->cert_status) &&
-           !net::IsCertStatusMinorError(ssl_info_->cert_status));
+           net::IsCertStatusError(ssl_info_->cert_status));
     status.ssl_info = *ssl_info_;
   }
 

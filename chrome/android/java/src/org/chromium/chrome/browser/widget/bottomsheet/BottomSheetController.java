@@ -236,6 +236,7 @@ public class BottomSheetController implements Destroyable {
     @Override
     public void destroy() {
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
+        mBottomSheet.destroy();
     }
 
     /**

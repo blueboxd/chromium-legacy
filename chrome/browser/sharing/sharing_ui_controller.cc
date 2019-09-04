@@ -52,12 +52,18 @@ SharingUiController::SharingUiController(content::WebContents* web_contents)
 SharingUiController::~SharingUiController() = default;
 
 void SharingUiController::CloseDialog() {
-  if (dialog_)
-    dialog_->Hide();
+  if (!dialog_)
+    return;
 
-  // Treat the dialog as closed as the process of closing the native widget
-  // might be async.
-  dialog_ = nullptr;
+  dialog_->Hide();
+
+  // SharingDialog::Hide may close the dialog asynchronously, and therefore not
+  // call OnDialogClosed immediately. If that is the case, call OnDialogClosed
+  // now to notify subclasses and clear |dialog_|.
+  if (dialog_)
+    OnDialogClosed(dialog_);
+
+  DCHECK(!dialog_);
 }
 
 void SharingUiController::ShowNewDialog() {
@@ -126,7 +132,6 @@ void SharingUiController::UpdateAndShowDialog() {
   send_result_ = SharingSendMessageResult::kSuccessful;
 
   CloseDialog();
-  UpdateIcon();
   DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
                               weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }

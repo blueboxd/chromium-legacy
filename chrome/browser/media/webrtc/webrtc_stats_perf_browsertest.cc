@@ -13,9 +13,9 @@
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "media/base/media_switches.h"
 #include "testing/perf/perf_test.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -325,7 +325,8 @@ IN_PROC_BROWSER_TEST_F(
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_H264) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
-  if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
                     "Skipping WebRtcPerfBrowserTest."
                     "MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_"

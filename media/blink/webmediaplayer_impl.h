@@ -220,11 +220,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool SupportsOverlayFullscreenVideo() override;
   void EnteredFullscreen() override;
   void ExitedFullscreen() override;
-  void BecameDominantVisibleContent(bool isDominant) override;
+  void BecameDominantVisibleContent(bool is_dominant) override;
   void SetIsEffectivelyFullscreen(
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void OnHasNativeControlsChanged(bool) override;
-  void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
+  void OnDisplayTypeChanged(WebMediaPlayer::DisplayType display_type) override;
 
   // blink::WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;

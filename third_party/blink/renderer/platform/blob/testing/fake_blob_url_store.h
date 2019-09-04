@@ -7,6 +7,8 @@
 
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -16,7 +18,9 @@ namespace blink {
 // Mocked BlobURLStore implementation for testing.
 class FakeBlobURLStore : public mojom::blink::BlobURLStore {
  public:
-  void Register(mojom::blink::BlobPtr, const KURL&, RegisterCallback) override;
+  void Register(mojo::PendingRemote<mojom::blink::Blob>,
+                const KURL&,
+                RegisterCallback) override;
   void Revoke(const KURL&) override;
   void Resolve(const KURL&, ResolveCallback) override;
   void ResolveAsURLLoaderFactory(
@@ -26,7 +30,7 @@ class FakeBlobURLStore : public mojom::blink::BlobURLStore {
       const KURL&,
       mojo::PendingReceiver<mojom::blink::BlobURLToken>) override;
 
-  HashMap<KURL, mojom::blink::BlobPtr> registrations;
+  HashMap<KURL, mojo::Remote<mojom::blink::Blob>> registrations;
   Vector<KURL> revocations;
 };
 

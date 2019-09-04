@@ -313,8 +313,6 @@ class MODULES_EXPORT VideoTrackRecorder
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  base::WeakPtrFactory<VideoTrackRecorder> weak_ptr_factory_{this};
-
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorder);
 };
 

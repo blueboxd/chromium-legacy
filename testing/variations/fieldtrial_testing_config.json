@@ -2447,8 +2447,7 @@
                 "android_webview",
                 "chromeos",
                 "linux",
-                "mac",
-                "windows"
+                "mac"
             ],
             "experiments": [
                 {
@@ -3954,6 +3953,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OutOfBlinkCors"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OutOfProcessQuarantine": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OutOfProcessQuarantine"
                     ]
                 }
             ]
@@ -6282,25 +6296,6 @@
             ]
         }
     ],
-    "V8AsmJSToWasm": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "AsmJsToWebAssembly",
-                    "enable_features": [
-                        "AsmJsToWebAssembly"
-                    ]
-                }
-            ]
-        }
-    ],
     "V8CacheInlineScriptCode": [
         {
             "platforms": [
@@ -6314,25 +6309,6 @@
                     "name": "CacheInlineScriptCode",
                     "enable_features": [
                         "CacheInlineScriptCode"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8Ignition": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Future",
-                    "enable_features": [
-                        "V8Future"
                     ]
                 }
             ]

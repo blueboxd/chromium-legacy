@@ -87,7 +87,7 @@ void FontUniqueNameLookupAndroid::EnsureServiceConnected() {
     return;
 
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_));
+      service_.BindNewPipeAndPassReceiver());
 }
 
 void FontUniqueNameLookupAndroid::ReceiveReadOnlySharedMemoryRegion(

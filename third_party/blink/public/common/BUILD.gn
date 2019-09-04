@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//third_party/webrtc/webrtc.gni")
 
 # Public common API headers, mojom and libraries that can be linked and
 # referenced both by browser-side and renderer-side components.
@@ -20,6 +22,11 @@ component("common") {
   deps = [
     "//third_party/blink/common",
   ]
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }
 
 source_set("headers") {
@@ -126,6 +133,7 @@ source_set("headers") {
   ]
 
   deps = [
+    ":buildflags",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

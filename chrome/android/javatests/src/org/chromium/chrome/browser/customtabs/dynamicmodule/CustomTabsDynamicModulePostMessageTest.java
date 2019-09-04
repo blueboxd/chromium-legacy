@@ -175,8 +175,8 @@ public class CustomTabsDynamicModulePostMessageTest {
         });
 
         assertTrue(coordinator.requestPostMessageChannel(FAKE_ORIGIN_URI));
-        messageChannelHelper.waitForCallback();
-        onPostMessageHelper.waitForCallback();
+        messageChannelHelper.waitForFirst();
+        onPostMessageHelper.waitForFirst();
     }
 
     /**

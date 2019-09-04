@@ -269,26 +269,6 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   if (target_state == DocumentLifecycle::kCompositingInputsClean)
     return;
 
-  // When printing a document, there is no use in updating composited animations
-  // since we won't use the results.
-  //
-  // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
-  // browser normally, but renders every page as if it were being printed.  See
-  // crbug.com/667547
-  if (!layout_view_.GetDocument().Printing() ||
-      RuntimeEnabledFeatures::PrintBrowserEnabled()) {
-    layout_view_.GetFrameView()
-        ->GetScrollableArea()
-        ->UpdateCompositorScrollAnimations();
-    if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
-            layout_view_.GetFrameView()->AnimatingScrollableAreas()) {
-      for (PaintLayerScrollableArea* scrollable_area :
-           *animating_scrollable_areas) {
-        scrollable_area->UpdateCompositorScrollAnimations();
-      }
-    }
-  }
-
 #if DCHECK_IS_ON()
   DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
   AssertNoUnresolvedDirtyBits();

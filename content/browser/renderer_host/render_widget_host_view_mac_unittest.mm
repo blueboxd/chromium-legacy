@@ -2067,7 +2067,7 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsPresence) {
   if (@available(macOS 10.12.2, *)) {
     EXPECT_NSEQ(nil, candidate_list_item());
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_PASSWORD);
-    EXPECT_NSEQ(nil, candidate_list_item());
+    EXPECT_NSNE(nil, candidate_list_item());
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
     EXPECT_NSNE(nil, candidate_list_item());
   }
@@ -2130,6 +2130,27 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
     ASSERT_EQ("CommitText", GetMessageNames(events));
+  }
+}
+
+TEST_F(InputMethodMacTest, TouchBarTextSuggestionsNotRequestedForPasswords) {
+  base::test::ScopedFeatureList feature_list;
+  if (@available(macOS 10.12.2, *)) {
+    base::scoped_nsobject<FakeSpellChecker> spellChecker(
+        [[FakeSpellChecker alloc] init]);
+    tab_GetInProcessNSView().spellCheckerForTesting =
+        static_cast<NSSpellChecker*>(spellChecker.get());
+
+    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_PASSWORD);
+    EXPECT_NSNE(nil, candidate_list_item());
+    candidate_list_item().allowsCollapsing = NO;
+
+    const base::string16 kOriginalString = base::UTF8ToUTF16("abcxxxghi");
+
+    // Change the selection once; completions should *not* be requested.
+    tab_view()->SelectionChanged(kOriginalString, 3, gfx::Range(3, 3));
+
+    EXPECT_EQ(0U, [spellChecker sequenceNumber]);
   }
 }
 

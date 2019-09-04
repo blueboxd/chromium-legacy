@@ -10,10 +10,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_test_base.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -37,13 +39,14 @@ static const char* kIframeHost2 = "www.iframe2.com";
 
 }  // namespace
 
-class SupervisedUserNavigationThrottleTest : public SupervisedUserTestBase {
+class SupervisedUserNavigationThrottleTest
+    : public MixinBasedInProcessBrowserTest {
  protected:
   SupervisedUserNavigationThrottleTest() = default;
   ~SupervisedUserNavigationThrottleTest() override = default;
 
   void BlockHost(const std::string& host) {
-    Profile* profile = GetPrimaryUserProfile();
+    Profile* profile = browser()->profile();
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(
             profile->GetProfileKey());
@@ -55,8 +58,15 @@ class SupervisedUserNavigationThrottleTest : public SupervisedUserTestBase {
 
   bool IsInterstitialBeingShown(Browser* browser);
 
+  virtual chromeos::LoggedInUserMixin::LogInType GetLogInType() {
+    return chromeos::LoggedInUserMixin::LogInType::kChild;
+  }
+
  private:
+  void SetUp() override;
   void SetUpOnMainThread() override;
+
+  std::unique_ptr<chromeos::LoggedInUserMixin> logged_in_user_mixin_;
 };
 
 bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShown(
@@ -69,21 +79,28 @@ bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShown(
          title == base::ASCIIToUTF16("Site blocked");
 }
 
-void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
-  SupervisedUserTestBase::SetUpOnMainThread();
+void SupervisedUserNavigationThrottleTest::SetUp() {
+  // Polymorphically initiate logged_in_user_mixin_.
+  logged_in_user_mixin_ = std::make_unique<chromeos::LoggedInUserMixin>(
+      &mixin_host_, GetLogInType(), embedded_test_server());
+  MixinBasedInProcessBrowserTest::SetUp();
+}
 
+void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
+  MixinBasedInProcessBrowserTest::SetUpOnMainThread();
   // Resolve everything to localhost.
   host_resolver()->AddIPLiteralRule("*", "127.0.0.1", "localhost");
 
   ASSERT_TRUE(embedded_test_server()->Started());
+
+  logged_in_user_mixin_->SetUpOnMainThreadHelper(host_resolver(), this);
 }
 
 // Tests that navigating to a blocked page simply fails if there is no
 // SupervisedUserNavigationObserver.
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        NoNavigationObserverBlock) {
-  LogInUser(LogInType::kChild);
-  Profile* profile = GetPrimaryUserProfile();
+  Profile* profile = browser()->profile();
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
@@ -106,8 +123,6 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        BlockMainFrameWithInterstitial) {
-  LogInUser(LogInType::kChild);
-
   BlockHost(kExampleHost2);
 
   GURL allowed_url = embedded_test_server()->GetURL(
@@ -123,8 +138,6 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        DontBlockSubFrame) {
-  LogInUser(LogInType::kChild);
-
   BlockHost(kExampleHost2);
   BlockHost(kIframeHost2);
 
@@ -151,11 +164,14 @@ class SupervisedUserNavigationThrottleNotSupervisedTest
  protected:
   SupervisedUserNavigationThrottleNotSupervisedTest() = default;
   ~SupervisedUserNavigationThrottleNotSupervisedTest() override = default;
+
+  chromeos::LoggedInUserMixin::LogInType GetLogInType() override {
+    return chromeos::LoggedInUserMixin::LogInType::kRegular;
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleNotSupervisedTest,
                        DontBlock) {
-  LogInUser(LogInType::kRegular);
   BlockHost(kExampleHost);
 
   GURL blocked_url = embedded_test_server()->GetURL(

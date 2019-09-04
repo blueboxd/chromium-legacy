@@ -422,7 +422,8 @@ bool CheckMseSupport(const WebMediaConfiguration& configuration) {
     if (!audio_config.codec.Ascii().empty())
       codec_vector.push_back(audio_config.codec.Ascii());
 
-    if (!media::StreamParserFactory::IsTypeSupported(
+    if (media::IsSupported !=
+        media::StreamParserFactory::IsTypeSupported(
             audio_config.mime_type.Ascii(), codec_vector)) {
       DVLOG(2) << __func__ << " MSE does not support audio config: "
                << audio_config.mime_type.Ascii() << " "
@@ -439,7 +440,8 @@ bool CheckMseSupport(const WebMediaConfiguration& configuration) {
     if (!video_config.codec.Ascii().empty())
       codec_vector.push_back(video_config.codec.Ascii());
 
-    if (!media::StreamParserFactory::IsTypeSupported(
+    if (media::IsSupported !=
+        media::StreamParserFactory::IsTypeSupported(
             video_config.mime_type.Ascii(), codec_vector)) {
       DVLOG(2) << __func__ << " MSE does not support video config: "
                << video_config.mime_type.Ascii() << " "

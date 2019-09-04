@@ -14,7 +14,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -27,6 +29,9 @@ import org.chromium.chrome.browser.keyboard_accessory.R;
 class KeyboardAccessoryView extends LinearLayout {
     protected RecyclerView mBarItemsView;
     protected TabLayout mTabLayout;
+    private ViewPropertyAnimator mRunningAnimation;
+    private boolean mShouldSkipClosingAnimation;
+    private boolean mDisableAnimations;
 
     protected static class HorizontalDividerItemDecoration extends RecyclerView.ItemDecoration {
         private final int mHorizontalMargin;
@@ -118,12 +123,41 @@ class KeyboardAccessoryView extends LinearLayout {
 
     private void show() {
         bringToFront(); // Needs to overlay every component and the bottom sheet - like a keyboard.
-        setVisibility(View.VISIBLE);
+        if (mRunningAnimation != null) mRunningAnimation.cancel();
+        if (mDisableAnimations) {
+            mRunningAnimation = null;
+            setVisibility(View.VISIBLE);
+            return;
+        }
+        mRunningAnimation = animate()
+                                    .alpha(1.0f)
+                                    .setDuration(150)
+                                    .setInterpolator(new AccelerateInterpolator())
+                                    .withStartAction(() -> setVisibility(View.VISIBLE));
         announceForAccessibility(getContentDescription());
     }
 
     private void hide() {
-        setVisibility(View.GONE);
+        if (mRunningAnimation != null) mRunningAnimation.cancel();
+        if (mShouldSkipClosingAnimation || mDisableAnimations) {
+            mRunningAnimation = null;
+            setVisibility(View.GONE);
+            return;
+        }
+        mRunningAnimation = animate()
+                                    .alpha(0.0f)
+                                    .setInterpolator(new AccelerateInterpolator())
+                                    .setStartDelay(150)
+                                    .setDuration(150)
+                                    .withEndAction(() -> setVisibility(View.GONE));
+    }
+
+    void setSkipClosingAnimation(boolean shouldSkipClosingAnimation) {
+        mShouldSkipClosingAnimation = shouldSkipClosingAnimation;
+    }
+
+    void disableAnimationsForTesting() {
+        mDisableAnimations = true;
     }
 
     private void initializeHorizontalRecyclerView(RecyclerView recyclerView) {

@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_H_
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/viz/service/display/output_surface.h"
@@ -119,8 +120,21 @@ class SkiaOutputDevice {
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
 
   // Only valid between StartSwapBuffers and FinishSwapBuffers.
-  base::Optional<BufferPresentedCallback> feedback_;
-  base::Optional<gpu::SwapBuffersCompleteParams> params_;
+  class SwapInfo {
+   public:
+    SwapInfo(uint64_t swap_id,
+             base::Optional<BufferPresentedCallback> feedback);
+    SwapInfo(SwapInfo&& other);
+    ~SwapInfo();
+    const gpu::SwapBuffersCompleteParams& Complete(gfx::SwapResult result);
+    void CallFeedback();
+
+   private:
+    base::Optional<BufferPresentedCallback> feedback_;
+    gpu::SwapBuffersCompleteParams params_;
+  };
+
+  base::queue<SwapInfo> pending_swaps_;
 
   ui::LatencyTracker latency_tracker_;
 

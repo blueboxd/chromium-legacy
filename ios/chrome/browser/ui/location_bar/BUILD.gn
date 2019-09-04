@@ -40,7 +40,9 @@ source_set("location_bar") {
     "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/infobars:badge",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/main",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui:feature_flags",
@@ -143,6 +145,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "location_bar_coordinator_unittest.mm",
+    "location_bar_mediator_unittest.mm",
   ]
   deps = [
     ":location_bar",
@@ -154,8 +157,13 @@ source_set("unit_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
+    "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/location_bar/test",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar/test",
     "//ios/chrome/browser/url_loading",

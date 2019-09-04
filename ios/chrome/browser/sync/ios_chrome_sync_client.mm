@@ -42,7 +42,6 @@
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_service.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_sync_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -161,12 +160,6 @@ sync_sessions::SessionSyncService*
 IOSChromeSyncClient::GetSessionSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return SessionSyncServiceFactory::GetForBrowserState(browser_state_);
-}
-
-autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return autofill::PersonalDataManagerFactory::GetForBrowserState(
-      browser_state_);
 }
 
 base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {

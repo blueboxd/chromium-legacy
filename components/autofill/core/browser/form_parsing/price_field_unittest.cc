@@ -31,7 +31,7 @@ class PriceFieldTest : public testing::Test {
 
   // Downcast for tests.
   static std::unique_ptr<PriceField> Parse(AutofillScanner* scanner) {
-    std::unique_ptr<FormField> field = PriceField::Parse(scanner);
+    std::unique_ptr<FormField> field = PriceField::Parse(scanner, nullptr);
     return std::unique_ptr<PriceField>(
         static_cast<PriceField*>(field.release()));
   }

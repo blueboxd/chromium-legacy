@@ -17,10 +17,12 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/escape.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/url_util.h"
@@ -30,6 +32,7 @@
 #include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/net_buildflags.h"
@@ -43,6 +46,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
@@ -475,7 +479,7 @@ TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
       net::DnsConfig::SecureDnsMode::AUTOMATIC,
       base::nullopt /* dns_over_https_servers */);
   EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC,
             dns_client_ptr->GetEffectiveConfig()->secure_dns_mode);
 
   std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
@@ -499,13 +503,6 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   const bool kServer2UsePost = true;
   const std::string kServer3 = "https://grapefruit/resolver/query{?dns}";
   const bool kServer3UsePost = false;
-
-  // Create the primary NetworkContext before enabling DNS over HTTPS.
-  mojom::NetworkContextPtr network_context;
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
-  service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                  std::move(context_params));
 
   // Create valid DnsConfig.
   net::DnsConfig config;
@@ -561,16 +558,54 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   EXPECT_EQ(kServer2UsePost, dns_over_https_servers[0].use_post);
   EXPECT_EQ(kServer3, dns_over_https_servers[1].server_template);
   EXPECT_EQ(kServer3UsePost, dns_over_https_servers[1].use_post);
+}
 
-  // Destroying the primary NetworkContext should disable DNS over HTTPS.
-  network_context.reset();
-  base::RunLoop().RunUntilIdle();
-  // DnsClient is still enabled.
-  EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-  // DNS over HTTPS is not.
-  dns_over_https_servers =
-      dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
-  EXPECT_TRUE(dns_over_https_servers.empty());
+TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeatureWithParameters(
+      features::kDnsOverHttpsUpgrade,
+      {{"DisabledProviders", "CleanBrowsingSecure, , Cloudflare,Unexpected"}});
+  service()->ConfigureStubHostResolver(
+      true /* insecure_dns_client_enabled */,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
+      base::nullopt /* dns_over_https_servers */);
+
+  // Set valid DnsConfig.
+  net::DnsConfig config;
+  // Cloudflare upgradeable IPs
+  net::IPAddress dns_ip0(1, 0, 0, 1);
+  net::IPAddress dns_ip1;
+  EXPECT_TRUE(dns_ip1.AssignFromIPLiteral("2606:4700:4700::1111"));
+  // CleanBrowsing family filter upgradeable IP
+  net::IPAddress dns_ip2;
+  EXPECT_TRUE(dns_ip2.AssignFromIPLiteral("2a0d:2a00:2::"));
+  // CleanBrowsing security filter upgradeable IP
+  net::IPAddress dns_ip3(185, 228, 169, 9);
+  // Non-upgradeable IP
+  net::IPAddress dns_ip4(1, 2, 3, 4);
+
+  config.nameservers.push_back(
+      net::IPEndPoint(dns_ip0, net::dns_protocol::kDefaultPort));
+  config.nameservers.push_back(
+      net::IPEndPoint(dns_ip1, net::dns_protocol::kDefaultPort));
+  config.nameservers.push_back(net::IPEndPoint(dns_ip2, 54));
+  config.nameservers.push_back(
+      net::IPEndPoint(dns_ip3, net::dns_protocol::kDefaultPort));
+  config.nameservers.push_back(
+      net::IPEndPoint(dns_ip4, net::dns_protocol::kDefaultPort));
+
+  auto dns_client = net::DnsClient::CreateClient(nullptr /* net_log */);
+  dns_client->SetSystemConfig(config);
+  net::DnsClient* dns_client_ptr = dns_client.get();
+  service()->host_resolver_manager()->SetDnsClientForTesting(
+      std::move(dns_client));
+
+  std::vector<net::DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_TRUE(dns_client_ptr->GetEffectiveConfig());
+  EXPECT_EQ(expected_doh_servers,
+            dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers);
 }
 
 #endif  // !defined(OS_IOS)

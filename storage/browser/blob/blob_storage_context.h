@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_memory_controller.h"
@@ -63,8 +64,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageContext
   std::unique_ptr<BlobDataHandle> GetBlobDataFromPublicURL(const GURL& url);
   // If this BlobStorageContext is deleted before this method finishes, the
   // callback will still be called with null.
-  void GetBlobDataFromBlobPtr(
-      blink::mojom::BlobPtr blob,
+  void GetBlobDataFromBlobRemote(
+      mojo::PendingRemote<blink::mojom::Blob> blob,
       base::OnceCallback<void(std::unique_ptr<BlobDataHandle>)> callback);
 
   // Always returns a handle to a blob. Use BlobStatus::GetBlobStatus() and

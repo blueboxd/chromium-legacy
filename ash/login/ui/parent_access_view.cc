@@ -16,6 +16,7 @@
 #include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -212,6 +214,21 @@ void RecordUsage(ParentAccessRequestReason reason) {
 }
 
 }  // namespace
+
+// Label button that displays focus ring.
+class ParentAccessView::FocusableLabelButton : public views::LabelButton {
+ public:
+  FocusableLabelButton(views::ButtonListener* listener,
+                       const base::string16& text)
+      : views::LabelButton(listener, text) {
+    SetInstallFocusRingOnFocus(true);
+    focus_ring()->SetColor(kShelfFocusBorderColor);
+  }
+  ~FocusableLabelButton() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FocusableLabelButton);
+};
 
 // Digital access code input view for variable length of input codes.
 // Displays a separate underscored field for every input code digit.
@@ -633,7 +650,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
   AddChildView(footer);
 
-  help_button_ = new views::LabelButton(
+  help_button_ = new FocusableLabelButton(
       this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_HELP));
   help_button_->SetPaintToLayer();
   help_button_->layer()->SetFillsBoundsOpaquely(false);
@@ -799,6 +816,8 @@ void ParentAccessView::UpdatePreferredSize() {
   pin_keyboard_to_footer_spacer_->SetPreferredSize(
       GetPinKeyboardToFooterSpacerSize());
   SetPreferredSize(CalculatePreferredSize());
+  if (GetWidget())
+    GetWidget()->CenterWindow(GetPreferredSize());
 }
 
 void ParentAccessView::FocusSubmitButton() {

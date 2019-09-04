@@ -91,7 +91,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
       const sync_pb::EncryptedData& encryption_keybag,
       const sync_pb::EncryptedData& keystore_decryptor_token);
 
-  void UpdateCryptographerFromExplicitPassphraseNigori(
+  void UpdateCryptographerFromNonKeystoreNigori(
       const sync_pb::EncryptedData& keybag);
 
   base::Time GetExplicitPassphraseTime() const;

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 
 class Profile;
@@ -19,6 +20,7 @@ class SyncService;
 // disables these types based on whether ArcAppInstance is ready.
 class ArcPackageSyncModelTypeController
     : public syncer::SyncableServiceBasedModelTypeController,
+      public ArcAppListPrefs::Observer,
       public arc::ArcSessionManager::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -33,6 +35,9 @@ class ArcPackageSyncModelTypeController
   // DataTypeController overrides.
   PreconditionState GetPreconditionState() const override;
 
+  // ArcAppListPrefs::Observer overrides.
+  void OnPackageListInitialRefreshed() override;
+
   // ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcInitialStart() override;
@@ -40,6 +45,7 @@ class ArcPackageSyncModelTypeController
  private:
   syncer::SyncService* const sync_service_;
   Profile* const profile_;
+  ArcAppListPrefs* const arc_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPackageSyncModelTypeController);
 };

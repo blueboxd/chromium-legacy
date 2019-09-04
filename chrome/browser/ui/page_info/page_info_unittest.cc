@@ -771,27 +771,6 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
             page_info()->site_details_message());
 }
 
-TEST_F(PageInfoTest, HTTPSRevocationError) {
-  security_level_ = security_state::SECURE;
-  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
-  visible_security_state_.certificate = cert();
-  visible_security_state_.cert_status =
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
-  int status = 0;
-  status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
-  status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  visible_security_state_.connection_status = status;
-  visible_security_state_.connection_info_initialized = true;
-
-  SetDefaultUIExpectations(mock_ui());
-
-  EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
-            page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN,
-            page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
-}
-
 TEST_F(PageInfoTest, HTTPSConnectionError) {
   security_level_ = security_state::SECURE;
   visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");

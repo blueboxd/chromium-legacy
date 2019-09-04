@@ -222,4 +222,52 @@ TEST(LogBuffer, AppendSingleElementBuffer) {
   EXPECT_EQ(R"({"type":"text","value":"foo"})", json);
 }
 
+TEST(LogBuffer, Highlight) {
+  LogBuffer expected;
+  expected << "foo" << Tag{"b"} << "bar" << CTag{"b"} << "baz";
+  LogBuffer actual;
+  actual << HighlightValue("foobarbaz", "bar");
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
+TEST(LogBuffer, HighlightAtStart) {
+  LogBuffer expected;
+  expected << Tag{"b"} << "foo" << CTag{"b"} << "barbaz";
+  LogBuffer actual;
+  actual << HighlightValue("foobarbaz", "foo");
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
+TEST(LogBuffer, HighlightAtEnd) {
+  LogBuffer expected;
+  expected << "foobar" << Tag{"b"} << "baz" << CTag{"b"};
+  LogBuffer actual;
+  actual << HighlightValue("foobarbaz", "baz");
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
+TEST(LogBuffer, HighlightEmpty) {
+  LogBuffer expected;
+  expected << "foobarbaz";
+  LogBuffer actual;
+  actual << HighlightValue("foobarbaz", "");
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
+TEST(LogBuffer, HighlightNotFound) {
+  LogBuffer expected;
+  expected << "foobarbaz";
+  LogBuffer actual;
+  actual << HighlightValue("foobarbaz", "notfound");
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
+TEST(LogBuffer, HighlightEmptyString) {
+  LogBuffer expected;
+  expected << "";
+  LogBuffer actual;
+  actual << HighlightValue("", "");
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
 }  // namespace autofill

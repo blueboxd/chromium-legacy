@@ -30,7 +30,8 @@ DnsConfig::DnsConfig(std::vector<IPEndPoint> nameservers)
       attempts(2),
       rotate(false),
       use_local_ipv6(false),
-      secure_dns_mode(SecureDnsMode::OFF) {}
+      secure_dns_mode(SecureDnsMode::OFF),
+      allow_dns_over_https_upgrade(false) {}
 
 DnsConfig::~DnsConfig() = default;
 
@@ -60,7 +61,9 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
          (attempts == d.attempts) && (rotate == d.rotate) &&
          (use_local_ipv6 == d.use_local_ipv6) &&
          (dns_over_https_servers == d.dns_over_https_servers) &&
-         (secure_dns_mode == d.secure_dns_mode);
+         (secure_dns_mode == d.secure_dns_mode) &&
+         (allow_dns_over_https_upgrade == d.allow_dns_over_https_upgrade) &&
+         (disabled_upgrade_providers == d.disabled_upgrade_providers);
 }
 
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
@@ -77,6 +80,8 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   use_local_ipv6 = d.use_local_ipv6;
   dns_over_https_servers = d.dns_over_https_servers;
   secure_dns_mode = d.secure_dns_mode;
+  allow_dns_over_https_upgrade = d.allow_dns_over_https_upgrade;
+  disabled_upgrade_providers = d.disabled_upgrade_providers;
 }
 
 std::unique_ptr<base::Value> DnsConfig::ToValue() const {
@@ -114,6 +119,13 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   }
   dict->Set("doh_servers", std::move(list));
   dict->SetInteger("secure_dns_mode", static_cast<int>(secure_dns_mode));
+  dict->SetBoolean("allow_dns_over_https_upgrade",
+                   allow_dns_over_https_upgrade);
+
+  list = std::make_unique<base::ListValue>();
+  for (const auto& provider : disabled_upgrade_providers)
+    list->AppendString(provider);
+  dict->Set("disabled_upgrade_providers", std::move(list));
 
   return std::move(dict);
 }

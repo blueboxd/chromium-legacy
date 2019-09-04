@@ -31,7 +31,7 @@ class AddressFieldTest : public testing::Test {
 
   // Downcast for tests.
   static std::unique_ptr<AddressField> Parse(AutofillScanner* scanner) {
-    std::unique_ptr<FormField> field = AddressField::Parse(scanner);
+    std::unique_ptr<FormField> field = AddressField::Parse(scanner, nullptr);
     return std::unique_ptr<AddressField>(
         static_cast<AddressField*>(field.release()));
   }

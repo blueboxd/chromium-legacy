@@ -10,6 +10,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 enum class SharingDeviceRegistrationResult;
 
 // Result of VAPID key creation during Sharing registration.
@@ -33,6 +37,28 @@ enum class SharingDialogType {
   kEducationalDialog = 2,
   kErrorDialog = 3,
   kMaxValue = kErrorDialog,
+};
+
+// Entry point of a Click to Call journey.
+// These values are logged to UKM. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingClickToCallEntryPoint" in src/tools/metrics/histograms/enums.xml.
+enum class SharingClickToCallEntryPoint {
+  kLeftClickLink = 0,
+  kRightClickLink = 1,
+  kRightClickSelection = 2,
+  kMaxValue = kRightClickSelection,
+};
+
+// Selection at the end of a Click to Call journey.
+// These values are logged to UKM. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingClickToCallSelection" in src/tools/metrics/histograms/enums.xml.
+enum class SharingClickToCallSelection {
+  kNone = 0,
+  kDevice = 1,
+  kApp = 2,
+  kMaxValue = kApp,
 };
 
 // These histogram suffixes must match the ones in SharingClickToCallUi defined
@@ -94,5 +120,13 @@ void LogSendSharingMessageResult(SharingSendMessageResult result);
 
 // Logs to UMA result of sendin an ack of a SharingMessage.
 void LogSendSharingAckMessageResult(SharingSendMessageResult result);
+
+// Records a Click to Call selection to UKM. This is logged after a completed
+// action like selecting an app or a device to send the phone number to.
+void LogClickToCallUKM(content::WebContents* web_contents,
+                       SharingClickToCallEntryPoint entry_point,
+                       bool has_devices,
+                       bool has_apps,
+                       SharingClickToCallSelection selection);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

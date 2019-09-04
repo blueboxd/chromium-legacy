@@ -79,6 +79,8 @@ class CC_EXPORT ImageDecodeCache {
         devtools_instrumentation::ScopedImageDecodeTask::ImageType;
     if (image_type == PaintImage::ImageType::kWEBP)
       return ScopedImageType::kWebP;
+    if (image_type == PaintImage::ImageType::kJPEG)
+      return ScopedImageType::kJpeg;
     return ScopedImageType::kOther;
   }
 

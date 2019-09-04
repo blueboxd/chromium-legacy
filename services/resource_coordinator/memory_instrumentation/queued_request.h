@@ -8,11 +8,10 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -55,11 +54,11 @@ struct QueuedRequest {
       kChromeDump,
       kOSDump,
     };
-    PendingResponse(base::ProcessId, const Type type);
+    PendingResponse(const mojom::ClientProcess* client, const Type type);
 
     bool operator<(const PendingResponse& other) const;
 
-    const base::ProcessId process_id;
+    const mojom::ClientProcess* client;
     const Type type;
   };
 
@@ -70,7 +69,7 @@ struct QueuedRequest {
 
     base::ProcessId process_id = base::kNullProcessId;
     mojom::ProcessType process_type = mojom::ProcessType::OTHER;
-    base::Optional<std::string> service_name;
+    std::vector<std::string> service_names;
     std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_dump;
     OSMemDumpMap os_dumps;
   };
@@ -102,7 +101,7 @@ struct QueuedRequest {
   // |RequestOSMemoryDump| call that has not yet replied or been canceled (due
   // to the client disconnecting).
   std::set<PendingResponse> pending_responses;
-  std::map<base::ProcessId, Response> responses;
+  std::map<mojom::ClientProcess*, Response> responses;
   int failed_memory_dump_count = 0;
   bool dump_in_progress = false;
 
@@ -130,11 +129,10 @@ struct QueuedVmRegionRequest {
 
     base::ProcessId process_id = base::kNullProcessId;
     OSMemDumpMap os_dumps;
-    base::Optional<std::string> service_name;
   };
 
-  std::set<base::ProcessId> pending_responses;
-  std::map<base::ProcessId, Response> responses;
+  std::set<mojom::ClientProcess*> pending_responses;
+  std::map<mojom::ClientProcess*, Response> responses;
 };
 
 }  // namespace memory_instrumentation

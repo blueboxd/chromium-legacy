@@ -207,7 +207,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      network::mojom::ClientCertificateResponderPtr cert_responder) override;
+      mojo::PendingRemote<network::mojom::ClientCertificateResponder>
+          cert_responder) override;
   void OnSSLCertificateError(uint32_t process_id,
                              uint32_t routing_id,
                              const GURL& url,

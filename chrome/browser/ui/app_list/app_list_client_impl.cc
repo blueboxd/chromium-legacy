@@ -169,6 +169,8 @@ void AppListClientImpl::ViewShown(int64_t display_id) {
                              current_model_updater_->BadgedItemCount());
   }
   display_id_ = display_id;
+  if (search_controller_)
+    search_controller_->AppListShown();
 }
 
 void AppListClientImpl::ActivateItem(int profile_id,

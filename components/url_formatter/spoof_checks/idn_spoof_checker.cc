@@ -188,7 +188,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //      U+04C8 (ӈ), U+04CA (ӊ), U+050B (ԋ), U+0527 (ԧ), U+0529 (ԩ)} => h
   //   - {U+0138 (ĸ), U+03BA (κ), U+043A (к), U+049B (қ), U+049D (ҝ),
   //      U+049F (ҟ), U+04A1(ҡ), U+04C4 (ӄ), U+051F (ԟ)} => k
-  //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก)} => n
+  //   - {U+014B (ŋ), U+043F (п), U+0525 (ԥ), U+0E01 (ก), U+05D7 (ח)} => n
   //   - U+0153 (œ) => "ce"
   //     TODO: see https://crbug.com/843352 for further work on
   //     U+0525 and U+0153.
@@ -229,7 +229,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
       UNICODE_STRING_SIMPLE("ExtraConf"),
       icu::UnicodeString::fromUTF8(
           "[æӕ] > ae; [þϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
-          "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥก] > n; œ > ce;"
+          "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥกח] > n; œ > ce;"
           "[ŧтҭԏ七丅丆] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
           "[ҫင] > c; [ұ丫] > y; [χҳӽӿ乂] > x;"

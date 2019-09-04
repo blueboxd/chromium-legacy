@@ -31,6 +31,15 @@ namespace {
 // Opacity of the active tab background painted over inactive selected tabs.
 constexpr float kSelectedTabOpacity = 0.75f;
 
+// How the tab shape path is modified for selected tabs.
+using ShapeModifier = int;
+// No modification should be done.
+constexpr ShapeModifier kNone = 0x00;
+// Exclude the lower left arc.
+constexpr ShapeModifier kNoLowerLeftArc = 0x01;
+// Exclude the lower right arc.
+constexpr ShapeModifier kNoLowerRightArc = 0x02;
+
 // Tab style implementation for the GM2 refresh (Chrome 69).
 class GM2TabStyle : public TabStyleViews {
  public:
@@ -46,7 +55,7 @@ class GM2TabStyle : public TabStyleViews {
   gfx::Insets GetContentsInsets() const override;
   float GetZValue() const override;
   TabStyle::TabColors CalculateColors() const override;
-  void PaintTab(gfx::Canvas* canvas, const SkPath& clip) const override;
+  void PaintTab(gfx::Canvas* canvas) const override;
   void SetHoverLocation(const gfx::Point& location) override;
   void ShowHover(ShowHoverStyle style) override;
   void HideHover(HideHoverStyle style) override;
@@ -87,14 +96,18 @@ class GM2TabStyle : public TabStyleViews {
 
   SkColor GetTabBackgroundColor(TabActive active) const;
 
+  // When selected, non-active, non-hovered tabs are adjacent to each other,
+  // there are anti-aliasing artifacts in the overlapped lower arc region. This
+  // returns how to modify the tab shape to eliminate the lower arcs on the
+  // right or left based on the state of the adjacent tab(s).
+  ShapeModifier GetShapeModifier(PathType path_type) const;
+
   // Painting helper functions:
-  void PaintInactiveTabBackground(gfx::Canvas* canvas,
-                                  const SkPath& clip) const;
+  void PaintInactiveTabBackground(gfx::Canvas* canvas) const;
   void PaintTabBackground(gfx::Canvas* canvas,
                           TabActive active,
                           base::Optional<int> fill_id,
-                          int y_inset,
-                          const SkPath* clip) const;
+                          int y_inset) const;
   void PaintTabBackgroundFill(gfx::Canvas* canvas,
                               TabActive active,
                               bool paint_hover_effect,
@@ -202,6 +215,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
 
   // Path-specific adjustments:
   const float stroke_adjustment = stroke_thickness * scale;
+  bool extend_to_top = false;
   if (path_type == PathType::kInteriorClip) {
     // Inside of the border runs |stroke_thickness| inside the outer edge.
     tab_left += stroke_adjustment;
@@ -215,16 +229,17 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     top_radius -= 0.5f * stroke_adjustment;
     tab_bottom -= 0.5f * stroke_adjustment;
     bottom_radius -= 0.5f * stroke_adjustment;
-  } else if (path_type == PathType::kHitTest ||
-             path_type == PathType::kExteriorClip) {
+  } else if (path_type == PathType::kHitTest) {
     // Outside border needs to draw its bottom line a stroke width above the
     // bottom of the tab, to line up with the stroke that runs across the rest
     // of the bottom of the tab bar (when strokes are enabled).
     tab_bottom -= stroke_adjustment;
     bottom_radius -= stroke_adjustment;
+    extend_to_top = ShouldExtendHitTest();
   }
-  const bool extend_to_top =
-      (path_type == PathType::kHitTest) && ShouldExtendHitTest();
+  const ShapeModifier shape_modifier = GetShapeModifier(path_type);
+  const bool extend_left_to_bottom = shape_modifier & kNoLowerLeftArc;
+  const bool extend_right_to_bottom = shape_modifier & kNoLowerRightArc;
 
   // When the radius shrinks, it leaves a gap between the bottom corners and the
   // edge of the tab. Make sure we account for this - and for any adjustment we
@@ -262,14 +277,18 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // ┏━╯         ╰─┐
     path.moveTo(left, extended_bottom);
     path.lineTo(left, tab_bottom);
-    path.lineTo(left + corner_gap, tab_bottom);
 
-    // Draw the bottom-left arc.
+    // Draw the bottom-left arc if not excluded.
     //   ╭─────────╮
     //   │ Content │
     // ┌─╝         ╰─┐
-    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+    if (extend_left_to_bottom) {
+      path.lineTo(left + corner_gap + bottom_radius, tab_bottom);
+    } else {
+      path.lineTo(left + corner_gap, tab_bottom);
+      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                 SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+    }
 
     // Draw the ascender and top arc, if present.
     if (extend_to_top) {
@@ -292,7 +311,6 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
       //   │ Content │
       // ┌─╯         ╰─┐
       path.lineTo(tab_right, tab_top);
-
     } else {
       //   ╭━━━━━━━━━╗
       //   │ Content │
@@ -306,9 +324,13 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     //   ╭─────────╮
     //   │ Content ┃
     // ┌─╯         ╚─┐
-    path.lineTo(tab_right, tab_bottom - bottom_radius);
-    path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
+    if (extend_right_to_bottom) {
+      path.lineTo(tab_right, tab_bottom);
+    } else {
+      path.lineTo(tab_right, tab_bottom - bottom_radius);
+      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                 SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
+    }
 
     // Draw everything right of the bottom-right corner of the tab.
     //   ╭─────────╮
@@ -396,7 +418,7 @@ TabStyle::TabColors GM2TabStyle::CalculateColors() const {
   return {foreground_color, background_color};
 }
 
-void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const SkPath& clip) const {
+void GM2TabStyle::PaintTab(gfx::Canvas* canvas) const {
   base::Optional<int> active_tab_fill_id;
   int active_tab_y_inset = 0;
   if (tab_->GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
@@ -406,16 +428,16 @@ void GM2TabStyle::PaintTab(gfx::Canvas* canvas, const SkPath& clip) const {
 
   if (tab_->IsActive()) {
     PaintTabBackground(canvas, TabActive::kActive, active_tab_fill_id,
-                       active_tab_y_inset, nullptr /* clip */);
+                       active_tab_y_inset);
   } else {
-    PaintInactiveTabBackground(canvas, clip);
+    PaintInactiveTabBackground(canvas);
 
     const float throb_value = GetThrobValue();
     if (throb_value > 0) {
       canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              tab_->GetLocalBounds());
       PaintTabBackground(canvas, TabActive::kActive, active_tab_fill_id,
-                         active_tab_y_inset, nullptr /* clip */);
+                         active_tab_y_inset);
       canvas->Restore();
     }
   }
@@ -632,36 +654,41 @@ SkColor GM2TabStyle::GetTabBackgroundColor(TabActive active) const {
   return color;
 }
 
-void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas,
-                                             const SkPath& clip) const {
+ShapeModifier GM2TabStyle::GetShapeModifier(PathType path_type) const {
+  ShapeModifier shape_modifier = kNone;
+  if (path_type == PathType::kFill && tab_->IsSelected() && !IsHoverActive() &&
+      !tab_->IsActive()) {
+    auto check_adjacent_tab = [](const Tab* tab, int offset,
+                                 ShapeModifier modifier) {
+      const Tab* adjacent_tab = tab->controller()->GetAdjacentTab(tab, offset);
+      if (adjacent_tab && adjacent_tab->IsSelected() &&
+          !adjacent_tab->IsMouseHovered())
+        return modifier;
+      return kNone;
+    };
+    shape_modifier |= check_adjacent_tab(tab_, -1, kNoLowerLeftArc);
+    shape_modifier |= check_adjacent_tab(tab_, 1, kNoLowerRightArc);
+  }
+  return shape_modifier;
+}
+
+void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas) const {
   PaintTabBackground(canvas, TabActive::kInactive,
-                     tab_->controller()->GetCustomBackgroundId(), 0,
-                     tab_->controller()->MaySetClip() ? &clip : nullptr);
+                     tab_->controller()->GetCustomBackgroundId(), 0);
 }
 
 void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,
                                      TabActive active,
                                      base::Optional<int> fill_id,
-                                     int y_inset,
-                                     const SkPath* clip) const {
+                                     int y_inset) const {
   // |y_inset| is only set when |fill_id| is being used.
   DCHECK(!y_inset || fill_id.has_value());
 
-  const SkColor stroke_color =
-      tab_->controller()->GetToolbarTopSeparatorColor();
-  const bool paint_hover_effect =
-      active == TabActive::kInactive && IsHoverActive();
-  const float stroke_thickness =
-      GetStrokeThickness(active == TabActive::kActive);
-
-  PaintTabBackgroundFill(canvas, active, paint_hover_effect, fill_id, y_inset);
-  if (stroke_thickness > 0) {
-    gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
-    if (clip)
-      canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
-    PaintBackgroundStroke(canvas, active, stroke_color);
-  }
-
+  PaintTabBackgroundFill(canvas, active,
+                         active == TabActive::kInactive && IsHoverActive(),
+                         fill_id, y_inset);
+  PaintBackgroundStroke(canvas, active,
+                        tab_->controller()->GetToolbarTopSeparatorColor());
   PaintSeparators(canvas);
 }
 
@@ -709,17 +736,20 @@ void GM2TabStyle::PaintTabBackgroundFill(gfx::Canvas* canvas,
 void GM2TabStyle::PaintBackgroundStroke(gfx::Canvas* canvas,
                                         TabActive active,
                                         SkColor stroke_color) const {
+  const bool is_active = active == TabActive::kActive;
+  const int stroke_thickness = GetStrokeThickness(is_active);
+  if (!stroke_thickness)
+    return;
+
   SkPath outer_path =
-      GetPath(TabStyle::PathType::kBorder, canvas->image_scale(),
-              active == TabActive::kActive);
+      GetPath(TabStyle::PathType::kBorder, canvas->image_scale(), is_active);
   gfx::ScopedCanvas scoped_canvas(canvas);
   float scale = canvas->UndoDeviceScaleFactor();
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(stroke_color);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(GetStrokeThickness(active == TabActive::kActive) *
-                       scale);
+  flags.setStrokeWidth(stroke_thickness * scale);
   canvas->DrawPath(outer_path, flags);
 }
 

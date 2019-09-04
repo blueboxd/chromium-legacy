@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "components/safe_browsing/buildflags.h"
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -50,6 +51,16 @@ const base::Feature kRealTimeUrlLookupEnabled{
 const base::Feature kRealTimeUrlLookupFetchAllowlist{
     "SafeBrowsingRealTimeUrlLookupFetchAllowlist",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSendOnFocusPing {
+  "SafeBrowsingSendOnFocusPing",
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -92,6 +103,7 @@ constexpr struct {
     {&kPasswordProtectionForSignedInUsers, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupFetchAllowlist, true},
+    {&kSendOnFocusPing, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

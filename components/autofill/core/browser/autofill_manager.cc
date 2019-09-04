@@ -1448,7 +1448,7 @@ AutofillManager::AutofillManager(
     const std::string app_locale,
     AutofillDownloadManagerState enable_download_manager,
     std::unique_ptr<CreditCardAccessManager> cc_access_manager)
-    : AutofillHandler(driver),
+    : AutofillHandler(driver, client->GetLogManager()),
       client_(client),
       log_manager_(client_->GetLogManager()),
       app_locale_(app_locale),

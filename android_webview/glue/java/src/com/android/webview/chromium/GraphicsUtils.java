@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 
 package com.android.webview.chromium;
+import org.chromium.base.annotations.NativeMethods;
 
 abstract class GraphicsUtils {
     public static long getDrawSWFunctionTable() {
-        return nativeGetDrawSWFunctionTable();
+        return GraphicsUtilsJni.get().getDrawSWFunctionTable();
     }
 
     public static long getDrawGLFunctionTable() {
-        return nativeGetDrawGLFunctionTable();
+        return GraphicsUtilsJni.get().getDrawGLFunctionTable();
     }
 
-    private static native long nativeGetDrawSWFunctionTable();
-    private static native long nativeGetDrawGLFunctionTable();
+    @NativeMethods
+    interface Natives {
+        long getDrawSWFunctionTable();
+        long getDrawGLFunctionTable();
+    }
 }

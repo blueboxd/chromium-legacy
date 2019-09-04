@@ -72,6 +72,10 @@ std::ostream& operator<<(
     case ResultCode::kFinishedWithNonFatalErrors:
       stream << "[Finished with non-fatal errors]";
       break;
+    case ResultCode::kErrorClientAppMetadataFetchFailed:
+      stream << "[Error: Could not retrieve ClientAppMetadata from "
+             << "ClientAppMetadataProvider]";
+      break;
     case ResultCode::kErrorMissingUserKeyPair:
       stream << "[Error: No user key pair in registry]";
       break;
@@ -167,6 +171,9 @@ std::ostream& operator<<(
       break;
     case ResultCode::kErrorShareGroupPrivateKeyApiCallUnknownError:
       stream << "[ShareGroupPrivateKey API call failed: Unknown error]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForClientAppMetadata:
+      stream << "[Error: Timeout waiting for ClientAppMetadata]";
       break;
     case ResultCode::kErrorTimeoutWaitingForGroupKeyCreation:
       stream << "[Error: Timeout waiting for group key creation]";

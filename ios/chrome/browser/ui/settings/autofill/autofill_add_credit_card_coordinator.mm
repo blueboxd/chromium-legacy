@@ -104,7 +104,8 @@
 - (void)creditCardMediatorShowScanner:(AutofillAddCreditCardMediator*)mediator
     API_AVAILABLE(ios(13.0)) {
   self.creditCardScannerCoordinator = [[CreditCardScannerCoordinator alloc]
-      initWithBaseViewController:self.addCreditCardViewController];
+      initWithBaseViewController:self.addCreditCardViewController
+              creditCardConsumer:self.addCreditCardViewController];
 
   [self.creditCardScannerCoordinator start];
 }

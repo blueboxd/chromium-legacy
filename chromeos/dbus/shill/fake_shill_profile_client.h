@@ -63,6 +63,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillProfileClient
                   base::DictionaryValue* properties) override;
   bool HasService(const std::string& service_path) override;
   void ClearProfiles() override;
+  void SetSimulateDeleteResult(FakeShillSimulatedResult delete_result) override;
 
  private:
   struct ProfileProperties;
@@ -79,6 +80,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillProfileClient
   // |AddProfile| will encure that shared profile is never added after a user
   // profile.
   std::vector<std::unique_ptr<ProfileProperties>> profiles_;
+
+  FakeShillSimulatedResult simulate_delete_result_ =
+      FakeShillSimulatedResult::kSuccess;
 
   DISALLOW_COPY_AND_ASSIGN(FakeShillProfileClient);
 };

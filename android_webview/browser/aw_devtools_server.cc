@@ -49,7 +49,7 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
             base::BindRepeating(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
     if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
-      return std::unique_ptr<net::ServerSocket>();
+      return nullptr;
 
     return std::move(socket);
   }
@@ -63,7 +63,7 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
             base::BindRepeating(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
     if (socket->BindAndListen(*name, kBackLog) != net::OK)
-      return std::unique_ptr<net::ServerSocket>();
+      return nullptr;
 
     return std::move(socket);
   }

@@ -329,6 +329,12 @@ void InProcessBrowserTest::TearDown() {
 #endif
 }
 
+void InProcessBrowserTest::SelectFirstBrowser() {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  if (!browser_list->empty())
+    browser_ = browser_list->get(0);
+}
+
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
   CloseBrowserAsynchronously(browser);
   ui_test_utils::WaitForBrowserToClose(browser);
@@ -449,12 +455,6 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
   return browser;
 }
 #endif  // !defined(OS_MACOSX)
-
-void InProcessBrowserTest::SelectFirstBrowser() {
-  const BrowserList* browser_list = BrowserList::GetInstance();
-  if (!browser_list->empty())
-    browser_ = browser_list->get(0);
-}
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(

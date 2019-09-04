@@ -10,11 +10,28 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_dialog_delegate.h"
+#include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+namespace {
+
+class MockLoginScreen : public TestLoginScreen {
+ public:
+  MockLoginScreen() = default;
+  ~MockLoginScreen() override = default;
+
+  MOCK_METHOD1(FocusLoginShelf, void(bool reverse));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLoginScreen);
+};
+
+}  // namespace
 
 namespace chromeos {
 
@@ -26,41 +43,48 @@ class LoginScreenExtensionUiWebDialogViewUnittest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile;
+  testing::StrictMock<MockLoginScreen> mock_login_screen_;
+
+  std::unique_ptr<LoginScreenExtensionUiDialogDelegate> dialog_delegate_;
+  std::unique_ptr<LoginScreenExtensionUiWebDialogView> dialog_view_;
+
+  void CreateDialogView(bool can_be_closed_by_user = true) {
+    LoginScreenExtensionUiCreateOptions create_options(
+        "extension_name", GURL(), can_be_closed_by_user,
+        /*close_callback=*/base::DoNothing());
+
+    dialog_delegate_ =
+        std::make_unique<LoginScreenExtensionUiDialogDelegate>(&create_options);
+
+    dialog_view_ = std::make_unique<LoginScreenExtensionUiWebDialogView>(
+        &profile, dialog_delegate_.get(),
+        std::make_unique<ChromeWebContentsHandler>());
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiWebDialogViewUnittest);
 };
 
 TEST_F(LoginScreenExtensionUiWebDialogViewUnittest, ShouldShowCloseButton) {
-  LoginScreenExtensionUiCreateOptions create_options(
-      "extension_name", GURL(),
-      /*can_be_closed_by_user=*/true, base::DoNothing());
-
-  std::unique_ptr<LoginScreenExtensionUiDialogDelegate> dialog_delegate =
-      std::make_unique<LoginScreenExtensionUiDialogDelegate>(&create_options);
-
-  std::unique_ptr<LoginScreenExtensionUiWebDialogView> dialog_view =
-      std::make_unique<LoginScreenExtensionUiWebDialogView>(
-          &profile, dialog_delegate.get(),
-          std::make_unique<ChromeWebContentsHandler>());
-
-  ASSERT_TRUE(dialog_view->ShouldShowCloseButton());
+  CreateDialogView(/*can_be_closed_by_user=*/true);
+  EXPECT_TRUE(dialog_view_->ShouldShowCloseButton());
 }
 
 TEST_F(LoginScreenExtensionUiWebDialogViewUnittest, ShouldNotShowCloseButton) {
-  LoginScreenExtensionUiCreateOptions create_options(
-      "extension_name", GURL(),
-      /*can_be_closed_by_user=*/false, base::DoNothing());
+  CreateDialogView(/*can_be_closed_by_user=*/false);
+  EXPECT_FALSE(dialog_view_->ShouldShowCloseButton());
+}
 
-  std::unique_ptr<LoginScreenExtensionUiDialogDelegate> dialog_delegate =
-      std::make_unique<LoginScreenExtensionUiDialogDelegate>(&create_options);
+TEST_F(LoginScreenExtensionUiWebDialogViewUnittest, TabOut) {
+  CreateDialogView();
 
-  std::unique_ptr<LoginScreenExtensionUiWebDialogView> dialog_view =
-      std::make_unique<LoginScreenExtensionUiWebDialogView>(
-          &profile, dialog_delegate.get(),
-          std::make_unique<ChromeWebContentsHandler>());
+  EXPECT_CALL(mock_login_screen_, FocusLoginShelf(/*reverse=*/true));
+  EXPECT_TRUE(dialog_view_->TakeFocus(nullptr, /*reverse=*/true));
+  testing::Mock::VerifyAndClearExpectations(&mock_login_screen_);
 
-  ASSERT_FALSE(dialog_view->ShouldShowCloseButton());
+  EXPECT_CALL(mock_login_screen_, FocusLoginShelf(/*reverse=*/false));
+  EXPECT_TRUE(dialog_view_->TakeFocus(nullptr, /*reverse=*/false));
+  testing::Mock::VerifyAndClearExpectations(&mock_login_screen_);
 }
 
 }  // namespace chromeos

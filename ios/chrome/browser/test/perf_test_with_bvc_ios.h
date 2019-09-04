@@ -15,6 +15,7 @@
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 
+class Browser;
 @class BrowserViewController;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
@@ -53,6 +54,9 @@ class PerfTestWithBVC : public PerfTest {
 
   TabModel* tab_model_;
   TabModel* otr_tab_model_;
+
+  std::unique_ptr<Browser> browser_;
+  std::unique_ptr<Browser> otr_browser_;
 
   CommandDispatcher* command_dispatcher_;
   BrowserViewControllerDependencyFactory* bvc_factory_;

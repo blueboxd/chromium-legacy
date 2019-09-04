@@ -31,10 +31,6 @@ const int kTrayRoundedBorderRadius = 2;
 
 const int kTrayToggleButtonWidth = 68;
 
-// Note that the alpha value should match kSignalStrengthImageBgAlpha in
-// ash/public/cpp/network_icon_image_source.cc
-const int kTrayIconBackgroundAlpha = 0x4D /* 30% */;
-
 const int kMenuIconSize = 20;
 const int kMenuButtonSize = 48;
 const int kMenuSeparatorVerticalPadding = 4;

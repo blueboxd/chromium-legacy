@@ -101,6 +101,12 @@ void SetIndividualRuntimeFeatures(
 
   if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding) &&
       base::FeatureList::IsEnabled(
+          blink::features::kDecodeJpeg420ImagesToYUV)) {
+    WebRuntimeFeatures::EnableDecodeJpeg420ImagesToYUV(true);
+  }
+
+  if (!command_line.HasSwitch(switches::kDisableYUVImageDecoding) &&
+      base::FeatureList::IsEnabled(
           blink::features::kDecodeLossyWebPImagesToYUV)) {
     WebRuntimeFeatures::EnableDecodeLossyWebPImagesToYUV(true);
   }
@@ -577,6 +583,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnablePointerLockOptions(
       base::FeatureList::IsEnabled(features::kPointerLockOptions));
+
+  WebRuntimeFeatures::EnableDocumentPolicy(
+      base::FeatureList::IsEnabled(features::kDocumentPolicy));
 }
 
 }  // namespace

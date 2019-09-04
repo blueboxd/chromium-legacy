@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -50,7 +51,7 @@ public class AwContentsStatics {
     public static void clearClientCertPreferences(Runnable callback) {
         ThreadUtils.assertOnUiThread();
         getClientCertLookupTable().clear();
-        nativeClearClientCertPreferences(callback);
+        AwContentsStaticsJni.get().clearClientCertPreferences(callback);
     }
 
     @CalledByNative
@@ -65,7 +66,7 @@ public class AwContentsStatics {
         // two calls will be running at the same time, this should not cause
         // any harm.
         if (sUnreachableWebDataUrl == null) {
-            sUnreachableWebDataUrl = nativeGetUnreachableWebDataUrl();
+            sUnreachableWebDataUrl = AwContentsStaticsJni.get().getUnreachableWebDataUrl();
         }
         return sUnreachableWebDataUrl;
     }
@@ -79,12 +80,12 @@ public class AwContentsStatics {
     }
 
     public static String getProductVersion() {
-        return nativeGetProductVersion();
+        return AwContentsStaticsJni.get().getProductVersion();
     }
 
-    public static void setServiceWorkerNetworkClient(
-            AwContentsNetworkClient ioThreadClient, AwBrowserContext browserContext) {
-        nativeSetServiceWorkerNetworkClient(ioThreadClient, browserContext);
+    public static void setServiceWorkerIoThreadClient(
+            AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext) {
+        AwContentsStaticsJni.get().setServiceWorkerIoThreadClient(ioThreadClient, browserContext);
     }
 
     @CalledByNative
@@ -99,7 +100,7 @@ public class AwContentsStatics {
             callback = b -> {
             };
         }
-        nativeSetSafeBrowsingWhitelist(urlArray, callback);
+        AwContentsStaticsJni.get().setSafeBrowsingWhitelist(urlArray, callback);
     }
 
     @SuppressWarnings("NoContextGetApplicationContext")
@@ -117,15 +118,15 @@ public class AwContentsStatics {
     }
 
     public static Uri getSafeBrowsingPrivacyPolicyUrl() {
-        return Uri.parse(nativeGetSafeBrowsingPrivacyPolicyUrl());
+        return Uri.parse(AwContentsStaticsJni.get().getSafeBrowsingPrivacyPolicyUrl());
     }
 
     public static void setCheckClearTextPermitted(boolean permitted) {
-        nativeSetCheckClearTextPermitted(permitted);
+        AwContentsStaticsJni.get().setCheckClearTextPermitted(permitted);
     }
 
     public static void logCommandLineForDebugging() {
-        nativeLogCommandLineForDebugging();
+        AwContentsStaticsJni.get().logCommandLineForDebugging();
     }
 
     /**
@@ -146,21 +147,21 @@ public class AwContentsStatics {
      * Returns true if WebView is running in multi process mode.
      */
     public static boolean isMultiProcessEnabled() {
-        return nativeIsMultiProcessEnabled();
+        return AwContentsStaticsJni.get().isMultiProcessEnabled();
     }
 
-    //--------------------------------------------------------------------------------------------
-    //  Native methods
-    //--------------------------------------------------------------------------------------------
-    private static native void nativeLogCommandLineForDebugging();
-    private static native String nativeGetSafeBrowsingPrivacyPolicyUrl();
-    private static native void nativeClearClientCertPreferences(Runnable callback);
-    private static native String nativeGetUnreachableWebDataUrl();
-    private static native String nativeGetProductVersion();
-    private static native void nativeSetServiceWorkerNetworkClient(
-            AwContentsNetworkClient ioThreadClient, AwBrowserContext browserContext);
-    private static native void nativeSetSafeBrowsingWhitelist(
-            String[] urls, Callback<Boolean> callback);
-    private static native void nativeSetCheckClearTextPermitted(boolean permitted);
-    private static native boolean nativeIsMultiProcessEnabled();
+    @NativeMethods
+    interface Natives {
+        void logCommandLineForDebugging();
+
+        String getSafeBrowsingPrivacyPolicyUrl();
+        void clearClientCertPreferences(Runnable callback);
+        String getUnreachableWebDataUrl();
+        String getProductVersion();
+        void setServiceWorkerIoThreadClient(
+                AwContentsIoThreadClient ioThreadClient, AwBrowserContext browserContext);
+        void setSafeBrowsingWhitelist(String[] urls, Callback<Boolean> callback);
+        void setCheckClearTextPermitted(boolean permitted);
+        boolean isMultiProcessEnabled();
+    }
 }

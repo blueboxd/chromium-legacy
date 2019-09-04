@@ -36,6 +36,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
@@ -1879,8 +1880,8 @@ void ServiceWorkerGlobalScope::DispatchPaymentRequestEvent(
   PaymentRequestRespondWithObserver* respond_with_observer =
       PaymentRequestRespondWithObserver::Create(this, event_id,
                                                 wait_until_observer);
-  payments::mojom::blink::PaymentHandlerHostPtrInfo payment_handler_host =
-      std::move(event_data->payment_handler_host);
+  mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost>
+      payment_handler_host = std::move(event_data->payment_handler_host);
   Event* event = PaymentRequestEvent::Create(
       event_type_names::kPaymentrequest,
       PaymentEventDataConversion::ToPaymentRequestEventInit(

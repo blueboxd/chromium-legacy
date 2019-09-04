@@ -146,14 +146,12 @@ bool GetVariationParamByFeatureAsBool(const base::Feature& feature,
 // Expose some functions for testing.
 namespace testing {
 
-// Clears all of the mapped associations. Deprecated, try to use
-// VariationParamsManager instead as it does a lot of work for you
-// automatically.
+// Clears all of the mapped associations. Deprecated, use ScopedFeatureList
+// instead as it does a lot of work for you automatically.
 void ClearAllVariationIDs();
 
-// Clears all of the associated params. Deprecated, try to use
-// VariationParamsManager instead as it does a lot of work for you
-// automatically.
+// Clears all of the associated params. Deprecated, use ScopedFeatureList
+// instead as it does a lot of work for you automatically.
 void ClearAllVariationParams();
 
 }  // namespace testing

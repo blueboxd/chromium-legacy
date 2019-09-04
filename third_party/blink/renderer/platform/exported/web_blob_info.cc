@@ -67,7 +67,7 @@ WebBlobInfo& WebBlobInfo::operator=(const WebBlobInfo& other) = default;
 mojo::ScopedMessagePipeHandle WebBlobInfo::CloneBlobHandle() const {
   if (!blob_handle_)
     return mojo::ScopedMessagePipeHandle();
-  return blob_handle_->CloneBlobPtr().PassInterface().PassHandle();
+  return blob_handle_->CloneBlobRemote().PassPipe();
 }
 
 WebBlobInfo::WebBlobInfo(scoped_refptr<BlobDataHandle> handle)

@@ -176,9 +176,11 @@ const CSSPrimitiveValue* InterpolableLength::CreateCSSValue(
   }
 
   if (root_node) {
-    return CSSMathFunctionValue::Create(root_node);
+    return CSSMathFunctionValue::Create(root_node, range);
   }
   if (first_value) {
+    if (range == kValueRangeNonNegative && first_value->DoubleValue() < 0)
+      return CSSNumericLiteralValue::Create(0, first_value->GetType());
     return first_value;
   }
   return CSSNumericLiteralValue::Create(0,

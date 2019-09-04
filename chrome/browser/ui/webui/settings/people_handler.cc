@@ -220,6 +220,7 @@ base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
                              base::TimeFormatShortDate(passphrase_time));
     case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
     case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
+    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
     case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
       break;
   }
@@ -242,6 +243,7 @@ base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
                              base::TimeFormatShortDate(passphrase_time));
     case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
     case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
+    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
     case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
       break;
   }

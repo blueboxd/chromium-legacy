@@ -383,8 +383,6 @@ class ExtensionWebstorePrivateApiTestChild
                               embedded_test_server_.get()) {
     // Suppress regular user login to enable child user login.
     set_chromeos_user_ = false;
-    // Launch a browser instance after logging in.
-    logged_in_user_mixin_.set_should_launch_browser(true);
   }
 
   void SetUp() override {
@@ -427,14 +425,8 @@ class ExtensionWebstorePrivateApiTestChild
   void SetUpOnMainThread() override {
     mixin_host_.SetUpOnMainThread();
     ExtensionWebstorePrivateApiTest::SetUpOnMainThread();
-    // Needed for resolving FakeGaiaMixin token requests.
-    // Otherwise the test times out.
-    host_resolver()->AddRule("*", "127.0.0.1");
-    logged_in_user_mixin_.LogInUser(true /* issue_any_scope_token */);
-    // Set the private |browser_| member in InProcessBrowserTest.
-    // Otherwise calls to InProcessBrowserTest::browser() returns null and leads
-    // to segmentation faults.
-    SelectFirstBrowser();
+    logged_in_user_mixin_.SetUpOnMainThreadHelper(
+        host_resolver(), this, true /* issue_any_scope_token */);
   }
 
   void TearDownOnMainThread() override {

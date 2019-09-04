@@ -9,8 +9,6 @@
 (function() {
 'use strict';
 
-const mojom = chromeos.networkConfig.mojom;
-
 Polymer({
   is: 'network-proxy',
 
@@ -84,14 +82,15 @@ Polymer({
   /**
    * Saved Manual properties so that switching to another type does not loose
    * any set properties while the UI is open.
-   * @private {!mojom.ManagedManualProxySettings|undefined}
+   * @private {!chromeos.networkConfig.mojom.ManagedManualProxySettings|
+   *           undefined}
    */
   savedManual_: undefined,
 
   /**
    * Saved ExcludeDomains properties so that switching to a non-Manual type does
    * not loose any set exclusions while the UI is open.
-   * @private {!mojom.ManagedStringList|undefined}
+   * @private {!chromeos.networkConfig.mojom.ManagedStringList|undefined}
    */
   savedExcludeDomains_: undefined,
 
@@ -125,8 +124,8 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProxyLocation|undefined} a
-   * @param {!mojom.ManagedProxyLocation|undefined} b
+   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} a
+   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined} b
    * @return {boolean}
    * @private
    */
@@ -137,7 +136,7 @@ Polymer({
 
   /**
    * @param {number} port
-   * @return {!mojom.ManagedProxyLocation}
+   * @return {!chromeos.networkConfig.mojom.ManagedProxyLocation}
    * @private
    */
   createDefaultProxyLocation_: function(port) {
@@ -149,13 +148,14 @@ Polymer({
 
   /**
    * Returns a copy of |inputProxy| with all required properties set correctly.
-   * @param {!mojom.ManagedProxySettings} inputProxy
-   * @return {!mojom.ManagedProxySettings}
+   * @param {!chromeos.networkConfig.mojom.ManagedProxySettings} inputProxy
+   * @return {!chromeos.networkConfig.mojom.ManagedProxySettings}
    * @private
    */
   validateProxy_: function(inputProxy) {
-    const proxy = /** @type {!mojom.ManagedProxySettings} */ (
-        Object.assign({}, inputProxy));
+    const proxy =
+        /** @type {!chromeos.networkConfig.mojom.ManagedProxySettings} */ (
+            Object.assign({}, inputProxy));
     const type = proxy.type.activeValue;
     if (type == 'PAC') {
       if (!proxy.pac) {
@@ -175,9 +175,11 @@ Polymer({
       if (!proxy.manual.socks) {
         proxy.manual.socks = this.createDefaultProxyLocation_(1080);
       }
-      proxy.excludeDomains = proxy.excludeDomains ||
-          this.savedExcludeDomains_ ||
-          {activeValue: [], policySource: mojom.PolicySource.kNone};
+      proxy.excludeDomains =
+          proxy.excludeDomains || this.savedExcludeDomains_ || {
+            activeValue: [],
+            policySource: chromeos.networkConfig.mojom.PolicySource.kNone
+          };
     }
     return proxy;
   },
@@ -214,7 +216,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProxySettings} proxy
+   * @param {!chromeos.networkConfig.mojom.ManagedProxySettings} proxy
    * @private
    */
   setProxy_: function(proxy) {
@@ -244,7 +246,7 @@ Polymer({
   },
 
   /**
-   * @return {!mojom.ManagedProxySettings}
+   * @return {!chromeos.networkConfig.mojom.ManagedProxySettings}
    * @private
    */
   createDefaultProxySettings_: function() {
@@ -254,8 +256,9 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProxyLocation|undefined} location
-   * @return {!mojom.ProxyLocation|undefined}
+   * @param {!chromeos.networkConfig.mojom.ManagedProxyLocation|undefined}
+   *     location
+   * @return {!chromeos.networkConfig.mojom.ProxyLocation|undefined}
    * @private
    */
   getProxyLocation_: function(location) {
@@ -273,6 +276,7 @@ Polymer({
    * @private
    */
   sendProxyChange_: function() {
+    const mojom = chromeos.networkConfig.mojom;
     const proxyType = OncMojo.getActiveString(this.proxy_.type);
     if (!proxyType || (proxyType == 'PAC' && !this.proxy_.pac)) {
       return;

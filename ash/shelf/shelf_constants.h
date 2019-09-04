@@ -6,6 +6,7 @@
 #define ASH_SHELF_SHELF_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"

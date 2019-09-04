@@ -38,6 +38,8 @@ class ImpressionHistoryTracker : public UserActionHandler {
     virtual ~Delegate() = default;
 
     // Called when the impression data is updated.
+    // TODO(xingliu): Rename this, only need to call this when the background
+    // task needs to reschedule to another time.
     virtual void OnImpressionUpdated() = 0;
 
    private:

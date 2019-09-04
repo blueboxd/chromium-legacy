@@ -18,7 +18,6 @@
 
 namespace net {
 
-struct DnsConfig;
 class NetworkChangeNotifierFactory;
 struct NetworkInterface;
 class SystemDnsConfigChangeNotifier;
@@ -146,15 +145,10 @@ class NET_EXPORT NetworkChangeNotifier {
   class NET_EXPORT DNSObserver {
    public:
     // Will be called when the DNS settings of the system may have changed.
-    // Use GetDnsConfig to obtain the current settings.
     virtual void OnDNSChanged() = 0;
     // Will be called when DNS settings of the system have been loaded.
-    // Use GetDnsConfig to obtain the current settings.
     // NOTE(pauljensen): This will not be called if the initial DNS config
     // has already been read before this observer is registered.
-    // Determining if a DNS config has already been read can be done by
-    // calling GetDnsConfig() after registering an observer, and seeing if
-    // the DnsConfig's IsValid() returns true.
     virtual void OnInitialDNSConfigRead();
 
    protected:
@@ -368,12 +362,13 @@ class NET_EXPORT NetworkChangeNotifier {
   // Requires NetworkHandles support, see AreNetworkHandlesSupported().
   static NetworkHandle GetDefaultNetwork();
 
-  // Retrieve the last read DnsConfig. This could be expensive if the system has
-  // a large HOSTS file.
-  //
-  // TODO(crbug.com/971411): Remove once HostResolverManager converted to
-  // directly use SystemDnsConfigChangeNotifier.
-  static void GetDnsConfig(DnsConfig* config);
+  // Get the underlying SystemDnsConfigChangeNotifier, or null if there is none.
+  // Only intended for code building HostResolverManagers. Other code intending
+  // to watch for DNS config changes should use
+  // NetworkChangeNotifier::AddDNSObserver to receive notifications about both
+  // underlying system config changes and effective changes added on top by
+  // Chrome net code.
+  static SystemDnsConfigChangeNotifier* GetSystemDnsConfigNotifier();
 
 #if defined(OS_LINUX)
   // Returns the AddressTrackerLinux if present.
@@ -541,6 +536,7 @@ class NET_EXPORT NetworkChangeNotifier {
   virtual ConnectionType GetCurrentNetworkConnectionType(
       NetworkHandle network) const;
   virtual NetworkHandle GetCurrentDefaultNetwork() const;
+  virtual SystemDnsConfigChangeNotifier* GetCurrentSystemDnsConfigNotifier();
 
   // Broadcasts a notification to all registered observers.  Note that this
   // happens asynchronously, even for observers on the current thread, even in
@@ -555,21 +551,10 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfSpecificNetworkChange(NetworkChangeType type,
                                                      NetworkHandle network);
 
-  // Stores |config| in NetworkState and notifies observers. The first
-  // notification will be OnInitialDNSConfigRead, and after that OnDNSChanged.
-  static void SetDnsConfigForTesting(const DnsConfig& config);
-
-  // Clears previous DnsConfig, if any, to simulate the first one being set.
-  static void ClearDnsConfigForTesting();
-
   // Infer connection type from |GetNetworkList|. If all network interfaces
   // have the same type, return it, otherwise return CONNECTION_UNKNOWN.
   static ConnectionType ConnectionTypeFromInterfaces();
 
-  SystemDnsConfigChangeNotifier* system_dns_config_notifier() {
-    DCHECK(system_dns_config_notifier_);
-    return system_dns_config_notifier_;
-  }
   // Unregisters and clears |system_dns_config_notifier_|. Useful if a subclass
   // owns the notifier and is destroying it before |this|'s destructor is called
   void StopSystemDnsConfigNotifier();

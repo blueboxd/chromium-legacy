@@ -80,9 +80,7 @@ target(link_target_type, "renderer_sources") {
 
   deps = [
     "//content/public/child:child_sources",
-    "//content/public/common:buildflags",
     "//content/public/common:common_sources",
-    "//content/public/common:feature_h264_with_openh264_ffmpeg",
     "//content/renderer",
     "//gin",
     "//media/capture",
@@ -92,6 +90,7 @@ target(link_target_type, "renderer_sources") {
     "//ppapi/c",
     "//skia",
     "//third_party/blink/public:blink_headers",
+    "//third_party/blink/public/common",
     "//third_party/webrtc_overrides",
     "//third_party/widevine/cdm:headers",
     "//ui/base",

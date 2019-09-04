@@ -261,16 +261,12 @@ const char* LoggingEventToBackgroundUserActionName(NTPLoggingEventType event) {
       return "NTPRicherPicker.Backgrounds.CollectionClicked";
     case NTP_BACKGROUND_SELECT_IMAGE:
       return "NTPRicherPicker.Backgrounds.BackgroundSelected";
-    case NTP_BACKGROUND_DESELECT_IMAGE:
-      return "NTPRicherPicker.Backgrounds.BackgroundDeselected";
     case NTP_BACKGROUND_IMAGE_SET:
       return "NTPRicherPicker.Backgrounds.BackgroundSet";
     case NTP_BACKGROUND_BACK_CLICK:
       return "NTPRicherPicker.Backgrounds.BackClicked";
     case NTP_BACKGROUND_DEFAULT_SELECTED:
       return "NTPRicherPicker.Backgrounds.DefaultSelected";
-    case NTP_BACKGROUND_DEFAULT_DESELECTED:
-      return "NTPRicherPicker.Backgrounds.DefaultDeselected";
     case NTP_BACKGROUND_UPLOAD_CANCEL:
       return "NTPRicherPicker.Backgrounds.UploadCanceled";
     case NTP_BACKGROUND_UPLOAD_DONE:
@@ -515,11 +511,9 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_BACKGROUND_UPLOAD_FROM_DEVICE:
     case NTP_BACKGROUND_OPEN_COLLECTION:
     case NTP_BACKGROUND_SELECT_IMAGE:
-    case NTP_BACKGROUND_DESELECT_IMAGE:
     case NTP_BACKGROUND_IMAGE_SET:
     case NTP_BACKGROUND_BACK_CLICK:
     case NTP_BACKGROUND_DEFAULT_SELECTED:
-    case NTP_BACKGROUND_DEFAULT_DESELECTED:
     case NTP_BACKGROUND_UPLOAD_CANCEL:
     case NTP_BACKGROUND_UPLOAD_DONE:
     case NTP_BACKGROUND_IMAGE_RESET:

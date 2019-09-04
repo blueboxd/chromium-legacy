@@ -11,8 +11,9 @@ namespace autofill {
 using base::TimeTicks;
 
 AutofillHandlerProxy::AutofillHandlerProxy(AutofillDriver* driver,
+                                           LogManager* log_manager,
                                            AutofillProvider* provider)
-    : AutofillHandler(driver), provider_(provider) {}
+    : AutofillHandler(driver, log_manager), provider_(provider) {}
 
 AutofillHandlerProxy::~AutofillHandlerProxy() {}
 

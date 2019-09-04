@@ -1939,9 +1939,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, WebViewRendererKillReload) {
 }
 
 // Test NavigationRequest::CheckAboutSrcDoc()
-// TODO(https://crbug.com/996725): Re-enable this test.
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
-                       DISABLED_BlockedSrcDocBrowserInitiated) {
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
   const char* about_srcdoc_urls[] = {"about:srcdoc", "about:srcdoc?foo",
                                      "about:srcdoc#foo"};
   // 1. Main frame navigations to about:srcdoc and its variations are blocked.
@@ -1972,9 +1970,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
 }
 
 // Test NavigationRequest::CheckAboutSrcDoc().
-// TODO(https://crbug.com/996725): Re-enable this test.
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
-                       DISABLED_BlockedSrcDocRendererInitiated) {
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   FrameTreeNode* main_frame =

@@ -34,6 +34,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   if (feature_info->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces)
     capabilities_.supports_post_sub_buffer = false;
+  capabilities_.max_frames_pending = gl_surface->GetBufferCount() - 1;
 }
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,

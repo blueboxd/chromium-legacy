@@ -91,9 +91,7 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
       result.blob_length = std::numeric_limits<uint64_t>::max();
       if (element.optional_blob_data_handle_) {
         result.optional_blob_handle =
-            element.optional_blob_data_handle_->CloneBlobPtr()
-                .PassInterface()
-                .PassHandle();
+            element.optional_blob_data_handle_->CloneBlobRemote().PassPipe();
         result.blob_length = element.optional_blob_data_handle_->size();
       }
       break;

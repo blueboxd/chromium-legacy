@@ -34,7 +34,9 @@ android_library("apk_java") {
     "//android_webview:android_webview_locale_config_java",
     "//android_webview:common_commandline_java",
     "//base:base_java",
+    "//base:jni_java",
     "//components/embedder_support/android:application_java",
     "//ui/android:ui_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

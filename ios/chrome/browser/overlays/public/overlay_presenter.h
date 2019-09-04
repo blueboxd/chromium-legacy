@@ -33,6 +33,9 @@ class OverlayPresenter {
   // Adds and removes observers.
   virtual void AddObserver(OverlayPresenterObserver* observer) = 0;
   virtual void RemoveObserver(OverlayPresenterObserver* observer) = 0;
+
+  // Whether overlay UI is currently shown in the presentation context.
+  virtual bool IsShowingOverlayUI() const = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_PRESENTER_H_

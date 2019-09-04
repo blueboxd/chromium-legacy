@@ -86,7 +86,7 @@ public class CustomTabsDynamicModuleLoaderTest {
             });
         });
 
-        onLoaded.waitForCallback();
+        onLoaded.waitForFirst();
     }
 
     /**
@@ -107,7 +107,7 @@ public class CustomTabsDynamicModuleLoaderTest {
             });
         });
 
-        onLoaded.waitForCallback();
+        onLoaded.waitForFirst();
 
         assertEquals(0, mDexInputStreamProvider.getCallCount());
         assertEquals(0, mModuleLoaderFromApk.getDexDirectory().listFiles().length);
@@ -132,7 +132,7 @@ public class CustomTabsDynamicModuleLoaderTest {
             });
         });
 
-        onLoaded.waitForCallback();
+        onLoaded.waitForFirst();
     }
 
     @Test
@@ -150,7 +150,7 @@ public class CustomTabsDynamicModuleLoaderTest {
             });
         });
 
-        onLoaded.waitForCallback();
+        onLoaded.waitForFirst();
 
         assertEquals(1, mDexInputStreamProvider.getCallCount());
 
@@ -175,7 +175,7 @@ public class CustomTabsDynamicModuleLoaderTest {
                     result -> onLoaded1.notifyCalled());
         });
 
-        onLoaded1.waitForCallback();
+        onLoaded1.waitForFirst();
 
         CallbackHelper onLoaded2 = new CallbackHelper();
 
@@ -186,7 +186,7 @@ public class CustomTabsDynamicModuleLoaderTest {
                     result -> onLoaded2.notifyCalled());
         });
 
-        onLoaded2.waitForCallback();
+        onLoaded2.waitForFirst();
 
         assertEquals(1, mDexInputStreamProvider.getCallCount());
 
@@ -213,7 +213,7 @@ public class CustomTabsDynamicModuleLoaderTest {
             });
         });
 
-        onLoaded.waitForCallback();
+        onLoaded.waitForFirst();
 
         assertEquals(1, mDexInputStreamProvider.getCallCount());
 
@@ -238,7 +238,7 @@ public class CustomTabsDynamicModuleLoaderTest {
                     result -> onLoadedWithDex.notifyCalled());
         });
 
-        onLoadedWithDex.waitForCallback();
+        onLoadedWithDex.waitForFirst();
         CallbackHelper onLoadedWithoutDex = new CallbackHelper();
 
         runOnUiThreadBlocking(() -> {
@@ -248,7 +248,7 @@ public class CustomTabsDynamicModuleLoaderTest {
                     result -> onLoadedWithoutDex.notifyCalled());
         });
 
-        onLoadedWithoutDex.waitForCallback();
+        onLoadedWithoutDex.waitForFirst();
 
         assertEquals(1, mDexInputStreamProvider.getCallCount());
         assertFalse(ContextUtils.getAppSharedPreferences().contains(

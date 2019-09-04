@@ -13,6 +13,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Determines user consent and app opt-out for metrics. See aw_metrics_service_client.h for more
@@ -56,7 +57,7 @@ public class AwMetricsServiceClient {
 
     public static void setConsentSetting(Context ctx, boolean userConsent) {
         ThreadUtils.assertOnUiThread();
-        nativeSetHaveMetricsConsent(userConsent && !isAppOptedOut(ctx));
+        AwMetricsServiceClientJni.get().setHaveMetricsConsent(userConsent && !isAppOptedOut(ctx));
     }
 
     @CalledByNative
@@ -65,5 +66,8 @@ public class AwMetricsServiceClient {
         return shouldRecordPackageName(ctx) ? ctx.getPackageName() : null;
     }
 
-    public static native void nativeSetHaveMetricsConsent(boolean enabled);
+    @NativeMethods
+    interface Natives {
+        void setHaveMetricsConsent(boolean enabled);
+    }
 }

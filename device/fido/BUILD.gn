@@ -90,7 +90,6 @@ component("fido") {
     "fido_discovery_factory.h",
     "fido_parsing_utils.cc",
     "fido_parsing_utils.h",
-    "fido_request_handler.h",
     "fido_request_handler_base.cc",
     "fido_request_handler_base.h",
     "fido_task.cc",

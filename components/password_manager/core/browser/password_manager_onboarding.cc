@@ -71,7 +71,11 @@ void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
 
 bool ShouldShowOnboarding(PrefService* prefs,
                           PasswordUpdateBool is_password_update,
-                          BlacklistedBool is_blacklisted) {
+                          BlacklistedBool is_blacklisted,
+                          SyncState sync_state) {
+  if (sync_state == NOT_SYNCING) {
+    return false;
+  }
   if (is_blacklisted) {
     return false;
   }

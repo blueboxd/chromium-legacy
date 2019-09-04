@@ -3,10 +3,15 @@
 // found in the LICENSE file.
 
 package com.android.webview.chromium;
+import org.chromium.base.annotations.NativeMethods;
 
 class DrawFunctor {
     public static long getDrawFnFunctionTable() {
-        return nativeGetFunctionTable();
+        return DrawFunctorJni.get().getFunctionTable();
     }
-    private static native long nativeGetFunctionTable();
+
+    @NativeMethods
+    interface Natives {
+        long getFunctionTable();
+    }
 }

@@ -51,7 +51,6 @@ class FakeTabController : public TabController {
   }
   bool SupportsMultipleSelection() override { return false; }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
-  bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab, const ui::Event& event) override {}
   void ExtendSelectionTo(Tab* tab) override {}
   void ToggleSelected(Tab* tab) override {}
@@ -81,9 +80,6 @@ class FakeTabController : public TabController {
                          const ui::MouseEvent& event) override {}
   void UpdateHoverCard(Tab* tab) override {}
   bool HoverCardIsShowingForTab(Tab* tab) override { return false; }
-  bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override {
-    return true;
-  }
   int GetBackgroundOffset() const override { return 0; }
   bool ShouldPaintAsActiveFrame() const override { return true; }
   int GetStrokeThickness() const override { return 0; }

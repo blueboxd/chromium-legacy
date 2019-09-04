@@ -762,6 +762,10 @@ bool VisualViewport::VisualViewportSuppliesScrollbars() const {
   return GetPage().GetSettings().GetViewportEnabled();
 }
 
+const Document* VisualViewport::GetDocument() const {
+  return MainFrame() ? MainFrame()->GetDocument() : nullptr;
+}
+
 CompositorElementId VisualViewport::GetCompositorElementId() const {
   return element_id_;
 }

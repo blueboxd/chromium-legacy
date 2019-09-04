@@ -43,7 +43,8 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::ClientCertificateResponderPtr client_cert_responder) override {}
+      mojo::PendingRemote<mojom::ClientCertificateResponder>
+          client_cert_responder) override {}
   void OnSSLCertificateError(uint32_t process_id,
                              uint32_t routing_id,
                              const GURL& url,

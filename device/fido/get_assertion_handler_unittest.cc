@@ -206,7 +206,6 @@ TEST_F(FidoGetAssertionHandlerTest, CtapRequestOnSingleDevice) {
 
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
 }
 
 // Test a scenario where the connected authenticator is a U2F device.
@@ -223,7 +222,6 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
 }
 
 TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
@@ -330,7 +328,6 @@ TEST_F(FidoGetAssertionHandlerTest, ValidEmptyCredential) {
 
   get_assertion_callback().WaitForCallback();
   const auto& response = get_assertion_callback().value<0>();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   ASSERT_TRUE(response);
   ASSERT_EQ(1u, response->size());
@@ -358,7 +355,6 @@ TEST_F(FidoGetAssertionHandlerTest, TruncatedUTF8) {
 
   get_assertion_callback().WaitForCallback();
   const auto& response = get_assertion_callback().value<0>();
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   ASSERT_TRUE(response);
   ASSERT_EQ(1u, response->size());
@@ -520,7 +516,6 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyUsbTransportAllowed) {
 
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
       request_handler->transport_availability_info().available_transports,
       ::testing::UnorderedElementsAre(
@@ -554,7 +549,6 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyBleTransportAllowed) {
 
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
       request_handler->transport_availability_info().available_transports,
       ::testing::UnorderedElementsAre(
@@ -588,7 +582,6 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyNfcTransportAllowed) {
 
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
       request_handler->transport_availability_info().available_transports,
       ::testing::UnorderedElementsAre(
@@ -627,7 +620,6 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
 
   EXPECT_EQ(GetAssertionStatus::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value<0>());
-  EXPECT_TRUE(request_handler->is_complete());
   EXPECT_THAT(
       request_handler->transport_availability_info().available_transports,
       ::testing::UnorderedElementsAre(FidoTransportProtocol::kInternal));

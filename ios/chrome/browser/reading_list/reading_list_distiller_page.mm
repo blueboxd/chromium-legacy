@@ -147,8 +147,7 @@ bool ReadingListDistillerPage::IsLoadingSuccess(
 
   // On SSL connections, check there was no error.
   const web::SSLStatus& ssl_status = item->GetSSL();
-  if (net::IsCertStatusError(ssl_status.cert_status) &&
-      !net::IsCertStatusMinorError(ssl_status.cert_status)) {
+  if (net::IsCertStatusError(ssl_status.cert_status)) {
     return false;
   }
   return true;
@@ -239,8 +238,7 @@ bool ReadingListDistillerPage::IsGoogleCachedAMPPage() {
                                          ->GetLastCommittedItem()
                                          ->GetSSL();
   if (!ssl_status.certificate ||
-      (net::IsCertStatusError(ssl_status.cert_status) &&
-       !net::IsCertStatusMinorError(ssl_status.cert_status))) {
+      net::IsCertStatusError(ssl_status.cert_status)) {
     return false;
   }
 

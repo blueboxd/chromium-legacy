@@ -199,11 +199,10 @@ var tests = [
         url,
         'foo.com/bar.pdf',
         'http://www.example.com/subdir/foo.com/bar.pdf');
-    // The expected result is not normalized here.
     doNavigationUrlTests(
         url,
         '../www.foo.com/bar.pdf',
-        'http://www.example.com/subdir/../www.foo.com/bar.pdf');
+        'http://www.example.com/www.foo.com/bar.pdf');
 
     // Open an absolute link.
     doNavigationUrlTests(
@@ -227,15 +226,15 @@ var tests = [
     doNavigationUrlTests(
         url,
         '..\\bar.pdf',
-        'http://www.example.com/subdir/..\\bar.pdf');
+        'http://www.example.com/bar.pdf');
     doNavigationUrlTests(
         url,
         '.\\bar.pdf',
-        'http://www.example.com/subdir/.\\bar.pdf');
+        'http://www.example.com/subdir/bar.pdf');
     doNavigationUrlTests(
         url,
         '\\bar.pdf',
-        'http://www.example.com/subdir/\\bar.pdf');
+        'http://www.example.com/subdir//bar.pdf');
 
     // Regression test for https://crbug.com/569040
     doNavigationUrlTests(

@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/power/power_button_menu_metrics_type.h"
 #include "ash/system/power/power_button_menu_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -22,9 +24,6 @@ namespace ash {
 constexpr int PowerButtonMenuView::kMenuViewTransformDistanceDp;
 
 namespace {
-
-// Color of the fullscreen background shield.
-constexpr SkColor kShieldColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
 
 // Opacity of the power button menu fullscreen background shield.
 constexpr float kPowerButtonMenuOpacity = 0.6f;
@@ -65,7 +64,9 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   PowerButtonMenuBackgroundView(base::RepeatingClosure show_animation_done)
       : show_animation_done_(show_animation_done) {
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    layer()->SetColor(kShieldColor);
+    layer()->SetColor(AshColorProvider::Get()->DeprecatedGetShieldLayerColor(
+        AshColorProvider::ShieldLayerType::kAlpha60,
+        kPowerButtonMenuFullscreenShieldColor));
   }
 
   ~PowerButtonMenuBackgroundView() override = default;

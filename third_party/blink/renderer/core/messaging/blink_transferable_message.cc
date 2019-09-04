@@ -130,9 +130,8 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
     result.blobs.push_back(mojom::SerializedBlob::New(
         blob.value->Uuid().Utf8(), blob.value->GetType().Utf8(),
         blob.value->size(),
-        mojom::BlobPtrInfo(
-            blob.value->CloneBlobPtr().PassInterface().PassHandle(),
-            mojom::Blob::Version_)));
+        mojom::BlobPtrInfo(blob.value->CloneBlobRemote().PassPipe(),
+                           mojom::Blob::Version_)));
   }
   result.stack_trace_id = message.sender_stack_trace_id.id;
   result.stack_trace_debugger_id_first =

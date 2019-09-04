@@ -124,8 +124,10 @@ public class ScrimTest {
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mBottomSheet.showContent(new TestBottomSheetContent(
-                    mActivityTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false));
+            mSheetController.requestShowContent(
+                    new TestBottomSheetContent(mActivityTestRule.getActivity(),
+                            BottomSheet.ContentPriority.HIGH, false),
+                    false);
             mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false);
         });
 

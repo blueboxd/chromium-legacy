@@ -241,6 +241,7 @@ void CryptAuthSchedulerImpl::HandleEnrollmentResult(
 
 void CryptAuthSchedulerImpl::HandleDeviceSyncResult(
     const CryptAuthDeviceSyncResult& device_sync_result) {
+  // Note: "Success" for DeviceSync means no errors, not even non-fatal errors.
   HandleResult(RequestType::kDeviceSync, device_sync_result.IsSuccess(),
                device_sync_result.client_directive());
 }

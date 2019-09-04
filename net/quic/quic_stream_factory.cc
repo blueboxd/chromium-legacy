@@ -816,7 +816,7 @@ int QuicStreamFactory::Job::DoConnect() {
     return ERR_QUIC_PROTOCOL_ERROR;
 
   rv = session_->CryptoConnect(
-      base::Bind(&QuicStreamFactory::Job::OnConnectComplete, GetWeakPtr()));
+      base::BindOnce(&QuicStreamFactory::Job::OnConnectComplete, GetWeakPtr()));
 
   if (!session_->connection()->connected() &&
       session_->error() == quic::QUIC_PROOF_INVALID) {
@@ -1416,9 +1416,8 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                             params_.retry_on_alternate_network_before_handshake,
                             params_.race_stale_dns_on_connection, priority,
                             cert_verify_flags, net_log);
-  int rv = job->Run(
-      base::BindRepeating(&QuicStreamFactory::OnJobComplete,
-                          base::Unretained(this), job.get()));
+  int rv = job->Run(base::BindOnce(&QuicStreamFactory::OnJobComplete,
+                                   base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
     job->AddRequest(request);
     active_jobs_[session_key] = std::move(job);
@@ -2062,8 +2061,8 @@ quic::QuicAsyncStatus QuicStreamFactory::StartCertVerifyJob(
       new CertVerifierJob(server_id, cert_verify_flags, net_log));
   quic::QuicAsyncStatus status = cert_verifier_job->Run(
       &crypto_config_,
-      base::Bind(&QuicStreamFactory::OnCertVerifyJobComplete,
-                 base::Unretained(this), cert_verifier_job.get()));
+      base::BindOnce(&QuicStreamFactory::OnCertVerifyJobComplete,
+                     base::Unretained(this), cert_verifier_job.get()));
   if (status == quic::QUIC_PENDING)
     active_cert_verifier_jobs_[server_id] = std::move(cert_verifier_job);
   return status;

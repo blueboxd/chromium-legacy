@@ -157,10 +157,9 @@ TEST(OneShotEventTest, DropsCallbackRefUponSignalled) {
   {
     auto ref_counted_class =
         base::MakeRefCounted<RefCountedClass>(&did_delete_instance);
-    event.Post(
-        FROM_HERE,
-        base::BindRepeating(&RefCountedClass::PerformTask, ref_counted_class),
-        runner);
+    event.Post(FROM_HERE,
+               base::BindOnce(&RefCountedClass::PerformTask, ref_counted_class),
+               runner);
     event.Signal();
     runner->RunPendingTasks();
     EXPECT_TRUE(ref_counted_class->did_perform_task());

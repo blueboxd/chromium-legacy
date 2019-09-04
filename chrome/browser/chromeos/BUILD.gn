@@ -2490,7 +2490,6 @@ source_set("unit_tests") {
     "drive/fileapi/fileapi_worker_unittest.cc",
     "drive/fileapi/webkit_file_stream_reader_impl_unittest.cc",
     "drive/write_on_cache_file_unittest.cc",
-    "eol_notification_unittest.cc",
     "events/event_rewriter_unittest.cc",
     "extensions/active_tab_permission_granter_delegate_chromeos_unittest.cc",
     "extensions/default_app_order_unittest.cc",

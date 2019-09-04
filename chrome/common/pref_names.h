@@ -204,6 +204,8 @@ extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kNaturalScroll[];
 extern const char kPrimaryMouseButtonRight[];
 extern const char kMouseReverseScroll[];
+extern const char kMouseAcceleration[];
+extern const char kTouchpadAcceleration[];
 extern const char kMouseSensitivity[];
 extern const char kTouchpadSensitivity[];
 extern const char kUse24HourClock[];
@@ -314,6 +316,7 @@ extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kDeviceWebUsbAllowDevicesForUrls[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
 extern const char kSettingsShowBrowserBanner[];
+extern const char kSettingsShowOSBanner[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
@@ -412,7 +415,6 @@ extern const char kPrintPreviewUseSystemDefaultPrinter[];
 #endif
 
 #if defined(OS_CHROMEOS)
-extern const char kExternalPrintServers[];
 extern const char kRecommendedNativePrinters[];
 extern const char kRecommendedNativePrintersAccessMode[];
 extern const char kRecommendedNativePrintersBlacklist[];

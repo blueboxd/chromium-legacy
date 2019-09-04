@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
@@ -78,6 +80,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @interface PopupMenuMediator () <BookmarkModelBridgeObserver,
                                  CRWWebStateObserver,
                                  IOSLanguageDetectionTabHelperObserving,
+                                 OverlayPresenterObserving,
                                  ReadingListMenuNotificationDelegate,
                                  WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -87,6 +90,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   // Bridge to get notified of the language detection event.
   std::unique_ptr<language::IOSLanguageDetectionTabHelperObserverBridge>
       _iOSLanguageDetectionTabHelperObserverBridge;
+  std::unique_ptr<OverlayPresenterObserver> _overlayPresenterObserver;
 }
 
 // Items to be displayed in the popup menu.
@@ -108,6 +112,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // Whether the hint for the "New Incognito Tab" item should be triggered.
 @property(nonatomic, assign) BOOL triggerNewIncognitoTabTip;
 
+// Whether an overlay is currently presented over the web content area.
+@property(nonatomic, assign, getter=isWebContentAreaShowingOverlay)
+    BOOL webContentAreaShowingOverlay;
+
 #pragma mark*** Specific Items ***
 
 @property(nonatomic, strong) PopupMenuToolsItem* openNewIncognitoTabItem;
@@ -128,28 +136,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 @implementation PopupMenuMediator
 
-@synthesize items = _items;
-@synthesize isIncognito = _isIncognito;
-@synthesize popupMenu = _popupMenu;
-@synthesize bookmarkModel = _bookmarkModel;
-@synthesize dispatcher = _dispatcher;
-@synthesize engagementTracker = _engagementTracker;
-@synthesize readingListMenuNotifier = _readingListMenuNotifier;
-@synthesize triggerNewIncognitoTabTip = _triggerNewIncognitoTabTip;
-@synthesize type = _type;
-@synthesize webState = _webState;
-@synthesize webStateList = _webStateList;
-@synthesize openNewIncognitoTabItem = _openNewIncognitoTabItem;
-@synthesize reloadStopItem = _reloadStopItem;
-@synthesize readLaterItem = _readLaterItem;
-@synthesize bookmarkItem = _bookmarkItem;
-@synthesize findInPageItem = _findInPageItem;
-@synthesize siteInformationItem = _siteInformationItem;
-@synthesize requestDesktopSiteItem = _requestDesktopSiteItem;
-@synthesize requestMobileSiteItem = _requestMobileSiteItem;
-@synthesize readingListItem = _readingListItem;
-@synthesize specificItems = _specificItems;
-
 #pragma mark - Public
 
 - (instancetype)initWithType:(PopupMenuType)type
@@ -164,6 +150,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
         [[ReadingListMenuNotifier alloc] initWithReadingList:readingListModel];
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _overlayPresenterObserver =
+        std::make_unique<OverlayPresenterObserverBridge>(self);
     _triggerNewIncognitoTabTip = triggerNewIncognitoTabTip;
   }
   return self;
@@ -194,6 +182,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     }
 
     _engagementTracker = nullptr;
+  }
+
+  if (_webContentAreaOverlayPresenter) {
+    _webContentAreaOverlayPresenter->RemoveObserver(
+        _overlayPresenterObserver.get());
+    self.webContentAreaShowingOverlay = NO;
+    _webContentAreaOverlayPresenter = nullptr;
   }
 
   _readingListMenuNotifier = nil;
@@ -301,6 +296,18 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [self updateBookmarkItem];
 }
 
+#pragma mark - OverlayPresenterObserving
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    willShowOverlayForRequest:(OverlayRequest*)request {
+  self.webContentAreaShowingOverlay = YES;
+}
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    didHideOverlayForRequest:(OverlayRequest*)request {
+  self.webContentAreaShowingOverlay = NO;
+}
+
 #pragma mark - Properties
 
 - (void)setWebState:(web::WebState*)webState {
@@ -338,6 +345,24 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (_webStateList) {
     self.webState = self.webStateList->GetActiveWebState();
     _webStateList->AddObserver(_webStateListObserver.get());
+  }
+}
+
+- (void)setWebContentAreaOverlayPresenter:
+    (OverlayPresenter*)webContentAreaOverlayPresenter {
+  if (_webContentAreaOverlayPresenter) {
+    _webContentAreaOverlayPresenter->RemoveObserver(
+        _overlayPresenterObserver.get());
+    self.webContentAreaShowingOverlay = NO;
+  }
+
+  _webContentAreaOverlayPresenter = webContentAreaOverlayPresenter;
+
+  if (_webContentAreaOverlayPresenter) {
+    _webContentAreaOverlayPresenter->AddObserver(
+        _overlayPresenterObserver.get());
+    self.webContentAreaShowingOverlay =
+        _webContentAreaOverlayPresenter->IsShowingOverlayUI();
   }
 }
 
@@ -436,6 +461,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   return _items;
 }
 
+- (void)setWebContentAreaShowingOverlay:(BOOL)webContentAreaShowingOverlay {
+  if (_webContentAreaShowingOverlay == webContentAreaShowingOverlay)
+    return;
+  _webContentAreaShowingOverlay = webContentAreaShowingOverlay;
+  [self updatePopupMenu];
+}
+
 #pragma mark - PopupMenuActionHandlerCommands
 
 - (void)readPageLater {
@@ -498,7 +530,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // status.
 - (void)updatePopupMenu {
   [self updateReloadStopItem];
-  self.readLaterItem.enabled = [self isCurrentURLWebURL];
+  // The "Read Later" functionality requires JavaScript execution, which is
+  // paused while overlays are displayed over the web content area.
+  self.readLaterItem.enabled =
+      !self.webContentAreaShowingOverlay && [self isCurrentURLWebURL];
   [self updateBookmarkItem];
   self.translateItem.enabled = [self isTranslateEnabled];
   self.findInPageItem.enabled = [self isFindInPageEnabled];

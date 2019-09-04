@@ -294,23 +294,25 @@ CreditCardAccessManager::GetOrCreateFIDOAuthenticator() {
 #endif
 
 void CreditCardAccessManager::OnCVCAuthenticationComplete(
-    bool did_succeed,
-    const CreditCard* card,
-    const base::string16& cvc,
-    base::Value creation_options) {
+    const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response) {
   is_authentication_in_progress_ = false;
-  accessor_->OnCreditCardFetched(did_succeed, card, cvc);
+  accessor_->OnCreditCardFetched(response.did_succeed, response.card,
+                                 response.cvc);
 
-  if (!did_succeed)
+  if (!response.did_succeed)
     return;
 
 #if defined(OS_ANDROID)
   // Now that unmask flow is complete, on Android, if GetRealPan includes
   // |creation_options|, completely hand over registration flow to
   // CreditCardFIDOAuthenticator.
-  if (creation_options.is_dict())
-    GetOrCreateFIDOAuthenticator()->Register(std::move(creation_options));
-#elif !defined(OS_IOS)  // CreditCardFIDOAuthenticator does not exist on iOS.
+  if (response.creation_options.has_value()) {
+    DCHECK(response.creation_options->is_dict());
+    GetOrCreateFIDOAuthenticator()->Register(
+        response.creation_options->Clone());
+  }
+#elif !defined(OS_IOS)
+  // CreditCardFIDOAuthenticator does not exist on iOS.
   // On desktop, prompts dialog to show the authentication offer.
   if (unmask_details_.offer_fido_opt_in)
     GetOrCreateFIDOAuthenticator()->ShowWebauthnOfferDialog();

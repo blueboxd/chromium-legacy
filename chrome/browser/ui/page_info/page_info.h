@@ -75,9 +75,6 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SITE_IDENTITY_STATUS_CERT,
     // The website provided a valid EV certificate.
     SITE_IDENTITY_STATUS_EV_CERT,
-    // The website provided a valid certificate but no revocation check could be
-    // performed.
-    SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN,
     // Site identity could not be verified because the site did not provide a
     // certificate. This is the expected state for HTTP connections.
     SITE_IDENTITY_STATUS_NO_CERT,

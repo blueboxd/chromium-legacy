@@ -19,12 +19,6 @@ namespace content {
 
 class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
  public:
-  // TODO(https://crbug.com/955171): Remove this method and use Create once
-  // RendererInterfaceBinders uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void CreateForRequest(
-      blink::mojom::SharedWorkerFactoryRequest request);
-
   static void Create(
       mojo::PendingReceiver<blink::mojom::SharedWorkerFactory> receiver);
 

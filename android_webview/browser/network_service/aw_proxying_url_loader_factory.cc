@@ -8,7 +8,7 @@
 
 #include "android_webview/browser/android_protocol_handler.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
-#include "android_webview/browser/aw_contents_network_client.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
@@ -91,7 +91,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   bool InputStreamFailed(bool restart_needed);
 
  private:
-  std::unique_ptr<AwContentsNetworkClient> GetNetworkClient();
+  std::unique_ptr<AwContentsIoThreadClient> GetIoThreadClient();
 
   // This is called when the original URLLoaderClient has a connection error.
   void OnURLLoaderClientError();
@@ -286,16 +286,17 @@ InterceptedRequest::~InterceptedRequest() {
 }
 
 void InterceptedRequest::Restart() {
-  std::unique_ptr<AwContentsNetworkClient> network_client = GetNetworkClient();
+  std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
+      GetIoThreadClient();
 
-  if (ShouldBlockURL(request_.url, network_client.get())) {
+  if (ShouldBlockURL(request_.url, io_thread_client.get())) {
     SendErrorAndCompleteImmediately(net::ERR_ACCESS_DENIED);
     return;
   }
 
   request_.load_flags =
-      UpdateLoadFlags(request_.load_flags, network_client.get());
-  if (!network_client || ShouldNotInterceptRequest()) {
+      UpdateLoadFlags(request_.load_flags, io_thread_client.get());
+  if (!io_thread_client || ShouldNotInterceptRequest()) {
     // equivalent to no interception
     InterceptResponseReceived(nullptr);
   } else {
@@ -308,7 +309,7 @@ void InterceptedRequest::Restart() {
     // TODO: verify the case when WebContents::RenderFrameDeleted is called
     // before network request is intercepted (i.e. if that's possible and
     // whether it can result in any issues).
-    network_client->ShouldInterceptRequestAsync(
+    io_thread_client->ShouldInterceptRequestAsync(
         AwWebResourceRequest(request_),
         base::BindOnce(&InterceptedRequest::InterceptResponseReceived,
                        weak_factory_.GetWeakPtr()));
@@ -441,7 +442,7 @@ AwContentsClientBridge* GetAwContentsClientBridgeFromID(int process_id,
   return AwContentsClientBridge::FromWebContents(wc);
 }
 
-void OnReceivedHttpError(
+void OnReceivedHttpErrorOnUiThread(
     int process_id,
     int render_frame_id,
     const AwWebResourceRequest& request,
@@ -455,11 +456,11 @@ void OnReceivedHttpError(
   client->OnReceivedHttpError(request, std::move(http_error_info));
 }
 
-void OnReceivedError(int process_id,
-                     int render_frame_id,
-                     const AwWebResourceRequest& request,
-                     int error_code,
-                     bool safebrowsing_hit) {
+void OnReceivedErrorOnUiThread(int process_id,
+                               int render_frame_id,
+                               const AwWebResourceRequest& request,
+                               int error_code,
+                               bool safebrowsing_hit) {
   auto* client = GetAwContentsClientBridgeFromID(process_id, render_frame_id);
   if (!client) {
     DLOG(WARNING) << "client is null, onReceivedError dropped for "
@@ -469,11 +470,11 @@ void OnReceivedError(int process_id,
   client->OnReceivedError(request, error_code, safebrowsing_hit);
 }
 
-void OnNewLoginRequest(int process_id,
-                       int render_frame_id,
-                       const std::string& realm,
-                       const std::string& account,
-                       const std::string& args) {
+void OnNewLoginRequestOnUiThread(int process_id,
+                                 int render_frame_id,
+                                 const std::string& realm,
+                                 const std::string& account,
+                                 const std::string& args) {
   auto* client = GetAwContentsClientBridgeFromID(process_id, render_frame_id);
   if (!client) {
     return;
@@ -497,8 +498,11 @@ void InterceptedRequest::OnReceiveResponse(
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
         AwContentsClientBridge::ExtractHttpErrorInfo(head->headers.get());
 
-    OnReceivedHttpError(process_id_, request_.render_frame_id,
-                        AwWebResourceRequest(request_), std::move(error_info));
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&OnReceivedHttpErrorOnUiThread, process_id_,
+                       request_.render_frame_id, AwWebResourceRequest(request_),
+                       std::move(error_info)));
   }
 
   if (request_.resource_type ==
@@ -511,9 +515,11 @@ void InterceptedRequest::OnReceiveResponse(
       if (ParseHeader(header_string, ALLOW_ANY_REALM, &header_data)) {
         // TODO(timvolodine): consider simplifying this and above callback
         // code, crbug.com/897149.
-        OnNewLoginRequest(process_id_, request_.render_frame_id,
-                          header_data.realm, header_data.account,
-                          header_data.args);
+        base::PostTask(
+            FROM_HERE, {content::BrowserThread::UI},
+            base::BindOnce(&OnNewLoginRequestOnUiThread, process_id_,
+                           request_.render_frame_id, header_data.realm,
+                           header_data.account, header_data.args));
       }
     }
   }
@@ -596,18 +602,18 @@ void InterceptedRequest::ResumeReadingBodyFromNet() {
     target_loader_->ResumeReadingBodyFromNet();
 }
 
-std::unique_ptr<AwContentsNetworkClient>
-InterceptedRequest::GetNetworkClient() {
+std::unique_ptr<AwContentsIoThreadClient>
+InterceptedRequest::GetIoThreadClient() {
   if (request_.originated_from_service_worker) {
-    return AwContentsNetworkClient::GetServiceWorkerNetworkClient();
+    return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
   }
 
   // |process_id_| == 0 indicates this is a navigation, and so we should use the
   // frame_tree_node_id API (with request_.render_frame_id).
   return process_id_
-             ? AwContentsNetworkClient::FromID(process_id_,
-                                               request_.render_frame_id)
-             : AwContentsNetworkClient::FromID(request_.render_frame_id);
+             ? AwContentsIoThreadClient::FromID(process_id_,
+                                                request_.render_frame_id)
+             : AwContentsIoThreadClient::FromID(request_.render_frame_id);
 }
 
 void InterceptedRequest::OnURLLoaderClientError() {
@@ -671,7 +677,6 @@ void InterceptedRequest::CallOnComplete(
 }
 
 void InterceptedRequest::SendErrorAndCompleteImmediately(int error_code) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto status = network::URLLoaderCompletionStatus(error_code);
   SendErrorCallback(status.error_code, false);
   target_client_->OnComplete(status);
@@ -686,8 +691,11 @@ void InterceptedRequest::SendErrorCallback(int error_code,
     return;
 
   sent_error_callback_ = true;
-  OnReceivedError(process_id_, request_.render_frame_id,
-                  AwWebResourceRequest(request_), error_code, safebrowsing_hit);
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&OnReceivedErrorOnUiThread, process_id_,
+                     request_.render_frame_id, AwWebResourceRequest(request_),
+                     error_code, safebrowsing_hit));
 }
 
 }  // namespace
@@ -702,7 +710,7 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     bool intercept_only)
     : process_id_(process_id), intercept_only_(intercept_only) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!(intercept_only_ && target_factory_info));
   if (target_factory_info) {
     target_factory_.Bind(std::move(target_factory_info));
@@ -723,7 +731,7 @@ void AwProxyingURLLoaderFactory::CreateProxy(
     int process_id,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // will manage its own lifetime
   new AwProxyingURLLoaderFactory(process_id, std::move(loader_request),
@@ -784,7 +792,7 @@ void AwProxyingURLLoaderFactory::OnProxyBindingError() {
 
 void AwProxyingURLLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest loader_request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   proxy_bindings_.AddBinding(this, std::move(loader_request));
 }
 

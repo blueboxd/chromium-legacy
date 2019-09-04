@@ -144,6 +144,7 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   void OnTabletControllerDestroyed() override;
 
  private:
+  class FocusableLabelButton;
   class AccessCodeInput;
 
   // Submits access code for validation.
@@ -185,7 +186,7 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   AccessCodeInput* access_code_view_ = nullptr;
   LoginPinView* pin_keyboard_view_ = nullptr;
   LoginButton* back_button_ = nullptr;
-  views::LabelButton* help_button_ = nullptr;
+  FocusableLabelButton* help_button_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
   NonAccessibleView* pin_keyboard_to_footer_spacer_ = nullptr;
 

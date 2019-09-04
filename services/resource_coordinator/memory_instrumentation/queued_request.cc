@@ -21,13 +21,14 @@ QueuedRequest::Args::Args(MemoryDumpType dump_type,
 QueuedRequest::Args::Args(const Args& args) = default;
 QueuedRequest::Args::~Args() = default;
 
-QueuedRequest::PendingResponse::PendingResponse(base::ProcessId process_id,
-                                                Type type)
-    : process_id(process_id), type(type) {}
+QueuedRequest::PendingResponse::PendingResponse(
+    const mojom::ClientProcess* client,
+    Type type)
+    : client(client), type(type) {}
 
 bool QueuedRequest::PendingResponse::operator<(
     const PendingResponse& other) const {
-  return std::tie(process_id, type) < std::tie(other.process_id, other.type);
+  return std::tie(client, type) < std::tie(other.client, other.type);
 }
 
 QueuedRequest::Response::Response() {}

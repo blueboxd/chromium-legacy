@@ -72,7 +72,7 @@ const base::Feature kKeepPrefetchedContentSuggestions{
     "KeepPrefetchedContentSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOptionalImagesEnabledFeature{
-    "NTPRemoteSuggestionsOptionalImages", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPRemoteSuggestionsOptionalImages", base::FEATURE_ENABLED_BY_DEFAULT};
 
 std::vector<const base::Feature*> GetAllFeatures() {
   // Skip the last feature as it's a nullptr.

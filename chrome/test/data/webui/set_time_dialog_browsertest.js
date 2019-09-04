@@ -186,6 +186,7 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
       // one, therefore even with the 15 minutes forwarded it should be smaller.
       expectGT(updatedTime.getTime(), updatedTimeAndTimezone.getTime());
 
+      assertEquals(1, testBrowserProxy.getCallCount('setTimezone'));
 
       return testBrowserProxy.whenCalled('setTimeInSeconds')
           .then(timeInSeconds => {
@@ -223,6 +224,8 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
         dateInput.focus();
         dateInput.valueAsDate = twoDaysAgo;
         setTimeElement.$$('#doneButton').click();
+
+        assertEquals(0, testBrowserProxy.getCallCount('setTimezone'));
 
         // Verify the page sends a request to move time backward.
         return testBrowserProxy.whenCalled('setTimeInSeconds')

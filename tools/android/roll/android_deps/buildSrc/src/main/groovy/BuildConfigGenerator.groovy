@@ -240,6 +240,20 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/989505\n')
                 sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
+            case 'androidx_core_core':
+            case 'androidx_media_media':
+            case 'androidx_versionedparcelable_versionedparcelable':
+            case 'com_android_support_support_compat':
+            case 'com_android_support_support_media_compat':
+            case 'com_android_support_versionedparcelable':
+                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('  ignore_aidl = true\n')
+                break
+            case 'androidx_transition_transition':
+                // Not specified in the POM, compileOnly dependency not supposed to be used unless
+                // the library is present: b/70887421
+                sb.append('  deps += [":androidx_fragment_fragment_java"]\n')
+                break
             case 'android_arch_lifecycle_runtime':
             case 'android_arch_lifecycle_viewmodel':
                 sb.append('  # https://crbug.com/887942#c1\n')
@@ -257,11 +271,6 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/989505\n')
                 sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
-            case 'com_android_support_support_compat':
-            case 'com_android_support_support_media_compat':
-                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
-                sb.append('  ignore_aidl = true\n')
-                break
             case 'com_android_support_support_vector_drawable':
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
                 sb.append('  create_srcjar = false\n')
@@ -270,10 +279,6 @@ class BuildConfigGenerator extends DefaultTask {
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421
                 sb.append('  deps += [":com_android_support_support_fragment_java"]\n')
-                break
-            case 'com_android_support_versionedparcelable':
-                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
-                sb.append('  ignore_aidl = true\n')
                 break
             case 'com_google_android_gms_play_services_basement':
                 // Deprecated deps jar but still needed by play services basement.

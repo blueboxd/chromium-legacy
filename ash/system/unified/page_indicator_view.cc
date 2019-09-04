@@ -86,16 +86,16 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
   void PaintButtonContents(gfx::Canvas* canvas) override {
     gfx::Rect rect(GetContentsBounds());
 
-    AshColorProvider* color_provider = AshColorProvider::Get();
-    const SkColor selected_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconPrimary,
-        AshColorProvider::AshColorMode::kDark);
+    const SkColor selected_color =
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconPrimary,
+            AshColorProvider::AshColorMode::kDark);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setColor(selected_
                        ? selected_color
-                       : color_provider->GetDisabledColor(selected_color));
+                       : AshColorProvider::GetDisabledColor(selected_color));
     canvas->DrawCircle(rect.CenterPoint(), kUnifiedPageIndicatorButtonRadius,
                        flags);
   }

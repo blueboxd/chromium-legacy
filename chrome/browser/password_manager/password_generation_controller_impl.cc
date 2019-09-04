@@ -50,15 +50,6 @@ PasswordGenerationController* PasswordGenerationController::GetIfExisting(
 }
 
 struct PasswordGenerationControllerImpl::GenerationElementData {
-  GenerationElementData(autofill::PasswordForm form,
-                        autofill::FormSignature form_signature,
-                        autofill::FieldSignature field_signature,
-                        uint32_t max_password_length)
-      : form(std::move(form)),
-        form_signature(form_signature),
-        field_signature(field_signature),
-        max_password_length(max_password_length) {}
-
   GenerationElementData(
       const autofill::password_generation::PasswordGenerationUIData& ui_data) {
     const std::string kFieldType = "password";
@@ -68,6 +59,7 @@ struct PasswordGenerationControllerImpl::GenerationElementData {
         autofill::CalculateFormSignature(ui_data.password_form.form_data);
     field_signature = autofill::CalculateFieldSignatureByNameAndType(
         ui_data.generation_element, kFieldType);
+    generation_element_id = ui_data.generation_element_id;
     max_password_length = ui_data.max_length;
   }
 
@@ -79,6 +71,9 @@ struct PasswordGenerationControllerImpl::GenerationElementData {
 
   // Signature of the field for which password generation is triggered.
   autofill::FieldSignature field_signature;
+
+  // Renderer ID of the password field triggering generation.
+  uint32_t generation_element_id;
 
   // Maximum length of the generated password.
   uint32_t max_password_length;
@@ -157,7 +152,9 @@ void PasswordGenerationControllerImpl::GeneratedPasswordAccepted(
     return;
   password_manager::metrics_util::LogGenerationDialogChoice(
       GenerationDialogChoice::kAccepted, type);
-  driver->GeneratedPasswordAccepted(password);
+  driver->GeneratedPasswordAccepted(
+      generation_element_data_->form.form_data,
+      generation_element_data_->generation_element_id, password);
   ResetState();
 }
 

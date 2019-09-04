@@ -21,12 +21,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
@@ -339,10 +340,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   base::debug::VerifyDebugger();
 
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
 #if defined(OS_POSIX)
-  base::FileDescriptorWatcher file_descriptor_watcher(
-      message_loop.task_runner());
+  base::FileDescriptorWatcher file_descriptor_watcher(executor.task_runner());
 #endif
 
   launcher_delegate->PreSharding();

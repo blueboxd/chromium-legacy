@@ -45,8 +45,6 @@ _add_unwind_tables_in_chrome_32bit_apk =
 # Variables:
 #   target_type: Either 'android_apk' or 'android_app_bundle_module'.
 #   apk_name: For APK target types, the final APK name without a suffix.
-#   module_name: For bundle module target types, the module's name without a
-#     suffix.
 #   is_base_module: For bundle module target types, true iff this is a base
 #     application module, instead of a feature module.
 #   android_manifest: Application manifest path.

@@ -318,10 +318,6 @@ class ExtensionPrefs : public KeyedService {
   // to use Blacklist::GetBlacklistedIDs rather than this method.
   bool IsExtensionBlacklisted(const std::string& id) const;
 
-  // Returns whether insecure algorithms like SHA1 are trusted for the
-  // purpose of updating the extension.
-  bool InsecureExtensionUpdatesEnabled() const;
-
   // Increment the count of how many times we prompted the user to acknowledge
   // the given extension, and return the new count.
   int IncrementAcknowledgePromptCount(const std::string& extension_id);

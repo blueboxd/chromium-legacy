@@ -8,10 +8,10 @@
 
 namespace blink {
 
-void FakeBlobURLStore::Register(mojom::blink::BlobPtr blob,
+void FakeBlobURLStore::Register(mojo::PendingRemote<mojom::blink::Blob> blob,
                                 const KURL& url,
                                 RegisterCallback callback) {
-  registrations.insert(url, std::move(blob));
+  registrations.insert(url, mojo::Remote<mojom::blink::Blob>(std::move(blob)));
   std::move(callback).Run();
 }
 

@@ -19,12 +19,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
@@ -49,6 +51,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/mock_mdns_client.h"
 #include "net/dns/mock_mdns_socket_factory.h"
+#include "net/dns/test_dns_config_service.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
@@ -425,13 +428,10 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
 class TestHostResolverManager : public HostResolverManager {
  public:
   TestHostResolverManager(const HostResolver::ManagerOptions& options,
-                          NetLog* net_log)
-      : TestHostResolverManager(options, net_log, true) {}
-
-  TestHostResolverManager(const HostResolver::ManagerOptions& options,
+                          SystemDnsConfigChangeNotifier* notifier,
                           NetLog* net_log,
-                          bool ipv6_reachable)
-      : HostResolverManager(options, net_log),
+                          bool ipv6_reachable = true)
+      : HostResolverManager(options, notifier, net_log),
         ipv6_reachable_(ipv6_reachable) {}
 
   ~TestHostResolverManager() override = default;
@@ -513,6 +513,7 @@ class HostResolverManagerTest : public TestWithTaskEnvironment {
       EXPECT_EQ(0u, resolver_->num_running_dispatcher_jobs_for_tests());
       if (host_cache_)
         resolver_->RemoveHostCacheInvalidator(host_cache_->invalidator());
+      resolver_.reset();
     }
     EXPECT_FALSE(proc_->HasBlockedRequests());
   }
@@ -546,7 +547,7 @@ class HostResolverManagerTest : public TestWithTaskEnvironment {
     DestroyResolver();
 
     resolver_ = std::make_unique<TestHostResolverManager>(
-        options, nullptr /* net_log */, ipv6_reachable);
+        options, nullptr /* notifier */, nullptr /* net_log */, ipv6_reachable);
     resolver_->set_proc_params_for_test(params);
 
     if (host_cache_)
@@ -1369,35 +1370,6 @@ TEST_F(HostResolverManagerTest, FlushCacheOnIPAddressChange) {
 
   // Resolve "host1" again -- this time it won't be served from cache, so it
   // will complete asynchronously.
-  ResolveHostResponseHelper flushed_response(resolver_->CreateRequest(
-      HostPortPair("host1", 80), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  EXPECT_THAT(flushed_response.result_error(), IsOk());
-  EXPECT_EQ(2u, proc_->GetCaptureList().size());  // Expected increase.
-}
-
-TEST_F(HostResolverManagerTest, FlushCacheOnDnsConfigChange) {
-  proc_->SignalMultiple(2u);  // One before the flush, one after.
-
-  // Resolve to load cache.
-  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
-      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  EXPECT_THAT(initial_response.result_error(), IsOk());
-  EXPECT_EQ(1u, proc_->GetCaptureList().size());
-
-  // Result expected to come from the cache.
-  ResolveHostResponseHelper cached_response(resolver_->CreateRequest(
-      HostPortPair("host1", 75), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  EXPECT_THAT(cached_response.result_error(), IsOk());
-  EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
-
-  // Flush cache by triggering a DNS config change.
-  NetworkChangeNotifier::NotifyObserversOfDNSChangeForTests();
-  base::RunLoop().RunUntilIdle();  // Notification happens async.
-
-  // Expect flushed from cache and therefore served from |proc_|.
   ResolveHostResponseHelper flushed_response(resolver_->CreateRequest(
       HostPortPair("host1", 80), NetLogWithSource(), base::nullopt,
       request_context_.get(), host_cache_.get()));
@@ -2321,7 +2293,9 @@ TEST_F(HostResolverManagerTest, IsIPv6Reachable) {
   // bypass the IPv6 reachability tests.
   DestroyResolver();
   host_cache_ = nullptr;
-  resolver_ = std::make_unique<HostResolverManager>(DefaultOptions(), nullptr);
+  resolver_ = std::make_unique<HostResolverManager>(
+      DefaultOptions(), nullptr /* system_dns_config_notifier */,
+      nullptr /* net_log */);
 
   // Verify that two consecutive calls return the same value.
   TestNetLog test_net_log;
@@ -3385,15 +3359,48 @@ DnsConfig CreateValidDnsConfig() {
   return config;
 }
 
+DnsConfig CreateUpgradableDnsConfig() {
+  DnsConfig config;
+  config.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  config.allow_dns_over_https_upgrade = true;
+  // Cloudflare upgradeable IPs
+  IPAddress dns_ip0(1, 0, 0, 1);
+  IPAddress dns_ip1;
+  EXPECT_TRUE(dns_ip1.AssignFromIPLiteral("2606:4700:4700::1111"));
+  // SafeBrowsing family filter upgradeable IP
+  IPAddress dns_ip2;
+  EXPECT_TRUE(dns_ip2.AssignFromIPLiteral("2a0d:2a00:2::"));
+  // SafeBrowsing security filter upgradeable IP
+  IPAddress dns_ip3(185, 228, 169, 9);
+  // Non-upgradeable IP
+  IPAddress dns_ip4(1, 2, 3, 4);
+
+  config.nameservers.push_back(IPEndPoint(dns_ip0, dns_protocol::kDefaultPort));
+  config.nameservers.push_back(IPEndPoint(dns_ip1, dns_protocol::kDefaultPort));
+  config.nameservers.push_back(IPEndPoint(dns_ip2, 54));
+  config.nameservers.push_back(IPEndPoint(dns_ip3, dns_protocol::kDefaultPort));
+  config.nameservers.push_back(IPEndPoint(dns_ip4, dns_protocol::kDefaultPort));
+  EXPECT_TRUE(config.IsValid());
+  return config;
+}
+
 // Specialized fixture for tests of DnsTask.
 class HostResolverManagerDnsTest : public HostResolverManagerTest {
  public:
-  HostResolverManagerDnsTest() : dns_client_(nullptr) {}
+  HostResolverManagerDnsTest()
+      : notifier_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock()})),
+        dns_client_(nullptr) {
+    auto config_service = std::make_unique<TestDnsConfigService>();
+    config_service_ = config_service.get();
+    notifier_ = std::make_unique<SystemDnsConfigChangeNotifier>(
+        notifier_task_runner_, std::move(config_service));
+  }
 
  protected:
   void TearDown() override {
     HostResolverManagerTest::TearDown();
-    ChangeDnsConfig(DnsConfig());
+    InvalidateDnsConfig();
   }
 
   // HostResolverManagerTest implementation:
@@ -3410,7 +3417,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
     DestroyResolver();
 
     resolver_ = std::make_unique<TestHostResolverManager>(
-        options, nullptr /* net_log */, ipv6_reachable);
+        options, notifier_.get(), nullptr /* net_log */, ipv6_reachable);
     auto dns_client =
         std::make_unique<MockDnsClient>(DnsConfig(), CreateDefaultDnsRules());
     dns_client_ = dns_client.get();
@@ -3578,21 +3585,77 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   }
 
   void ChangeDnsConfig(const DnsConfig& config) {
-    NetworkChangeNotifier::SetDnsConfigForTesting(config);
-    // Notification is delivered asynchronously.
-    base::RunLoop().RunUntilIdle();
+    DCHECK(config.IsValid());
+
+    notifier_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TestDnsConfigService::OnHostsRead,
+                       base::Unretained(config_service_), config.hosts));
+    notifier_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&TestDnsConfigService::OnConfigRead,
+                                  base::Unretained(config_service_), config));
+
+    base::RunLoop run_loop;
+    notifier_task_runner_->PostTask(FROM_HERE,
+                                    base::BindOnce(run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void InvalidateDnsConfig() {
+    notifier_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TestDnsConfigService::OnHostsRead,
+                       base::Unretained(config_service_), DnsHosts()));
+    notifier_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&TestDnsConfigService::InvalidateConfig,
+                                  base::Unretained(config_service_)));
+
+    base::RunLoop run_loop;
+    notifier_task_runner_->PostTask(FROM_HERE,
+                                    base::BindOnce(run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   void SetInitialDnsConfig(const DnsConfig& config) {
-    NetworkChangeNotifier::ClearDnsConfigForTesting();
-    NetworkChangeNotifier::SetDnsConfigForTesting(config);
-    // Notification is delivered asynchronously.
-    base::RunLoop().RunUntilIdle();
+    InvalidateDnsConfig();
+    ChangeDnsConfig(config);
   }
+
+  scoped_refptr<base::SequencedTaskRunner> notifier_task_runner_;
+  TestDnsConfigService* config_service_;
+  std::unique_ptr<SystemDnsConfigChangeNotifier> notifier_;
 
   // Owned by |resolver_|.
   MockDnsClient* dns_client_;
 };
+
+TEST_F(HostResolverManagerDnsTest, FlushCacheOnDnsConfigChange) {
+  proc_->SignalMultiple(2u);  // One before the flush, one after.
+
+  // Resolve to populate the cache.
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());
+
+  // Result expected to come from the cache.
+  ResolveHostResponseHelper cached_response(resolver_->CreateRequest(
+      HostPortPair("host1", 75), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(cached_response.result_error(), IsOk());
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
+
+  // Flush cache by triggering a DNS config change.
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  // Expect flushed from cache and therefore served from |proc_|.
+  ResolveHostResponseHelper flushed_response(resolver_->CreateRequest(
+      HostPortPair("host1", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(flushed_response.result_error(), IsOk());
+  EXPECT_EQ(2u, proc_->GetCaptureList().size());  // Expected increase.
+}
 
 TEST_F(HostResolverManagerDnsTest, DisableAndEnableInsecureDnsClient) {
   // Disable fallback to allow testing how requests are initially handled.
@@ -3752,7 +3815,7 @@ TEST_F(HostResolverManagerDnsTest, NoFallbackToProcTask) {
   // All other hostnames will fail in proc_.
 
   // Set empty DnsConfig.
-  ChangeDnsConfig(DnsConfig());
+  InvalidateDnsConfig();
   // Initially there is no config, so client should not be invoked.
   ResolveHostResponseHelper initial_response0(resolver_->CreateRequest(
       HostPortPair("ok_fail", 80), NetLogWithSource(), base::nullopt,
@@ -5492,7 +5555,7 @@ TEST_F(HostResolverManagerDnsTest, InvalidDnsConfigWithPendingRequests) {
 
   // Clear DNS config. Fully in-progress, partially in-progress, and queued
   // requests should all be aborted.
-  ChangeDnsConfig(DnsConfig());
+  InvalidateDnsConfig();
   for (auto& response : responses) {
     EXPECT_THAT(response->result_error(), IsError(ERR_NETWORK_CHANGED));
   }
@@ -5718,7 +5781,7 @@ TEST_F(HostResolverManagerDnsTest,
 // Same as DnsClient disabled, requests with source=DNS and no usable DnsConfig
 // should result in an error.
 TEST_F(HostResolverManagerDnsTest, DnsCallsWithNoDnsConfig) {
-  ChangeDnsConfig(DnsConfig());
+  InvalidateDnsConfig();
 
   HostResolver::ResolveHostParameters params;
   params.source = HostResolverSource::DNS;
@@ -6392,6 +6455,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   const DnsConfig::SecureDnsMode secure_dns_mode =
       DnsConfig::SecureDnsMode::SECURE;
   overrides.secure_dns_mode = secure_dns_mode;
+  overrides.allow_dns_over_https_upgrade = true;
+  const std::vector<std::string> disabled_upgrade_providers = {"provider_name"};
+  overrides.disabled_upgrade_providers = disabled_upgrade_providers;
 
   // This test is expected to test overriding all fields.
   EXPECT_TRUE(overrides.OverridesEverything());
@@ -6412,6 +6478,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   EXPECT_TRUE(overridden_config->use_local_ipv6);
   EXPECT_EQ(dns_over_https_servers, overridden_config->dns_over_https_servers);
   EXPECT_EQ(secure_dns_mode, overridden_config->secure_dns_mode);
+  EXPECT_TRUE(overridden_config->allow_dns_over_https_upgrade);
+  EXPECT_EQ(disabled_upgrade_providers,
+            overridden_config->disabled_upgrade_providers);
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -6545,6 +6614,178 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   EXPECT_THAT(client_ptr->GetEffectiveConfig(),
               testing::Pointee(original_config));
 }
+
+TEST_F(HostResolverManagerDnsTest, DohMapping) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://chrome.cloudflare-dns.com/dns-query", true /* use-post */},
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */},
+      {"https://doh.cleanbrowsing.org/doh/security-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingDisabled) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.allow_dns_over_https_upgrade = false;
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingModeIneligibleForUpgrade) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.disabled_upgrade_providers = {"CleanBrowsingSecure",
+                                                "Cloudflare", "Unexpected"};
+  ChangeDnsConfig(original_config);
+
+  // A DoH upgrade should be attempted on the DNS servers in the config, but
+  // only for permitted providers.
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingIgnoredIfTemplateSpecified) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // If the overrides contains DoH servers, no DoH upgrade should be attempted.
+  DnsConfigOverrides overrides;
+  const std::vector<DnsConfig::DnsOverHttpsServerConfig>
+      dns_over_https_servers_overrides = {
+          DnsConfig::DnsOverHttpsServerConfig("doh.server.override.com", true)};
+  overrides.dns_over_https_servers = dns_over_https_servers_overrides;
+  resolver_->SetDnsConfigOverrides(overrides);
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  EXPECT_EQ(dns_over_https_servers_overrides,
+            fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.dns_over_tls_active = true;
+  ChangeDnsConfig(original_config);
+
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://chrome.cloudflare-dns.com/dns-query", true /* use-post */},
+      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+       false /* use_post */},
+      {"https://doh.cleanbrowsing.org/doh/security-filter{?dns}",
+       false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
+TEST_F(HostResolverManagerDnsTest, DohMappingWithStrictDot) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  // Create a DnsConfig containing IP addresses associated with Cloudflare,
+  // SafeBrowsing family filter, SafeBrowsing security filter, and other IPs
+  // not associated with hardcoded DoH services.
+  DnsConfig original_config = CreateUpgradableDnsConfig();
+  original_config.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
+  original_config.dns_over_tls_active = true;
+
+  // Google DoT hostname
+  original_config.dns_over_tls_hostname = "dns.google";
+  ChangeDnsConfig(original_config);
+  const DnsConfig* fetched_config = client_ptr->GetEffectiveConfig();
+  EXPECT_EQ(original_config.nameservers, fetched_config->nameservers);
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> expected_doh_servers = {
+      {"https://dns.google/dns-query{?dns}", false /* use_post */}};
+  EXPECT_EQ(expected_doh_servers, fetched_config->dns_over_https_servers);
+}
+
 #endif  // !defined(OS_IOS)
 
 TEST_F(HostResolverManagerDnsTest, FlushCacheOnDnsConfigOverridesChange) {
@@ -6825,7 +7066,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery) {
 TEST_F(HostResolverManagerDnsTest, TxtQuery_InvalidConfig) {
   set_allow_fallback_to_proctask(false);
   // Set empty DnsConfig.
-  ChangeDnsConfig(DnsConfig());
+  InvalidateDnsConfig();
 
   HostResolver::ResolveHostParameters parameters;
   parameters.dns_query_type = DnsQueryType::TXT;

@@ -248,20 +248,6 @@
 }
 
 ################################################################################
-# ../../base/android/proguard/dcheck_is_off.flags
-################################################################################
-# Copyright 2019 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# Contains flags that are applied only when ENABLE_DCHECK=false.
-
-# Ensure that LifetimeAssert implementation is not reachable in release.
-# Temporarily commenting this out until R8 rolls with a fix to the optimization
-# that should remove this class. See b/135918413.
-#-checkdiscard class org.chromium.base.LifetimeAssert$WrappedReference { *; }
-
-################################################################################
 # ../../base/android/proguard/enable_obfuscation.flags
 ################################################################################
 # Copyright 2016 The Chromium Authors. All rights reserved.
@@ -281,6 +267,22 @@
 # found in the LICENSE file.
 
 -keep class org.chromium.build.BuildHooksAndroidImpl
+
+################################################################################
+# ../../build/android/dcheck_is_off.flags
+################################################################################
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains flags that are applied only when ENABLE_DCHECK=false.
+
+-checkdiscard @org.chromium.base.annotations.CheckDiscard class ** {
+  *;
+}
+-checkdiscard class ** {
+  @org.chromium.base.annotations.CheckDiscard *;
+}
 
 ################################################################################
 # ../../chrome/android/java/proguard.flags

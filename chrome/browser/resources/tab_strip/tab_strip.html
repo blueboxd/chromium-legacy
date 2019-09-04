@@ -20,6 +20,18 @@
             0 0 0 1px rgb(var(--google-grey-300-rgb));
         --tabstrip-focus-color: rgb(var(--google-blue-500-rgb));
         --tabstrip-primary-text-color: rgb(var(--google-grey-900-rgb));
+        --tabstrip-separator-color: rgb(var(--google-grey-300-rgb));
+      }
+
+      @media (prefers-color-scheme: dark) {
+        html {
+          --tabstrip-background-color: rgba(var(--google-grey-900-rgb));
+          --tabstrip-card-background-color: rgba(255, 255, 255, 0.04);
+          --tabstrip-elevation-box-shadow: none;
+          --tabstrip-focus-color: rgb(var(--google-blue-300-rgb));
+          --tabstrip-primary-text-color: rgb(var(--google-grey-200-rgb));
+          --tabstrip-separator-color: rgb(255, 255, 255, 0.1);
+        }
       }
 
       body {

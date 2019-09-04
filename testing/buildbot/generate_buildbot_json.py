@@ -1038,6 +1038,8 @@ class BBJSONGenerator(object):
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
       'chromeos-kevin-google-rel',
+      # code coverage, see https://crbug.com/1000367.
+      'linux-chromeos-coverage-rel-dummy',
     ]
 
   def check_input_file_consistency(self, verbose=False):

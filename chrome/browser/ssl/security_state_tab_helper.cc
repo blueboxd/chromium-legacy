@@ -133,7 +133,6 @@ void SecurityStateTabHelper::DidFinishNavigation(
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       GetVisibleSecurityState();
   if (net::IsCertStatusError(visible_security_state->cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state->cert_status) &&
       !navigation_handle->IsErrorPage()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for

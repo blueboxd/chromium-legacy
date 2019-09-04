@@ -6,7 +6,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
@@ -20,28 +21,28 @@
 namespace blink {
 namespace {
 
-using mojom::blink::Blob;
-using mojom::blink::BlobPtr;
 using mojom::blink::BlobURLStore;
 
 class TestURLRegistrable : public URLRegistrable {
  public:
-  TestURLRegistrable(URLRegistry* registry, BlobPtr blob = nullptr)
+  TestURLRegistrable(
+      URLRegistry* registry,
+      mojo::PendingRemote<mojom::blink::Blob> blob = mojo::NullRemote())
       : registry_(registry), blob_(std::move(blob)) {}
 
   URLRegistry& Registry() const override { return *registry_; }
 
-  BlobPtr AsMojoBlob() override {
+  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() override {
     if (!blob_)
-      return nullptr;
-    BlobPtr result;
-    blob_->Clone(MakeRequest(&result));
+      return mojo::NullRemote();
+    mojo::PendingRemote<mojom::blink::Blob> result;
+    blob_->Clone(result.InitWithNewPipeAndPassReceiver());
     return result;
   }
 
  private:
   URLRegistry* const registry_;
-  BlobPtr blob_;
+  mojo::Remote<mojom::blink::Blob> blob_;
 };
 
 class FakeURLRegistry : public URLRegistry {
@@ -83,10 +84,10 @@ class PublicURLManagerTest : public testing::Test {
     return execution_context_->GetPublicURLManager();
   }
 
-  BlobPtr CreateMojoBlob(const String& uuid) {
-    BlobPtr result;
-    mojo::MakeStrongBinding(std::make_unique<FakeBlob>(uuid),
-                            MakeRequest(&result));
+  mojo::PendingRemote<mojom::blink::Blob> CreateMojoBlob(const String& uuid) {
+    mojo::PendingRemote<mojom::blink::Blob> result;
+    mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid),
+                                result.InitWithNewPipeAndPassReceiver());
     return result;
   }
 

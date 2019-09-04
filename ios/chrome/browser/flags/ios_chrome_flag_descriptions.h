@@ -117,6 +117,18 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];
 
+// Title and description for the flag to control if credit card upload can
+// display a cardholder name fix flow.
+extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];
+extern const char
+    kEnableAutofillCreditCardUploadEditableCardholderNameDescription[];
+
+// Title and description for the flag to control if credit card upload can
+// display an expiration date fix flow.
+extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
+extern const char
+    kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
+
 // Title and description for the flag to control if no thanks button should be
 // shown when saving a card.
 extern const char kEnableAutofillSaveCardShowNoThanksName[];

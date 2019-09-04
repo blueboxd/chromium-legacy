@@ -385,18 +385,11 @@ void CastAudioOutputStream::CmaWrapper::PushBuffer() {
     // The rendering delay to account for buffering is not included in
     // rendering_delay.delay_microseconds but is in delay_timestamp which isn't
     // used by AudioOutputStreamImpl.
-    if (is_audio_prefetch_) {
-      // Only account for this when prefetch is enabled or else video will
-      // stutter (b/123999757).
-      delay = base::TimeDelta::FromMicroseconds(
-          rendering_delay.delay_microseconds +
-          rendering_delay.timestamp_microseconds - MonotonicClockNow());
-      if (delay.InMicroseconds() < 0) {
-        delay = base::TimeDelta();
-      }
-    } else {
-      delay =
-          base::TimeDelta::FromMicroseconds(rendering_delay.delay_microseconds);
+    delay = base::TimeDelta::FromMicroseconds(
+        rendering_delay.delay_microseconds +
+        rendering_delay.timestamp_microseconds - MonotonicClockNow());
+    if (delay.InMicroseconds() < 0) {
+      delay = base::TimeDelta();
     }
   }
   last_rendering_delay_ = delay;

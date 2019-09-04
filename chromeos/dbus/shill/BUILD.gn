@@ -29,6 +29,7 @@ component("shill") {
     "fake_shill_profile_client.h",
     "fake_shill_service_client.cc",
     "fake_shill_service_client.h",
+    "fake_shill_simulated_result.h",
     "fake_shill_third_party_vpn_driver_client.cc",
     "fake_shill_third_party_vpn_driver_client.h",
     "fake_sms_client.cc",

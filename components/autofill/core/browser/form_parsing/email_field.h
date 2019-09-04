@@ -13,9 +13,12 @@
 
 namespace autofill {
 
+class LogManager;
+
 class EmailField : public FormField {
  public:
-  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
+                                          LogManager* log_manager);
   explicit EmailField(const AutofillField* field);
 
  protected:

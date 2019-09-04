@@ -156,8 +156,8 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for welcome page.">
     Connect to your phone
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chromebook; includes details on specific features that can be used and a link to an information page">
-    Your Chromebook and Android phone work better together. Connect them so you can text from your computer, share your internet connection, and unlock your Chromebook with your phone.<ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$2<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chrome OS device; includes details on specific features that can be used and a link to an information page">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> and Android phone work better together. Connect them so you can text from your computer, share your internet connection, and unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone.<ph name="FOOTNOTE_POINTER">$2<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$3<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE" desc="Footnote for multi-device feature setup page, which indicates that the exact set of features available to users differs according to the device model used.">
     <ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph>Features vary by device
@@ -169,7 +169,7 @@
     Select a device
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER" desc="Header to introduce a list of the features that the user is agreeing to in the multi-device setup.">
-    When you connect your devices, you agree that your Chromebook can:
+    When you connect your devices, you agree that your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can:
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION" desc="Description of a feature that shows text messages received by the user's phone as notification on their Chromebook and a link to an information page.">
     Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN">&lt;a href="$1<ex>https://support.google.com/chromebook/?p=messages</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
@@ -1076,31 +1076,31 @@
     Battery isn't charging
   </message>
   <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE" desc="The message of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
-    To charge this Chromebook, use a battery from the same brand.
+    To charge this Chromebook, use a compatible Dell battery.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE" desc="The title of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
     Power adapter issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE" desc="The message of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
-    Please use a USB Type-C power adapter or an adapter from the same brand as your Chromebook.
+    To avoid charging and performance issues, use a compatible Dell or USB Type-C power adapter.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE" desc="The title of the notification shown to inform the user that attached dock is incompatible.">
-    Not all features on this dock are supported
+    Dock isn't fully compatible
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE" desc="The message of the notification shown to inform the user that attached dock is incompatible.">
-    Use a docking station designed to work with this Chromebook.
+    To get additional features, use a Dell docking station designed to work with this Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE" desc="The title of the notification shown to inform the user that attached dock presents hardware failures.">
-    Dock has an issue
+    Dock fan needs service
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE" desc="The message of the notification shown to inform the user that attached dock presents hardware failures.">
-    Your dock needs to be serviced. Without a working fan your dock will shut down.
+    Contact Dell for service. The dock will shut down if the fan isn't working.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE" desc="The title of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
-    Display connected to the dock has an issue
+    Dock video-port issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE" desc="The message of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
-    Your dock's HDMI port can't be used when the USB Type-C port is used for video output. Please use a different port for one of the displays.
+    HDMI and USB Type-C ports can't be used for video at the same time. Use a different video port.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE" desc="The title of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
     Thunderbolt is not supported
@@ -2092,12 +2092,6 @@
   </message>
   <message name="IDS_EOL_DISMISS_BUTTON" desc="A button label shown in the notification for eol status change to dismiss the notification.">
     Don't remind me again
-  </message>
-  <message name="IDS_PENDING_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device will no longer be supported after a certain period of time.">
-    Updates end <ph name="MONTH_AND_YEAR">$1<ex>June 2020</ex></ph>
-  </message>
-  <message name="IDS_PENDING_EOL_NOTIFICATION_MESSAGE" desc="Notification shown to inform the user that this device will no longer receive latest software updates after a certain period of time.">
-    You'll still be able to use this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> after that time, but it will no longer get automatic software and security updates
   </message>
 
   <!-- TPM Firmware Update Notification Strings -->

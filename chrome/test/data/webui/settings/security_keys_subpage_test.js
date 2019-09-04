@@ -147,6 +147,7 @@ class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
       'enumerateEnrollments',
       'startEnrolling',
       'cancelEnrollment',
+      'deleteEnrollment',
       'close',
     ]);
   }
@@ -174,6 +175,11 @@ class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
   /** @override */
   cancelEnrollment() {
     return this.handleMethod('cancelEnrollment');
+  }
+
+  /** @override */
+  deleteEnrollment(id) {
+    return this.handleMethod('deleteEnrollment', id);
   }
 
   /** @override */
@@ -717,6 +723,8 @@ suite('SecurityKeysBioEnrollment', function() {
     const enumerateResolver = new PromiseResolver();
     browserProxy.setResponseFor(
         'enumerateEnrollments', enumerateResolver.promise);
+    const deleteResolver = new PromiseResolver();
+    browserProxy.setResponseFor('deleteEnrollment', deleteResolver.promise);
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startBioEnroll');
@@ -738,7 +746,7 @@ suite('SecurityKeysBioEnrollment', function() {
     await browserProxy.whenCalled('enumerateEnrollments');
     uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
-    const enrollments = [
+    let enrollments = [
       {
         name: 'Fingerprint00',
         id: '0000',
@@ -753,6 +761,19 @@ suite('SecurityKeysBioEnrollment', function() {
       },
     ];
     enumerateResolver.resolve(enrollments);
+    await uiReady;
+    assertShown(allDivs, dialog, 'enrollments');
+    assertEquals(dialog.$.enrollmentList.items, enrollments);
+
+    // Delete the second enrollments and refresh the list.
+    Polymer.flush();
+    Polymer.dom(dialog.$.enrollmentList)
+        .querySelectorAll('cr-icon-button')[1]
+        .click();
+    const id = await browserProxy.whenCalled('deleteEnrollment');
+    assertEquals(enrollments[1].id, id);
+    enrollments.splice(1, 1);
+    deleteResolver.resolve(enrollments);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
     assertEquals(dialog.$.enrollmentList.items, enrollments);

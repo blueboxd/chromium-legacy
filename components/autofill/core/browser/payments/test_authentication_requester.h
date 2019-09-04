@@ -37,10 +37,8 @@ class TestAuthenticationRequester
 
   // CreditCardCVCAuthenticator::Requester:
   void OnCVCAuthenticationComplete(
-      bool did_succeed,
-      const CreditCard* card = nullptr,
-      const base::string16& cvc = base::string16(),
-      base::Value creation_options = base::Value()) override;
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
+      override;
 
 #if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:

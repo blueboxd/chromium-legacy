@@ -463,11 +463,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kComponentUpdatesEnabled,
     prefs::kComponentUpdatesEnabled,
     base::Value::Type::BOOLEAN },
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  { key::kExtensionAllowInsecureUpdates,
-    extensions::pref_names::kInsecureExtensionUpdatesEnabled,
-    base::Value::Type::BOOLEAN },
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,

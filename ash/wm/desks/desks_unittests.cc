@@ -37,6 +37,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/session_manager/session_manager_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/base/ui_base_types.h"
@@ -1347,7 +1348,7 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
           AshColorProvider::ControlsLayerType::kInactiveControlBackground,
           AshColorProvider::AshColorMode::kDark);
   const SkColor disabled_background_color =
-      AshColorProvider::Get()->GetDisabledColor(background_color);
+      AshColorProvider::GetDisabledColor(background_color);
   EXPECT_TRUE(new_desk_button->GetEnabled());
   EXPECT_EQ(background_color, new_desk_button->background()->get_color());
 
@@ -1930,6 +1931,7 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
         MultiUserWindowManager::Create(this, GetUser1AccountId());
     MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
         MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
+    session_controller->SetSessionState(session_manager::SessionState::ACTIVE);
   }
 
   void TearDown() override {
@@ -2113,6 +2115,14 @@ TEST_F(DesksMultiUserTest, RemoveDesks) {
   SwitchActiveUser(GetUser2AccountId());
   EXPECT_TRUE(desk_3->is_active());
   EXPECT_TRUE(win6->IsVisible());
+}
+
+TEST_F(DesksMultiUserTest, SwitchingUsersEndsOverview) {
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->StartOverview());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  SwitchActiveUser(GetUser2AccountId());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
 }  // namespace

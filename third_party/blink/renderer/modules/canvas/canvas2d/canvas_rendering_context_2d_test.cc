@@ -724,7 +724,8 @@ TEST_F(CanvasRenderingContext2DTest,
       size, CanvasColorParams(), kPreferNoAcceleration);
   fake_deaccelerate_surface->SetCanvasResourceHost(&host);
 
-  cc::PaintCanvas* paint_canvas_ptr = fake_deaccelerate_surface->Canvas();
+  cc::PaintCanvas* paint_canvas_ptr =
+      fake_deaccelerate_surface->DrawingCanvas();
   FakeCanvas2DLayerBridge* surface_ptr = fake_deaccelerate_surface.get();
 
   EXPECT_CALL(*fake_deaccelerate_surface, DrawFullImage(_)).Times(1);

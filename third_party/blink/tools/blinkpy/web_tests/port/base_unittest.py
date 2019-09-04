@@ -970,23 +970,18 @@ class PortTest(LoggingTestCase):
         self.assertTrue(port.skips_test('failures/expected/image.html'))
 
     def test_split_webdriver_test_name(self):
-        port = self.make_port()
-        webdriver_expectation_name = "tests/accept_alert/accept.py>>foo"
-
-        (wb_test, subtest) = port.split_webdriver_test_name(webdriver_expectation_name)
-
-        self.assertEqual(wb_test, "tests/accept_alert/accept.py")
-        self.assertEqual(subtest, "foo")
+        self.assertEqual(
+            Port.split_webdriver_test_name("tests/accept_alert/accept.py>>foo"),
+            ("tests/accept_alert/accept.py", "foo"))
+        self.assertEqual(
+            Port.split_webdriver_test_name("tests/accept_alert/accept.py"),
+            ("tests/accept_alert/accept.py", None))
 
     def test_add_webdriver_subtest_suffix(self):
-        port = self.make_port()
-        wb_test_name = "abd"
-        sub_test_name = "bar"
-
-        full_webdriver_name = port.add_webdriver_subtest_suffix(wb_test_name, sub_test_name)
-
-        self.assertEqual(full_webdriver_name, "abd>>bar")
-
+        self.assertEqual(
+            Port.add_webdriver_subtest_suffix("abd", "bar"), "abd>>bar")
+        self.assertEqual(
+            Port.add_webdriver_subtest_suffix("abd", None), "abd")
 
     def test_add_webdriver_subtest_suffix(self):
         port = self.make_port()

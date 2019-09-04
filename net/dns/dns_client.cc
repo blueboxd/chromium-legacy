@@ -15,6 +15,7 @@
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/dns_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_factory.h"
@@ -39,6 +40,24 @@ bool IsEqual(const base::Optional<DnsConfig>& c1, const DnsConfig* c2) {
     return false;
 
   return c1.value() == *c2;
+}
+
+void UpdateConfigForDohUpgrade(DnsConfig* config) {
+  // TODO(crbug.com/878582): Reconsider whether the hardcoded mapping should
+  // also be applied in SECURE mode.
+  if (config->allow_dns_over_https_upgrade &&
+      config->dns_over_https_servers.empty() &&
+      config->secure_dns_mode == DnsConfig::SecureDnsMode::AUTOMATIC) {
+    // If we're in strict mode on Android, only attempt to upgrade the
+    // specified DoT hostname.
+    if (!config->dns_over_tls_hostname.empty()) {
+      config->dns_over_https_servers = GetDohUpgradeServersFromDotHostname(
+          config->dns_over_tls_hostname, config->disabled_upgrade_providers);
+    } else {
+      config->dns_over_https_servers = GetDohUpgradeServersFromNameservers(
+          config->nameservers, config->disabled_upgrade_providers);
+    }
+  }
 }
 
 constexpr base::TimeDelta kInitialDoHTimeout =
@@ -167,6 +186,8 @@ class DnsClientImpl : public DnsClient,
 
       config = config_overrides_.ApplyOverrides(system_config_.value());
     }
+
+    UpdateConfigForDohUpgrade(&config);
 
     if (!config.IsValid() || config.unhandled_options)
       return base::nullopt;

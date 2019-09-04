@@ -51,19 +51,6 @@ public interface BottomSheetObserver {
     void onSheetOffsetChanged(float heightFraction, float offsetPx);
 
     /**
-     * An event for when the sheet is transitioning from the peeking state to the half expanded
-     * state. Once the sheet is outside the peek-half range, this event will no longer be
-     * called. This event is guaranteed to be called at least once with 0.0f in the peeking state
-     * and 1.0f at or past the half state. This means if the sheet is set to the full state from
-     * the peeking state, this event will be called a single time with 1.0f.
-     *
-     * @param transitionFraction The fraction of the way to the half expanded state that the
-     *                           sheet is. This will be 0.0f when the sheet is peeking and 1.0f
-     *                           when the sheet is half expanded.
-     */
-    void onTransitionPeekToHalf(float transitionFraction);
-
-    /**
      * An event for when the sheet changes state.
      * @param newState The new sheet state. See {@link SheetState}.
      */

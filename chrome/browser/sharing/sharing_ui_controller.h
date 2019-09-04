@@ -65,7 +65,7 @@ class SharingUiController {
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
 
   // Called by the SharingDialog when it is being closed.
-  void OnDialogClosed(SharingDialog* dialog);
+  virtual void OnDialogClosed(SharingDialog* dialog);
 
   void UpdateAndShowDialog();
 

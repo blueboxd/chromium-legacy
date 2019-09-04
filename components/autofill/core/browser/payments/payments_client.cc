@@ -376,6 +376,10 @@ class UnmaskCardRequest : public PaymentsRequest {
     if (base::StringToInt(request_details_.user_response.exp_year, &value))
       request_dict.SetKey("expiration_year", base::Value(value));
 
+    request_dict.SetKey(
+        "opt_in_fido_auth",
+        base::Value(request_details_.user_response.enable_fido_auth));
+
     if (request_details_.fido_assertion_info.is_dict()) {
       request_dict.SetKey("fido_assertion_info",
                           std::move(request_details_.fido_assertion_info));
@@ -953,10 +957,19 @@ PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails() {}
 PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
     const UnmaskResponseDetails& other) {
-  real_pan = other.real_pan;
-  fido_creation_options = other.fido_creation_options.Clone();
+  *this = other;
 }
 PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() {}
+PaymentsClient::UnmaskResponseDetails& PaymentsClient::UnmaskResponseDetails::
+operator=(const PaymentsClient::UnmaskResponseDetails& other) {
+  real_pan = other.real_pan;
+  if (other.fido_creation_options.has_value()) {
+    fido_creation_options = other.fido_creation_options->Clone();
+  } else {
+    fido_creation_options.reset();
+  }
+  return *this;
+}
 
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() {}
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(

@@ -32,7 +32,7 @@ int GetSafetyTipTitleId(security_state::SafetyTipStatus warning_type) {
 #if defined(OS_ANDROID)
       return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_TITLE;
 #else
-      return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE;
+      return IDS_PAGE_INFO_SAFETY_TIP_SUMMARY;
 #endif
     case security_state::SafetyTipStatus::kUnknown:
     case security_state::SafetyTipStatus::kNone:

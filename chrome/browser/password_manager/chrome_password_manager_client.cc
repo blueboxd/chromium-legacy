@@ -24,6 +24,7 @@
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -89,7 +90,6 @@
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #endif
@@ -518,7 +518,16 @@ bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled();
 }
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(ON_FOCUS_PING_ENABLED) || \
+    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+safe_browsing::PasswordProtectionService*
+ChromePasswordManagerClient::GetPasswordProtectionService() const {
+  return safe_browsing::ChromePasswordProtectionService::
+      GetPasswordProtectionService(profile_);
+}
+#endif
+
+#if defined(ON_FOCUS_PING_ENABLED)
 void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
@@ -530,13 +539,9 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
         frame_url, pps->GetAccountInfo().hosted_domain);
   }
 }
+#endif  // defined(ON_FOCUS_PING_ENABLED)
 
-safe_browsing::PasswordProtectionService*
-ChromePasswordManagerClient::GetPasswordProtectionService() const {
-  return safe_browsing::ChromePasswordProtectionService::
-      GetPasswordProtectionService(profile_);
-}
-
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
     PasswordType password_type,
     const std::string& username,
@@ -559,7 +564,7 @@ void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
     pps->MaybeLogPasswordReuseDetectedEvent(web_contents());
   }
 }
-#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   return ukm::GetSourceIdForWebContentsDocument(web_contents());

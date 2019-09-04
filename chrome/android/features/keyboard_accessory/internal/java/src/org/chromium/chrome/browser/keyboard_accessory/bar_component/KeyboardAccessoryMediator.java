@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
@@ -215,7 +217,12 @@ class KeyboardAccessoryMediator
     }
 
     void show() {
+        mModel.set(SKIP_CLOSING_ANIMATION, false);
         mModel.set(VISIBLE, true);
+    }
+
+    void skipClosingAnimationOnce() {
+        mModel.set(SKIP_CLOSING_ANIMATION, true);
     }
 
     void dismiss() {
@@ -242,7 +249,9 @@ class KeyboardAccessoryMediator
             return;
         }
         if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == SHOW_KEYBOARD_CALLBACK
-                || propertyKey == TAB_LAYOUT_ITEM || propertyKey == SHEET_TITLE) {
+                || propertyKey == TAB_LAYOUT_ITEM || propertyKey == SHEET_TITLE
+                || propertyKey == SKIP_CLOSING_ANIMATION
+                || propertyKey == DISABLE_ANIMATIONS_FOR_TESTING) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

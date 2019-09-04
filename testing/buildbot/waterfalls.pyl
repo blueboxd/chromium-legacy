@@ -722,6 +722,21 @@
         },
         'os_type': 'chromeos',
       },
+      # Replicate linux-chromeos-rel for code coverage experiment.
+      # TODO(crbug.com/1000367): Remove once linux-chromeos-coverage-rel is
+      # folded into linux-chromeos-rel.
+      'linux-chromeos-coverage-rel-dummy': {
+        'mixins': [
+          'linux-xenial',
+          'code-coverage',
+        ],
+        'additional_compile_targets': [
+          'gn_all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
       'linux-chromeos-dbg': {
         'mixins': [
           'linux-xenial',

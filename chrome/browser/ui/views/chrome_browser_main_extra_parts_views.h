@@ -25,6 +25,7 @@ class WMState;
 }
 #endif
 
+class DevtoolsProcessObserver;
 class RelaunchNotificationController;
 
 class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
@@ -45,6 +46,8 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
   // Only used when running in --enable-ui-devtools.
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
+  std::unique_ptr<DevtoolsProcessObserver> devtools_process_observer_;
+
 #if defined(USE_AURA)
   std::unique_ptr<wm::WMState> wm_state_;
 #endif

@@ -9,8 +9,20 @@
 namespace syncer {
 
 bool IsExplicitPassphrase(PassphraseType type) {
-  return type == PassphraseType::CUSTOM_PASSPHRASE ||
-         type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
+  switch (type) {
+    case PassphraseType::IMPLICIT_PASSPHRASE:
+    case PassphraseType::KEYSTORE_PASSPHRASE:
+    case PassphraseType::TRUSTED_VAULT_PASSPHRASE:
+      return false;
+    case PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+    case PassphraseType::CUSTOM_PASSPHRASE:
+      return true;
+    case PassphraseType::PASSPHRASE_TYPE_SIZE:
+      break;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 sync_pb::NigoriSpecifics::PassphraseType ProtoPassphraseInt32ToProtoEnum(
@@ -31,6 +43,8 @@ base::Optional<PassphraseType> ProtoPassphraseInt32ToEnum(
       return PassphraseType::CUSTOM_PASSPHRASE;
     case sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
       return PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
+    case sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
+      return PassphraseType::TRUSTED_VAULT_PASSPHRASE;
     case sync_pb::NigoriSpecifics::UNKNOWN:
       // This must be an unknown value coming from future versions or a field
       // actually being populated with UNKNOWN (which is a protocol violation).
@@ -51,6 +65,8 @@ sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
       return sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE;
     case PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
       return sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE;
+    case PassphraseType::TRUSTED_VAULT_PASSPHRASE:
+      return sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE;
     case PassphraseType::PASSPHRASE_TYPE_SIZE:
       break;
   }

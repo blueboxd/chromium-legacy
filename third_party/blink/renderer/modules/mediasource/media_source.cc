@@ -363,8 +363,17 @@ bool MediaSource::isTypeSupported(const String& type) {
   // 5. If the MediaSource does not support the specified combination of media
   //    type, media subtype, and codecs then return false.
   // 6. Return true.
-  bool result = MIMETypeRegistry::IsSupportedMediaSourceMIMEType(
-      content_type.GetType(), codecs);
+  // For incompletely specified mime-type and codec combinations, we also return
+  // false, complying with the non-normative guidance being incubated for the
+  // MSE vNext codec switching feature at
+  // https://github.com/WICG/media-source/tree/codec-switching.
+  // TODO(wolenetz): Relaxed codec specificity following similar non-normative
+  // guidance will soon be allowed for addSourceBuffer and changeType methods,
+  // but this strict codec specificity is and will be retained for
+  // isTypeSupported. See https://crbug.com/535738
+  bool result = MIMETypeRegistry::kIsSupported ==
+                MIMETypeRegistry::SupportsMediaSourceMIMEType(
+                    content_type.GetType(), codecs);
   DVLOG(2) << __func__ << "(" << type << ") -> " << (result ? "true" : "false");
   return result;
 }

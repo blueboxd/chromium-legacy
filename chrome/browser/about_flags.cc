@@ -115,7 +115,6 @@
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
-#include "content/public/common/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
@@ -1355,11 +1354,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hw-h264-encoding",
      flag_descriptions::kWebrtcHwH264EncodingName,
      flag_descriptions::kWebrtcHwH264EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kWebRtcHWH264Encoding)},
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWH264Encoding)},
     {"enable-webrtc-hw-vp8-encoding",
      flag_descriptions::kWebrtcHwVP8EncodingName,
      flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kWebRtcHWVP8Encoding)},
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP8Encoding)},
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",
      flag_descriptions::kWebrtcPipeWireCapturerName,
@@ -1910,9 +1909,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-homepage-tile", flag_descriptions::kHomepageTileName,
      flag_descriptions::kHomepageTileDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kHomepageTile)},
-    {"enable-search-ready-omnibox", flag_descriptions::kSearchReadyOmniboxName,
-     flag_descriptions::kSearchReadyOmniboxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kSearchReadyOmniboxFeature)},
     {"enable-bookmark-reorder", flag_descriptions::kReorderBookmarksName,
      flag_descriptions::kReorderBookmarksDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReorderBookmarks)},
@@ -2060,6 +2056,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableResourceLoadingHintsName,
      flag_descriptions::kEnableResourceLoadingHintsDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kResourceLoadingHints)},
+    {"enable-previews-coin-flip",
+     flag_descriptions::kEnablePreviewsCoinFlipName,
+     flag_descriptions::kEnablePreviewsCoinFlipDescription, kOsAll,
+     FEATURE_VALUE_TYPE(previews::features::kCoinFlipHoldback)},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
@@ -2193,11 +2193,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"system-keyboard-lock", flag_descriptions::kSystemKeyboardLockName,
      flag_descriptions::kSystemKeyboardLockDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemKeyboardLock)},
-#if defined(OS_ANDROID)
-    {"progress-bar-throttle", flag_descriptions::kProgressBarThrottleName,
-     flag_descriptions::kProgressBarThrottleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kProgressBarThrottleFeature)},
-#endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"offline-pages-load-signal-collecting",
      flag_descriptions::kOfflinePagesLoadSignalCollectingName,
@@ -3937,7 +3932,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hw-vp9-encoding",
      flag_descriptions::kWebrtcHwVP9EncodingName,
      flag_descriptions::kWebrtcHwVP9EncodingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kWebRtcHWVP9Encoding)},
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcHWVP9Encoding)},
 
 #if defined(OS_ANDROID)
     {"manual-password-generation-android",
@@ -4050,6 +4045,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
+    {"allow-disable-mouse-acceleration",
+     flag_descriptions::kAllowDisableMouseAccelerationName,
+     flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAllowDisableMouseAcceleration)},
+
     {"enable-streamlined-usb-printer-setup",
      flag_descriptions::kStreamlinedUsbPrinterSetupName,
      flag_descriptions::kStreamlinedUsbPrinterSetupDescription, kOsCrOS,
@@ -4415,6 +4415,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpdatedCardUnmaskPromptUi)},
+
+    {"decode-jpeg-images-to-yuv",
+     flag_descriptions::kDecodeJpeg420ImagesToYUVName,
+     flag_descriptions::kDecodeJpeg420ImagesToYUVDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kDecodeJpeg420ImagesToYUV)},
 
     {"decode-webp-images-to-yuv",
      flag_descriptions::kDecodeLossyWebPImagesToYUVName,

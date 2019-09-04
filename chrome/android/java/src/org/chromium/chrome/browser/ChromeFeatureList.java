@@ -155,6 +155,8 @@ public abstract class ChromeFeatureList {
             "AllowRemoteContextForNotifications";
     public static final String AUTOFILL_ALLOW_NON_HTTP_ACTIVATION =
             "AutofillAllowNonHttpActivation";
+    public static final String AUTOFILL_CREDIT_CARD_AUTHENTICATION =
+            "AutofillCreditCardAuthentication";
     public static final String AUTOFILL_ENABLE_COMPANY_NAME = "AutofillEnableCompanyName";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_NIGHT_MODE = "AndroidNightMode";
@@ -297,14 +299,12 @@ public abstract class ChromeFeatureList {
     public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
-    public static final String PROGRESS_BAR_THROTTLE = "ProgressBarThrottle";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String REORDER_BOOKMARKS = "ReorderBookmarks";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
-    public static final String SEARCH_READY_OMNIBOX = "SearchReadyOmnibox";
     public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";

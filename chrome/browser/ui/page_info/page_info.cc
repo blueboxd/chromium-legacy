@@ -243,8 +243,7 @@ void ReportAnyInsecureContent(
   // certificate error, then it would not be that useful (and could
   // potentially be confusing) to warn about subresources that had certificate
   // errors too.
-  if (!net::IsCertStatusError(visible_security_state.cert_status) ||
-      net::IsCertStatusMinorError(visible_security_state.cert_status)) {
+  if (!net::IsCertStatusError(visible_security_state.cert_status)) {
     displayed_insecure_content =
         displayed_insecure_content ||
         visible_security_state.displayed_content_with_cert_errors;
@@ -653,8 +652,7 @@ void PageInfo::ComputeUIInputs(
   certificate_ = visible_security_state.certificate;
 
   if (certificate_ &&
-      (!net::IsCertStatusError(visible_security_state.cert_status) ||
-       net::IsCertStatusMinorError(visible_security_state.cert_status))) {
+      (!net::IsCertStatusError(visible_security_state.cert_status))) {
     // HTTPS with no or minor errors.
     if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
 #if defined(OS_CHROMEOS)
@@ -664,31 +662,6 @@ void PageInfo::ComputeUIInputs(
 #else
       DCHECK(false) << "Policy certificates exist only on ChromeOS";
 #endif
-    } else if (net::IsCertStatusMinorError(
-                   visible_security_state.cert_status)) {
-      site_identity_status_ = SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN;
-      base::string16 issuer_name(
-          UTF8ToUTF16(certificate_->issuer().GetDisplayName()));
-      if (issuer_name.empty()) {
-        issuer_name.assign(l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
-      }
-
-      site_details_message_.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED, issuer_name));
-
-      site_details_message_ += ASCIIToUTF16("\n\n");
-      if (visible_security_state.cert_status &
-          net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION) {
-        site_details_message_ += l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION);
-      } else if (visible_security_state.cert_status &
-                 net::CERT_STATUS_NO_REVOCATION_MECHANISM) {
-        site_details_message_ += l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_NO_REVOCATION_MECHANISM);
-      } else {
-        NOTREACHED() << "Need to specify string for this warning";
-      }
     } else {
       // No major or minor errors.
       if (visible_security_state.cert_status & net::CERT_STATUS_IS_EV) {

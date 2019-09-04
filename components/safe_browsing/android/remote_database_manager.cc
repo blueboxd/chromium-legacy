@@ -271,8 +271,8 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
 AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
     const GURL& url,
     Client* client) {
-  NOTREACHED();
-  return AsyncMatch::MATCH;
+  // TODO(crbug.com/995926): Enable CSD allowlist on Android
+  return AsyncMatch::NO_MATCH;
 }
 
 bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(

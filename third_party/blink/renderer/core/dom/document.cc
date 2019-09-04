@@ -8227,10 +8227,14 @@ WindowAgent& Document::GetWindowAgent() {
 
 void Document::CountPotentialFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
-  size_t index = static_cast<size_t>(feature);
-  if (potentially_violated_features_[index])
+  wtf_size_t index = static_cast<wtf_size_t>(feature);
+  if (potentially_violated_features_.size() == 0) {
+    potentially_violated_features_.resize(
+        static_cast<wtf_size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
+  } else if (potentially_violated_features_[index]) {
     return;
-  potentially_violated_features_.set(index);
+  }
+  potentially_violated_features_[index] = true;
   UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.PotentialViolation",
                             feature);
 }

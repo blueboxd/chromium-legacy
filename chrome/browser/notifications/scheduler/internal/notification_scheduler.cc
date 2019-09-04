@@ -121,8 +121,15 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override {
     context_->notification_manager()->ScheduleNotification(
-        std::move(notification_params));
-    ScheduleBackgroundTask();
+        std::move(notification_params),
+        base::BindOnce(&NotificationSchedulerImpl::OnNotificationScheduled,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnNotificationScheduled(bool success) {
+    if (success) {
+      ScheduleBackgroundTask();
+    }
   }
 
   void DeleteAllNotifications(SchedulerClientType type) override {
@@ -227,7 +234,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
       std::unique_ptr<NotificationEntry> entry,
       std::unique_ptr<NotificationData> updated_notification_data) {
     if (!updated_notification_data) {
-      // TODO(xingliu): Client has drop the data, track metrics here.
+      stats::LogNotificationLifeCycleEvent(
+          stats::NotificationLifeCycleEvent::kClientCancel, entry->type);
       return;
     }
 

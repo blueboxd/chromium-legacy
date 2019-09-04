@@ -105,10 +105,8 @@ UpdateDataProvider::GetData(bool install_immediately,
     crx_component->allows_background_download = false;
     crx_component->requires_network_encryption = true;
     crx_component->crx_format_requirement =
-        extension->from_webstore()
-            ? GetWebstoreVerifierFormat(false)
-            : GetPolicyVerifierFormat(
-                  extension_prefs->InsecureExtensionUpdatesEnabled());
+        extension->from_webstore() ? GetWebstoreVerifierFormat(false)
+                                   : GetPolicyVerifierFormat();
     crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(
         id, extension->path(), install_immediately,
         base::BindOnce(&UpdateDataProvider::RunInstallCallback, this));

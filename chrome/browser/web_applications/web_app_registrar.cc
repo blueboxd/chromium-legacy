@@ -146,6 +146,11 @@ LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
   return web_app ? web_app->launch_container() : LaunchContainer::kDefault;
 }
 
+void WebAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
+                                            LaunchContainer launch_container) {
+  NOTIMPLEMENTED();
+}
+
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
   app_ids.reserve(registry_.size());

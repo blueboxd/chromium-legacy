@@ -22,11 +22,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/common/buildflags.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
@@ -46,6 +44,7 @@
 #include "media/base/media_permission.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
@@ -174,7 +173,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   // Building /w |rtc_use_h264|, is the corresponding run-time feature enabled?
-  if (!base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg)) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebRtcH264WithOpenH264FFmpeg)) {
     // Feature is to be disabled.
     webrtc::DisableRtcUseH264();
   }

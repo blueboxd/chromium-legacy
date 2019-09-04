@@ -41,10 +41,10 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
   SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize, icon_color));
-  SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(
-               icon, kTrayTopShortcutButtonIconSize,
-               AshColorProvider::Get()->GetDisabledColor(icon_color)));
+  SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
+                            AshColorProvider::GetDisabledColor(icon_color)));
 }
 
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,

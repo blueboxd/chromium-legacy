@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -179,13 +178,13 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     CompletionCallback completion_callback)
-    : FidoRequestHandler(
+    : FidoRequestHandlerBase(
           connector,
           fido_discovery_factory,
           base::STLSetIntersection<base::flat_set<FidoTransportProtocol>>(
               supported_transports,
-              GetTransportsAllowedByRP(authenticator_selection_criteria)),
-          std::move(completion_callback)),
+              GetTransportsAllowedByRP(authenticator_selection_criteria))),
+      completion_callback_(std::move(completion_callback)),
       request_(std::move(request)),
       authenticator_selection_criteria_(
           std::move(authenticator_selection_criteria)) {
@@ -333,9 +332,9 @@ void MakeCredentialRequestHandler::HandleResponse(
   if (authenticator->IsWinNativeApiAuthenticator()) {
     state_ = State::kFinished;
     CancelActiveAuthenticators(authenticator->GetId());
-    OnAuthenticatorResponse(
-        authenticator, WinCtapDeviceResponseCodeToMakeCredentialStatus(status),
-        std::move(response));
+    std::move(completion_callback_)
+        .Run(WinCtapDeviceResponseCodeToMakeCredentialStatus(status),
+             std::move(response), authenticator);
     return;
   }
 #endif
@@ -349,9 +348,9 @@ void MakeCredentialRequestHandler::HandleResponse(
       ConvertDeviceResponseCode(status);
   if (!maybe_result) {
     if (state_ == State::kWaitingForSecondTouch) {
-      OnAuthenticatorResponse(
-          authenticator, MakeCredentialStatus::kAuthenticatorResponseInvalid,
-          base::nullopt);
+      std::move(completion_callback_)
+          .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid,
+               base::nullopt, authenticator);
     } else {
       FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
                       << " from " << authenticator->GetDisplayName();
@@ -366,7 +365,8 @@ void MakeCredentialRequestHandler::HandleResponse(
     FIDO_LOG(ERROR) << "Failing make credential request due to status "
                     << static_cast<int>(status) << " from "
                     << authenticator->GetDisplayName();
-    OnAuthenticatorResponse(authenticator, *maybe_result, base::nullopt);
+    std::move(completion_callback_)
+        .Run(*maybe_result, base::nullopt, authenticator);
     return;
   }
 
@@ -375,9 +375,9 @@ void MakeCredentialRequestHandler::HandleResponse(
   if (!response || response->GetRpIdHash() != rp_id_hash) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
-    OnAuthenticatorResponse(authenticator,
-                            MakeCredentialStatus::kAuthenticatorResponseInvalid,
-                            base::nullopt);
+    std::move(completion_callback_)
+        .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             authenticator);
     return;
   }
 
@@ -387,8 +387,8 @@ void MakeCredentialRequestHandler::HandleResponse(
         *authenticator->AuthenticatorTransport());
   }
 
-  OnAuthenticatorResponse(authenticator, MakeCredentialStatus::kSuccess,
-                          std::move(response));
+  std::move(completion_callback_)
+      .Run(MakeCredentialStatus::kSuccess, std::move(response), authenticator);
 }
 
 void MakeCredentialRequestHandler::HandleTouch(

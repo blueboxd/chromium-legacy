@@ -25,6 +25,7 @@ class CryptAuthDeviceSyncResult {
   enum class ResultCode {
     kSuccess,
     kFinishedWithNonFatalErrors,
+    kErrorClientAppMetadataFetchFailed,
     kErrorMissingUserKeyPair,
     kErrorEncryptingDeviceMetadata,
     kErrorEstablishingGroupPublicKey,
@@ -57,6 +58,7 @@ class CryptAuthDeviceSyncResult {
     kErrorShareGroupPrivateKeyApiCallInternalServerError,
     kErrorShareGroupPrivateKeyApiCallUnknownError,
     kErrorTimeoutWaitingForGroupKeyCreation,
+    kErrorTimeoutWaitingForClientAppMetadata,
     kErrorTimeoutWaitingForLocalDeviceMetadataEncryption,
     kErrorTimeoutWaitingForFirstSyncMetadataResponse,
     kErrorTimeoutWaitingForSecondSyncMetadataResponse,
@@ -69,7 +71,18 @@ class CryptAuthDeviceSyncResult {
     kMaxValue = kErrorTimeoutWaitingForShareGroupPrivateKeyResponse
   };
 
-  enum class ResultType { kSuccess, kNonFatalError, kFatalError };
+  // Enum class to denote the result type of a CryptAuth v2 DeviceSync attempt.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. If entries are added, kMaxValue
+  // should be updated.
+  // TODO(nohle): Add numeric values.
+  enum class ResultType {
+    kSuccess,
+    kNonFatalError,
+    kFatalError,
+    // Used for UMA logs.
+    kMaxValue = kFatalError
+  };
 
   static ResultType GetResultType(ResultCode result_code);
 

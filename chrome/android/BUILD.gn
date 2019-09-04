@@ -1586,8 +1586,6 @@ static_library("browser_test_support") {
 #    'android_apk', or 'android_app_bundle_module'.
 #  apk_name: For 'android_apk' target types, name of the final APK without
 #    an .apk suffix (e.g. 'ChromePublic').
-#  module_name: For 'android_app_bundle_module' target types, name of the
-#    module (e.g. 'ChromePublicBase').
 #  is_base_module: For 'android_app_bundle_module' target types only,
 #     set to true to indicate that this is a base application module
 #     (instead of a feature module).
@@ -1603,7 +1601,6 @@ template("chrome_public_apk_or_module_tmpl") {
                              "is_base_module",
                              "jni_registration_header",
                              "is_modern",
-                             "module_name",
                              "target_type",
                              "enable_multidex",
                            ])
@@ -1654,7 +1651,6 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
 
 chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
   target_type = "android_app_bundle_module"
-  module_name = "ChromeModernPublicBase"
   is_base_module = true
   is_modern = true
   bundle_target = ":chrome_modern_public_bundle"
@@ -1683,8 +1679,6 @@ android_library("monochrome_java") {
 #   target_type: Either 'android_apk' or 'android_app_bundle_module'.
 #   apk_name: For APK target types, the final APK name without an .apk
 #     suffix (e.g. "MonochromePublic").
-#   module_name: For module target types, the module's name without a
-#     suffix (e.g. "MonochromePublicBase")
 #   is_base_module: For module target types, a boolean indicating whether
 #     this is a base bundle module (instead of a feature one).
 #   is_64_bit_browser: When compiling in a 64-bit configuration, a boolean
@@ -1735,7 +1729,6 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "include_32_bit_webview",
                              "is_64_bit_browser",
                              "is_base_module",
-                             "module_name",
                              "proguard_jar_path",
                              "resource_ids_provider_dep",
                              "static_library_provider",
@@ -2172,7 +2165,6 @@ foreach(_module_desc, chrome_modern_module_descs) {
   chrome_feature_module(
       "chrome_modern_public_bundle_${_module_desc.name}_bundle_module") {
     manifest_package = chrome_public_manifest_package
-    module_name_suffix = "ChromeModernPublic"
     base_module_target = ":chrome_modern_public_base_bundle_module"
     uncompress_shared_libraries = chromium_linker_supported
     is_monochrome_or_trichrome = false
@@ -2262,7 +2254,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "include_32_bit_webview",
                              "use_trichrome_library",
                            ])
-    module_name = _bundle_name + "Base"
     bundle_target = ":${invoker.target_name}"
     target_type = "android_app_bundle_module"
     is_base_module = true
@@ -2284,7 +2275,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   foreach(_module_desc, _module_descs) {
     chrome_feature_module("${target_name}_${_module_desc.name}_bundle_module") {
       manifest_package = chrome_public_manifest_package
-      module_name_suffix = _bundle_name
       base_module_target = ":$_base_module_target_name"
       uncompress_shared_libraries = true
       is_monochrome_or_trichrome = true
@@ -2535,6 +2525,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/PreviewsInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/PreviewsLitePageInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/ReaderModeInfoBar.java",
+    "java/src/org/chromium/chrome/browser/infobar/SafetyTipInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SearchGeolocationDisclosureInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java",

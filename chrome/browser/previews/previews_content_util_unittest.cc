@@ -19,11 +19,15 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -558,6 +562,9 @@ class PreviewsContentSimulatedNavigationTest
   }
 
   content::NavigationHandle* StartNavigation() {
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+
     navigation_simulator_ =
         content::NavigationSimulator::CreateBrowserInitiated(
             GURL("https://test.com"), web_contents());
@@ -572,6 +579,9 @@ class PreviewsContentSimulatedNavigationTest
   }
 
   content::NavigationHandle* StartNavigationAndReadyCommit() {
+    ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+
     navigation_simulator_ =
         content::NavigationSimulator::CreateBrowserInitiated(
             GURL("https://test.com"), web_contents());
@@ -586,8 +596,13 @@ class PreviewsContentSimulatedNavigationTest
     return navigation_simulator_->GetNavigationHandle();
   }
 
+  ukm::TestAutoSetUkmRecorder* ukm_recorder() const {
+    return ukm_recorder_.get();
+  }
+
  private:
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
 
 TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
@@ -596,6 +611,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
     bool enable_feature;
     // True maps to previews::CoinFlipHoldbackResult::kHoldback.
     bool set_random_coin_flip_for_navigation;
+    bool want_ukm;
     previews::CoinFlipHoldbackResult want_coin_flip_result;
     content::PreviewsState initial_state;
     content::PreviewsState want_returned;
@@ -605,6 +621,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .msg = "Feature disabled, no affect, heads",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = true,
+          .want_ukm = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -613,6 +630,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .msg = "Feature disabled, no affect, tails",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = false,
+          .want_ukm = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -622,6 +640,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
                  "on true coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
+          .want_ukm = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -631,6 +650,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
                  "on false coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
+          .want_ukm = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -640,6 +660,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
               "Before-commit decided previews are affected on true coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
+          .want_ukm = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
           .initial_state = content::OFFLINE_PAGE_ON,
           .want_returned = content::PREVIEWS_OFF,
@@ -648,6 +669,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
           .msg = "Before-commit decided previews are logged on false coin flip",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
+          .want_ukm = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
           .initial_state = content::OFFLINE_PAGE_ON,
           .want_returned = content::OFFLINE_PAGE_ON,
@@ -658,6 +680,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
               "both exist",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
+          .want_ukm = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
           .initial_state = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
           .want_returned = content::PREVIEWS_OFF,
@@ -667,6 +690,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
                  "both exist",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
+          .want_ukm = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
           .initial_state = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
           .want_returned = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
@@ -701,6 +725,15 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
     EXPECT_EQ(test_case.want_returned, returned);
     EXPECT_EQ(test_case.want_coin_flip_result,
               GetPreviewsUserData(handle)->coin_flip_holdback_result());
+
+    using UkmEntry = ukm::builders::PreviewsCoinFlip;
+    auto entries = ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName);
+    EXPECT_EQ(test_case.want_ukm ? 1u : 0u, entries.size());
+    for (auto* entry : entries) {
+      ukm_recorder()->ExpectEntryMetric(
+          entry, UkmEntry::kcoin_flip_resultName,
+          static_cast<int>(test_case.want_coin_flip_result));
+    }
   }
 }
 
@@ -709,6 +742,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
     std::string msg;
     bool enable_feature;
     bool set_random_coin_flip_for_navigation;
+    bool want_ukm;
     previews::CoinFlipHoldbackResult want_coin_flip_result;
     content::PreviewsState initial_state;
     content::PreviewsState want_returned;
@@ -718,6 +752,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Feature disabled, no affect, heads",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = true,
+          .want_ukm = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -726,6 +761,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Feature disabled, no affect, tails",
           .enable_feature = false,
           .set_random_coin_flip_for_navigation = false,
+          .want_ukm = false,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -734,6 +770,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Holdback enabled previews",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = true,
+          .want_ukm = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::PREVIEWS_OFF,
@@ -742,6 +779,7 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
           .msg = "Log enabled previews",
           .enable_feature = true,
           .set_random_coin_flip_for_navigation = false,
+          .want_ukm = true,
           .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
           .initial_state = content::NOSCRIPT_ON,
           .want_returned = content::NOSCRIPT_ON,
@@ -776,6 +814,15 @@ TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
     EXPECT_EQ(test_case.want_returned, returned);
     EXPECT_EQ(test_case.want_coin_flip_result,
               GetPreviewsUserData(handle)->coin_flip_holdback_result());
+
+    using UkmEntry = ukm::builders::PreviewsCoinFlip;
+    auto entries = ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName);
+    EXPECT_EQ(test_case.want_ukm ? 1u : 0u, entries.size());
+    for (auto* entry : entries) {
+      ukm_recorder()->ExpectEntryMetric(
+          entry, UkmEntry::kcoin_flip_resultName,
+          static_cast<int>(test_case.want_coin_flip_result));
+    }
   }
 }
 

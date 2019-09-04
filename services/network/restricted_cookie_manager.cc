@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -304,12 +305,29 @@ void RestrictedCookieManager::SetCanonicalCookie(
   bool blocked = !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
                                                           top_frame_origin);
 
-  if (blocked) {
+  CookieInclusionStatus status;
+  if (blocked)
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+
+  // Don't allow URLs with leading dots like https://.some-weird-domain.com
+  // This probably never happens.
+  if (!net::cookie_util::DomainIsHostOnly(url.host()))
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
+
+  // Don't allow setting cookies on other domains.
+  // TODO(crbug.com/996786): This should never happen. This should eventually
+  // result in a renderer kill, but for now just log metrics.
+  bool domain_match = cookie.IsDomainMatch(url.host());
+  if (!domain_match)
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.RestrictedCookieManager.SetCanonicalCookieDomainMatch",
+      domain_match);
+
+  if (!status.IsInclude()) {
     if (network_context_client_) {
-      std::vector<net::CookieWithStatus> result_with_status;
-      result_with_status.push_back(
-          {cookie, CookieInclusionStatus(
-                       CookieInclusionStatus::EXCLUDE_USER_PREFERENCES)});
+      std::vector<net::CookieWithStatus> result_with_status = {
+          {cookie, status}};
       network_context_client_->OnCookiesChanged(
           is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
           result_with_status);
@@ -320,6 +338,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   // TODO(pwnall): Validate the CanonicalCookie fields.
 
+  // Update the creation and last access times.
   base::Time now = base::Time::NowFromSystemTime();
   auto sanitized_cookie = std::make_unique<net::CanonicalCookie>(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,

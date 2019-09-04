@@ -157,6 +157,16 @@ void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
   ScheduleUpdateDeviceSettings();
 }
 
+void InputControllerEvdev::SetMouseAcceleration(bool enabled) {
+  input_device_settings_.mouse_acceleration_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::SetTouchpadAcceleration(bool enabled) {
+  input_device_settings_.touchpad_acceleration_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
 void InputControllerEvdev::SetTapToClickPaused(bool state) {
   input_device_settings_.tap_to_click_paused = state;
   ScheduleUpdateDeviceSettings();

@@ -17,6 +17,7 @@
 <link rel="import" href="../settings_page_css.html">
 
 <if expr="chromeos">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../android_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../android_apps_page/android_apps_page.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
@@ -25,6 +26,7 @@
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 <link rel="import" href="../multidevice_page/multidevice_page.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 </if>
 
 <if expr="not chromeos">
@@ -35,7 +37,7 @@
      includes both the basic and advanced settings. -->
 <dom-module id="settings-basic-page">
   <template>
-    <style include="settings-page-styles cr-hidden-style">
+    <style include="settings-page-styles cr-hidden-style settings-shared">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
@@ -61,13 +63,14 @@
         font-weight: 600;
       }
 
+      #osSettingsBanner,
       #secondaryUserBanner {
         @apply --cr-card-elevation;
         align-items: center;
         background-color: white;
         border-radius: 2px;
         display: flex;
-        margin: 21px 0;
+        margin-top: 21px;
       }
 
       #secondaryUserIcon {
@@ -107,12 +110,22 @@
           </settings-reset-profile-banner>
         </template>
 <if expr="chromeos">
+        <template is="dom-if" if="[[showOSSettingsBanner_]]">
+          <div id="osSettingsBanner" class="settings-box banner">
+            <div class="start">
+              $i18nRaw{osSettingsBannerText}
+            </div>
+            <cr-icon-button class="icon-clear"
+                id="hideOSSettings"
+                aria-label="$i18n{clear}"
+                on-click="onOSSettingsBannerClosed_">
+            </cr-icon-button>
+          </div>
+        </template>
         <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
         </div>
-</if>
-<if expr="chromeos">
         <template is="dom-if" if="[[showPage_(pageVisibility.internet)]]"
             restamp>
           <settings-section page-title="$i18n{internetPageTitle}"

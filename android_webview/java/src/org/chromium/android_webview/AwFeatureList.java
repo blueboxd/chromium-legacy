@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Java accessor for base/feature_list.h state.
@@ -59,12 +60,15 @@ final public class AwFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        return nativeIsEnabled(featureName);
+        return AwFeatureListJni.get().isEnabled(featureName);
     }
 
     // Alphabetical:
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
 
-    private static native boolean nativeIsEnabled(String featureName);
+    @NativeMethods
+    interface Natives {
+        boolean isEnabled(String featureName);
+    }
 }

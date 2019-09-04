@@ -486,6 +486,9 @@ constexpr char kLocalProfileId[] = "profile.local_profile_id";
 #endif
 
 // Deprecated 8/2019
+const char kInsecureExtensionUpdatesEnabled[] =
+    "extension_updates.insecure_extension_updates_enabled";
+
 const char kLastStartupTimestamp[] = "startup_metric.last_startup_timestamp";
 
 // Deprecated 8/2019
@@ -563,6 +566,8 @@ void RegisterProfilePrefsForMigration(
 #if defined(USE_X11)
   registry->RegisterIntegerPref(kLocalProfileId, 0);
 #endif
+
+  registry->RegisterBooleanPref(kInsecureExtensionUpdatesEnabled, false);
 
   registry->RegisterDictionaryPref(kHintLoadedCounts);
 }
@@ -1167,6 +1172,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kLocalProfileId);
 #endif
 
-  // Added 8/2019.
+  // Added 8/2019
+  profile_prefs->ClearPref(kInsecureExtensionUpdatesEnabled);
   profile_prefs->ClearPref(kHintLoadedCounts);
 }

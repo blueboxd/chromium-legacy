@@ -235,6 +235,19 @@ cca.mojo.DeviceOperator = class {
   }
 
   /**
+   * Sets the intent for the upcoming capture session.
+   * @param {string} deviceId The renderer-facing device id of the target camera
+   *     which could be retrieved from MediaDeviceInfo.deviceId.
+   * @param {cros.mojom.CaptureIntent} captureIntent The purpose of this
+   *     capture, to help the camera device decide optimal configurations.
+   * @return {!Promise} Promise for the operation.
+   */
+  async setCaptureIntent(deviceId, captureIntent) {
+    const device = this.getDevice(deviceId);
+    await device.setCaptureIntent(captureIntent);
+  }
+
+  /**
    * Checks if portrait mode is supported.
    * @param {string} deviceId The id for target device.
    * @return {!Promise<boolean>} Promise of the boolean result.

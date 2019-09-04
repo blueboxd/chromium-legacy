@@ -21,7 +21,8 @@ namespace {
 // A form field that can parse a full name field.
 class FullNameField : public NameField {
  public:
-  static std::unique_ptr<FullNameField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FullNameField> Parse(AutofillScanner* scanner,
+                                              LogManager* log_manager);
   explicit FullNameField(AutofillField* field);
 
  protected:
@@ -37,10 +38,13 @@ class FullNameField : public NameField {
 class FirstLastNameField : public NameField {
  public:
   static std::unique_ptr<FirstLastNameField> ParseSpecificName(
-      AutofillScanner* scanner);
+      AutofillScanner* scanner,
+      LogManager* log_manager);
   static std::unique_ptr<FirstLastNameField> ParseComponentNames(
-      AutofillScanner* scanner);
-  static std::unique_ptr<FirstLastNameField> Parse(AutofillScanner* scanner);
+      AutofillScanner* scanner,
+      LogManager* log_manager);
+  static std::unique_ptr<FirstLastNameField> Parse(AutofillScanner* scanner,
+                                                   LogManager* log_manager);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -59,14 +63,16 @@ class FirstLastNameField : public NameField {
 }  // namespace
 
 // static
-std::unique_ptr<FormField> NameField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> NameField::Parse(AutofillScanner* scanner,
+                                            LogManager* log_manager) {
   if (scanner->IsEnd())
     return nullptr;
 
   // Try FirstLastNameField first since it's more specific.
-  std::unique_ptr<FormField> field = FirstLastNameField::Parse(scanner);
+  std::unique_ptr<FormField> field =
+      FirstLastNameField::Parse(scanner, log_manager);
   if (!field)
-    field = FullNameField::Parse(scanner);
+    field = FullNameField::Parse(scanner, log_manager);
   return field;
 }
 
@@ -75,11 +81,12 @@ void NameField::AddClassifications(FieldCandidatesMap* field_candidates) const {
 }
 
 // static
-std::unique_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner,
+                                                    LogManager* log_manager) {
   // Exclude e.g. "username" or "nickname" fields.
   scanner->SaveCursor();
-  bool should_ignore =
-      ParseField(scanner, UTF8ToUTF16(kNameIgnoredRe), nullptr);
+  bool should_ignore = ParseField(scanner, UTF8ToUTF16(kNameIgnoredRe), nullptr,
+                                  {log_manager, "kNameIgnoredRe"});
   scanner->Rewind();
   if (should_ignore)
     return nullptr;
@@ -88,7 +95,8 @@ std::unique_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
   // for example, Travelocity_Edit travel profile.html contains a field
   // "Travel Profile Name".
   AutofillField* field = nullptr;
-  if (ParseField(scanner, UTF8ToUTF16(kNameRe), &field))
+  if (ParseField(scanner, UTF8ToUTF16(kNameRe), &field,
+                 {log_manager, "kNameRe"}))
     return std::make_unique<FullNameField>(field);
 
   return nullptr;
@@ -102,14 +110,16 @@ void FullNameField::AddClassifications(
 FullNameField::FullNameField(AutofillField* field) : field_(field) {}
 
 std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
-    AutofillScanner* scanner) {
+    AutofillScanner* scanner,
+    LogManager* log_manager) {
   // Some pages (e.g. Overstock_comBilling.html, SmithsonianCheckout.html)
   // have the label "Name" followed by two or three text fields.
   std::unique_ptr<FirstLastNameField> v(new FirstLastNameField);
   scanner->SaveCursor();
 
   AutofillField* next = nullptr;
-  if (ParseField(scanner, UTF8ToUTF16(kNameSpecificRe), &v->first_name_) &&
+  if (ParseField(scanner, UTF8ToUTF16(kNameSpecificRe), &v->first_name_,
+                 {log_manager, "kNameSpecificRe"}) &&
       ParseEmptyLabel(scanner, &next)) {
     if (ParseEmptyLabel(scanner, &v->last_name_)) {
       // There are three name fields; assume that the middle one is a
@@ -129,7 +139,8 @@ std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseSpecificName(
 
 // static
 std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
-    AutofillScanner* scanner) {
+    AutofillScanner* scanner,
+    LogManager* log_manager) {
   std::unique_ptr<FirstLastNameField> v(new FirstLastNameField);
   scanner->SaveCursor();
 
@@ -148,12 +159,13 @@ std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
     // Skip over any unrelated fields, e.g. "username" or "nickname".
     if (ParseFieldSpecifics(scanner, UTF8ToUTF16(kNameIgnoredRe),
                             MATCH_DEFAULT | MATCH_SELECT | MATCH_SEARCH,
-                            nullptr)) {
+                            nullptr, {log_manager, "kNameIgnoredRe"})) {
       continue;
     }
 
     if (!v->first_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kFirstNameRe), &v->first_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kFirstNameRe), &v->first_name_,
+                   {log_manager, "kFirstNameRe"})) {
       continue;
     }
 
@@ -163,18 +175,21 @@ std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
     // "txtmiddlename"); such a field probably actually represents a
     // middle initial.
     if (!v->middle_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kMiddleInitialRe), &v->middle_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kMiddleInitialRe), &v->middle_name_,
+                   {log_manager, "kMiddleInitialRe"})) {
       v->middle_initial_ = true;
       continue;
     }
 
     if (!v->middle_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kMiddleNameRe), &v->middle_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kMiddleNameRe), &v->middle_name_,
+                   {log_manager, "kMiddleNameRe"})) {
       continue;
     }
 
     if (!v->last_name_ &&
-        ParseField(scanner, UTF8ToUTF16(kLastNameRe), &v->last_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kLastNameRe), &v->last_name_,
+                   {log_manager, "kLastNameRe"})) {
       continue;
     }
 
@@ -192,10 +207,12 @@ std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
 
 // static
 std::unique_ptr<FirstLastNameField> FirstLastNameField::Parse(
-    AutofillScanner* scanner) {
-  std::unique_ptr<FirstLastNameField> field = ParseSpecificName(scanner);
+    AutofillScanner* scanner,
+    LogManager* log_manager) {
+  std::unique_ptr<FirstLastNameField> field =
+      ParseSpecificName(scanner, log_manager);
   if (!field)
-    field = ParseComponentNames(scanner);
+    field = ParseComponentNames(scanner, log_manager);
   return field;
 }
 

@@ -9,9 +9,6 @@
 namespace extensions {
 
 ManifestFeature::ManifestFeature() {
-  // TODO(crbug.com/979790): This will default to false once the transition
-  // to blocklisting unsupported APIs is complete.
-  set_disallow_for_service_workers(false);
 }
 
 ManifestFeature::~ManifestFeature() {

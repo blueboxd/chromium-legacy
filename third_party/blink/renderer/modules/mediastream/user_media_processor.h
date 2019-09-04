@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
@@ -99,8 +100,9 @@ class MODULES_EXPORT UserMediaProcessor
                        const blink::MediaStreamDevice& new_device);
 
   void set_media_stream_dispatcher_host_for_testing(
-      blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host) {
-    dispatcher_host_ = std::move(dispatcher_host);
+      mojo::PendingRemote<blink::mojom::blink::MediaStreamDispatcherHost>
+          dispatcher_host) {
+    dispatcher_host_.Bind(std::move(dispatcher_host));
   }
 
   void Trace(Visitor*);
@@ -244,7 +246,7 @@ class MODULES_EXPORT UserMediaProcessor
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);
 
-  const blink::mojom::blink::MediaStreamDispatcherHostPtr&
+  const mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost>&
   GetMediaStreamDispatcherHost();
   const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
@@ -285,7 +287,7 @@ class MODULES_EXPORT UserMediaProcessor
   LocalStreamSources local_sources_;
   LocalStreamSources pending_local_sources_;
 
-  blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host_;
+  mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost> dispatcher_host_;
 
   // UserMedia requests are processed sequentially. |current_request_info_|
   // contains the request currently being processed, if any, and

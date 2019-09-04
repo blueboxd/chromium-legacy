@@ -88,11 +88,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   // Optimization Hints preview.
   previews_likely_ |= HasEnabledPreviews(previews_state);
 
-  coin_flip_result_ = previews_user_data->coin_flip_holdback_result();
-
-  DCHECK(coin_flip_result_ == CoinFlipHoldbackResult::kNotSet ||
-         previews_likely_);
-
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {
     if (!IsOfflinePreview(navigation_handle->GetWebContents()))
@@ -228,7 +223,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
   }
 
   ukm::builders::Previews builder(GetDelegate().GetSourceId());
-  builder.Setcoin_flip_result(static_cast<int>(coin_flip_result_));
   if (lite_page_seen_)
     builder.Setlite_page(1);
   if (lite_page_redirect_seen_)

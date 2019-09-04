@@ -463,5 +463,29 @@ Polymer({
     expandButton.expanded = !expandButton.expanded;
     cr.ui.focusWithoutInk(expandButton);
   },
+
+  /**
+   * @param {string} id The selected input method ID.
+   * @param {string} currentId The ID of the currently enabled input method.
+   * @return {string} The default tab index '0' if the selected input method is
+   *     not currently enabled; otherwise, returns an empty string which
+   *     effectively unsets the tabindex attribute.
+   * @private
+   */
+  getInputMethodTabIndex_: function(id, currentId) {
+    return id == currentId ? '' : '0';
+  },
+
+  /**
+   * Handles the mousedown even by preventing focusing an input method list
+   * item. This is only registered by the input method list item to avoid
+   * unwanted focus.
+   * @param {!Event} e
+   * @private
+   */
+  onMouseDown_: function(e) {
+    // Preventing the mousedown event from propagating prevents focus being set.
+    e.preventDefault();
+  },
 });
 })();

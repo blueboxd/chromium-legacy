@@ -55,7 +55,7 @@ void SystemMenuButton::SetVectorIcon(const gfx::VectorIcon& icon) {
            gfx::CreateVectorIcon(icon, icon_color));
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(
-               icon, AshColorProvider::Get()->GetDisabledColor(icon_color)));
+               icon, AshColorProvider::GetDisabledColor(icon_color)));
 }
 
 SystemMenuButton::~SystemMenuButton() = default;

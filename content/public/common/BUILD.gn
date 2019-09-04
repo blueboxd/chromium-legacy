@@ -329,23 +329,6 @@ source_set("resource_type_header") {
   ]
 }
 
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
-}
-
-source_set("feature_h264_with_openh264_ffmpeg") {
-  deps = [
-    ":buildflags",
-    "//base",
-    "//media:media_buildflags",
-  ]
-  sources = [
-    "feature_h264_with_openh264_ffmpeg.cc",
-    "feature_h264_with_openh264_ffmpeg.h",
-  ]
-}
-
 mojom("interfaces") {
   # We don't want Blink variants of these bindings to be generated.
   disable_variants = true

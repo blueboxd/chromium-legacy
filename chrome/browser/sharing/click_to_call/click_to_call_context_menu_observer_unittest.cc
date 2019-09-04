@@ -20,6 +20,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -97,7 +98,8 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
   }
 
   void BuildMenu(const std::string& phone_number) {
-    observer_->BuildMenu(phone_number);
+    observer_->BuildMenu(phone_number,
+                         SharingClickToCallEntryPoint::kRightClickLink);
     sharing_message.mutable_click_to_call_message()->set_phone_number(
         phone_number);
   }

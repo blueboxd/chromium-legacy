@@ -8,6 +8,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
@@ -32,19 +34,26 @@
 
 @interface LocationBarMediator () <CRWWebStateObserver,
                                    SearchEngineObserving,
-                                   WebStateListObserving>
+                                   WebStateListObserving,
+                                   OverlayPresenterObserving>
 
 // The current web state associated with the toolbar.
 @property(nonatomic, assign) web::WebState* webState;
 
 // Whether the current default search engine supports search by image.
 @property(nonatomic, assign) BOOL searchEngineSupportsSearchByImage;
+
+// Whether an overlay is currently presented over the web content area.
+@property(nonatomic, assign, getter=isWebContentAreaShowingOverlay)
+    BOOL webContentAreaShowingOverlay;
+
 @end
 
 @implementation LocationBarMediator {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
+  std::unique_ptr<OverlayPresenterObserverBridge> _overlayObserver;
 }
 
 - (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel {
@@ -54,6 +63,7 @@
     _locationBarModel = locationBarModel;
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _overlayObserver = std::make_unique<OverlayPresenterObserverBridge>(self);
     _searchEngineSupportsSearchByImage = NO;
   }
   return self;
@@ -66,17 +76,8 @@
 #pragma mark - Public
 
 - (void)disconnect {
-  if (_webStateList) {
-    _webStateList->RemoveObserver(_webStateListObserver.get());
-    _webStateListObserver.reset();
-    _webStateList = nullptr;
-  }
-
-  if (_webState) {
-    _webState->RemoveObserver(_webStateObserver.get());
-    _webStateObserver.reset();
-    _webState = nullptr;
-  }
+  self.webStateList = nullptr;
+  self.webContentAreaOverlayPresenter = nullptr;
 }
 
 #pragma mark - CRWWebStateObserver
@@ -135,6 +136,18 @@
   _webState = nullptr;
 }
 
+#pragma mark - OverlayPresesenterObserving
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    willShowOverlayForRequest:(OverlayRequest*)request {
+  self.webContentAreaShowingOverlay = YES;
+}
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    didHideOverlayForRequest:(OverlayRequest*)request {
+  self.webContentAreaShowingOverlay = NO;
+}
+
 #pragma mark - WebStateListObserver
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -189,8 +202,24 @@
   }
 
   _webStateList = webStateList;
-  self.webState = self.webStateList->GetActiveWebState();
-  _webStateList->AddObserver(_webStateListObserver.get());
+
+  if (_webStateList) {
+    self.webState = self.webStateList->GetActiveWebState();
+    _webStateList->AddObserver(_webStateListObserver.get());
+  } else {
+    self.webState = nullptr;
+  }
+}
+
+- (void)setWebContentAreaOverlayPresenter:
+    (OverlayPresenter*)webContentAreaOverlayPresenter {
+  if (_webContentAreaOverlayPresenter)
+    _webContentAreaOverlayPresenter->RemoveObserver(_overlayObserver.get());
+
+  _webContentAreaOverlayPresenter = webContentAreaOverlayPresenter;
+
+  if (_webContentAreaOverlayPresenter)
+    _webContentAreaOverlayPresenter->AddObserver(_overlayObserver.get());
 }
 
 - (void)setTemplateURLService:(TemplateURLService*)templateURLService {
@@ -212,6 +241,13 @@
   }
 }
 
+- (void)setWebContentAreaShowingOverlay:(BOOL)webContentAreaShowingOverlay {
+  if (_webContentAreaShowingOverlay == webContentAreaShowingOverlay)
+    return;
+  _webContentAreaShowingOverlay = webContentAreaShowingOverlay;
+  [self.consumer updateLocationShareable:[self isSharingEnabled]];
+}
+
 #pragma mark - private
 
 - (void)notifyConsumerOfChangedLocation {
@@ -222,7 +258,7 @@
   if (isNTP) {
     [self.consumer updateAfterNavigatingToNTP];
   }
-  [self.consumer updateLocationShareable:[self isCurrentPageShareable]];
+  [self.consumer updateLocationShareable:[self isSharingEnabled]];
 }
 
 - (void)notifyConsumerOfChangedSecurityIcon {
@@ -269,7 +305,12 @@
 
 #pragma mark Shareability helpers
 
-- (BOOL)isCurrentPageShareable {
+- (BOOL)isSharingEnabled {
+  // Page sharing requires JavaScript execution, which is paused while overlays
+  // are displayed over the web content area.
+  if (self.webContentAreaShowingOverlay)
+    return NO;
+
   const GURL& URL = self.webState->GetLastCommittedURL();
   return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
 }

@@ -4287,11 +4287,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* frame,
-         blink::mojom::PresentationServiceRequest request) {
+         mojo::PendingReceiver<blink::mojom::PresentationService> receiver) {
         if (!frame->presentation_service_)
           frame->presentation_service_ = PresentationServiceImpl::Create(frame);
 
-        frame->presentation_service_->Bind(std::move(request));
+        frame->presentation_service_->Bind(std::move(receiver));
       },
       base::Unretained(this)));
 
@@ -4458,14 +4458,15 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(
         [](RenderFrameHostImpl* frame,
-           blink::mojom::NativeFileSystemManagerRequest request) {
-          NativeFileSystemManagerImpl::BindRequestFromUIThread(
+           mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
+               receiver) {
+          NativeFileSystemManagerImpl::BindReceiverFromUIThread(
               static_cast<StoragePartitionImpl*>(
                   frame->GetProcess()->GetStoragePartition()),
               NativeFileSystemManagerImpl::BindingContext(
                   frame->GetLastCommittedOrigin(), frame->GetLastCommittedURL(),
                   frame->GetProcess()->GetID(), frame->GetRoutingID()),
-              std::move(request));
+              std::move(receiver));
         },
         base::Unretained(this)));
   }
@@ -5006,6 +5007,17 @@ void RenderFrameHostImpl::CommitNavigation(
       // it is never reached.
       NOTREACHED();
       base::debug::DumpWithoutCrashing();
+    } else {
+      // An about:srcdoc document is always same SiteInstance with its parent.
+      // Otherwise, it won't be able to load. The parent's document contains the
+      // iframe and its srcdoc attribute.
+      //
+      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M80 if
+      // it is never reached.
+      if (GetSiteInstance() != parent_->GetSiteInstance()) {
+        NOTREACHED();
+        base::debug::DumpWithoutCrashing();
+      }
     }
   }
 
@@ -6246,11 +6258,11 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
-    blink::mojom::DedicatedWorkerHostFactoryRequest request) {
+    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   content::CreateDedicatedWorkerHostFactory(
       process_->GetID(), /*ancestor_render_frame_id=*/routing_id_,
       /*creator_render_frame_id=*/routing_id_, last_committed_origin_,
-      std::move(request));
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

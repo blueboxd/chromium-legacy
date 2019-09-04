@@ -245,6 +245,85 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
       << result.error;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_SensitiveDirectory_ExistingFile) {
+  const std::string file_contents = "Hello World";
+  const base::FilePath test_file = CreateTestFile(file_contents);
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context, ConfirmSensitiveDirectoryAccess_(
+                                      testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAbort));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
+      << result.error;
+
+  {
+    // File should still exist, and be unmodified.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string read_contents;
+    EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
+    EXPECT_EQ(file_contents, read_contents);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_SensitiveDirectory_NonExistingFile) {
+  const base::FilePath test_file = CreateTestFile("");
+  {
+    // Delete file, since SaveFile should be able to deal with non-existing
+    // files.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::DeleteFile(test_file, false));
+  }
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context, ConfirmSensitiveDirectoryAccess_(
+                                      testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAbort));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
+      << result.error;
+
+  {
+    // File should not have been created.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_FALSE(base::PathExists(test_file));
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(

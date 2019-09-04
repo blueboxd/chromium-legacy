@@ -35,10 +35,10 @@ class StorageManager final : public ScriptWrappable {
 
   // Binds the interface (if not already bound) with the given interface
   // provider, and returns it,
-  mojom::blink::QuotaDispatcherHost& GetQuotaHost(ExecutionContext*);
+  mojom::blink::QuotaDispatcherHost* GetQuotaHost(ExecutionContext*);
 
   mojo::Remote<mojom::blink::PermissionService> permission_service_;
-  mojom::blink::QuotaDispatcherHostPtr quota_host_;
+  mojo::Remote<mojom::blink::QuotaDispatcherHost> quota_host_;
 };
 
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/power_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
@@ -43,10 +44,6 @@ const int kMinVisualChargeLevel = 1;
 
 // The color of the battery's badge (bolt, unreliable, X).
 const SkColor kBatteryBadgeColor = gfx::kGoogleGrey900;
-
-// The color used for the battery's badge and charged color when the battery
-// charge level is critically low and the device is not plugged in.
-const SkColor kBatteryAlertColor = gfx::kGoogleRed300;
 
 class BatteryImageSource : public gfx::CanvasImageSource {
  public:
@@ -108,9 +105,12 @@ class BatteryImageSource : public gfx::CanvasImageSource {
                          size().height() * dsf);
     canvas->ClipRect(clip_rect);
 
+    const SkColor alert_color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconRed,
+        AshColorProvider::AshColorMode::kDark);
     const bool use_alert_color =
         charge_level == min_charge_level && info_.alert_if_low;
-    flags.setColor(use_alert_color ? kBatteryAlertColor : fg_color_);
+    flags.setColor(use_alert_color ? alert_color : fg_color_);
     canvas->DrawPath(path, flags);
 
     canvas->Restore();
@@ -118,7 +118,7 @@ class BatteryImageSource : public gfx::CanvasImageSource {
     // Paint the badge over top of the battery, if applicable.
     if (info_.icon_badge) {
       const SkColor badge_color =
-          use_alert_color ? kBatteryAlertColor : kBatteryBadgeColor;
+          use_alert_color ? alert_color : kBatteryBadgeColor;
       PaintVectorIcon(canvas, *info_.icon_badge, badge_color);
     }
   }

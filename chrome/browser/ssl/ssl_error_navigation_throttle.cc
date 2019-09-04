@@ -66,8 +66,7 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   // If there was no certificate error, SSLInfo will be empty.
   const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
   int cert_status = info.cert_status;
-  if (!net::IsCertStatusError(cert_status) ||
-      net::IsCertStatusMinorError(cert_status)) {
+  if (!net::IsCertStatusError(cert_status)) {
     return content::NavigationThrottle::PROCEED;
   }
 

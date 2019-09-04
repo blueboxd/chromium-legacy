@@ -103,10 +103,10 @@ class MockCredentialManagerDocumentInterfaceBroker
  public:
   MockCredentialManagerDocumentInterfaceBroker(
       mojom::blink::DocumentInterfaceBroker* document_interface_broker,
-      mojom::blink::DocumentInterfaceBrokerRequest request,
+      mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker> receiver,
       MockCredentialManager* mock_credential_manager)
       : TestDocumentInterfaceBroker(document_interface_broker,
-                                    std::move(request)),
+                                    std::move(receiver)),
         mock_credential_manager_(mock_credential_manager) {}
 
   void GetCredentialManager(

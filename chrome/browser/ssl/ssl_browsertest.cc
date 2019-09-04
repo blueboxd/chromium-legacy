@@ -589,9 +589,6 @@ class SSLUITestBase : public InProcessBrowserTest,
                                       int expected_authentication_state) {
     CheckSecurityState(tab, error, security_state::DANGEROUS,
                        expected_authentication_state);
-    // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security level
-    // to DANGEROUS.
-    ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
   }
 
   void ProceedThroughInterstitial(WebContents* tab) {

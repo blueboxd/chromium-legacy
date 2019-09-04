@@ -146,6 +146,7 @@ class MockInputHandler : public cc::InputHandler {
       const gfx::PointF& mouse_position) override {
     cc::InputHandlerPointerResult pointer_result;
     pointer_result.type = cc::kScrollbarScroll;
+    pointer_result.scroll_offset = gfx::ScrollOffset(0, 1);
     return pointer_result;
   }
 

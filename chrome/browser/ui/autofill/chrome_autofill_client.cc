@@ -491,8 +491,7 @@ bool ChromeAutofillClient::IsContextSecure() {
   // AwAutofillClient::IsContextSecure. See crbug.com/505388
   return navigation_entry->GetURL().SchemeIsCryptographic() &&
          ssl_status.certificate &&
-         (!net::IsCertStatusError(ssl_status.cert_status) ||
-          net::IsCertStatusMinorError(ssl_status.cert_status)) &&
+         !net::IsCertStatusError(ssl_status.cert_status) &&
          !(ssl_status.content_status &
            content::SSLStatus::RAN_INSECURE_CONTENT);
 }

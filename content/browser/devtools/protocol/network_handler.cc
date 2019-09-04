@@ -406,10 +406,8 @@ String securityState(const GURL& url, const net::CertStatus& cert_status) {
       return Security::SecurityStateEnum::Secure;
     return Security::SecurityStateEnum::Insecure;
   }
-  if (net::IsCertStatusError(cert_status) &&
-      !net::IsCertStatusMinorError(cert_status)) {
+  if (net::IsCertStatusError(cert_status))
     return Security::SecurityStateEnum::Insecure;
-  }
   return Security::SecurityStateEnum::Secure;
 }
 

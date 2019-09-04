@@ -157,6 +157,22 @@ class ScheduledNotificationManagerTest : public testing::Test {
     loop.Run();
   }
 
+  // Schedules a notification and wait until the callback is called.
+  void ScheduleNotification(std::unique_ptr<NotificationParams> params,
+                            bool expected_success) {
+    base::RunLoop loop;
+    auto schedule_callback = base::BindOnce(
+        [](base::RepeatingClosure quit_closure, bool expected_success,
+           bool success) {
+          EXPECT_EQ(success, expected_success);
+          quit_closure.Run();
+        },
+        loop.QuitClosure(), expected_success);
+    manager()->ScheduleNotification(std::move(params),
+                                    std::move(schedule_callback));
+    loop.Run();
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockDelegate> delegate_;
@@ -247,7 +263,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
                               base::OnceCallback<void(bool)> cb) {
         std::move(cb).Run(true);
       }));
-  manager()->ScheduleNotification(std::move(params));
+  ScheduleNotification(std::move(params), true /*expected_success*/);
 
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;
@@ -285,8 +301,12 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
                           IconStore::AddCallback callback) {
         std::move(callback).Run({}, true);
       }));
-  EXPECT_CALL(*notification_store(), Add(_, _, _));
-  manager()->ScheduleNotification(std::move(params));
+  EXPECT_CALL(*notification_store(), Add(_, _, _))
+      .WillOnce(Invoke(
+          [&](const std::string&, const NotificationEntry&,
+              base::OnceCallback<void(bool)> cb) { std::move(cb).Run(true); }));
+
+  ScheduleNotification(std::move(params), true /*expected_success*/);
 
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;
@@ -488,7 +508,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationWithIcons) {
                               base::OnceCallback<void(bool)> cb) {
         std::move(cb).Run(true);
       }));
-  manager()->ScheduleNotification(std::move(params));
+  ScheduleNotification(std::move(params), true /*expected_success*/);
 
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;
@@ -528,7 +548,50 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationWithIconsFailed) {
         std::move(callback).Run(std::move(icons_uuid_map), false);
       }));
 
-  manager()->ScheduleNotification(std::move(params));
+  ScheduleNotification(std::move(params), false /*expected_success*/);
+
+  // Verify in-memory data.
+  ScheduledNotificationManager::Notifications notifications;
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_TRUE(notifications.empty());
+}
+
+// Verifies the case that failed to add to the notification store.
+TEST_F(ScheduledNotificationManagerTest, ScheduleAddNotificationFailed) {
+  InitWithData(std::vector<NotificationEntry>());
+  NotificationData notification_data;
+  notification_data.icons = CreateIcons();
+  ScheduleParams schedule_params;
+  auto params = std::make_unique<NotificationParams>(
+      SchedulerClientType::kTest1, notification_data, schedule_params);
+  params->schedule_params.deliver_time_start = base::Time::Now();
+  params->schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+
+  // Succeeded to add icons.
+  EXPECT_CALL(*icon_store(), AddIcons(_, _))
+      .WillOnce(Invoke([](IconStore::IconTypeBundleMap icons,
+                          IconStore::AddCallback callback) {
+        IconStore::IconTypeUuidMap icons_uuid_map;
+        for (const auto& pair : icons) {
+          if (pair.first == IconType::kLargeIcon)
+            icons_uuid_map.emplace(pair.first, kLargeIconUuid);
+          else if (pair.first == IconType::kSmallIcon)
+            icons_uuid_map.emplace(pair.first, kSmallIconUuid);
+        }
+        std::move(callback).Run(std::move(icons_uuid_map), true);
+      }));
+
+  std::vector<std::string> icons_to_delete{kSmallIconUuid, kLargeIconUuid};
+  EXPECT_CALL(*icon_store(), DeleteIcons(icons_to_delete, _));
+
+  // Failed to add notifications.
+  EXPECT_CALL(*notification_store(), Add(_, _, _))
+      .WillOnce(Invoke(
+          [](const std::string&, const NotificationEntry&,
+             base::OnceCallback<void(bool)> cb) { std::move(cb).Run(false); }));
+
+  ScheduleNotification(std::move(params), false /*expected_success*/);
 
   // Verify in-memory data.
   ScheduledNotificationManager::Notifications notifications;

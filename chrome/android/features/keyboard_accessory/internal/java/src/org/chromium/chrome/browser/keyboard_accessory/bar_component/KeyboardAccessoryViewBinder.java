@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
@@ -101,8 +103,13 @@ class KeyboardAccessoryViewBinder {
         if (propertyKey == BAR_ITEMS) {
             view.setBarItemsAdapter(
                     KeyboardAccessoryCoordinator.createBarItemsAdapter(model.get(BAR_ITEMS)));
+        } else if (propertyKey == DISABLE_ANIMATIONS_FOR_TESTING) {
+            if (model.get(DISABLE_ANIMATIONS_FOR_TESTING)) view.disableAnimationsForTesting();
         } else if (propertyKey == VISIBLE) {
             view.setVisible(model.get(VISIBLE));
+        } else if (propertyKey == SKIP_CLOSING_ANIMATION) {
+            view.setSkipClosingAnimation(model.get(SKIP_CLOSING_ANIMATION));
+            if (!model.get(VISIBLE)) view.setVisible(false); // Update to cancel any animation.
         } else if (propertyKey == BOTTOM_OFFSET_PX) {
             view.setBottomOffset(model.get(BOTTOM_OFFSET_PX));
         } else if (propertyKey == SHOW_KEYBOARD_CALLBACK || propertyKey == KEYBOARD_TOGGLE_VISIBLE

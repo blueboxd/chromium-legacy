@@ -34,7 +34,10 @@ using net::test::IsOk;
 
 DiskCacheTest::DiskCacheTest() {
   CHECK(temp_dir_.CreateUniqueTempDir());
-  cache_path_ = temp_dir_.GetPath();
+  // Put the cache into a subdir of |temp_dir_|, to permit tests to safely
+  // remove the cache directory without risking collisions with other tests.
+  cache_path_ = temp_dir_.GetPath().AppendASCII("cache");
+  CHECK(base::CreateDirectory(cache_path_));
 }
 
 DiskCacheTest::~DiskCacheTest() = default;

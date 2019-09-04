@@ -14,7 +14,7 @@ interface NativeFileSystemFileWriter {
   // written.
   // TODO(mek): This might need some way of reporting progress events back to
   // the renderer.
-  Write(uint64 offset, Blob data) => (NativeFileSystemError result,
+  Write(uint64 offset, pending_remote<Blob> data) => (NativeFileSystemError result,
                                       uint64 bytes_written);
 
   // Write data from |stream| to the given |position| in the file being written

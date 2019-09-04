@@ -760,7 +760,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
 
 #endif  // !defined(OS_CHROMEOS)
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/1000234): Re-enable this test.
+#define MAYBE_OpenLink DISABLED_OpenLink
+#else
+#define MAYBE_OpenLink OpenLink
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_OpenLink) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   LoadAndLaunchPlatformApp("open_link", "Launched");
   ui_test_utils::TabAddedWaiter(browser()).Wait();

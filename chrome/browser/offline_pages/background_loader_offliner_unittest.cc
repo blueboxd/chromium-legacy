@@ -679,14 +679,15 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnCertificateError) {
             request_status());
 }
 
-TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnMinorCertificateError) {
+TEST_F(BackgroundLoaderOfflinerTest, FailsOnRevocationCheckingFailure) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
 
-  // Sets a minor certificate error that should be acceptable.
+  // Sets a revocation checking failure certificate error that should not be
+  // allowed.
   std::unique_ptr<VisibleSecurityState> visible_security_state =
       BaseVisibleSecurityState();
   visible_security_state->cert_status |=
@@ -703,8 +704,10 @@ TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnMinorCertificateError) {
   CompleteLoading();
   PumpLoop();
 
-  EXPECT_TRUE(SaveInProgress());
-  EXPECT_FALSE(completion_callback_called());
+  EXPECT_FALSE(SaveInProgress());
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADED_PAGE_HAS_CERTIFICATE_ERROR,
+            request_status());
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnHttp) {

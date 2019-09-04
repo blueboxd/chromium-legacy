@@ -16,6 +16,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_proxy.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_shared_css.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
@@ -137,7 +138,7 @@
       </template>
       <network-proxy editable use-shared-proxies
           on-proxy-change="onProxyChange_"
-          network-properties="[[managedProperties_]]">
+          managed-properties="[[managedProperties_]]">
       </network-proxy>
     </div>
 

@@ -78,6 +78,38 @@ class ObservedPropertyImpl {
    private:
     PropertyType value_;
   };
+
+  // Same as NotifiesOnlyOnChanges, but provides the previous value when
+  // notifying observers.
+  template <typename PropertyType,
+            void (ObserverType::*NotifyFunctionPtr)(
+                const NodeType*,
+                PropertyType previous_value)>
+  class NotifiesOnlyOnChangesWithPreviousValue {
+   public:
+    NotifiesOnlyOnChangesWithPreviousValue() {}
+    explicit NotifiesOnlyOnChangesWithPreviousValue(PropertyType initial_value)
+        : value_(initial_value) {}
+
+    ~NotifiesOnlyOnChangesWithPreviousValue() {}
+
+    // Sets the property and sends a notification if needed. Returns true if a
+    // notification was sent, false otherwise.
+    bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
+      if (value_ == value)
+        return false;
+      PropertyType previous_value = value_;
+      value_ = std::forward<PropertyType>(value);
+      for (auto* observer : node->GetObservers())
+        ((observer)->*(NotifyFunctionPtr))(node, previous_value);
+      return true;
+    }
+
+    const PropertyType& value() const { return value_; }
+
+   private:
+    PropertyType value_;
+  };
 };
 
 }  // namespace performance_manager

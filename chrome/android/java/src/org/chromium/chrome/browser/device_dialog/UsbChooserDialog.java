@@ -12,6 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
@@ -55,8 +56,14 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         // Emphasize the origin.
         Profile profile = Profile.getLastUsedProfile();
         SpannableString originSpannableString = new SpannableString(origin);
+
+        assert activity instanceof ChromeBaseAppCompatActivity;
+        final boolean useDarkColors = !((ChromeBaseAppCompatActivity) activity)
+                                               .getNightModeStateProvider()
+                                               .isInNightMode();
+
         OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, activity.getResources(), profile,
-                securityLevel, false /* isInternalPage */, true /* useDarkColors */,
+                securityLevel, false /* isInternalPage */, useDarkColors,
                 true /* emphasizeHttpsScheme */);
         // Construct a full string and replace the origin text with emphasized version.
         SpannableString title =

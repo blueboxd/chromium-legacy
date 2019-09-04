@@ -888,6 +888,10 @@ static bool IsValidUTF16(const base::string16& str16) {
   return base::UTF16ToUTF8(str16.c_str(), str16.size(), &unused_str8);
 }
 
+void AuthenticatorClientPinEntrySheetModel::OnBack() {
+  dialog_model()->StartOver();
+}
+
 void AuthenticatorClientPinEntrySheetModel::OnAccept() {
   // TODO(martinkr): use device::pin::kMinLength once landed.
   constexpr size_t kMinPinLength = 4;
@@ -961,6 +965,10 @@ base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
 base::Optional<base::string16>
 AuthenticatorClientPinTapAgainSheetModel::GetAdditionalDescription() const {
   return PossibleResidentKeyWarning(dialog_model());
+}
+
+void AuthenticatorClientPinTapAgainSheetModel::OnBack() {
+  dialog_model()->StartOver();
 }
 
 // AuthenticatorGenericErrorSheetModel -----------------------------------

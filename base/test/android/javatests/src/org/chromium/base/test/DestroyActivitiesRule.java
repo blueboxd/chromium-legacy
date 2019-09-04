@@ -81,7 +81,7 @@ public class DestroyActivitiesRule extends ExternalResource {
             }
         });
         try {
-            allDestroyedCalledback.waitForCallback();
+            allDestroyedCalledback.waitForFirst();
         } catch (InterruptedException | TimeoutException e) {
             // There appears to be a framework bug on K and L where onStop and onDestroy are not
             // called for a handful of tests. We ignore these exceptions.

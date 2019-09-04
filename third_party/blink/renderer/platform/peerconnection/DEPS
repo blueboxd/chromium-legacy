@@ -9,6 +9,7 @@ include_rules = [
     # Dependencies.
     "+base/threading/thread_restrictions.h",
     "+media/base",
+    "+media/media_buildflags.h",
     "+media/video/gpu_video_accelerator_factories.h",
     "+media/video/video_decode_accelerator.h",
     "+media/video/h264_parser.h",

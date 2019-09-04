@@ -324,25 +324,6 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
   EXPECT_EQ(SmsStatus::kSuccess, sms_status1);
 }
 
-TEST_F(SmsServiceTest, Timeout) {
-  NavigateAndCommit(GURL(kTestUrl));
-
-  Service service(web_contents());
-
-  base::RunLoop loop;
-
-  service.MakeRequest(
-      TimeDelta::FromSeconds(0),
-      BindLambdaForTesting(
-          [&loop](SmsStatus status, const Optional<string>& sms) {
-            EXPECT_EQ(SmsStatus::kTimeout, status);
-            EXPECT_EQ(base::nullopt, sms);
-            loop.Quit();
-          }));
-
-  loop.Run();
-}
-
 TEST_F(SmsServiceTest, CleansUp) {
   NavigateAndCommit(GURL(kTestUrl));
 

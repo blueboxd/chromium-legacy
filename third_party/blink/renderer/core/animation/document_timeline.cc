@@ -56,7 +56,7 @@ bool CompareAnimations(const Member<Animation>& left,
 // Returns the current animation time for a given |document|. This is
 // the animation clock time capped to be at least this document's
 // ZeroTime() such that the animation time is never negative when converted.
-base::TimeTicks CurrentAnimationTime(const Document* document) {
+base::TimeTicks CurrentAnimationTime(Document* document) {
   base::TimeTicks animation_time = document->GetAnimationClock().CurrentTime();
   base::TimeTicks document_zero_time = document->Timeline().ZeroTime();
 

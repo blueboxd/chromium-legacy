@@ -110,7 +110,8 @@ void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
     const base::string16& cvc,
     const base::string16& exp_month,
     const base::string16& exp_year,
-    bool should_store_pan) {
+    bool should_store_pan,
+    bool enable_fido_auth) {
   verify_timestamp_ = AutofillClock::Now();
   unmasking_number_of_attempts_++;
   unmasking_result_ = AutofillClient::NONE;

@@ -72,7 +72,7 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
   }
 }
 
-void BlobURLStoreImpl::Register(blink::mojom::BlobPtr blob,
+void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
                                 const GURL& url,
                                 RegisterCallback callback) {
   if (!url.SchemeIsBlob()) {
@@ -98,10 +98,11 @@ void BlobURLStoreImpl::Register(blink::mojom::BlobPtr blob,
     return;
   }
 
-  blink::mojom::Blob* blob_ptr = blob.get();
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob));
+  blink::mojom::Blob* blob_ptr = blob_remote.get();
   blob_ptr->GetInternalUUID(base::BindOnce(
       &BlobURLStoreImpl::RegisterWithUUID, weak_ptr_factory_.GetWeakPtr(),
-      std::move(blob), url, std::move(callback)));
+      std::move(blob_remote), url, std::move(callback)));
 }
 
 void BlobURLStoreImpl::Revoke(const GURL& url) {
@@ -162,7 +163,7 @@ void BlobURLStoreImpl::ResolveForNavigation(
   new BlobURLTokenImpl(context_, url, std::move(blob_handle), std::move(token));
 }
 
-void BlobURLStoreImpl::RegisterWithUUID(blink::mojom::BlobPtr blob,
+void BlobURLStoreImpl::RegisterWithUUID(mojo::Remote<blink::mojom::Blob> blob,
                                         const GURL& url,
                                         RegisterCallback callback,
                                         const std::string& uuid) {

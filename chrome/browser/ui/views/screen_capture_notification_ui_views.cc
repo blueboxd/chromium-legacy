@@ -36,7 +36,7 @@
 namespace {
 
 const int kHorizontalMargin = 10;
-const float kWindowAlphaValue = 0.85f;
+const float kWindowAlphaValue = 0.96f;
 const int kPaddingVertical = 5;
 const int kPaddingHorizontal = 10;
 

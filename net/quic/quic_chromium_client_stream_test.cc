@@ -511,11 +511,12 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
   // Start to read the body.
   TestCompletionCallback callback;
   scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle_->ReadBody(
-                buffer.get(), 2 * data_len,
-                base::Bind(&QuicChromiumClientStreamTest::ResetStreamCallback,
-                           base::Unretained(this), stream_)));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle_->ReadBody(
+          buffer.get(), 2 * data_len,
+          base::BindOnce(&QuicChromiumClientStreamTest::ResetStreamCallback,
+                         base::Unretained(this), stream_)));
 
   // Receive the data and close the stream during the callback.
   size_t offset = 0;

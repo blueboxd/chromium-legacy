@@ -40,23 +40,23 @@ content::DevToolsBackgroundServicesContext* GetDevTools(
 
 PaymentHandlerHost::PaymentHandlerHost(content::WebContents* web_contents,
                                        Delegate* delegate)
-    : binding_(this), web_contents_(web_contents), delegate_(delegate) {
+    : web_contents_(web_contents), delegate_(delegate) {
   DCHECK(web_contents_);
   DCHECK(delegate_);
 }
 
 PaymentHandlerHost::~PaymentHandlerHost() {}
 
-mojom::PaymentHandlerHostPtrInfo PaymentHandlerHost::Bind() {
-  mojom::PaymentHandlerHostPtrInfo host_ptr_info;
-  binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&host_ptr_info));
+mojo::PendingRemote<mojom::PaymentHandlerHost> PaymentHandlerHost::Bind() {
+  receiver_.reset();
+  mojo::PendingRemote<mojom::PaymentHandlerHost> host =
+      receiver_.BindNewPipeAndPassRemote();
 
   // Connection error handler can be set only after the Bind() call.
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PaymentHandlerHost::Disconnect, weak_ptr_factory_.GetWeakPtr()));
 
-  return host_ptr_info;
+  return host;
 }
 
 void PaymentHandlerHost::UpdateWith(
@@ -115,7 +115,7 @@ void PaymentHandlerHost::NoUpdatedPaymentDetails() {
 }
 
 void PaymentHandlerHost::Disconnect() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 base::WeakPtr<PaymentHandlerHost> PaymentHandlerHost::AsWeakPtr() {

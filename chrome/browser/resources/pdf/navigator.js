@@ -73,40 +73,56 @@ class PdfNavigator {
    *    a new tab, and a new window.
    */
   constructor(originalUrl, viewport, paramsParser, navigatorDelegate) {
-    this.originalUrl_ = originalUrl;
+    /** @private {?URL} */
+    this.originalUrl_ = null;
+    try {
+      this.originalUrl_ = new URL(originalUrl);
+    } catch (err) {
+      console.warn('Invalid original URL');
+    }
+
+    /** @private {!Viewport} */
     this.viewport_ = viewport;
+
+    /** @private {!OpenPdfParamsParser} */
     this.paramsParser_ = paramsParser;
+
+    /** @private {!NavigatorDelegate} */
     this.navigatorDelegate_ = navigatorDelegate;
   }
 
   /**
    * Function to navigate to the given URL. This might involve navigating
    * within the PDF page or opening a new url (in the same tab or a new tab).
-   * @param {string} url The URL to navigate to.
+   * @param {string} urlString The URL to navigate to.
    * @param {!PdfNavigator.WindowOpenDisposition} disposition The window open
    *     disposition when navigating to the new URL.
    */
-  navigate(url, disposition) {
-    if (url.length == 0) {
+  navigate(urlString, disposition) {
+    if (urlString.length == 0) {
       return;
     }
 
     // If |urlFragment| starts with '#', then it's for the same URL with a
     // different URL fragment.
-    if (url.charAt(0) == '#') {
+    if (urlString[0] === '#' && this.originalUrl_) {
       // if '#' is already present in |originalUrl| then remove old fragment
       // and add new url fragment.
-      const hashIndex = this.originalUrl_.search('#');
-      if (hashIndex != -1) {
-        url = this.originalUrl_.substring(0, hashIndex) + url;
-      } else {
-        url = this.originalUrl_ + url;
-      }
+      const newUrl = new URL(this.originalUrl_.href);
+      newUrl.hash = urlString;
+      urlString = newUrl.href;
     }
 
     // If there's no scheme, then take a guess at the scheme.
-    if (url.indexOf('://') == -1 && url.indexOf('mailto:') == -1) {
-      url = this.guessUrlWithoutScheme_(url);
+    if (!urlString.includes('://') && !urlString.includes('mailto:')) {
+      urlString = this.guessUrlWithoutScheme_(urlString);
+    }
+
+    let url = null;
+    try {
+      url = new URL(urlString);
+    } catch (err) {
+      return;
     }
 
     if (!this.isValidUrl_(url)) {
@@ -116,22 +132,22 @@ class PdfNavigator {
     switch (disposition) {
       case PdfNavigator.WindowOpenDisposition.CURRENT_TAB:
         this.paramsParser_.getViewportFromUrlParams(
-            url, this.onViewportReceived_.bind(this));
+            url.href, this.onViewportReceived_.bind(this));
         break;
       case PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
-        this.navigatorDelegate_.navigateInNewTab(url, false);
+        this.navigatorDelegate_.navigateInNewTab(url.href, false);
         break;
       case PdfNavigator.WindowOpenDisposition.NEW_FOREGROUND_TAB:
-        this.navigatorDelegate_.navigateInNewTab(url, true);
+        this.navigatorDelegate_.navigateInNewTab(url.href, true);
         break;
       case PdfNavigator.WindowOpenDisposition.NEW_WINDOW:
-        this.navigatorDelegate_.navigateInNewWindow(url);
+        this.navigatorDelegate_.navigateInNewWindow(url.href);
         break;
       case PdfNavigator.WindowOpenDisposition.SAVE_TO_DISK:
         // TODO(jaepark): Alt + left clicking a link in PDF should
         // download the link.
         this.paramsParser_.getViewportFromUrlParams(
-            url, this.onViewportReceived_.bind(this));
+            url.href, this.onViewportReceived_.bind(this));
         break;
       default:
         break;
@@ -145,20 +161,16 @@ class PdfNavigator {
    * @private
    */
   onViewportReceived_(viewportPosition) {
-    let originalUrl = this.originalUrl_;
-    let hashIndex = originalUrl.search('#');
-    if (hashIndex != -1) {
-      originalUrl = originalUrl.substring(0, hashIndex);
-    }
-
-    let newUrl = viewportPosition.url;
-    hashIndex = newUrl.search('#');
-    if (hashIndex != -1) {
-      newUrl = newUrl.substring(0, hashIndex);
+    let newUrl = null;
+    try {
+      newUrl = new URL(viewportPosition.url);
+    } catch (err) {
     }
 
     const pageNumber = viewportPosition.page;
-    if (pageNumber != undefined && originalUrl == newUrl) {
+    if (pageNumber != undefined && this.originalUrl_ && newUrl &&
+        this.originalUrl_.origin === newUrl.origin &&
+        this.originalUrl_.pathname === newUrl.pathname) {
       this.viewport_.goToPage(pageNumber);
     } else {
       this.navigatorDelegate_.navigateInCurrentTab(viewportPosition.url);
@@ -167,28 +179,20 @@ class PdfNavigator {
 
   /**
    * Checks if the URL starts with a scheme and is not just a scheme.
-   * TODO (rbpotter): Update to use URL (here and elsewhere in this file).
-   * @param {string} url The input URL
+   * @param {!URL} url The input URL
    * @return {boolean} Whether the url is valid.
    * @private
    */
   isValidUrl_(url) {
     // Make sure |url| starts with a valid scheme.
-    if (!url.startsWith('http://') && !url.startsWith('https://') &&
-        !url.startsWith('ftp://') && !url.startsWith('file://') &&
-        !url.startsWith('mailto:')) {
+    const validSchemes = ['http:', 'https:', 'ftp:', 'file:', 'mailto:'];
+    if (!validSchemes.includes(url.protocol)) {
       return false;
     }
 
     // Navigations to file:-URLs are only allowed from file:-URLs.
-    if (url.startsWith('file:') && !this.originalUrl_.startsWith('file:')) {
-      return false;
-    }
-
-
-    // Make sure |url| is not only a scheme.
-    if (url == 'http://' || url == 'https://' || url == 'ftp://' ||
-        url == 'file://' || url == 'mailto:') {
+    if (url.protocol === 'file:' && this.originalUrl_ &&
+        this.originalUrl_.protocol !== 'file:') {
       return false;
     }
 
@@ -207,53 +211,40 @@ class PdfNavigator {
     // and neither does adding |url| to it.
     // If the original URL is not a valid URL, this cannot make a valid URL.
     // In both cases, just bail out.
-    if (this.originalUrl_.startsWith('mailto:') ||
+    if (!this.originalUrl_ || this.originalUrl_.protocol === 'mailto:' ||
         !this.isValidUrl_(this.originalUrl_)) {
       return url;
     }
 
     // Check for absolute paths.
     if (url.startsWith('/')) {
-      const schemeEndIndex = this.originalUrl_.indexOf('://');
-      const firstSlash = this.originalUrl_.indexOf('/', schemeEndIndex + 3);
-      // e.g. http://www.foo.com/bar -> http://www.foo.com
-      const domain = firstSlash != -1 ?
-          this.originalUrl_.substr(0, firstSlash) :
-          this.originalUrl_;
-      return domain + url;
+      return this.originalUrl_.origin + url;
     }
 
-    // Check for obvious relative paths.
-    let isRelative = false;
-    if (url.startsWith('.') || url.startsWith('\\')) {
-      isRelative = true;
-    }
-
+    // Check for other non-relative paths.
     // In Adobe Acrobat Reader XI, it looks as though links with less than
     // 2 dot separators in the domain are considered relative links, and
-    // those with 2 of more are considered http URLs. e.g.
+    // those with 2 or more are considered http URLs. e.g.
     //
     // www.foo.com/bar -> http
     // foo.com/bar -> relative link
-    if (!isRelative) {
+    if (url.startsWith('\\')) {
+      // Prepend so that the relative URL will be correctly computed by new
+      // URL() below.
+      url = './' + url;
+    }
+    if (!url.startsWith('.')) {
       const domainSeparatorIndex = url.indexOf('/');
       const domainName = domainSeparatorIndex == -1 ?
           url :
           url.substr(0, domainSeparatorIndex);
       const domainDotCount = (domainName.match(/\./g) || []).length;
-      if (domainDotCount < 2) {
-        isRelative = true;
+      if (domainDotCount >= 2) {
+        return 'http://' + url;
       }
     }
 
-    if (isRelative) {
-      const slashIndex = this.originalUrl_.lastIndexOf('/');
-      const path = slashIndex != -1 ? this.originalUrl_.substr(0, slashIndex) :
-                                      this.originalUrl_;
-      return path + '/' + url;
-    }
-
-    return 'http://' + url;
+    return new URL(url, this.originalUrl_.href).href;
   }
 }
 

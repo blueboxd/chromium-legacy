@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/wake_lock/wake_lock.h"
 
@@ -18,7 +19,6 @@ namespace device {
 // would be 3.
 struct WakeLockProvider::WakeLockDataPerType {
   WakeLockDataPerType() = default;
-  WakeLockDataPerType(WakeLockDataPerType&&) = default;
   ~WakeLockDataPerType() = default;
 
   // Currently activated wake locks of this wake lock type.
@@ -29,7 +29,7 @@ struct WakeLockProvider::WakeLockDataPerType {
   std::map<WakeLock*, std::unique_ptr<WakeLock>> wake_locks;
 
   // Observers for this wake lock type.
-  mojo::InterfacePtrSet<mojom::WakeLockObserver> observers;
+  mojo::RemoteSet<mojom::WakeLockObserver> observers;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockDataPerType);
 };
@@ -79,13 +79,14 @@ void WakeLockProvider::GetWakeLockWithoutContext(
 
 void WakeLockProvider::NotifyOnWakeLockDeactivation(
     mojom::WakeLockType type,
-    mojom::WakeLockObserverPtr observer) {
+    mojo::PendingRemote<mojom::WakeLockObserver> pending_observer) {
+  mojo::Remote<mojom::WakeLockObserver> observer(std::move(pending_observer));
   // If |type| is not held then notify the observer immediately. Add it to the
   // observer list for future deactivation notifications.
   if (GetWakeLockDataPerType(type).count == 0) {
     observer->OnWakeLockDeactivated(type);
   }
-  GetWakeLockDataPerType(type).observers.AddPtr(std::move(observer));
+  GetWakeLockDataPerType(type).observers.Add(std::move(observer));
 }
 
 void WakeLockProvider::GetActiveWakeLocksForTests(
@@ -112,10 +113,8 @@ void WakeLockProvider::OnWakeLockDeactivated(mojom::WakeLockType type) {
   // Notify observers of the last cancelation i.e. deactivation of wake lock
   // type |type|.
   if (new_count == 0) {
-    GetWakeLockDataPerType(type).observers.ForAllPtrs(
-        [type](mojom::WakeLockObserver* wake_lock_observer) {
-          wake_lock_observer->OnWakeLockDeactivated(type);
-        });
+    for (auto& observer : GetWakeLockDataPerType(type).observers)
+      observer->OnWakeLockDeactivated(type);
   }
 }
 

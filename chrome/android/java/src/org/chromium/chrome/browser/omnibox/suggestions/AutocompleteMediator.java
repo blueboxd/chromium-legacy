@@ -321,13 +321,6 @@ class AutocompleteMediator
     void onNativeInitialized() {
         mNativeInitialized = true;
 
-        // The feature is instantiated in the constructor to simplify plumbing. If the feature is
-        // actually disabled, null out the coordinator.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEARCH_READY_OMNIBOX)) {
-            mEditUrlProcessor.destroy();
-            mEditUrlProcessor = null;
-        }
-
         mShowSuggestionFavicons =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
 

@@ -14,10 +14,10 @@
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/config_source.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h"
+#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/supervised_user/supervised_user_test_base.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_constants.h"
@@ -82,7 +82,7 @@ class TestParentAccessServiceObserver : public ParentAccessService::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestParentAccessServiceObserver);
 };
 
-class ParentAccessServiceTest : public SupervisedUserTestBase {
+class ParentAccessServiceTest : public policy::LoginPolicyTestBase {
  public:
   ParentAccessServiceTest()
       : test_observer_(
@@ -95,18 +95,18 @@ class ParentAccessServiceTest : public SupervisedUserTestBase {
     policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
         "example.com");
 
-    SupervisedUserTestBase::SetUp();
+    policy::LoginPolicyTestBase::SetUp();
   }
 
   void SetUpOnMainThread() override {
     ASSERT_NO_FATAL_FAILURE(GetTestAccessCodeValues(&test_values_));
     ParentAccessService::Get().AddObserver(test_observer_.get());
-    SupervisedUserTestBase::SetUpOnMainThread();
+    policy::LoginPolicyTestBase::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     ParentAccessService::Get().RemoveObserver(test_observer_.get());
-    SupervisedUserTestBase::TearDownOnMainThread();
+    policy::LoginPolicyTestBase::TearDownOnMainThread();
   }
 
   std::string GetIdToken() const override {
@@ -114,6 +114,11 @@ class ParentAccessServiceTest : public SupervisedUserTestBase {
   }
 
  protected:
+  void LogInChild() {
+    SkipToLoginScreen();
+    LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  }
+
   // Updates the policy containing the Parent Access Code config.
   void UpdatePolicy(const base::DictionaryValue& dict) {
     const user_manager::UserManager* const user_manager =
@@ -156,7 +161,7 @@ class ParentAccessServiceTest : public SupervisedUserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoConfigAvailable) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   auto test_value = test_values_.begin();
   EXPECT_FALSE(ValidateAccessCode(test_value->second, test_value->first));
@@ -165,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoConfigAvailable) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoValidConfigAvailable) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
@@ -179,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoValidConfigAvailable) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithFutureConfig) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
@@ -193,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithFutureConfig) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithCurrentConfig) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
@@ -207,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithCurrentConfig) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithOldConfig) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
@@ -222,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithOldConfig) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, MultipleValidationAttempts) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   AccessCodeValues::iterator test_value = test_values_.begin();
 
@@ -246,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, MultipleValidationAttempts) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoObserver) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   ParentAccessService::Get().RemoveObserver(test_observer_.get());
 
@@ -260,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoObserver) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoAccountId) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   ParentAccessService::Get().RemoveObserver(test_observer_.get());
 
@@ -274,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoAccountId) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, InvalidAccountId) {
-  LogInUser(LogInType::kChild);
+  LogInChild();
 
   ParentAccessService::Get().RemoveObserver(test_observer_.get());
 

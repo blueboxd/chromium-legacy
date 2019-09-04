@@ -26,12 +26,12 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
+#include "content/public/browser/system_connector.h"
 
 namespace app_list {
 
@@ -77,6 +77,9 @@ std::unique_ptr<SearchController> CreateSearchController(
   std::unique_ptr<SearchController> controller =
       std::make_unique<SearchController>(model_updater, list_controller,
                                          profile);
+
+  // Set up rankers for search results.
+  controller->InitializeRankers(content::GetSystemConnector());
 
   // Add mixer groups. There are four main groups: answer card, apps
   // and omnibox. Each group has a "soft" maximum number of results. However, if

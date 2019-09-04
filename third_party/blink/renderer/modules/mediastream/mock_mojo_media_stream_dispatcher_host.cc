@@ -10,16 +10,13 @@
 
 namespace blink {
 
-MockMojoMediaStreamDispatcherHost::MockMojoMediaStreamDispatcherHost()
-    : binding_(this) {}
+MockMojoMediaStreamDispatcherHost::MockMojoMediaStreamDispatcherHost() {}
 
 MockMojoMediaStreamDispatcherHost::~MockMojoMediaStreamDispatcherHost() {}
 
-mojom::blink::MediaStreamDispatcherHostPtr
-MockMojoMediaStreamDispatcherHost::CreateInterfacePtrAndBind() {
-  mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host;
-  binding_.Bind(mojo::MakeRequest(&dispatcher_host));
-  return dispatcher_host;
+mojo::PendingRemote<mojom::blink::MediaStreamDispatcherHost>
+MockMojoMediaStreamDispatcherHost::CreatePendingRemoteAndBind() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 void MockMojoMediaStreamDispatcherHost::GenerateStream(

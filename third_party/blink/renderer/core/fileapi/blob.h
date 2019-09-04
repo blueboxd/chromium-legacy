@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_BLOB_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
@@ -117,7 +118,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
   // URLRegistrable to support PublicURLs.
   URLRegistry& Registry() const final;
-  mojom::blink::BlobPtr AsMojoBlob() final;
+  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() final;
 
   // ImageBitmapSource implementation
   bool IsBlob() const override { return true; }

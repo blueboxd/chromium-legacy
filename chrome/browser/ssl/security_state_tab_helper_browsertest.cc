@@ -651,16 +651,24 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMALogsVisitsAfterWarning) {
   histograms.ExpectBucketCount(kHistogramName, true, 1);
 }
 
-// Tests that interstitial.ssl.visited_site_after_warning is not being logged
-// to on errors that do not trigger a full site interstitial.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMADoesNotLogOnMinorError) {
+// Tests that interstitial.ssl.visited_site_after_warning is being logged
+// on ERR_CERT_UNABLE_TO_CHECK_REVOCATION (which previously did not show an
+// interstitial.)
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+                       UMALogsVisitsAfterRevocationCheckFailureWarning) {
   const char kHistogramName[] = "interstitial.ssl.visited_site_after_warning";
   base::HistogramTester histograms;
   SetUpMockCertVerifierForHttpsServer(
-      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, net::OK);
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+      net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
+  // Histogram shouldn't log before clicking through interstitial.
   histograms.ExpectTotalCount(kHistogramName, 0);
+  ProceedThroughInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  // Histogram should log after clicking through.
+  histograms.ExpectUniqueSample(kHistogramName, true, 1);
 }
 
 // Test security state after clickthrough for a SHA-1 certificate that is

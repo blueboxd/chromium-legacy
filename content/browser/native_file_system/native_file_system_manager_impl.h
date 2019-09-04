@@ -88,15 +88,6 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const BindingContext& binding_context,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
-  // TODO(https://crbug.com/955171): Remove this method and use
-  // BindReceiverFromUIThread once RendererInterfaceBinders and
-  // RenderFrameHostImpl use service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void BindRequestFromUIThread(
-      StoragePartitionImpl* storage_partition,
-      const BindingContext& binding_context,
-      blink::mojom::NativeFileSystemManagerRequest request);
-
   // blink::mojom::NativeFileSystemManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(
@@ -196,6 +187,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       ChooseEntriesCallback callback,
       std::vector<base::FilePath> entries,
       NativeFileSystemPermissionContext::SensitiveDirectoryResult result);
+  void DidCreateOrTruncateSaveFile(const BindingContext& binding_context,
+                                   const base::FilePath& path,
+                                   ChooseEntriesCallback callback,
+                                   bool success);
   void DidChooseDirectory(
       const BindingContext& binding_context,
       const base::FilePath& path,

@@ -6,9 +6,6 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
-#include "base/i18n/time_formatting.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/default_clock.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -23,7 +20,6 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_palette.h"
@@ -36,25 +32,6 @@ namespace chromeos {
 namespace {
 
 const char kEolNotificationId[] = "chrome://product_eol";
-
-base::string16 PredictedMonthAndYearOfEol(base::Time current_time,
-                                          int32_t number_of_milestones) {
-  // The average number of weeks between automatic updates to the OS.  There is
-  // an 8 week cycle every 6 months, so the worst case earliest predicted date
-  // can be 4 weeks/year behind the actual final release date.  Since the date
-  // of the first release milestone out of the |number_of_milestones| remaining
-  // is not provided, the worst case latest prediction could be up to but not
-  // including 6 weeks ahead of the actual final release date.  Underestimation
-  // is preferred, so 6 week intervals are used.
-  constexpr int kAverageNumWeeksInMilestone = 6;
-  constexpr int kNumDaysInOneWeek = 7;
-
-  base::Time predicted_eol_date =
-      current_time +
-      base::TimeDelta::FromDays(kAverageNumWeeksInMilestone *
-                                kNumDaysInOneWeek * number_of_milestones);
-  return base::TimeFormatMonthAndYear(predicted_eol_date);
-}
 
 // Buttons that appear in notifications.
 enum ButtonIndex {
@@ -117,9 +94,7 @@ bool EolNotification::ShouldShowEolNotification() {
 }
 
 EolNotification::EolNotification(Profile* profile)
-    : clock_(base::DefaultClock::GetInstance()),
-      profile_(profile),
-      status_(update_engine::EndOfLifeStatus::kSupported) {}
+    : profile_(profile), status_(update_engine::EndOfLifeStatus::kSupported) {}
 
 EolNotification::~EolNotification() {}
 
@@ -142,11 +117,9 @@ void EolNotification::OnEolStatus(
       profile_->GetPrefs()->GetInteger(prefs::kEolStatus);
   profile_->GetPrefs()->SetInteger(prefs::kEolStatus, status_);
 
-  // Security only state is no longer supported.  If |number_of_milestones_| is
-  // non-empty, a notification should appear regardless of |status_| alone.
-  if (!number_of_milestones_ &&
-      (status_ == update_engine::EndOfLifeStatus::kSupported ||
-       status_ == update_engine::EndOfLifeStatus::kSecurityOnly)) {
+  // Security only state is no longer supported.
+  if (status_ == update_engine::EndOfLifeStatus::kSupported ||
+      status_ == update_engine::EndOfLifeStatus::kSecurityOnly) {
     return;
   }
 
@@ -166,43 +139,26 @@ void EolNotification::OnEolStatus(
 
 void EolNotification::Update() {
   message_center::RichNotificationData data;
-  std::unique_ptr<message_center::Notification> notification;
 
   DCHECK_EQ(BUTTON_MORE_INFO, data.buttons.size());
   data.buttons.emplace_back(GetStringUTF16(IDS_LEARN_MORE));
 
-  if (number_of_milestones_ && number_of_milestones_.value() > 0) {
-    // Notifies user that updates will stop occurring at a month and year.
-    notification = ash::CreateSystemNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
-        l10n_util::GetStringFUTF16(
-            IDS_PENDING_EOL_NOTIFICATION_TITLE,
-            PredictedMonthAndYearOfEol(clock_->Now(),
-                                       number_of_milestones_.value())),
-        l10n_util::GetStringFUTF16(IDS_PENDING_EOL_NOTIFICATION_MESSAGE,
-                                   ui::GetChromeOSDeviceName()),
-        base::string16() /* display_source */, GURL(kEolNotificationId),
-        message_center::NotifierId(
-            message_center::NotifierType::SYSTEM_COMPONENT, kEolNotificationId),
-        data, new EolNotificationDelegate(profile_),
-        vector_icons::kBusinessIcon,
-        message_center::SystemNotificationWarningLevel::NORMAL);
-  } else {
-    // Notifies user that updates will no longer occur after this final update.
-    DCHECK_EQ(BUTTON_DISMISS, data.buttons.size());
-    data.buttons.emplace_back(GetStringUTF16(IDS_EOL_DISMISS_BUTTON));
-    notification = ash::CreateSystemNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
-        GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
-        l10n_util::GetStringFUTF16(IDS_EOL_NOTIFICATION_EOL,
-                                   ui::GetChromeOSDeviceName()),
-        base::string16() /* display_source */, GURL(kEolNotificationId),
-        message_center::NotifierId(
-            message_center::NotifierType::SYSTEM_COMPONENT, kEolNotificationId),
-        data, new EolNotificationDelegate(profile_),
-        kNotificationEndOfSupportIcon,
-        message_center::SystemNotificationWarningLevel::NORMAL);
-  }
+  DCHECK_EQ(BUTTON_DISMISS, data.buttons.size());
+  data.buttons.emplace_back(GetStringUTF16(IDS_EOL_DISMISS_BUTTON));
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
+          GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
+          l10n_util::GetStringFUTF16(IDS_EOL_NOTIFICATION_EOL,
+                                     ui::GetChromeOSDeviceName()),
+          base::string16() /* display_source */, GURL(kEolNotificationId),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kEolNotificationId),
+          data, new EolNotificationDelegate(profile_),
+          kNotificationEndOfSupportIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, *notification,

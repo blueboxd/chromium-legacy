@@ -65,7 +65,7 @@ void UpdateGoodiesPrefCantShow(bool can_show_goodies) {
 }  // namespace
 
 const char GoodiesDisplayer::kGoodiesURL[] =
-    "https://www.google.com/chrome/devices/goodies.html";
+    "https://www.google.com/chromebook/offers/";
 
 GoodiesDisplayer::GoodiesDisplayer() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

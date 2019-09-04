@@ -66,6 +66,10 @@ Polymer({
     this.$.networkDialog.show();
   },
 
+  focus: function() {
+    this.$.networkDialog.focus();
+  },
+
   /** Updates localized elements of the UI. */
   updateLocalizedContent: function() {
     this.$.networkSelectLogin.setCrOncStrings();

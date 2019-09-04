@@ -72,10 +72,6 @@ class BackgroundTaskCoordinatorHelper {
         base::Time deliver_time_start =
             entry->schedule_params.deliver_time_start.value();
 
-        // Each background task has a minimum interval.
-        if (deliver_time_start < now + config_->background_task_min_interval)
-          deliver_time_start = now + config_->background_task_min_interval;
-
         // Consider suppression time.
         if (client_state->suppression_info.has_value() &&
             deliver_time_start <

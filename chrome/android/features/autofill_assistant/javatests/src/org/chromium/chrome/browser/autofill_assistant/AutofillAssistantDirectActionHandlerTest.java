@@ -219,7 +219,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         }
 
         synchronized T waitForResult(String msg) throws Exception {
-            if (!mHasResult) mHelper.waitForCallback(msg);
+            if (!mHasResult) mHelper.waitForFirst(msg);
             assertTrue(mHasResult);
             return mResult;
         }

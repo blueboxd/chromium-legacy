@@ -18,6 +18,8 @@
 
 namespace chromeos {
 
+using namespace vm_tools::concierge;
+
 class ConciergeClientImpl : public ConciergeClient {
  public:
   ConciergeClientImpl() {}
@@ -52,44 +54,14 @@ class ConciergeClientImpl : public ConciergeClient {
       const vm_tools::concierge::CreateDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kCreateDiskImageMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode CreateDiskImageRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::CreateDiskImageResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kCreateDiskImageMethod, request, std::move(callback));
   }
 
   void DestroyDiskImage(
       const vm_tools::concierge::DestroyDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
           callback) override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kDestroyDiskImageMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode DestroyDiskImageRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::DestroyDiskImageResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kDestroyDiskImageMethod, request, std::move(callback));
   }
 
   void ImportDiskImage(
@@ -121,131 +93,41 @@ class ConciergeClientImpl : public ConciergeClient {
       const vm_tools::concierge::CancelDiskImageRequest& request,
       DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kCancelDiskImageMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode CancelDiskImageRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::CancelDiskImageResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kCancelDiskImageMethod, request, std::move(callback));
   }
 
   void DiskImageStatus(
       const vm_tools::concierge::DiskImageStatusRequest& request,
       DBusMethodCallback<vm_tools::concierge::DiskImageStatusResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kDiskImageStatusMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode DiskImageStatusRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::DiskImageStatusResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kDiskImageStatusMethod, request, std::move(callback));
   }
 
   void ListVmDisks(const vm_tools::concierge::ListVmDisksRequest& request,
                    DBusMethodCallback<vm_tools::concierge::ListVmDisksResponse>
                        callback) override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kListVmDisksMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode ListVmDisksRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::ListVmDisksResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kListVmDisksMethod, request, std::move(callback));
   }
 
   void StartTerminaVm(const vm_tools::concierge::StartVmRequest& request,
                       DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                           callback) override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kStartVmMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode StartVmRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
     // TODO(nverne): revert to TIMEOUT_USE_DEFAULT when StartVm no longer
     // requires unnecessary long running crypto calculations.
     constexpr int kStartVmTimeoutMs = 160 * 1000;
-    concierge_proxy_->CallMethod(
-        &method_call, kStartVmTimeoutMs,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::StartVmResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kStartVmMethod, request, std::move(callback), kStartVmTimeoutMs);
   }
 
   void StopVm(const vm_tools::concierge::StopVmRequest& request,
               DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kStopVmMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode StopVmRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::StopVmResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kStopVmMethod, request, std::move(callback));
   }
 
   void GetVmInfo(const vm_tools::concierge::GetVmInfoRequest& request,
                  DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse>
                      callback) override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kGetVmInfoMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode GetVmInfoRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::GetVmInfoResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kGetVmInfoMethod, request, std::move(callback));
   }
 
   void GetVmEnterpriseReportingInfo(
@@ -253,48 +135,15 @@ class ConciergeClientImpl : public ConciergeClient {
       DBusMethodCallback<
           vm_tools::concierge::GetVmEnterpriseReportingInfoResponse> callback)
       override {
-    dbus::MethodCall method_call(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kGetVmEnterpriseReportingInfoMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR)
-          << "Failed to encode GetVmEnterpriseReportingInfoRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(
-            &ConciergeClientImpl::OnDBusProtoResponse<
-                vm_tools::concierge::GetVmEnterpriseReportingInfoResponse>,
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kGetVmEnterpriseReportingInfoMethod, request,
+               std::move(callback));
   }
 
   void SetVmCpuRestriction(
       const vm_tools::concierge::SetVmCpuRestrictionRequest& request,
       DBusMethodCallback<vm_tools::concierge::SetVmCpuRestrictionResponse>
           callback) override {
-    dbus::MethodCall method_call(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kSetVmCpuRestrictionMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode SetVmCpuRestrictionRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::SetVmCpuRestrictionResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kSetVmCpuRestrictionMethod, request, std::move(callback));
   }
 
   void WaitForServiceToBeAvailable(
@@ -307,112 +156,35 @@ class ConciergeClientImpl : public ConciergeClient {
       const vm_tools::concierge::ContainerSshKeysRequest& request,
       DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
           callback) override {
-    dbus::MethodCall method_call(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kGetContainerSshKeysMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode ContainerSshKeysRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::ContainerSshKeysResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kGetContainerSshKeysMethod, request, std::move(callback));
   }
 
-  void AttachUsbDevice(base::ScopedFD fd,
+  void AttachUsbDevice(
+      base::ScopedFD fd,
       const vm_tools::concierge::AttachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kAttachUsbDeviceMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode AttachUsbDeviceRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    writer.AppendFileDescriptor(fd.get());
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::AttachUsbDeviceResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kAttachUsbDeviceMethod, request, std::move(callback));
   }
 
   void DetachUsbDevice(
       const vm_tools::concierge::DetachUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kDetachUsbDeviceMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode DetachUsbDeviceRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::DetachUsbDeviceResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kDetachUsbDeviceMethod, request, std::move(callback));
   }
 
   void ListUsbDevices(
       const vm_tools::concierge::ListUsbDeviceRequest& request,
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
       override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kListUsbDeviceMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode ListUsbDeviceRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::ListUsbDeviceResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kListUsbDeviceMethod, request, std::move(callback));
   }
 
   void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
                   DBusMethodCallback<vm_tools::concierge::StartVmResponse>
                       callback) override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kStartArcVmMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode StartArcVmRequest protobuf";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-      return;
-    }
-
-    concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::StartVmResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethod(kStartArcVmMethod, request, std::move(callback));
   }
 
  protected:
@@ -442,6 +214,27 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
  private:
+  template <typename RequestProto, typename ResponseProto>
+  void CallMethod(const std::string& method_name,
+                  const RequestProto& request,
+                  DBusMethodCallback<ResponseProto> callback,
+                  int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT) {
+    dbus::MethodCall method_call(kVmConciergeInterface, method_name);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode protobuf for " << method_name;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, timeout_ms,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<ResponseProto>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   template <typename ResponseProto>
   void OnDBusProtoResponse(DBusMethodCallback<ResponseProto> callback,
                            dbus::Response* dbus_response) {

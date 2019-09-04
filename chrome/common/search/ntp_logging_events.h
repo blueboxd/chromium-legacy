@@ -146,16 +146,12 @@ enum NTPLoggingEventType {
   NTP_BACKGROUND_OPEN_COLLECTION = 68,
   // A image tile was selected in the richer picker.
   NTP_BACKGROUND_SELECT_IMAGE = 69,
-  // A image tile was deselected in the richer picker.
-  NTP_BACKGROUND_DESELECT_IMAGE = 70,
   // An image was set as the NTP background.
   NTP_BACKGROUND_IMAGE_SET = 71,
   // The back arrow was clicked in the richer picker.
   NTP_BACKGROUND_BACK_CLICK = 72,
   // The 'No background' tile was selected in the richer picker.
   NTP_BACKGROUND_DEFAULT_SELECTED = 73,
-  // The 'No background' tile was deselected in the richer picker.
-  NTP_BACKGROUND_DEFAULT_DESELECTED = 74,
   // 'Cancel' was clicked in the image selection dialog.
   NTP_BACKGROUND_UPLOAD_CANCEL = 75,
   // 'Done' was clicked in the image selection dialog.

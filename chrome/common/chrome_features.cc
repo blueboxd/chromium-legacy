@@ -163,6 +163,10 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 #endif
 
 #if defined(OS_CHROMEOS)
+// Shows a setting that allows disabling mouse acceleration.
+const base::Feature kAllowDisableMouseAcceleration{
+    "AllowDisableMouseAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -673,7 +677,7 @@ const base::Feature kSystemWebApps{"SystemWebApps",
 
 // Enables or disables the App Management UI.
 const base::Feature kAppManagement{"AppManagement",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disable downloads of unsafe file types over insecure transports if initiated
 // from a secure page

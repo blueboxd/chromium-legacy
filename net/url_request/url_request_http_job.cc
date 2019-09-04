@@ -117,10 +117,8 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
   net::CertStatus other_errors =
       ssl_info.cert_status &
       ~net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED;
-  if (net::IsCertStatusError(other_errors) &&
-      !net::IsCertStatusMinorError(other_errors)) {
+  if (net::IsCertStatusError(other_errors))
     return;
-  }
 
   // Record the CT compliance of each request, to give a picture of the
   // percentage of overall requests that are CT-compliant.
@@ -862,9 +860,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
 
   if (transaction_ && transaction_->GetResponseInfo()) {
     const SSLInfo& ssl_info = transaction_->GetResponseInfo()->ssl_info;
-    if (!IsCertificateError(result) ||
-        (IsCertStatusError(ssl_info.cert_status) &&
-         IsCertStatusMinorError(ssl_info.cert_status))) {
+    if (!IsCertificateError(result)) {
       LogTrustAnchor(ssl_info.public_key_hashes);
     }
 

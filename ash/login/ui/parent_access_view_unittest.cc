@@ -18,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -27,6 +28,7 @@
 #include "components/account_id/account_id.h"
 #include "components/session_manager/session_manager_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -72,6 +74,14 @@ class ParentAccessViewTest : public LoginTestBase {
   void SetUp() override {
     LoginTestBase::SetUp();
     login_client_ = std::make_unique<MockLoginScreenClient>();
+  }
+
+  void TearDown() override {
+    LoginTestBase::TearDown();
+
+    // If the test did not explicitly dismissed the widget, destroy it now.
+    if (ParentAccessWidget::Get())
+      ParentAccessWidget::Get()->Destroy();
   }
 
   // Simulates mouse press event on a |button|.
@@ -533,8 +543,10 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 }
 
+using ParentAccessWidgetTest = ParentAccessViewTest;
+
 // Tests that correct usage metric is reported.
-TEST_F(ParentAccessViewTest, UMAUsageMetric) {
+TEST_F(ParentAccessWidgetTest, UMAUsageMetric) {
   ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
   DismissWidget();
   histogram_tester_.ExpectBucketCount(
@@ -574,6 +586,49 @@ TEST_F(ParentAccessViewTest, UMAUsageMetric) {
 
   histogram_tester_.ExpectTotalCount(
       ParentAccessView::kUMAParentAccessCodeUsage, 5);
+}
+
+// Tests that the widget is properly resized when tablet mode changes.
+TEST_F(ParentAccessWidgetTest, WidgetResizingInTabletMode) {
+  // Set display large enough to fit preferred view sizes.
+  UpdateDisplay("1200x800");
+  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+
+  ParentAccessWidget* widget = ParentAccessWidget::Get();
+  ASSERT_TRUE(widget);
+  ParentAccessView* view =
+      ParentAccessWidget::TestApi(widget).parent_access_view();
+
+  constexpr auto kClamshellModeSize = gfx::Size(340, 340);
+  constexpr auto kTabletModeSize = gfx::Size(340, 580);
+
+  const auto widget_size = [&view]() -> gfx::Size {
+    return view->GetWidget()->GetWindowBoundsInScreen().size();
+  };
+
+  const auto widget_center = [&view]() -> gfx::Point {
+    return view->GetWidget()->GetWindowBoundsInScreen().CenterPoint();
+  };
+
+  const auto user_work_area_center = [&view]() -> gfx::Point {
+    return WorkAreaInsets::ForWindow(view->GetWidget()->GetNativeWindow())
+        ->user_work_area_bounds()
+        .CenterPoint();
+  };
+
+  EXPECT_EQ(kClamshellModeSize, view->size());
+  EXPECT_EQ(kClamshellModeSize, widget_size());
+  EXPECT_EQ(user_work_area_center(), widget_center());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(kTabletModeSize, view->size());
+  EXPECT_EQ(kTabletModeSize, widget_size());
+  EXPECT_EQ(user_work_area_center(), widget_center());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(kClamshellModeSize, view->size());
+  EXPECT_EQ(kClamshellModeSize, widget_size());
+  EXPECT_EQ(user_work_area_center(), widget_center());
 }
 
 }  // namespace ash

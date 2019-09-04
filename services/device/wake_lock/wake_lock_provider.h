@@ -11,9 +11,9 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/device/wake_lock/wake_lock.h"
@@ -43,7 +43,7 @@ class WakeLockProvider : public mojom::WakeLockProvider,
                                  mojom::WakeLockRequest request) override;
   void NotifyOnWakeLockDeactivation(
       mojom::WakeLockType type,
-      mojom::WakeLockObserverPtr observer) override;
+      mojo::PendingRemote<mojom::WakeLockObserver> pending_observer) override;
   void GetActiveWakeLocksForTests(
       mojom::WakeLockType type,
       GetActiveWakeLocksForTestsCallback callback) override;

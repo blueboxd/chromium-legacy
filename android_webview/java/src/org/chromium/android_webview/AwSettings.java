@@ -21,6 +21,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -144,7 +145,7 @@ public class AwSettings {
 
     static class LazyDefaultUserAgent{
         // Lazy Holder pattern
-        private static final String sInstance = nativeGetDefaultUserAgent();
+        private static final String sInstance = AwSettingsJni.get().getDefaultUserAgent();
     }
 
     // Protects access to settings global fields.
@@ -306,12 +307,12 @@ public class AwSettings {
     void setWebContents(WebContents webContents) {
         synchronized (mAwSettingsLock) {
             if (mNativeAwSettings != 0) {
-                nativeDestroy(mNativeAwSettings);
+                AwSettingsJni.get().destroy(mNativeAwSettings, AwSettings.this);
                 assert mNativeAwSettings == 0;  // nativeAwSettingsGone should have been called.
             }
             if (webContents != null) {
                 mEventHandler.bindUiThread();
-                mNativeAwSettings = nativeInit(webContents);
+                mNativeAwSettings = AwSettingsJni.get().init(AwSettings.this, webContents);
                 updateEverythingLocked();
             }
         }
@@ -320,7 +321,7 @@ public class AwSettings {
     private void updateEverythingLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         assert mNativeAwSettings != 0;
-        nativeUpdateEverythingLocked(mNativeAwSettings);
+        AwSettingsJni.get().updateEverythingLocked(mNativeAwSettings, AwSettings.this);
         onGestureZoomSupportChanged(
                 supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
     }
@@ -483,7 +484,8 @@ public class AwSettings {
                 mInitialPageScalePercent = scaleInPercent;
                 mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
                     if (mNativeAwSettings != 0) {
-                        nativeUpdateInitialPageScaleLocked(mNativeAwSettings);
+                        AwSettingsJni.get().updateInitialPageScaleLocked(
+                                mNativeAwSettings, AwSettings.this);
                     }
                 });
             }
@@ -579,7 +581,8 @@ public class AwSettings {
                 mAutoCompleteEnabled = enable;
                 mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
                     if (mNativeAwSettings != 0) {
-                        nativeUpdateFormDataPreferencesLocked(mNativeAwSettings);
+                        AwSettingsJni.get().updateFormDataPreferencesLocked(
+                                mNativeAwSettings, AwSettings.this);
                     }
                 });
             }
@@ -640,7 +643,8 @@ public class AwSettings {
             if (!oldUserAgent.equals(mUserAgent)) {
                 mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
                     if (mNativeAwSettings != 0) {
-                        nativeUpdateUserAgentLocked(mNativeAwSettings);
+                        AwSettingsJni.get().updateUserAgentLocked(
+                                mNativeAwSettings, AwSettings.this);
                     }
                 });
             }
@@ -673,7 +677,8 @@ public class AwSettings {
                 mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
                     if (mNativeAwSettings != 0) {
                         updateWebkitPreferencesOnUiThreadLocked();
-                        nativeResetScrollAndScaleState(mNativeAwSettings);
+                        AwSettingsJni.get().resetScrollAndScaleState(
+                                mNativeAwSettings, AwSettings.this);
                     }
                 });
             }
@@ -1292,7 +1297,8 @@ public class AwSettings {
         mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
             assert Thread.holdsLock(mAwSettingsLock);
             assert mNativeAwSettings != 0;
-            nativeUpdateWillSuppressErrorStateLocked(mNativeAwSettings);
+            AwSettingsJni.get().updateWillSuppressErrorStateLocked(
+                    mNativeAwSettings, AwSettings.this);
         });
     }
 
@@ -1747,7 +1753,8 @@ public class AwSettings {
                 mOffscreenPreRaster = enabled;
                 mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
                     if (mNativeAwSettings != 0) {
-                        nativeUpdateOffscreenPreRasterLocked(mNativeAwSettings);
+                        AwSettingsJni.get().updateOffscreenPreRasterLocked(
+                                mNativeAwSettings, AwSettings.this);
                     }
                 });
             }
@@ -1770,7 +1777,8 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             mEventHandler.runOnUiThreadBlockingAndLocked(() -> {
                 if (mNativeAwSettings != 0) {
-                    nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
+                    AwSettingsJni.get().updateRendererPreferencesLocked(
+                            mNativeAwSettings, AwSettings.this);
                 }
             });
         }
@@ -1825,7 +1833,8 @@ public class AwSettings {
     private void populateWebPreferences(long webPrefsPtr) {
         synchronized (mAwSettingsLock) {
             assert mNativeAwSettings != 0;
-            nativePopulateWebPreferencesLocked(mNativeAwSettings, webPrefsPtr);
+            AwSettingsJni.get().populateWebPreferencesLocked(
+                    mNativeAwSettings, AwSettings.this, webPrefsPtr);
         }
     }
 
@@ -1833,7 +1842,7 @@ public class AwSettings {
         assert mEventHandler.mHandler != null;
         ThreadUtils.assertOnUiThread();
         if (mNativeAwSettings != 0) {
-            nativeUpdateWebkitPreferencesLocked(mNativeAwSettings);
+            AwSettingsJni.get().updateWebkitPreferencesLocked(mNativeAwSettings, AwSettings.this);
         }
     }
 
@@ -1841,35 +1850,26 @@ public class AwSettings {
         assert mEventHandler.mHandler != null;
         ThreadUtils.assertOnUiThread();
         if (mNativeAwSettings != 0) {
-            nativeUpdateCookiePolicyLocked(mNativeAwSettings);
+            AwSettingsJni.get().updateCookiePolicyLocked(mNativeAwSettings, AwSettings.this);
         }
     }
 
-    private native long nativeInit(WebContents webContents);
-
-    private native void nativeDestroy(long nativeAwSettings);
-
-    private native void nativePopulateWebPreferencesLocked(long nativeAwSettings, long webPrefsPtr);
-
-    private native void nativeResetScrollAndScaleState(long nativeAwSettings);
-
-    private native void nativeUpdateEverythingLocked(long nativeAwSettings);
-
-    private native void nativeUpdateInitialPageScaleLocked(long nativeAwSettings);
-
-    private native void nativeUpdateUserAgentLocked(long nativeAwSettings);
-
-    private native void nativeUpdateWebkitPreferencesLocked(long nativeAwSettings);
-
-    private static native String nativeGetDefaultUserAgent();
-
-    private native void nativeUpdateFormDataPreferencesLocked(long nativeAwSettings);
-
-    private native void nativeUpdateRendererPreferencesLocked(long nativeAwSettings);
-
-    private native void nativeUpdateOffscreenPreRasterLocked(long nativeAwSettings);
-
-    private native void nativeUpdateWillSuppressErrorStateLocked(long nativeAwSettings);
-
-    private native void nativeUpdateCookiePolicyLocked(long nativeAwSettings);
+    @NativeMethods
+    interface Natives {
+        long init(AwSettings caller, WebContents webContents);
+        void destroy(long nativeAwSettings, AwSettings caller);
+        void populateWebPreferencesLocked(
+                long nativeAwSettings, AwSettings caller, long webPrefsPtr);
+        void resetScrollAndScaleState(long nativeAwSettings, AwSettings caller);
+        void updateEverythingLocked(long nativeAwSettings, AwSettings caller);
+        void updateInitialPageScaleLocked(long nativeAwSettings, AwSettings caller);
+        void updateUserAgentLocked(long nativeAwSettings, AwSettings caller);
+        void updateWebkitPreferencesLocked(long nativeAwSettings, AwSettings caller);
+        String getDefaultUserAgent();
+        void updateFormDataPreferencesLocked(long nativeAwSettings, AwSettings caller);
+        void updateRendererPreferencesLocked(long nativeAwSettings, AwSettings caller);
+        void updateOffscreenPreRasterLocked(long nativeAwSettings, AwSettings caller);
+        void updateWillSuppressErrorStateLocked(long nativeAwSettings, AwSettings caller);
+        void updateCookiePolicyLocked(long nativeAwSettings, AwSettings caller);
+    }
 }

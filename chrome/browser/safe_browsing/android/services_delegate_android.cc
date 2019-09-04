@@ -37,7 +37,7 @@ std::unique_ptr<ServicesDelegate> ServicesDelegate::CreateForTest(
 
 ServicesDelegateAndroid::ServicesDelegateAndroid(
     SafeBrowsingService* safe_browsing_service)
-    : safe_browsing_service_(safe_browsing_service) {
+    : ServicesDelegate(safe_browsing_service, /*services_creator=*/nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -113,16 +113,6 @@ void ServicesDelegateAndroid::StartOnIOThread(
 
 void ServicesDelegateAndroid::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
-}
-
-void ServicesDelegateAndroid::CreatePasswordProtectionService(
-    Profile* profile) {}
-void ServicesDelegateAndroid::RemovePasswordProtectionService(
-    Profile* profile) {}
-PasswordProtectionService*
-ServicesDelegateAndroid::GetPasswordProtectionService(Profile* profile) const {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 void ServicesDelegateAndroid::CreateTelemetryService(Profile* profile) {

@@ -311,6 +311,8 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
   std::map<std::string, float> ranking_map;
   if (using_aggregated_app_inference_)
     ranking_map = app_launch_event_logger_->RetrieveRankings();
+  int aggregated_app_rank_success_count = 0;
+  int aggregated_app_rank_fail_count = 0;
 
   for (auto& result : *results) {
     const auto& type = RankingItemTypeFromSearchResult(*result.result);
@@ -362,6 +364,9 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
         if (ranked != ranking_map.end()) {
           result.score =
               kBoostOfApps + ReRange((ranked->second + 4.0) / 8.0, 0.67, 1.0);
+          ++aggregated_app_rank_success_count;
+        } else {
+          ++aggregated_app_rank_fail_count;
         }
       } else {
         if (app_ranker_) {
@@ -372,6 +377,14 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
         }
       }
     }
+  }
+  if (using_aggregated_app_inference_ &&
+      (aggregated_app_rank_success_count != 0 ||
+       aggregated_app_rank_fail_count != 0)) {
+    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankSuccess",
+                              aggregated_app_rank_success_count);
+    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankFail",
+                              aggregated_app_rank_fail_count);
   }
 }
 

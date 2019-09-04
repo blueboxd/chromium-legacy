@@ -143,6 +143,7 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
   DCHECK(!sync_processor_.get());
   DCHECK(!IsArcAppSyncFlowDisabled());
+  DCHECK(prefs_->package_list_initial_refreshed());
 
   sync_processor_ = std::move(sync_processor);
   sync_error_handler_ = std::move(error_handler);

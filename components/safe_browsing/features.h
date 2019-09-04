@@ -49,6 +49,9 @@ extern const base::Feature kForceUseAPDownloadProtection;
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 
+// Controls whether Chrome sends on focus ping.
+extern const base::Feature kSendOnFocusPing;
+
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 

@@ -862,6 +862,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationSpecifics& proto) {}
 
 VISIT_PROTO_FIELDS(const sync_pb::SecurityEventSpecifics& proto) {
   VISIT(gaia_password_reuse_event);
+  VISIT(event_time_usec);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::GaiaPasswordReuse& proto) {

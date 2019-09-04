@@ -16,9 +16,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
-import org.chromium.chrome.browser.webapps.TouchlessAddToHomescreenDialog;
 
 /**
  * Handles the promotion and installation of an app specified by the current web page. This object
@@ -113,10 +111,6 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
      * @return A version of the {@link AddToHomescreenDialog}.
      */
     private AddToHomescreenDialog buildDialog() {
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            return new TouchlessAddToHomescreenDialog(
-                    mTab.getActivity(), mTab.getActivity().getModalDialogManager(), this);
-        }
         return new AddToHomescreenDialog(mTab.getActivity(), this);
     }
 

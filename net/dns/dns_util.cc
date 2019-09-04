@@ -14,6 +14,8 @@
 #include "base/big_endian.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -108,6 +110,103 @@ bool DNSDomainFromDot(const base::StringPiece& dotted,
 
   *out = std::string(name, namelen);
   return true;
+}
+
+// Represents insecure DNS, DoT, and DoH services run by the same provider
+// and providing the same filtering behavior. These entries are used to
+// determine if insecure DNS or DoT services can be upgraded to associated
+// DoH services in automatic mode.
+struct DohUpgradeEntry {
+  DohUpgradeEntry(std::string provider,
+                  std::set<std::string> ip_strs,
+                  std::set<std::string> dns_over_tls_hostnames,
+                  DnsConfig::DnsOverHttpsServerConfig dns_over_https_config)
+      : provider(std::move(provider)),
+        dns_over_tls_hostnames(std::move(dns_over_tls_hostnames)),
+        dns_over_https_config(std::move(dns_over_https_config)) {
+    for (const std::string& ip_str : ip_strs) {
+      IPAddress ip_address;
+      bool success = ip_address.AssignFromIPLiteral(ip_str);
+      DCHECK(success);
+      ip_addresses.insert(ip_address);
+    }
+  }
+  DohUpgradeEntry(const DohUpgradeEntry& other) = default;
+  ~DohUpgradeEntry() = default;
+  const std::string provider;
+  std::set<IPAddress> ip_addresses;
+  const std::set<std::string> dns_over_tls_hostnames;
+  const DnsConfig::DnsOverHttpsServerConfig dns_over_https_config;
+};
+
+const std::vector<const DohUpgradeEntry>& GetDohUpgradeList() {
+  static const base::NoDestructor<std::vector<const DohUpgradeEntry>>
+      upgradable_servers({
+          DohUpgradeEntry("Cisco",
+                          {"208.67.222.222", "208.67.220.220",
+                           "2620:119:35::35", "2620:119:53::53"},
+                          {""} /* DoT hostname */,
+                          {"https://doh.opendns.com/dns-query{?dns}",
+                           false /* use_post */}),
+          DohUpgradeEntry(
+              "CleanBrowsingAdult",
+              {"185.228.168.10", "185.228.169.11", "2a0d:2a00:1::1",
+               "2a0d:2a00:2::1"},
+              {"adult-filter-dns.cleanbrowsing.org"} /* DoT hostname */,
+              {"https://doh.cleanbrowsing.org/doh/adult-filter{?dns}",
+               false /* use_post */}),
+          DohUpgradeEntry(
+              "CleanBrowsingFamily",
+              {"185.228.168.168", "185.228.169.168",
+               "2a0d:2a00:1::", "2a0d:2a00:2::"},
+              {"family-filter-dns.cleanbrowsing.org"} /* DoT hostname */,
+              {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
+               false /* use_post */}),
+          DohUpgradeEntry(
+              "CleanBrowsingSecure",
+              {"185.228.168.9", "185.228.169.9", "2a0d:2a00:1::2",
+               "2a0d:2a00:2::2"},
+              {"security-filter-dns.cleanbrowsing.org"} /* DoT hostname */,
+              {"https://doh.cleanbrowsing.org/doh/security-filter{?dns}",
+               false /* use_post */}),
+          DohUpgradeEntry(
+              "Cloudflare",
+              {"1.1.1.1", "1.0.0.1", "2606:4700:4700::1111",
+               "2606:4700:4700::1001"},
+              {"one.one.one.one",
+               "1dot1dot1dot1.cloudflare-dns.com"} /* DoT hostname */,
+              {"https://chrome.cloudflare-dns.com/dns-query",
+               true /* use-post */}),
+          DohUpgradeEntry(
+              "Dnssb",
+              {"185.222.222.222", "185.184.222.222", "2a09::", "2a09::1"},
+              {"dns.sb"} /* DoT hostname */,
+              {"https://doh.dns.sb/dns-query?no_ecs=true{&dns}",
+               false /* use_post */}),
+          DohUpgradeEntry(
+              "Google",
+              {"8.8.8.8", "8.8.4.4", "2001:4860:4860::8888",
+               "2001:4860:4860::8844"},
+              {"dns.google", "dns.google.com",
+               "8888.google"} /* DoT hostname */,
+              {"https://dns.google/dns-query{?dns}", false /* use_post */}),
+          DohUpgradeEntry(
+              "Quad9Cdn",
+              {"9.9.9.11", "149.112.112.11", "2620:fe::11", "2620:fe::fe:11"},
+              {"dns11.quad9.net"} /* DoT hostname */,
+              {"https://dns11.quad9.net/dns-query", true /* use_post */}),
+          DohUpgradeEntry(
+              "Quad9Insecure",
+              {"9.9.9.10", "149.112.112.10", "2620:fe::10", "2620:fe::fe:10"},
+              {"dns10.quad9.net"} /* DoT hostname */,
+              {"https://dns10.quad9.net/dns-query", true /* use_post */}),
+          DohUpgradeEntry(
+              "Quad9Secure",
+              {"9.9.9.9", "149.112.112.112", "2620:fe::fe", "2620:fe::9"},
+              {"dns.quad9.net", "dns9.quad9.net"} /* DoT hostname */,
+              {"https://dns.quad9.net/dns-query", true /* use_post */}),
+      });
+  return *upgradable_servers;
 }
 
 }  // namespace
@@ -280,6 +379,52 @@ DnsQueryType AddressFamilyToDnsQueryType(AddressFamily address_family) {
       NOTREACHED();
       return DnsQueryType::UNSPECIFIED;
   }
+}
+
+std::vector<DnsConfig::DnsOverHttpsServerConfig>
+GetDohUpgradeServersFromDotHostname(
+    const std::string& dot_server,
+    const std::vector<std::string>& excluded_providers) {
+  const std::vector<const DohUpgradeEntry>& upgradable_servers =
+      GetDohUpgradeList();
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers;
+
+  if (dot_server.empty())
+    return doh_servers;
+
+  for (const auto& upgrade_entry : upgradable_servers) {
+    if (base::Contains(excluded_providers, upgrade_entry.provider))
+      continue;
+
+    if (base::Contains(upgrade_entry.dns_over_tls_hostnames, dot_server)) {
+      doh_servers.push_back(upgrade_entry.dns_over_https_config);
+      break;
+    }
+  }
+  return doh_servers;
+}
+
+std::vector<DnsConfig::DnsOverHttpsServerConfig>
+GetDohUpgradeServersFromNameservers(
+    const std::vector<IPEndPoint>& dns_servers,
+    const std::vector<std::string>& excluded_providers) {
+  const std::vector<const DohUpgradeEntry>& upgradable_servers =
+      GetDohUpgradeList();
+  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers;
+
+  for (const auto& server : dns_servers) {
+    for (const auto& upgrade_entry : upgradable_servers) {
+      if (base::Contains(excluded_providers, upgrade_entry.provider))
+        continue;
+
+      // DoH servers should only be added once.
+      if (base::Contains(upgrade_entry.ip_addresses, server.address()) &&
+          !base::Contains(doh_servers, upgrade_entry.dns_over_https_config)) {
+        doh_servers.push_back(upgrade_entry.dns_over_https_config);
+      }
+    }
+  }
+  return doh_servers;
 }
 
 }  // namespace net

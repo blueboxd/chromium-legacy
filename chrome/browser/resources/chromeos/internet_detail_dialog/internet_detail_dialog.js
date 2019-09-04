@@ -10,8 +10,6 @@
 (function() {
 'use strict';
 
-const mojom = chromeos.networkConfig.mojom;
-
 Polymer({
   is: 'internet-detail-dialog',
 
@@ -149,7 +147,7 @@ Polymer({
     }
     // If the network was or is active, request an update.
     if (this.managedProperties_.connectionState !=
-            mojom.ConnectionStateType.kNotConnected ||
+            chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected ||
         networks.find(network => network.guid == this.guid)) {
       this.getNetworkDetails_();
     }
@@ -201,7 +199,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {!OncMojo.NetworkStateProperties}
    */
   getNetworkState_: function(managedProperties) {
@@ -209,7 +207,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ConfigProperties} config
+   * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
    * @private
    */
   setMojoNetworkProperties_: function(config) {
@@ -227,7 +225,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
@@ -240,7 +238,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
@@ -249,7 +247,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
@@ -259,16 +257,17 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
   isRemembered_: function(managedProperties) {
-    return managedProperties.source != mojom.OncSource.kNone;
+    return managedProperties.source !=
+        chromeos.networkConfig.mojom.OncSource.kNone;
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -278,36 +277,39 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
   isCellular_: function(managedProperties) {
-    return managedProperties.type == mojom.NetworkType.kCellular;
+    return managedProperties.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular;
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
   showCellularSim_: function(managedProperties) {
-    return managedProperties.type == mojom.NetworkType.kCellular &&
+    return managedProperties.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular &&
         managedProperties.cellular.family != 'CDMA';
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
   showCellularChooseNetwork_: function(managedProperties) {
-    return managedProperties.type == mojom.NetworkType.kCellular &&
+    return managedProperties.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular &&
         managedProperties.cellular.supportNetworkScan;
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
@@ -319,7 +321,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -329,30 +331,32 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
   showConnect_: function(managedProperties) {
     return managedProperties.connectable &&
-        managedProperties.type != mojom.NetworkType.kEthernet &&
+        managedProperties.type !=
+        chromeos.networkConfig.mojom.NetworkType.kEthernet &&
         managedProperties.connectionState ==
-        mojom.ConnectionStateType.kNotConnected;
+        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
   showDisconnect_: function(managedProperties) {
-    return managedProperties.type != mojom.NetworkType.kEthernet &&
+    return managedProperties.type !=
+        chromeos.networkConfig.mojom.NetworkType.kEthernet &&
         managedProperties.connectionState !=
-        mojom.ConnectionStateType.kNotConnected;
+        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -364,7 +368,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -381,7 +385,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
@@ -415,7 +419,7 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent<!mojom.ApnProperties>} event
+   * @param {!CustomEvent<!chromeos.networkConfig.mojom.ApnProperties>} event
    * @private
    */
   onApnChange_: function(event) {
@@ -431,7 +435,8 @@ Polymer({
    * Event triggered when the IP Config or NameServers element changes.
    * @param {!CustomEvent<!{
    *     field: string,
-   *     value: (string|!mojom.IPConfigProperties|!Array<string>)
+   *     value: (string|!chromeos.networkConfig.mojom.IPConfigProperties|
+   *             !Array<string>)
    * }>} event The network-ip-config or network-nameservers change event.
    * @private
    */
@@ -448,7 +453,7 @@ Polymer({
 
   /**
    * Event triggered when the Proxy configuration element changes.
-   * @param {!CustomEvent<!mojom.ProxySettings>} event
+   * @param {!CustomEvent<!chromeos.networkConfig.mojom.ProxySettings>} event
    * @private
    */
   onProxyChange_: function(event) {
@@ -485,14 +490,14 @@ Polymer({
   getInfoFields_: function() {
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
-    if (type == mojom.NetworkType.kCellular) {
+    if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {
       fields.push(
           'cellular.homeProvider.name', 'cellular.servingOperator.name',
           'cellular.activationState', 'cellular.roamingState',
           'restrictedConnectivity', 'cellular.meid', 'cellular.esn',
           'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
           'cellular.min');
-    } else if (type == mojom.NetworkType.kWiFi) {
+    } else if (type == chromeos.networkConfig.mojom.NetworkType.kWiFi) {
       fields.push('restrictedConnectivity');
     }
     fields.push('macAddress');

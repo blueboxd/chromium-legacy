@@ -11,7 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 #include "url/origin.h"
 
@@ -69,7 +70,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   }
 
   // Binds to an IPC endpoint and returns it.
-  mojom::PaymentHandlerHostPtrInfo Bind();
+  mojo::PendingRemote<mojom::PaymentHandlerHost> Bind();
 
   // Notifies the payment handler of the updated details, such as updated total,
   // in response to the change of the payment method.
@@ -97,7 +98,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
 
   // The end-point for the payment handler renderer process to call into the
   // browser process.
-  mojo::Binding<mojom::PaymentHandlerHost> binding_;
+  mojo::Receiver<mojom::PaymentHandlerHost> receiver_{this};
 
   // The merchant page that invoked the Payment Request API.
   content::WebContents* web_contents_;

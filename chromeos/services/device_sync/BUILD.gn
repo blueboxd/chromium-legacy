@@ -243,6 +243,7 @@ source_set("unit_tests") {
     "cryptauth_key_unittest.cc",
     "cryptauth_metadata_syncer_impl_unittest.cc",
     "cryptauth_scheduler_impl_unittest.cc",
+    "cryptauth_v2_device_manager_impl_unittest.cc",
     "cryptauth_v2_enroller_impl_unittest.cc",
     "cryptauth_v2_enrollment_manager_impl_unittest.cc",
     "device_sync_service_unittest.cc",

@@ -458,10 +458,8 @@ void LoginPasswordView::SetEasyUnlockIcon(
   password_row_->Layout();
 }
 
-void LoginPasswordView::UpdateForUser(const LoginUserInfo& user) {
-  textfield_->SetAccessibleName(l10n_util::GetStringFUTF16(
-      IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
-      base::UTF8ToUTF16(user.basic_user_info.display_email)));
+void LoginPasswordView::SetAccessibleName(const base::string16& name) {
+  textfield_->SetAccessibleName(name);
 }
 
 void LoginPasswordView::SetFocusEnabledForChildViews(bool enable) {

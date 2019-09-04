@@ -1739,12 +1739,10 @@ bool ExtensionService::OnExternalExtensionFileFound(
   installer->set_install_immediately(info.install_immediately);
   installer->set_creation_flags(info.creation_flags);
 
-  CRXFileInfo file_info(
-      info.path,
-      info.crx_location == Manifest::EXTERNAL_POLICY
-          ? GetPolicyVerifierFormat(ExtensionPrefs::Get(profile_)
-                                        ->InsecureExtensionUpdatesEnabled())
-          : GetExternalVerifierFormat());
+  CRXFileInfo file_info(info.path,
+                        info.crx_location == Manifest::EXTERNAL_POLICY
+                            ? GetPolicyVerifierFormat()
+                            : GetExternalVerifierFormat());
 #if defined(OS_CHROMEOS)
   InstallLimiter::Get(profile_)->Add(installer, file_info);
 #else

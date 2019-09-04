@@ -73,6 +73,8 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
 
   void GetFpsRange(const gfx::Size& resolution, GetFpsRangeCallback callback);
 
+  cros::mojom::CaptureIntent GetCaptureIntent();
+
   void SetReprocessResult(SetReprocessOptionCallback callback,
                           const int32_t status,
                           media::mojom::BlobPtr blob);
@@ -86,6 +88,9 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   void SetFpsRange(const gfx::Size& resolution,
                    const gfx::Range& fps_range,
                    SetFpsRangeCallback callback) override;
+
+  void SetCaptureIntent(cros::mojom::CaptureIntent capture_intent,
+                        SetCaptureIntentCallback callback) override;
 
  private:
   std::string device_id_;
@@ -103,6 +108,10 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   base::Lock fps_ranges_lock_;
 
   ResolutionFpsRangeMap resolution_fps_range_map_;
+
+  base::Lock capture_intent_lock_;
+
+  cros::mojom::CaptureIntent capture_intent_;
 
   std::unique_ptr<base::WeakPtrFactory<CameraAppDeviceImpl>> weak_ptr_factory_;
 

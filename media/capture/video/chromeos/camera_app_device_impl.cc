@@ -110,6 +110,11 @@ void CameraAppDeviceImpl::GetFpsRange(const gfx::Size& resolution,
   std::move(callback).Run(it->second);
 }
 
+cros::mojom::CaptureIntent CameraAppDeviceImpl::GetCaptureIntent() {
+  base::AutoLock lock(capture_intent_lock_);
+  return capture_intent_;
+}
+
 void CameraAppDeviceImpl::SetReprocessResult(
     SetReprocessOptionCallback callback,
     const int32_t status,
@@ -193,6 +198,14 @@ void CameraAppDeviceImpl::SetFpsRange(const gfx::Size& resolution,
 
   resolution_fps_range_map_[resolution] = fps_range;
   std::move(callback).Run(true);
+}
+
+void CameraAppDeviceImpl::SetCaptureIntent(
+    cros::mojom::CaptureIntent capture_intent,
+    SetCaptureIntentCallback callback) {
+  base::AutoLock lock(capture_intent_lock_);
+  capture_intent_ = capture_intent;
+  std::move(callback).Run();
 }
 
 }  // namespace media

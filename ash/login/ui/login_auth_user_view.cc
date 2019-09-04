@@ -468,16 +468,16 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
 
-    // TODO(crbug.com/983103): Add an accessible name.
     arrow_button_ = AddChildView(std::make_unique<ArrowButtonView>(
         /*listener=*/this, kChallengeResponseArrowSizeDp));
     arrow_button_->SetBackgroundColor(kChallengeResponseArrowBackgroundColor);
     arrow_button_->SetFocusPainter(nullptr);
+    arrow_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_START_SMART_CARD_AUTH_BUTTON_ACCESSIBLE_NAME));
 
-    auto* arrow_to_icon_spacer =
-        AddChildView(std::make_unique<NonAccessibleView>());
-    arrow_to_icon_spacer->SetPreferredSize(
-        gfx::Size(0, kSpacingBetweenChallengeResponseArrowAndIconDp));
+    arrow_to_icon_spacer_ = AddChildView(std::make_unique<NonAccessibleView>());
+    arrow_to_icon_spacer_->SetPreferredSize(
+        gfx::Size(0, GetArrowToIconSpacerHeight()));
 
     icon_ = AddChildView(std::make_unique<views::ImageView>());
     icon_->SetImage(GetImageForIcon());
@@ -522,7 +522,9 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
                               base::Unretained(this), State::kInitial));
     }
 
-    arrow_button_->SetEnabled(state_ != State::kAuthenticating);
+    arrow_button_->SetVisible(state_ != State::kAuthenticating);
+    arrow_to_icon_spacer_->SetPreferredSize(
+        gfx::Size(0, GetArrowToIconSpacerHeight()));
     icon_->SetImage(GetImageForIcon());
     label_->SetText(GetTextForLabel());
 
@@ -530,6 +532,15 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   }
 
  private:
+  int GetArrowToIconSpacerHeight() const {
+    int spacer_height = kSpacingBetweenChallengeResponseArrowAndIconDp;
+    // During authentication, the arrow button is hidden, so the spacer should
+    // consume this space to avoid moving controls below it.
+    if (state_ == State::kAuthenticating)
+      spacer_height += kChallengeResponseArrowSizeDp;
+    return spacer_height;
+  }
+
   gfx::ImageSkia GetImageForIcon() const {
     switch (state_) {
       case State::kInitial:
@@ -559,6 +570,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   base::RepeatingClosure on_start_tap_;
   State state_ = State::kInitial;
   ArrowButtonView* arrow_button_ = nullptr;
+  NonAccessibleView* arrow_to_icon_spacer_ = nullptr;
   views::ImageView* icon_ = nullptr;
   views::Label* label_ = nullptr;
   base::OneShotTimer reset_state_timer_;
@@ -736,7 +748,6 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   password_view_ = password_view.get();
   password_view->SetPaintToLayer();  // Needed for opacity animation.
   password_view->layer()->SetFillsBoundsOpaquely(false);
-  password_view->UpdateForUser(user);
 
   auto pin_view = std::make_unique<LoginPinView>(
       LoginPinView::Style::kAlphanumeric,
@@ -937,6 +948,11 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   if (auth_disabled)
     disabled_auth_message_->RequestFocus();
 
+  // Adjust the PIN keyboard visibility before the password textfield's one, so
+  // that when both are about to be hidden the focus doesn't jump to the "1"
+  // keyboard button, causing unexpected accessibility effects.
+  pin_view_->SetVisible(has_pin);
+
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
   password_view_->SetFocusEnabledForChildViews(has_password);
@@ -947,7 +963,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   if (!had_password && has_password)
     password_view_->RequestFocus();
 
-  pin_view_->SetVisible(has_pin);
   fingerprint_view_->SetVisible(has_fingerprint);
   challenge_response_view_->SetVisible(has_challenge_response);
   external_binary_auth_button_->SetVisible(has_external_binary);
@@ -981,6 +996,17 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   } else {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER));
+  }
+  const std::string& user_display_email =
+      current_user().basic_user_info.display_email;
+  if (security_token_pin_request_) {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_SMART_CARD_PIN_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  } else {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
   }
 
   // Only the active auth user view has a password displayed. If that is the
@@ -1141,7 +1167,6 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
   const bool user_changed = current_user().basic_user_info.account_id !=
                             user.basic_user_info.account_id;
   user_view_->UpdateForUser(user, true /*animate*/);
-  password_view_->UpdateForUser(user);
   if (user_changed)
     password_view_->Clear();
   online_sign_in_message_->SetText(

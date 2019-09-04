@@ -43,25 +43,19 @@ base::string16 GetNotificationTitleForError(
 
   switch (print_job->error_code()) {
     case CupsPrintJob::ErrorCode::PAPER_JAM:
-      return l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job->document_title()));
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE);
     case CupsPrintJob::ErrorCode::OUT_OF_INK:
-      return l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job->document_title()));
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE);
     case CupsPrintJob::ErrorCode::OUT_OF_PAPER:
-      return l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job->document_title()));
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE);
     case CupsPrintJob::ErrorCode::DOOR_OPEN:
-      return l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job->document_title()));
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE);
     default:
-      return l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job->document_title()));
+      return l10n_util::GetStringUTF16(IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE);
   }
 }
 
@@ -206,20 +200,15 @@ void CupsPrintJobNotification::UpdateNotificationTitle() {
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_SUSPENDED:
     case CupsPrintJob::State::STATE_RESUMED:
-      title = l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job_->document_title()));
+      title =
+          l10n_util::GetStringUTF16(IDS_PRINT_JOB_PRINTING_NOTIFICATION_TITLE);
       break;
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-      title = l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_DONE_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job_->document_title()));
+      title = l10n_util::GetStringUTF16(IDS_PRINT_JOB_DONE_NOTIFICATION_TITLE);
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
     case CupsPrintJob::State::STATE_FAILED:
-      title = l10n_util::GetStringFUTF16(
-          IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
-          base::UTF8ToUTF16(print_job_->document_title()));
+      title = l10n_util::GetStringUTF16(IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE);
       break;
     case CupsPrintJob::State::STATE_ERROR:
       title = GetNotificationTitleForError(print_job_);

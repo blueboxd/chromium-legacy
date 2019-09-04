@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
@@ -52,7 +53,8 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
       DeviceCapturerFactoryCallback testing_factory_callback);
 
   void SetMediaStreamDispatcherHostForTesting(
-      mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host);
+      mojo::PendingRemote<mojom::blink::MediaStreamDispatcherHost>
+          dispatcher_host);
 
   media::VideoCapturerSource* GetSourceForTesting();
 
@@ -83,11 +85,11 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,
                          bool is_running);
 
-  const mojom::blink::MediaStreamDispatcherHostPtr&
+  const mojo::Remote<mojom::blink::MediaStreamDispatcherHost>&
   GetMediaStreamDispatcherHost();
 
   WeakPersistent<LocalFrame> frame_;
-  mojom::blink::MediaStreamDispatcherHostPtr host_;
+  mojo::Remote<mojom::blink::MediaStreamDispatcherHost> host_;
 
   // The source that provides video frames.
   std::unique_ptr<media::VideoCapturerSource> source_;

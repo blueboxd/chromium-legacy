@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
+#include "components/safe_browsing/password_protection/password_protection_service.h"
 
 class Profile;
 
@@ -78,7 +80,9 @@ class ServicesDelegate {
       SafeBrowsingService* safe_browsing_service,
       ServicesDelegate::ServicesCreator* services_creator);
 
-  virtual ~ServicesDelegate() {}
+  ServicesDelegate(SafeBrowsingService* safe_browsing_service,
+                   ServicesCreator* services_creator);
+  virtual ~ServicesDelegate();
 
   virtual const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
       const = 0;
@@ -117,19 +121,18 @@ class ServicesDelegate {
       const V4ProtocolConfig& v4_config) = 0;
   virtual void StopOnIOThread(bool shutdown) = 0;
 
-  virtual void CreatePasswordProtectionService(Profile* profile) = 0;
-  virtual void RemovePasswordProtectionService(Profile* profile) = 0;
-  virtual PasswordProtectionService* GetPasswordProtectionService(
-      Profile* profile) const = 0;
+  void CreatePasswordProtectionService(Profile* profile);
+  void RemovePasswordProtectionService(Profile* profile);
+  PasswordProtectionService* GetPasswordProtectionService(
+      Profile* profile) const;
 
   virtual void CreateTelemetryService(Profile* profile) = 0;
   virtual void RemoveTelemetryService() = 0;
   virtual TelemetryService* GetTelemetryService() const = 0;
 
-  virtual void CreateVerdictCacheManager(Profile* profile) = 0;
-  virtual void RemoveVerdictCacheManager(Profile* profile) = 0;
-  virtual VerdictCacheManager* GetVerdictCacheManager(
-      Profile* profile) const = 0;
+  virtual void CreateVerdictCacheManager(Profile* profile);
+  virtual void RemoveVerdictCacheManager(Profile* profile);
+  virtual VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
 
   virtual void CreateBinaryUploadService(Profile* profile) = 0;
   virtual void RemoveBinaryUploadService(Profile* profile) = 0;
@@ -137,6 +140,24 @@ class ServicesDelegate {
       Profile* profile) const = 0;
 
   virtual std::string GetSafetyNetId() const = 0;
+
+ protected:
+  // Unowned pointer
+  SafeBrowsingService* const safe_browsing_service_;
+
+  // Unowned pointer
+  ServicesCreator* const services_creator_;
+
+  // TODO(xinghuilu@): Change it to base::map<>
+  // Tracks existing Profiles, and their corresponding
+  // ChromePasswordProtectionService instances.
+  // Accessed on UI thread.
+  std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
+      password_protection_service_map_;
+
+  // Tracks existing Profiles, and their corresponding VerdictCacheManager
+  // instances. Accessed on UI thread.
+  std::map<Profile*, std::unique_ptr<VerdictCacheManager>> cache_manager_map_;
 };
 
 }  // namespace safe_browsing

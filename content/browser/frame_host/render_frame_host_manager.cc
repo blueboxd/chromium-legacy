@@ -2235,6 +2235,13 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   if (request.IsForMhtmlSubframe())
     return base::WrapRefCounted(current_site_instance);
 
+  // Srcdoc documents are always in the same SiteInstance as their parent. They
+  // load their content from the "srcdoc" iframe attribute which lives in the
+  // parent's process.
+  RenderFrameHostImpl* parent = render_frame_host_->GetParent();
+  if (parent && request.common_params().url.IsAboutSrcdoc())
+    return base::WrapRefCounted(parent->GetSiteInstance());
+
   // First, check if the navigation can switch SiteInstances. If not, the
   // navigation should use the current SiteInstance.
   bool no_renderer_swap_allowed = false;
@@ -2882,6 +2889,9 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
   // history navigations. The two cannot be set simultaneously.
   DCHECK(!source_instance || !dest_instance);
 
+  // This case is handled outside of this function.
+  DCHECK(!dest_url.IsAboutSrcdoc());
+
   // If dest_url is a unique origin like about:blank, then the need for a swap
   // is determined by the source_instance or dest_instance.
   GURL resolved_url = dest_url;
@@ -2892,24 +2902,34 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
       resolved_url = dest_instance->GetSiteURL();
     } else {
       // If there is no SiteInstance this unique origin can be associated with,
-      // then check whether it is safe to put into the parent frame's process.
-      // This is the case for about:blank URLs (with or without fragments),
-      // since they contain no active data.  This is also the case for
-      // about:srcdoc, since such URLs only get active content from their parent
-      // frame.  Using the parent frame's process avoids putting blank frames
-      // into OOPIFs and preserves scripting for about:srcdoc.
+      // then check whether it is safe to stay in the current process or not.
       //
-      // Allow a process swap for other unique origin URLs, such as data: URLs.
-      // These have active content and may have come from an untrusted source,
-      // such as a restored frame from a different site or a redirect.
-      // (Normally, redirects to data: or about: URLs are disallowed as
-      // net::ERR_UNSAFE_REDIRECT. However, extensions can still redirect
-      // arbitary requests to those URLs using the chrome.webRequest or
+      // * about:blank: Safe to stay in the current process, because it doesn't
+      //                contain content from untrustworthy sources.
+      //
+      // * data: URL: Not safe to stay in the current process, because it may
+      //             contain data from untrustworthy sources, such as a restored
+      //             frame from a different site or a redirect [1]. It is not
+      //             safe loading arbitrary data: URL in arbitrary processes.
+      //
+      // * about:srcdoc: Handled outside of this function. Always sharing the
+      //                 SiteInstance of its parent, because it is where the
+      //                 data comes from.
+      //
+      // * MHTML document: Handled outside of this function. Always sharing the
+      //                   SiteInstance of the main frame's document, because it
+      //                   is where the data comes from.
+      //
+      // * Other URLs: A priori not safe. It contains chrome-URL, ...
+      //
+      // [1] Server redirects to data: URL are disallowed and a
+      // net::ERR_UNSAFE_REDIRECT error page is displayed instead. However this
+      // is not sufficient, because extensions can still redirect arbitrary
+      // requests to those URLs using chrome.webRequest or
       // chrome.declarativeWebRequest API, which will end up here (for an
-      // example, see ExtensionWebRequestApiTest.WebRequestDeclarative1).)
-      if (resolved_url.IsAboutBlank() || resolved_url.IsAboutSrcdoc()) {
+      // example, see ExtensionWebRequestApiTest.WebRequestDeclarative1).
+      if (resolved_url.IsAboutBlank())
         return false;
-      }
     }
   }
 

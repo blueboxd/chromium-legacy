@@ -218,7 +218,7 @@ RTCDataChannel::RTCDataChannel(
       buffered_amount_(0U),
       stopped_(false),
       observer_(base::MakeRefCounted<Observer>(
-          context->GetTaskRunner(TaskType::kInternalMedia),
+          context->GetTaskRunner(TaskType::kNetworking),
           this,
           channel)) {
   DCHECK(peer_connection_handler);

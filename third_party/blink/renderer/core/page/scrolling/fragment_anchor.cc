@@ -32,14 +32,15 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
   }
 
   // Count how often we see a # in the fragment (i.e. after the # delimiting
-  // the hash). We do this after trying to find a ##targetText so that we don't
-  // pollute this metric with our own feature since we're trying to determine
-  // how prevalent ## is. If a ##targetText is found, it'll strip off the ##
-  // and any text following it.
+  // the hash). We avoid counting cases with ##targetText since we're trying to
+  // determine how often this happens outside our feature so we don't want to
+  // pollute it with our own usage.
   if (url.HasFragmentIdentifier()) {
     size_t hash_pos = url.FragmentIdentifier().Find("#");
-    if (hash_pos != kNotFound)
-      UseCounter::Count(frame.GetDocument(), WebFeature::kFragmentDoubleHash);
+    if (hash_pos != kNotFound) {
+      if (url.FragmentIdentifier().Find("#targetText=") == kNotFound)
+        UseCounter::Count(frame.GetDocument(), WebFeature::kFragmentDoubleHash);
+    }
   }
 
   bool element_id_anchor_found = false;

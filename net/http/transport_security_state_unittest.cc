@@ -1711,26 +1711,14 @@ TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
   // However, simulating a Field Trial in which CT is required for certificates
   // after 2017-12-01 should cause CT to be required for this certificate, as
   // it was issued 2017-12-20.
-  const char kTrialName[] = "EnforceCTForNewCertsTrial";
-  const char kGroupName[] = "Unused";  // Value not used.
-  const char kFeatureName[] = "EnforceCTForNewCerts";
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>());
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
   // Set the enforcement date to 2017-12-01 00:00:00;
   params["date"] = "1512086400";
-  base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-      kTrialName, kGroupName, params);
 
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-  feature_list->RegisterFieldTrialOverride(
-      kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(kEnforceCTForNewCerts,
+                                                         params);
 
   // It should fail if it doesn't comply with policy.
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,

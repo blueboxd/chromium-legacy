@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_ANDROID_FONT_UNIQUE_NAME_LOOKUP_ANDROID_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_ANDROID_FONT_UNIQUE_NAME_LOOKUP_ANDROID_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 #include "third_party/blink/public/mojom/font_unique_name_lookup/font_unique_name_lookup.mojom-blink.h"
 #include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
@@ -32,7 +33,7 @@ class FontUniqueNameLookupAndroid : public FontUniqueNameLookup {
   void ReceiveReadOnlySharedMemoryRegion(
       base::ReadOnlySharedMemoryRegion shared_memory_region);
 
-  mojom::blink::FontUniqueNameLookupPtr service_;
+  mojo::Remote<mojom::blink::FontUniqueNameLookup> service_;
   WTF::Deque<NotifyFontUniqueNameLookupReady> pending_callbacks_;
   base::Optional<bool> sync_available_;
 

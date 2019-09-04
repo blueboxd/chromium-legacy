@@ -280,18 +280,6 @@
         <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
     </style>
 
-    <style name="Theme.Chromium.Preferences.AlertDialog" parent="Theme.Chromium.AlertDialog">
-        <item name="buttonBarButtonStyle">@style/TextAppearance.DialogButtonCompat</item>
-    </style>
-
-    <!-- TODO(crbug.com/971791): Using all caps for support library preference dialog buttons to
-         match existing non-compat style, however we should later reexamine whether this is still
-         the right choice since it looks like most of our other AlertDialogs use the default title
-         case. -->
-    <style name="TextAppearance.DialogButtonCompat" parent="AlertDialogButtonStyle">
-        <item name="android:textAllCaps">true</item>
-    </style>
-
     <style name="Theme.Chromium.SwitchPreference">
         <item name="android:layout">@layout/preference_compat</item>
         <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>

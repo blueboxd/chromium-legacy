@@ -496,19 +496,10 @@ void ShowManagementPageForProfile(Profile* profile) {
 
 void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kAppManagement));
-  constexpr char kAppManagementPagePrefix[] =
-      "chrome://app-management/detail?id=";
+  constexpr char kAppManagementSubPagePrefix[] = "app-management/detail?id=";
   base::RecordAction(base::UserMetricsAction("ShowAppManagementDetailPage"));
-  GURL url(kAppManagementPagePrefix + app_id);
-
-  Browser* browser = chrome::FindTabbedBrowser(profile, false);
-  if (!browser)
-    browser = new Browser(Browser::CreateParams(profile, true));
-
-  FocusWebContents(browser);
-  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile, kAppManagementSubPagePrefix + app_id);
 }
 
 GURL GetOSSettingsUrl(const std::string& sub_page) {

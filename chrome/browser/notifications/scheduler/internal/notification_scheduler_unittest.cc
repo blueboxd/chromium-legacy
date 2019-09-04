@@ -204,10 +204,29 @@ TEST_F(NotificationSchedulerTest, InitScheduledNotificationManagerFailed) {
 // Test to schedule a notification.
 TEST_F(NotificationSchedulerTest, Schedule) {
   Init();
-
   auto param = std::unique_ptr<NotificationParams>();
-  EXPECT_CALL(*notification_manager(), ScheduleNotification(_));
+  EXPECT_CALL(*notification_manager(), ScheduleNotification(_, _))
+      .WillOnce(
+          Invoke([](std::unique_ptr<NotificationParams>,
+                    ScheduledNotificationManager::ScheduleCallback callback) {
+            std::move(callback).Run(true);
+          }));
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
+  scheduler()->Schedule(std::move(param));
+}
+
+// When failed to add to the scheduled notification manager, no background task
+// is triggered.
+TEST_F(NotificationSchedulerTest, ScheduleFailed) {
+  Init();
+  auto param = std::unique_ptr<NotificationParams>();
+  EXPECT_CALL(*notification_manager(), ScheduleNotification(_, _))
+      .WillOnce(
+          Invoke([](std::unique_ptr<NotificationParams>,
+                    ScheduledNotificationManager::ScheduleCallback callback) {
+            std::move(callback).Run(false);
+          }));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _)).Times(0);
   scheduler()->Schedule(std::move(param));
 }
 

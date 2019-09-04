@@ -13,6 +13,7 @@
 #include "components/search_engines/template_url_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -134,6 +135,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[tabModel stub] saveSessionImmediately:NO];
     [[tabModel stub] closeAllTabs];
 
+    browser_ =
+        std::make_unique<TestBrowser>(chrome_browser_state_.get(), tabModel_);
+
     // Create three web states.
     for (int i = 0; i < 3; i++) {
       web::WebState::CreateParams params(chrome_browser_state_.get());
@@ -152,8 +156,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
     // Instantiate the BVC.
     bvc_ = [[BrowserViewController alloc]
-                      initWithTabModel:tabModel_
-                          browserState:chrome_browser_state_.get()
+                       initWithBrowser:browser_.get()
                      dependencyFactory:factory
             applicationCommandEndpoint:mockApplicationCommandHandler
                      commandDispatcher:command_dispatcher_
@@ -188,6 +191,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TabModel* tabModel_;
+  std::unique_ptr<Browser> browser_;
   BrowserViewControllerHelper* bvcHelper_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;

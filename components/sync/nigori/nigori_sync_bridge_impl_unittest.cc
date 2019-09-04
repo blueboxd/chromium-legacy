@@ -23,8 +23,13 @@ using testing::Eq;
 using testing::Ne;
 using testing::Not;
 using testing::NotNull;
+using testing::Return;
 
 const char kNigoriKeyName[] = "nigori-key";
+
+NigoriMetadataBatch CreateDummyNigoriMetadataBatch(
+    const std::string& progress_marker_token,
+    int64_t entity_metadata_sequence_number);
 
 MATCHER(NotNullTime, "") {
   return !arg.is_null();
@@ -97,6 +102,24 @@ MATCHER_P(EncryptedDataEq, expected, "") {
   const sync_pb::EncryptedData& given = arg;
   return given.key_name() == expected.key_name() &&
          given.blob() == expected.blob();
+}
+
+MATCHER_P2(IsDummyNigoriMetadataBatchWithTokenAndSequenceNumber,
+           expected_token,
+           expected_sequence_number,
+           "") {
+  const NigoriMetadataBatch& given = arg;
+  NigoriMetadataBatch expected =
+      CreateDummyNigoriMetadataBatch(expected_token, expected_sequence_number);
+  if (given.model_type_state.SerializeAsString() !=
+      expected.model_type_state.SerializeAsString()) {
+    return false;
+  }
+  if (!given.entity_metadata.has_value()) {
+    return !expected.entity_metadata.has_value();
+  }
+  return given.entity_metadata->SerializeAsString() ==
+         expected.entity_metadata->SerializeAsString();
 }
 
 KeyParams Pbkdf2KeyParams(std::string key) {
@@ -195,6 +218,18 @@ sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
   specifics.set_encrypt_everything(true);
 
   return specifics;
+}
+
+NigoriMetadataBatch CreateDummyNigoriMetadataBatch(
+    const std::string& progress_marker_token,
+    int64_t entity_metadata_sequence_number) {
+  NigoriMetadataBatch metadata_batch;
+  metadata_batch.model_type_state.mutable_progress_marker()->set_token(
+      progress_marker_token);
+  metadata_batch.entity_metadata = sync_pb::EntityMetadata::default_instance();
+  metadata_batch.entity_metadata->set_sequence_number(
+      entity_metadata_sequence_number);
+  return metadata_batch;
 }
 
 class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
@@ -615,6 +650,71 @@ TEST(NigoriSyncBridgeImplTestWithPackedExplicitPassphrase,
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeyParams));
   bridge->RemoveObserver(&observer);
+}
+
+TEST(NigoriSyncBridgeImplPersistenceTest, ShouldRestoreKeystoreNigori) {
+  // Emulate storing on disc.
+  auto storage1 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  sync_pb::NigoriLocalData nigori_local_data;
+  ON_CALL(*storage1, StoreData(_))
+      .WillByDefault([&](const sync_pb::NigoriLocalData& data) {
+        nigori_local_data = data;
+      });
+
+  // Provide some metadata to verify that we store it.
+  auto processor1 =
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+  const std::string kDummyProgressMarkerToken = "dummy_token";
+  const int64_t kDummySequenceNumber = 100;
+  ON_CALL(*processor1, GetMetadata()).WillByDefault([&] {
+    return CreateDummyNigoriMetadataBatch(kDummyProgressMarkerToken,
+                                          kDummySequenceNumber);
+  });
+
+  const FakeEncryptor kEncryptor;
+  auto bridge1 = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(processor1), std::move(storage1), &kEncryptor,
+      /*packed_explicit_passphrase_key=*/std::string());
+
+  // Perform initial sync with simple keystore Nigori.
+  const std::string kRawKeystoreKey = "raw_keystore_key";
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams},
+      /*keystore_decryptor_params=*/kKeystoreKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+
+  ASSERT_TRUE(bridge1->SetKeystoreKeys({kRawKeystoreKey}));
+  ASSERT_THAT(bridge1->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  // At this point |nigori_local_data| must be initialized with metadata
+  // provided by CreateDummyNigoriMetadataBatch() and data should represent
+  // the simple keystore Nigori.
+
+  // Create secondary storage which will return |nigori_local_data| on
+  // RestoreData() call.
+  auto storage2 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  ON_CALL(*storage2, RestoreData()).WillByDefault(Return(nigori_local_data));
+
+  // Create secondary processor, which should expect ModelReadyToSync() call
+  // with previously stored metadata.
+  auto processor2 =
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+  EXPECT_CALL(
+      *processor2,
+      ModelReadyToSync(NotNull(),
+                       IsDummyNigoriMetadataBatchWithTokenAndSequenceNumber(
+                           kDummyProgressMarkerToken, kDummySequenceNumber)));
+
+  auto bridge2 = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(processor2), std::move(storage2), &kEncryptor,
+      /*packed_explicit_passphrase_key=*/std::string());
+
+  // Verify that we restored Cryptographer state.
+  const Cryptographer& cryptographer = bridge2->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
 }
 
 }  // namespace

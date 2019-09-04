@@ -47,8 +47,8 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
+    "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
-    "java/src/org/chromium/android_webview/AwContentsNetworkClient.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
@@ -509,10 +509,10 @@ source_set("common") {
     "browser/aw_contents.h",
     "browser/aw_contents_client_bridge.cc",
     "browser/aw_contents_client_bridge.h",
+    "browser/aw_contents_io_thread_client.cc",
+    "browser/aw_contents_io_thread_client.h",
     "browser/aw_contents_lifecycle_notifier.cc",
     "browser/aw_contents_lifecycle_notifier.h",
-    "browser/aw_contents_network_client.cc",
-    "browser/aw_contents_network_client.h",
     "browser/aw_contents_statics.cc",
     "browser/aw_cookie_access_policy.cc",
     "browser/aw_cookie_access_policy.h",
@@ -790,7 +790,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwContentsClient.java",
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
     "java/src/org/chromium/android_webview/AwContentsClientCallbackHelper.java",
-    "java/src/org/chromium/android_webview/AwContentsNetworkClient.java",
+    "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
@@ -883,6 +883,7 @@ android_library("android_webview_java") {
     ":strings_grd",
     ":system_webview_manifest",
     "//base:base_java",
+    "//base:jni_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
@@ -907,6 +908,7 @@ android_library("android_webview_java") {
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser/android:java" ]

@@ -114,12 +114,30 @@ message Image {
   // image and may not match the murmur2 hash field above.
   optional bytes image_data = 6;
 
+  // Possible purposes that an icon can be used for.
+  enum Purpose {
+    // Missing purpose.
+    PURPOSE_UNDEFINED = 0;
+    // The icon can be displayed in any context.
+    ANY = 1;
+
+    // The icon can be used where space constraints and/or color requirements
+    // differ from those of the application icon.
+    // BADGE = 2; We do not plan to support Badge purpose, and will ignore it.
+
+    // The icon is designed with the intention to be masked.
+    MASKABLE = 3;
+
+    reserved 2;
+  }
+
+  // The purposes this image may be used for.
+  repeated Purpose purposes = 7;
+
   // Specifies Chrome's intended usages for the image.
   repeated Usage usages = 8;
 
-  optional bool is_primay_icon_maskable = 9;
-
-  reserved 2, 3, 4, 7;
+  reserved 2, 3, 4, 9;
 }
 
 // A proto representing a ShareTargetParamsFile

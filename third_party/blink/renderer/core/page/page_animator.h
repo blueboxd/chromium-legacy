@@ -23,7 +23,7 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   void ScheduleVisualUpdate(LocalFrame*);
   void ServiceScriptedAnimations(
       base::TimeTicks monotonic_animation_start_time);
-  void RunPostAnimationFrameCallbacks();
+  void PostAnimate();
 
   bool IsServicingAnimations() const { return servicing_animations_; }
 

@@ -232,7 +232,6 @@ class TabStrip : public views::AccessiblePaneView,
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
-  bool MaySetClip() override;
   void SelectTab(Tab* tab, const ui::Event& event) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
@@ -259,7 +258,6 @@ class TabStrip : public views::AccessiblePaneView,
                          const ui::MouseEvent& event) override;
   void UpdateHoverCard(Tab* tab) override;
   bool HoverCardIsShowingForTab(Tab* tab) override;
-  bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
   int GetBackgroundOffset() const override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;

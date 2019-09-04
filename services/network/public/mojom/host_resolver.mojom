@@ -102,6 +102,13 @@ struct DnsConfigOverrides {
   // The default SecureDnsMode to use when resolving queries. It can be
   // for individual requests such as requests to resolve a DoH server hostname.
   OptionalSecureDnsMode secure_dns_mode = OptionalSecureDnsMode.NO_OVERRIDE;
+
+  // Whether automatic upgrade to DNS over HTTPS servers is permitted.
+  Tristate allow_dns_over_https_upgrade = Tristate.NO_OVERRIDE;
+
+  // List of providers to exclude from upgrade mapping. See the
+  // mapping in net/dns/dns_util.cc for provider ids.
+  array<string>? disabled_upgrade_providers;
 };
 
 // Control handle used to control outstanding NetworkContext::ResolveHost

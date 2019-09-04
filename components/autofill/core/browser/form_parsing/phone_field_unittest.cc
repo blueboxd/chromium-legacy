@@ -39,7 +39,7 @@ class PhoneFieldTest : public testing::Test {
  protected:
   // Downcast for tests.
   static std::unique_ptr<PhoneField> Parse(AutofillScanner* scanner) {
-    std::unique_ptr<FormField> field = PhoneField::Parse(scanner);
+    std::unique_ptr<FormField> field = PhoneField::Parse(scanner, nullptr);
     return std::unique_ptr<PhoneField>(
         static_cast<PhoneField*>(field.release()));
   }

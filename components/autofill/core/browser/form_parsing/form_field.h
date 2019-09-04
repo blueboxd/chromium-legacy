@@ -18,6 +18,16 @@ namespace autofill {
 
 class AutofillField;
 class AutofillScanner;
+class LogManager;
+
+// This helper struct allows passing information into ParseField /
+// ParseFieldSpecifics that can be used to create a log entry in
+// chrome://autofill-internals explaining which regular expressions
+// were matched by local heuristics.
+struct RegExLogging {
+  LogManager* const log_manager = nullptr;
+  const char* regex_name = "";
+};
 
 // Represents a logical form field in a web form.  Classes that implement this
 // interface can identify themselves as a particular type of form field, e.g.
@@ -31,7 +41,8 @@ class FormField {
   // returned FieldCandidatesMap.
   static FieldCandidatesMap ParseFormFields(
       const std::vector<std::unique_ptr<AutofillField>>& fields,
-      bool is_form_tag);
+      bool is_form_tag,
+      LogManager* log_manager = nullptr);
 
  protected:
   // A bit-field used for matching specific parts of a field in question.
@@ -74,7 +85,8 @@ class FormField {
   // success and fills |match| with a pointer to the field.
   static bool ParseField(AutofillScanner* scanner,
                          const base::string16& pattern,
-                         AutofillField** match);
+                         AutofillField** match,
+                         const RegExLogging& logging = {});
 
   // Parses the stream of fields in |scanner| with regular expression |pattern|
   // as specified in the |match_type| bit field (see |MatchType|).  If |match|
@@ -84,7 +96,8 @@ class FormField {
   static bool ParseFieldSpecifics(AutofillScanner* scanner,
                                   const base::string16& pattern,
                                   int match_type,
-                                  AutofillField** match);
+                                  AutofillField** match,
+                                  const RegExLogging& logging = {});
 
   // Attempts to parse a field with an empty label.  Returns true
   // on success and fills |match| with a pointer to the field.
@@ -113,7 +126,8 @@ class FormField {
 
   // Function pointer type for the parsing function that should be passed to the
   // ParseFormFieldsPass() helper function.
-  typedef std::unique_ptr<FormField> ParseFunction(AutofillScanner* scanner);
+  typedef std::unique_ptr<FormField> ParseFunction(AutofillScanner* scanner,
+                                                   LogManager* log_manager);
 
   // Matches |pattern| to the contents of the field at the head of the
   // |scanner|.
@@ -122,13 +136,15 @@ class FormField {
   static bool MatchAndAdvance(AutofillScanner* scanner,
                               const base::string16& pattern,
                               int match_type,
-                              AutofillField** match);
+                              AutofillField** match,
+                              const RegExLogging& logging = {});
 
   // Matches the regular expression |pattern| against the components of |field|
   // as specified in the |match_type| bit field (see |MatchType|).
   static bool Match(const AutofillField* field,
                     const base::string16& pattern,
-                    int match_type);
+                    int match_type,
+                    const RegExLogging& logging = {});
 
   // Perform a "pass" over the |fields| where each pass uses the supplied
   // |parse| method to match content to a given field type.
@@ -138,7 +154,8 @@ class FormField {
   // |field_candidates|.
   static void ParseFormFieldsPass(ParseFunction parse,
                                   const std::vector<AutofillField*>& fields,
-                                  FieldCandidatesMap* field_candidates);
+                                  FieldCandidatesMap* field_candidates,
+                                  LogManager* log_manager = nullptr);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };

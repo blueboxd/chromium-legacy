@@ -44,8 +44,9 @@ void SavePasswordInfoBarDelegate::Create(
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
   password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response_);
-  form_to_save_->GetMetricsRecorder()->RecordUIDismissalReason(
-      infobar_response_);
+  if (auto* recorder = form_to_save_->GetMetricsRecorder()) {
+    recorder->RecordUIDismissalReason(infobar_response_);
+  }
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
@@ -70,9 +71,11 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     SetDetailsMessage(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER));
   }
 
-  form_to_save_->GetMetricsRecorder()->RecordPasswordBubbleShown(
-      form_to_save_->GetCredentialSource(),
-      password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+  if (auto* recorder = form_to_save_->GetMetricsRecorder()) {
+    recorder->RecordPasswordBubbleShown(
+        form_to_save_->GetCredentialSource(),
+        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
+  }
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

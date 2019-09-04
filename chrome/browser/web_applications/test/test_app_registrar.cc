@@ -137,6 +137,11 @@ LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
   return LaunchContainer::kTab;
 }
 
+void TestAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
+                                             LaunchContainer launch_container) {
+  NOTIMPLEMENTED();
+}
+
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   std::vector<AppId> result;
   for (const std::pair<AppId, AppInfo>& it : installed_apps_) {

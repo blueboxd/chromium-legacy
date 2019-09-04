@@ -153,13 +153,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
         std::move(connector), extensions::Manifest::INTERNAL,
         extensions::Extension::NO_FLAGS, temp_dir_.GetPath(),
         task_runner_.get(), this);
-    // Temporary allow CRX2 for kiosk apps.
-    // See https://crbug.com/960428. Note that we don't have user policies at
-    // this stage, so we have to explicitly allow CRX2 extension archive format.
-    // TODO(crbug.com/740715): remove in M77.
     unpacker->StartWithCrx(extensions::CRXFileInfo(
-        crx_file_, extensions::GetPolicyVerifierFormat(
-                       true /* insecure_updates_enabled */)));
+        crx_file_, extensions::GetPolicyVerifierFormat()));
   }
 
   void NotifyFinishedInThreadPool() {

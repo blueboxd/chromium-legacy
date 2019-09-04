@@ -18,8 +18,9 @@ class MockScheduledNotificationManager : public ScheduledNotificationManager {
   ~MockScheduledNotificationManager() override;
 
   MOCK_METHOD2(Init, void(Delegate*, base::OnceCallback<void(bool)>));
-  MOCK_METHOD1(ScheduleNotification,
-               void(std::unique_ptr<notifications::NotificationParams>));
+  MOCK_METHOD2(ScheduleNotification,
+               void(std::unique_ptr<notifications::NotificationParams>,
+                    ScheduleCallback));
   MOCK_METHOD1(DisplayNotification, void(const std::string&));
   MOCK_CONST_METHOD1(GetAllNotifications, void(Notifications*));
   MOCK_CONST_METHOD2(GetNotifications,

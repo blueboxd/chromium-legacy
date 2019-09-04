@@ -181,6 +181,9 @@ extern const char kCloudImportDescription[];
 extern const char kCloudPrinterHandlerName[];
 extern const char kCloudPrinterHandlerDescription[];
 
+extern const char kDecodeJpeg420ImagesToYUVName[];
+extern const char kDecodeJpeg420ImagesToYUVDescription[];
+
 extern const char kDecodeLossyWebPImagesToYUVName[];
 extern const char kDecodeLossyWebPImagesToYUVDescription[];
 
@@ -510,6 +513,9 @@ extern const char kEnablePictureInPictureDescription[];
 
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
+
+extern const char kEnablePreviewsCoinFlipName[];
+extern const char kEnablePreviewsCoinFlipDescription[];
 
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
@@ -1544,9 +1550,6 @@ extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
 extern const char kProcessSharingWithStrictSiteInstancesName[];
 extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
-extern const char kProgressBarThrottleName[];
-extern const char kProgressBarThrottleDescription[];
-
 extern const char kQuietNotificationPromptsName[];
 extern const char kQuietNotificationPromptsDescription[];
 
@@ -1563,9 +1566,6 @@ extern const char kReaderModeInCCTDescription[];
 
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
-
-extern const char kSearchReadyOmniboxName[];
-extern const char kSearchReadyOmniboxDescription[];
 
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
@@ -1819,6 +1819,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 
 extern const char kAggregatedMlAppRankingName[];
 extern const char kAggregatedMlAppRankingDescription[];
+
+extern const char kAllowDisableMouseAccelerationName[];
+extern const char kAllowDisableMouseAccelerationDescription[];
 
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];

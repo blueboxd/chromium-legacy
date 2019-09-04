@@ -34,6 +34,15 @@ static constexpr size_t kInitialScratchDeserializationBufferSize = 1024;
 
 namespace gpu {
 
+void SharedContextState::compileError(const char* shader, const char* errors) {
+  if (!context_lost_) {
+    LOG(ERROR) << "Skia shader compilation error\n"
+               << "------------------------\n"
+               << shader << "\nErrors:\n"
+               << errors;
+  }
+}
+
 SharedContextState::SharedContextState(
     scoped_refptr<gl::GLShareGroup> share_group,
     scoped_refptr<gl::GLSurface> surface,
@@ -135,7 +144,6 @@ void SharedContextState::InitializeGrContext(
             glProgramBinary(program, binaryFormat, binary, length);
           };
     }
-
     // If you make any changes to the GrContext::Options here that could
     // affect text rendering, make sure to match the capabilities initialized
     // in GetCapabilities and ensuring these are also used by the
@@ -148,6 +156,7 @@ void SharedContextState::InitializeGrContext(
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
     options.fDisallowGLSLBinaryCaching = workarounds.disable_program_disk_cache;
+    options.fShaderErrorHandler = this;
     // TODO(csmartdalton): enable internal multisampling after the related Skia
     // rolls are in.
     options.fInternalMultisampleCount = 0;

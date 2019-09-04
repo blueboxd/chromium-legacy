@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/infobars/core/infobar.h"
@@ -208,6 +209,33 @@ void TabSharingUIViews::OnTabStripModelChanged(
   }
 }
 
+void TabSharingUIViews::TabChangedAt(content::WebContents* contents,
+                                     int index,
+                                     TabChangeType change_type) {
+  // Sad tab cannot be shared so don't create an infobar for it.
+  auto* sad_tab_helper = SadTabHelper::FromWebContents(contents);
+  if (sad_tab_helper && sad_tab_helper->sad_tab())
+    return;
+
+  if (infobars_.find(contents) == infobars_.end())
+    CreateInfobarForWebContents(contents);
+}
+
+void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* info_bar,
+                                         bool animate) {
+  auto infobars_entry = std::find_if(infobars_.begin(), infobars_.end(),
+                                     [info_bar](const auto& infobars_entry) {
+                                       return infobars_entry.second == info_bar;
+                                     });
+  if (infobars_entry == infobars_.end())
+    return;
+
+  info_bar->owner()->RemoveObserver(this);
+  infobars_.erase(infobars_entry);
+  if (infobars_entry->first == shared_tab_)
+    StopSharing();
+}
+
 void TabSharingUIViews::CreateInfobarsForAllTabs() {
   BrowserList* browser_list = BrowserList::GetInstance();
   for (auto* browser : *browser_list) {
@@ -223,8 +251,10 @@ void TabSharingUIViews::CreateInfobarsForAllTabs() {
 
 void TabSharingUIViews::CreateInfobarForWebContents(
     content::WebContents* contents) {
+  auto* infobar_service = InfoBarService::FromWebContents(contents);
+  infobar_service->AddObserver(this);
   infobars_[contents] = TabSharingInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(contents),
+      infobar_service,
       shared_tab_ == contents ? base::string16() : shared_tab_name_, app_name_,
       !source_callback_.is_null() /*is_sharing_allowed*/, this);
 }
@@ -233,8 +263,10 @@ void TabSharingUIViews::RemoveInfobarsForAllTabs() {
   BrowserList::GetInstance()->RemoveObserver(this);
   TabStripModelObserver::StopObservingAll(this);
 
-  for (const auto& infobars_entry : infobars_)
+  for (const auto& infobars_entry : infobars_) {
+    infobars_entry.second->owner()->RemoveObserver(this);
     infobars_entry.second->RemoveSelf();
+  }
 
   infobars_.clear();
 }

@@ -1675,8 +1675,8 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   // Ack the request.
   ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
   EXPECT_THAT(stream_->ReadResponseHeaders(
-                  base::Bind(&QuicHttpStreamTest::CloseStream,
-                             base::Unretained(this), stream_.get())),
+                  base::BindOnce(&QuicHttpStreamTest::CloseStream,
+                                 base::Unretained(this), stream_.get())),
               IsError(ERR_IO_PENDING));
 
   // Send the response with a body.

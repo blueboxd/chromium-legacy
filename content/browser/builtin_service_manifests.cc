@@ -25,6 +25,7 @@
 #include "services/media_session/public/cpp/manifest.h"
 #include "services/metrics/public/cpp/manifest.h"
 #include "services/network/public/cpp/manifest.h"
+#include "services/resource_coordinator/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/tracing/manifest.h"
 
@@ -72,6 +73,7 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
                   ? service_manager::Manifest::ExecutionMode::kInProcessBuiltin
                   : service_manager::Manifest::ExecutionMode::
                         kOutOfProcessBuiltin),
+          resource_coordinator::GetManifest(),
           tracing::GetManifest(),
       }};
   return *manifests;

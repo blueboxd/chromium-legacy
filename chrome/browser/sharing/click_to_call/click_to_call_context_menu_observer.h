@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -43,7 +44,8 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
 
-  void BuildMenu(const std::string& phone_number);
+  void BuildMenu(const std::string& phone_number,
+                 SharingClickToCallEntryPoint entry_point);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClickToCallContextMenuObserverTest,
@@ -64,6 +66,7 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   SubMenuDelegate sub_menu_delegate_{this};
 
   std::string phone_number_;
+  base::Optional<SharingClickToCallEntryPoint> entry_point_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
 

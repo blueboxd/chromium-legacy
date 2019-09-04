@@ -20,6 +20,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.AUT
 import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
 import android.support.design.widget.TabLayout;
@@ -404,6 +405,15 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getAutofillItemAt(1).getFeatureForIPH(),
                 is(FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE));
         assertThat(getAutofillItemAt(2).getFeatureForIPH(), is(nullValue()));
+    }
+
+    @Test
+    public void testSkipAnimationsOnlyUntilNextShow() {
+        assertThat(mModel.get(SKIP_CLOSING_ANIMATION), is(false));
+        mCoordinator.skipClosingAnimationOnce();
+        assertThat(mModel.get(SKIP_CLOSING_ANIMATION), is(true));
+        mCoordinator.show();
+        assertThat(mModel.get(SKIP_CLOSING_ANIMATION), is(false));
     }
 
     @Test

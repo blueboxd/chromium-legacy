@@ -6,37 +6,37 @@ from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
+from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
+from .exposure import Exposure
 from .idl_type import IdlType
 from .literal_constant import LiteralConstant
 from .make_copy import make_copy
 
 
 class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-               WithOwner, WithComponent, WithDebugInfo):
+               WithExposure, WithOwner, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-constants"""
 
     class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      idl_type,
                      value,
                      extended_attributes=None,
-                     code_generator_info=None,
                      component=None,
-                     components=None,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
             assert isinstance(value, LiteralConstant)
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(
-                self, component=component, components=components)
+            WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
+            WithComponent.__init__(self, component=component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.idl_type = idl_type
@@ -50,6 +50,7 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
         WithCodeGeneratorInfo.__init__(
             self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)

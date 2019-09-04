@@ -615,7 +615,7 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes() {
+void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
 
   // First, try to detect field types based on each field's |autocomplete|
@@ -628,7 +628,7 @@ void FormStructure::DetermineHeuristicTypes() {
   // prediction routines.
   if (ShouldRunHeuristics()) {
     const FieldCandidatesMap field_type_map =
-        FormField::ParseFormFields(fields_, is_form_tag_);
+        FormField::ParseFormFields(fields_, is_form_tag_, log_manager);
     for (const auto& field : fields_) {
       const auto iter = field_type_map.find(field->unique_name());
       if (iter != field_type_map.end()) {

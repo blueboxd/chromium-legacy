@@ -32,6 +32,8 @@ class UI_DEVTOOLS_EXPORT TracingAgent
   explicit TracingAgent(std::unique_ptr<ConnectorDelegate> connector);
   ~TracingAgent() override;
 
+  void set_gpu_pid(base::ProcessId pid) { gpu_pid_ = pid; }
+
   // Sends the Tracing JSON data in the form of CBOR to the frontend.
   void OnTraceDataCollected(std::unique_ptr<std::string> trace_fragment);
 

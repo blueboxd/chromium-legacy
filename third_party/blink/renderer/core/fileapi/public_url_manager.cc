@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
@@ -111,7 +112,7 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   DCHECK(!url.IsEmpty());
   const String& url_string = url.GetString();
 
-  mojom::blink::BlobPtr blob = registrable->AsMojoBlob();
+  mojo::PendingRemote<mojom::blink::Blob> blob = registrable->AsMojoBlob();
   if (blob) {
     // Measure how much jank the following synchronous IPC introduces.
     SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterPublicURLTime");

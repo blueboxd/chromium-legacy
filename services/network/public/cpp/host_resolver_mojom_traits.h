@@ -76,6 +76,14 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static network::mojom::OptionalSecureDnsMode secure_dns_mode(
       const net::DnsConfigOverrides& overrides);
 
+  static network::mojom::DnsConfigOverrides::Tristate
+  allow_dns_over_https_upgrade(const net::DnsConfigOverrides& overrides);
+
+  static const base::Optional<std::vector<std::string>>&
+  disabled_upgrade_providers(const net::DnsConfigOverrides& overrides) {
+    return overrides.disabled_upgrade_providers;
+  }
+
   static bool Read(network::mojom::DnsConfigOverridesDataView data,
                    net::DnsConfigOverrides* out);
 };

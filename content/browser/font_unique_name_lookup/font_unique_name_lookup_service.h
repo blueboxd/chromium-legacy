@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/font_unique_name_lookup/font_unique_name_lookup.mojom.h"
 
 namespace content {
@@ -19,7 +19,7 @@ class FontUniqueNameLookupService : public blink::mojom::FontUniqueNameLookup {
   FontUniqueNameLookupService();
   ~FontUniqueNameLookupService() override;
 
-  static void Create(blink::mojom::FontUniqueNameLookupRequest);
+  static void Create(mojo::PendingReceiver<blink::mojom::FontUniqueNameLookup>);
 
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 

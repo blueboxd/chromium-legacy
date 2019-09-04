@@ -10,6 +10,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_infobar.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,9 +27,10 @@ void ShowSafetyTipDialog(content::WebContents* web_contents,
                          const GURL& url) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::make_unique<SafetyTipInfoBarDelegate>(safety_tip_status, url,
-                                                 web_contents)));
+  auto delegate = std::make_unique<SafetyTipInfoBarDelegate>(safety_tip_status,
+                                                             url, web_contents);
+  infobar_service->AddInfoBar(
+      SafetyTipInfoBar::CreateInfoBar(std::move(delegate)));
 }
 
 }  // namespace safety_tips
@@ -42,16 +44,7 @@ SafetyTipInfoBarDelegate::SafetyTipInfoBarDelegate(
       web_contents_(web_contents) {}
 
 base::string16 SafetyTipInfoBarDelegate::GetMessageText() const {
-  size_t offset;
-  const base::string16 safety_tip_name =
-      l10n_util::GetStringUTF16(IDS_SAFETY_TIP_ANDROID_NAME);
-  const base::string16 title_text = l10n_util::GetStringFUTF16(
-      GetSafetyTipTitleId(safety_tip_status_), safety_tip_name, &offset);
-
-  return base::JoinString(
-      {title_text, l10n_util::GetStringUTF16(
-                       GetSafetyTipDescriptionId(safety_tip_status_))},
-      base::ASCIIToUTF16("\n\n"));
+  return l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY);
 }
 
 int SafetyTipInfoBarDelegate::GetButtons() const {
@@ -98,4 +91,9 @@ int SafetyTipInfoBarDelegate::GetIconId() const {
 void SafetyTipInfoBarDelegate::InfoBarDismissed() {
   // Called when you click the X. Treat the same as 'ignore'.
   Cancel();
+}
+
+base::string16 SafetyTipInfoBarDelegate::GetDescriptionText() const {
+  return l10n_util::GetStringUTF16(
+      GetSafetyTipDescriptionId(safety_tip_status_));
 }

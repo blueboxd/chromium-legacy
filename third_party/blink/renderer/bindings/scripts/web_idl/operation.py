@@ -7,8 +7,10 @@ from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
+from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithOwner
+from .exposure import Exposure
 from .function_like import FunctionLike
 from .idl_type import IdlType
 from .make_copy import make_copy
@@ -16,20 +18,18 @@ from .overload_group import OverloadGroup
 
 
 class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
-                WithOwner, WithComponent, WithDebugInfo):
+                WithExposure, WithOwner, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-operations"""
 
     class IR(FunctionLike.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      arguments,
                      return_type,
                      is_static=False,
                      extended_attributes=None,
-                     code_generator_info=None,
                      component=None,
-                     components=None,
                      debug_info=None):
             FunctionLike.IR.__init__(
                 self,
@@ -38,9 +38,9 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
                 return_type=return_type,
                 is_static=is_static)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(
-                self, component=component, components=components)
+            WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
+            WithComponent.__init__(self, component=component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_stringifier = False
@@ -52,6 +52,7 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
         WithCodeGeneratorInfo.__init__(
             self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
@@ -63,8 +64,8 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._is_stringifier
 
 
-class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithOwner,
-                     WithDebugInfo):
+class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
+                     WithOwner, WithDebugInfo):
     """
     Represents a group of operations with the same identifier.
 
@@ -72,13 +73,15 @@ class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithOwner,
     the operations are overloaded.
     """
 
-    class IR(OverloadGroup.IR, WithCodeGeneratorInfo, WithDebugInfo):
+    class IR(OverloadGroup.IR, WithCodeGeneratorInfo, WithExposure,
+             WithDebugInfo):
         def __init__(self,
                      operations,
                      code_generator_info=None,
                      debug_info=None):
             OverloadGroup.IR.__init__(self, operations)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithExposure.__init__(self)
             WithDebugInfo.__init__(self, debug_info)
 
     def __init__(self, ir, operations, owner):
@@ -93,5 +96,6 @@ class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithOwner,
         OverloadGroup.__init__(self, functions=operations)
         WithCodeGeneratorInfo.__init__(
             self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
         WithOwner.__init__(self, owner)
         WithDebugInfo.__init__(self, ir.debug_info)

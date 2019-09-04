@@ -789,7 +789,7 @@ void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
     const quic::ParsedQuicVersion& version) {
   if (!net_log_is_capturing_)
     return;
-  string quic_version = QuicVersionToString(version.transport_version);
+  string quic_version = quic::ParsedQuicVersionToString(version);
   net_log_.AddEventWithStringParams(
       NetLogEventType::QUIC_SESSION_VERSION_NEGOTIATED, "version",
       quic_version);

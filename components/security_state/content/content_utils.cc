@@ -127,8 +127,6 @@ void ExplainCertificateSecurity(
 
   bool is_cert_status_error =
       net::IsCertStatusError(visible_security_state.cert_status);
-  bool is_cert_status_minor_error =
-      net::IsCertStatusMinorError(visible_security_state.cert_status);
 
   if (is_cert_status_error) {
     base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
@@ -142,11 +140,7 @@ void ExplainCertificateSecurity(
         visible_security_state.certificate,
         blink::WebMixedContentContextType::kNotMixedContent);
 
-    if (is_cert_status_minor_error) {
-      security_style_explanations->neutral_explanations.push_back(explanation);
-    } else {
-      security_style_explanations->insecure_explanations.push_back(explanation);
-    }
+    security_style_explanations->insecure_explanations.push_back(explanation);
   } else {
     // If the certificate does not have errors and is not using SHA1, then add
     // an explanation that the certificate is valid.
@@ -321,17 +315,14 @@ void ExplainContentSecurity(
             l10n_util::GetStringUTF8(IDS_NON_SECURE_FORM_DESCRIPTION)));
   }
 
-  // If the main resource was loaded with no certificate errors or only minor
-  // certificate errors, then record the presence of subresources with
-  // certificate errors. Subresource certificate errors aren't recorded when the
-  // main resource was loaded with major certificate errors because, in the
-  // common case, these subresource certificate errors would be duplicative with
-  // the main resource's error.
+  // If the main resource was loaded with no certificate errors then record the
+  // presence of subresources with certificate errors. Subresource certificate
+  // errors aren't recorded when the main resource was loaded with major
+  // certificate errors because, in the common case, these subresource
+  // certificate errors would be duplicative with the main resource's error.
   bool is_cert_status_error =
       net::IsCertStatusError(visible_security_state.cert_status);
-  bool is_cert_status_minor_error =
-      net::IsCertStatusMinorError(visible_security_state.cert_status);
-  if (!is_cert_status_error || is_cert_status_minor_error) {
+  if (!is_cert_status_error) {
     if (visible_security_state.ran_content_with_cert_errors) {
       add_secure_explanation = false;
       security_style_explanations->insecure_explanations.push_back(
@@ -425,9 +416,7 @@ blink::WebSecurityStyle GetSecurityStyle(
     ExplainSafeBrowsingSecurity(visible_security_state,
                                 security_style_explanations);
   } else if (visible_security_state.is_error_page &&
-             (!net::IsCertStatusError(visible_security_state.cert_status) ||
-              net::IsCertStatusMinorError(
-                  visible_security_state.cert_status))) {
+             !net::IsCertStatusError(visible_security_state.cert_status)) {
     security_style_explanations->summary =
         l10n_util::GetStringUTF8(IDS_ERROR_PAGE_SUMMARY);
     // In the case of a non cert error page, we usually don't have a

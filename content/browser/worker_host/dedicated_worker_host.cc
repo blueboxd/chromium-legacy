@@ -368,12 +368,12 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
 }
 
 void DedicatedWorkerHost::CreateNestedDedicatedWorker(
-    blink::mojom::DedicatedWorkerHostFactoryRequest request) {
+    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateDedicatedWorkerHostFactory(worker_process_id_,
                                    ancestor_render_frame_id_,
                                    /*creator_render_frame_id=*/MSG_ROUTING_NONE,
-                                   origin_, std::move(request));
+                                   origin_, std::move(receiver));
 }
 
 void DedicatedWorkerHost::BindFileSystemManager(

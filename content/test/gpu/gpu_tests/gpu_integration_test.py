@@ -81,9 +81,8 @@ class GpuIntegrationTest(
       browser_options.logs_cloud_bucket = None
 
     # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
-    # the browser to collect gpu info. A command line switch is added here to
-    # skip this gpu process for all gpu integration tests to prevent any
-    # interference with the test results.
+    # the browser to collect gpu info. A command line switch is added here so
+    # the dx12/vulkan info can be collected immediately for the tests.
     browser_args.append(
       '--no-delay-for-dx12-vulkan-info-collection')
 

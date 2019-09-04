@@ -313,13 +313,6 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
            drag_controller_->IsDraggingTab(contents);
   }
 
-  // Returns true if dragging has resulted in temporarily stacking the tabs.
-  bool IsStackingDraggedTabs() const {
-    return drag_controller_.get() && drag_controller_->started_drag() &&
-           (drag_controller_->move_behavior() ==
-            TabDragController::MOVE_VISIBLE_TABS);
-  }
-
   void SetMoveBehavior(TabDragController::MoveBehavior move_behavior) {
     if (drag_controller_)
       drag_controller_->SetMoveBehavior(move_behavior);
@@ -1391,11 +1384,6 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
   return !!touch_layout_;
 }
 
-bool TabStrip::MaySetClip() {
-  // Only touch layout needs to restrict the clip.
-  return touch_layout_ || drag_context_->IsStackingDraggedTabs();
-}
-
 void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOfTab(tab);
   if (IsValidModelIndex(model_index)) {
@@ -1599,52 +1587,6 @@ bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
   return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
          !hover_card_->IsFadingOut() &&
          hover_card_->GetDesiredAnchorView() == tab;
-}
-
-bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {
-  if (!MaySetClip())
-    return true;
-
-  int index = GetModelIndexOfTab(tab);
-  if (index == -1)
-    return true;  // Tab is closing, paint it all.
-
-  int active_index = drag_context_->IsStackingDraggedTabs()
-                         ? controller_->GetActiveIndex()
-                         : touch_layout_->active_index();
-  if (active_index == tab_count())
-    active_index--;
-
-  const gfx::Rect& current_bounds = tab_at(index)->bounds();
-  if (index < active_index) {
-    const Tab* next_tab = tab_at(index + 1);
-    const gfx::Rect& next_bounds = next_tab->bounds();
-    if (current_bounds.x() == next_bounds.x())
-      return false;
-
-    if (current_bounds.x() > next_bounds.x())
-      return true;  // Can happen during dragging.
-
-    *clip =
-        next_tab->tab_style()->GetPath(TabStyle::PathType::kExteriorClip, scale,
-                                       false, TabStyle::RenderUnits::kDips);
-
-    clip->offset(SkIntToScalar(next_bounds.x() - current_bounds.x()), 0);
-  } else if (index > active_index && index > 0) {
-    const Tab* prev_tab = tab_at(index - 1);
-    const gfx::Rect& previous_bounds = prev_tab->bounds();
-    if (current_bounds.x() == previous_bounds.x())
-      return false;
-
-    if (current_bounds.x() < previous_bounds.x())
-      return true;  // Can happen during dragging.
-
-    *clip =
-        prev_tab->tab_style()->GetPath(TabStyle::PathType::kExteriorClip, scale,
-                                       false, TabStyle::RenderUnits::kDips);
-    clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
-  }
-  return true;
 }
 
 int TabStrip::GetBackgroundOffset() const {

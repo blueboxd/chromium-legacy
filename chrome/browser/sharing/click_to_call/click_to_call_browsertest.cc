@@ -22,16 +22,21 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "net/dns/mock_host_resolver.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
 namespace {
@@ -61,13 +66,8 @@ class ClickToCallBrowserTest : public SyncTest {
 
     ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-    std::unique_ptr<content::WebContents> web_contents_ptr =
-        content::WebContents::Create(
-            content::WebContents::CreateParams(GetProfile(0)));
-    web_contents_ = web_contents_ptr.get();
-    Browser* browser = AddBrowser(0);
-    browser->tab_strip_model()->AppendWebContents(std::move(web_contents_ptr),
-                                                  true);
+    sessions_helper::OpenTab(0, GURL("http://www.google.com/"));
+    web_contents_ = GetBrowser(0)->tab_strip_model()->GetWebContentsAt(0);
 
     gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
         gcm::GCMProfileServiceFactory::GetForProfile(GetProfile(0)));
@@ -341,4 +341,56 @@ IN_PROC_BROWSER_TEST_F(
       IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
   EXPECT_FALSE(menu->IsItemPresent(
       IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES));
+}
+
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
+  Init({kSharingDeviceRegistration, kClickToCallUI,
+        kClickToCallContextMenuForSelectedText},
+       {});
+  SetUpDevices(/*count=*/1);
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::RunLoop run_loop;
+  ukm_recorder.SetOnAddEntryCallback(
+      ukm::builders::Sharing_ClickToCall::kEntryName, run_loop.QuitClosure());
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      InitRightClickMenu(GURL(kNonTelUrl), base::ASCIIToUTF16("Google"),
+                         base::ASCIIToUTF16(kTextWithPhoneNumber));
+
+  // Check click to call items in context menu
+  ASSERT_TRUE(menu->IsItemPresent(
+      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
+  // Send number to device
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
+                       0);
+
+  // Expect UKM metrics to be logged
+  run_loop.Run();
+  std::vector<const ukm::mojom::UkmEntry*> ukm_entries =
+      ukm_recorder.GetEntriesByName(
+          ukm::builders::Sharing_ClickToCall::kEntryName);
+  ASSERT_EQ(1u, ukm_entries.size());
+
+  const int64_t* entry_point = ukm_recorder.GetEntryMetric(
+      ukm_entries[0], ukm::builders::Sharing_ClickToCall::kEntryPointName);
+  const int64_t* has_apps = ukm_recorder.GetEntryMetric(
+      ukm_entries[0], ukm::builders::Sharing_ClickToCall::kHasAppsName);
+  const int64_t* has_devices = ukm_recorder.GetEntryMetric(
+      ukm_entries[0], ukm::builders::Sharing_ClickToCall::kHasDevicesName);
+  const int64_t* selection = ukm_recorder.GetEntryMetric(
+      ukm_entries[0], ukm::builders::Sharing_ClickToCall::kSelectionName);
+
+  ASSERT_TRUE(entry_point);
+  ASSERT_TRUE(has_apps);
+  ASSERT_TRUE(has_devices);
+  ASSERT_TRUE(selection);
+
+  EXPECT_EQ(
+      static_cast<int64_t>(SharingClickToCallEntryPoint::kRightClickSelection),
+      *entry_point);
+  EXPECT_EQ(true, *has_devices);
+  EXPECT_EQ(static_cast<int64_t>(SharingClickToCallSelection::kDevice),
+            *selection);
+  // TODO(knollr): mock apps and verify |has_apps| here too.
 }

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
@@ -60,8 +59,6 @@ class CONTENT_EXPORT SmsService
   void Process(blink::mojom::SmsStatus, base::Optional<std::string> sms);
   void CleanUp();
 
-  // Callback when the |timer_| times out.
-  void OnTimeout();
   // Called when the user manually clicks the 'Enter code' button.
   void OnConfirm();
   // Called when the user manually dismisses the infobar.
@@ -74,7 +71,6 @@ class CONTENT_EXPORT SmsService
 
   const url::Origin origin_;
 
-  base::OneShotTimer timer_;
   ReceiveCallback callback_;
   base::Optional<std::string> sms_;
   base::TimeTicks start_time_;

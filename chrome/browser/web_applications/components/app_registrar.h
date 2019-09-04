@@ -90,6 +90,8 @@ class AppRegistrar {
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
   virtual LaunchContainer GetAppLaunchContainer(const AppId& app_id) const = 0;
+  virtual void SetAppLaunchContainer(const AppId& app_id,
+                                     LaunchContainer launch_container) = 0;
 
   virtual std::vector<AppId> GetAppIds() const = 0;
 

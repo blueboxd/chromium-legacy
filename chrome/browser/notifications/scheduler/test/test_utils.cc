@@ -125,7 +125,8 @@ std::string DebugString(const ClientState* client_state) {
 
   for (const auto& impression : client_state->impressions) {
     std::ostringstream stream;
-    stream << "Impression, create_time:" << impression.create_time << "\n"
+    stream << "\n"
+           << "Impression, create_time:" << impression.create_time << "\n"
            << " create_time in microseconds:"
            << impression.create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
            << "\n"

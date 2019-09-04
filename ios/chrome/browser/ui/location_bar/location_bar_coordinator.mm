@@ -19,7 +19,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
@@ -93,6 +95,8 @@ const int kLocationAuthorizationStatusCount = 5;
 @property(nonatomic, strong) OmniboxCoordinator* omniboxCoordinator;
 @property(nonatomic, strong) LocationBarMediator* mediator;
 @property(nonatomic, strong) LocationBarViewController* viewController;
+@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, readonly) WebStateList* webStateList;
 
 // Tracks calls in progress to -cancelOmniboxEdit to avoid calling it from
 // itself when -resignFirstResponder causes -textFieldWillResignFirstResponder
@@ -102,16 +106,16 @@ const int kLocationAuthorizationStatusCount = 5;
 @end
 
 @implementation LocationBarCoordinator
-@synthesize commandDispatcher = _commandDispatcher;
-@synthesize viewController = _viewController;
-@synthesize started = _started;
-@synthesize mediator = _mediator;
-@synthesize browserState = _browserState;
-@synthesize dispatcher = _dispatcher;
-@synthesize delegate = _delegate;
-@synthesize webStateList = _webStateList;
-@synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
-@synthesize omniboxCoordinator = _omniboxCoordinator;
+
+#pragma mark - Accessors
+
+- (ios::ChromeBrowserState*)browserState {
+  return self.browser ? self.browser->GetBrowserState() : nullptr;
+}
+
+- (WebStateList*)webStateList {
+  return self.browser ? self.browser->GetWebStateList() : nullptr;
+}
 
 #pragma mark - public
 
@@ -121,6 +125,7 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (void)start {
   DCHECK(self.commandDispatcher);
+  DCHECK(self.browser);
 
   if (self.started)
     return;
@@ -195,6 +200,8 @@ const int kLocationAuthorizationStatusCount = 5;
   self.mediator = [[LocationBarMediator alloc]
       initWithLocationBarModel:[self locationBarModel]];
   self.mediator.webStateList = self.webStateList;
+  self.mediator.webContentAreaOverlayPresenter = OverlayPresenter::FromBrowser(
+      self.browser, OverlayModality::kWebContentArea);
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self;

@@ -130,7 +130,8 @@ const PhoneField::Parser PhoneField::kPhoneFieldGrammars[] = {
 };
 
 // static
-std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner,
+                                             LogManager* log_manager) {
   if (scanner->IsEnd())
     return nullptr;
 
@@ -147,8 +148,10 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
     for (; i < base::size(kPhoneFieldGrammars) &&
            kPhoneFieldGrammars[i].regex != REGEX_SEPARATOR;
          ++i) {
-      if (!ParsePhoneField(scanner, GetRegExp(kPhoneFieldGrammars[i].regex),
-                           &parsed_fields[kPhoneFieldGrammars[i].phone_part]))
+      if (!ParsePhoneField(
+              scanner, GetRegExp(kPhoneFieldGrammars[i].regex),
+              &parsed_fields[kPhoneFieldGrammars[i].phone_part],
+              {log_manager, GetRegExpName(kPhoneFieldGrammars[i].regex)}))
         break;
       if (kPhoneFieldGrammars[i].max_size &&
           (!parsed_fields[kPhoneFieldGrammars[i].phone_part]->max_length ||
@@ -191,9 +194,11 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
   // Look for a third text box.
   if (!phone_field->parsed_phone_fields_[FIELD_SUFFIX]) {
     if (!ParsePhoneField(scanner, kPhoneSuffixRe,
-                         &phone_field->parsed_phone_fields_[FIELD_SUFFIX])) {
+                         &phone_field->parsed_phone_fields_[FIELD_SUFFIX],
+                         {log_manager, "kPhoneSuffixRe"})) {
       ParsePhoneField(scanner, kPhoneSuffixSeparatorRe,
-                      &phone_field->parsed_phone_fields_[FIELD_SUFFIX]);
+                      &phone_field->parsed_phone_fields_[FIELD_SUFFIX],
+                      {log_manager, "kPhoneSuffixSeparatorRe"});
     }
   }
 
@@ -201,7 +206,8 @@ std::unique_ptr<FormField> PhoneField::Parse(AutofillScanner* scanner) {
   // The extension is not actually used, so this just eats the field so other
   // parsers do not mistaken it for something else.
   ParsePhoneField(scanner, kPhoneExtensionRe,
-                  &phone_field->parsed_phone_fields_[FIELD_EXTENSION]);
+                  &phone_field->parsed_phone_fields_[FIELD_EXTENSION],
+                  {log_manager, "kPhoneExtensionRe"});
 
   return std::move(phone_field);
 }
@@ -285,12 +291,41 @@ std::string PhoneField::GetRegExp(RegexType regex_id) {
 }
 
 // static
+const char* PhoneField::GetRegExpName(RegexType regex_id) {
+  switch (regex_id) {
+    case REGEX_COUNTRY:
+      return "kCountryCodeRe";
+    case REGEX_AREA:
+      return "kAreaCodeRe|kAreaCodeNotextRe";
+    case REGEX_AREA_NOTEXT:
+      return "kAreaCodeNotextRe";
+    case REGEX_PHONE:
+      return "kPhoneRe";
+    case REGEX_PREFIX_SEPARATOR:
+      return "kPhonePrefixSeparatorRe";
+    case REGEX_PREFIX:
+      return "kPhonePrefixRe";
+    case REGEX_SUFFIX_SEPARATOR:
+      return "kPhoneSuffixSeparatorRe";
+    case REGEX_SUFFIX:
+      return "kPhoneSuffixRe";
+    case REGEX_EXTENSION:
+      return "kPhoneExtensionRe";
+    default:
+      NOTREACHED();
+      break;
+  }
+  return "";
+}
+
+// static
 bool PhoneField::ParsePhoneField(AutofillScanner* scanner,
                                  const std::string& regex,
-                                 AutofillField** field) {
+                                 AutofillField** field,
+                                 const RegExLogging& logging) {
   return ParseFieldSpecifics(scanner, base::UTF8ToUTF16(regex),
                              MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER,
-                             field);
+                             field, logging);
 }
 
 }  // namespace autofill

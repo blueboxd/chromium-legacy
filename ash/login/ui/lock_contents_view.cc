@@ -574,21 +574,28 @@ void LockContentsView::ShowParentAccessDialog() {
 
 void LockContentsView::RequestSecurityTokenPin(
     SecurityTokenPinRequest request) {
-  if (!primary_big_view_ || !primary_big_view_->auth_user() ||
-      primary_big_view_->GetCurrentUser().basic_user_info.account_id !=
-          request.account_id) {
-    // The PIN request is obsolete.
-    std::move(request.pin_ui_closed_callback).Run();
-    return;
+  // Find which of the current big users, if any, should handle the request.
+  for (auto* big_user : {primary_big_view_, opt_secondary_big_view_}) {
+    if (big_user && big_user->auth_user() &&
+        big_user->GetCurrentUser().basic_user_info.account_id ==
+            request.account_id) {
+      big_user->auth_user()->RequestSecurityTokenPin(std::move(request));
+      return;
+    }
   }
-  primary_big_view_->auth_user()->RequestSecurityTokenPin(std::move(request));
+  // The PIN request is obsolete.
+  std::move(request.pin_ui_closed_callback).Run();
 }
 
 void LockContentsView::ClearSecurityTokenPinRequest() {
-  // Note that if the PIN UI used to be shown in a different primary big view,
-  // then it was already closed while switching the view.
+  // Try both big users - it's safe since at most one PIN request can happen at
+  // a time, and as clearing a non-existing PIN request is a no-op.
+  // Note that if the PIN UI used to be shown in some other big view, then it
+  // had already been closed while switching the view(s).
   if (primary_big_view_ && primary_big_view_->auth_user())
     primary_big_view_->auth_user()->ClearSecurityTokenPinRequest();
+  if (opt_secondary_big_view_ && opt_secondary_big_view_->auth_user())
+    opt_secondary_big_view_->auth_user()->ClearSecurityTokenPinRequest();
 }
 
 void LockContentsView::Layout() {

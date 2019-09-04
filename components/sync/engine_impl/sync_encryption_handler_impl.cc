@@ -1079,6 +1079,11 @@ SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   const PassphraseType nigori_passphrase_type =
       *nigori_passphrase_type_optional;
 
+  if (nigori_passphrase_type == PassphraseType::TRUSTED_VAULT_PASSPHRASE) {
+    NOTIMPLEMENTED();
+    return ApplyNigoriUpdateResult::kUnsupportedRemoteState;
+  }
+
   DVLOG(1) << "Applying nigori node update.";
   bool nigori_types_need_update =
       !UpdateEncryptedTypesFromNigori(nigori, trans);

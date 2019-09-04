@@ -390,8 +390,7 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
     return fake_cryptauth_group_private_key_sharer_factory_->instances().back();
   }
 
-  void OnDeviceSyncComplete(
-      const CryptAuthDeviceSyncResult& device_sync_result) {
+  void OnDeviceSyncComplete(CryptAuthDeviceSyncResult device_sync_result) {
     device_sync_result_ = device_sync_result;
   }
 

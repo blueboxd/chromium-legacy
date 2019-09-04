@@ -34,7 +34,9 @@ std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
   client->AddAgent(std::move(dom_agent_views));
   client->AddAgent(std::make_unique<CSSAgent>(dom_agent_views_ptr));
   client->AddAgent(OverlayAgentViews::Create(dom_agent_views_ptr));
-  client->AddAgent(std::make_unique<TracingAgent>(std::move(connector)));
+  auto tracing_agent = std::make_unique<TracingAgent>(std::move(connector));
+  server->set_tracing_agent(tracing_agent.get());
+  client->AddAgent(std::move(tracing_agent));
   server->AttachClient(std::move(client));
   return server;
 }

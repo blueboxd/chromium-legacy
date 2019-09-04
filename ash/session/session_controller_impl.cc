@@ -22,7 +22,6 @@
 #include "ash/system/screen_security/screen_switch_check_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -425,9 +424,6 @@ void SessionControllerImpl::SetSessionLengthLimit(base::TimeDelta length_limit,
 
 void SessionControllerImpl::CanSwitchActiveUser(
     CanSwitchActiveUserCallback callback) {
-  // Cancel overview mode when switching user profiles.
-  Shell::Get()->overview_controller()->EndOverview();
-
   ash::Shell::Get()
       ->screen_switch_check_controller()
       ->CanSwitchAwayFromActiveUser(std::move(callback));

@@ -6,7 +6,7 @@ import("//components/safe_browsing/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 source_set("password_protection") {
-  if (safe_browsing_mode == 1) {
+  if (safe_browsing_mode == 1 || safe_browsing_mode == 2) {
     sources = [
       "password_protection_navigation_throttle.cc",
       "password_protection_navigation_throttle.h",
@@ -40,11 +40,13 @@ source_set("password_protection") {
       "//components/sessions",
       "//components/signin/public/base",
       "//components/signin/public/identity_manager",
-      "//components/zoom",
       "//content/public/browser:browser",
       "//net:net",
       "//third_party/protobuf:protobuf_lite",
     ]
+  }
+  if (safe_browsing_mode == 1) {
+    deps += [ "//components/zoom" ]
   }
 }
 

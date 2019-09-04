@@ -834,10 +834,8 @@ gfx::Size NativeWidgetAura::GetMinimumSize() const {
 }
 
 gfx::Size NativeWidgetAura::GetMaximumSize() const {
-  // A window should not have a maximum size and also be maximizable.
-  DCHECK(delegate_->GetMaximumSize().IsEmpty() ||
-         !(window_->GetProperty(aura::client::kResizeBehaviorKey) &
-           aura::client::kResizeBehaviorCanMaximize));
+  // Do no check maximizability as EXO clients can have maximum size and be
+  // maximizable at the same time.
   return delegate_->GetMaximumSize();
 }
 

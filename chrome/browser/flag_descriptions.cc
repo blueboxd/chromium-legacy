@@ -279,6 +279,11 @@ const char kCloudPrinterHandlerDescription[] =
     "print server, instead of the cloud print interface in the Print "
     "Preview WebUI.";
 
+const char kDecodeJpeg420ImagesToYUVName[] = "YUV decoding for JPEG";
+const char kDecodeJpeg420ImagesToYUVDescription[] =
+    "Decode and render 4:2:0 formatted jpeg images from YUV instead of RGB."
+    "This feature requires GPU or OOP rasterization to also be enabled.";
+
 const char kDecodeLossyWebPImagesToYUVName[] = "YUV Decoding for WebP";
 const char kDecodeLossyWebPImagesToYUVDescription[] =
     "Decode and render lossy WebP images from YUV instead of RGB. "
@@ -664,6 +669,10 @@ const char kEnableURLLoaderLitePageServerPreviewsDescription[] =
     "Enable using a network service URL Loader for Lite Page Server Previews. "
     "This requires enable-lite-page-server-previews to be enabled along with "
     "network-service.";
+
+const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
+const char kEnablePreviewsCoinFlipDescription[] =
+    "Enable coin flip experimentation of Previews.";
 
 const char kBuiltInModuleAllName[] = "All experimental built-in modules";
 const char kBuiltInModuleAllDescription[] =
@@ -2614,10 +2623,6 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[] =
     "separated like strict site isolation, but process selection puts multiple "
     "site instances in a single process.";
 
-const char kProgressBarThrottleName[] = "Android progress update throttling.";
-const char kProgressBarThrottleDescription[] =
-    "Limit the maximum progress update to make progress appear smoother.";
-
 const char kQuietNotificationPromptsName[] =
     "Quieter notification permission prompts";
 const char kQuietNotificationPromptsDescription[] =
@@ -2644,11 +2649,6 @@ const char kSafeBrowsingUseLocalBlacklistsV2Description[] =
     "If enabled, maintain a copy of Safe Browsing blacklists in the browser "
     "process to check the Safe Browsing reputation of URLs without calling "
     "into GmsCore for every URL.";
-
-const char kSearchReadyOmniboxName[] = "Search Ready Omnibox";
-const char kSearchReadyOmniboxDescription[] =
-    "Clears the omnibox and adds a suggestion item to share, copy, or edit the "
-    "URL.";
 
 const char kSetMarketUrlForTestingName[] = "Set market URL for testing";
 const char kSetMarketUrlForTestingDescription[] =
@@ -3060,6 +3060,11 @@ const char kAcceleratedMjpegDecodeDescription[] =
 const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
 const char kAggregatedMlAppRankingDescription[] =
     "Use the aggregated ML model to rank the suggested apps.";
+
+const char kAllowDisableMouseAccelerationName[] =
+    "Allow disabling mouse acceleration";
+const char kAllowDisableMouseAccelerationDescription[] =
+    "Shows a setting to disable mouse acceleration.";
 
 const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =

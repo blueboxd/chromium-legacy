@@ -6,12 +6,15 @@
 #define NET_DNS_DNS_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/public/dns_query_type.h"
 
 namespace net {
@@ -107,6 +110,23 @@ uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type);
 
 NET_EXPORT DnsQueryType
 AddressFamilyToDnsQueryType(AddressFamily address_family);
+
+// Uses the hardcoded upgrade mapping to discover DoH service(s) associated
+// with a DoT hostname. Providers listed in |excluded_providers| are not
+// eligible for upgrade.
+NET_EXPORT_PRIVATE std::vector<DnsConfig::DnsOverHttpsServerConfig>
+GetDohUpgradeServersFromDotHostname(
+    const std::string& dot_server,
+    const std::vector<std::string>& excluded_providers);
+
+// Uses the hardcoded upgrade mapping to discover DoH service(s) associated
+// with a list of insecure DNS servers. Server ordering is preserved across
+// the mapping. Providers listed in |excluded_providers| are not
+// eligible for upgrade.
+NET_EXPORT_PRIVATE std::vector<DnsConfig::DnsOverHttpsServerConfig>
+GetDohUpgradeServersFromNameservers(
+    const std::vector<IPEndPoint>& dns_servers,
+    const std::vector<std::string>& excluded_providers);
 
 }  // namespace net
 

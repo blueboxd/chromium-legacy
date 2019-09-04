@@ -21,6 +21,7 @@
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -291,7 +292,8 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
   dns_config_change_manager_ = std::make_unique<DnsConfigChangeManager>();
 
   host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
-      net::HostResolver::ManagerOptions(), net_log_);
+      net::HostResolver::ManagerOptions(),
+      net::NetworkChangeNotifier::GetSystemDnsConfigNotifier(), net_log_);
   host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
@@ -441,12 +443,6 @@ void NetworkService::ConfigureStubHostResolver(
   host_resolver_manager_->SetInsecureDnsClientEnabled(
       insecure_dns_client_enabled);
 
-  // Configure DNS over HTTPS.
-  if (!dns_over_https_servers || dns_over_https_servers.value().empty()) {
-    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
-    return;
-  }
-
   for (auto* network_context : network_contexts_) {
     if (!network_context->IsPrimaryNetworkContext())
       continue;
@@ -455,13 +451,21 @@ void NetworkService::ConfigureStubHostResolver(
         network_context->url_request_context());
   }
 
+  // Configure DNS over HTTPS.
   net::DnsConfigOverrides overrides;
-  overrides.dns_over_https_servers.emplace();
-  for (const auto& doh_server : *dns_over_https_servers) {
-    overrides.dns_over_https_servers.value().emplace_back(
-        doh_server->server_template, doh_server->use_post);
+  if (dns_over_https_servers && !dns_over_https_servers.value().empty()) {
+    overrides.dns_over_https_servers.emplace();
+    for (const auto& doh_server : *dns_over_https_servers) {
+      overrides.dns_over_https_servers.value().emplace_back(
+          doh_server->server_template, doh_server->use_post);
+    }
   }
   overrides.secure_dns_mode = secure_dns_mode;
+  overrides.allow_dns_over_https_upgrade =
+      base::FeatureList::IsEnabled(features::kDnsOverHttpsUpgrade);
+  overrides.disabled_upgrade_providers =
+      SplitString(features::kDnsOverHttpsUpgradeDisabledProvidersParam.Get(),
+                  ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 
@@ -711,16 +715,6 @@ void NetworkService::OnBindInterface(
 }
 
 void NetworkService::DestroyNetworkContexts() {
-  // If DNS over HTTPS is enabled, the HostResolver is currently using
-  // NetworkContexts to do DNS lookups, so need to tell the HostResolver
-  // to stop using DNS over HTTPS before destroying any NetworkContexts.
-  // The SetDnsConfigOverrides() call will will fail any in-progress DNS
-  // lookups, but only if there are current config overrides (which there will
-  // be if DNS over HTTPS is currently enabled).
-  if (host_resolver_manager_) {
-    host_resolver_manager_->SetDnsConfigOverrides(net::DnsConfigOverrides());
-  }
-
   // Delete NetworkContexts. If there's a primary NetworkContext, it must be
   // deleted after all other NetworkContexts, to avoid use-after-frees.
   for (auto it = owned_network_contexts_.begin();

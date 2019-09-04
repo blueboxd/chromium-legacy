@@ -4,36 +4,57 @@
 
 package org.chromium.weblayer;
 
-import org.chromium.weblayer_private.ProfileImpl;
+import android.content.Context;
+import android.os.RemoteException;
+import android.util.AndroidRuntimeException;
+import android.util.Log;
 
-import java.io.File;
+import org.chromium.weblayer_private.aidl.IProfile;
+import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
  * Profile holds state (typically on disk) needed for browsing. Create a
  * Profile via WebLayer.
  */
 public final class Profile {
-    ProfileImpl mProfile;
+    private static final String TAG = "WL_Profile";
 
-    Profile(File path) {
-        mProfile = new ProfileImpl(path.getPath());
-    }
+    private IProfile mImpl;
 
-    ProfileImpl getProfileImpl() {
-        return mProfile;
+    Profile(IProfile impl) {
+        mImpl = impl;
     }
 
     @Override
     protected void finalize() {
-        // TODO(sky): figure out right assertion here if mProfile is non-null.
+        // TODO(sky): figure out right assertion here if mImpl is non-null.
     }
 
     public void destroy() {
-        mProfile.destroy();
-        mProfile = null;
+        try {
+            mImpl.destroy();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call destroy.", e);
+            throw new AndroidRuntimeException(e);
+        }
     }
 
     public void clearBrowsingData() {
-        mProfile.clearBrowsingData();
+        try {
+            mImpl.clearBrowsingData();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call clearBrowsingData.", e);
+            throw new AndroidRuntimeException(e);
+        }
+    }
+
+    public BrowserController createBrowserController(Context context) {
+        try {
+            return new BrowserController(
+                    mImpl.createBrowserController(ObjectWrapper.wrap(context)));
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call createBrowserController.", e);
+            throw new AndroidRuntimeException(e);
+        }
     }
 }

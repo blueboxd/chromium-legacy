@@ -657,7 +657,7 @@ public class DetachedResourceRequestTest {
         }
 
         public void waitForRequest() throws InterruptedException, TimeoutException {
-            mRequestedWaiter.waitForCallback();
+            mRequestedWaiter.waitForFirst();
         }
 
         public void waitForRequest(int currentCallCount, int numberOfCallsToWaitFor)
@@ -666,7 +666,7 @@ public class DetachedResourceRequestTest {
         }
 
         public void waitForCompletion() throws InterruptedException, TimeoutException {
-            mCompletionWaiter.waitForCallback();
+            mCompletionWaiter.waitForFirst();
         }
 
         public void waitForCompletion(int currentCallCount, int numberOfCallsToWaitFor)

@@ -722,6 +722,10 @@
       'chromeos-kevin-experimental-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
+      # Replicate linux-chromeos-rel for code coverage experiment.
+      # TODO(crbug.com/1000367): Remove once linux-chromeos-coverage-rel is
+      # folded into linux-chromeos-rel.
+      'linux-chromeos-coverage-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
@@ -1264,6 +1268,11 @@
 
     'chromeos_with_codecs_release_trybot': [
       'chromeos_with_codecs', 'release_trybot', 'use_vaapi', 'no_symbols',
+    ],
+
+    'chromeos_with_codecs_release_trybot_code_coverage': [
+      'chromeos_with_codecs', 'release_trybot', 'use_vaapi', 'no_symbols',
+      'use_clang_coverage', 'partial_clang_instrumentation',
     ],
 
     'clang_code_coverage': [

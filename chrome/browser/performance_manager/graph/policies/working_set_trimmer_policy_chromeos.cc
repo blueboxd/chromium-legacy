@@ -50,16 +50,22 @@ void WorkingSetTrimmerPolicyChromeOS::OnMemoryPressure(
 
 void WorkingSetTrimmerPolicyChromeOS::TrimNodesOnGraph() {
   const base::TimeTicks now_ticks = base::TimeTicks::Now();
-  for (const PageNode* node : graph_->GetAllPageNodes()) {
-    if (!node->IsVisible() &&
-        node->GetTimeSinceLastVisibilityChange() >
+  for (const PageNode* page_node : graph_->GetAllPageNodes()) {
+    if (!page_node->IsVisible() &&
+        page_node->GetTimeSinceLastVisibilityChange() >
             trim_on_memory_pressure_params_.node_invisible_time) {
       // Get the process node and if it has not been
       // trimmed within the backoff period, we will do that
       // now.
-      const ProcessNode* process_node =
-          node->GetMainFrameNode()->GetProcessNode();
-      if (process_node->GetProcess().IsValid()) {
+
+      // Check that we have a main frame.
+      const FrameNode* frame_node = page_node->GetMainFrameNode();
+      if (!frame_node) {
+        continue;
+      }
+
+      const ProcessNode* process_node = frame_node->GetProcessNode();
+      if (process_node && process_node->GetProcess().IsValid()) {
         base::TimeTicks last_trim = GetLastTrimTime(process_node);
         if (now_ticks - last_trim >
             trim_on_memory_pressure_params_.node_trim_backoff_time) {

@@ -106,6 +106,11 @@ class ExtendedAttribute(object):
             self.syntactic_form))
 
     @property
+    def has_values(self):
+        return self._format in (self._FORM_NO_ARGS, self._FORM_IDENT,
+                                self._FORM_IDENT_LIST)
+
+    @property
     def values(self):
         """
         Returns a list of values for format Ident and IdentList.  Returns an
@@ -119,6 +124,10 @@ class ExtendedAttribute(object):
             return self._values
         raise ValueError('[{}] does not have a value.'.format(
             self.syntactic_form))
+
+    @property
+    def has_arguments(self):
+        return self._format in (self._FORM_ARG_LIST, self._FORM_NAMED_ARG_LIST)
 
     @property
     def arguments(self):

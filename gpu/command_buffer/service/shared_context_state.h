@@ -45,7 +45,8 @@ struct ContextState;
 class GPU_GLES2_EXPORT SharedContextState
     : public base::trace_event::MemoryDumpProvider,
       public gpu::GLContextVirtualDelegate,
-      public base::RefCounted<SharedContextState> {
+      public base::RefCounted<SharedContextState>,
+      public GrContextOptions::ShaderErrorHandler {
  public:
   // TODO: Refactor code to have seperate constructor for GL and Vulkan and not
   // initialize/use GL related info for vulkan and vice-versa.
@@ -93,6 +94,8 @@ class GPU_GLES2_EXPORT SharedContextState
   }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   GrContext* gr_context() { return gr_context_; }
+  // Handles Skia-reported shader compilation errors.
+  void compileError(const char* shader, const char* errors) override;
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }
   gles2::ContextState* context_state() const { return context_state_.get(); }
   bool context_lost() const { return context_lost_; }

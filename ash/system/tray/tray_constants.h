@@ -74,7 +74,6 @@ constexpr int kTraySeparatorWidth = 0;
 
 // The size of the icons appearing in the material design system tray.
 constexpr int kTrayIconSize = 16;
-extern const int kTrayIconBackgroundAlpha;
 
 // The padding around network tray icon in dip.
 constexpr int kTrayNetworkIconPadding = 2;

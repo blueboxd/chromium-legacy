@@ -22,9 +22,7 @@ namespace safe_browsing {
 namespace {
 
 const char kBinaryFCMServiceAppId[] = "safe_browsing_fcm_service";
-// TODO(drubery): Once the server side has finalized their sender id, fill this
-// in.
-const char kBinaryFCMServiceSenderId[] = "SenderID";
+const char kBinaryFCMServiceSenderId[] = "465959725923";
 const char kBinaryFCMServiceMessageKey[] = "proto";
 
 }  // namespace

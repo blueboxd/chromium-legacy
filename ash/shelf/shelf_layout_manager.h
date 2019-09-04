@@ -402,6 +402,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void SendA11yAlertForFullscreenWorkspaceState(
       WorkspaceWindowState current_workspace_window_state);
 
+  // Invoked after |suspend_visibility_update_| resets.
+  void OnVisibilityUpdateResumed(bool animate);
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_ = false;

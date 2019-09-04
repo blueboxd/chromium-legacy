@@ -9,6 +9,13 @@
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/public/overlay_request.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
+#include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
@@ -74,6 +81,16 @@ class PopupMenuMediatorTest : public ChromeWebTest {
     OCMExpect([popup_menu_strict_ setPopupMenuItems:[OCMArg any]]);
     OCMExpect([popup_menu_strict_ setDelegate:[OCMArg any]]);
     SetUpWebStateList();
+
+    // Set up the TestBrowser.
+    TestChromeBrowserState::Builder browser_state_builder;
+    browser_state_ = browser_state_builder.Build();
+    browser_ = std::make_unique<TestBrowser>(browser_state_.get(),
+                                             web_state_list_.get());
+    // Set up the OverlayPresenter.
+    OverlayPresenter::FromBrowser(browser_.get(),
+                                  OverlayModality::kWebContentArea)
+        ->SetPresentationContext(&presentation_context_);
   }
 
   // Explicitly disconnect the mediator so there won't be any WebStateList
@@ -170,13 +187,16 @@ class PopupMenuMediatorTest : public ChromeWebTest {
     return NO;
   }
 
+  FakeOverlayPresentationContext presentation_context_;
+  std::unique_ptr<WebStateList> web_state_list_;
+  FakeWebStateListDelegate web_state_list_delegate_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<Browser> browser_;
   PopupMenuMediator* mediator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
   std::unique_ptr<web::NavigationItem> navigation_item_;
-  std::unique_ptr<WebStateList> web_state_list_;
-  FakeWebStateListDelegate web_state_list_delegate_;
   id popup_menu_;
   // Mock refusing all calls except -setPopupMenuItems:.
   id popup_menu_strict_;
@@ -185,7 +205,8 @@ class PopupMenuMediatorTest : public ChromeWebTest {
 // Tests that the feature engagement tracker get notified when the mediator is
 // disconnected and the tracker wants the notification badge displayed.
 TEST_F(PopupMenuMediatorTest, TestFeatureEngagementDisconnect) {
-  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
   feature_engagement::test::MockTracker tracker;
   EXPECT_CALL(tracker, ShouldTriggerHelpUI(testing::_))
       .WillRepeatedly(testing::Return(true));
@@ -200,7 +221,8 @@ TEST_F(PopupMenuMediatorTest, TestFeatureEngagementDisconnect) {
 // Tests that the mediator is returning the right number of items and sections
 // for the Tools Menu type.
 TEST_F(PopupMenuMediatorTest, TestToolsMenuItemsCount) {
-  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
   NSUInteger number_of_action_items = 7;
   if (ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()
@@ -221,7 +243,8 @@ TEST_F(PopupMenuMediatorTest, TestToolsMenuItemsCount) {
 // Tests that the mediator is returning the right number of items and sections
 // for the Tab Grid type, in non-incognito.
 TEST_F(PopupMenuMediatorTest, TestTabGridMenuNonIncognito) {
-  CreateMediator(PopupMenuTypeTabGrid, NO, NO);
+  CreateMediator(PopupMenuTypeTabGrid, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
   CheckMediatorSetItems(@[
     // New Tab, New Incognito Tab
     @(2),
@@ -233,7 +256,8 @@ TEST_F(PopupMenuMediatorTest, TestTabGridMenuNonIncognito) {
 // Tests that the mediator is returning the right number of items and sections
 // for the Tab Grid type, in incognito.
 TEST_F(PopupMenuMediatorTest, TestTabGridMenuIncognito) {
-  CreateMediator(PopupMenuTypeTabGrid, YES, NO);
+  CreateMediator(PopupMenuTypeTabGrid, /*is_incognito=*/YES,
+                 /*trigger_incognito_hint=*/NO);
   CheckMediatorSetItems(@[
     // New Tab, New Incognito Tab
     @(2),
@@ -244,7 +268,8 @@ TEST_F(PopupMenuMediatorTest, TestTabGridMenuIncognito) {
 
 // Tests that the mediator is asking for an item to be highlighted when asked.
 TEST_F(PopupMenuMediatorTest, TestNewIncognitoHint) {
-  CreateMediator(PopupMenuTypeToolsMenu, NO, YES);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/YES);
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
   OCMExpect([popup_menu_ setItemToHighlight:[OCMArg isNotNil]]);
@@ -254,7 +279,8 @@ TEST_F(PopupMenuMediatorTest, TestNewIncognitoHint) {
 
 // Test that the mediator isn't asking for an highlighted item.
 TEST_F(PopupMenuMediatorTest, TestNewIncognitoNoHint) {
-  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
   [[popup_menu_ reject] setItemToHighlight:[OCMArg any]];
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
@@ -263,7 +289,8 @@ TEST_F(PopupMenuMediatorTest, TestNewIncognitoNoHint) {
 
 // Tests that the mediator is asking for an item to be highlighted when asked.
 TEST_F(PopupMenuMediatorTest, TestNewIncognitoHintTabGrid) {
-  CreateMediator(PopupMenuTypeTabGrid, NO, YES);
+  CreateMediator(PopupMenuTypeTabGrid, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/YES);
   OCMExpect([popup_menu_ setItemToHighlight:[OCMArg isNotNil]]);
   mediator_.webStateList = web_state_list_.get();
   SetUpActiveWebState();
@@ -274,7 +301,8 @@ TEST_F(PopupMenuMediatorTest, TestNewIncognitoHintTabGrid) {
 // Tests that the items returned by the mediator are correctly enabled on a
 // WebPage.
 TEST_F(PopupMenuMediatorTest, TestItemsStatusOnWebPage) {
-  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
   mediator_.webStateList = web_state_list_.get();
   FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
   mediator_.popupMenu = consumer;
@@ -290,7 +318,8 @@ TEST_F(PopupMenuMediatorTest, TestItemsStatusOnWebPage) {
 // Tests that the items returned by the mediator are correctly enabled on the
 // NTP.
 TEST_F(PopupMenuMediatorTest, TestItemsStatusOnNTP) {
-  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
   mediator_.webStateList = web_state_list_.get();
   FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
   mediator_.popupMenu = consumer;
@@ -302,4 +331,35 @@ TEST_F(PopupMenuMediatorTest, TestItemsStatusOnNTP) {
 
   EXPECT_TRUE(HasItem(consumer, kToolsMenuNewTabId, /*enabled=*/YES));
   EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/YES));
+}
+
+// Tests that the "Read Later" button is disabled while overlay UI is displayed
+// in OverlayModality::kWebContentArea.
+TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
+  const GURL kUrl("https://chromium.test");
+  web_state_->SetCurrentURL(kUrl);
+  CreateMediator(PopupMenuTypeToolsMenu, /*is_incognito=*/NO,
+                 /*trigger_incognito_hint=*/NO);
+  mediator_.webStateList = web_state_list_.get();
+  mediator_.webContentAreaOverlayPresenter = OverlayPresenter::FromBrowser(
+      browser_.get(), OverlayModality::kWebContentArea);
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  SetUpActiveWebState();
+  ASSERT_TRUE(HasItem(consumer, kToolsMenuReadLater, /*enabled=*/YES));
+
+  // Present a JavaScript alert over the WebState and verify that the page is no
+  // longer shareable.
+  JavaScriptDialogSource source(web_state_, kUrl, /*is_main_frame=*/true);
+  const std::string kMessage("message");
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      web_state_, OverlayModality::kWebContentArea);
+  queue->AddRequest(
+      OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
+          source, kMessage));
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuReadLater, /*enabled=*/NO));
+
+  // Cancel the request and verify that the "Read Later" button is enabled.
+  queue->CancelAllRequests();
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuReadLater, /*enabled=*/YES));
 }

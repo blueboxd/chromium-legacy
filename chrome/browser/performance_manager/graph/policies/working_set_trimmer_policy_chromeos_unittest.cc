@@ -173,6 +173,27 @@ TEST_F(WorkingSetTrimmerPolicyChromeOSTest, DontTrimIfNotInvisibleLongEnough) {
   EXPECT_NE(current_walk_time, initial_walk_time);
 }
 
+// This test will validate that we skip a page node that doesn't have a main
+// frame node.
+TEST_F(WorkingSetTrimmerPolicyChromeOSTest, DontTrimIfNoMainFrame) {
+  // Create a lone page node.
+  auto page_node = CreateNode<PageNodeImpl>();
+
+  // Make sure the node is not visible for 1 day.
+  page_node->SetIsVisible(true);   // Reset visibility and set invisible Now.
+  page_node->SetIsVisible(false);  // Uses the testing clock.
+  FastForwardBy(base::TimeDelta::FromDays(1));
+
+  // We should not be called because we don't have a frame node or process node.
+  EXPECT_CALL(*policy(), TrimWorkingSet(testing::_)).Times(0);
+
+  // Triger memory pressure and we should observe the walk.
+  policy()->listener().SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+
+  FastForwardBy(base::TimeDelta::FromDays(1));
+}
+
 // This test will validate that we WILL trim the working set if it has been
 // invisible long enough.
 TEST_F(WorkingSetTrimmerPolicyChromeOSTest, TrimIfInvisibleLongEnough) {

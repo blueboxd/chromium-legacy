@@ -5,6 +5,7 @@
 from .code_generator_info import CodeGeneratorInfo
 from .code_generator_info import CodeGeneratorInfoMutable
 from .exposure import Exposure
+from .exposure import ExposureMutable
 from .extended_attribute import ExtendedAttributes
 
 
@@ -52,11 +53,15 @@ class WithCodeGeneratorInfo(object):
 
 
 class WithExposure(object):
-    """Implements |exposures| as a readonly attribute."""
+    """Implements |exposure| as a readonly attribute."""
 
-    def __init__(self, exposures=None):
-        # TODO(peria): Design Exposure and this class.
-        pass
+    def __init__(self, exposure=None):
+        assert exposure is None or isinstance(exposure, Exposure)
+        self._exposure = exposure or ExposureMutable()
+
+    @property
+    def exposure(self):
+        return self._exposure
 
 
 class Component(str):
@@ -64,8 +69,6 @@ class Component(str):
     Represents a component that is a Blink-specific layering concept, such as
     'core' and 'modules'.
     """
-
-    pass
 
 
 class WithComponent(object):

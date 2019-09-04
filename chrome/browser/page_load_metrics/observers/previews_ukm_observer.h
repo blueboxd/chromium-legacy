@@ -17,7 +17,7 @@
 namespace content {
 class NavigationHandle;
 class WebContents;
-}
+}  // namespace content
 
 namespace previews {
 
@@ -84,7 +84,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       defer_all_script_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
       offline_eligibility_reason_;
-  CoinFlipHoldbackResult coin_flip_result_ = CoinFlipHoldbackResult::kNotSet;
   base::Optional<base::TimeDelta> navigation_restart_penalty_;
   base::Optional<std::string> serialized_hint_version_string_;
 

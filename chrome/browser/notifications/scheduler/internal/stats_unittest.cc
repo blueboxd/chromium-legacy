@@ -34,7 +34,8 @@ void TestLogUserAction(const UserActionData& user_action_data,
 
 void TestNotificationShow(const NotificationData& notification_data,
                           SchedulerClientType client_type,
-                          bool expect_ihnr_histogram) {
+                          bool expect_ihnr_histogram,
+                          bool expect_life_cycle_histogram) {
   base::HistogramTester histograms;
   LogNotificationShow(notification_data, client_type);
   if (expect_ihnr_histogram) {
@@ -45,6 +46,20 @@ void TestNotificationShow(const NotificationData& notification_data,
   } else {
     histograms.ExpectTotalCount(kIhnrActionButtonEventHistogram, 0);
     histograms.ExpectTotalCount(kIhnrActionButtonEventTestHistogram, 0);
+  }
+
+  if (expect_life_cycle_histogram) {
+    histograms.ExpectBucketCount(
+        "Notifications.Scheduler.NotificationLifeCycleEvent",
+        NotificationLifeCycleEvent::kShown, 1);
+    histograms.ExpectBucketCount(
+        "Notifications.Scheduler.NotificationLifeCycleEvent.__Test__",
+        NotificationLifeCycleEvent::kShown, 1);
+  } else {
+    histograms.ExpectTotalCount(
+        "Notifications.Scheduler.NotificationLifeCycleEvent", 0);
+    histograms.ExpectTotalCount(
+        "Notifications.Scheduler.NotificationLifeCycleEvent.__Test__", 0);
   }
 }
 
@@ -64,9 +79,11 @@ TEST(NotificationSchedulerStatsTest, LogUserActionIhnrButton) {
 TEST(NotificationSchedulerStatsTest, LogNotificationShow) {
   NotificationData notification_data;
   notification_data.buttons.emplace_back(NotificationData::Button());
+
   // Notification without ihnr buttons.
   TestNotificationShow(notification_data, SchedulerClientType::kTest1,
-                       false /*expect_ihnr_histogram*/);
+                       false /*expect_ihnr_histogram*/,
+                       true /*expect_life_cycle_histogram*/);
 
   std::vector<ActionButtonType> types{ActionButtonType::kHelpful,
                                       ActionButtonType::kUnhelpful};
@@ -74,7 +91,8 @@ TEST(NotificationSchedulerStatsTest, LogNotificationShow) {
     notification_data.buttons.front().type = action_button_type;
     // Notification with ihnr buttons.
     TestNotificationShow(notification_data, SchedulerClientType::kTest1,
-                         true /*expect_ihnr_histogram*/);
+                         true /*expect_ihnr_histogram*/,
+                         true /*expect_life_cycle_histogram*/);
   }
 }
 

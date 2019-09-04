@@ -8,11 +8,6 @@
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/no_destructor.h"
-#include "base/strings/string_split.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -20,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -116,35 +112,34 @@ bool IsPinEnabled(PrefService* pref_service) {
   return base::FeatureList::IsEnabled(features::kQuickUnlockPin);
 }
 
-// Returns fingerprint location depending on the board name.
-// TODO(crbug.com/938738): Replace this disallowed board name reference
-// with a flag that's determined based on settings from chromeos-config.
+// Returns fingerprint location depending on the commandline switch.
 // TODO(rsorokin): Add browser tests for different assets.
 FingerprintLocation GetFingerprintLocation() {
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  const std::string board_name = board[0];
-  if (board_name == "nocturne")
+  const FingerprintLocation default_location =
+      FingerprintLocation::TABLET_POWER_BUTTON;
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (!cl->HasSwitch(switches::kFingerprintSensorLocation))
+    return default_location;
+
+  const std::string location_info =
+      cl->GetSwitchValueASCII(switches::kFingerprintSensorLocation);
+  if (location_info == "power-button-top-left")
     return FingerprintLocation::TABLET_POWER_BUTTON;
-  if (board_name == "nami")
+  if (location_info == "keyboard-bottom-right")
     return FingerprintLocation::KEYBOARD_BOTTOM_RIGHT;
-  if (board_name == "hatch")
+  if (location_info == "keyboard-top-right")
     return FingerprintLocation::KEYBOARD_TOP_RIGHT;
-  return FingerprintLocation::TABLET_POWER_BUTTON;
+  NOTREACHED() << "Not handled value: " << location_info;
+  return default_location;
 }
 
 bool IsFingerprintEnabled(Profile* profile) {
   if (enable_for_testing_)
     return true;
 
-  // Disable fingerprint if the device does not have a fingerprint reader
-  // TODO(yulunwu): http://crbug.com/922270
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  static const base::NoDestructor<base::FilePath> kFingerprintSensorPath(
-      base::FilePath("/dev/cros_fp"));
-  if (!base::PathExists(*kFingerprintSensorPath))
+  // Disable fingerprint if the device does not have a fingerprint reader.
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (!cl->HasSwitch(switches::kFingerprintSensorLocation))
     return false;
 
   // Disable fingerprint if the profile does not belong to the primary user.
@@ -161,10 +156,6 @@ bool IsFingerprintEnabled(Profile* profile) {
 
 void EnabledForTesting(bool state) {
   enable_for_testing_ = state;
-}
-
-bool IsEnabledForTesting() {
-  return enable_for_testing_;
 }
 
 void DisablePinByPolicyForTesting(bool disable) {

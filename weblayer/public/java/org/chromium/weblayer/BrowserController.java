@@ -4,25 +4,36 @@
 
 package org.chromium.weblayer;
 
-import android.app.Activity;
 import android.net.Uri;
+import android.os.RemoteException;
+import android.util.AndroidRuntimeException;
+import android.util.Log;
 import android.view.View;
 
-import org.chromium.weblayer_private.BrowserControllerClient;
-import org.chromium.weblayer_private.BrowserControllerImpl;
+import org.chromium.weblayer_private.aidl.IBrowserController;
+import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class BrowserController {
-    private final BrowserControllerImpl mBrowserController;
+    private static final String TAG = "WL_BrowserController";
+
+    private final IBrowserController mImpl;
     private final NavigationController mNavigationController;
     // TODO(sky): copy ObserverList from base and use it instead.
     private final CopyOnWriteArrayList<BrowserObserver> mObservers;
 
-    public BrowserController(Activity activity, Profile profile) {
-        mBrowserController = new BrowserControllerImpl(
-                activity, profile.getProfileImpl(), new BrowserClientImpl());
-        mNavigationController = new NavigationController(mBrowserController);
+    public BrowserController(IBrowserController impl) {
+        mImpl = impl;
+        try {
+            mImpl.setClient(new BrowserClientImpl());
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call setClient.", e);
+            throw new AndroidRuntimeException(e);
+        }
+
+        mNavigationController = new NavigationController(this);
         mObservers = new CopyOnWriteArrayList<BrowserObserver>();
     }
 
@@ -36,7 +47,12 @@ public final class BrowserController {
     }
 
     public void setTopView(View view) {
-        mBrowserController.setTopView(view);
+        try {
+            mImpl.setTopView(ObjectWrapper.wrap(view));
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call setTopView.", e);
+            throw new AndroidRuntimeException(e);
+        }
     }
 
     public void addObserver(BrowserObserver observer) {
@@ -47,7 +63,34 @@ public final class BrowserController {
         mObservers.remove(observer);
     }
 
-    private final class BrowserClientImpl implements BrowserControllerClient {
+    public void destroy() {
+        try {
+            mImpl.destroy();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call destroy.", e);
+            throw new AndroidRuntimeException(e);
+        }
+    }
+
+    public View onCreateView() {
+        try {
+            return ObjectWrapper.unwrap(mImpl.onCreateView(), View.class);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call onCreateView.", e);
+            throw new AndroidRuntimeException(e);
+        }
+    }
+
+    void navigate(Uri uri) {
+        try {
+            mImpl.navigate(uri.toString());
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call navigate.", e);
+            throw new AndroidRuntimeException(e);
+        }
+    }
+
+    private final class BrowserClientImpl extends IBrowserControllerClient.Stub {
         @Override
         public void displayURLChanged(String url) {
             Uri uri = Uri.parse(url);

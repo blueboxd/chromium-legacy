@@ -49,6 +49,7 @@ namespace {
 // the size of the report. UMA suggests 99.9% will have < 200 domains.
 const int kMaxReusedDomains = 200;
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 // The maximum time to wait for DOM features to be collected, in milliseconds.
 const int kDomFeatureTimeoutMs = 3000;
 
@@ -65,6 +66,7 @@ std::unique_ptr<VisualFeatures> ExtractVisualFeatures(
   visual_utils::GetBlurredImage(screenshot, features->mutable_image());
   return features;
 }
+#endif
 
 }  // namespace
 
@@ -202,6 +204,8 @@ void PasswordProtectionRequest::FillRequestProto() {
   request_proto_->set_clicked_through_interstitial(
       clicked_through_interstitial);
   request_proto_->set_content_type(web_contents_->GetContentsMimeType());
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (password_protection_service_->IsExtendedReporting() &&
       !password_protection_service_->IsIncognito()) {
     gfx::Size content_area_size =
@@ -209,6 +213,7 @@ void PasswordProtectionRequest::FillRequestProto() {
     request_proto_->set_content_area_height(content_area_size.height());
     request_proto_->set_content_area_width(content_area_size.width());
   }
+#endif
 
   switch (trigger_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
@@ -265,6 +270,7 @@ void PasswordProtectionRequest::FillRequestProto() {
       NOTREACHED();
   }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Get the page DOM features.
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
   password_protection_service_->GetPhishingDetector(rfh->GetRemoteInterfaces(),
@@ -280,8 +286,12 @@ void PasswordProtectionRequest::FillRequestProto() {
                      GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDomFeatureTimeoutMs));
   dom_feature_start_time_ = base::TimeTicks::Now();
+#else
+  SendRequest();
+#endif
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (dom_features_collection_complete_)
@@ -380,6 +390,7 @@ void PasswordProtectionRequest::OnVisualFeatureCollectionDone(
 
   SendRequest();
 }
+#endif
 
 void PasswordProtectionRequest::SendRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -502,12 +513,14 @@ void PasswordProtectionRequest::Finish(
     if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
       LogPasswordOnFocusRequestOutcome(outcome);
     } else {
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
       LogPasswordEntryRequestOutcome(outcome, password_account_type);
 
       if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
             web_contents_, outcome, password_type_, response.get());
       }
+#endif
     }
 
     if (outcome == RequestOutcome::SUCCEEDED && response) {

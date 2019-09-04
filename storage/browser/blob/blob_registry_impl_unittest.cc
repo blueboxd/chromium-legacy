@@ -20,6 +20,8 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -227,9 +229,9 @@ TEST_F(BlobRegistryImplTest, GetBlobFromEmptyUUID) {
 }
 
 TEST_F(BlobRegistryImplTest, Register_EmptyUUID) {
-  blink::mojom::BlobPtr blob;
+  mojo::Remote<blink::mojom::Blob> blob;
   EXPECT_FALSE(
-      registry_->Register(MakeRequest(&blob), "", "", "",
+      registry_->Register(blob.BindNewPipeAndPassReceiver(), "", "", "",
                           std::vector<blink::mojom::DataElementPtr>()));
 
   EXPECT_EQ(1u, bad_messages_.size());
@@ -238,7 +240,7 @@ TEST_F(BlobRegistryImplTest, Register_EmptyUUID) {
   EXPECT_FALSE(registry_.is_connected());
 
   blob.FlushForTesting();
-  EXPECT_TRUE(blob.encountered_error());
+  EXPECT_FALSE(blob.is_connected());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
@@ -247,9 +249,9 @@ TEST_F(BlobRegistryImplTest, Register_ExistingUUID) {
   std::unique_ptr<BlobDataHandle> handle =
       CreateBlobFromString(kId, "hello world");
 
-  blink::mojom::BlobPtr blob;
+  mojo::Remote<blink::mojom::Blob> blob;
   EXPECT_FALSE(
-      registry_->Register(MakeRequest(&blob), kId, "", "",
+      registry_->Register(blob.BindNewPipeAndPassReceiver(), kId, "", "",
                           std::vector<blink::mojom::DataElementPtr>()));
 
   EXPECT_EQ(1u, bad_messages_.size());
@@ -258,7 +260,7 @@ TEST_F(BlobRegistryImplTest, Register_ExistingUUID) {
   EXPECT_FALSE(registry_.is_connected());
 
   blob.FlushForTesting();
-  EXPECT_TRUE(blob.encountered_error());
+  EXPECT_FALSE(blob.is_connected());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
@@ -267,9 +269,9 @@ TEST_F(BlobRegistryImplTest, Register_EmptyBlob) {
   const std::string kContentType = "content/type";
   const std::string kContentDisposition = "disposition";
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, kContentType,
-                                  kContentDisposition,
+  mojo::Remote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.BindNewPipeAndPassReceiver(), kId,
+                                  kContentType, kContentDisposition,
                                   std::vector<blink::mojom::DataElementPtr>()));
 
   EXPECT_TRUE(bad_messages_.empty());
@@ -298,9 +300,9 @@ TEST_F(BlobRegistryImplTest, Register_ReferencedBlobClosedPipe) {
       blink::mojom::DataElement::NewBlob(blink::mojom::DataElementBlob::New(
           std::move(referenced_blob_info), 0, 16)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -314,14 +316,15 @@ TEST_F(BlobRegistryImplTest, Register_ReferencedBlobClosedPipe) {
 TEST_F(BlobRegistryImplTest, Register_SelfReference) {
   const std::string kId = "id";
 
-  blink::mojom::BlobPtrInfo blob_info;
-  blink::mojom::BlobRequest blob_request = MakeRequest(&blob_info);
+  mojo::PendingRemote<blink::mojom::Blob> blob_remote;
+  mojo::PendingReceiver<blink::mojom::Blob> receiver =
+      blob_remote.InitWithNewPipeAndPassReceiver();
 
   std::vector<blink::mojom::DataElementPtr> elements;
   elements.push_back(blink::mojom::DataElement::NewBlob(
-      blink::mojom::DataElementBlob::New(std::move(blob_info), 0, 16)));
+      blink::mojom::DataElementBlob::New(std::move(blob_remote), 0, 16)));
 
-  EXPECT_TRUE(registry_->Register(std::move(blob_request), kId, "", "",
+  EXPECT_TRUE(registry_->Register(std::move(receiver), kId, "", "",
                                   std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
@@ -344,28 +347,32 @@ TEST_F(BlobRegistryImplTest, Register_CircularReference) {
   const std::string kId2 = "id2";
   const std::string kId3 = "id3";
 
-  blink::mojom::BlobPtrInfo blob1_info, blob2_info, blob3_info;
-  blink::mojom::BlobRequest blob_request1 = MakeRequest(&blob1_info);
-  blink::mojom::BlobRequest blob_request2 = MakeRequest(&blob2_info);
-  blink::mojom::BlobRequest blob_request3 = MakeRequest(&blob3_info);
+  mojo::PendingRemote<blink::mojom::Blob> blob1_remote, blob2_remote,
+      blob3_remote;
+  mojo::PendingReceiver<blink::mojom::Blob> blob_receiver1 =
+      blob1_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<blink::mojom::Blob> blob_receiver2 =
+      blob2_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingReceiver<blink::mojom::Blob> blob_receiver3 =
+      blob3_remote.InitWithNewPipeAndPassReceiver();
 
   std::vector<blink::mojom::DataElementPtr> elements1;
   elements1.push_back(blink::mojom::DataElement::NewBlob(
-      blink::mojom::DataElementBlob::New(std::move(blob1_info), 0, 16)));
+      blink::mojom::DataElementBlob::New(std::move(blob1_remote), 0, 16)));
 
   std::vector<blink::mojom::DataElementPtr> elements2;
   elements2.push_back(blink::mojom::DataElement::NewBlob(
-      blink::mojom::DataElementBlob::New(std::move(blob2_info), 0, 16)));
+      blink::mojom::DataElementBlob::New(std::move(blob2_remote), 0, 16)));
 
   std::vector<blink::mojom::DataElementPtr> elements3;
   elements3.push_back(blink::mojom::DataElement::NewBlob(
-      blink::mojom::DataElementBlob::New(std::move(blob3_info), 0, 16)));
+      blink::mojom::DataElementBlob::New(std::move(blob3_remote), 0, 16)));
 
-  EXPECT_TRUE(registry_->Register(std::move(blob_request1), kId1, "", "",
+  EXPECT_TRUE(registry_->Register(std::move(blob_receiver1), kId1, "", "",
                                   std::move(elements2)));
-  EXPECT_TRUE(registry_->Register(std::move(blob_request2), kId2, "", "",
+  EXPECT_TRUE(registry_->Register(std::move(blob_receiver2), kId2, "", "",
                                   std::move(elements3)));
-  EXPECT_TRUE(registry_->Register(std::move(blob_request3), kId3, "", "",
+  EXPECT_TRUE(registry_->Register(std::move(blob_receiver3), kId3, "", "",
                                   std::move(elements1)));
   EXPECT_TRUE(bad_messages_.empty());
 
@@ -415,9 +422,9 @@ TEST_F(BlobRegistryImplTest, Register_NonExistentBlob) {
       blink::mojom::DataElement::NewBlob(blink::mojom::DataElementBlob::New(
           std::move(referenced_blob_info), 0, 16)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -443,8 +450,9 @@ TEST_F(BlobRegistryImplTest, Register_ValidBlobReferences) {
                           MakeRequest(&blob1_info));
 
   const std::string kId2 = "id2";
-  blink::mojom::BlobPtrInfo blob2_info;
-  blink::mojom::BlobRequest blob_request2 = MakeRequest(&blob2_info);
+  mojo::PendingRemote<blink::mojom::Blob> blob2_remote;
+  mojo::PendingReceiver<blink::mojom::Blob> blob_receiver2 =
+      blob2_remote.InitWithNewPipeAndPassReceiver();
 
   std::vector<blink::mojom::DataElementPtr> elements1;
   elements1.push_back(blink::mojom::DataElement::NewBlob(
@@ -452,13 +460,13 @@ TEST_F(BlobRegistryImplTest, Register_ValidBlobReferences) {
 
   std::vector<blink::mojom::DataElementPtr> elements2;
   elements2.push_back(blink::mojom::DataElement::NewBlob(
-      blink::mojom::DataElementBlob::New(std::move(blob2_info), 0, 8)));
+      blink::mojom::DataElementBlob::New(std::move(blob2_remote), 0, 8)));
 
-  blink::mojom::BlobPtr final_blob;
+  mojo::PendingRemote<blink::mojom::Blob> final_blob;
   const std::string kId3 = "id3";
-  EXPECT_TRUE(registry_->Register(MakeRequest(&final_blob), kId3, "", "",
-                                  std::move(elements2)));
-  EXPECT_TRUE(registry_->Register(std::move(blob_request2), kId2, "", "",
+  EXPECT_TRUE(registry_->Register(final_blob.InitWithNewPipeAndPassReceiver(),
+                                  kId3, "", "", std::move(elements2)));
+  EXPECT_TRUE(registry_->Register(std::move(blob_receiver2), kId2, "", "",
                                   std::move(elements1)));
 
   // kId3 references kId2, kId2 reference kId1, kId1 is a simple string.
@@ -491,9 +499,9 @@ TEST_F(BlobRegistryImplTest, Register_UnreadableFile) {
       blink::mojom::DataElement::NewFile(blink::mojom::DataElementFile::New(
           base::FilePath(FILE_PATH_LITERAL("foobar")), 0, 16, base::nullopt)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -515,9 +523,9 @@ TEST_F(BlobRegistryImplTest, Register_ValidFile) {
   elements.push_back(blink::mojom::DataElement::NewFile(
       blink::mojom::DataElementFile::New(path, 0, 16, base::nullopt)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -541,9 +549,9 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_InvalidScheme) {
       blink::mojom::DataElementFilesystemURL::New(GURL("http://foobar.com/"), 0,
                                                   16, base::nullopt)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -565,9 +573,9 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_UnreadablFile) {
   elements.push_back(blink::mojom::DataElement::NewFileFilesystem(
       blink::mojom::DataElementFilesystemURL::New(url, 0, 16, base::nullopt)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -589,9 +597,9 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_Valid) {
   elements.push_back(blink::mojom::DataElement::NewFileFilesystem(
       blink::mojom::DataElementFilesystemURL::New(url, 0, 16, base::nullopt)));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -615,9 +623,9 @@ TEST_F(BlobRegistryImplTest, Register_BytesInvalidEmbeddedData) {
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           10, std::vector<uint8_t>(5), CreateBytesProvider(""))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_FALSE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                   std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_FALSE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                   "", "", std::move(elements)));
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
@@ -649,9 +657,9 @@ TEST_F(BlobRegistryImplTest, Register_BytesInvalidDataSize) {
           std::numeric_limits<uint64_t>::max() - 4, base::nullopt,
           CreateBytesProvider(""))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_FALSE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                   std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_FALSE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                   "", "", std::move(elements)));
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
@@ -684,9 +692,9 @@ TEST_F(BlobRegistryImplTest, Register_BytesOutOfMemory) {
           kTestBlobStorageMaxDiskSpace, base::nullopt,
           CreateBytesProvider(""))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());
@@ -710,9 +718,9 @@ TEST_F(BlobRegistryImplTest, Register_ValidEmbeddedBytes) {
           kData.size(), std::vector<uint8_t>(kData.begin(), kData.end()),
           CreateBytesProvider(kData))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());
@@ -740,9 +748,9 @@ TEST_F(BlobRegistryImplTest, Register_ValidBytesAsReply) {
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           kData.size(), base::nullopt, CreateBytesProvider(kData))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());
@@ -771,9 +779,9 @@ TEST_F(BlobRegistryImplTest, Register_ValidBytesAsStream) {
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           kData.size(), base::nullopt, CreateBytesProvider(kData))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());
@@ -807,9 +815,9 @@ TEST_F(BlobRegistryImplTest, Register_ValidBytesAsFile) {
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           kData.size(), base::nullopt, CreateBytesProvider(kData))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());
@@ -853,9 +861,9 @@ TEST_F(BlobRegistryImplTest, Register_BytesProviderClosedPipe) {
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           32, base::nullopt, std::move(bytes_provider_remote))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
@@ -878,9 +886,9 @@ TEST_F(BlobRegistryImplTest,
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           32, base::nullopt, std::move(bytes_provider_remote))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   EXPECT_TRUE(context_->registry().HasEntry(kId));
@@ -918,9 +926,9 @@ TEST_F(BlobRegistryImplTest,
       blink::mojom::DataElement::NewBlob(blink::mojom::DataElementBlob::New(
           std::move(referenced_blob_info), 0, kData.size())));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
 
   EXPECT_TRUE(bad_messages_.empty());
 
@@ -956,9 +964,9 @@ TEST_F(BlobRegistryImplTest,
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           kData.size(), base::nullopt, std::move(bytes_provider_remote))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   EXPECT_TRUE(context_->registry().HasEntry(kId));
@@ -992,9 +1000,9 @@ TEST_F(BlobRegistryImplTest,
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
           kData.size(), base::nullopt, std::move(bytes_provider_remote))));
 
-  blink::mojom::BlobPtr blob;
-  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
-                                  std::move(elements)));
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  EXPECT_TRUE(registry_->Register(blob.InitWithNewPipeAndPassReceiver(), kId,
+                                  "", "", std::move(elements)));
   EXPECT_TRUE(bad_messages_.empty());
 
   EXPECT_TRUE(context_->registry().HasEntry(kId));
@@ -1044,8 +1052,8 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
   EXPECT_EQ(kContentType, blob->content_type);
   EXPECT_EQ(kData.length(), blob->size);
   ASSERT_TRUE(blob->blob);
-  blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-  EXPECT_EQ(blob->uuid, UUIDFromBlob(blob_ptr.get()));
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
+  EXPECT_EQ(blob->uuid, UUIDFromBlob(blob_remote.get()));
 
   EXPECT_EQ(kData.length(), progress_client.total_size);
   EXPECT_GE(progress_client.call_count, 1);

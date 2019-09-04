@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TEST_DOCUMENT_INTERFACE_BROKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TEST_DOCUMENT_INTERFACE_BROKER_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-test-utils.h"
 
 namespace blink {
@@ -19,14 +19,14 @@ class TestDocumentInterfaceBroker
  public:
   TestDocumentInterfaceBroker(
       mojom::blink::DocumentInterfaceBroker* document_interface_broker,
-      mojom::blink::DocumentInterfaceBrokerRequest request);
+      mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker> receiver);
   ~TestDocumentInterfaceBroker() override;
   mojom::blink::DocumentInterfaceBroker* GetForwardingInterface() override;
   void Flush();
 
  private:
   mojom::blink::DocumentInterfaceBroker* real_broker_;
-  mojo::Binding<mojom::blink::DocumentInterfaceBroker> binding_;
+  mojo::Receiver<mojom::blink::DocumentInterfaceBroker> receiver_;
 };
 }  // namespace blink
 

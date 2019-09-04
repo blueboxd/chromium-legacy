@@ -53,8 +53,21 @@ ClickToCallUiController::~ClickToCallUiController() = default;
 
 void ClickToCallUiController::OnDeviceSelected(
     const std::string& phone_number,
-    const syncer::DeviceInfo& device) {
+    const syncer::DeviceInfo& device,
+    SharingClickToCallEntryPoint entry_point) {
+  // TODO(knollr): figure out how to get a value for |has_apps|.
+  LogClickToCallUKM(web_contents(), entry_point,
+                    /*has_devices=*/true, /*has_apps=*/false,
+                    SharingClickToCallSelection::kDevice);
+
   SendNumberToDevice(device, phone_number);
+}
+
+void ClickToCallUiController::OnDialogClosed(SharingDialog* dialog) {
+  if (ukm_recorder_ && this->dialog() == dialog)
+    std::move(ukm_recorder_).Run(SharingClickToCallSelection::kNone);
+
+  SharingUiController::OnDialogClosed(dialog);
 }
 
 base::string16 ClickToCallUiController::GetTitle() {
@@ -88,6 +101,9 @@ void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
 }
 
 void ClickToCallUiController::OnDeviceChosen(const syncer::DeviceInfo& device) {
+  if (ukm_recorder_)
+    std::move(ukm_recorder_).Run(SharingClickToCallSelection::kDevice);
+
   SendNumberToDevice(device, GetUnescapedURLContent(phone_url_));
 }
 
@@ -102,6 +118,9 @@ void ClickToCallUiController::SendNumberToDevice(
 }
 
 void ClickToCallUiController::OnAppChosen(const App& app) {
+  if (ukm_recorder_)
+    std::move(ukm_recorder_).Run(SharingClickToCallSelection::kApp);
+
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(phone_url_,
                                                          web_contents());
 }
@@ -112,6 +131,12 @@ void ClickToCallUiController::OnHelpTextClicked() {
 }
 
 SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
+  if (!HasSendFailed()) {
+    // Only left clicks open a dialog.
+    ukm_recorder_ = base::BindOnce(&LogClickToCallUKM, web_contents(),
+                                   SharingClickToCallEntryPoint::kLeftClickLink,
+                                   !devices().empty(), !apps().empty());
+  }
   return window->ShowClickToCallDialog(web_contents(), this);
 }
 

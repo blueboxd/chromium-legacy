@@ -63,6 +63,7 @@ source_set("eg_tests") {
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/main",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/location_bar",

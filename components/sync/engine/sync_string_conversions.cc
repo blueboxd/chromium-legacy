@@ -40,6 +40,7 @@ const char* PassphraseTypeToString(PassphraseType type) {
     ENUM_CASE(PassphraseType::KEYSTORE_PASSPHRASE);
     ENUM_CASE(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
     ENUM_CASE(PassphraseType::CUSTOM_PASSPHRASE);
+    ENUM_CASE(PassphraseType::TRUSTED_VAULT_PASSPHRASE);
     case PassphraseType::PASSPHRASE_TYPE_SIZE:
       break;
   }

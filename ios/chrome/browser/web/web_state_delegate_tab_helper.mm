@@ -19,7 +19,9 @@
 WEB_STATE_USER_DATA_KEY_IMPL(WebStateDelegateTabHelper)
 
 WebStateDelegateTabHelper::WebStateDelegateTabHelper(web::WebState* web_state)
-    : weak_factory_(this) {}
+    : weak_factory_(this) {
+  web_state->AddObserver(this);
+}
 
 WebStateDelegateTabHelper::~WebStateDelegateTabHelper() = default;
 
@@ -47,6 +49,13 @@ void WebStateDelegateTabHelper::OnAuthRequired(
                      weak_factory_.GetWeakPtr(), callback));
   OverlayRequestQueue::FromWebState(source, OverlayModality::kWebContentArea)
       ->AddRequest(std::move(request));
+}
+
+#pragma mark - WebStateObserver
+
+void WebStateDelegateTabHelper::WebStateDestroyed(web::WebState* web_state) {
+  java_script_dialog_presenter_.Close();
+  web_state->RemoveObserver(this);
 }
 
 #pragma mark - Overlay Callbacks

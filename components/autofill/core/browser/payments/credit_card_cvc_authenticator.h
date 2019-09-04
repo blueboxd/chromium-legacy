@@ -20,14 +20,38 @@ class CreditCardCVCAuthenticator
     : public payments::FullCardRequest::ResultDelegate,
       public payments::FullCardRequest::UIDelegate {
  public:
+  struct CVCAuthenticationResponse {
+    CVCAuthenticationResponse();
+    ~CVCAuthenticationResponse();
+
+    CVCAuthenticationResponse& with_did_succeed(bool b) {
+      did_succeed = b;
+      return *this;
+    }
+    // Data pointed to by |c| must outlive this object.
+    CVCAuthenticationResponse& with_card(const CreditCard* c) {
+      card = c;
+      return *this;
+    }
+    CVCAuthenticationResponse& with_cvc(const base::string16 s) {
+      cvc = base::string16(s);
+      return *this;
+    }
+    CVCAuthenticationResponse& with_creation_options(
+        base::Optional<base::Value> v) {
+      creation_options = std::move(v);
+      return *this;
+    }
+    bool did_succeed = false;
+    const CreditCard* card = nullptr;
+    base::string16 cvc = base::string16();
+    base::Optional<base::Value> creation_options = base::nullopt;
+  };
   class Requester {
    public:
     virtual ~Requester() {}
     virtual void OnCVCAuthenticationComplete(
-        bool did_succeed,
-        const CreditCard* card = nullptr,
-        const base::string16& cvc = base::string16(),
-        base::Value creation_options = base::Value()) = 0;
+        const CVCAuthenticationResponse& response) = 0;
   };
   explicit CreditCardCVCAuthenticator(AutofillClient* client);
   ~CreditCardCVCAuthenticator() override;

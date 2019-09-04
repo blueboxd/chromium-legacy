@@ -993,7 +993,8 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
     if (IsUsernameOrPasswordField(element)) {
       WebLocalFrame* frame = render_frame()->GetWebFrame();
       GURL frame_url = GURL(frame->GetDocument().Url());
-#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
+// Enabled on desktop and Android
+#if BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
       if (!checked_safe_browsing_reputation_) {
         checked_safe_browsing_reputation_ = true;
         GURL action_url =

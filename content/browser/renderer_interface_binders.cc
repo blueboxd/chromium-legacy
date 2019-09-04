@@ -89,14 +89,6 @@ class RendererInterfaceBinders {
  private:
   void InitializeParameterizedBinderRegistry();
 
-  // TODO(https://crbug.com/955171): Remove this method and use
-  // CreateWebSocketConnector directly once |this| uses
-  // service_manager::BinderMap instead of |parameterized_binder_registry_|.
-  static void CreateWebSocketConnectorForRequest(
-      blink::mojom::WebSocketConnectorRequest request,
-      RenderProcessHost* host,
-      const url::Origin& origin);
-
   static void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
       RenderProcessHost* host,
@@ -186,7 +178,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   // TODO(nhiroki): Consider moving this into SharedWorkerHost and
   // ServiceWorkerProviderHost.
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(CreateWebSocketConnectorForRequest));
+      base::BindRepeating(CreateWebSocketConnector));
 
   parameterized_binder_registry_.AddInterface(
       base::Bind([](payments::mojom::PaymentManagerRequest request,
@@ -216,12 +208,13 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       }));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(
-        [](blink::mojom::NativeFileSystemManagerRequest request,
+        [](mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
+               receiver,
            RenderProcessHost* host, const url::Origin& origin) {
           // This code path is only for workers, hence always pass in
           // MSG_ROUTING_NONE as frame ID. Frames themselves go through
           // RenderFrameHostImpl instead.
-          NativeFileSystemManagerImpl::BindRequestFromUIThread(
+          NativeFileSystemManagerImpl::BindReceiverFromUIThread(
               static_cast<StoragePartitionImpl*>(host->GetStoragePartition()),
               NativeFileSystemManagerImpl::BindingContext(
                   origin,
@@ -230,7 +223,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
                   // will be used for SafeBrowsing checks and for the Quarantine
                   // Service.
                   origin.GetURL(), host->GetID(), MSG_ROUTING_NONE),
-              std::move(request));
+              std::move(receiver));
         }));
   }
   parameterized_binder_registry_.AddInterface(base::Bind(
@@ -277,15 +270,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
 RendererInterfaceBinders& GetRendererInterfaceBinders() {
   static base::NoDestructor<RendererInterfaceBinders> binders;
   return *binders;
-}
-
-void RendererInterfaceBinders::CreateWebSocketConnectorForRequest(
-    blink::mojom::WebSocketConnectorRequest request,
-    RenderProcessHost* host,
-    const url::Origin& origin) {
-  // Implicit conversion from WebSocketConnectorRequest to
-  // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
-  CreateWebSocketConnector(std::move(request), host, origin);
 }
 
 void RendererInterfaceBinders::CreateWebSocketConnector(

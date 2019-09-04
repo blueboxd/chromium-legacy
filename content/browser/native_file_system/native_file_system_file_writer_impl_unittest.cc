@@ -95,7 +95,7 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, std::move(fs)),
         /*has_transient_user_activation=*/false);
-    handle_->set_skip_quarantine_service_for_testing();
+    handle_->SetSkipQuarantineCheckForTesting();
   }
 
   void TearDown() override {
@@ -103,13 +103,15 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     EXPECT_TRUE(dir_.Delete());
   }
 
-  blink::mojom::BlobPtr CreateBlob(const std::string& contents) {
+  mojo::PendingRemote<blink::mojom::Blob> CreateBlob(
+      const std::string& contents) {
     auto builder =
         std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID());
     builder->AppendData(contents);
     auto handle = blob_context_->AddFinishedBlob(std::move(builder));
-    blink::mojom::BlobPtr result;
-    storage::BlobImpl::Create(std::move(handle), MakeRequest(&result));
+    mojo::PendingRemote<blink::mojom::Blob> result;
+    storage::BlobImpl::Create(std::move(handle),
+                              result.InitWithNewPipeAndPassReceiver());
     return result;
   }
 
@@ -159,9 +161,10 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     }
   }
 
-  NativeFileSystemStatus WriteBlobSync(uint64_t position,
-                                       blink::mojom::BlobPtr blob,
-                                       uint64_t* bytes_written_out) {
+  NativeFileSystemStatus WriteBlobSync(
+      uint64_t position,
+      mojo::PendingRemote<blink::mojom::Blob> blob,
+      uint64_t* bytes_written_out) {
     base::RunLoop loop;
     NativeFileSystemStatus result_out;
     handle_->Write(position, std::move(blob),
@@ -262,8 +265,8 @@ INSTANTIATE_TEST_SUITE_P(NativeFileSystemFileWriterImplTest,
                          ::testing::Bool());
 
 TEST_F(NativeFileSystemFileWriterImplTest, WriteInvalidBlob) {
-  blink::mojom::BlobPtr blob;
-  MakeRequest(&blob);
+  mojo::PendingRemote<blink::mojom::Blob> blob;
+  ignore_result(blob.InitWithNewPipeAndPassReceiver());
 
   uint64_t bytes_written;
   NativeFileSystemStatus result =

@@ -502,6 +502,45 @@ int ServiceWorkerContextCore::GetNextEmbeddedWorkerId() {
   return next_embedded_worker_id_++;
 }
 
+scoped_refptr<blink::URLLoaderFactoryBundle>
+ServiceWorkerContextCore::GetLoaderFactoryBundleForUpdateCheck() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+
+  // Update the default factory in the bundle with a newly cloned network
+  // factory before update check because the old default factory may be invalid
+  // due to crash of network service.
+  // TODO(crbug.com/995763): This should call WillCreateURLLoaderFactory().
+
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    StoragePartitionImpl* storage_partition = wrapper()->storage_partition();
+    if (storage_partition) {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
+      scoped_refptr<network::SharedURLLoaderFactory> network_factory =
+          storage_partition->GetURLLoaderFactoryForBrowserProcess();
+      network_factory->Clone(remote.InitWithNewPipeAndPassReceiver());
+
+      auto pending_factory_bundle =
+          std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+      pending_factory_bundle->pending_default_factory() = std::move(remote);
+      loader_factory_bundle_for_update_check_->Update(
+          std::move(pending_factory_bundle));
+    }
+  } else {
+    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+    loader_factory_getter_->CloneNetworkFactory(
+        mojo::MakeRequest(&network_factory_ptr));
+    auto pending_factory_bundle =
+        std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+    pending_factory_bundle->pending_default_factory() =
+        network_factory_ptr.PassInterface();
+    loader_factory_bundle_for_update_check_->Update(
+        std::move(pending_factory_bundle));
+  }
+
+  return loader_factory_bundle_for_update_check_;
+}
+
 void ServiceWorkerContextCore::RegistrationComplete(
     const GURL& scope,
     ServiceWorkerContextCore::RegistrationCallback callback,

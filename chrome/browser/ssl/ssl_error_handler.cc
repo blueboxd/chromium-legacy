@@ -572,6 +572,8 @@ int IsCertErrorFatal(int cert_error) {
     case net::ERR_CERT_COMMON_NAME_INVALID:
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_NO_REVOCATION_MECHANISM:
+    case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
@@ -1051,8 +1053,7 @@ bool SSLErrorHandler::IsOnlyCertError(
 
   return cert_error_ ==
              net::MapCertStatusToNetError(only_cert_error_expected) &&
-         (!net::IsCertStatusError(other_errors) ||
-          net::IsCertStatusMinorError(ssl_info_.cert_status));
+         !net::IsCertStatusError(other_errors);
 }
 
 // static

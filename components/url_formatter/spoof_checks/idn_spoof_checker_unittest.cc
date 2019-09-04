@@ -564,9 +564,7 @@ const IDNTestCase kIdnCases[] = {
     {"xn--s5a8h3a.com", L"\x04cf\x050d\x0503.com", false},
 
     // 1շ34567890.com
-    {"xn--134567890-gnk.com",
-     L"1շ34567890.com",
-     false},
+    {"xn--134567890-gnk.com", L"1շ34567890.com", false},
     // ꓲ2345б7890.com
     {"xn--23457890-e7g93622b.com",
      L"\xa4f2"
@@ -625,9 +623,7 @@ const IDNTestCase kIdnCases[] = {
      L"4567890.com",
      false},
     // 123ㄐ567890.com
-    {"xn--123567890-dr5h.com",
-     L"123ㄐ567890.com",
-     false},
+    {"xn--123567890-dr5h.com", L"123ㄐ567890.com", false},
     // 123Ꮞ567890.com
     {"xn--123567890-dm4b.com",
      L"123\x13ce"
@@ -639,9 +635,7 @@ const IDNTestCase kIdnCases[] = {
      L"7890.com",
      false},
     // 12345ճ7890.com
-    {"xn--123457890-fmk.com",
-     L"12345ճ7890.com",
-     false},
+    {"xn--123457890-fmk.com", L"12345ճ7890.com", false},
     // 1234567ȣ90.com
     {"xn--123456790-6od.com",
      L"1234567\x0223"
@@ -1086,6 +1080,10 @@ const IDNTestCase kIdnCases[] = {
     {"xn--3-cq6a.com", L"丩3.com", false},
     {"xn--cxe-n68d.com", L"c丫xe.com", false},
     {"xn--cye-b98d.com", L"cy乂e.com", false},
+
+    // U+05D7 can look like Latin n in many fonts.
+    {"xn--ceba.com", L"חח.com", false},
+
 };  // namespace
 
 namespace test {

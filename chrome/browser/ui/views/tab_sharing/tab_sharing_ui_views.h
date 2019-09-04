@@ -30,7 +30,8 @@ class Profile;
 
 class TabSharingUIViews : public TabSharingUI,
                           public BrowserListObserver,
-                          public TabStripModelObserver {
+                          public TabStripModelObserver,
+                          public infobars::InfoBarManager::Observer {
  public:
   TabSharingUIViews(const content::DesktopMediaID& media_id,
                     base::string16 app_name);
@@ -61,6 +62,12 @@ class TabSharingUIViews : public TabSharingUI,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
+
+  // InfoBarManager::Observer:
+  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
 
  private:
   void CreateInfobarsForAllTabs();

@@ -70,9 +70,9 @@ Refer to README.md for content description and update process.
  <item id="desktop_ios_promotion" hash_code="13694792" type="0" deprecated="2018-11-04" content_hash_code="19776951" file_path=""/>
  <item id="device_geolocation_request" hash_code="77673751" type="0" deprecated="2017-10-20" content_hash_code="97181773" file_path=""/>
  <item id="device_management_service" hash_code="117782019" type="0" content_hash_code="104419970" os_list="linux,windows" file_path="components/policy/core/common/cloud/device_management_service.cc"/>
- <item id="devtools_free_data_source" hash_code="22774132" type="0" content_hash_code="35733000" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
+ <item id="devtools_free_data_source" hash_code="22774132" type="0" content_hash_code="35733000" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui_data_source.cc"/>
  <item id="devtools_handle_front_end_messages" hash_code="135636011" type="0" content_hash_code="76808593" os_list="linux,windows" file_path="content/shell/browser/shell_devtools_bindings.cc"/>
- <item id="devtools_hard_coded_data_source" hash_code="111565057" type="0" content_hash_code="75183720" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
+ <item id="devtools_hard_coded_data_source" hash_code="111565057" type="0" content_hash_code="75183720" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui_data_source.cc"/>
  <item id="devtools_http_handler" hash_code="49160454" type="0" content_hash_code="88414393" os_list="linux,windows" file_path="content/browser/devtools/devtools_http_handler.cc"/>
  <item id="devtools_interceptor" hash_code="98123737" type="0" deprecated="2019-07-31" content_hash_code="64591843" file_path=""/>
  <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="32810159" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>

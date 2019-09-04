@@ -49,8 +49,7 @@ struct WebRequestInfoInitParams {
       int32_t routing_id,
       const network::ResourceRequest& request,
       bool is_download,
-      bool is_async,
-      bool is_service_worker_script);
+      bool is_async);
 
   ~WebRequestInfoInitParams();
 
@@ -73,7 +72,6 @@ struct WebRequestInfoInitParams {
   int web_view_rules_registry_id = -1;
   int web_view_embedder_process_id = -1;
   ExtensionApiFrameIdMap::FrameData frame_data;
-  bool is_service_worker_script = false;
 
  private:
   void InitializeWebViewAndFrameData(
@@ -170,8 +168,6 @@ struct WebRequestInfo {
   // since this is lazily computed. Cached to avoid redundant computations.
   mutable base::Optional<declarative_net_request::RulesetManager::Action>
       dnr_action;
-
-  const bool is_service_worker_script;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);

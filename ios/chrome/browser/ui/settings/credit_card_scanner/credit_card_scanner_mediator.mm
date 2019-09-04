@@ -8,16 +8,29 @@
 #import <Vision/Vision.h>
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using base::UserMetricsAction;
+
 @interface CreditCardScannerMediator ()
 
 // An image analysis request that finds and recognizes text in an image.
 @property(nonatomic, strong) VNRecognizeTextRequest* textRecognitionRequest;
+
+// Delegate notified when a card has been scanned.
+@property(nonatomic, weak) id<CreditCardScannerMediatorDelegate>
+    creditCardScannerMediatorDelegate;
+
+// This property is for an interface which notfies the credit card consumer.
+@property(nonatomic, weak) id<CreditCardConsumer> creditCardConsumer;
 
 // The card number set after |textRecognitionRequest| from recognised text on
 // the card.
@@ -35,6 +48,19 @@
 
 @implementation CreditCardScannerMediator
 
+#pragma mark - Lifecycle
+
+- (instancetype)initWithDelegate:(id<CreditCardScannerMediatorDelegate>)
+                                     creditCardScannerMediatorDelegate
+              creditCardConsumer:(id<CreditCardConsumer>)creditCardConsumer {
+  self = [super init];
+  if (self) {
+    _creditCardScannerMediatorDelegate = creditCardScannerMediatorDelegate;
+    _creditCardConsumer = creditCardConsumer;
+  }
+  return self;
+}
+
 #pragma mark - CreditCardScannerImageDelegate
 
 - (void)processOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
@@ -45,6 +71,9 @@
     auto completionHandler = ^(VNRequest* request, NSError* error) {
       if (request.results.count != 0) {
         [weakSelf searchInRecognizedText:request.results];
+        if (self.cardNumber) {
+          [self dismissScannerOnCardScanned];
+        }
       }
     };
 
@@ -80,6 +109,13 @@
 
 #pragma mark - Helper Methods
 
+// Dismisses the scanner when credit card number is found.
+- (void)dismissScannerOnCardScanned {
+  base::RecordAction(UserMetricsAction("MobileCreditCardScannerScannedCard"));
+  [self.creditCardScannerMediatorDelegate
+      creditCardScannerMediatorDidFinishScan:self];
+}
+
 // Searches in |recognizedText| for credit card number and expiration date.
 - (void)searchInRecognizedText:
     (NSArray<VNRecognizedTextObservation*>*)recognizedText {
@@ -92,6 +128,14 @@
       continue;
     }
     [self extractDataFromText:candidate.string];
+  }
+
+  if (self.cardNumber) {
+    [self.creditCardConsumer setCreditCardNumber:self.cardNumber
+                                 expirationMonth:self.expirationMonth
+                                  expirationYear:self.expirationYear];
+    [self.creditCardScannerMediatorDelegate
+        creditCardScannerMediatorDidFinishScan:self];
   }
 }
 
@@ -108,7 +152,6 @@
   }
 }
 
-
 // Extracts credit card number from |string|.
 - (NSString*)extractCreditCardNumber:(NSString*)string {
   NSString* text = [[NSString alloc] initWithString:string];
@@ -118,9 +161,9 @@
     text = [text stringByReplacingOccurrencesOfString:symbol withString:@""];
   }
 
-  // Matches strings which have 13-19 numbers between the start(^) and the
+  // Matches strings which have 13-19 characters between the start(^) and the
   // end($) of the line.
-  NSString* pattern = @"^([0-9]{13,19})$";
+  NSString* pattern = @"^(\\w{13,19})$";
 
   NSError* error;
   NSRegularExpression* regex = [[NSRegularExpression alloc]
@@ -135,8 +178,49 @@
   if (!match) {
     return nil;
   }
-  NSString* creditCardNumber = [text substringWithRange:match.range];
-  return creditCardNumber;
+
+  NSString* stringMatchingPattern = [text substringWithRange:match.range];
+
+  NSString* creditCardNumber =
+      [self substituteSimilarCharactersInRecognizedText:stringMatchingPattern];
+  NSCharacterSet* allowedCharacterSet =
+      [NSCharacterSet decimalDigitCharacterSet];
+  NSCharacterSet* creditCardNumberSet =
+      [NSCharacterSet characterSetWithCharactersInString:creditCardNumber];
+  if ([allowedCharacterSet isSupersetOfSet:creditCardNumberSet]) {
+    return creditCardNumber;
+  }
+  return nil;
+}
+
+// Substitutes commonly misrecognized characters, for example: 'S' -> '5' or
+// 'l' -> '1'
+- (NSString*)substituteSimilarCharactersInRecognizedText:
+    (NSString*)recognizedText {
+  NSDictionary* misrecognisedAlphabets = @{
+    @"B" : @"8",
+    @"C" : @"0",
+    @"D" : @"0",
+    @"G" : @"9",
+    @"I" : @"1",
+    @"L" : @"1",
+    @"O" : @"0",
+    @"Q" : @"0",
+    @"S" : @"5",
+    @"T" : @"7",
+    @"U" : @"0",
+    @"Z" : @"7"
+  };
+
+  NSString* substitutedText =
+      [[NSString alloc] initWithString:recognizedText].uppercaseString;
+  for (NSString* alphabet in misrecognisedAlphabets) {
+    NSString* digit = misrecognisedAlphabets[alphabet];
+    substitutedText =
+        [substitutedText stringByReplacingOccurrencesOfString:alphabet
+                                                   withString:digit];
+  }
+  return substitutedText;
 }
 
 @end

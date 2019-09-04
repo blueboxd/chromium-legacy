@@ -34,7 +34,7 @@ namespace {
 const char kTestFileName[] = "jebgalgnebhfojomionfpkfelancnnkf.crx";
 
 const char hash_jebg[] =
-    "6fc4b93fd11134de1300c2c0bb88c12b644a4ec0fd7c9b12cb7cc067667bde87";
+    "7ab32f071cd9b5ef8e0d7913be161f532d98b3e9fa284a7cd8059c3409ce0498";
 
 base::FilePath MakeTestFilePath(const char* file) {
   base::FilePath path;
@@ -341,8 +341,8 @@ TEST_F(CrxDownloaderTest, TwoUrls_FirstInvalid) {
   EXPECT_EQ(-1, download_metrics[0].total_bytes);
   EXPECT_EQ(expected_crx_url, download_metrics[1].url);
   EXPECT_EQ(0, download_metrics[1].error);
-  EXPECT_EQ(1843, download_metrics[1].downloaded_bytes);
-  EXPECT_EQ(1843, download_metrics[1].total_bytes);
+  EXPECT_EQ(1015, download_metrics[1].downloaded_bytes);
+  EXPECT_EQ(1015, download_metrics[1].total_bytes);
 }
 
 // Tests that the download succeeds if the first url is correct and the

@@ -21,11 +21,16 @@ ArcPackageSyncModelTypeController::ArcPackageSyncModelTypeController(
                                                       syncable_service,
                                                       dump_stack),
       sync_service_(sync_service),
-      profile_(profile) {
+      profile_(profile),
+      arc_prefs_(ArcAppListPrefs::Get(profile)) {
+  DCHECK(arc_prefs_);
+
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   if (arc_session_manager) {
     arc_session_manager->AddObserver(this);
   }
+
+  arc_prefs_->AddObserver(this);
 }
 
 ArcPackageSyncModelTypeController::~ArcPackageSyncModelTypeController() {
@@ -33,14 +38,23 @@ ArcPackageSyncModelTypeController::~ArcPackageSyncModelTypeController() {
   if (arc_session_manager) {
     arc_session_manager->RemoveObserver(this);
   }
+  arc_prefs_->RemoveObserver(this);
 }
 
 syncer::DataTypeController::PreconditionState
 ArcPackageSyncModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return arc::IsArcPlayStoreEnabledForProfile(profile_)
-             ? PreconditionState::kPreconditionsMet
-             : PreconditionState::kMustStopAndClearData;
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile_)) {
+    return PreconditionState::kMustStopAndClearData;
+  }
+  // Implementing a wait here in the controller, instead of the regular wait in
+  // the SyncableService, allows waiting again after this particular datatype
+  // has been disabled and reenabled (since core sync code does not support the
+  // notion of a model becoming unready, which effectively is the case here).
+  if (!arc_prefs_->package_list_initial_refreshed()) {
+    return PreconditionState::kMustStopAndKeepData;
+  }
+  return PreconditionState::kPreconditionsMet;
 }
 
 void ArcPackageSyncModelTypeController::OnArcPlayStoreEnabledChanged(
@@ -50,6 +64,11 @@ void ArcPackageSyncModelTypeController::OnArcPlayStoreEnabledChanged(
 }
 
 void ArcPackageSyncModelTypeController::OnArcInitialStart() {
+  DCHECK(CalledOnValidThread());
+  sync_service_->DataTypePreconditionChanged(type());
+}
+
+void ArcPackageSyncModelTypeController::OnPackageListInitialRefreshed() {
   DCHECK(CalledOnValidThread());
   sync_service_->DataTypePreconditionChanged(type());
 }

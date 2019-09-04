@@ -3727,8 +3727,9 @@
       'name': 'ExtensionAllowInsecureUpdates',
       'owners': ['waffles@chromium.org', 'rdevlin.cronin@chromium.org'],
       'type': 'main',
+      'deprecated': True,
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:73-', 'chrome_os:73-'],
+      'supported_on': ['chrome.*:73-77', 'chrome_os:73-77'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -17106,7 +17107,7 @@
     {
       'name': 'ExternalPrintServers',
       'owners': ['file://chromeos/printing/OWNERS'],
-      'type': 'dict',
+      'type': 'external',
       'schema': {
         'type': 'object',
         'properties': {
@@ -17122,7 +17123,6 @@
       },
       'id': 572,
       'supported_on': ['chrome_os:78-'],
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

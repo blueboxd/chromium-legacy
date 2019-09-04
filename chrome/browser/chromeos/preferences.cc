@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -227,6 +228,12 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(
       prefs::kMouseReverseScroll, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kMouseAcceleration, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kTouchpadAcceleration, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
@@ -576,6 +583,7 @@ void Preferences::RegisterProfilePrefs(
                                 false);
 
   registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
+  registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -597,6 +605,8 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   mouse_reverse_scroll_.Init(prefs::kMouseReverseScroll, prefs, callback);
+  mouse_acceleration_.Init(prefs::kMouseAcceleration, prefs, callback);
+  touchpad_acceleration_.Init(prefs::kTouchpadAcceleration, prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, callback);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, callback);
@@ -834,6 +844,25 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Changed", enabled);
     else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kMouseAcceleration) {
+    const bool enabled = mouse_acceleration_.GetValue();
+    if (user_is_active)
+      mouse_settings.SetAcceleration(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      base::UmaHistogramBoolean("Mouse.Acceleration.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      base::UmaHistogramBoolean("Mouse.Acceleration.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTouchpadAcceleration) {
+    const bool enabled = touchpad_acceleration_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetAcceleration(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      base::UmaHistogramBoolean("Touchpad.Acceleration.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      base::UmaHistogramBoolean("Touchpad.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kDownloadDefaultDirectory) {

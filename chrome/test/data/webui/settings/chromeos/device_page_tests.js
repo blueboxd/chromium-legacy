@@ -278,6 +278,11 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
           },
+          acceleration: {
+            key: 'settings.touchpad.acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
           sensitivity2: {
             key: 'settings.touchpad.sensitivity2',
             type: chrome.settingsPrivate.PrefType.NUMBER,
@@ -294,6 +299,11 @@ cr.define('device_page_tests', function() {
             key: 'settings.mouse.reverse_scroll',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
+          },
+          acceleration: {
+            key: 'settings.mouse.acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
           },
           sensitivity2: {
             key: 'settings.mouse.sensitivity2',

@@ -7,9 +7,11 @@ from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
+from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithOwner
 from .constant import Constant
+from .exposure import Exposure
 from .idl_type import IdlType
 from .ir_map import IRMap
 from .make_copy import make_copy
@@ -20,11 +22,11 @@ from .user_defined_type import UserDefinedType
 
 
 class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
-                WithComponent, WithDebugInfo):
+                WithExposure, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
     class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      is_partial,
@@ -38,9 +40,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      maplike=None,
                      setlike=None,
                      extended_attributes=None,
-                     code_generator_info=None,
                      component=None,
-                     components=None,
                      debug_info=None):
             assert isinstance(is_partial, bool)
             assert isinstance(is_mixin, bool)
@@ -79,9 +79,9 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                     kind = IRMap.IR.Kind.INTERFACE
             IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(
-                self, component=component, components=components)
+            WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
+            WithComponent.__init__(self, component=component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
@@ -96,6 +96,14 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.maplike = maplike
             self.setlike = setlike
 
+        def iter_all_members(self):
+            for attribute in self.attributes:
+                yield attribute
+            for constant in self.constants:
+                yield constant
+            for operation in self.operations:
+                yield operation
+
     def __init__(self, ir):
         assert isinstance(ir, Interface.IR)
         assert not ir.is_partial
@@ -105,6 +113,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
         WithCodeGeneratorInfo.__init__(
             self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
 

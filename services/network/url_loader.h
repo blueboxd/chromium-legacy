@@ -268,8 +268,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojo::Binding<mojom::URLLoader> binding_;
   mojo::Receiver<mojom::AuthChallengeResponder>
       auth_challenge_responder_receiver_{this};
-  mojo::Binding<mojom::ClientCertificateResponder>
-      client_cert_responder_binding_;
+  mojo::Receiver<mojom::ClientCertificateResponder>
+      client_cert_responder_receiver_{this};
   mojom::URLLoaderClientPtr url_loader_client_;
   int64_t total_written_bytes_ = 0;
 

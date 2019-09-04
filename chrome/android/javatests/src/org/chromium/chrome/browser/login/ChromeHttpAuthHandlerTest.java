@@ -149,7 +149,7 @@ public class ChromeHttpAuthHandlerTest {
 
         String url = mTestServer.getURL("/auth-basic");
         ChromeTabUtils.loadUrlOnUiThread(tab, url);
-        handlerCallback.waitForCallback();
+        handlerCallback.waitForFirst();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeHttpAuthHandler.setTestCreationCallback(null); });
         return handlerRef.get();

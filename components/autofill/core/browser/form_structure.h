@@ -39,6 +39,7 @@ class TimeTicks;
 namespace autofill {
 
 class LogBuffer;
+class LogManager;
 
 // Password attributes (whether a password has special symbols, numeric, etc.)
 enum class PasswordAttribute {
@@ -63,7 +64,7 @@ class FormStructure {
 
   // Runs several heuristics against the form fields to determine their possible
   // types.
-  void DetermineHeuristicTypes();
+  void DetermineHeuristicTypes(LogManager* log_manager = nullptr);
 
   // Encodes the proto |upload| request from this FormStructure.
   // In some cases, a |login_form_signature| is included as part of the upload.

@@ -68,6 +68,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RequestGpuSupportedRuntimeVersion(bool delayed) const;
   bool GpuProcessStartAllowed() const;
 
+  bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
 
@@ -78,6 +79,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void UpdateDx12VulkanInfo(
       const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
+  void UpdateDx12VulkanRequestStatus(bool request_continues);
 #endif
   // Update the GPU feature info. This updates the blacklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.

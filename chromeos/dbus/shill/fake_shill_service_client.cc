@@ -433,12 +433,13 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
                                                        &guid_to_set);
     }
   }
-  if (!guid_to_set.empty()) {
+  if (!guid_to_set.empty())
     properties->SetKey(shill::kGuidProperty, base::Value(guid_to_set));
+  if (type == shill::kTypeWifi) {
+    properties->SetKey(shill::kSSIDProperty, base::Value(name));
+    properties->SetKey(shill::kWifiHexSsid,
+                       base::Value(base::HexEncode(name.c_str(), name.size())));
   }
-  properties->SetKey(shill::kSSIDProperty, base::Value(name));
-  properties->SetKey(shill::kWifiHexSsid,
-                     base::Value(base::HexEncode(name.c_str(), name.size())));
   properties->SetKey(shill::kNameProperty, base::Value(name));
   std::string device_path =
       ShillDeviceClient::Get()->GetTestInterface()->GetDevicePathForType(type);

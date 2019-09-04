@@ -188,12 +188,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       bool* is_touching_scrolling_layer,
       cc::TouchAction* white_listed_touch_action);
 
-  // Scroll updates injected from within the renderer process will not have a
-  // scroll update component, since those are added to the latency info
-  // in the browser process before being dispatched to the renderer.
-  void EnsureScrollUpdateLatencyComponent(LatencyInfo* monitored_latency_info,
-                                          base::TimeTicks original_timestamp);
-
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;
 
@@ -234,7 +228,19 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
   bool has_ongoing_compositor_scroll_or_pinch_;
-  bool is_first_gesture_scroll_update_;
+
+  // Tracks whether the first scroll update gesture event has been seen after a
+  // scroll begin. This is set/reset when scroll gestures are processed in
+  // HandleInputEventWithLatencyInfo and shouldn't be used outside the scope
+  // of that method.
+  bool has_seen_first_gesture_scroll_update_after_begin_;
+
+  // Whether the last injected scroll gesture was a GestureScrollBegin. Used to
+  // determine which GestureScrollUpdate is the first in a gesture sequence for
+  // latency classification. This is separate from
+  // |is_first_gesture_scroll_update_| and is used to determine which type of
+  // latency component should be added for injected GestureScrollUpdates.
+  bool last_injected_gesture_was_begin_;
 
   const base::TickClock* tick_clock_;
 

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/shill/fake_shill_simulated_result.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
 namespace dbus {
@@ -106,6 +107,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
 
     // Returns the current Fast Transition status.
     virtual bool GetFastTransitionStatus() = 0;
+
+    // Makes ConfigureService succeed, fail, or timeout.
+    virtual void SetSimulateConfigurationResult(
+        FakeShillSimulatedResult configuration_result) = 0;
 
    protected:
     virtual ~TestInterface() {}

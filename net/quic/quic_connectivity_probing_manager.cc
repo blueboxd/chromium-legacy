@@ -210,7 +210,7 @@ void QuicConnectivityProbingManager::SendConnectivityProbingPacket(
   }
   retransmit_timer_.Start(
       FROM_HERE, timeout,
-      base::Bind(
+      base::BindOnce(
           &QuicConnectivityProbingManager::MaybeResendConnectivityProbingPacket,
           weak_factory_.GetWeakPtr()));
 }

@@ -38,4 +38,7 @@
     <!-- Scrollbar colors -->
     <color name="default_scroll_thumb">@color/white_alpha_20</color>
 
+    <!-- Explore Sites colors -->
+    <color name="explore_sites_dense_tile_background_color">@color/modern_secondary_color</color>
+
 </resources>

@@ -38,6 +38,7 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
   options.fAvoidStencilBuffers = capabilities.avoid_stencil_buffers;
   options.fAllowPathMaskCaching = false;
   options.fSharpenMipmappedTextures = true;
+  options.fShaderErrorHandler = this;
   // TODO(csmartdalton): enable internal multisampling after the related Skia
   // rolls are in.
   options.fInternalMultisampleCount = 0;
@@ -58,6 +59,14 @@ GrContextForGLES2Interface::~GrContextForGLES2Interface() {
     gr_context_->releaseResourcesAndAbandonContext();
     context_support_->SetGrContext(nullptr);
   }
+}
+
+void GrContextForGLES2Interface::compileError(const char* shader,
+                                              const char* errors) {
+  LOG(ERROR) << "Skia shader compilation error\n"
+             << "------------------------\n"
+             << shader << "\nErrors:\n"
+             << errors;
 }
 
 void GrContextForGLES2Interface::OnLostContext() {

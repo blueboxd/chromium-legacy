@@ -243,8 +243,8 @@ bool QuicChromiumPacketWriter::MaybeRetryAfterWriteError(int rv) {
 
   retry_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(UINT64_C(1) << retry_count_),
-      base::Bind(&QuicChromiumPacketWriter::RetryPacketAfterNoBuffers,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicChromiumPacketWriter::RetryPacketAfterNoBuffers,
+                     weak_factory_.GetWeakPtr()));
   retry_count_++;
   write_in_progress_ = true;
   return true;

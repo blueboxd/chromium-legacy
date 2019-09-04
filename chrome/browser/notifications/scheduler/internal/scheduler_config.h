@@ -52,9 +52,6 @@ struct SchedulerConfig {
   // The time window to launch the background task.
   base::TimeDelta background_task_window_duration;
 
-  // The minimum interval between background tasks.
-  base::TimeDelta background_task_min_interval;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerConfig);
 };

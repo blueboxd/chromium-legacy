@@ -40,6 +40,7 @@ namespace {
 const size_t kMaxDeviceNameLength = 248;
 const char kDeviceNameTooLong[] =
     "A device name can't be longer than 248 bytes.";
+const char kInactiveDocumentError[] = "Document not active";
 }  // namespace
 
 static void CanonicalizeFilter(
@@ -141,6 +142,12 @@ static void ConvertRequestDeviceOptions(
 
 ScriptPromise Bluetooth::getAvailability(ScriptState* script_state) {
   ExecutionContext* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed()) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), kInactiveDocumentError));
+  }
+
   CHECK(context->IsSecureContext());
   EnsureServiceConnection();
 
@@ -198,7 +205,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   if (!frame) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Document not active"));
+                          script_state->GetIsolate(), kInactiveDocumentError));
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
@@ -314,7 +321,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   if (!frame) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Document not active"));
+                          script_state->GetIsolate(), kInactiveDocumentError));
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
@@ -448,6 +455,8 @@ void Bluetooth::EnsureServiceConnection() {
   if (!service_) {
     // See https://bit.ly/2S0zRAS for task types.
     auto* context = GetExecutionContext();
+    DCHECK(context);
+
     auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
     context->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&service_, task_runner));

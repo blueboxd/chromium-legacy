@@ -246,8 +246,7 @@ void ComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
       crx_path, nullptr, config->GetUnzipperFactory()->Create(),
-      config->GetPatcherFactory()->Create(),
-      crx_file::VerifierFormat::CRX2_OR_CRX3);
+      config->GetPatcherFactory()->Create(), crx_file::VerifierFormat::CRX3);
   component_unpacker->Unpack(base::BindOnce(
       &ComponentInstallerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();

@@ -180,44 +180,6 @@ void FileSystemChooser::MultiFilesSelected(
   DCHECK(isolated_context);
 
   RecordFileSelectionResult(type_, files.size());
-
-  if (type_ == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
-    // Create files if they don't yet exist, and truncate files if they do
-    // exist.
-    base::PostTask(
-        FROM_HERE,
-        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
-         base::MayBlock()},
-        base::BindOnce(
-            [](const std::vector<base::FilePath>& files,
-               scoped_refptr<base::TaskRunner> callback_runner,
-               ResultCallback callback) {
-              for (const auto& path : files) {
-                int creation_flags =
-                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
-                base::File file(path, creation_flags);
-
-                if (!file.IsValid()) {
-                  callback_runner->PostTask(
-                      FROM_HERE,
-                      base::BindOnce(std::move(callback),
-                                     native_file_system_error::FromStatus(
-                                         blink::mojom::NativeFileSystemStatus::
-                                             kOperationFailed,
-                                         "Failed to create file"),
-                                     std::vector<base::FilePath>()));
-                  return;
-                }
-              }
-              callback_runner->PostTask(
-                  FROM_HERE, base::BindOnce(std::move(callback),
-                                            native_file_system_error::Ok(),
-                                            std::move(files)));
-            },
-            files, callback_runner_, std::move(callback_)));
-    delete this;
-    return;
-  }
   callback_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback_), native_file_system_error::Ok(),

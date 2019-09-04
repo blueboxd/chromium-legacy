@@ -15,11 +15,7 @@ crx_file::VerifierFormat GetWebstoreVerifierFormat(
              : crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
 }
 
-crx_file::VerifierFormat GetPolicyVerifierFormat(
-    bool insecure_updates_enabled) {
-  // TODO(crbug.com/740715): Eliminate CRX2.
-  if (insecure_updates_enabled)
-    return crx_file::VerifierFormat::CRX2_OR_CRX3;
+crx_file::VerifierFormat GetPolicyVerifierFormat() {
   return crx_file::VerifierFormat::CRX3;
 }
 

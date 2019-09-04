@@ -2395,16 +2395,23 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
   download_params->set_guid(guid_);
-  if (!HasStrongValidators() && download_params->offset() > 0 &&
+  if (!HasStrongValidators() &&
       base::FeatureList::IsEnabled(
           features::kAllowDownloadResumptionWithoutStrongValidators)) {
-    download_params->set_use_if_range(false);
-    download_params->set_file_offset(download_params->offset());
     int64_t validation_length = GetDownloadValidationLengthConfig();
-    download_params->set_offset(download_params->offset() > validation_length
-                                    ? download_params->offset() -
-                                          validation_length
-                                    : 0);
+    if (download_params->offset() > validation_length) {
+      // There is enough data for validation, set the file_offset so
+      // DownloadFileImpl will validate the data between offset to
+      // file_offset.
+      download_params->set_use_if_range(false);
+      download_params->set_file_offset(download_params->offset());
+      download_params->set_offset(download_params->offset() -
+                                  validation_length);
+    } else {
+      // There is not enough data for validation, simply overwrites the
+      // existing data from the beginning.
+      download_params->set_offset(0);
+    }
   }
 
   // TODO(xingliu): Read |fetch_error_body| and |request_headers_| from the

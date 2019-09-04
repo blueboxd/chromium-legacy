@@ -27,6 +27,7 @@ class AutofillField;
 struct FormData;
 struct FormFieldData;
 class FormStructure;
+class LogManager;
 
 // This class defines the interface should be implemented by autofill
 // implementation in browser side to interact with AutofillDriver.
@@ -141,7 +142,7 @@ class AutofillHandler {
   const FormStructureMap& form_structures() const { return form_structures_; }
 
  protected:
-  AutofillHandler(AutofillDriver* driver);
+  AutofillHandler(AutofillDriver* driver, LogManager* log_manager);
 
   virtual void OnFormSubmittedImpl(const FormData& form,
                                    bool known_success,
@@ -211,6 +212,8 @@ class AutofillHandler {
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
   AutofillDriver* const driver_;
+
+  LogManager* const log_manager_;
 
   // Our copy of the form data.
   FormStructureMap form_structures_;

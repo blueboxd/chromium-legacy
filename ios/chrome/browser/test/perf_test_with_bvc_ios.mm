@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -111,14 +112,18 @@ void PerfTestWithBVC::SetUp() {
   [otr_tab_model_ restoreSessionWindow:session.sessionWindows[0]
                      forInitialRestore:YES];
 
+  browser_ =
+      std::make_unique<TestBrowser>(chrome_browser_state_.get(), tab_model_);
+  otr_browser_ = std::make_unique<TestBrowser>(
+      incognito_chrome_browser_state_.get(), otr_tab_model_);
+
   command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.
   bvc_factory_ = [[BrowserViewControllerDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()
               webStateList:[tab_model_ webStateList]];
   bvc_ = [[BrowserViewController alloc]
-                    initWithTabModel:tab_model_
-                        browserState:chrome_browser_state_.get()
+                     initWithBrowser:browser_.get()
                    dependencyFactory:bvc_factory_
           applicationCommandEndpoint:nil
                    commandDispatcher:command_dispatcher_

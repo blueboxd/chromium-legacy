@@ -40,12 +40,13 @@ template("fuchsia_package") {
   _build_ids_file = "$_pkg_out_dir/ids.txt"
   _component_manifest = "$_pkg_out_dir/${pkg.package_name}.cmx"
   _meta_far_file = "$_pkg_out_dir/meta.far"
-  _package_far_file = "$_pkg_out_dir/${pkg.package_name}"
-  _package_far_file_with_suffix = "${_package_far_file}.far"
+  _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
+  _final_far_file = "$_pkg_out_dir/${pkg.package_name}.far"
   _package_info_path = "$_pkg_out_dir/package"
 
   _write_manifest_target = "${pkg.package_name}__write_manifest"
   _package_target = "${pkg.package_name}__pkg"
+  _bundle_target = "${pkg.package_name}__bundle"
 
   # Generates a manifest file based on the GN runtime deps
   # suitable for "pm" tool consumption.
@@ -144,7 +145,7 @@ template("fuchsia_package") {
   }
 
   # Creates a package containing the metadata archive and blob data.
-  action(target_name) {
+  action(_bundle_target) {
     forward_variables_from(invoker, [ "testonly" ])
 
     script = "//build/gn_run_binary.py"
@@ -162,15 +163,7 @@ template("fuchsia_package") {
     ]
 
     outputs = [
-      _package_far_file_with_suffix,
-    ]
-
-    data = [
-      _package_far_file_with_suffix,
-
-      # Files specified here so that they can be read by isolated testbots.
-      _package_info_path,
-      _build_ids_file,
+      _combined_far_file,
     ]
 
     args = [
@@ -180,8 +173,37 @@ template("fuchsia_package") {
       "-m",
       rebase_path(_archive_manifest, root_build_dir),
       "archive",
-      "-output",
-      rebase_path(_package_far_file, root_build_dir),
+    ]
+  }
+
+  # Copies the archive to a well-known path.
+  # TODO(kmarshall): Use a 'pm' output flag to write directly to the desired
+  # file path instead.
+  copy(target_name) {
+    forward_variables_from(invoker, [ "testonly" ])
+
+    # Allows dependent targets to make use of "ids.txt".
+    public_deps = [
+      ":$_write_manifest_target",
+    ]
+
+    deps = [
+      ":$_bundle_target",
+    ]
+
+    data = [
+      _final_far_file,
+
+      # Files specified here so that they can be read by isolated testbots.
+      _package_info_path,
+      _build_ids_file,
+    ]
+
+    sources = [
+      _combined_far_file,
+    ]
+    outputs = [
+      _final_far_file,
     ]
   }
 }

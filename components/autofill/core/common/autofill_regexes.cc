@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/i18n/unicodestring.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -62,7 +63,8 @@ icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
 namespace autofill {
 
 bool MatchesPattern(const base::string16& input,
-                    const base::string16& pattern) {
+                    const base::string16& pattern,
+                    base::string16* match) {
   static base::NoDestructor<AutofillRegexes> g_autofill_regexes;
   static base::NoDestructor<base::Lock> g_lock;
   base::AutoLock lock(*g_lock);
@@ -72,9 +74,16 @@ bool MatchesPattern(const base::string16& input,
   matcher->reset(icu_input);
 
   UErrorCode status = U_ZERO_ERROR;
-  UBool match = matcher->find(0, status);
+  UBool matched = matcher->find(0, status);
   DCHECK(U_SUCCESS(status));
-  return match == TRUE;
+
+  if (matched == TRUE && match) {
+    icu::UnicodeString match_unicode = matcher->group(0, status);
+    DCHECK(U_SUCCESS(status));
+    *match = base::i18n::UnicodeStringToString16(match_unicode);
+  }
+
+  return matched == TRUE;
 }
 
 }  // namespace autofill

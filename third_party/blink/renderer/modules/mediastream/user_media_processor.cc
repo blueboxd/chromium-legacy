@@ -1641,11 +1641,11 @@ bool UserMediaProcessor::HasActiveSources() const {
   return !local_sources_.IsEmpty();
 }
 
-const blink::mojom::blink::MediaStreamDispatcherHostPtr&
+const mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost>&
 UserMediaProcessor::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
     frame_->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&dispatcher_host_));
+        dispatcher_host_.BindNewPipeAndPassReceiver());
   }
   return dispatcher_host_;
 }

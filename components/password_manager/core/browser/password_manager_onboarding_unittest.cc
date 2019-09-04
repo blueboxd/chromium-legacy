@@ -188,32 +188,38 @@ TEST_F(PasswordManagerOnboardingTest, ShouldShowOnboardingState) {
   feature_list.InitAndEnableFeature(
       password_manager::features::kPasswordManagerOnboardingAndroid);
   EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
-                                    BlacklistedBool(false)));
+                                    BlacklistedBool(false),
+                                    SyncState::SYNCING_NORMAL_ENCRYPTION));
 
   prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
                      static_cast<int>(OnboardingState::kShouldShow));
   EXPECT_TRUE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
-                                   BlacklistedBool(false)));
+                                   BlacklistedBool(false),
+                                   SyncState::SYNCING_NORMAL_ENCRYPTION));
 
   prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
                      static_cast<int>(OnboardingState::kDoNotShow));
   EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
-                                    BlacklistedBool(false)));
+                                    BlacklistedBool(false),
+                                    SyncState::SYNCING_NORMAL_ENCRYPTION));
 
   prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
                      static_cast<int>(OnboardingState::kShown));
   EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
-                                    BlacklistedBool(false)));
+                                    BlacklistedBool(false),
+                                    SyncState::SYNCING_NORMAL_ENCRYPTION));
 }
 
 TEST_F(PasswordManagerOnboardingTest, ShouldShowOnboardingFeatureDisabled) {
+  // Feature disabled ==> don't show.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kPasswordManagerOnboardingAndroid);
   prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
                      static_cast<int>(OnboardingState::kShouldShow));
   EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
-                                    BlacklistedBool(false)));
+                                    BlacklistedBool(false),
+                                    SyncState::SYNCING_NORMAL_ENCRYPTION));
 }
 
 TEST_F(PasswordManagerOnboardingTest, ShouldShowOnboardingPasswordUpdate) {
@@ -222,7 +228,8 @@ TEST_F(PasswordManagerOnboardingTest, ShouldShowOnboardingPasswordUpdate) {
   feature_list.InitAndEnableFeature(
       password_manager::features::kPasswordManagerOnboardingAndroid);
   EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(true),
-                                    BlacklistedBool(false)));
+                                    BlacklistedBool(false),
+                                    SyncState::SYNCING_NORMAL_ENCRYPTION));
 }
 
 TEST_F(PasswordManagerOnboardingTest,
@@ -232,7 +239,19 @@ TEST_F(PasswordManagerOnboardingTest,
   feature_list.InitAndEnableFeature(
       password_manager::features::kPasswordManagerOnboardingAndroid);
   EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
-                                    BlacklistedBool(true)));
+                                    BlacklistedBool(true),
+                                    SyncState::SYNCING_NORMAL_ENCRYPTION));
+}
+
+TEST_F(PasswordManagerOnboardingTest,
+       ShouldShowOnboardingPasswordSyncDisabled) {
+  // Password sync disabled ==> don't show.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kPasswordManagerOnboardingAndroid);
+  EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), PasswordUpdateBool(false),
+                                    BlacklistedBool(false),
+                                    SyncState::NOT_SYNCING));
 }
 
 }  // namespace password_manager

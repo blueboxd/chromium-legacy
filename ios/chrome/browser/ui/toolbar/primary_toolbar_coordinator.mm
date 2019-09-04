@@ -11,6 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
@@ -221,12 +222,11 @@
 - (void)setUpLocationBar {
   self.locationBarCoordinator = [[LocationBarCoordinator alloc] init];
 
-  self.locationBarCoordinator.browserState = self.browserState;
+  self.locationBarCoordinator.browser = self.browser;
   self.locationBarCoordinator.dispatcher =
       base::mac::ObjCCastStrict<CommandDispatcher>(self.dispatcher);
   self.locationBarCoordinator.commandDispatcher = self.commandDispatcher;
   self.locationBarCoordinator.delegate = self.delegate;
-  self.locationBarCoordinator.webStateList = self.webStateList;
   self.locationBarCoordinator.popupPresenterDelegate =
       self.popupPresenterDelegate;
   [self.locationBarCoordinator start];

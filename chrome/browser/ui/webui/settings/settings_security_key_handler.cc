@@ -539,6 +539,10 @@ void SecurityKeysBioEnrollmentHandler::RegisterMessages() {
           &SecurityKeysBioEnrollmentHandler::HandleStartEnrolling,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollDelete",
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleDelete,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "securityKeyBioEnrollCancel",
       base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleCancel,
                           base::Unretained(this)));
@@ -723,6 +727,34 @@ void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
   d.SetIntKey("code", static_cast<int>(code));
   d.SetIntKey("remaining", 0);
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)), std::move(d));
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleDelete(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(2u, args->GetSize());
+  state_ = State::kDeleting;
+  callback_id_ = args->GetList()[0].GetString();
+  std::vector<uint8_t> template_id;
+  if (!base::HexStringToBytes(args->GetList()[1].GetString(), &template_id)) {
+    NOTREACHED();
+    return;
+  }
+  bio_->DeleteTemplate(
+      std::move(template_id),
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnDelete,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnDelete(
+    device::CtapDeviceResponseCode c) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(state_, State::kDeleting);
+  DCHECK(!callback_id_.empty());
+  state_ = State::kEnumerating;
+  bio_->EnumerateTemplates(
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnHaveEnumeration,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleCancel(

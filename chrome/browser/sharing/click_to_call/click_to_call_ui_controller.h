@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
@@ -33,7 +35,8 @@ class ClickToCallUiController
   ~ClickToCallUiController() override;
 
   void OnDeviceSelected(const std::string& phone_number,
-                        const syncer::DeviceInfo& device);
+                        const syncer::DeviceInfo& device,
+                        SharingClickToCallEntryPoint entry_point);
 
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
@@ -41,6 +44,7 @@ class ClickToCallUiController
   int GetRequiredDeviceCapabilities() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
+  void OnDialogClosed(SharingDialog* dialog) override;
   base::string16 GetContentType() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
@@ -57,11 +61,14 @@ class ClickToCallUiController
 
  private:
   friend class content::WebContentsUserData<ClickToCallUiController>;
+  using UKMRecorderCallback =
+      base::OnceCallback<void(SharingClickToCallSelection)>;
 
   // Sends |phone_number| to |device| as a SharingMessage.
   void SendNumberToDevice(const syncer::DeviceInfo& device,
                           const std::string& phone_number);
 
+  UKMRecorderCallback ukm_recorder_;
   GURL phone_url_;
   bool hide_default_handler_ = false;
 

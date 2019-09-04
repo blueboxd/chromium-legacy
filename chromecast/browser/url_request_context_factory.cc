@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
@@ -209,7 +210,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
     return;
 
   host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
-      net::HostResolver::ManagerOptions(), nullptr);
+      net::HostResolver::ManagerOptions(),
+      net::NetworkChangeNotifier::GetSystemDnsConfigNotifier(),
+      /*net_log=*/nullptr);
   cert_verifier_ =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   ssl_config_service_.reset(new net::SSLConfigServiceDefaults);

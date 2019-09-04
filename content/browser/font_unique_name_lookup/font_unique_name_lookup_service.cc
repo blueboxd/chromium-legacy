@@ -13,7 +13,7 @@
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
@@ -26,9 +26,9 @@ FontUniqueNameLookupService::~FontUniqueNameLookupService() {}
 
 // static
 void FontUniqueNameLookupService::Create(
-    blink::mojom::FontUniqueNameLookupRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<FontUniqueNameLookupService>(),
-                          std::move(request));
+    mojo::PendingReceiver<blink::mojom::FontUniqueNameLookup> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FontUniqueNameLookupService>(),
+                              std::move(receiver));
 }
 
 // static

@@ -262,6 +262,8 @@ class CORE_EXPORT VisualViewport final
   ScrollbarTheme& GetPageScrollbarTheme() const override;
   bool VisualViewportSuppliesScrollbars() const override;
 
+  const Document* GetDocument() const override;
+
   TransformPaintPropertyNode* GetDeviceEmulationTransformNode() const;
   TransformPaintPropertyNode* GetOverscrollElasticityTransformNode() const;
   TransformPaintPropertyNode* GetPageScaleNode() const;

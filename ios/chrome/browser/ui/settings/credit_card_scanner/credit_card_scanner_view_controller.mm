@@ -38,6 +38,29 @@ using base::UserMetricsAction;
   return self;
 }
 
+#pragma mark - UIViewController
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  // Crop the scanner subviews to the size of the |scannerView| to avoid the
+  // preview overlay being visible outside the screen bounds while presenting.
+  self.scannerView.clipsToBounds = YES;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  // Allow the constraints to modify the preview overlay size to cover the
+  // entire screen during rotation.
+  self.scannerView.clipsToBounds = NO;
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  // Crop the scanner subviews to the size of the |scannerView| to avoid the
+  // preview overlay being visible outside the screen bounds while dismissing.
+  self.scannerView.clipsToBounds = YES;
+}
+
 #pragma mark - ScannerViewController
 
 - (ScannerView*)buildScannerView {
@@ -60,9 +83,7 @@ using base::UserMetricsAction;
       base::RecordAction(UserMetricsAction("MobileCreditCardScannerError"));
       break;
     case scannerViewController::SCAN_COMPLETE:
-      base::RecordAction(
-          UserMetricsAction("MobileCreditCardScannerScannedCard"));
-      break;
+      // Fall through.
     case scannerViewController::IMPOSSIBLY_UNLIKELY_AUTHORIZATION_CHANGE:
       break;
   }

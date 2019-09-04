@@ -15,7 +15,6 @@ android_library("java") {
   ]
 
   deps = [
-    "//weblayer:weblayer_lib",
-    "//weblayer/browser/java",
+    "//weblayer/browser/java:client_java",
   ]
 }

@@ -12,6 +12,7 @@ import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.ui.base.ResourceBundle;
@@ -78,9 +79,12 @@ public class WebViewApkApplication extends Application {
             return false;
         }
         LibraryLoader.getInstance().switchCommandLineForWebView();
-        nativeInitializePakResources();
+        WebViewApkApplicationJni.get().initializePakResources();
         return true;
     }
 
-    private static native void nativeInitializePakResources();
+    @NativeMethods
+    interface Natives {
+        void initializePakResources();
+    }
 }

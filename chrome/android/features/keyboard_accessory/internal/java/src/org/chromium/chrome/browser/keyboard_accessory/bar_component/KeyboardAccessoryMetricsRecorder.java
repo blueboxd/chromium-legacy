@@ -73,7 +73,9 @@ class KeyboardAccessoryMetricsRecorder {
             if (propertyKey == KeyboardAccessoryProperties.BOTTOM_OFFSET_PX
                     || propertyKey == KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE
                     || propertyKey == KeyboardAccessoryProperties.SHEET_TITLE
-                    || propertyKey == KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK) {
+                    || propertyKey == KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK
+                    || propertyKey == KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION
+                    || propertyKey == KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";

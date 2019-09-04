@@ -328,7 +328,8 @@ bool CardUnmaskPromptViews::Accept() {
       year_input_->GetVisible()
           ? year_input_->GetTextForRow(year_input_->GetSelectedIndex())
           : base::string16(),
-      storage_checkbox_ ? storage_checkbox_->GetChecked() : false);
+      storage_checkbox_ ? storage_checkbox_->GetChecked() : false,
+      /*enable_fido_auth=*/false);
   return false;
 }
 

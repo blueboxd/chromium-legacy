@@ -34,12 +34,6 @@ class BlobRegistryWrapper
   void Bind(int process_id,
             mojo::PendingReceiver<blink::mojom::BlobRegistry> receiver);
 
-  // TODO(https://crbug.com/955171): Remove this method and use Bind once
-  // RenderProcessHostImpl uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  void BindForRequest(int process_id,
-                      blink::mojom::BlobRegistryRequest request);
-
  private:
   BlobRegistryWrapper();
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;

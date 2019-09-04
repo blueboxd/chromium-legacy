@@ -109,6 +109,24 @@ const base::Feature kPrefetchMainResourceNetworkIsolationKey{
     "PrefetchMainResourceNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable usage of hardcoded DoH upgrade mapping for use in automatic mode.
+const base::Feature kDnsOverHttpsUpgrade {
+  "DnsOverHttpsUpgrade",
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
+    defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Provides a mechanism to disable DoH upgrades for some subset of the hardcoded
+// upgrade mapping. Separate multiple provider ids with commas. See the
+// mapping in net/dns/dns_util.cc for provider ids.
+const base::FeatureParam<std::string>
+    kDnsOverHttpsUpgradeDisabledProvidersParam{&kDnsOverHttpsUpgrade,
+                                               "DisabledProviders", ""};
+
 bool ShouldEnableOutOfBlinkCors() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

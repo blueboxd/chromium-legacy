@@ -4935,8 +4935,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadCorruptLength) {
   EXPECT_NE(net::OK, OpenEntry(key, &entry));
 }
 
-// TODO(https://crbug.com/999584): Flaky on slower bots.
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCreateRecoverFromRmdir) {
+TEST_F(DiskCacheEntryTest, SimpleCacheCreateRecoverFromRmdir) {
   // This test runs as APP_CACHE to make operations more synchronous.
   // (in particular we want to see if create succeeded or not, so we don't
   //  want an optimistic one).

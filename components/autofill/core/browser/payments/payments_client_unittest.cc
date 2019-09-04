@@ -434,7 +434,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaCVCWithCreationOptions) {
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_EQ("1234", unmask_response_details_->real_pan);
   EXPECT_EQ("google.com",
-            *unmask_response_details_->fido_creation_options.FindStringKey(
+            *unmask_response_details_->fido_creation_options->FindStringKey(
                 "relying_party_id"));
 }
 

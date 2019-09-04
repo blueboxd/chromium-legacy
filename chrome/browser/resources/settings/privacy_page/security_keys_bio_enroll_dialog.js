@@ -19,6 +19,15 @@ Polymer({
   ],
 
   properties: {
+    /** @private */
+    addButtonVisible_: Boolean,
+
+    /** @private */
+    cancelButtonVisible_: Boolean,
+
+    /** @private */
+    deleteInProgress_: Boolean,
+
     /**
      * The ID of the element currently shown in the dialog.
      * @private
@@ -29,6 +38,9 @@ Polymer({
       observer: 'dialogPageChanged_',
     },
 
+    /** @private */
+    doneButtonVisible_: Boolean,
+
     /**
      * The list of enrollments displayed.
      * @private {!Array<!Enrollment>}
@@ -36,16 +48,7 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
-    addButtonVisible_: Boolean,
-
-    /** @private */
-    cancelButtonVisible_: Boolean,
-
-    /** @private */
     okButtonVisible_: Boolean,
-
-    /** @private */
-    doneButtonVisible_: Boolean,
   },
 
   /** @private {?settings.SecurityKeysBioEnrollProxyImpl} */
@@ -250,5 +253,21 @@ Polymer({
   hasSome_: function(list) {
     return !!(list && list.length);
   },
+
+  /**
+   * @private
+   * @param {!DomRepeatEvent} event
+   */
+  deleteEnrollment_: function(event) {
+    if (this.deleteInProgress_) {
+      return;
+    }
+    this.deleteInProgress_ = true;
+    const enrollment = this.enrollments_[event.model.index];
+    this.browserProxy_.deleteEnrollment(enrollment.id).then(enrollments => {
+      this.deleteInProgress_ = false;
+      this.onEnrollments_(enrollments);
+    });
+  }
 });
 })();

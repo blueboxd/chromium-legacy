@@ -82,16 +82,13 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // Whether a passphrase is required to decrypt the data for any currently
   // enabled data type.
   virtual bool IsPassphraseRequiredForDecryption() const = 0;
-  // Whether a "secondary" passphrase is in use, which means either a custom or
-  // a frozen implicit passphrase.
+  // Whether a "secondary" passphrase is in use (aka explicit passphrase), which
+  // means either a custom or a frozen implicit passphrase.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
   // The time the current explicit passphrase (if any) was set. If no secondary
   // passphrase is in use, or no time is available, returns an unset base::Time.
   virtual base::Time GetExplicitPassphraseTime() const = 0;
-  // The type of the passphrase currently in use. This is KEYSTORE_PASSPHRASE if
-  // "encrypt everything" is disabled, or CUSTOM_PASSPHRASE if
-  // "encrypt everything" is enabled. There are also some legacy passphrase
-  // types which may still occur for a small number of users.
+  // The type of the passphrase currently in use.
   virtual PassphraseType GetPassphraseType() const = 0;
 
   // Asynchronously sets the passphrase to |passphrase| for encryption.

@@ -2389,10 +2389,12 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
 HostResolverManager::HostResolverManager(
     const HostResolver::ManagerOptions& options,
+    SystemDnsConfigChangeNotifier* system_dns_config_notifier,
     NetLog* net_log)
     : max_queued_jobs_(0),
       proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
+      system_dns_config_notifier_(system_dns_config_notifier),
       check_ipv6_on_wifi_(options.check_ipv6_on_wifi),
       last_ipv6_probe_result_(true),
       additional_resolver_flags_(0),
@@ -2418,7 +2420,8 @@ HostResolverManager::HostResolverManager(
 #endif
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  NetworkChangeNotifier::AddDNSObserver(this);
+  if (system_dns_config_notifier_)
+    system_dns_config_notifier_->AddObserver(this);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID)
   EnsureDnsReloaderInit();
@@ -2428,11 +2431,6 @@ HostResolverManager::HostResolverManager(
 
 #if defined(ENABLE_BUILT_IN_DNS)
   dns_client_ = DnsClient::CreateClient(net_log_);
-
-  DnsConfig system_config;
-  NetworkChangeNotifier::GetDnsConfig(&system_config);
-  dns_client_->SetSystemConfig(std::move(system_config));
-
   dns_client_->SetInsecureEnabled(options.insecure_dns_client_enabled);
   dns_client_->SetConfigOverrides(options.dns_config_overrides);
 #else
@@ -2452,7 +2450,8 @@ HostResolverManager::~HostResolverManager() {
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-  NetworkChangeNotifier::RemoveDNSObserver(this);
+  if (system_dns_config_notifier_)
+    system_dns_config_notifier_->RemoveObserver(this);
 }
 
 std::unique_ptr<HostResolverManager::CancellableRequest>
@@ -3409,23 +3408,11 @@ void HostResolverManager::OnConnectionTypeChanged(
           ProcTaskParams::kDnsDefaultUnresponsiveDelay, type);
 }
 
-void HostResolverManager::OnInitialDNSConfigRead() {
-  if (!dns_client_)
-    return;
-
-  DnsConfig config;
-  NetworkChangeNotifier::GetDnsConfig(&config);
-
-  dns_client_->SetSystemConfig(std::move(config));
-}
-
-void HostResolverManager::OnDNSChanged() {
+void HostResolverManager::OnSystemDnsConfigChanged(
+    base::Optional<DnsConfig> config) {
   bool changed = false;
   bool transactions_allowed_before = false;
   if (dns_client_) {
-    DnsConfig config;
-    NetworkChangeNotifier::GetDnsConfig(&config);
-
     transactions_allowed_before = dns_client_->CanUseSecureDnsTransactions() ||
                                   dns_client_->CanUseInsecureDnsTransactions();
     changed = dns_client_->SetSystemConfig(std::move(config));

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/constants.mojom.h"
 
 namespace device {
@@ -118,7 +119,6 @@ class TestWakeLockProvider::TestWakeLock : public mojom::WakeLock,
 // would be 3.
 struct TestWakeLockProvider::WakeLockDataPerType {
   WakeLockDataPerType() = default;
-  WakeLockDataPerType(WakeLockDataPerType&&) = default;
   ~WakeLockDataPerType() = default;
 
   // Currently held count of this wake lock type.
@@ -129,7 +129,7 @@ struct TestWakeLockProvider::WakeLockDataPerType {
   std::map<TestWakeLock*, std::unique_ptr<TestWakeLock>> wake_locks;
 
   // Observers for this wake lock type.
-  mojo::InterfacePtrSet<mojom::WakeLockObserver> observers;
+  mojo::RemoteSet<mojom::WakeLockObserver> observers;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockDataPerType);
 };
@@ -217,22 +217,21 @@ void TestWakeLockProvider::OnWakeLockDeactivated(mojom::WakeLockType type) {
   // Notify observers of the last cancelation i.e. deactivation of wake lock
   // type |type|.
   if (new_count == 0) {
-    GetWakeLockDataPerType(type).observers.ForAllPtrs(
-        [type](mojom::WakeLockObserver* wake_lock_observer) {
-          wake_lock_observer->OnWakeLockDeactivated(type);
-        });
+    for (auto& observer : GetWakeLockDataPerType(type).observers)
+      observer->OnWakeLockDeactivated(type);
   }
 }
 
 void TestWakeLockProvider::NotifyOnWakeLockDeactivation(
     mojom::WakeLockType type,
-    mojom::WakeLockObserverPtr observer) {
+    mojo::PendingRemote<mojom::WakeLockObserver> pending_observer) {
+  mojo::Remote<mojom::WakeLockObserver> observer(std::move(pending_observer));
   // Notify observer immediately if wake lock is deactivated. Add it to the
   // observers list for future deactivation notifications.
   if (GetWakeLockDataPerType(type).count == 0) {
     observer->OnWakeLockDeactivated(type);
   }
-  GetWakeLockDataPerType(type).observers.AddPtr(std::move(observer));
+  GetWakeLockDataPerType(type).observers.Add(std::move(observer));
 }
 
 void TestWakeLockProvider::GetActiveWakeLocksForTests(

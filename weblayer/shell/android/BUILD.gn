@@ -50,6 +50,7 @@ android_library("weblayer_shell_java") {
     "//media/capture/video/android:capture_java",
     "//mojo/public/java:system_java",
     "//net/android:net_java",
+    "//third_party/android_deps:android_support_v4_java",
   ]
   java_files = [
     "src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
@@ -67,6 +68,7 @@ android_apk("weblayer_shell_apk") {
     ":weblayer_shell_java",
     ":weblayer_shell_manifest",
     "//base:base_java",
+    "//weblayer/browser/java",
   ]
   apk_name = "WebLayerShell"
   android_manifest = weblayer_shell_manifest

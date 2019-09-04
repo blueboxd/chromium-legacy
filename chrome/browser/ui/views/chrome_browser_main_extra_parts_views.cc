@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/devtools_process_observer.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/ui_devtools/connector_delegate.h"
@@ -104,6 +105,8 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
     devtools_server_ = ui_devtools::CreateUiDevToolsServerForViews(
         g_browser_process->system_network_context_manager()->GetContext(),
         std::move(connector));
+    devtools_process_observer_ = std::make_unique<DevtoolsProcessObserver>(
+        devtools_server_->tracing_agent());
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

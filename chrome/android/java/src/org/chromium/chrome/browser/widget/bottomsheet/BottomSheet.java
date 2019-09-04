@@ -108,9 +108,6 @@ public class BottomSheet
      */
     public static final long BASE_ANIMATION_DURATION_MS = 218;
 
-    /** The amount of time it takes to transition sheet content in or out. */
-    private static final long TRANSITION_DURATION_MS = 150;
-
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
      * released. This is the value used when there are 3 active states. A smaller value here means
@@ -195,12 +192,6 @@ public class BottomSheet
     private TouchRestrictingFrameLayout mBottomSheetContentContainer;
 
     /**
-     * The last ratio sent to observers of onTransitionPeekToHalf(). This is used to ensure the
-     * final value sent to these observers is 1.0f.
-     */
-    private float mLastPeekToHalfRatioSent;
-
-    /**
      * The last offset ratio sent to observers of onSheetOffsetChanged(). This is used to ensure the
      * min and max values are provided at least once (0 and 1).
      */
@@ -229,9 +220,6 @@ public class BottomSheet
 
     /** The token used to enable browser controls persistence. */
     private int mPersistentControlsToken;
-
-    /** Conversion ratio of dp to px. */
-    private float mDpToPx;
 
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
@@ -357,27 +345,6 @@ public class BottomSheet
         void onSizeChanged(int width, int height, int oldWidth, int oldHeight);
     }
 
-    /**
-     * Returns whether the provided bottom sheet state is in one of the stable open or closed
-     * states: {@link #SheetState.FULL}, {@link #SheetState.PEEK} or {@link #SheetState.HALF}
-     * @param sheetState A {@link SheetState} to test.
-     */
-    public static boolean isStateStable(@SheetState int sheetState) {
-        switch (sheetState) {
-            case SheetState.HIDDEN:
-            case SheetState.PEEK:
-            case SheetState.HALF:
-            case SheetState.FULL:
-                return true;
-            case SheetState.SCROLLING:
-                return false;
-            case SheetState.NONE: // Should never be tested, internal only value.
-            default:
-                assert false;
-                return false;
-        }
-    }
-
     @Override
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is scrolling off-screen or in the process of hiding, gestures should not
@@ -418,7 +385,7 @@ public class BottomSheet
     /**
      * Called when the activity containing the {@link BottomSheet} is destroyed.
      */
-    public void destroy() {
+    void destroy() {
         mIsDestroyed = true;
         mIsTouchEnabled = false;
         mObservers.clear();
@@ -489,7 +456,7 @@ public class BottomSheet
      * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
      */
     @VisibleForTesting
-    public boolean isToolbarAndroidViewHidden() {
+    boolean isToolbarAndroidViewHidden() {
         return mFullscreenManager == null || mFullscreenManager.getBottomControlOffset() > 0
                 || mToolbarHolder.getVisibility() != VISIBLE;
     }
@@ -530,7 +497,6 @@ public class BottomSheet
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
         setBackground(mBottomSheetContentContainer);
-        mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
         // Listen to height changes on the root.
         root.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -775,7 +741,8 @@ public class BottomSheet
      * Show content in the bottom sheet's content area.
      * @param content The {@link BottomSheetContent} to show, or null if no content should be shown.
      */
-    public void showContent(@Nullable final BottomSheetContent content) {
+    @VisibleForTesting
+    void showContent(@Nullable final BottomSheetContent content) {
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
@@ -1090,21 +1057,6 @@ public class BottomSheet
                     offsetWithBrowserControls, getSheetHeightForState(SheetState.PEEK))) {
             for (BottomSheetObserver o : mObservers) o.onSheetFullyPeeked();
         }
-
-        // This ratio is relative to the peek and half positions of the sheet.
-        float peekHalfRatio = MathUtils.clamp(
-                (screenRatio - getPeekRatio()) / (getHalfRatio() - getPeekRatio()), 0, 1);
-
-        // If the ratio is close enough to zero, just set it to zero.
-        if (MathUtils.areFloatsEqual(peekHalfRatio, 0f)) peekHalfRatio = 0f;
-
-        if (peekHalfRatio != mLastPeekToHalfRatioSent
-                && (mLastPeekToHalfRatioSent < 1f || peekHalfRatio < 1f)) {
-            mLastPeekToHalfRatioSent = peekHalfRatio;
-            for (BottomSheetObserver o : mObservers) {
-                o.onTransitionPeekToHalf(peekHalfRatio);
-            }
-        }
     }
 
     /**
@@ -1243,7 +1195,7 @@ public class BottomSheet
      * @param state The state to get the height from.
      * @return The height of the sheet at the provided state.
      */
-    public float getSheetHeightForState(@SheetState int state) {
+    private float getSheetHeightForState(@SheetState int state) {
         if (mSheetContent != null && mSheetContent.wrapContentEnabled()
                 && state == SheetState.FULL) {
             ensureContentDesiredHeightIsComputed();
@@ -1365,24 +1317,10 @@ public class BottomSheet
     }
 
     /**
-     * @return The height of the toolbar holder.
-     */
-    public int getToolbarContainerHeight() {
-        return mToolbarHolder != null ? mToolbarHolder.getHeight() : 0;
-    }
-
-    /**
      * @return The height of the toolbar shadow.
      */
     public int getToolbarShadowHeight() {
         return mToolbarShadowHeight;
-    }
-
-    /**
-     * @return Whether or not the browser is in overview mode.
-     */
-    protected boolean isInOverviewMode() {
-        return mActivity != null && mActivity.isInOverviewMode();
     }
 
     /**

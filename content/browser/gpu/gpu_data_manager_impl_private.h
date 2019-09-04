@@ -47,6 +47,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestCompleteGpuInfoIfNeeded();
   void RequestGpuSupportedRuntimeVersion(bool delayed);
   bool IsEssentialGpuInfoAvailable() const;
+  bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
   void RequestVideoMemoryUsageStatsUpdate(
@@ -64,6 +65,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
   void UpdateDx12VulkanInfo(
       const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDx12VulkanRequestStatus(bool request_continues);
 #endif
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
@@ -189,6 +191,11 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   gpu::GpuFeatureInfo gpu_feature_info_;
   gpu::GPUInfo gpu_info_;
+#if defined(OS_WIN)
+  bool gpu_info_dx12_vulkan_valid_ = false;
+  bool gpu_info_dx12_vulkan_requested_ = false;
+  bool gpu_info_dx12_vulkan_request_failed_ = false;
+#endif
 
   // What we would have gotten if we haven't fallen back to SwiftShader or
   // pure software (in the viz case).

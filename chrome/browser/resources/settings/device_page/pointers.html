@@ -22,8 +22,8 @@
 
       .subsection > settings-toggle-button,
       .subsection > .settings-box  {
-        padding-left: 0;
-        padding-right: 0;
+        padding-inline-end: 0;
+        padding-inline-start: 0;
       }
     </style>
     <div id="mouse" hidden$="[[!hasMouse]]">
@@ -43,6 +43,12 @@
             pref="{{prefs.settings.mouse.reverse_scroll}}"
             label="$i18n{mouseReverseScroll}">
         </settings-toggle-button>
+        <template is="dom-if" if="[[allowDisableAcceleration_]]">
+          <settings-toggle-button id="mouseAcceleration"
+              pref="{{prefs.settings.mouse.acceleration}}"
+              label="$i18n{pointerAccelerationLabel}">
+          </settings-toggle-button>
+        </template>
         <div class="settings-box">
           <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
           <settings-slider pref="{{prefs.settings.mouse.sensitivity2}}"
@@ -66,6 +72,12 @@
             pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
             label="$i18n{tapDraggingLabel}">
         </settings-toggle-button>
+        <template is="dom-if" if="[[allowDisableAcceleration_]]">
+          <settings-toggle-button id="touchpadAcceleration"
+              pref="{{prefs.settings.touchpad.acceleration}}"
+              label="$i18n{pointerAccelerationLabel}">
+          </settings-toggle-button>
+        </template>
         <div class="settings-box">
           <div class="start" id="touchpadSpeedLabel">$i18n{touchpadSpeed}</div>
             <settings-slider id="touchpadSensitivity"

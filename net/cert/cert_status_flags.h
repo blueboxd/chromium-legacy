@@ -30,11 +30,6 @@ static inline bool IsCertStatusError(CertStatus status) {
   return (CERT_STATUS_ALL_ERRORS & status) != 0;
 }
 
-// IsCertStatusMinorError returns true iff |cert_status| indicates a condition
-// that should typically be ignored by automated requests. (i.e. a revocation
-// check failure.)
-NET_EXPORT bool IsCertStatusMinorError(CertStatus cert_status);
-
 // Maps a network error code to the equivalent certificate status flag.  If
 // the error code is not a certificate error, it is mapped to 0.
 NET_EXPORT CertStatus MapNetErrorToCertStatus(int error);

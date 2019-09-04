@@ -10,6 +10,7 @@ export class TabsApiProxy {
     this.callbackRouter = {
       onActivated: chrome.tabs.onActivated,
       onCreated: chrome.tabs.onCreated,
+      onMoved: chrome.tabs.onMoved,
       onRemoved: chrome.tabs.onRemoved,
       onUpdated: chrome.tabs.onUpdated,
     };
@@ -47,6 +48,19 @@ export class TabsApiProxy {
   closeTab(tabId) {
     return new Promise(resolve => {
       chrome.tabs.remove(tabId, resolve);
+    });
+  }
+
+  /**
+   * @param {number} tabId
+   * @param {number} newIndex
+   * @return {!Promise<!Tab>}
+   */
+  moveTab(tabId, newIndex) {
+    return new Promise(resolve => {
+      chrome.tabs.move(tabId, {index: newIndex}, tab => {
+        resolve(tab);
+      });
     });
   }
 }

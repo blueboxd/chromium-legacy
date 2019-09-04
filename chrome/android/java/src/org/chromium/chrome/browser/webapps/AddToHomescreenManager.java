@@ -11,7 +11,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -83,12 +82,7 @@ public class AddToHomescreenManager implements AddToHomescreenDialog.Delegate {
      */
     @CalledByNative
     public void showDialog() {
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            mDialog = new TouchlessAddToHomescreenDialog(
-                    mActivity, mTab.getActivity().getModalDialogManager(), this);
-        } else {
-            mDialog = new AddToHomescreenDialog(mActivity, this);
-        }
+        mDialog = new AddToHomescreenDialog(mActivity, this);
         mDialog.show();
     }
 

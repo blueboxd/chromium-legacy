@@ -152,6 +152,12 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // SelectFirstBrowser() is called.
   Browser* browser() const { return browser_; }
 
+  // Set |browser_| to the first browser on the browser list.
+  // Call this when your test subclass wants to access a non-null browser
+  // instance through browser() but browser creation is delayed until after
+  // PreRunTestOnMainThread().
+  void SelectFirstBrowser();
+
  protected:
   // Closes the given browser and waits for it to release all its resources.
   void CloseBrowserSynchronously(Browser* browser);
@@ -225,12 +231,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // Creates a browser for an application and waits for it to load and shows
   // the browser.
   Browser* CreateBrowserForApp(const std::string& app_name, Profile* profile);
-
-  // Set |browser_| to the first browser on the browser list.
-  // Call this when your test subclass wants to access a non-null browser
-  // instance through browser() but browser creation is delayed until after
-  // PreRunTestOnMainThread().
-  void SelectFirstBrowser();
 
   // Called from the various CreateBrowser methods to add a blank tab, wait for
   // the navigation to complete, and show the browser's window.

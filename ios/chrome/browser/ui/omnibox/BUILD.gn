@@ -244,6 +244,7 @@ source_set("perf_tests") {
     "//components/omnibox/browser:test_support",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",

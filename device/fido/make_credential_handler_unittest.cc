@@ -177,7 +177,6 @@ TEST_F(FidoMakeCredentialHandlerTest, TestCtap2MakeCredential) {
 
   callback().WaitForCallback();
   EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
-  EXPECT_TRUE(request_handler->is_complete());
 }
 
 // Test a scenario where the connected authenticator is a U2F device.
@@ -193,7 +192,6 @@ TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegister) {
 
   callback().WaitForCallback();
   EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
-  EXPECT_TRUE(request_handler->is_complete());
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithUserVerificationRequired) {

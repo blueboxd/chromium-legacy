@@ -49,6 +49,23 @@ enum class ImpressionEvent {
   kMaxValue = kSuppressionExpired
 };
 
+// Event to track the life cycle of a scheduled notification. Don't reuse or
+// delete values. Needs to match NotificationSchedulerNotificationLifeCycleEvent
+// in enums.xml.
+enum class NotificationLifeCycleEvent {
+  // The client requests to schedule the notification.
+  kScheduleRequest = 0,
+  // The notification is successfully scheduled.
+  kScheduled = 1,
+  // The notification is dropped due to invalid input parameters.
+  kInvalidInput = 2,
+  // The notification is shown to the user.
+  kShown = 3,
+  // The notification is canceled by the client before showing the notification.
+  kClientCancel = 4,
+  kMaxValue = kClientCancel
+};
+
 // Logs the user action when the user interacts with notification sent from the
 // scheduling system.
 void LogUserAction(const UserActionData& user_action_data);
@@ -81,6 +98,10 @@ void LogNotificationDbOperation(bool success);
 // Logs metrics before showing the notification.
 void LogNotificationShow(const NotificationData& notification_data,
                          SchedulerClientType client_type);
+
+// Logs scheduled notification life cycle event.
+void LogNotificationLifeCycleEvent(NotificationLifeCycleEvent event,
+                                   SchedulerClientType client_type);
 
 // Logs png icon converter encode result.
 void LogPngIconConverterEncodeResult(bool success);

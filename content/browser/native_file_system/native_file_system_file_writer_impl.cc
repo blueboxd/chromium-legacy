@@ -103,9 +103,10 @@ NativeFileSystemFileWriterImpl::~NativeFileSystemFileWriterImpl() {
   }
 }
 
-void NativeFileSystemFileWriterImpl::Write(uint64_t offset,
-                                           blink::mojom::BlobPtr data,
-                                           WriteCallback callback) {
+void NativeFileSystemFileWriterImpl::Write(
+    uint64_t offset,
+    mojo::PendingRemote<blink::mojom::Blob> data,
+    WriteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RunWithWritePermission(
@@ -163,9 +164,10 @@ void NativeFileSystemFileWriterImpl::Close(CloseCallback callback) {
       std::move(callback));
 }
 
-void NativeFileSystemFileWriterImpl::WriteImpl(uint64_t offset,
-                                               blink::mojom::BlobPtr data,
-                                               WriteCallback callback) {
+void NativeFileSystemFileWriterImpl::WriteImpl(
+    uint64_t offset,
+    mojo::PendingRemote<blink::mojom::Blob> data,
+    WriteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
@@ -179,7 +181,7 @@ void NativeFileSystemFileWriterImpl::WriteImpl(uint64_t offset,
     return;
   }
 
-  blob_context()->GetBlobDataFromBlobPtr(
+  blob_context()->GetBlobDataFromBlobRemote(
       std::move(data),
       base::BindOnce(&NativeFileSystemFileWriterImpl::DoWriteBlob,
                      weak_factory_.GetWeakPtr(), std::move(callback), offset));
@@ -308,7 +310,7 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     return;
   }
 
-  if (can_skip_quarantine_check()) {
+  if (CanSkipQuarantineCheck()) {
     state_ = State::kClosed;
     std::move(callback).Run(native_file_system_error::Ok());
     return;

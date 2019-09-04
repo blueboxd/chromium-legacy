@@ -15,20 +15,22 @@ namespace autofill {
 TravelField::~TravelField() = default;
 
 // static
-std::unique_ptr<FormField> TravelField::Parse(AutofillScanner* scanner) {
+std::unique_ptr<FormField> TravelField::Parse(AutofillScanner* scanner,
+                                              LogManager* log_manager) {
   if (!scanner || scanner->IsEnd()) {
     return nullptr;
   }
 
   auto travel_field = std::make_unique<TravelField>();
   if (ParseField(scanner, base::UTF8ToUTF16(kPassportRe),
-                 &travel_field->passport_) ||
+                 &travel_field->passport_, {log_manager, "kPassportRe"}) ||
       ParseField(scanner, base::UTF8ToUTF16(kTravelOriginRe),
-                 &travel_field->origin_) ||
+                 &travel_field->origin_, {log_manager, "kTravelOriginRe"}) ||
       ParseField(scanner, base::UTF8ToUTF16(kTravelDestinationRe),
-                 &travel_field->destination_) ||
-      ParseField(scanner, base::UTF8ToUTF16(kFlightRe),
-                 &travel_field->flight_)) {
+                 &travel_field->destination_,
+                 {log_manager, "kTravelDestinationRe"}) ||
+      ParseField(scanner, base::UTF8ToUTF16(kFlightRe), &travel_field->flight_,
+                 {log_manager, "kFlightRe"})) {
     // If any regex matches, then we found a travel field.
     return std::move(travel_field);
   }

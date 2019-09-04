@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "media/base/bind_to_current_loop.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
@@ -112,9 +113,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         WTF::BindRepeating(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                            WTF::Unretained(this)),
         std::move(delegate));
-    mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
-        mock_dispatcher_host_.CreateInterfacePtrAndBind();
-    source_->SetMediaStreamDispatcherHostForTesting(std::move(dispatcher_host));
+    source_->SetMediaStreamDispatcherHostForTesting(
+        mock_dispatcher_host_.CreatePendingRemoteAndBind());
     webkit_source_.Initialize(WebString::FromASCII("dummy_source_id"),
                               WebMediaStreamSource::kTypeVideo,
                               WebString::FromASCII("dummy_source_name"),

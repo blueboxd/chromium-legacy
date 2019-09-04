@@ -156,60 +156,6 @@ public class BottomSheetObserverTest {
         assertEquals(0.5f, mObserver.getLastOffsetChangedValue(), MathUtils.EPSILON);
     }
 
-    /**
-     * Test the onTransitionPeekToHalf event.
-     */
-    @Test
-    @MediumTest
-    public void testPeekToHalfTransition() throws InterruptedException, TimeoutException {
-        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
-        CallbackHelper callbackHelper = mObserver.mPeekToHalfCallbackHelper;
-
-        BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();
-        float peekHeight = bottomSheet.getPeekRatio() * bottomSheet.getSheetContainerHeight();
-        float halfHeight = bottomSheet.getHalfRatio() * bottomSheet.getSheetContainerHeight();
-        float fullHeight = bottomSheet.getFullRatio() * bottomSheet.getSheetContainerHeight();
-
-        float midPeekHalf = (peekHeight + halfHeight) / 2f;
-        float midHalfFull = (halfHeight + fullHeight) / 2f;
-
-        // When in the peeking state, the transition value should be 0.
-        int callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(peekHeight);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
-
-        // When in between peek and half states, the transition value should be 0.5.
-        callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(midPeekHalf);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
-
-        // After jumping to the full state (skipping the half state), the event should have
-        // triggered once more with a max value of 1.
-        callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(fullHeight);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
-
-        // Moving from full to somewhere between half and full should not trigger the event.
-        callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(midHalfFull);
-        assertEquals(callbackCount, callbackHelper.getCallCount());
-
-        // Reset the sheet to be between peek and half states.
-        callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(midPeekHalf);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(0.5f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
-
-        // At the half state the event should send 1.
-        callbackCount = callbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetOffsetFromBottom(halfHeight);
-        callbackHelper.waitForCallback(callbackCount, 1);
-        assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
-    }
-
     @Test
     @MediumTest
     public void testWrapContentBehavior() throws TimeoutException, InterruptedException {

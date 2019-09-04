@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
@@ -72,6 +73,68 @@ TEST_F(SVGUseElementTest,
   ASSERT_TRUE(use);
   ASSERT_TRUE(use->GetShadowRoot());
   ASSERT_FALSE(use->GetShadowRoot()->getElementById("target"));
+}
+
+TEST_F(SVGUseElementTest, NullInstanceRootWhenNotConnectedToDocument) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <svg>
+      <defs>
+        <rect id="r" width="100" height="100" fill="blue"/>
+      </defs>
+      <use id="target" href="#r"/>
+    </svg>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+
+  auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
+  ASSERT_TRUE(target);
+  ASSERT_TRUE(target->InstanceRoot());
+
+  target->remove();
+
+  ASSERT_FALSE(target->InstanceRoot());
+}
+
+TEST_F(SVGUseElementTest, NullInstanceRootWhenConnectedToInactiveDocument) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <svg>
+      <defs>
+        <rect id="r" width="100" height="100" fill="blue"/>
+      </defs>
+      <use id="target" href="#r"/>
+    </svg>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+
+  auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
+  ASSERT_TRUE(target);
+  ASSERT_TRUE(target->InstanceRoot());
+
+  Document* other_document =
+      GetDocument().implementation().createHTMLDocument();
+  other_document->body()->appendChild(target);
+
+  ASSERT_FALSE(target->InstanceRoot());
+}
+
+TEST_F(SVGUseElementTest, NullInstanceRootWhenShadowTreePendingRebuild) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <svg>
+      <defs>
+        <rect id="r" width="100" height="100" fill="blue"/>
+      </defs>
+      <use id="target" href="#r"/>
+    </svg>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
+
+  auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
+  ASSERT_TRUE(target);
+  ASSERT_TRUE(target->InstanceRoot());
+
+  GetDocument().getElementById("r")->setAttribute(html_names::kWidthAttr, "50");
+
+  ASSERT_FALSE(target->InstanceRoot());
 }
 
 }  // namespace blink

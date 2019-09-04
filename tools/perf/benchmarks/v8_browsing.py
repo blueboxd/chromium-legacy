@@ -27,10 +27,6 @@ _V8_GC_HIGH_LEVEL_STATS_RE = re.compile(r'^v8-gc-('
 
 
 def V8BrowsingShouldAddValue(name):
-  # TODO(crbug.com/775942): The "unknown_browser" is needed because of a race
-  # condition in the memory dump manager. Remove this once the bug is fixed.
-  if 'memory:chrome' in name or 'memory:unknown_browser' in name:
-    return 'renderer_processes' in name
   if 'v8-gc' in name:
     return (_V8_GC_HIGH_LEVEL_STATS_RE.search(name) and
             not _IGNORED_V8_STATS_RE.search(name))

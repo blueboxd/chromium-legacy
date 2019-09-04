@@ -16,6 +16,15 @@ let TabActivatedInfo;
 
 /**
  * @typedef {{
+ *    fromIndex: number,
+ *    toIndex: number,
+ *    windowId: number,
+ * }}
+ */
+let TabMovedInfo;
+
+/**
+ * @typedef {{
  *    isWindowClosing: boolean,
  *    windowId: number,
  * }}

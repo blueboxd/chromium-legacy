@@ -167,6 +167,9 @@ LogBuffer& operator<<(LogBuffer& buf, base::StringPiece text) {
   if (!buf.active())
     return buf;
 
+  if (text.empty())
+    return buf;
+
   if (TryCoalesceString(&buf.buffer_, text))
     return buf;
 
@@ -234,6 +237,34 @@ LogTableRowBuffer operator<<(LogBuffer& buf, Tr&& tr) {
 LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, Attrib&& attrib) {
   *buf.parent_ << std::move(attrib);
   return std::move(buf);
+}
+
+namespace {
+// Highlights the first |needle| in |haystack| by wrapping it in <b> tags.
+template <typename STRING_TYPE>
+LogBuffer HighlightValueInternal(base::BasicStringPiece<STRING_TYPE> haystack,
+                                 base::BasicStringPiece<STRING_TYPE> needle) {
+  using StringPieceT = base::BasicStringPiece<STRING_TYPE>;
+  LogBuffer buffer;
+  size_t pos = haystack.find(needle);
+  if (pos == StringPieceT::npos || needle.empty()) {
+    buffer << haystack;
+    return buffer;
+  }
+  buffer << haystack.substr(0, pos);
+  buffer << Tag{"b"} << needle << CTag{"b"};
+  buffer << haystack.substr(pos + needle.size());
+  return buffer;
+}
+}  // namespace
+
+LogBuffer HighlightValue(base::StringPiece haystack, base::StringPiece needle) {
+  return HighlightValueInternal(haystack, needle);
+}
+
+LogBuffer HighlightValue(base::StringPiece16 haystack,
+                         base::StringPiece16 needle) {
+  return HighlightValueInternal(haystack, needle);
 }
 
 }  // namespace autofill

@@ -230,10 +230,10 @@ class CreditCardAccessManagerTest : public testing::Test {
     if (fido_opt_in) {
       response.fido_creation_options =
           base::Value(base::Value::Type::DICTIONARY);
-      response.fido_creation_options.SetKey("relying_party_id",
-                                            base::Value(kGooglePaymentsRpid));
-      response.fido_creation_options.SetKey("challenge",
-                                            base::Value(kTestChallenge));
+      response.fido_creation_options->SetKey("relying_party_id",
+                                             base::Value(kGooglePaymentsRpid));
+      response.fido_creation_options->SetKey("challenge",
+                                             base::Value(kTestChallenge));
     }
 #endif
     full_card_request->OnDidGetRealPan(result,

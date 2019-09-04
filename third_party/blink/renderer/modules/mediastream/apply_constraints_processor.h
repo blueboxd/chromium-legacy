@@ -82,7 +82,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor
   // contains the request currently being processed, if any.
   // |video_source_| and |request_completed_cb_| are the video source and
   // reply callback for the current request.
-  WeakMember<blink::ApplyConstraintsRequest> current_request_;
+  Member<blink::ApplyConstraintsRequest> current_request_;
 
   // TODO(crbug.com/704136): Change to use Member.
   blink::MediaStreamVideoSource* video_source_ = nullptr;

@@ -18,7 +18,7 @@
 
     <!-- Preferences -->
     <style name="Base.V21.Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
-        <item name="alertDialogTheme">@style/Theme.Chromium.Preferences.AlertDialog</item>
+        <item name="alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
     </style>
 
     <style name="Theme.Chromium.Preferences" parent="Base.V21.Theme.Chromium.Preferences" />

@@ -385,8 +385,8 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
       CertVerifier::RequestParams(cert_, hostname_, cert_verify_flags_,
                                   ocsp_response_, cert_sct_),
       &verify_details_->cert_verify_result,
-      base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
-                 base::Unretained(this)),
+      base::BindOnce(&ProofVerifierChromium::Job::OnIOComplete,
+                     base::Unretained(this)),
       &cert_verifier_request_, net_log_);
 }
 
@@ -400,9 +400,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
-  if (enforce_policy_checking_ &&
-      (result == OK ||
-       (IsCertificateError(result) && IsCertStatusMinorError(cert_status)))) {
+  if (enforce_policy_checking_ && result == OK) {
     ct::SCTList verified_scts = ct::SCTsMatchingStatus(
         verify_details_->ct_verify_result.scts, ct::SCT_STATUS_OK);
 
@@ -512,7 +510,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   }
 
   verify_details_->is_fatal_cert_error =
-      IsCertStatusError(cert_status) && !IsCertStatusMinorError(cert_status) &&
+      IsCertStatusError(cert_status) &&
       transport_security_state_->ShouldSSLErrorsBeFatal(hostname_);
 
   if (result != OK) {

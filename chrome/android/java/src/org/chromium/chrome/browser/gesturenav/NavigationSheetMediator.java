@@ -36,10 +36,10 @@ class NavigationSheetMediator {
     private final ClickListener mClickListener;
     private final FaviconHelper mFaviconHelper;
     private final int mFaviconSize;
+    private final ModelList mModelList;
 
     private NavigationHistory mHistory;
     private FaviconHelper.DefaultFaviconHelper mDefaultFaviconHelper;
-    private ModelList mModelList;
 
     /**
      * Performs an action when a navigation item is clicked.
@@ -117,8 +117,9 @@ class NavigationSheetMediator {
      * @param favicon the favicon data.
      */
     private void onFaviconAvailable(String pageUrl, Bitmap favicon) {
-        // This callback can come after the sheet is hidden. Do nothing if that happens.
-        if (mModelList == null) return;
+        // This callback can come after the sheet is hidden (which clears modelList).
+        // Do nothing if that happens.
+        if (mModelList.size() == 0) return;
         if (favicon == null) {
             if (mDefaultFaviconHelper == null) {
                 mDefaultFaviconHelper = new FaviconHelper.DefaultFaviconHelper();

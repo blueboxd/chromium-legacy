@@ -4,15 +4,22 @@
 
 package org.chromium.weblayer_private;
 
+import android.os.RemoteException;
+import android.util.AndroidRuntimeException;
+
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 
 @JNINamespace("weblayer")
 public final class BrowserObserverProxy {
-    private long mNativeBrowserObserverProxy;
-    private BrowserControllerClient mClient;
+    private static final String TAG = "WL_BObserverProxy";
 
-    BrowserObserverProxy(long browserController, BrowserControllerClient client) {
+    private long mNativeBrowserObserverProxy;
+    private IBrowserControllerClient mClient;
+
+    BrowserObserverProxy(long browserController, IBrowserControllerClient client) {
         mClient = client;
         mNativeBrowserObserverProxy = nativeCreateBrowserObsererProxy(this, browserController);
     }
@@ -23,7 +30,12 @@ public final class BrowserObserverProxy {
 
     @CalledByNative
     private void displayURLChanged(String string) {
-        mClient.displayURLChanged(string);
+        try {
+            mClient.displayURLChanged(string);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to call displayURLChanged.", e);
+            throw new AndroidRuntimeException(e);
+        }
     }
 
     private static native long nativeCreateBrowserObsererProxy(

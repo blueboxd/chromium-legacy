@@ -83,6 +83,7 @@ bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
          hostname.find('.') != std::string::npos;
 }
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
     ReusedPasswordAccountType password_type,
@@ -96,6 +97,7 @@ bool PasswordProtectionService::ShouldShowModalWarning(
           verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
          IsWarningEnabled(password_type);
 }
+#endif
 
 LoginReputationClientResponse::VerdictType
 PasswordProtectionService::GetCachedVerdict(
@@ -133,6 +135,7 @@ void PasswordProtectionService::StartRequest(
   pending_requests_.insert(std::move(request));
 }
 
+#if defined(ON_FOCUS_PING_ENABLED)
 void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
@@ -141,6 +144,9 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     const std::string& hosted_domain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestOutcome reason;
+  if (!base::FeatureList::IsEnabled(safe_browsing::kSendOnFocusPing)) {
+    return;
+  }
   if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
                   main_frame_url,
                   GetPasswordProtectionReusedPasswordAccountType(
@@ -154,7 +160,9 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   }
 }
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
@@ -196,6 +204,7 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     ShowInterstitial(web_contents, reused_password_account_type);
   }
 }
+#endif
 
 bool PasswordProtectionService::CanSendPing(
     LoginReputationClientRequest::TriggerType trigger_type,
@@ -251,6 +260,7 @@ void PasswordProtectionService::RequestFinished(
       return;
     }
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
     if (ShouldShowModalWarning(request->trigger_type(), password_type,
                                response->verdict_type())) {
       username_for_last_shown_warning_ = request->username();
@@ -260,10 +270,12 @@ void PasswordProtectionService::RequestFinished(
                        password_type);
       request->set_is_modal_warning_showing(true);
     }
+#endif
   }
 
   request->HandleDeferredNavigations();
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // If the request is canceled, the PasswordProtectionService is already
   // partially destroyed, and we won't be able to log accurate metrics.
   if (outcome != RequestOutcome::CANCELED) {
@@ -275,6 +287,7 @@ void PasswordProtectionService::RequestFinished(
                                      request->username(),
                                      request->password_type(), is_phishing_url);
   }
+#endif
 
   // Remove request from |pending_requests_| list. If it triggers warning, add
   // it into the !warning_reqeusts_| list.
@@ -333,8 +346,10 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_profile_management_status(
       GetProfileManagementStatus(GetBrowserPolicyConnector()));
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   user_population->set_is_under_advanced_protection(
       IsUnderAdvancedProtection());
+#endif
   user_population->set_is_incognito(IsIncognito());
 }
 
@@ -382,6 +397,7 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
   return nullptr;
 }
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordProtectionService::RemoveWarningRequestsByWebContents(
     content::WebContents* web_contents) {
   for (auto it = warning_requests_.begin(); it != warning_requests_.end();) {
@@ -400,6 +416,7 @@ bool PasswordProtectionService::IsModalWarningShowingInWebContents(
   }
   return false;
 }
+#endif
 
 bool PasswordProtectionService::IsWarningEnabled(
     ReusedPasswordAccountType password_type) {
@@ -534,10 +551,12 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
              safe_browsing::kPasswordProtectionForSignedInUsers);
 }
 
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void PasswordProtectionService::GetPhishingDetector(
     service_manager::InterfaceProvider* provider,
     mojom::PhishingDetectorPtr* phishing_detector) {
   provider->GetInterface(phishing_detector);
 }
+#endif
 
 }  // namespace safe_browsing

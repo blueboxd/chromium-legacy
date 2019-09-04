@@ -30,7 +30,6 @@
 #include "components/version_info/version_string.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
@@ -126,11 +125,6 @@ sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
 send_tab_to_self::SendTabToSelfSyncService*
 WebViewSyncClient::GetSendTabToSelfSyncService() {
   return nullptr;
-}
-
-autofill::PersonalDataManager* WebViewSyncClient::GetPersonalDataManager() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return WebViewPersonalDataManagerFactory::GetForBrowserState(browser_state_);
 }
 
 base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {

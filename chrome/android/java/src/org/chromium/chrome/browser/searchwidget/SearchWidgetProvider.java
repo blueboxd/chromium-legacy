@@ -113,7 +113,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     static final String ACTION_UPDATE_ALL_WIDGETS =
             "org.chromium.chrome.browser.searchwidget.UPDATE_ALL_WIDGETS";
 
-    static final String EXTRA_START_VOICE_SEARCH =
+    public static final String EXTRA_START_VOICE_SEARCH =
             "org.chromium.chrome.browser.searchwidget.START_VOICE_SEARCH";
 
     private static final String PREF_IS_VOICE_SEARCH_AVAILABLE =

@@ -21,6 +21,7 @@ namespace autofill {
 
 class AutofillField;
 class AutofillScanner;
+class LogManager;
 
 // A phone number in one of the following formats:
 // - area code, prefix, suffix
@@ -30,7 +31,8 @@ class PhoneField : public FormField {
  public:
   ~PhoneField() override;
 
-  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
+  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
+                                          LogManager* log_manager);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
@@ -87,10 +89,15 @@ class PhoneField : public FormField {
   // Returns the regular expression string corresponding to |regex_id|
   static std::string GetRegExp(RegexType regex_id);
 
+  // Returns the constant name of the regex corresponding to |regex_id|.
+  // This is useful for logging purposes.
+  static const char* GetRegExpName(RegexType regex_id);
+
   // Convenient wrapper for ParseFieldSpecifics().
   static bool ParsePhoneField(AutofillScanner* scanner,
                               const std::string& regex,
-                              AutofillField** field);
+                              AutofillField** field,
+                              const RegExLogging& logging);
 
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.

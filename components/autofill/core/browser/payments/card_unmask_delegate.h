@@ -29,6 +29,9 @@ class CardUnmaskDelegate {
 
     // State of "copy to this device" checkbox.
     bool should_store_pan;
+
+    // User is opting-in for FIDO Authentication for future card unmasking.
+    bool enable_fido_auth = false;
   };
 
   // Called when the user has attempted a verification. Prompt is still

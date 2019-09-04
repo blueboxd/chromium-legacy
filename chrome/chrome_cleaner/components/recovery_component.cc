@@ -39,7 +39,7 @@ namespace {
 const char kComponentDownloadUrl[] =
     "https://clients2.google.com/service/update2/crx?response=redirect&os=win"
     "&arch=x86&installsource=swreporter&x=id%3Dnpdjjkjlcidkjlamlmmdelcjbcpdjocm"
-    "%26v%3D0.0.0.0%26uc";
+    "%26v%3D0.0.0.0%26uc&acceptformat=crx3";
 
 // CRX hash. The extension id is: npdjjkjlcidkjlamlmmdelcjbcpdjocm.
 const uint8_t kSha2Hash[] = {0xdf, 0x39, 0x9a, 0x9b, 0x28, 0x3a, 0x9b, 0x0c,

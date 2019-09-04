@@ -3099,6 +3099,7 @@ crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
+crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
 
@@ -5953,16 +5954,6 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # Marking them as Failure/Pass to collect data on bots. Once confirmed they are
 # no longer flaky we can re-enable.
 crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode-transform.html [ Failure Pass ]
-crbug.com/991565 animations/direction-and-fill/fill-mode.html [ Failure Pass ]
-crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Failure Pass ]
-crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Failure Pass ]
-crbug.com/991565 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Failure Pass ]
-crbug.com/991565 svg/animations/dynamic-modify-transform-without-baseval.html [ Failure Pass ]
-crbug.com/991565 svg/animations/target-condition-crash.html [ Failure Pass ]
-
 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
@@ -6525,6 +6516,19 @@ crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.htm
 
 crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
 crbug.com/1000124 [ Mac ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash ]
+crbug.com/1000124 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash ]
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
+
+# Sheriff 2019-09-04
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/devices-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/elements/event-listeners-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/network/network-condition-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/security/security-origin-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/settings/geolocations-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-filesystem-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Pass Failure ]
+crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Pass Failure ]
+crbug.com/1000396 [ Win ] virtual/audio-service/media/video-remove-insert-repaints.html [ Pass Failure ]

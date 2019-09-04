@@ -335,6 +335,8 @@ void AlsaVolumeControl::SetPowerSave(bool power_save_on) {
   for (const auto& amp_mixer : amp_mixers_) {
     if (!SetElementMuted(amp_mixer.get(), power_save_on)) {
       LOG(INFO) << "Amp toggle failed: no amp switch on mixer element.";
+    } else {
+      LOG(INFO) << "Set Power Save to: " << power_save_on;
     }
   }
 }

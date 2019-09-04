@@ -39,6 +39,10 @@
 #include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace previews {
 
@@ -344,6 +348,33 @@ void LogCommittedPreview(previews::PreviewsUserData* previews_data,
       navigation_ect, net::EFFECTIVE_CONNECTION_TYPE_LAST);
 }
 
+// Records the result of the coin flip in PreviewsUserData and UKM. This may be
+// called multiple times during a navigation (like on redirects), but once
+// called with one |result|, that value is not expected to change.
+void UpdatePreviewsUserDataAndRecordCoinFlipResult(
+    content::NavigationHandle* navigation_handle,
+    previews::PreviewsUserData* previews_user_data,
+    previews::CoinFlipHoldbackResult result) {
+  DCHECK_NE(result, previews::CoinFlipHoldbackResult::kNotSet);
+
+  // We only want to record the coin flip once per navigation when set, so if it
+  // is already set then we're done.
+  if (previews_user_data->coin_flip_holdback_result() !=
+      previews::CoinFlipHoldbackResult::kNotSet) {
+    // The coin flip result value should never change its set state during a
+    // navigation.
+    DCHECK_EQ(previews_user_data->coin_flip_holdback_result(), result);
+    return;
+  }
+
+  previews_user_data->set_coin_flip_holdback_result(result);
+
+  ukm::builders::PreviewsCoinFlip builder(ukm::ConvertToSourceId(
+      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID));
+  builder.Setcoin_flip_result(static_cast<int>(result));
+  builder.Record(ukm::UkmRecorder::Get());
+}
+
 content::PreviewsState DetermineCommittedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
@@ -516,13 +547,13 @@ content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
     // will also be held back here. However, since a before-commit preview was
     // likely, we turn off all of them to make analysis simpler and this code
     // more robust.
-    previews_data->set_coin_flip_holdback_result(
-        CoinFlipHoldbackResult::kHoldback);
+    UpdatePreviewsUserDataAndRecordCoinFlipResult(
+        navigation_handle, previews_data, CoinFlipHoldbackResult::kHoldback);
     return content::PREVIEWS_OFF;
   }
 
-  previews_data->set_coin_flip_holdback_result(
-      CoinFlipHoldbackResult::kAllowed);
+  UpdatePreviewsUserDataAndRecordCoinFlipResult(
+      navigation_handle, previews_data, CoinFlipHoldbackResult::kAllowed);
   return initial_state;
 }
 
@@ -555,13 +586,14 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
           CoinFlipHoldbackResult::kNotSet);
       return initial_state;
     }
-    previews_data->set_coin_flip_holdback_result(
-        CoinFlipHoldbackResult::kHoldback);
+
+    UpdatePreviewsUserDataAndRecordCoinFlipResult(
+        navigation_handle, previews_data, CoinFlipHoldbackResult::kHoldback);
     return content::PREVIEWS_OFF;
   }
 
-  previews_data->set_coin_flip_holdback_result(
-      CoinFlipHoldbackResult::kAllowed);
+  UpdatePreviewsUserDataAndRecordCoinFlipResult(
+      navigation_handle, previews_data, CoinFlipHoldbackResult::kAllowed);
   return initial_state;
 }
 

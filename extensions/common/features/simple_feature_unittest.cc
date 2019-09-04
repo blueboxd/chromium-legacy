@@ -1006,11 +1006,8 @@ TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
 
-  // Expect the feature is not allowed, since the initial state is disallowed.
-  // TODO(crbug.com/979790): This will default to allowed once the transition
-  // to blocklisting unsupported APIs is complete. This will require swapping
-  // these two EXPECTs.
-  EXPECT_EQ(Feature::INVALID_CONTEXT,
+  // Expect the feature is allowed, since the default is to allow.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
                 .IsAvailableToContext(
                     extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -1029,9 +1026,9 @@ TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
                                       Feature::CHROMEOS_PLATFORM)
                 .result());
 
-  // Enable the feature for service workers.
-  feature.set_disallow_for_service_workers(false);
-  EXPECT_EQ(Feature::IS_AVAILABLE,
+  // Disable the feature for service workers. The feature should be disallowed.
+  feature.set_disallow_for_service_workers(true);
+  EXPECT_EQ(Feature::INVALID_CONTEXT,
             feature
                 .IsAvailableToContext(
                     extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,

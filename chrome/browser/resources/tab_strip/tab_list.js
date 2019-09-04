@@ -58,6 +58,7 @@ class TabListElement extends CustomElement {
       this.tabsApiHandler_.onActivated.addListener(
           this.onTabActivated_.bind(this));
       this.tabsApiHandler_.onCreated.addListener(this.onTabCreated_.bind(this));
+      this.tabsApiHandler_.onMoved.addListener(this.onTabMoved_.bind(this));
       this.tabsApiHandler_.onRemoved.addListener(this.onTabRemoved_.bind(this));
       this.tabsApiHandler_.onUpdated.addListener(this.onTabUpdated_.bind(this));
     });
@@ -140,6 +141,22 @@ class TabListElement extends CustomElement {
     }
 
     this.insertTabOrMoveTo_(this.createTabElement_(tab), tab.index);
+  }
+
+  /**
+   * @param {number} tabId
+   * @param {!TabMovedInfo} moveInfo
+   * @private
+   */
+  onTabMoved_(tabId, moveInfo) {
+    if (moveInfo.windowId !== this.windowId_) {
+      return;
+    }
+
+    const movedTab = this.findTabElement_(tabId);
+    if (movedTab) {
+      this.insertTabOrMoveTo_(movedTab, moveInfo.toIndex);
+    }
   }
 
   /**

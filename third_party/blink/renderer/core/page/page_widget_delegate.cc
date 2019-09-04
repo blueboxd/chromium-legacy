@@ -57,7 +57,7 @@ void PageWidgetDelegate::Animate(Page& page,
 }
 
 void PageWidgetDelegate::PostAnimate(Page& page) {
-  page.Animator().RunPostAnimationFrameCallbacks();
+  page.Animator().PostAnimate();
 }
 
 void PageWidgetDelegate::UpdateLifecycle(

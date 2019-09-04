@@ -305,6 +305,8 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
         try {
           if (deviceOperator) {
             await deviceOperator.setFpsRange(deviceId, constraints);
+            await deviceOperator.setCaptureIntent(
+                deviceId, this.modes_.getCaptureIntent(mode));
           }
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
           if (!supportedModes) {

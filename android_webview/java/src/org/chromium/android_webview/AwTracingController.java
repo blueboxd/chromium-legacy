@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import org.chromium.base.TraceRecordMode;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -71,7 +72,7 @@ public class AwTracingController {
     // boolean mIsTracing;
 
     public AwTracingController() {
-        mNativeAwTracingController = nativeInit();
+        mNativeAwTracingController = AwTracingControllerJni.get().init(AwTracingController.this);
     }
 
     // Start tracing
@@ -83,7 +84,8 @@ public class AwTracingController {
 
         String categoryFilter =
                 constructCategoryFilterString(predefinedCategories, customIncludedCategories);
-        nativeStart(mNativeAwTracingController, categoryFilter, mode);
+        AwTracingControllerJni.get().start(
+                mNativeAwTracingController, AwTracingController.this, categoryFilter, mode);
         return RESULT_SUCCESS;
     }
 
@@ -91,12 +93,14 @@ public class AwTracingController {
     public boolean stopAndFlush(@Nullable OutputStream outputStream) {
         if (!isTracing()) return false;
         mOutputStream = outputStream;
-        nativeStopAndFlush(mNativeAwTracingController);
+        AwTracingControllerJni.get().stopAndFlush(
+                mNativeAwTracingController, AwTracingController.this);
         return true;
     }
 
     public boolean isTracing() {
-        return nativeIsTracing(mNativeAwTracingController);
+        return AwTracingControllerJni.get().isTracing(
+                mNativeAwTracingController, AwTracingController.this);
     }
 
     // Combines configuration bits into a category string usable by chromium.
@@ -152,9 +156,13 @@ public class AwTracingController {
     }
 
     private long mNativeAwTracingController;
-    private native long nativeInit();
-    private native boolean nativeStart(
-            long nativeAwTracingController, String categories, int traceMode);
-    private native boolean nativeStopAndFlush(long nativeAwTracingController);
-    private native boolean nativeIsTracing(long nativeAwTracingController);
+
+    @NativeMethods
+    interface Natives {
+        long init(AwTracingController caller);
+        boolean start(long nativeAwTracingController, AwTracingController caller, String categories,
+                int traceMode);
+        boolean stopAndFlush(long nativeAwTracingController, AwTracingController caller);
+        boolean isTracing(long nativeAwTracingController, AwTracingController caller);
+    }
 }

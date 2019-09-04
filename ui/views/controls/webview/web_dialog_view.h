@@ -73,7 +73,6 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
                 bool use_dialog_frame = false);
   ~WebDialogView() override;
 
-  // For testing.
   content::WebContents* web_contents();
 
   // Overridden from views::ClientView:

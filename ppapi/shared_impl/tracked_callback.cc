@@ -73,8 +73,7 @@ TrackedCallback::TrackedCallback(Resource* resource,
     if (is_blocking()) {
       // This is a blocking completion callback, so we will need a condition
       // variable for blocking & signalling the calling thread.
-      operation_completed_condvar_.reset(
-          new base::ConditionVariable(proxy_lock));
+      operation_completed_condvar_.reset(new base::ConditionVariable(&lock_));
     } else {
       // It's a non-blocking callback, so we should have a MessageLoopResource
       // to dispatch to. Note that we don't error check here, though. Later,
@@ -191,16 +190,20 @@ int32_t TrackedCallback::BlockUntilComplete() {
   // Protect us from being deleted to ensure operation_completed_condvar_ is
   // available to wait on when we drop our lock.
   scoped_refptr<TrackedCallback> thiz(this);
+
+  // Unlock proxy lock temporarily; We don't want to block whole proxy while
+  // we're waiting for the callback
+  ProxyLock::Release();
+
   while (!completed_) {
-    // Unlock our lock temporarily; any thread that tries to signal us will need
-    // the lock.
-    lock_.Release();
     operation_completed_condvar_->Wait();
-    // Note that the condvar releases the ProxyLock during Wait and re-acquires
-    // the ProxyLock when it's signaled. We reacquire lock_ immediately after,
-    // preserving lock order.
-    ProxyLock::AssertAcquired();
-    lock_.Acquire();
+  }
+
+  // Now we need to get ProxyLock back, but because it's used in outer code to
+  // maintain lock order we need to release our lock first
+  {
+    base::AutoUnlock unlock(lock_);
+    ProxyLock::Acquire();
   }
 
   if (!completion_task_.is_null()) {

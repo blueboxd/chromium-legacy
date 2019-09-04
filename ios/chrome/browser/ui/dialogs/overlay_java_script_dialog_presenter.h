@@ -19,6 +19,9 @@ class OverlayJavaScriptDialogPresenter final
   OverlayJavaScriptDialogPresenter();
   ~OverlayJavaScriptDialogPresenter() override;
 
+  // Notifies the presenter that the presenter that its tab is being closed.
+  void Close();
+
   // web::JavaScriptDialogPresenter:
   void RunJavaScriptDialog(web::WebState* web_state,
                            const GURL& origin_url,
@@ -37,6 +40,7 @@ class OverlayJavaScriptDialogPresenter final
 
   DISALLOW_COPY_AND_ASSIGN(OverlayJavaScriptDialogPresenter);
 
+  bool closing_ = false;
   base::WeakPtrFactory<OverlayJavaScriptDialogPresenter> weak_factory_;
 };
 

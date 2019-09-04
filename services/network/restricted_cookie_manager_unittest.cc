@@ -556,6 +556,27 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieHttpOnly) {
   }
 }
 
+TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieValidateDomain) {
+  GURL other_site("https://not-example.com");
+  auto cookie = net::CanonicalCookie::Create(
+      other_site, "cookie=foo;domain=not-example.com", base::Time::Now(),
+      base::nullopt);
+  ASSERT_EQ(".not-example.com", cookie->Domain());
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      *cookie, GURL("http://example.com/test"), GURL("http://example.com")));
+  ASSERT_EQ(1u, recorded_activity().size());
+  EXPECT_TRUE(recorded_activity()[0].status.HasExclusionReason(
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH));
+
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "cookie";
+  options->match_type = mojom::CookieMatchType::EQUALS;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+  EXPECT_THAT(cookies, testing::SizeIs(0));
+}
+
 TEST_P(RestrictedCookieManagerTest, SetCookieFromString) {
   EXPECT_TRUE(backend()->SetCookieFromString(
       GURL("http://example.com/test/"), GURL("http://example.com"),

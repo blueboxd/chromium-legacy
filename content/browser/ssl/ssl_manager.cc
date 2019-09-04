@@ -119,12 +119,8 @@ void HandleSSLErrorOnUI(
   if (!web_contents) {
     // Requests can fail to dispatch because they don't have a WebContents. See
     // https://crbug.com/86537. In this case we have to make a decision in this
-    // function, so we ignore revocation check failures.
-    if (net::IsCertStatusMinorError(ssl_info.cert_status)) {
-      handler->ContinueRequest();
-    } else {
-      handler->CancelRequest();
-    }
+    // function.
+    handler->CancelRequest();
     return;
   }
 
@@ -357,11 +353,6 @@ void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
   }
 
   DCHECK(net::IsCertificateError(handler->cert_error()));
-  if (handler->cert_error() == net::ERR_CERT_NO_REVOCATION_MECHANISM ||
-      handler->cert_error() == net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION) {
-    handler->ContinueRequest();
-    return;
-  }
   OnCertErrorInternal(std::move(handler));
 }
 

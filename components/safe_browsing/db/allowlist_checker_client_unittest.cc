@@ -75,7 +75,6 @@ class AllowlistCheckerClientTest : public testing::Test {
 TEST_F(AllowlistCheckerClientTest, TestCsdListMatch) {
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url_, _))
       .WillOnce(Return(AsyncMatch::MATCH));
-
   MockBoolCallback callback;
   EXPECT_CALL(callback, Run(true /* did_match_allowlist */));
   AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
@@ -85,7 +84,6 @@ TEST_F(AllowlistCheckerClientTest, TestCsdListMatch) {
 TEST_F(AllowlistCheckerClientTest, TestCsdListNoMatch) {
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url_, _))
       .WillOnce(Return(AsyncMatch::NO_MATCH));
-
   MockBoolCallback callback;
   EXPECT_CALL(callback, Run(false /* did_match_allowlist */));
   AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,

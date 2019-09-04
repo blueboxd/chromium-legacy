@@ -77,7 +77,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -947,7 +946,9 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
 
     ui::PaintRecorder recorder(paint_info.context(), size());
     // TODO(sky/glen): make me pretty!
-    recorder.canvas()->FillRect(indicator_bounds, GetBookmarkBarTextColor());
+    recorder.canvas()->FillRect(
+        indicator_bounds,
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
 }
 
@@ -1559,13 +1560,14 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->SetAccessibleName(node->GetTitle());
   button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   // We don't always have a theme provider (ui tests, for example).
+  SkColor text_color = gfx::kPlaceholderColor;
   const ui::ThemeProvider* const tp = GetThemeProvider();
   if (tp) {
-    SkColor color = GetBookmarkBarTextColor();
-    button->SetEnabledTextColors(color);
+    text_color = tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+    button->SetEnabledTextColors(text_color);
     if (node->is_folder()) {
       button->SetImage(views::Button::STATE_NORMAL,
-                       chrome::GetBookmarkFolderIcon(color));
+                       chrome::GetBookmarkFolderIcon(text_color));
     }
   }
 
@@ -1581,8 +1583,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
-        const gfx::ImageSkia icon = gfx::CreateVectorIcon(
-            kDefaultTouchFaviconIcon, GetBookmarkBarTextColor());
+        const gfx::ImageSkia icon =
+            gfx::CreateVectorIcon(kDefaultTouchFaviconIcon, text_color);
         const gfx::ImageSkia mask =
             gfx::CreateVectorIcon(kDefaultTouchFaviconMaskIcon, SK_ColorBLACK);
         favicon = gfx::ImageSkiaOperations::CreateMaskedImage(icon, mask);
@@ -1592,12 +1594,10 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
       themify_icon = true;
     }
 
-    if (themify_icon && GetThemeProvider() &&
-        GetThemeProvider()->HasCustomColor(
-            ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)) {
+    if (themify_icon && tp &&
+        tp->HasCustomColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)) {
       favicon = gfx::ImageSkiaOperations::CreateColorMask(
-          favicon, GetThemeProvider()->GetColor(
-                       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
+          favicon, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
     }
 
     button->SetImage(views::Button::STATE_NORMAL, favicon);
@@ -1911,7 +1911,8 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
                     bookmark_buttons_[i]);
   }
 
-  const SkColor color = GetBookmarkBarTextColor();
+  const SkColor color =
+      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   other_bookmarks_button_->SetEnabledTextColors(color);
   other_bookmarks_button_->SetImage(views::Button::STATE_NORMAL,
                                     chrome::GetBookmarkFolderIcon(color));
@@ -2010,12 +2011,4 @@ size_t BookmarkBarView::GetIndexForButton(views::View* button) {
     return size_t{-1};
 
   return size_t{it - bookmark_buttons_.cbegin()};
-}
-
-SkColor BookmarkBarView::GetBookmarkBarTextColor() {
-  const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  return color_utils::BlendForMinContrast(
-             theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
-             theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))
-      .color;
 }

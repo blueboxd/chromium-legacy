@@ -23,11 +23,9 @@
 
 namespace {
 
-// First story, centered around not having to remember your password.
-constexpr char kStoryA[] = "convenience";
-// Second story, centered around avaiability on multiple devices.
+// Story centered on your password being available on multiple devices.
 constexpr char kStoryB[] = "access";
-// Third story, centered around password safety and leak detection.
+// Story centered on password safety and leak detection.
 constexpr char kStoryC[] = "safety";
 
 // Retrieve the title and explanation strings that will be used for the
@@ -37,13 +35,15 @@ constexpr char kStoryC[] = "safety";
 std::pair<base::string16, base::string16> GetOnboardingTitleAndDetails() {
   std::string story = base::GetFieldTrialParamValueByFeature(
       password_manager::features::kPasswordManagerOnboardingAndroid, "story");
-  base::string16 onboarding_title, onboarding_details;
-  if (story.empty() || story == kStoryA) {
-    onboarding_title =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A);
-    onboarding_details =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A);
-  } else if (story == kStoryB) {
+
+  // By default the story centered on not having to remember your password is
+  // shown.
+  base::string16 onboarding_title =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A);
+  base::string16 onboarding_details =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A);
+
+  if (story == kStoryB) {
     onboarding_title =
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_B);
     onboarding_details =
@@ -54,6 +54,7 @@ std::pair<base::string16, base::string16> GetOnboardingTitleAndDetails() {
     onboarding_details =
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_C);
   }
+
   return {onboarding_title, onboarding_details};
 }
 

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "android_webview/browser/aw_contents.h"
-#include "android_webview/browser/aw_contents_network_client.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_javascript_dialog_manager.h"
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/permission/media_access_permission_request.h"
@@ -229,7 +229,7 @@ void AwWebContentsDelegate::WebContentsCreated(
     const std::string& frame_name,
     const GURL& target_url,
     content::WebContents* new_contents) {
-  AwContentsNetworkClient::RegisterPendingContents(new_contents);
+  AwContentsIoThreadClient::RegisterPendingContents(new_contents);
 }
 
 void AwWebContentsDelegate::CloseContents(WebContents* source) {
@@ -278,12 +278,12 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
     std::move(callback).Run(
         blink::MediaStreamDevices(),
         blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
-        std::unique_ptr<content::MediaStreamUI>());
+        nullptr);
     return;
   }
   aw_contents->GetPermissionRequestHandler()->SendRequest(
-      std::unique_ptr<AwPermissionRequestDelegate>(
-          new MediaAccessPermissionRequest(request, std::move(callback))));
+      std::make_unique<MediaAccessPermissionRequest>(request,
+                                                     std::move(callback)));
 }
 
 void AwWebContentsDelegate::EnterFullscreenModeForTab(

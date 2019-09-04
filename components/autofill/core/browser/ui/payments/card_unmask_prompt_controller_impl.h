@@ -38,7 +38,8 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   void OnUnmaskPromptAccepted(const base::string16& cvc,
                               const base::string16& exp_month,
                               const base::string16& exp_year,
-                              bool should_store_pan) override;
+                              bool should_store_pan,
+                              bool enable_fido_auth) override;
   void NewCardLinkClicked() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;

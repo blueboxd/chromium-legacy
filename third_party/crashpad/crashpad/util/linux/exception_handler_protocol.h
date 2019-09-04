@@ -21,6 +21,7 @@
 #include <sys/types.h>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "util/file/file_io.h"
 #include "util/misc/address_types.h"
 
@@ -50,6 +51,13 @@ class ExceptionHandlerProtocol {
     //! \brief The address in the client's address space of a
     //!     SanitizationInformation struct, or 0 if there is no such struct.
     VMAddress sanitization_information_address;
+
+#if defined(OS_LINUX)
+    //! \brief Indicates that the client is likely in a crash loop if a crash
+    //!     occurs before this timestamp. This value is only used by ChromeOS's
+    //!     `/sbin/crash_reporter`.
+    uint64_t crash_loop_before_time;
+#endif
   };
 
   //! \brief The signal used to indicate a crash dump is complete.

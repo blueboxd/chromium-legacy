@@ -255,6 +255,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     webapk::Image* best_primary_icon_image = web_app_manifest->add_icons();
     SetImageData(best_primary_icon_image, primary_icon);
     best_primary_icon_image->add_usages(webapk::Image::PRIMARY_ICON);
+    if (is_primary_icon_maskable) {
+      best_primary_icon_image->add_purposes(webapk::Image::MASKABLE);
+    } else {
+      best_primary_icon_image->add_purposes(webapk::Image::ANY);
+    }
 
     if (!badge_icon.drawsNothing()) {
       webapk::Image* best_badge_icon_image = web_app_manifest->add_icons();
@@ -268,7 +273,11 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     if (entry.first == shortcut_info.best_primary_icon_url.spec()) {
       SetImageData(image, primary_icon);
       image->add_usages(webapk::Image::PRIMARY_ICON);
-      image->set_is_primay_icon_maskable(is_primary_icon_maskable);
+      if (is_primary_icon_maskable) {
+        image->add_purposes(webapk::Image::MASKABLE);
+      } else {
+        image->add_purposes(webapk::Image::ANY);
+      }
     }
     if (entry.first == shortcut_info.best_badge_icon_url.spec()) {
       if (shortcut_info.best_badge_icon_url !=

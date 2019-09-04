@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h"
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/display_cutout_client_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_impl.h"
@@ -69,7 +70,9 @@ namespace {
 
 class EndOfTaskRunner : public Thread::TaskObserver {
  public:
-  void WillProcessTask(const base::PendingTask&) override {}
+  void WillProcessTask(const base::PendingTask&) override {
+    AnimationClock::NotifyTaskStart();
+  }
 
   void DidProcessTask(const base::PendingTask&) override {
     // TODO(tzik): Move rejected promise handling to EventLoop.

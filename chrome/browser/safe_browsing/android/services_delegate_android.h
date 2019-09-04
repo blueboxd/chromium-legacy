@@ -45,10 +45,6 @@ class ServicesDelegateAndroid : public ServicesDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
-  void CreatePasswordProtectionService(Profile* profile) override;
-  void RemovePasswordProtectionService(Profile* profile) override;
-  PasswordProtectionService* GetPasswordProtectionService(
-      Profile* profile) const override;
 
   void CreateTelemetryService(Profile* profile) override;
   void RemoveTelemetryService() override;
@@ -71,8 +67,6 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   // has legacy extended reporting enabled. In such a case, this method reports
   // LEGACY as the current level.
   ExtendedReportingLevel GetEstimatedExtendedReportingLevel() const;
-
-  SafeBrowsingService* const safe_browsing_service_;
 
   // The telemetry service tied to the current profile.
   std::unique_ptr<AndroidTelemetryService> telemetry_service_;

@@ -686,9 +686,7 @@ void SignedExchangeHandler::OnVerifyCert(
   ssl_info.is_issued_by_known_root = cv_result.is_issued_by_known_root;
   ssl_info.public_key_hashes = cv_result.public_key_hashes;
   ssl_info.ocsp_result = cv_result.ocsp_result;
-  ssl_info.is_fatal_cert_error =
-      net::IsCertStatusError(ssl_info.cert_status) &&
-      !net::IsCertStatusMinorError(ssl_info.cert_status);
+  ssl_info.is_fatal_cert_error = net::IsCertStatusError(ssl_info.cert_status);
   ssl_info.UpdateCertificateTransparencyInfo(ct_result);
 
   if (devtools_proxy_) {

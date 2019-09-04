@@ -195,6 +195,12 @@ int32_t GpuVideoAcceleratorFactoriesImpl::GetCommandBufferRouteId() {
 bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
     media::VideoDecoderImplementation implementation,
     const media::VideoDecoderConfig& config) {
+  // There is no support for alpha channel hardware decoding yet.
+  if (config.alpha_mode() == media::VideoDecoderConfig::AlphaMode::kHasAlpha) {
+    DVLOG(1) << "Alpha transparency formats are not supported.";
+    return false;
+  }
+
   base::AutoLock lock(supported_decoder_configs_lock_);
 
   // If GetSupportedConfigs() has not completed (or was never started), report

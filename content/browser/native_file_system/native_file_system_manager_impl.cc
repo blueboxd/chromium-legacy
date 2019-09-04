@@ -106,6 +106,12 @@ bool HasTransientUserActivation(int render_process_id, int frame_id) {
   return rfh->HasTransientUserActivation();
 }
 
+bool CreateOrTruncateFile(const base::FilePath& path) {
+  int creation_flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
+  base::File file(path, creation_flags);
+  return file.IsValid();
+}
+
 }  // namespace
 
 NativeFileSystemManagerImpl::SharedHandleState::SharedHandleState(
@@ -168,17 +174,6 @@ void NativeFileSystemManagerImpl::BindReceiverFromUIThread(
                  base::BindOnce(&NativeFileSystemManagerImpl::BindReceiver,
                                 base::Unretained(manager), binding_context,
                                 std::move(receiver)));
-}
-
-// static
-void NativeFileSystemManagerImpl::BindRequestFromUIThread(
-    StoragePartitionImpl* storage_partition,
-    const BindingContext& binding_context,
-    blink::mojom::NativeFileSystemManagerRequest request) {
-  // Implicit conversion |request| to
-  // mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>.
-  BindReceiverFromUIThread(storage_partition, binding_context,
-                           std::move(request));
 }
 
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
@@ -480,17 +475,44 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     return;
   }
 
-  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
-  result_entries.reserve(entries.size());
-  for (const auto& entry : entries) {
-    if (options.type() == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
-      result_entries.push_back(
-          CreateWritableFileEntryFromPath(binding_context, entry));
-    } else {
-      result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
-    }
+  if (options.type() == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
+    DCHECK_EQ(entries.size(), 1u);
+    // Create file if it doesn't yet exist, and truncate file if it does exist.
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+         base::MayBlock()},
+        base::BindOnce(&CreateOrTruncateFile, entries.front()),
+        base::BindOnce(
+            &NativeFileSystemManagerImpl::DidCreateOrTruncateSaveFile, this,
+            binding_context, entries.front(), std::move(callback)));
+    return;
   }
 
+  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
+  result_entries.reserve(entries.size());
+  for (const auto& entry : entries)
+    result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
+  std::move(callback).Run(native_file_system_error::Ok(),
+                          std::move(result_entries));
+}
+
+void NativeFileSystemManagerImpl::DidCreateOrTruncateSaveFile(
+    const BindingContext& binding_context,
+    const base::FilePath& path,
+    ChooseEntriesCallback callback,
+    bool success) {
+  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
+  if (!success) {
+    std::move(callback).Run(
+        native_file_system_error::FromStatus(
+            blink::mojom::NativeFileSystemStatus::kOperationFailed,
+            "Failed to create or truncate file"),
+        std::move(result_entries));
+    return;
+  }
+  result_entries.push_back(
+      CreateWritableFileEntryFromPath(binding_context, path));
   std::move(callback).Run(native_file_system_error::Ok(),
                           std::move(result_entries));
 }

@@ -11,7 +11,6 @@ import("//chrome/android/modules/chrome_feature_modules.gni")
 # Supports most attributes of the android_app_bundle_module target, plus:
 #   module_desc: Descriptor of this module. See
 #     //chrome/android/modules/chrome_feature_modules.gni for the format.
-#   module_name_suffix: Suffix added to the module name.
 #   is_monochrome_or_trichrome: (Optional) Whether this module is packaged into
 #     Monochrome or Trichrome.
 #   is_64_bit_browser: (Optional) Whether Chrome (as opposed to WebView) runs in
@@ -20,7 +19,6 @@ import("//chrome/android/modules/chrome_feature_modules.gni")
 #     WebView.
 template("chrome_feature_module") {
   assert(defined(invoker.module_desc))
-  assert(defined(invoker.module_name_suffix))
   _module_desc = invoker.module_desc
   _is_monochrome_or_trichrome = defined(invoker.is_monochrome_or_trichrome) &&
                                 invoker.is_monochrome_or_trichrome
@@ -28,6 +26,11 @@ template("chrome_feature_module") {
       defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
   _include_32_bit_webview =
       defined(invoker.include_32_bit_webview) && invoker.include_32_bit_webview
+
+  # TODO(tiborg): Remove once downstream use removed.
+  if (defined(invoker.module_name_suffix)) {
+    not_needed(invoker, [ "module_name_suffix" ])
+  }
 
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
@@ -40,9 +43,6 @@ template("chrome_feature_module") {
                              "version_name",
                            ])
     android_manifest = _module_desc.android_manifest
-
-    # TODO(tiborg): Remove module_name flag from android_app_bundle_module.
-    module_name = "${_module_desc.name}${invoker.module_name_suffix}"
     target_sdk_version = android_sdk_version
     deps = []
     if (defined(_module_desc.java_deps)) {

@@ -570,6 +570,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
   RenderFrameHostImpl* rfh_d = rfh_b->child_at(0)->current_frame_host();
+  // Set an arbitrarily long timeout to ensure the subframe unload timer doesn't
+  // fire before we call OnDetach().
+  rfh_d->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
   RenderFrameDeletedObserver delete_d(rfh_d);
 
@@ -632,6 +635,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
   b1->GetProcess()->AddFilter(detach_filter_b.get());
 
   a1->DisableSwapOutTimerForTesting();
+  // Set an arbitrarily long timeout to ensure the subframe unload timer doesn't
+  // fire before we call OnDetach().
+  b1->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
   // Add unload handler on A2, but not on the other frames.
   UnloadPrint(a2->frame_tree_node(), "A2");

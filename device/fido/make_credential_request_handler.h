@@ -14,10 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_request_handler.h"
+#include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
@@ -28,7 +29,13 @@ namespace device {
 
 class FidoAuthenticator;
 class FidoDiscoveryFactory;
-class AuthenticatorMakeCredentialResponse;
+
+namespace pin {
+struct EmptyResponse;
+struct KeyAgreementResponse;
+struct RetriesResponse;
+class TokenResponse;
+}  // namespace pin
 
 enum class MakeCredentialStatus {
   kSuccess,
@@ -50,9 +57,13 @@ enum class MakeCredentialStatus {
 };
 
 class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
-    : public FidoRequestHandler<MakeCredentialStatus,
-                                AuthenticatorMakeCredentialResponse> {
+    : public FidoRequestHandlerBase {
  public:
+  using CompletionCallback = base::OnceCallback<void(
+      MakeCredentialStatus,
+      base::Optional<AuthenticatorMakeCredentialResponse>,
+      const FidoAuthenticator*)>;
+
   MakeCredentialRequestHandler(
       service_manager::Connector* connector,
       FidoDiscoveryFactory* fido_discovery_factory,
@@ -100,6 +111,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
   void OnHavePINToken(CtapDeviceResponseCode status,
                       base::Optional<pin::TokenResponse> response);
 
+  CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   CtapMakeCredentialRequest request_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;

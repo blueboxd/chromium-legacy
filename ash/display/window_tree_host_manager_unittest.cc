@@ -1418,6 +1418,7 @@ class RootWindowTestObserver : public aura::WindowObserver {
     shelf_display_bounds_ = screen_util::GetDisplayBoundsWithShelf(window);
   }
 
+  // Returns the shelf display bounds, in screen coordinates.
   const gfx::Rect& shelf_display_bounds() const {
     return shelf_display_bounds_;
   }
@@ -1460,7 +1461,8 @@ TEST_F(WindowTreeHostManagerTest, ReplacePrimary) {
 
   display_info_list.push_back(new_first_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("0,0 500x500", test_observer.shelf_display_bounds().ToString());
+  // The shelf is now on the second display.
+  EXPECT_EQ("400,0 500x500", test_observer.shelf_display_bounds().ToString());
   primary_root->RemoveObserver(&test_observer);
 }
 

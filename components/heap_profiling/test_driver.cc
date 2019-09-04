@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace heap_profiling {
@@ -682,6 +683,12 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
     return true;
   }
 
+  service_manager::Connector* connector = content::GetSystemConnector();
+  if (!connector) {
+    LOG(ERROR) << "A system Connector is not available in this environment.";
+    return false;
+  }
+
   wait_for_profiling_to_start_ = true;
   base::OnceClosure start_callback;
 
@@ -700,8 +707,9 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
-                                   sampling_rate, std::move(start_callback));
+  Supervisor::GetInstance()->Start(connector, options_.mode,
+                                   options_.stack_mode, sampling_rate,
+                                   std::move(start_callback));
 
   return true;
 }
@@ -727,6 +735,12 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
     return true;
   }
 
+  service_manager::Connector* connector = content::GetSystemConnector();
+  if (!connector) {
+    LOG(ERROR) << "A system Connector is not available in this environment.";
+    return false;
+  }
+
   // When this is not-null, initialization should wait for the QuitClosure to be
   // called.
   std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
@@ -744,8 +758,9 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
-                                   sampling_rate, std::move(start_callback));
+  Supervisor::GetInstance()->Start(connector, options_.mode,
+                                   options_.stack_mode, sampling_rate,
+                                   std::move(start_callback));
 
   run_loop->Run();
 

@@ -73,7 +73,7 @@ const base::Feature kUsbHostFeature{"ArcUsbHost",
 // When enabled, chrome://settings and Files.app will ask if the user wants
 // to expose USB storage devices to ARC.
 const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARC VPN integration.
 // When enabled, Chrome traffic will be routed through VPNs connected in

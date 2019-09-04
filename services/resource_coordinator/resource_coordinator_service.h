@@ -5,33 +5,50 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_SERVICE_H_
 #define SERVICES_RESOURCE_COORDINATOR_RESOURCE_COORDINATOR_SERVICE_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "base/memory/weak_ptr.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
-#include "services/resource_coordinator/public/mojom/resource_coordinator_service.mojom.h"
+
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace resource_coordinator {
 
-class ResourceCoordinatorService : public mojom::ResourceCoordinatorService {
+class ResourceCoordinatorService : public service_manager::Service {
  public:
   explicit ResourceCoordinatorService(
-      mojo::PendingReceiver<mojom::ResourceCoordinatorService> receiver);
+      service_manager::mojom::ServiceRequest request);
   ~ResourceCoordinatorService() override;
 
-  // mojom::ResourceCoordinatorService implementation:
-  void BindMemoryInstrumentationCoordinatorController(
-      mojo::PendingReceiver<
-          memory_instrumentation::mojom::CoordinatorController> receiver)
-      override;
-  void RegisterHeapProfiler(
-      mojo::PendingRemote<memory_instrumentation::mojom::HeapProfiler> profiler,
-      mojo::PendingReceiver<memory_instrumentation::mojom::HeapProfilerHelper>
-          receiver) override;
+  // service_manager::Service:
+  void OnStart() override;
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  const mojo::Receiver<mojom::ResourceCoordinatorService> receiver_;
-  memory_instrumentation::CoordinatorImpl memory_instrumentation_coordinator_;
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive service_keepalive_;
+
+  service_manager::BinderRegistryWithArgs<
+      const service_manager::BindSourceInfo&>
+      registry_;
+  std::unique_ptr<memory_instrumentation::CoordinatorImpl>
+      memory_instrumentation_coordinator_;
+
+  // WeakPtrFactory members should always come last so WeakPtrs are destructed
+  // before other members.
+  base::WeakPtrFactory<ResourceCoordinatorService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorService);
 };

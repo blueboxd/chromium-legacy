@@ -42,7 +42,7 @@ NetworkChangeNotifierPosix::~NetworkChangeNotifierPosix() {
 }
 
 void NetworkChangeNotifierPosix::OnDNSChanged() {
-  system_dns_config_notifier()->RefreshConfig();
+  GetCurrentSystemDnsConfigNotifier()->RefreshConfig();
 }
 
 void NetworkChangeNotifierPosix::OnIPAddressChanged() {

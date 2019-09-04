@@ -14,10 +14,6 @@
 
 class BookmarkUndoService;
 
-namespace autofill {
-class PersonalDataManager;
-}  // namespace autofill
-
 namespace bookmarks {
 class BookmarkModel;
 }  // namespace bookmarks
@@ -70,7 +66,6 @@ class BrowserSyncClient : public syncer::SyncClient {
   virtual sync_sessions::SessionSyncService* GetSessionSyncService() = 0;
   virtual send_tab_to_self::SendTabToSelfSyncService*
   GetSendTabToSelfSyncService() = 0;
-  virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoService() = 0;
   virtual base::RepeatingClosure GetPasswordStateChangedCallback() = 0;
 

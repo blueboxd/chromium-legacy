@@ -201,8 +201,7 @@
           initWithBrowserState:self.browserState
                   webStateList:self.tabModel.webStateList];
   _viewController = [[BrowserViewController alloc]
-                    initWithTabModel:self.tabModel
-                        browserState:self.browserState
+                     initWithBrowser:self.browser
                    dependencyFactory:factory
           applicationCommandEndpoint:self.applicationCommandHandler
                    commandDispatcher:self.dispatcher

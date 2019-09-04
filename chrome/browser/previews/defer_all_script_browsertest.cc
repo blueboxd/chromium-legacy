@@ -368,15 +368,25 @@ IN_PROC_BROWSER_TEST_P(
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);
 
   // Verify UKM entries.
-  using UkmEntry = ukm::builders::Previews;
-  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
-  ASSERT_EQ(1u, entries.size());
-  auto* entry = entries.at(0);
-  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
-                                      2);
-  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName, 1);
-  test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
-                                      true);
+  {
+    using UkmEntry = ukm::builders::Previews;
+    auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries.at(0);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName,
+                                        1);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
+                                        true);
+  }
+
+  {
+    using UkmEntry = ukm::builders::PreviewsCoinFlip;
+    auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    auto* entry = entries.at(0);
+    test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kcoin_flip_resultName,
+                                        2);
+  }
 }
 
 // The client_redirect_url (/client_redirect_base.html) performs a client

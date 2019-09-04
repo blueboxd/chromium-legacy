@@ -8,12 +8,14 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }  // namespace content
 
 namespace chromeos {
@@ -22,7 +24,9 @@ class LoginScreenExtensionUiDialogDelegate;
 
 // A WebDialogView used by chrome.loginScreenUi API calls. It hides the close
 // button if |LoginScreenExtensionUiDialogDelegate::CanCloseDialog()| is false.
-class LoginScreenExtensionUiWebDialogView : public views::WebDialogView {
+class LoginScreenExtensionUiWebDialogView
+    : public views::WebDialogView,
+      public ash::SystemTrayFocusObserver {
  public:
   explicit LoginScreenExtensionUiWebDialogView(
       content::BrowserContext* context,
@@ -31,7 +35,12 @@ class LoginScreenExtensionUiWebDialogView : public views::WebDialogView {
           handler);
   ~LoginScreenExtensionUiWebDialogView() override;
 
+  // views::WebDialogView
   bool ShouldShowCloseButton() const override;
+  bool TakeFocus(content::WebContents* source, bool reverse) override;
+
+  // ash::SystemTrayFocusObserver
+  void OnFocusLeavingSystemTray(bool reverse) override;
 
  private:
   LoginScreenExtensionUiDialogDelegate* delegate_ = nullptr;

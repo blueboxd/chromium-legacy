@@ -6,11 +6,13 @@ from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
+from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
-from .ir_map import IRMap
+from .exposure import Exposure
 from .idl_type import IdlType
+from .ir_map import IRMap
 from .literal_constant import LiteralConstant
 from .make_copy import make_copy
 from .reference import RefById
@@ -18,20 +20,19 @@ from .user_defined_type import UserDefinedType
 
 
 class Dictionary(UserDefinedType, WithExtendedAttributes,
-                 WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+                 WithCodeGeneratorInfo, WithExposure, WithComponent,
+                 WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-dictionaries"""
 
     class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      is_partial,
                      inherited=None,
                      own_members=None,
                      extended_attributes=None,
-                     code_generator_info=None,
                      component=None,
-                     components=None,
                      debug_info=None):
             assert isinstance(is_partial, bool)
             assert inherited is None or isinstance(inherited, RefById)
@@ -43,14 +44,17 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
                     if is_partial else IRMap.IR.Kind.DICTIONARY)
             IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(
-                self, component=component, components=components)
+            WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
+            WithComponent.__init__(self, component=component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
             self.inherited = inherited
             self.own_members = own_members
+
+        def iter_all_members(self):
+            return iter(self.own_members)
 
     def __init__(self, ir):
         assert isinstance(ir, Dictionary.IR)
@@ -61,6 +65,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
         WithCodeGeneratorInfo.__init__(
             self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
 
@@ -108,18 +113,16 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
 
 class DictionaryMember(WithIdentifier, WithExtendedAttributes,
-                       WithCodeGeneratorInfo, WithOwner, WithComponent,
-                       WithDebugInfo):
+                       WithCodeGeneratorInfo, WithExposure, WithOwner,
+                       WithComponent, WithDebugInfo):
     class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      idl_type=None,
                      default_value=None,
                      extended_attributes=None,
-                     code_generator_info=None,
                      component=None,
-                     components=None,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
             assert default_value is None or isinstance(default_value,
@@ -128,9 +131,9 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(
-                self, component=component, components=components)
+            WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
+            WithComponent.__init__(self, component=component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.idl_type = idl_type
@@ -145,6 +148,7 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
         WithCodeGeneratorInfo.__init__(
             self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)

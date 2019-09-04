@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "ui/gfx/android/java_bitmap.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -77,8 +78,14 @@ void DisplayAgentAndroid::ShowNotification(
   // test.
   auto java_notification_data = Java_DisplayAgent_buildNotificationData(
       env, ConvertUTF16ToJavaString(env, notification_data->title),
-      ConvertUTF16ToJavaString(env, notification_data->message),
-      nullptr /*icon*/);
+      ConvertUTF16ToJavaString(env, notification_data->message));
+
+  for (const auto& icon : notification_data->icons) {
+    // TODO(hesen): Support Android resource Id.
+    Java_DisplayAgent_addIconWithBitmap(
+        env, java_notification_data, static_cast<int>(icon.first /*IconType*/),
+        gfx::ConvertToJavaBitmap(&icon.second.bitmap));
+  }
 
   for (size_t i = 0; i < notification_data->buttons.size(); ++i) {
     const auto& button = notification_data->buttons[i];

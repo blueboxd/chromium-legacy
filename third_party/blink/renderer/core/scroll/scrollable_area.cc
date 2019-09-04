@@ -665,6 +665,12 @@ void ScrollableArea::CancelProgrammaticScrollAnimation() {
 
 bool ScrollableArea::ShouldScrollOnMainThread() const {
   if (GraphicsLayer* layer = LayerForScrolling()) {
+    // cc::Layer state is set through PaintArtifactCompositor::Update which is
+    // not run until the paint lifecycle phase.
+    DCHECK(!GetDocument() || GetDocument()->Lifecycle().GetState() >=
+                                 DocumentLifecycle::kInPaint);
+    // TODO(pdr): There is no need to read this data off the cc::Layer because
+    // we can query the blink-side property tree instead.
     uint32_t reasons = layer->CcLayer()->GetMainThreadScrollingReasons();
     // Should scroll on main thread unless the reason is the one that is set
     // by the ScrollAnimator, in which case, the animation can still be
@@ -731,6 +737,10 @@ void ScrollableArea::ShowOverlayScrollbars() {
   if (!scrollbar_captured_ && !mouse_over_scrollbar_) {
     fade_overlay_scrollbars_timer_->StartOneShot(time_until_disable, FROM_HERE);
   }
+}
+
+const Document* ScrollableArea::GetDocument() const {
+  return &GetLayoutBox()->GetDocument();
 }
 
 IntSize ScrollableArea::ClampScrollOffset(const IntSize& scroll_offset) const {

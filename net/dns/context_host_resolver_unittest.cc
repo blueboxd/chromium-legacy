@@ -40,7 +40,8 @@ class ContextHostResolverTest : public TestWithTaskEnvironment {
  protected:
   void SetUp() override {
     manager_ = std::make_unique<HostResolverManager>(
-        HostResolver::ManagerOptions(), nullptr);
+        HostResolver::ManagerOptions(),
+        nullptr /* system_dns_config_notifier */, nullptr /* net_log */);
   }
 
   void SetMockDnsRules(MockDnsClientRuleList rules) {

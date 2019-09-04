@@ -628,12 +628,13 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle2 =
       session_->CreateHandle(destination_);
 
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(
-                /*requires_confirmation=*/false,
-                base::Bind(&QuicChromiumClientSessionTest::ResetHandleOnError,
-                           base::Unretained(this), &handle2),
-                TRAFFIC_ANNOTATION_FOR_TESTS));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(
+          /*requires_confirmation=*/false,
+          base::BindOnce(&QuicChromiumClientSessionTest::ResetHandleOnError,
+                         base::Unretained(this), &handle2),
+          TRAFFIC_ANNOTATION_FOR_TESTS));
 
   TestCompletionCallback callback2;
   ASSERT_EQ(ERR_IO_PENDING,
@@ -1672,30 +1673,28 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketMaxReaders) {
   }
 }
 
-// TODO(renjietang): Find out why this test fails on trybot but passes locally,
-// with FLAGS_quic_reloadable_flag_quic_do_not_send_settings flipped.
-TEST_P(QuicChromiumClientSessionTest, DISABLED_MigrateToSocketReadError) {
+TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
   std::unique_ptr<quic::QuicEncryptedPacket> settings_packet;
   std::unique_ptr<quic::QuicEncryptedPacket> client_ping =
       client_maker_.MakeAckAndPingPacket(2, false, 1, 1, 1);
   std::unique_ptr<quic::QuicEncryptedPacket> initial_ping;
+  std::vector<MockWrite> old_writes;
+  std::vector<MockRead> old_reads;
   if (VersionUsesQpack(version_.transport_version)) {
     settings_packet = client_maker_.MakeInitialSettingsPacket(1);
-    MockWrite old_writes[] = {MockWrite(ASYNC, settings_packet->data(),
-                                        settings_packet->length(), 0)};
-    MockRead old_reads[] = {
-        MockRead(ASYNC, ERR_IO_PENDING, 1),  // causes reading to pause.
-        MockRead(ASYNC, ERR_NETWORK_CHANGED, 2)};
-    socket_data_.reset(new SequencedSocketData(old_reads, old_writes));
+    old_writes.push_back(MockWrite(ASYNC, settings_packet->data(),
+                                   settings_packet->length(), 0));
   } else {
     initial_ping = client_maker_.MakePingPacket(1, true);
-    MockWrite old_writes[] = {
-        MockWrite(ASYNC, initial_ping->data(), initial_ping->length(), 0)};
-    MockRead old_reads[] = {
-        MockRead(ASYNC, ERR_IO_PENDING, 1),  // causes reading to pause.
-        MockRead(ASYNC, ERR_NETWORK_CHANGED, 2)};
-    socket_data_.reset(new SequencedSocketData(old_reads, old_writes));
+    old_writes.push_back(
+        MockWrite(ASYNC, initial_ping->data(), initial_ping->length(), 0));
   }
+  old_reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, 1));
+  old_reads.push_back(MockRead(ASYNC, ERR_NETWORK_CHANGED, 2));
+
+  socket_data_.reset(new SequencedSocketData(
+      base::span<const MockRead>(old_reads.data(), old_reads.size()),
+      base::span<const MockWrite>(old_writes.data(), old_writes.size())));
 
   std::unique_ptr<quic::QuicEncryptedPacket> server_ping(
       server_maker_.MakePingPacket(1, /*include_version=*/false));

@@ -44,8 +44,10 @@ then build and run the fuzzer.
 3. `gn args out/Fuzzer  # Set arguments to matches those in the clusterfuzz "Detailed report"'s "GN CONFIG (ARGS.GN)" section`
 4. `autoninja -C out/Fuzzer/ ${FUZZER_NAME}  # Build the fuzzer target`
 5. `./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Verify repro by running fuzzer (for memory leaks, try setting "ASAN_OPTIONS=detect_leaks=1")`
-6. `LPM_DUMP_NATIVE_INPUT=1 SQL_SKIP_QUERIES=AlterTable ./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Try using different args to get SQL statements that will repro the bug`
-7. Optionally, take output from (7) into a repro.sql file for further testing.
+6. `LPM_DUMP_NATIVE_INPUT=1 SQL_SKIP_QUERIES=AlterTable ./out/Fuzzer/${FUZZER_NAME} ${CLUSTERFUZZ_TESTCASE}  # Try using different args to get SQL statements that will repro the bug. SQL_SKIP_QUERIES can help minimize the repro`
+7. Optionally, minimize the testcase further using the `-minimize_crash`
+[flag](https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/reproducing.md#minimizing-a-crash-input-optional).
+8. Optionally, take output from (7) into a repro.sql file for further testing.
 To do so, either copy the SQL query in the output from (6) into a .sql file, or
 run the final command in (7) with a `> repro.sql` at the end, and filter out
 non-sql content afterwards. Either way, ensure that the case continues to repro

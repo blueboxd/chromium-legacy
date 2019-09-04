@@ -171,12 +171,14 @@ class ChromePasswordManagerClient
   void OnOnboardingSuccessful(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if defined(ON_FOCUS_PING_ENABLED)
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType reused_password_type,
       const std::string& username,

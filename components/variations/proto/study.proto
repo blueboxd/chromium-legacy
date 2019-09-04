@@ -299,7 +299,8 @@ message Study {
     // Takes the same range of values as form_factor, e.g. [PHONE, TABLET].
     repeated FormFactor exclude_form_factor = 14;
 
-    // List of Chrome OS hardware classes that will receive this study.
+    // List of hardware classes that will receive this study.
+    // This supports Chrome OS and as of M77, Android.
     //
     // Starting with Chrome M67, this does a case insensitive match on the same
     // hardware class field that is reported to UMA in the SystemProfileProto's
@@ -315,7 +316,8 @@ message Study {
     // Ex: ["veyron_minnie", "daisy"]
     repeated string hardware_class = 8;
 
-    // List of Chrome OS hardware classes that will be excluded in this study.
+    // List of hardware classes that will be excluded in this study.
+    // This supports Chrome OS and as of M77, Android.
     //
     // Starting with Chrome M67, this does a case insensitive match on the same
     // hardware class field that is reported to UMA in the SystemProfileProto's

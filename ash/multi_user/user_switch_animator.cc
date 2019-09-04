@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
@@ -89,6 +90,7 @@ UserSwitchAnimator::UserSwitchAnimator(MultiUserWindowManagerImpl* owner,
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
       screen_cover_(GetScreenCover(NULL)),
       windows_by_account_id_() {
+  Shell::Get()->overview_controller()->EndOverview();
   BuildUserToWindowsListMap();
   AdvanceUserTransitionAnimation();
 

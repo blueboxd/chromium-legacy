@@ -12,6 +12,7 @@
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_instrument.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -110,7 +111,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   gfx::ImageSkia icon_image_skia() const override;
 
   void set_payment_handler_host(
-      mojom::PaymentHandlerHostPtrInfo payment_handler_host) {
+      mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host) {
     payment_handler_host_ = std::move(payment_handler_host);
   }
 
@@ -143,7 +144,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   // the service worker is installed.
   base::WeakPtr<IdentityObserver> identity_observer_;
 
-  mojom::PaymentHandlerHostPtrInfo payment_handler_host_;
+  mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host_;
 
   // PaymentAppProvider::CanMakePayment result of this payment instrument.
   bool can_make_payment_result_;

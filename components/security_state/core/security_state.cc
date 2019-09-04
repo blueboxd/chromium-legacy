@@ -108,6 +108,7 @@ SecurityLevel GetSecurityLevel(
   if (HasMajorCertificateError(visible_security_state)) {
     return DANGEROUS;
   }
+  DCHECK(!net::IsCertStatusError(visible_security_state.cert_status));
 
   const GURL& url = visible_security_state.url;
 
@@ -168,12 +169,6 @@ SecurityLevel GetSecurityLevel(
     return kDisplayedInsecureContentLevel;
   }
 
-  if (net::IsCertStatusError(visible_security_state.cert_status)) {
-    // Major cert errors are handled above.
-    DCHECK(net::IsCertStatusMinorError(visible_security_state.cert_status));
-    return NONE;
-  }
-
   if (visible_security_state.is_view_source) {
     return NONE;
   }
@@ -202,8 +197,7 @@ bool HasMajorCertificateError(
       visible_security_state.certificate;
 
   const bool is_major_cert_error =
-      net::IsCertStatusError(visible_security_state.cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state.cert_status);
+      net::IsCertStatusError(visible_security_state.cert_status);
 
   return is_cryptographic_with_certificate && is_major_cert_error;
 }

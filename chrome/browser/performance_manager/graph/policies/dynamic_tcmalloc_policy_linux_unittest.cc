@@ -5,8 +5,6 @@
 #include "chrome/browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.h"
 
 #include "base/allocator/buildflags.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -76,40 +74,6 @@ class MockTcmallocTunablesImpl : public tcmalloc::mojom::TcmallocTunables {
  private:
   mojo::Receiver<tcmalloc::mojom::TcmallocTunables> receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(MockTcmallocTunablesImpl);
-};
-
-// ScopedExperimentalStateToggle allows us to set our experimental state so we
-// can tweak params for testing.
-class ScopedExperimentalStateToggle {
- public:
-  ScopedExperimentalStateToggle(const std::string& feature_name,
-                                base::FeatureList::OverrideState feature_state,
-                                base::FieldTrialParams variation_params)
-      : field_trial_list_(nullptr /* entropy_provider */) {
-    constexpr const char kTestFieldTrialName[] =
-        "FieldTrialNameShouldNotMatter";
-    constexpr const char kTestExperimentGroupName[] =
-        "GroupNameShouldNotMatter";
-
-    EXPECT_TRUE(base::AssociateFieldTrialParams(
-        kTestFieldTrialName, kTestExperimentGroupName, variation_params));
-    base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
-        kTestFieldTrialName, kTestExperimentGroupName);
-
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(feature_name, feature_state,
-                                             field_trial);
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
-  }
-
-  ~ScopedExperimentalStateToggle() {}
-
- private:
-  base::FieldTrialList field_trial_list_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedExperimentalStateToggle);
 };
 
 class DynamicTcmallocPolicyTest : public ::testing::Test {
@@ -277,9 +241,9 @@ TEST_F(DynamicTcmallocPolicyTest,
 // the frame has been invisible for longer than the cutoff time.
 TEST_F(DynamicTcmallocPolicyTest, OnlyApplyInvisibleScaleFactorAfterCutoff) {
   // Switch our experimental state so we can test certain behavior.
-  ScopedExperimentalStateToggle experimental_state_(
-      features::kDynamicTcmallocTuning.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kDynamicTcmallocTuning,
       {{"DynamicTcmallocScaleInvisibleTimeSec", "240"},
        {"DynamicTcmallocTuneTimeSec", "120"}});
 

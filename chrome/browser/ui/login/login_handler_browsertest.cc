@@ -1766,7 +1766,13 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuthWithCache) {
 }
 
 // Tests that basic proxy auth works as expected, for HTTPS pages.
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, ProxyAuthHTTPS) {
+#if defined(OS_MACOSX)
+// TODO(https://crbug.com/1000446): Re-enable this test.
+#define MAYBE_ProxyAuthHTTPS DISABLED_ProxyAuthHTTPS
+#else
+#define MAYBE_ProxyAuthHTTPS ProxyAuthHTTPS
+#endif
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_ProxyAuthHTTPS) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kHTTPAuthCommittedInterstitials);

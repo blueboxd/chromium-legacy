@@ -31,6 +31,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     this.callbackRouter = {
       onActivated: new EventDispatcher(),
       onCreated: new EventDispatcher(),
+      onMoved: new EventDispatcher(),
       onRemoved: new EventDispatcher(),
       onUpdated: new EventDispatcher(),
     };

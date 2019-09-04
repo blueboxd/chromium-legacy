@@ -360,10 +360,14 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
 class FuzzedHostResolverManager : public HostResolverManager {
  public:
   // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
+  // TODO(crbug.com/971411): Fuzz system DNS config changes through a non-null
+  // SystemDnsConfigChangeNotifier.
   FuzzedHostResolverManager(const HostResolver::ManagerOptions& options,
                             NetLog* net_log,
                             FuzzedDataProvider* data_provider)
-      : HostResolverManager(options, net_log),
+      : HostResolverManager(options,
+                            nullptr /* system_dns_config_notifier */,
+                            net_log),
         data_provider_(data_provider),
         is_ipv6_reachable_(data_provider->ConsumeBool()),
         socket_factory_(data_provider_),

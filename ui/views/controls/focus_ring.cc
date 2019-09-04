@@ -23,6 +23,18 @@ double GetCornerRadius() {
   return FocusableBorder::kCornerRadiusDp + thickness;
 }
 
+SkPath GetHighlightPathInternal(const View* view) {
+  SkPath* highlight_path = view->GetProperty(kHighlightPathKey);
+  if (highlight_path)
+    return *highlight_path;
+
+  const double corner_radius = GetCornerRadius();
+  SkPath path;
+  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(view->GetLocalBounds()),
+                                    corner_radius, corner_radius));
+  return path;
+}
+
 }  // namespace
 
 // static
@@ -101,8 +113,10 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   paint.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
 
   SkPath path = path_;
+  // Focus rings flip the canvas if RTL is enabled for it's parent, so
+  // we need to always get non-mirrored highlight path for focus rings.
   if (path.isEmpty())
-    path = GetHighlightPath(parent());
+    path = GetHighlightPathInternal(parent());
 
   DCHECK(IsPathUseable(path));
   DCHECK_EQ(flip_canvas_on_paint_for_rtl_ui(),
@@ -168,14 +182,13 @@ SkRRect FocusRing::RingRectFromPathRect(const SkRRect& rrect) const {
 }
 
 SkPath GetHighlightPath(const View* view) {
-  SkPath* highlight_path = view->GetProperty(kHighlightPathKey);
-  if (highlight_path)
-    return *highlight_path;
-
-  const double corner_radius = GetCornerRadius();
-  SkPath path;
-  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(view->GetLocalBounds()),
-                                    corner_radius, corner_radius));
+  SkPath path = GetHighlightPathInternal(view);
+  if (view->flip_canvas_on_paint_for_rtl_ui()) {
+    gfx::Point center = view->GetContentsBounds().CenterPoint();
+    SkMatrix flip;
+    flip.setRotate(180, center.x(), center.y());
+    path.transform(flip);
+  }
   return path;
 }
 

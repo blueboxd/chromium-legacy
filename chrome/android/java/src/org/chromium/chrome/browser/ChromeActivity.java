@@ -1285,11 +1285,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mToolbarManager = null;
         }
 
-        if (mBottomSheet != null) {
-            mBottomSheet.destroy();
-            mBottomSheet = null;
-        }
-
         if (mDidAddPolicyChangeListener) {
             CombinedPolicyProvider.get().removePolicyChangeListener(this);
             mDidAddPolicyChangeListener = false;

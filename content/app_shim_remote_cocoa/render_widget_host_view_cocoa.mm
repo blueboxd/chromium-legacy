@@ -380,6 +380,8 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   [touchBarItem
       updateWithInsertionPointVisibility:textSelectionRange_.is_empty()];
+  if (textInputType_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    return;
   if (!touchBarItem.candidateListVisible)
     return;
   if (!textSelectionRange_.IsValid() ||
@@ -2208,8 +2210,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
-      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
+  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE) {
     candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
         initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
     auto* candidateListItem = candidateListTouchBarItem_.get();

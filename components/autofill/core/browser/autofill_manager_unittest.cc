@@ -66,7 +66,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/version_info/channel.h"
 #include "net/base/url_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -367,8 +366,6 @@ class AutofillManagerTest : public testing::Test {
         /*call_parent_methods=*/false);
     autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
-    variation_params_.ClearAllVariationParams();
-
     // Initialize the TestPersonalDataManager with some default data.
     CreateTestAutofillProfiles();
     CreateTestCreditCards();
@@ -621,7 +618,6 @@ class AutofillManagerTest : public testing::Test {
   MockAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
   std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
-  variations::testing::VariationParamsManager variation_params_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:

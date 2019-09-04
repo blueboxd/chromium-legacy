@@ -459,7 +459,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MultipleMonitors) {
   window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
   window_state->Maximize();
 
-  // Maximize the window with as the restore bounds is inside 2nd display but
+  // Maximize the window width as the restore bounds is inside 2nd display but
   // lock container windows are always on primary display.
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
   target_bounds = gfx::Rect(300, 400);

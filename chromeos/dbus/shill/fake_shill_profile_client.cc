@@ -101,6 +101,17 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
                                          const std::string& entry_path,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
+  switch (simulate_delete_result_) {
+    case FakeShillSimulatedResult::kSuccess:
+      break;
+    case FakeShillSimulatedResult::kFailure:
+      error_callback.Run("Error", "Simulated failure");
+      return;
+    case FakeShillSimulatedResult::kTimeout:
+      // No callbacks get executed and the caller should eventually timeout.
+      return;
+  }
+
   ProfileProperties* profile = GetProfile(profile_path, error_callback);
   if (!profile) {
     error_callback.Run("Error.InvalidProfile", profile_path.value());
@@ -262,6 +273,11 @@ bool FakeShillProfileClient::HasService(const std::string& service_path) {
 
 void FakeShillProfileClient::ClearProfiles() {
   profiles_.clear();
+}
+
+void FakeShillProfileClient::SetSimulateDeleteResult(
+    FakeShillSimulatedResult delete_result) {
+  simulate_delete_result_ = delete_result;
 }
 
 FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(

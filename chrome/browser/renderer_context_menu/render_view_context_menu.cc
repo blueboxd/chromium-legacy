@@ -61,6 +61,7 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_utils.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -1823,10 +1824,13 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
 }
 
 void RenderViewContextMenu::MaybeAppendClickToCallItem() {
+  SharingClickToCallEntryPoint entry_point;
   base::Optional<std::string> phone_number;
   if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
+    entry_point = SharingClickToCallEntryPoint::kRightClickLink;
     phone_number = GetUnescapedURLContent(params_.link_url);
   } else if (!params_.selection_text.empty()) {
+    entry_point = SharingClickToCallEntryPoint::kRightClickSelection;
     phone_number = ExtractPhoneNumberForClickToCall(
         browser_context_, base::UTF16ToUTF8(params_.selection_text));
   }
@@ -1840,7 +1844,7 @@ void RenderViewContextMenu::MaybeAppendClickToCallItem() {
     observers_.AddObserver(click_to_call_context_menu_observer_.get());
   }
 
-  click_to_call_context_menu_observer_->BuildMenu(*phone_number);
+  click_to_call_context_menu_observer_->BuildMenu(*phone_number, entry_point);
 }
 
 // Menu delegate functions -----------------------------------------------------

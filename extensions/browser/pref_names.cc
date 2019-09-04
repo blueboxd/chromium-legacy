@@ -33,8 +33,6 @@ const char kAllowedTypes[] = "extensions.allowed_types";
 const char kAppFullscreenAllowed[] = "apps.fullscreen.allowed";
 const char kExtensions[] = "extensions.settings";
 const char kExtensionManagement[] = "extensions.management";
-const char kInsecureExtensionUpdatesEnabled[] =
-    "extension_updates.insecure_extension_updates_enabled";
 const char kInstallAllowList[] = "extensions.install.allowlist";
 const char kInstallDenyList[] = "extensions.install.denylist";
 const char kInstallForceList[] = "extensions.install.forcelist";

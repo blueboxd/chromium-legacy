@@ -81,9 +81,7 @@ network::mojom::blink::DataPipeGetterPtrInfo StructTraits<
   if (data.type_ == blink::FormDataElement::kEncodedBlob) {
     if (data.optional_blob_data_handle_) {
       blink::mojom::blink::BlobPtr blob_ptr(blink::mojom::blink::BlobPtrInfo(
-          data.optional_blob_data_handle_->CloneBlobPtr()
-              .PassInterface()
-              .PassHandle(),
+          data.optional_blob_data_handle_->CloneBlobRemote().PassPipe(),
           blink::mojom::blink::Blob::Version_));
       network::mojom::blink::DataPipeGetterPtr data_pipe_getter_ptr;
       blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));

@@ -203,6 +203,14 @@ cr.define('settings', function() {
      */
     cancelEnrollment() {}
 
+    /**
+     * Deletes the enrollment with the given ID.
+     *
+     * @param {string} id
+     * @return {!Promise<!Array<!Enrollment>>} The remaining enrollments.
+     */
+    deleteEnrollment(id) {}
+
     /** Cancels all outstanding operations. */
     close() {}
   }
@@ -296,6 +304,11 @@ cr.define('settings', function() {
     /** @override */
     cancelEnrollment() {
       return cr.sendWithPromise('securityKeyBioEnrollCancel');
+    }
+
+    /** @override */
+    deleteEnrollment(id) {
+      return cr.sendWithPromise('securityKeyBioEnrollDelete', id);
     }
 
     /** @override */

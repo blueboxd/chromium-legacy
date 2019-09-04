@@ -39,6 +39,7 @@ TouchpadSettings& TouchpadSettings::operator=(const TouchpadSettings& other) {
     three_finger_click_ = other.three_finger_click_;
     tap_dragging_ = other.tap_dragging_;
     natural_scroll_ = other.natural_scroll_;
+    acceleration_ = other.acceleration_;
   }
   return *this;
 }
@@ -103,6 +104,18 @@ bool TouchpadSettings::IsTapDraggingSet() const {
   return tap_dragging_.has_value();
 }
 
+void TouchpadSettings::SetAcceleration(bool enabled) {
+  acceleration_ = enabled;
+}
+
+bool TouchpadSettings::GetAcceleration() const {
+  return *acceleration_;
+}
+
+bool TouchpadSettings::IsAccelerationSet() const {
+  return acceleration_.has_value();
+}
+
 bool TouchpadSettings::Update(const TouchpadSettings& settings) {
   bool updated = false;
   if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
@@ -112,6 +125,8 @@ bool TouchpadSettings::Update(const TouchpadSettings& settings) {
   if (UpdateIfHasValue(settings.three_finger_click_, &three_finger_click_))
     updated = true;
   if (UpdateIfHasValue(settings.tap_dragging_, &tap_dragging_))
+    updated = true;
+  if (UpdateIfHasValue(settings.acceleration_, &acceleration_))
     updated = true;
   UpdateIfHasValue(settings.natural_scroll_, &natural_scroll_);
   // Always send natural scrolling to the shell command, as a workaround.
@@ -146,6 +161,10 @@ void TouchpadSettings::Apply(const TouchpadSettings& touchpad_settings,
     input_device_settings->SetNaturalScroll(
         touchpad_settings.natural_scroll_.value());
   }
+  if (touchpad_settings.acceleration_.has_value()) {
+    input_device_settings->SetTouchpadAcceleration(
+        touchpad_settings.acceleration_.value());
+  }
 }
 
 MouseSettings::MouseSettings() = default;
@@ -157,6 +176,7 @@ MouseSettings& MouseSettings::operator=(const MouseSettings& other) {
     sensitivity_ = other.sensitivity_;
     primary_button_right_ = other.primary_button_right_;
     reverse_scroll_ = other.reverse_scroll_;
+    acceleration_ = other.acceleration_;
   }
   return *this;
 }
@@ -197,6 +217,18 @@ bool MouseSettings::IsReverseScrollSet() const {
   return reverse_scroll_.has_value();
 }
 
+void MouseSettings::SetAcceleration(bool enabled) {
+  acceleration_ = enabled;
+}
+
+bool MouseSettings::GetAcceleration() const {
+  return *acceleration_;
+}
+
+bool MouseSettings::IsAccelerationSet() const {
+  return acceleration_.has_value();
+}
+
 bool MouseSettings::Update(const MouseSettings& settings) {
   bool updated = false;
   if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
@@ -206,6 +238,9 @@ bool MouseSettings::Update(const MouseSettings& settings) {
     updated = true;
   }
   if (UpdateIfHasValue(settings.reverse_scroll_, &reverse_scroll_)) {
+    updated = true;
+  }
+  if (UpdateIfHasValue(settings.acceleration_, &acceleration_)) {
     updated = true;
   }
   return updated;
@@ -227,6 +262,10 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
   if (mouse_settings.reverse_scroll_.has_value()) {
     input_device_settings->SetMouseReverseScroll(
         mouse_settings.reverse_scroll_.value());
+  }
+  if (mouse_settings.acceleration_.has_value()) {
+    input_device_settings->SetMouseAcceleration(
+        mouse_settings.acceleration_.value());
   }
 }
 

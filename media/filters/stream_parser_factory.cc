@@ -430,20 +430,22 @@ static bool VerifyCodec(const CodecInfo* codec_info,
 }
 
 // Checks to see if the specified |type| and |codecs| list are supported.
-//
-// Returns true if |type| and all codecs listed in |codecs| are supported.
-// |factory_function| contains a function that can build a StreamParser for this
-// type. Value may be nullptr, in which case it is not touched.
+// Returns IsNotSupported if |type| and |codecs| are definitively not supported.
+// The values of |factory_function|, |audio_codecs|, and |video_codecs| are
+// undefined in this case.
+// Returns IsSupported if |type| and all codecs listed in |codecs| are
+// supported, any non-empty codecs requirement is met for |type|, and all of
+// |codecs| are supported for |type|.
+// Returns MayBeSupported if |type| is supported, but requires a codecs
+// parameter that is missing.
+// For both IsSupported and MayBeSupported results, |factory_function| is
+// updated to be a function that can build a StreamParser for this type,
 // |audio_codecs| is updated with the appropriate HistogramTags for matching
-// audio codecs specified in |codecs|. Value may be nullptr, in which case it is
-// not touched.
-// |video_codecs| is updated with the appropriate HistogramTags for matching
-// video codecs specified in |codecs|. Value may be nullptr, in which case it is
-// not touched.
-//
-// Returns false otherwise. The values of |factory_function|, |audio_codecs|,
-// and |video_codecs| are undefined.
-static bool CheckTypeAndCodecs(
+// audio codecs specified in |codecs|, and |video_codecs| is updated with the
+// appropriate HistogramTags for matching video codecs specified in |codecs|.
+// The value of each of |factory_function|, |audio_codecs| and |video_codecs| is
+// not updated if it was nullptr initially.
+static SupportsType CheckTypeAndCodecs(
     const std::string& type,
     const std::vector<std::string>& codecs,
     MediaLog* media_log,
@@ -458,14 +460,20 @@ static bool CheckTypeAndCodecs(
         const CodecInfo* codec_info = type_info.codecs[0];
         if (codec_info && !codec_info->pattern &&
             VerifyCodec(codec_info, audio_codecs, video_codecs)) {
+          // If there was no specified codec parameter, and if the major/minor
+          // type is supported, specific and requires no codec parameter (such
+          // as audio/mpeg is specific to MP3), then populate the expected
+          // specific codec value and factory function and return definitive
+          // support.
           if (factory_function)
             *factory_function = type_info.factory_function;
-          return true;
+          return IsSupported;
         }
 
         MEDIA_LOG(DEBUG, media_log)
-            << "A codecs parameter must be provided for '" << type << "'";
-        return false;
+            << "A codecs parameter must be provided for '" << type
+            << "' to determine definitive support proactively.";
+        return MayBeSupported;
       }
 
       // Make sure all the codecs specified in |codecs| are
@@ -488,23 +496,26 @@ static bool CheckTypeAndCodecs(
           MEDIA_LOG(DEBUG, media_log)
               << "Codec '" << codec_id << "' is not supported for '" << type
               << "'";
-          return false;
+          // Though the major/minor type is supported, a codecs parameter value
+          // was found to not be supported.
+          return IsNotSupported;
         }
       }
 
       if (factory_function)
         *factory_function = type_info.factory_function;
 
-      // All codecs were supported by this |type|.
-      return true;
+      // There was a non-empty |codecs| for this supported |type|, and all of
+      // |codecs| are supported for this |type|.
+      return IsSupported;
     }
   }
 
   // |type| didn't match any of the supported types.
-  return false;
+  return IsNotSupported;
 }
 
-bool StreamParserFactory::IsTypeSupported(
+SupportsType StreamParserFactory::IsTypeSupported(
     const std::string& type,
     const std::vector<std::string>& codecs) {
   // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
@@ -522,13 +533,15 @@ std::unique_ptr<StreamParser> StreamParserFactory::Create(
   std::vector<CodecInfo::HistogramTag> audio_codecs;
   std::vector<CodecInfo::HistogramTag> video_codecs;
 
-  if (CheckTypeAndCodecs(type, codecs, media_log, &factory_function,
-                         &audio_codecs, &video_codecs)) {
+  if (IsSupported == CheckTypeAndCodecs(type, codecs, media_log,
+                                        &factory_function, &audio_codecs,
+                                        &video_codecs)) {
     // Log the expected codecs.
-    // TODO(wolenetz): Relocate the logging to the parser configuration
-    // callback. This creation method is called in AddId(), and also in
-    // CanChangeType() and ChangeType(), so potentially overlogs codecs leading
-    // to disproportion versus actually parsed codec configurations from
+    // TODO(wolenetz): Relax the requirement for specific codecs (allow
+    // MayBeSupported here), and relocate the logging to the parser
+    // configuration callback. This creation method is called in AddId(), and
+    // also in CanChangeType() and ChangeType(), so potentially overlogs codecs
+    // leading to disproportion versus actually parsed codec configurations from
     // initialization segments. For this work and also recording when implicit
     // codec switching occurs (without explicit ChangeType), see
     // https://crbug.com/535738.

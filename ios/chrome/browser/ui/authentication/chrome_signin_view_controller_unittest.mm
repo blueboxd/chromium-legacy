@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 #import "ios/chrome/browser/ui/util/transparent_link_button.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -84,18 +85,26 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 namespace {
 
 // Returns the first TransparentLinkButton view in |mainView|.
-TransparentLinkButton* FindLinkButton(UIView* mainView) {
+UIView* FindViewWithAccessibilityID(UIView* mainView,
+                                    NSString* accessibilityID) {
   NSMutableArray* views = [NSMutableArray array];
   [views addObject:mainView];
   while (views.count > 0) {
     UIView* view = [views objectAtIndex:0];
     [views removeObjectAtIndex:0];
     [views addObjectsFromArray:view.subviews];
-    if ([view isKindOfClass:[TransparentLinkButton class]]) {
-      return base::mac::ObjCCastStrict<TransparentLinkButton>(view);
+    if ([view.accessibilityIdentifier isEqualToString:accessibilityID]) {
+      return view;
     }
   }
   return nil;
+}
+
+UIButton* FindLinkButton(UIView* mainView) {
+  UIView* view = FindViewWithAccessibilityID(
+      mainView, kAdvancedSigninSettingsLinkIdentifier);
+  EXPECT_NE(nil, view);
+  return base::mac::ObjCCastStrict<UIButton>(view);
 }
 
 const bool kUnifiedConsentParam[] = {
@@ -444,7 +453,7 @@ TEST_P(ChromeSigninViewControllerTest, TestRefusingConsent) {
 TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
   WaitAndExpectAllStringsOnScreen();
   if (unified_consent_enabled_) {
-    UIButton* linkButton = FindLinkButton([vc_ view]);
+    UIButton* linkButton = FindLinkButton(vc_.view);
     EXPECT_NE(nil, linkButton);
     [linkButton sendActionsForControlEvents:UIControlEventTouchUpInside];
     ConditionBlock condition = ^bool() {

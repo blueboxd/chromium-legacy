@@ -512,7 +512,24 @@ void CameraDeviceDelegate::OnInitialized(int32_t result) {
     return;
   }
   device_context_->SetState(CameraDeviceContext::State::kInitialized);
-  ConfigureStreams(false, base::nullopt);
+  bool require_photo = [&] {
+    if (camera_app_device_ == nullptr) {
+      return false;
+    }
+    auto capture_intent = camera_app_device_->GetCaptureIntent();
+    switch (capture_intent) {
+      case cros::mojom::CaptureIntent::DEFAULT:
+        return false;
+      case cros::mojom::CaptureIntent::STILL_CAPTURE:
+        return true;
+      case cros::mojom::CaptureIntent::VIDEO_RECORD:
+        return false;
+      default:
+        NOTREACHED() << "Unknown capture intent: " << capture_intent;
+        return false;
+    }
+  }();
+  ConfigureStreams(require_photo, base::nullopt);
 }
 
 void CameraDeviceDelegate::ConfigureStreams(

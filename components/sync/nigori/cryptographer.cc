@@ -29,6 +29,20 @@ CryptographerDataWithPendingKeys::CryptographerDataWithPendingKeys(
     CryptographerDataWithPendingKeys&& other) = default;
 CryptographerDataWithPendingKeys::~CryptographerDataWithPendingKeys() = default;
 
+// static
+Cryptographer Cryptographer::CreateFromCryptographerDataWithPendingKeys(
+    const CryptographerDataWithPendingKeys& serialized_state) {
+  std::unique_ptr<sync_pb::EncryptedData> pending_keys;
+  if (serialized_state.pending_keys.has_value()) {
+    pending_keys = std::make_unique<sync_pb::EncryptedData>(
+        *serialized_state.pending_keys);
+  }
+  return Cryptographer(NigoriKeyBag::CreateFromProto(
+                           serialized_state.cryptographer_data.key_bag()),
+                       serialized_state.cryptographer_data.default_key_name(),
+                       std::move(pending_keys));
+}
+
 Cryptographer::Cryptographer() : key_bag_(NigoriKeyBag::CreateEmpty()) {}
 
 Cryptographer::Cryptographer(const Cryptographer& other)
@@ -341,5 +355,13 @@ bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
     return false;
   return true;
 }
+
+Cryptographer::Cryptographer(
+    NigoriKeyBag key_bag,
+    const std::string& default_nigori_name,
+    std::unique_ptr<sync_pb::EncryptedData> pending_keys)
+    : key_bag_(std::move(key_bag)),
+      default_nigori_name_(std::move(default_nigori_name)),
+      pending_keys_(std::move(pending_keys)) {}
 
 }  // namespace syncer

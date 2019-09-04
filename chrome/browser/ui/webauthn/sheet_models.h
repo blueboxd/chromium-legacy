@@ -412,6 +412,7 @@ class AuthenticatorClientPinEntrySheetModel
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
+  void OnBack() override;
   void OnAccept() override;
 
   base::string16 pin_code_;
@@ -435,6 +436,7 @@ class AuthenticatorClientPinTapAgainSheetModel
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   base::Optional<base::string16> GetAdditionalDescription() const override;
+  void OnBack() override;
 };
 
 // Generic error dialog that can only be dismissed. Backwards navigation is

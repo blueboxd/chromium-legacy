@@ -206,17 +206,19 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
   }
 }
 
-const mojom::blink::MediaStreamDispatcherHostPtr&
+const mojo::Remote<mojom::blink::MediaStreamDispatcherHost>&
 MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
   DCHECK(frame_);
-  if (!host_)
-    frame_->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&host_));
+  if (!host_) {
+    frame_->GetInterfaceProvider().GetInterface(
+        host_.BindNewPipeAndPassReceiver());
+  }
   return host_;
 }
 
 void MediaStreamVideoCapturerSource::SetMediaStreamDispatcherHostForTesting(
-    mojom::blink::MediaStreamDispatcherHostPtr host) {
-  host_ = std::move(host);
+    mojo::PendingRemote<mojom::blink::MediaStreamDispatcherHost> host) {
+  host_.Bind(std::move(host));
 }
 
 media::VideoCapturerSource*

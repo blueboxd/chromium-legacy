@@ -93,6 +93,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   void SetBestServiceToConnect(const std::string& service_path) override;
   const NetworkThrottlingStatus& GetNetworkThrottlingStatus() override;
   bool GetFastTransitionStatus() override;
+  void SetSimulateConfigurationResult(
+      FakeShillSimulatedResult configuration_result) override;
 
   // Constants used for testing.
   static const char kFakeEthernetNetworkGuid[];
@@ -157,6 +159,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
 
   // 'Best' service to connect to on ConnectToBestServices() calls.
   std::string best_service_;
+
+  FakeShillSimulatedResult simulate_configuration_result_ =
+      FakeShillSimulatedResult::kSuccess;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

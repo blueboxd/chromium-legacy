@@ -130,6 +130,10 @@ const base::Feature kDataSaverHoldback{"DataSaverHoldback",
 const base::Feature kDesktopCaptureChangeSource{
     "DesktopCaptureChangeSource", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable document policy for configuring and restricting feature behavior.
+const base::Feature kDocumentPolicy{"DocumentPolicy",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When a screen reader is detected, allow users the option of letting
 // Google provide descriptions for unlabeled images.
 const base::Feature kExperimentalAccessibilityLabels{
@@ -681,30 +685,6 @@ const base::Feature kWebPayments{"WebPayments",
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault{"WebRTC-EnableWebRtcEcdsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables HW H264 encoding on Android.
-const base::Feature kWebRtcHWH264Encoding{"WebRtcHWH264Encoding",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables HW VP8 encoding on Android.
-const base::Feature kWebRtcHWVP8Encoding {
-  "WebRtcHWVP8Encoding",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-// Enables HW VP9 encoding on Android.
-const base::Feature kWebRtcHWVP9Encoding {
-  "WebRtcHWVP9Encoding",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // Enables negotiation of experimental multiplex codec in SDP.
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",

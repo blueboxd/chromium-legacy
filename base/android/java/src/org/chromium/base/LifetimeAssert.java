@@ -6,6 +6,8 @@ package org.chromium.base;
 
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.CheckDiscard;
+
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Collections;
@@ -14,9 +16,6 @@ import java.util.Set;
 
 /**
  * Used to assert that clean-up logic has been run before an object is GC'ed.
- *
- * Class is a no-op withen DCHECK_IS_ON=false, and is entirely removed by
- * proguard (enforced via -checkdiscard).
  *
  * Usage:
  * class MyClassWithCleanup {
@@ -29,6 +28,7 @@ import java.util.Set;
  *     }
  * }
  */
+@CheckDiscard
 public class LifetimeAssert {
     interface TestHook {
         void onCleaned(WrappedReference ref, String msg);

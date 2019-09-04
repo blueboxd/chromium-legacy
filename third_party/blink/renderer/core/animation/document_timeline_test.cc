@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -71,6 +72,7 @@ class AnimationDocumentTimelineTest : public PageTestBase {
     PageTestBase::SetUp(IntSize());
     document = &GetDocument();
     GetAnimationClock().ResetTimeForTesting();
+    GetAnimationClock().SetAllowedToDynamicallyUpdateTime(false);
     element = Element::Create(QualifiedName::Null(), document.Get());
     platform_timing = MakeGarbageCollected<MockPlatformTiming>();
     timeline = document->Timeline();
@@ -116,6 +118,7 @@ class AnimationDocumentTimelineRealTimeTest : public PageTestBase {
     PageTestBase::SetUp(IntSize());
     document = &GetDocument();
     timeline = document->Timeline();
+    GetAnimationClock().SetAllowedToDynamicallyUpdateTime(false);
   }
 
   void TearDown() override {
@@ -390,6 +393,39 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
       nullptr, CreateEmptyEffectModel(), timing);
   // Test passes if this does not crash.
   timeline->Play(keyframe_effect);
+}
+
+// Regression test for https://crbug.com/995806, ensuring that we do dynamically
+// progress the time when outside a rendering loop (so that we can serve e.g.
+// setInterval), but also that we *only* dynamically progress the time when
+// outside a rendering loop (so that we are mostly spec compliant).
+TEST_F(AnimationDocumentTimelineTest,
+       PredictionBehaviorOnlyAppliesOutsideRenderingLoop) {
+  base::SimpleTestTickClock test_clock;
+  GetAnimationClock().OverrideDynamicClockForTesting(&test_clock);
+  ASSERT_EQ(GetAnimationClock().CurrentTime(), test_clock.NowTicks());
+
+  // As long as we are inside the rendering loop, we shouldn't update even
+  // across tasks.
+  base::TimeTicks before_time = GetAnimationClock().CurrentTime();
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(GetAnimationClock().CurrentTime(), before_time);
+
+  AnimationClock::NotifyTaskStart();
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(GetAnimationClock().CurrentTime(), before_time);
+
+  // Once we leave the rendering loop, however, it is valid for the time to
+  // increase *once* per task.
+  GetAnimationClock().SetAllowedToDynamicallyUpdateTime(true);
+  EXPECT_GT(GetAnimationClock().CurrentTime(), before_time);
+
+  // The clock shouldn't tick again until we change task, however.
+  base::TimeTicks current_time = GetAnimationClock().CurrentTime();
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(GetAnimationClock().CurrentTime(), current_time);
+  AnimationClock::NotifyTaskStart();
+  EXPECT_GT(GetAnimationClock().CurrentTime(), current_time);
 }
 
 // Ensure that origin time is correctly calculated even when the animation

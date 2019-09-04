@@ -18,7 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/origin.h"
@@ -31,22 +31,23 @@ namespace content {
 
 namespace {
 
-void BindConnectorOnIOThread(int render_process_id,
-                             int render_frame_id,
-                             storage::QuotaManager* quota_manager,
-                             blink::mojom::QuotaDispatcherHostRequest request) {
-  mojo::MakeStrongBinding(
+void BindConnectorOnIOThread(
+    int render_process_id,
+    int render_frame_id,
+    storage::QuotaManager* quota_manager,
+    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<QuotaDispatcherHost>(
           render_process_id, render_frame_id, quota_manager,
           GetContentClient()->browser()->CreateQuotaPermissionContext()),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace
 
 // static
 void QuotaDispatcherHost::CreateForWorker(
-    blink::mojom::QuotaDispatcherHostRequest request,
+    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver,
     RenderProcessHost* host,
     const url::Origin& origin) {
   // TODO(crbug.com/779444): Save the |origin| here and use it rather than the
@@ -58,21 +59,21 @@ void QuotaDispatcherHost::CreateForWorker(
       base::BindOnce(
           &BindConnectorOnIOThread, host->GetID(), MSG_ROUTING_NONE,
           base::RetainedRef(host->GetStoragePartition()->GetQuotaManager()),
-          std::move(request)));
+          std::move(receiver)));
 }
 
 // static
 void QuotaDispatcherHost::CreateForFrame(
     RenderProcessHost* host,
     int render_frame_id,
-    blink::mojom::QuotaDispatcherHostRequest request) {
+    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) {
   // Bind on the IO thread.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindConnectorOnIOThread, host->GetID(), render_frame_id,
           base::RetainedRef(host->GetStoragePartition()->GetQuotaManager()),
-          std::move(request)));
+          std::move(receiver)));
 }
 
 QuotaDispatcherHost::QuotaDispatcherHost(

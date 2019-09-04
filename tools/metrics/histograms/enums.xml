@@ -32179,6 +32179,20 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="App Bundle URL, not handled"/>
 </enum>
 
+<enum name="IOSJavaScriptDialogDismissalCause">
+  <int value="0" label="Tab closed">The tab owning the dialog was closed</int>
+  <int value="1" label="Closed by user">
+    The user tapped on the OK or Cancel button.
+  </int>
+  <int value="2" label="Blocked by user">
+    Dialog was blocked because the user tapped the &quot;Suppress Dialogs&quot;
+    option.
+  </int>
+  <int value="3" label="Closed for navigation">
+    The user navigated the tab (e.g. back/forward, reload)
+  </int>
+</enum>
+
 <enum name="IosLocationAuthorizationStatus">
   <int value="0" label="User has not made a choice"/>
   <int value="1" label="Restricted"/>
@@ -34523,6 +34537,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
+  <int value="-1983891525" label="DecodeJpeg420ImagesToYUV:disabled"/>
   <int value="-1983569861" label="WebXROrientationSensorDevice:disabled"/>
   <int value="-1982700103" label="EnableAppsGridGapFeature:enabled"/>
   <int value="-1980328793" label="trace-upload-url"/>
@@ -35083,6 +35098,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1276579737" label="PictureInPictureAPI:disabled"/>
+  <int value="-1274502866" label="AllowDisableMouseAcceleration:enabled"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
@@ -35335,6 +35351,7 @@ from previous Chrome versions.
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
+  <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
   <int value="-953215709" label="StorageAccessAPI:enabled"/>
@@ -35554,6 +35571,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:disabled"/>
   <int value="-666508951" label="CrOSContainer:enabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
+  <int value="-662720891" label="PreviewsCoinFlipHoldback_UKMOnly:enabled"/>
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
@@ -35623,6 +35641,7 @@ from previous Chrome versions.
   <int value="-561194974" label="AutofillExpandedPopupViews:enabled"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
+  <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
@@ -36603,6 +36622,7 @@ from previous Chrome versions.
   <int value="821192723" label="show-fps-counter"/>
   <int value="824961931" label="use-simple-cache-backend"/>
   <int value="828092263" label="TemporaryUnexpireFlagsM78:enabled"/>
+  <int value="830282555" label="DecodeJpeg420ImagesToYUV:enabled"/>
   <int value="832142463" label="WebAssemblyStreaming:enabled"/>
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>
@@ -43589,6 +43609,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Suppression expired"/>
 </enum>
 
+<enum name="NotificationSchedulerNotificationLifeCycleEvent">
+  <int value="0" label="Schedule request"/>
+  <int value="1" label="Scheduled"/>
+  <int value="2" label="Invalid input parameters"/>
+  <int value="3" label="Shown"/>
+  <int value="4" label="Client Cancel"/>
+</enum>
+
 <enum name="NotificationSchedulerUserActionType">
   <int value="0" label="Click"/>
   <int value="1" label="Button Click"/>
@@ -49077,6 +49105,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Connected to the preview server"/>
 </enum>
 
+<enum name="PreviewsCoinFlipResult">
+  <int value="0" label="No preview attempted or coinflip disabled"/>
+  <int value="1" label="Preview attempted, allowed by coin flip"/>
+  <int value="2" label="Preview attempted, held back by coin flip"/>
+</enum>
+
 <enum name="PreviewsContextMenuActionLoFi">
   <int value="0" label="'Load image' context menu item shown"/>
   <int value="1" label="'Load image' context menu item clicked"/>
@@ -54434,6 +54468,18 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SharingClickToCallEntryPoint">
+  <int value="0" label="Left click on a phone link"/>
+  <int value="1" label="Right click on a phone link"/>
+  <int value="2" label="Right click on a phone number selection"/>
+</enum>
+
+<enum name="SharingClickToCallSelection">
+  <int value="0" label="None"/>
+  <int value="1" label="Device"/>
+  <int value="2" label="App"/>
+</enum>
+
 <enum name="SharingDeviceRegistrationResult">
   <int value="0" label="Operation is successful"/>
   <int value="1" label="Failed with Sync not ready"/>
@@ -58365,6 +58411,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="KEYSTORE_PASSPHRASE"/>
   <int value="2" label="FROZEN_IMPLICIT_PASSPHRASE"/>
   <int value="3" label="CUSTOM_PASSPHRASE"/>
+  <int value="4" label="TRUSTED_VAULT_PASSPHRASE"/>
 </enum>
 
 <enum name="SyncPositioningScheme">

@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
 #define IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
 
-#import "ios/chrome/browser/infobars/infobar_type.h"
-
 // Consumer for the location bar mediator.
 @protocol LocationBarConsumer
 

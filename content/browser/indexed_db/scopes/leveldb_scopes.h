@@ -80,11 +80,13 @@ class CONTENT_EXPORT LevelDBScopes {
       std::vector<ScopeLock> locks,
       std::vector<EmptyRange> empty_ranges);
 
-  leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope);
+  leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope,
+                         bool sync_on_commit);
 
   // |on_complete| will be called when the cleanup task for the scope has
   // finished operating.
   leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope,
+                         bool sync_on_commit,
                          base::OnceClosure on_complete);
 
   base::SequencedTaskRunner* RevertRunnerForTesting() const {

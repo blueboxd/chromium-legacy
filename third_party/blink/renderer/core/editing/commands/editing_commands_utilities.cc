@@ -520,7 +520,7 @@ void TidyUpHTMLStructure(Document& document) {
     return;
 
   Element* const current_root = document.documentElement();
-  if (current_root && IsHTMLHtmlElement(current_root))
+  if (current_root && IsA<HTMLHtmlElement>(current_root))
     return;
   Element* const existing_head =
       current_root && IsA<HTMLHeadElement>(current_root) ? current_root

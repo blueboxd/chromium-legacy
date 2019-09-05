@@ -667,7 +667,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::NavigationItem* item =
       self.navigationManagerImpl
           ->GetLastCommittedItemInCurrentOrRestoredSession();
-  return item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  if (item) {
+    // This special case is added for any app specific URLs that have been
+    // rewritten to about:// URLs.
+    if (item->GetURL().SchemeIs(url::kAboutScheme) &&
+        web::GetWebClient()->IsAppSpecificURL(item->GetVirtualURL())) {
+      return item->GetURL();
+    }
+    return item->GetVirtualURL();
+  }
+  return GURL::EmptyGURL();
 }
 
 - (void)reloadWithRendererInitiatedNavigation:(BOOL)rendererInitiated {

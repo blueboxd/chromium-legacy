@@ -46,39 +46,23 @@ void SetShouldUse24HourClock(bool use_24_hour_clock) {
 
 }  // anonymous namespace
 
-SystemClock::SystemClock()
-    : user_pod_was_focused_(false),
-      last_focused_pod_hour_clock_type_(base::k12HourClock),
-      user_profile_(NULL),
-      device_settings_observer_(CrosSettings::Get()->AddSettingsObserver(
-          kSystemUse24HourClock,
-          base::Bind(&SystemClock::OnSystemPrefChanged,
-                     base::Unretained(this)))) {
+SystemClock::SystemClock() {
+  device_settings_observer_ = CrosSettings::Get()->AddSettingsObserver(
+      kSystemUse24HourClock, base::Bind(&SystemClock::OnSystemPrefChanged,
+                                        weak_ptr_factory_.GetWeakPtr()));
+
   if (LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
-  // Register notifications on construction so that events such as
-  // PROFILE_CREATED do not get missed if they happen before Initialize().
-  registrar_.reset(new content::NotificationRegistrar);
-  if (!LoginState::IsInitialized() ||
-      LoginState::Get()->GetLoggedInUserType() ==
-          LoginState::LOGGED_IN_USER_NONE) {
-    registrar_->Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                    content::NotificationService::AllSources());
-  }
-  registrar_->Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                  content::NotificationService::AllSources());
-  registrar_->Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                  content::NotificationService::AllSources());
-  registrar_->Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                  content::NotificationService::AllSources());
+
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllSources());
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 SystemClock::~SystemClock() {
-  registrar_.reset();
-  device_settings_observer_.reset();
   if (LoginState::IsInitialized())
     LoginState::Get()->RemoveObserver(this);
+
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
@@ -96,36 +80,20 @@ void SystemClock::LoggedInStateChanged() {
 void SystemClock::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
-      UpdateClockType();
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-      OnActiveProfileChanged(content::Source<Profile>(source).ptr());
-      registrar_->Remove(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                         content::NotificationService::AllSources());
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      if (OnProfileDestroyed(content::Source<Profile>(source).ptr())) {
-        registrar_->Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                           content::NotificationService::AllSources());
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_SESSION_STARTED: {
-      OnActiveProfileChanged(ProfileManager::GetActiveUserProfile());
-      break;
-    }
-    default:
-      NOTREACHED();
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+  if (OnProfileDestroyed(content::Source<Profile>(source).ptr())) {
+    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                      content::NotificationService::AllSources());
   }
 }
 
-void SystemClock::ActiveUserChanged(const user_manager::User* active_user) {
-  if (active_user && active_user->is_profile_created())
-    UpdateClockType();
+void SystemClock::ActiveUserChanged(user_manager::User* active_user) {
+  if (!active_user)
+    return;
+
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&SystemClock::SetProfileByUser,
+                     weak_ptr_factory_.GetWeakPtr(), active_user));
 }
 
 void SystemClock::AddObserver(SystemClockObserver* observer) {
@@ -136,7 +104,11 @@ void SystemClock::RemoveObserver(SystemClockObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void SystemClock::OnActiveProfileChanged(Profile* profile) {
+void SystemClock::SetProfileByUser(const user_manager::User* user) {
+  SetProfile(ProfileHelper::Get()->GetProfileByUser(user));
+}
+
+void SystemClock::SetProfile(Profile* profile) {
   user_profile_ = profile;
   PrefService* prefs = profile->GetPrefs();
   user_pref_registrar_.reset(new PrefChangeRegistrar);

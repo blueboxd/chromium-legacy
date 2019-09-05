@@ -9,9 +9,14 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "weblayer/browser/navigation_impl.h"
 #include "weblayer/public/navigation_controller.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 namespace weblayer {
 class BrowserControllerImpl;
@@ -21,6 +26,40 @@ class NavigationControllerImpl : public NavigationController,
  public:
   explicit NavigationControllerImpl(BrowserControllerImpl* browser_controller);
   ~NavigationControllerImpl() override;
+
+#if defined(OS_ANDROID)
+  void SetNavigationControllerImpl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& java_controller);
+  void Navigate(JNIEnv* env,
+                const base::android::JavaParamRef<jobject>& obj,
+                const base::android::JavaParamRef<jstring>& url);
+  void GoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    GoBack();
+  }
+  void GoForward(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    GoForward();
+  }
+  void Reload(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    Reload();
+  }
+  void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    Stop();
+  }
+  int GetNavigationListSize(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj) {
+    return GetNavigationListSize();
+  }
+  int GetNavigationListCurrentIndex(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) {
+    return GetNavigationListCurrentIndex();
+  }
+  base::android::ScopedJavaLocalRef<jstring> GetNavigationEntryDisplayUri(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      int index);
+#endif
 
  private:
   // NavigationController implementation:
@@ -49,6 +88,10 @@ class NavigationControllerImpl : public NavigationController,
   base::ObserverList<NavigationObserver>::Unchecked observers_;
   std::map<content::NavigationHandle*, std::unique_ptr<NavigationImpl>>
       navigation_map_;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

@@ -46,13 +46,6 @@
         self.accessibilityLabel ? self.accessibilityLabel : self.text;
   }
 
-  // Decide cell.textLabel.backgroundColor in order:
-  //   1. styler.cellBackgroundColor;
-  //   2. styler.tableViewBackgroundColor.
-  cell.textLabel.backgroundColor = styler.cellBackgroundColor
-                                       ? styler.cellBackgroundColor
-                                       : styler.tableViewBackgroundColor;
-
   // Decide cell.textLabel.textColor in order:
   //   1. this.textColor;
   //   2. styler.cellTitleColor;

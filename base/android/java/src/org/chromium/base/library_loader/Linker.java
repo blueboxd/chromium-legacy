@@ -5,7 +5,6 @@
 package org.chromium.base.library_loader;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -217,11 +216,10 @@ public abstract class Linker {
      * fails to provide the library, the system linker is used as a fallback.
      *
      * LegacyLinker can run on all Android releases, but is unused on P+ as it may cause issues.
-     * LegacyLinker is preferred on N- because it does not write the shared RELRO to disk at
+     * LegacyLinker is preferred on M- because it does not write the shared RELRO to disk at
      * almost every cold startup.
      *
-     * Finally, ModernLinker is used on Android N+ when installing Chrome{,Modern}.apk, which is not
-     * a configuration shipped through the play store, but kept here temporarily to ease testing.
+     * Finally, ModernLinker is used on Android Q+ with Trichrome.
      *
      * @return the Linker implementation instance.
      */
@@ -240,10 +238,7 @@ public abstract class Linker {
         // regular library loading. See http://crbug.com/980304 as example.
         //
         // This is only called if LibraryLoader.useChromiumLinker() returns true, meaning this is
-        // either Chrome{,Modern} or the linker tests.
-        //
-        // TODO(lizeb): Also check that this is a local build to avoid shipping ModernLinker
-        // accidentally.
+        // either Chrome{,Modern}, the linker tests or Trichrome.
         synchronized (sLock) {
             if (sSingleton == null) {
                 // With incremental install, it's important to fall back to the "normal"
@@ -252,9 +247,7 @@ public abstract class Linker {
                         ContextUtils.getApplicationContext().getApplicationInfo().className;
                 boolean isIncrementalInstall =
                         appClass != null && appClass.contains("incrementalinstall");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !isIncrementalInstall) {
-                    // This is not hit for shipping versions, as the Chrome flavor on N+ is
-                    // MonoChrome, and this requires both Chrome.apk and N+.
+                if (NativeLibraries.sUseModernLinker && !isIncrementalInstall) {
                     sSingleton = new ModernLinker();
                 } else {
                     sSingleton = new LegacyLinker();
@@ -306,22 +299,22 @@ public abstract class Linker {
     }
 
     /** Tell the linker about the APK path, if the library is loaded from the APK. */
-    abstract void setApkFilePath(String path);
+    void setApkFilePath(String path) {}
 
     /**
      * Load a native shared library with the Chromium linker. Note the crazy linker treats
      * libraries and files as equivalent, so you can only open one library in a given zip
      * file. The library must not be the Chromium linker library.
      *
-     * @param libFilePath The path of the library (possibly in the zip file).
+     * @param library The library name to load.
      * @param isFixesAddressPermitted Whether the library can be loaded at a fixed address for RELRO
      * sharing.
      */
-    final void loadLibrary(String libFilePath, boolean isFixedAddressPermitted) {
-        if (DEBUG) Log.i(TAG, "loadLibrary: %s", libFilePath);
-        assert !libFilePath.equals(LINKER_JNI_LIBRARY);
+    final void loadLibrary(String library, boolean isFixedAddressPermitted) {
+        if (DEBUG) Log.i(TAG, "loadLibrary: %s", library);
+        assert !library.equals(LINKER_JNI_LIBRARY);
         synchronized (sLock) {
-            loadLibraryImplLocked(libFilePath, isFixedAddressPermitted);
+            loadLibraryImplLocked(library, isFixedAddressPermitted);
         }
     }
 

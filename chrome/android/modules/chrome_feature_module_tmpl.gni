@@ -27,11 +27,6 @@ template("chrome_feature_module") {
   _include_32_bit_webview =
       defined(invoker.include_32_bit_webview) && invoker.include_32_bit_webview
 
-  # TODO(tiborg): Remove once downstream use removed.
-  if (defined(invoker.module_name_suffix)) {
-    not_needed(invoker, [ "module_name_suffix" ])
-  }
-
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
                            [

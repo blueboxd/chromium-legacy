@@ -44,7 +44,7 @@ void VulkanDemo::Initialize() {
 
   ui::PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(100, 100, 800, 600);
-  auto x11_window = std::make_unique<ui::X11Window>(this, nullptr);
+  auto x11_window = std::make_unique<ui::X11Window>(this);
   x11_window->Initialize(std::move(properties));
 
   window_ = std::move(x11_window);

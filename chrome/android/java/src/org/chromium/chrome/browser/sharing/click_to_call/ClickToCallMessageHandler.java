@@ -50,9 +50,29 @@ public class ClickToCallMessageHandler {
             ClickToCallUma.recordDialerPresent(true);
             ClickToCallUma.recordDialerShown(TextUtils.isEmpty(phoneNumber));
         } catch (ActivityNotFoundException activityNotFound) {
-            // TODO(crbug.com/996644): Add error dialog when no dialer app is available.
+            // Notify the user that no dialer app was available.
             ClickToCallUma.recordDialerPresent(false);
+            displayDialerNotFoundNotification();
         }
+    }
+
+    /**
+     * Shows an error notification suggesting the user to enable a dialer app to
+     * use click to call.
+     */
+    public static void displayDialerNotFoundNotification() {
+        Context context = ContextUtils.getApplicationContext();
+
+        SharingNotificationUtil.showNotification(
+                NotificationUmaTracker.SystemNotificationType.CLICK_TO_CALL,
+                NotificationConstants.GROUP_CLICK_TO_CALL,
+                NotificationConstants.NOTIFICATION_ID_CLICK_TO_CALL_ERROR, /*contentIntent=*/null,
+                context.getResources().getString(
+                        R.string.click_to_call_dialer_absent_notification_title),
+                context.getResources().getString(
+                        R.string.click_to_call_dialer_absent_notification_text),
+                R.drawable.ic_error_outline_red_24dp, R.drawable.ic_dialer_not_found_red_40dp,
+                R.color.google_red_600);
     }
 
     /**
@@ -99,7 +119,8 @@ public class ClickToCallMessageHandler {
                 NotificationConstants.GROUP_CLICK_TO_CALL,
                 NotificationConstants.NOTIFICATION_ID_CLICK_TO_CALL, contentIntent, phoneNumber,
                 context.getResources().getString(R.string.click_to_call_notification_text),
-                R.drawable.ic_phone_googblue_36dp, /*largeIconId=*/0);
+                R.drawable.ic_devices_16dp, R.drawable.ic_dialer_icon_blue_40dp,
+                R.color.default_icon_color_blue);
     }
 
     /**

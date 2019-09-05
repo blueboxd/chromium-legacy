@@ -115,12 +115,10 @@ void PopulateBinderMap(SharedWorkerHost* host,
 }
 
 // Service workers
-ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host) {
+ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  // TODO(crbug.com/993409): pass Origin instead of GURL
-  return {host->running_hosted_version()->script_origin().GetURL(),
-          host->running_hosted_version()->version_id(), host->process_id()};
+  return host->running_hosted_version()->GetInfo();
 }
 
 void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
@@ -132,7 +130,7 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
 
 void PopulateBinderMapWithContext(
     ServiceWorkerProviderHost* host,
-    service_manager::BinderMapWithContext<const ServiceWorkerRunningInfo&>*
+    service_manager::BinderMapWithContext<const ServiceWorkerVersionInfo&>*
         map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 

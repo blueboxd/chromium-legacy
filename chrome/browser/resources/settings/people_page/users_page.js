@@ -83,9 +83,9 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isEditingUsersDisabled_: function(
+  isEditingUsersEnabled_: function(
       isOwner, isWhitelistManaged, allowGuest, isChild) {
-    return !isOwner || isWhitelistManaged || allowGuest || isChild;
+    return isOwner && !isWhitelistManaged && !allowGuest && !isChild;
   },
 
   /** @return {boolean} */

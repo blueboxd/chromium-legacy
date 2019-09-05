@@ -32,8 +32,10 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
@@ -254,6 +256,11 @@ ResourceLoadPriority AdjustPriorityWithDeferScriptIntervention(
     const ResourceRequest& resource_request,
     FetchParameters::DeferOption defer_option,
     bool is_link_preload) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kLowerJavaScriptPriorityWhenForceDeferred)) {
+    return priority_so_far;
+  }
+
   WebURLRequest::PreviewsState context_previews_state =
       fetch_context.previews_state();
 

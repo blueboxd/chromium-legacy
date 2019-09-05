@@ -479,8 +479,8 @@ TEST_F(SequencedSocketDataTest, SyncReadFromCompletionCallback) {
       ERR_IO_PENDING,
       sock_->Read(
           read_buf_.get(), kLen1,
-          base::Bind(&SequencedSocketDataTest::ReentrantReadCallback,
-                     base::Unretained(this), kMsg1, kLen1, kLen2, kLen2)));
+          base::BindOnce(&SequencedSocketDataTest::ReentrantReadCallback,
+                         base::Unretained(this), kMsg1, kLen1, kLen2, kLen2)));
 
   base::RunLoop().RunUntilIdle();
   AssertReadBufferEquals(kMsg2, kLen2);
@@ -527,12 +527,12 @@ TEST_F(SequencedSocketDataTest, AsyncReadFromCompletionCallback) {
   Initialize(reads, base::span<MockWrite>());
 
   read_buf_ = base::MakeRefCounted<IOBuffer>(kLen1);
-  ASSERT_EQ(
-      ERR_IO_PENDING,
-      sock_->Read(read_buf_.get(), kLen1,
-                  base::Bind(&SequencedSocketDataTest::ReentrantReadCallback,
-                             base::Unretained(this), kMsg1, kLen1, kLen2,
-                             ERR_IO_PENDING)));
+  ASSERT_EQ(ERR_IO_PENDING,
+            sock_->Read(
+                read_buf_.get(), kLen1,
+                base::BindOnce(&SequencedSocketDataTest::ReentrantReadCallback,
+                               base::Unretained(this), kMsg1, kLen1, kLen2,
+                               ERR_IO_PENDING)));
 
   ASSERT_FALSE(read_callback_.have_result());
   ASSERT_EQ(kLen2, read_callback_.WaitForResult());
@@ -780,12 +780,13 @@ TEST_F(SequencedSocketDataTest, SyncWriteFromCompletionCallback) {
 
   scoped_refptr<IOBuffer> write_buf = base::MakeRefCounted<IOBuffer>(kLen1);
   memcpy(write_buf->data(), kMsg1, kLen1);
-  ASSERT_EQ(ERR_IO_PENDING,
-            sock_->Write(
-                write_buf.get(), kLen1,
-                base::Bind(&SequencedSocketDataTest::ReentrantWriteCallback,
-                           base::Unretained(this), kLen1, kMsg2, kLen2, kLen2),
-                TRAFFIC_ANNOTATION_FOR_TESTS));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      sock_->Write(
+          write_buf.get(), kLen1,
+          base::BindOnce(&SequencedSocketDataTest::ReentrantWriteCallback,
+                         base::Unretained(this), kLen1, kMsg2, kLen2, kLen2),
+          TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -799,13 +800,13 @@ TEST_F(SequencedSocketDataTest, AsyncWriteFromCompletionCallback) {
 
   scoped_refptr<IOBuffer> write_buf = base::MakeRefCounted<IOBuffer>(kLen1);
   memcpy(write_buf->data(), kMsg1, kLen1);
-  ASSERT_EQ(
-      ERR_IO_PENDING,
-      sock_->Write(write_buf.get(), kLen1,
-                   base::Bind(&SequencedSocketDataTest::ReentrantWriteCallback,
-                              base::Unretained(this), kLen1, kMsg2, kLen2,
-                              ERR_IO_PENDING),
-                   TRAFFIC_ANNOTATION_FOR_TESTS));
+  ASSERT_EQ(ERR_IO_PENDING,
+            sock_->Write(
+                write_buf.get(), kLen1,
+                base::BindOnce(&SequencedSocketDataTest::ReentrantWriteCallback,
+                               base::Unretained(this), kLen1, kMsg2, kLen2,
+                               ERR_IO_PENDING),
+                TRAFFIC_ANNOTATION_FOR_TESTS));
 
   ASSERT_FALSE(write_callback_.have_result());
   ASSERT_EQ(kLen2, write_callback_.WaitForResult());
@@ -977,12 +978,13 @@ TEST_F(SequencedSocketDataTest, AsyncReadFromWriteCompletionCallback) {
 
   scoped_refptr<IOBuffer> write_buf = base::MakeRefCounted<IOBuffer>(kLen1);
   memcpy(write_buf->data(), kMsg1, kLen1);
-  ASSERT_EQ(ERR_IO_PENDING,
-            sock_->Write(
-                write_buf.get(), kLen1,
-                base::Bind(&SequencedSocketDataTest::ReentrantAsyncReadCallback,
-                           base::Unretained(this), kLen1, kLen2),
-                TRAFFIC_ANNOTATION_FOR_TESTS));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      sock_->Write(
+          write_buf.get(), kLen1,
+          base::BindOnce(&SequencedSocketDataTest::ReentrantAsyncReadCallback,
+                         base::Unretained(this), kLen1, kLen2),
+          TRAFFIC_ANNOTATION_FOR_TESTS));
 
   ASSERT_FALSE(read_callback_.have_result());
   ASSERT_EQ(kLen2, read_callback_.WaitForResult());

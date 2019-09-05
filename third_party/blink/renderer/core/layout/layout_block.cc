@@ -1441,8 +1441,8 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     // the flow thread, which will take care of that.
     const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
     if (!block_flow || !block_flow->MultiColumnFlowThread()) {
-      max_logical_width = LayoutUnit(scrollbar_width);
-      min_logical_width = LayoutUnit(scrollbar_width);
+      max_logical_width = min_logical_width =
+          ContentLogicalWidthForSizeContainment() + LayoutUnit(scrollbar_width);
       return;
     }
   } else if (DisplayLockInducesSizeContainment()) {

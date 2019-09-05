@@ -54,14 +54,6 @@ void AssistantStateProxy::OnAssistantStatusChanged(
   UpdateAssistantStatus(state);
 }
 
-void AssistantStateProxy::OnAssistantSettingsEnabled(bool enabled) {
-  UpdateSettingsEnabled(enabled);
-}
-
-void AssistantStateProxy::OnAssistantHotwordEnabled(bool enabled) {
-  UpdateHotwordEnabled(enabled);
-}
-
 void AssistantStateProxy::OnAssistantFeatureAllowedChanged(
     ash::mojom::AssistantAllowedState state) {
   UpdateFeatureAllowedState(state);

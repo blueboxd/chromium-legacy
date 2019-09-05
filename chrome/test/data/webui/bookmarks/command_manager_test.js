@@ -609,9 +609,17 @@ suite('<bookmarks-item> CommandManager integration', function() {
     chrome.bookmarkManagerPrivate.cut = bmpCutFunction;
   });
 
-  test('context menu disappears immediately on right click', function() {
+  test('context menu disappears immediately on right click', async function() {
+    commandManager.updateForPaste_ = function() {
+      this.canPaste_ = true;
+      return Promise.resolve();
+    };
+
     customClick(items[0], {button: 1}, 'contextmenu');
     assertDeepEquals(['11'], normalizeIterable(store.data.selection.items));
+
+    await test_util.flushTasks();
+
     let dropdown = commandManager.$.dropdown.getIfExists();
     let dialog = dropdown.getDialog();
     assertTrue(dropdown.open);

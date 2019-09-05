@@ -22,6 +22,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
+#include "content/public/browser/navigation_entry.h"
 
 namespace safe_browsing {
 
@@ -38,13 +39,24 @@ GURL GetDownloadUrl(const GURL& frame_url) {
               "native-file-system-write");
 }
 
+CheckClientDownloadRequestBase::TabUrls TabUrlsFromWebContents(
+    content::WebContents* web_contents) {
+  CheckClientDownloadRequestBase::TabUrls result;
+  if (web_contents) {
+    content::NavigationEntry* entry =
+        web_contents->GetController().GetVisibleEntry();
+    if (entry) {
+      result.url = entry->GetURL();
+      result.referrer = entry->GetReferrer().url;
+    }
+  }
+  return result;
+}
+
 }  // namespace
 
-NativeFileSystemWriteItem::NativeFileSystemWriteItem() = default;
-NativeFileSystemWriteItem::~NativeFileSystemWriteItem() = default;
-
 CheckNativeFileSystemWriteRequest::CheckNativeFileSystemWriteRequest(
-    std::unique_ptr<NativeFileSystemWriteItem> item,
+    std::unique_ptr<content::NativeFileSystemWriteItem> item,
     CheckDownloadCallback callback,
     DownloadProtectionService* service,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
@@ -52,8 +64,7 @@ CheckNativeFileSystemWriteRequest::CheckNativeFileSystemWriteRequest(
     : CheckClientDownloadRequestBase(GetDownloadUrl(item->frame_url),
                                      item->target_file_path,
                                      item->full_path,
-                                     item->tab_url,
-                                     GURL(),
+                                     TabUrlsFromWebContents(item->web_contents),
                                      item->browser_context,
                                      std::move(callback),
                                      service,

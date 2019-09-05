@@ -68,6 +68,28 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     CLICK_NONE,
   };
 
+  // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
+  class VIEWS_EXPORT DefaultButtonControllerDelegate
+      : public ButtonControllerDelegate {
+   public:
+    explicit DefaultButtonControllerDelegate(Button* button);
+    ~DefaultButtonControllerDelegate() override;
+
+    // views::ButtonControllerDelegate:
+    void RequestFocusFromEvent() override;
+    void NotifyClick(const ui::Event& event) override;
+    void OnClickCanceled(const ui::Event& event) override;
+    bool IsTriggerableEvent(const ui::Event& event) override;
+    bool ShouldEnterPushedState(const ui::Event& event) override;
+    bool ShouldEnterHoveredState() override;
+    InkDrop* GetInkDrop() override;
+    int GetDragOperations(const gfx::Point& press_pt) override;
+    bool InDrag() override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
+  };
+
   static const Button* AsButton(const View* view);
   static Button* AsButton(View* view);
 
@@ -196,30 +218,9 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     return button_controller_.get();
   }
 
+  void SetButtonController(std::unique_ptr<ButtonController> button_controller);
+
  protected:
-  // TODO(cyan): Consider having Button implement ButtonControllerDelegate.
-  class DefaultButtonControllerDelegate : public ButtonControllerDelegate {
-   public:
-    explicit DefaultButtonControllerDelegate(Button* button);
-    ~DefaultButtonControllerDelegate() override;
-
-    // views::ButtonControllerDelegate:
-    void RequestFocusFromEvent() override;
-    void NotifyClick(const ui::Event& event) override;
-    void OnClickCanceled(const ui::Event& event) override;
-    bool IsTriggerableEvent(const ui::Event& event) override;
-    bool ShouldEnterPushedState(const ui::Event& event) override;
-    bool ShouldEnterHoveredState() override;
-    InkDrop* GetInkDrop() override;
-    int GetDragOperations(const gfx::Point& press_pt) override;
-    bool InDrag() override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DefaultButtonControllerDelegate);
-  };
-
-  std::unique_ptr<ButtonControllerDelegate> CreateButtonControllerDelegate();
-
   // Construct the Button with a Listener. The listener can be null. This can be
   // true of buttons that don't have a listener - e.g. menubuttons where there's
   // no default action and checkboxes.
@@ -279,8 +280,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   }
 
   FocusRing* focus_ring() { return focus_ring_.get(); }
-
-  void SetButtonController(std::unique_ptr<ButtonController> button_controller);
 
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;

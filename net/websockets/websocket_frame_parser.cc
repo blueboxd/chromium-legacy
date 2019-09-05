@@ -37,11 +37,7 @@ const size_t kMaximumFrameHeaderSize =
 namespace net {
 
 WebSocketFrameParser::WebSocketFrameParser()
-    : frame_offset_(0), websocket_error_(kWebSocketNormalClosure) {
-  std::fill(masking_key_.key,
-            masking_key_.key + WebSocketFrameHeader::kMaskingKeyLength,
-            '\0');
-}
+    : frame_offset_(0), websocket_error_(kWebSocketNormalClosure) {}
 
 WebSocketFrameParser::~WebSocketFrameParser() = default;
 
@@ -157,16 +153,15 @@ size_t WebSocketFrameParser::DecodeFrameHeader(base::span<const char> data) {
   }
   DCHECK_EQ(websocket_error_, kWebSocketNormalClosure);
 
+  WebSocketMaskingKey masking_key = {};
   const bool masked = (second_byte & kMaskBit) != 0;
   static const int kMaskingKeyLength = WebSocketFrameHeader::kMaskingKeyLength;
   if (masked) {
     if (data.size() < current + kMaskingKeyLength)
       return 0;
     std::copy(&data[current], &data[current] + kMaskingKeyLength,
-              masking_key_.key);
+              masking_key.key);
     current += kMaskingKeyLength;
-  } else {
-    std::fill(masking_key_.key, masking_key_.key + kMaskingKeyLength, '\0');
   }
 
   current_frame_header_ = std::make_unique<WebSocketFrameHeader>(opcode);
@@ -175,6 +170,7 @@ size_t WebSocketFrameParser::DecodeFrameHeader(base::span<const char> data) {
   current_frame_header_->reserved2 = reserved2;
   current_frame_header_->reserved3 = reserved3;
   current_frame_header_->masked = masked;
+  current_frame_header_->masking_key = masking_key;
   current_frame_header_->payload_length = payload_length;
   DCHECK_EQ(0u, frame_offset_);
   return current;
@@ -201,13 +197,6 @@ std::unique_ptr<WebSocketFrameChunk> WebSocketFrameParser::DecodeFramePayload(
     // TODO(yoichio): Remove copy by making |frame_chunk| having refs of |data|.
     memcpy(io_data, data->data(), chunk_data_size);
     *data = data->subspan(chunk_data_size);
-    if (current_frame_header_->masked) {
-      // The masking function is its own inverse, so we use the same function to
-      // unmask as to mask.
-      MaskWebSocketFramePayload(masking_key_, frame_offset_, io_data,
-                                chunk_data_size);
-    }
-
     frame_offset_ += chunk_data_size;
   }
 

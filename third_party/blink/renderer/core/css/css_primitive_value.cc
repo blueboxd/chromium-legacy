@@ -180,7 +180,7 @@ CSSPrimitiveValue* CSSPrimitiveValue::CreateFromLength(const Length& length,
       const CalculationValue& calc = length.GetCalculationValue();
       if (calc.IsExpression() || (calc.Pixels() && calc.Percent()))
         return CSSMathFunctionValue::Create(length, zoom);
-      if (calc.Percent()) {
+      if (!calc.Pixels()) {
         double num = calc.Percent();
         if (num < 0 && calc.IsNonNegative())
           num = 0;

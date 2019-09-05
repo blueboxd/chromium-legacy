@@ -14,16 +14,11 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PointerEvent* Create(
-      const AtomicString& type,
-      const PointerEventInit* initializer,
-      base::TimeTicks platform_time_stamp,
-      MouseEvent::SyntheticEventType synthetic_event_type =
-          kRealOrIndistinguishable,
-      WebMenuSourceType menu_source_type = kMenuSourceNone) {
-    return MakeGarbageCollected<PointerEvent>(
-        type, initializer, platform_time_stamp, synthetic_event_type,
-        menu_source_type);
+  static PointerEvent* Create(const AtomicString& type,
+                              const PointerEventInit* initializer,
+                              base::TimeTicks platform_time_stamp) {
+    return MakeGarbageCollected<PointerEvent>(type, initializer,
+                                              platform_time_stamp);
   }
   static PointerEvent* Create(const AtomicString& type,
                               const PointerEventInit* initializer) {
@@ -32,9 +27,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   PointerEvent(const AtomicString&,
                const PointerEventInit*,
-               base::TimeTicks platform_time_stamp,
-               MouseEvent::SyntheticEventType synthetic_event_type,
-               WebMenuSourceType menu_source_type);
+               base::TimeTicks platform_time_stamp);
 
   PointerId pointerId() const { return pointer_id_; }
   double width() const { return width_; }

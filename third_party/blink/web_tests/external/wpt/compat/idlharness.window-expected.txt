@@ -1,8 +1,12 @@
 This is a testharness.js-based test.
-FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
- define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
-                        ^ Trailing comma in arguments list"
-FAIL Partial interface Window: original interface defined assert_true: Original interface should be defined expected true got false
-FAIL Partial interface HTMLBodyElement: original interface defined assert_true: Original interface should be defined expected true got false
+PASS idl_test setup
+PASS Partial interface Window: original interface defined
+PASS Partial interface HTMLBodyElement: original interface defined
+FAIL HTMLBodyElement interface: attribute onorientationchange assert_true: The prototype object must have a property "onorientationchange" expected true got false
+FAIL HTMLBodyElement interface: document.body must inherit property "onorientationchange" with the proper type assert_inherits: property "onorientationchange" not found in prototype chain
+FAIL Window interface: attribute orientation assert_own_property: The global object must have a property "orientation" expected property "orientation" missing
+FAIL Window interface: attribute onorientationchange assert_own_property: The global object must have a property "onorientationchange" expected property "onorientationchange" missing
+FAIL Window interface: window must inherit property "orientation" with the proper type assert_own_property: expected property "orientation" missing
+FAIL Window interface: window must inherit property "onorientationchange" with the proper type assert_own_property: expected property "onorientationchange" missing
 Harness: the test ran to completion.
 

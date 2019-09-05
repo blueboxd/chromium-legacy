@@ -122,6 +122,38 @@ TEST_F(NGLayoutResultCachingTest, HitDifferentBFCOffset) {
             NGBfcOffset(LayoutUnit(100), LayoutUnit::Max()));
 }
 
+TEST_F(NGLayoutResultCachingTest, HitDifferentBFCOffsetSameMarginStrut) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  // Different BFC offset, same margin-strut.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+    </style>
+    <div class="bfc">
+      <div style="height: 50px; margin-bottom: 20px;"></div>
+      <div id="test" style="height: 20px;"></div>
+    </div>
+    <div class="bfc">
+      <div style="height: 40px; margin-bottom: 20px;"></div>
+      <div id="src" style="height: 20px;"></div>
+    </div>
+  )HTML");
+
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  const NGConstraintSpace& space =
+      src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
 TEST_F(NGLayoutResultCachingTest, MissDescendantAboveBlockStart1) {
   ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
 
@@ -1109,6 +1141,285 @@ TEST_F(NGLayoutResultCachingTest, ClearancePastAdjoiningFloatsMovement) {
                                      &cache_status);
 
   // Case 2: We have forced clearance, and floats will impact our children.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MarginStrutMovementSelfCollapsing) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+    </style>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test1">
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src1">
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test2">
+          <div style="margin-bottom: 8px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src2">
+          <div style="margin-bottom: 8px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  // Case 1: We can safely re-use this fragment as it doesn't append anything
+  // to the margin-strut within the sub-tree.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  // The "end" margin-strut should be updated.
+  NGMarginStrut expected_margin_strut;
+  expected_margin_strut.Append(LayoutUnit(5), false /* is_quirky */);
+  EXPECT_EQ(expected_margin_strut, result->EndMarginStrut());
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 2: We can't re-use this fragment as it appended a non-zero value to
+  // the margin-strut within the sub-tree.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MarginStrutMovementInFlow) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+    </style>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test1">
+          <div>text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src1">
+          <div>text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test2">
+          <div style="margin-top: 8px;">text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src2">
+          <div style="margin-top: 8px;">text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test3">
+          <div>
+            <div style="margin-top: 8px;"></div>
+          </div>
+          <div>text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src3">
+          <div>
+            <div style="margin-top: 8px;"></div>
+          </div>
+          <div>text</div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* test3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test3"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+  auto* src3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src3"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  // Case 1: We can safely re-use this fragment as it doesn't append anything
+  // to the margin-strut within the sub-tree.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 2: We can't re-use this fragment as it appended a non-zero value to
+  // the margin-strut within the sub-tree.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src3->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test3->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 3: We can't re-use this fragment as a (inner) self-collapsing block
+  // appended a non-zero value to the margin-strut within the sub-tree.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MarginStrutMovementPercentage) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+    </style>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test1" style="width: 0px;">
+          <div style="margin-top: 50%;">text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src1" style="width: 0px;">
+          <div style="margin-top: 50%;">text</div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  // We can't re-use this fragment as it appended a non-zero value (50%) to the
+  // margin-strut within the sub-tree.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MarginStrutMovementDiscard) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+    </style>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test1">
+          <div style="-webkit-margin-top-collapse: discard;">text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src1">
+          <div style="-webkit-margin-top-collapse: discard;">text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 10px;">
+        <div id="test2">
+          <div>
+            <div style="-webkit-margin-bottom-collapse: discard;"></div>
+          </div>
+          <div>text</div>
+        </div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="margin-top: 5px;">
+        <div id="src2">
+          <div>
+            <div style="-webkit-margin-bottom-collapse: discard;"></div>
+          </div>
+          <div>text</div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  // Case 1: We can't re-use this fragment as the sub-tree discards margins.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 2: Also check a self-collapsing block with a block-end discard.
   EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
   EXPECT_EQ(result.get(), nullptr);
 }

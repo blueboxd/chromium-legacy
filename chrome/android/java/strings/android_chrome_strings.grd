@@ -337,11 +337,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_COMPLETED_DOWNLOADS" desc="Label for completed download notifications, within a list of notification categories. [CHAR-LIMIT=32]">
        Completed downloads
       </message>
-      <if expr="False">
-        <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
-         Permission requests
-        </message>
-      </if>
+      <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
+       Permission requests
+      </message>
 
       <!-- Sign-in, sync and personalization preferences -->
       <message name="IDS_PREFS_SECTION_ACCOUNT" desc="Title for the group of account-related entries in Settings. [CHAR-LIMIT=32]">
@@ -3888,8 +3886,14 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
 
       <!-- ClickToCall -->
-      <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification.">
+      <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification to call on a number.">
         Tap to make call
+      </message>
+      <message name="IDS_CLICK_TO_CALL_DIALER_ABSENT_NOTIFICATION_TITLE" desc="Title of click to call notification when there is no dialer on device.">
+        Can't make calls
+      </message>
+      <message name="IDS_CLICK_TO_CALL_DIALER_ABSENT_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification when there is no dialer on device.">
+        Make sure a phone app is enabled on this device
       </message>
 
       <!-- Shared Clipboard -->

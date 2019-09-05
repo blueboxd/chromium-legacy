@@ -158,8 +158,6 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool IsSwitchAccessSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForSwitchAccess();
 
-  void SetSwitchAccessIgnoreVirtualKeyEvent(bool should_ignore);
-
   void SetVirtualKeyboardEnabled(bool enabled);
   bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
   bool IsVirtualKeyboardSettingVisibleInTray();
@@ -248,6 +246,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void NotifyAccessibilityStatusChanged() override;
   bool IsAccessibilityFeatureVisibleInTrayMenu(
       const std::string& path) override;
+  void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
+      bool should_ignore) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 
 namespace media {
-#if defined(OS_CHROMEOS)
 
 NullHandle::NullHandle() = default;
 
@@ -28,5 +27,4 @@ const uint8_t* NullHandle::const_data() const {
   return nullptr;
 }
 
-#endif
 }  // namespace media

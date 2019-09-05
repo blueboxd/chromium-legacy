@@ -175,8 +175,8 @@ void HttpServer::DoAcceptLoop() {
   int rv;
   do {
     rv = server_socket_->Accept(&accepted_socket_,
-                                base::Bind(&HttpServer::OnAcceptCompleted,
-                                           weak_ptr_factory_.GetWeakPtr()));
+                                base::BindOnce(&HttpServer::OnAcceptCompleted,
+                                               weak_ptr_factory_.GetWeakPtr()));
     if (rv == ERR_IO_PENDING)
       return;
     rv = HandleAcceptResult(rv);
@@ -215,10 +215,9 @@ void HttpServer::DoReadLoop(HttpConnection* connection) {
     }
 
     rv = connection->socket()->Read(
-        read_buf,
-        read_buf->RemainingCapacity(),
-        base::Bind(&HttpServer::OnReadCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), connection->id()));
+        read_buf, read_buf->RemainingCapacity(),
+        base::BindOnce(&HttpServer::OnReadCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), connection->id()));
     if (rv == ERR_IO_PENDING)
       return;
     rv = HandleReadResult(connection, rv);
@@ -325,9 +324,9 @@ void HttpServer::DoWriteLoop(HttpConnection* connection,
   while (rv == OK && write_buf->GetSizeToWrite() > 0) {
     rv = connection->socket()->Write(
         write_buf, write_buf->GetSizeToWrite(),
-        base::Bind(&HttpServer::OnWriteCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), connection->id(),
-                   traffic_annotation),
+        base::BindOnce(&HttpServer::OnWriteCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), connection->id(),
+                       traffic_annotation),
         traffic_annotation);
     if (rv == ERR_IO_PENDING || rv == OK)
       return;

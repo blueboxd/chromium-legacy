@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL src="http://[" assert_true: loadend event fired expected true got false
-PASS src=""
-Harness: the test ran to completion.
-

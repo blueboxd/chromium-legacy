@@ -160,7 +160,7 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoReceiver, WrapWeakPersistent(&frame)));
   }
-  if (RuntimeEnabledFeatures::FileHandlingEnabled()) {
+  if (RuntimeEnabledFeatures::FileHandlingEnabled(frame.GetDocument())) {
     frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
         &WebLaunchServiceImpl::Create, WrapWeakPersistent(&frame)));
   }

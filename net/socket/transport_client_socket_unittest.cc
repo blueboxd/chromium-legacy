@@ -111,9 +111,10 @@ void TransportClientSocketTest::SetUp() {
   // Get the server's address (including the actual port number).
   ASSERT_THAT(listen_sock_->GetLocalAddress(&local_address), IsOk());
   listen_port_ = local_address.port();
-  listen_sock_->Accept(&connected_sock_,
-                       base::Bind(&TransportClientSocketTest::AcceptCallback,
-                                  base::Unretained(this)));
+  listen_sock_->Accept(
+      &connected_sock_,
+      base::BindOnce(&TransportClientSocketTest::AcceptCallback,
+                     base::Unretained(this)));
 
   AddressList addr = AddressList::CreateFromIPAddress(
       IPAddress::IPv4Localhost(), listen_port_);

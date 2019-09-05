@@ -10,7 +10,6 @@
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/public/mojom/ime_controller.mojom.h"
 #include "ash/public/mojom/tray_action.mojom.h"
-#include "ash/public/mojom/vpn_list.mojom.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/constants.mojom.h"
@@ -37,11 +36,10 @@ const service_manager::Manifest& GetManifest() {
                                service_manager::Manifest::
                                    InstanceSharingPolicy::kSingleton)
                            .Build())
-          .ExposeCapability(
-              "system_ui",
-              service_manager::Manifest::InterfaceList<
-                  mojom::CrosDisplayConfigController, mojom::ImeController,
-                  mojom::TrayAction, mojom::VpnList>())
+          .ExposeCapability("system_ui",
+                            service_manager::Manifest::InterfaceList<
+                                mojom::CrosDisplayConfigController,
+                                mojom::ImeController, mojom::TrayAction>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
           .RequireCapability(content::mojom::kServiceName, "navigation")

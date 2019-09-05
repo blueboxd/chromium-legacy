@@ -192,14 +192,7 @@ EasyUnlockService::EasyUnlockService(
       shut_down_(false),
       tpm_key_checked_(false) {}
 
-EasyUnlockService::~EasyUnlockService() {
-  // TODO(crbug.com/969135): Remove this once crbug.com/969135 is resolved.
-  // This CHECK ensures that EasyUnlockService is shutdown before it's deleted.
-  // This is added because the stack trace of the crash in question implies
-  // that a deleted member variable of EasyUnlockService is being touched during
-  // EasyUnlockService::Shutdown().
-  CHECK(shut_down_);
-}
+EasyUnlockService::~EasyUnlockService() = default;
 
 // static
 void EasyUnlockService::RegisterProfilePrefs(

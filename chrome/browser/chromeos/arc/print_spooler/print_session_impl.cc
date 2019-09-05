@@ -11,41 +11,45 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
-#include "components/arc/print_spooler/arc_print_renderer.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/window.h"
 
+namespace arc {
+
 // static
-arc::mojom::PrintSessionPtr PrintSessionImpl::Create(
+arc::mojom::PrintSessionHostPtr PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    arc::mojom::PrintRendererDelegatePtr delegate) {
-  if (!custom_tab || !delegate)
+    arc::mojom::PrintSessionInstancePtr instance) {
+  if (!custom_tab || !instance)
     return nullptr;
 
   // This object will be deleted when the mojo connection is closed.
-  arc::mojom::PrintSessionPtr ptr;
+  arc::mojom::PrintSessionHostPtr ptr;
   new PrintSessionImpl(std::move(web_contents), std::move(custom_tab),
-                       std::move(delegate), mojo::MakeRequest(&ptr));
+                       std::move(instance), mojo::MakeRequest(&ptr));
   return ptr;
 }
 
 PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    arc::mojom::PrintRendererDelegatePtr delegate,
-    arc::mojom::PrintSessionRequest request)
+    arc::mojom::PrintSessionInstancePtr instance,
+    arc::mojom::PrintSessionHostRequest request)
     : ArcCustomTabModalDialogHost(std::move(custom_tab),
                                   std::move(web_contents)),
       binding_(this, std::move(request)),
-      weak_ptr_factory_(this) {
+      instance_(std::move(instance)) {
   binding_.set_connection_error_handler(
       base::BindOnce(&PrintSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
+  web_contents_->SetUserData(UserDataKey(), base::WrapUnique(this));
+
   aura::Window* window = web_contents_->GetNativeView();
   custom_tab_->Attach(window);
   window->Show();
@@ -55,7 +59,7 @@ PrintSessionImpl::PrintSessionImpl(
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PrintSessionImpl::StartPrintAfterDelay,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(delegate)),
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(1));
 }
 
@@ -72,27 +76,13 @@ PrintSessionImpl::~PrintSessionImpl() {
 }
 
 void PrintSessionImpl::Close() {
-  delete this;
+  web_contents_->RemoveUserData(UserDataKey());
 }
 
-void PrintSessionImpl::StartPrintAfterDelay(
-    arc::mojom::PrintRendererDelegatePtr delegate) {
-  // Hand the PrintRendererDelegate interface pointer to a PrintRenderer
-  // observing the guest WebContents. This ensures the PrintRendererDelegate is
-  // associated with the RenderFrameHost corresponding to the RenderFrame
-  // being printed.
-  content::WebContents* web_contents_to_use =
-      printing::GetWebContentsToUse(web_contents_.get());
-  if (!web_contents_to_use) {
-    LOG(ERROR) << "Failed to obtain WebContents to use.";
-    Close();
-  }
-
-  ArcPrintRenderer::CreateForWebContents(web_contents_to_use);
-  ArcPrintRenderer::FromWebContents(web_contents_to_use)
-      ->SetDelegate(std::move(delegate));
-
-  // Start printing after the ArcPrintRenderer has been created to ensure it's
-  // available to the PrintRenderFrameHelper.
+void PrintSessionImpl::StartPrintAfterDelay() {
   printing::StartPrint(web_contents_.get(), false, false);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintSessionImpl)
+
+}  // namespace arc

@@ -60,10 +60,6 @@ class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
   optimization_guide::prefs::HintsFetcherTopHostBlacklistState
   GetCurrentBlacklistState() const;
 
-  // The minimum engagement score that a host must have to be considered a top
-  // host by |this|.
-  size_t GetMinTopHostEngagementThreshold() const;
-
   // Transition the current HintsFetcherTopHostBlacklist state to |state| and
   // validate the transition. The updated state is persisted in the
   // |kHintsFetcherTopHostBlacklistState| pref.

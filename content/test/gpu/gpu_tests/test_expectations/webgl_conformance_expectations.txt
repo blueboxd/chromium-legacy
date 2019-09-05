@@ -236,7 +236,6 @@ crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/webgl_
 crbug.com/angleproject/3469 [ win vulkan passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 crbug.com/angleproject/2916 [ win vulkan passthrough ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
 crbug.com/angleproject/2916 [ win vulkan passthrough ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
-crbug.com/angleproject/3788 [ win vulkan passthrough ] conformance/reading/read-pixels-test.html [ RetryOnFailure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/angleproject/2914 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]

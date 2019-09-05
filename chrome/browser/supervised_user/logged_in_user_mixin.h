@@ -40,13 +40,27 @@ class LoggedInUserMixin {
   // if should_launch_browser was set to true in the constructor.
   void SetUpOnMainThreadHelper(net::RuleBasedHostResolverProc* host_resolver,
                                InProcessBrowserTest* test_base,
-                               bool issue_any_scope_token = false);
+                               bool issue_any_scope_token = false,
+                               bool wait_for_active_session = true);
 
   // Log in as regular or child account depending on the |type| argument passed
   // to the constructor.
   // * If |issue_any_scope_token|, FakeGaiaMixin will issue a special all-access
   // token associated with the test refresh token. Only matters for child login.
-  void LogInUser(bool issue_any_scope_token = false);
+  // * If |wait_for_active_session|, LoginManagerMixin will wait for the session
+  // state to change to ACTIVE after logging in.
+  void LogInUser(bool issue_any_scope_token = false,
+                 bool wait_for_active_session = true);
+
+  // Waits for the session state to change to ACTIVE. Returns immediately if the
+  // session is already active.
+  void WaitForActiveSession() { login_manager_.WaitForActiveSession(); }
+
+  // Creates scoped user policy update from UserPolicyMixin.
+  // See UserPolicyMixin::RequestPolicyUpdate() for more info.
+  std::unique_ptr<ScopedUserPolicyUpdate> RequestPolicyUpdate() {
+    return user_policy_.RequestPolicyUpdate();
+  }
 
  private:
   LoginManagerMixin::TestUserInfo user_;

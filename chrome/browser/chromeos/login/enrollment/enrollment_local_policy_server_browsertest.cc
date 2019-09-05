@@ -208,7 +208,9 @@ class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
 };
 
 // Simple manual enrollment.
-IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
+// TODO(https://crbug.com/992022#c5): Re-enable this test.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       DISABLED_ManualEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -377,8 +379,9 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // Error during enrollment : 500 - Consumer account with packaged license.
+// TODO(https://crbug.com/992022#c4): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       EnrollmentErrorServerError) {
+                       DISABLED_EnrollmentErrorServerError) {
   policy_server_.SetExpectedDeviceEnrollmentError(500);
 
   TriggerEnrollmentAndSignInSuccessfully();

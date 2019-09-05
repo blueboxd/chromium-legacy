@@ -2369,7 +2369,8 @@ class OverviewSessionRoundedCornerTest : public OverviewSessionTest {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during animations.
-TEST_F(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibility) {
+// TODO(https://crbug.com/1000730): Re-enable this test.
+TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 

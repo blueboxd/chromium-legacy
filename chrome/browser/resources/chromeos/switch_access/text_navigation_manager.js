@@ -26,6 +26,12 @@ class TextNavigationManager {
 
     /** @private {chrome.automation.AutomationNode} */
     this.selectionEndObject_;
+
+    /** @private {boolean} */
+    this.currentlySelecting_ = false;
+
+    /** @private {function(chrome.automation.AutomationEvent): undefined} */
+    this.selectionListener_ = this.onNavChange_.bind(this);
   }
 
   /**
@@ -34,6 +40,8 @@ class TextNavigationManager {
    * @public
    */
   jumpToBeginning() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(false /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.HOME, {ctrl: true});
   }
@@ -44,6 +52,8 @@ class TextNavigationManager {
    * @public
    */
   jumpToEnd() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(false /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.END, {ctrl: true});
   }
@@ -55,8 +65,23 @@ class TextNavigationManager {
    * @public
    */
   moveBackwardOneChar() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(true /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.LEFT_ARROW, {});
+  }
+
+  /**
+   * Moves the text caret one character forward (does nothing
+   * if there are no more characters following the current
+   * location of the caret).
+   * @public
+   */
+  moveForwardOneChar() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(true /* resetCursor */);
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.RIGHT_ARROW, {});
   }
 
   /**
@@ -67,19 +92,10 @@ class TextNavigationManager {
    * @public
    */
   moveBackwardOneWord() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(false /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.LEFT_ARROW, {ctrl: true});
-  }
-
-  /**
-   * Moves the text caret one character forward (does nothing
-   * if there are no more characters following the current
-   * location of the caret).
-   * @public
-   */
-  moveForwardOneChar() {
-    this.navigationManager_.simulateKeyPress(
-        SAConstants.KeyCode.RIGHT_ARROW, {});
   }
 
   /**
@@ -90,6 +106,8 @@ class TextNavigationManager {
    * @public
    */
   moveForwardOneWord() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(false /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.RIGHT_ARROW, {ctrl: true});
   }
@@ -101,6 +119,8 @@ class TextNavigationManager {
    * @public
    */
   moveUpOneLine() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(false /* resetCursor */);
     this.navigationManager_.simulateKeyPress(SAConstants.KeyCode.UP_ARROW, {});
   }
 
@@ -111,14 +131,40 @@ class TextNavigationManager {
    * @public
    */
   moveDownOneLine() {
+    if (this.currentlySelecting_)
+      this.setupDynamicSelection_(false /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.DOWN_ARROW, {});
   }
 
+  /**
+   * TODO(crbug.com/999400): Work on text selection dynamic highlight and
+   * text selection implementation below
+   */
 
   /**
-   * TODO(rosalindag): Work on text selection functionality below.
+   * Sets up the cursor position and selection listener for dynamic selection.
+   * If the needToResetCursor boolean is true, the function will move the cursor
+   * to the end point of the selection before adding the event listener. If not,
+   * it will simply add the listener.
+   * @param {boolean} needToResetCursor
+   * @private
    */
+  setupDynamicSelection_(needToResetCursor) {
+    if (needToResetCursor) {
+      if (this.currentlySelecting() &&
+          this.selectionEndIndex_ != NO_SELECT_INDEX) {
+        // Move the cursor to the end of the existing selection.
+        chrome.automation.setDocumentSelection({
+          anchorObject: this.selectionEndObject_,
+          anchorOffset: this.selectionEndIndex_,
+          focusObject: this.selectionEndObject_,
+          focusOffset: this.selectionEndIndex_
+        });
+      }
+    }
+    this.manageNavigationListener_(true /** Add the listener */);
+  }
 
   /**
    * Sets the selection using the selectionStart and selectionEnd
@@ -183,8 +229,10 @@ class TextNavigationManager {
    * @return {boolean}
    * @public
    */
-  isSelectionStarted() {
-    return this.selectionStartIndex_ !== NO_SELECT_INDEX;
+  currentlySelecting() {
+    return (
+        this.selectionStartIndex_ !== NO_SELECT_INDEX &&
+        this.currentlySelecting_);
   }
 
   /**
@@ -211,15 +259,58 @@ class TextNavigationManager {
 
   /**
    * Sets the selectionStart variable based on the selection of the current
-   * node.
+   * node. Also sets the currently selecting boolean to true.
    * @public
    */
   saveSelectStart() {
     chrome.automation.getFocus((focusedNode) => {
       this.selectionStartObject_ = focusedNode;
       this.selectionStartIndex_ = this.getSelectionIndexFromNode_(
-          this.selectionStartObject_, true /*We are getting the start index.*/);
+          this.selectionStartObject_,
+          true /* We are getting the start index.*/);
+      this.currentlySelecting_ = true;
     });
+  }
+
+  /**
+   * Function to handle changes in the cursor position during selection.
+   * This function will remove the selection listener and set the end of the
+   * selection based on the new position.
+   * @private
+   */
+  onNavChange_() {
+    this.manageNavigationListener_(false);
+    if (this.currentlySelecting)
+      this.saveSelectEnd();
+  }
+
+  /**
+   * Adds or removes the selection listener based on a boolean parameter.
+   * @param {boolean} addListener
+   * @private
+   */
+  manageNavigationListener_(addListener) {
+    if (addListener) {
+      this.selectionStartObject_.addEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.selectionListener_, false /** Don't use capture.*/);
+    } else {
+      this.selectionStartObject_.removeEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.selectionListener_, false /** Don't use capture.*/);
+    }
+  }
+
+  /**
+   * Reset the currentlySelecting variable to false, reset the selection
+   * indices, and remove the listener on navigation.
+   * @public
+   */
+  resetCurrentlySelecting() {
+    this.currentlySelecting_ = false;
+    this.manageNavigationListener_(false /** Removing listener */);
+    this.selectionStartIndex_ = NO_SELECT_INDEX;
+    this.selectionEndIndex_ = NO_SELECT_INDEX;
   }
 
   /**

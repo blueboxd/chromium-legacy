@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -94,7 +95,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
   const extensions::Extension* extension = GetExtension(profile, extension_id);
   DCHECK(extension);
 
-  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
+      base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile, extension_id);
     return;
   }

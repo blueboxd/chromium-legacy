@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_
 #define CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_
 
-#include "content/public/browser/service_worker_running_info.h"
+#include "content/browser/service_worker/service_worker_info.h"
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "url/origin.h"
 
@@ -56,9 +56,9 @@ void PopulateBinderMap(ServiceWorkerProviderHost* host,
                        service_manager::BinderMap* map);
 void PopulateBinderMapWithContext(
     ServiceWorkerProviderHost* host,
-    service_manager::BinderMapWithContext<const ServiceWorkerRunningInfo&>*
+    service_manager::BinderMapWithContext<const ServiceWorkerVersionInfo&>*
         map);
-ServiceWorkerRunningInfo GetContextForHost(ServiceWorkerProviderHost* host);
+ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host);
 
 }  // namespace internal
 }  // namespace content

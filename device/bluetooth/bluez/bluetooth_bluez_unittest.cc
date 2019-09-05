@@ -4005,6 +4005,8 @@ TEST_F(BluetoothBlueZTest, GetDiscoverableTimeout) {
 TEST_F(BluetoothBlueZTest, Shutdown) {
   // Set up adapter. Set powered & discoverable, start discovery.
   GetAdapter();
+  fake_bluetooth_adapter_client_->SetUUIDs(
+      {kGapUuid, kGattUuid, kPnpUuid, kHeadsetUuid});
   adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
   adapter_->SetDiscoverable(true, GetCallback(), GetErrorCallback());
   adapter_->StartDiscoverySession(
@@ -4023,6 +4025,7 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   // Validate running adapter state.
   EXPECT_NE("", adapter_->GetAddress());
   EXPECT_NE("", adapter_->GetName());
+  EXPECT_EQ(4U, adapter_->GetUUIDs().size());
   EXPECT_TRUE(adapter_->IsInitialized());
   EXPECT_TRUE(adapter_->IsPresent());
   EXPECT_TRUE(adapter_->IsPowered());
@@ -4047,6 +4050,7 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   }  // ~TestBluetoothAdapterObserver calls RemoveObserver.
   EXPECT_EQ("", adapter_->GetAddress());
   EXPECT_EQ("", adapter_->GetName());
+  EXPECT_EQ(0U, adapter_->GetUUIDs().size());
 
   adapter_->SetName("", GetCallback(), GetErrorCallback());
   EXPECT_EQ(0, callback_count_);

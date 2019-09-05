@@ -81,12 +81,12 @@ leveldb::Status TransactionalLevelDBTransaction::Get(const StringPiece& key,
   return db_->Get(key, value, found);
 }
 
-leveldb::Status TransactionalLevelDBTransaction::Commit() {
+leveldb::Status TransactionalLevelDBTransaction::Commit(bool sync_on_commit) {
   DCHECK(!finished_);
   IDB_TRACE("LevelDBTransaction::Commit");
 
   finished_ = true;
-  return db_->scopes()->Commit(std::move(scope_),
+  return db_->scopes()->Commit(std::move(scope_), sync_on_commit,
                                std::move(commit_cleanup_complete_callback_));
 }
 

@@ -570,9 +570,10 @@ bool ServerUrlLoader::InterceptAutofillRequest(
   VLOG(1) << "Intercepted in-flight request to Autofill Server: "
           << resource_request.url.spec();
 
-  // TODO(crbug/958158): Extract URL content for GET Query requests.
-  // Look if the body has data.
-  if (resource_request.request_body == nullptr) {
+  bool is_post_request =
+      GetRequestTypeFromURL(request_url) == RequestType::kLegacyQueryProtoPOST;
+  // Look if the body has data if it is a POST request.
+  if (is_post_request && resource_request.request_body == nullptr) {
     constexpr char kNoBodyHTTPErrorHeaders[] = "HTTP/2.0 400 Bad Request";
     constexpr char kNoBodyHTTPErrorBody[] =
         "there is no body data in the request";
@@ -584,7 +585,7 @@ bool ServerUrlLoader::InterceptAutofillRequest(
   }
 
   StatusOr<AutofillQueryContents> query_request_statusor =
-      GetRequestTypeFromURL(request_url) == RequestType::kLegacyQueryProtoPOST
+      is_post_request
           ? GetAutofillQueryContentsFromPOSTQuery(resource_request)
           : GetAutofillQueryContentsFromGETQueryURL(resource_request.url);
   // Using CHECK is fine here since ServerCacheReplayer will only be used for

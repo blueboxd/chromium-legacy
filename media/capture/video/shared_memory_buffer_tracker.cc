@@ -98,13 +98,11 @@ SharedMemoryBufferTracker::DuplicateAsMojoBuffer() {
   return mojo::WrapUnsafeSharedMemoryRegion(region_.Duplicate());
 }
 
-#if defined(OS_CHROMEOS)
 gfx::GpuMemoryBufferHandle
 SharedMemoryBufferTracker::GetGpuMemoryBufferHandle() {
   NOTREACHED() << "Unsupported operation";
   return gfx::GpuMemoryBufferHandle();
 }
-#endif
 
 uint32_t SharedMemoryBufferTracker::GetMemorySizeInBytes() {
   DCHECK(region_.IsValid());

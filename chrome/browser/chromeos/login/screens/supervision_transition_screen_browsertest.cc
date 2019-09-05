@@ -11,36 +11,30 @@
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/login/auth/stub_authenticator_builder.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/session/arc_supervision_transition.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
-#include "net/dns/mock_host_resolver.h"
+#include "content/public/test/test_launcher.h"
 
 namespace chromeos {
 
 // Param returns the original user type.
 class SupervisionTransitionScreenTest
     : public MixinBasedInProcessBrowserTest,
-      public testing::WithParamInterface<user_manager::UserType> {
+      public testing::WithParamInterface<LoggedInUserMixin::LogInType> {
  public:
   SupervisionTransitionScreenTest() = default;
   ~SupervisionTransitionScreenTest() override = default;
@@ -53,9 +47,7 @@ class SupervisionTransitionScreenTest
   }
 
   void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-
-    ASSERT_TRUE(user_policy_.RequestPolicyUpdate());
+    ASSERT_TRUE(logged_in_user_mixin_.RequestPolicyUpdate());
 
     arc::ArcServiceLauncher::Get()->ResetForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
@@ -63,61 +55,42 @@ class SupervisionTransitionScreenTest
             base::BindRepeating(arc::FakeArcSession::Create)));
 
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    // For this test class, the PRE tests just happen to always wait for active
+    // session immediately after logging in, while the main tests do some checks
+    // and then postpone WaitForActiveSession() until later. So wait for active
+    // session immediately if IsPreTest() and postpone the call to
+    // WaitForActiveSession() otherwise.
+    logged_in_user_mixin_.SetUpOnMainThreadHelper(
+        host_resolver(), this, false /*issue_any_scope_token*/,
+        content::IsPreTest() /*wait_for_active_session*/);
   }
 
   // The tests simulate user type changes between regular and child user.
   // This returns the intended user type after transition. GetParam() returns
   // the initial user type.
-  user_manager::UserType GetTargetUserType() const {
-    return GetParam() == user_manager::USER_TYPE_REGULAR
-               ? user_manager::USER_TYPE_CHILD
-               : user_manager::USER_TYPE_REGULAR;
+  LoggedInUserMixin::LogInType GetTargetUserType() const {
+    return GetParam() == LoggedInUserMixin::LogInType::kRegular
+               ? LoggedInUserMixin::LogInType::kChild
+               : LoggedInUserMixin::LogInType::kRegular;
   }
 
-  void LogIn(const LoginManagerMixin::TestUserInfo& user) {
-    UserContext user_context =
-        LoginManagerMixin::CreateDefaultUserContext(user);
-    if (user.user_type == user_manager::USER_TYPE_CHILD) {
-      fake_gaia_.SetupFakeGaiaForChildUser(
-          user.account_id.GetUserEmail(), user.account_id.GetGaiaId(),
-          FakeGaiaMixin::kFakeRefreshToken, false /*issue_any_scope_token*/);
-    } else {
-      fake_gaia_.SetupFakeGaiaForLogin(user.account_id.GetUserEmail(),
-                                       user.account_id.GetGaiaId(),
-                                       FakeGaiaMixin::kFakeRefreshToken);
-    }
-    user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
-    login_manager_.AttemptLoginUsingAuthenticator(
-        user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
-  }
+ protected:
+  LoggedInUserMixin& logged_in_user_mixin() { return logged_in_user_mixin_; }
 
-  LoginManagerMixin::TestUserInfo user_{
-      AccountId::FromUserEmailGaiaId("user@gmail.com", "user"), GetParam()};
-  LoginManagerMixin login_manager_{&mixin_host_, {user_}};
-
-  LocalPolicyTestServerMixin policy_server_{&mixin_host_};
-  UserPolicyMixin user_policy_{&mixin_host_, user_.account_id, &policy_server_};
-
-  EmbeddedTestServerSetupMixin embedded_test_server_setup_{
-      &mixin_host_, embedded_test_server()};
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+ private:
+  LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_, content::IsPreTest() ? GetParam() : GetTargetUserType(),
+      embedded_test_server(), false /*should_launch_browser*/};
 };
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                        PRE_SuccessfulTransition) {
-  LogIn(user_);
-  login_manager_.WaitForActiveSession();
-
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
   arc::SetArcPlayStoreEnabledForProfile(profile, true);
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, SuccessfulTransition) {
-  LoginManagerMixin::TestUserInfo transitioned_user(user_.account_id,
-                                                    GetTargetUserType());
-  LogIn(transitioned_user);
-
   OobeScreenWaiter(SupervisionTransitionScreenView::kScreenId).Wait();
 
   test::OobeJS().ExpectVisiblePath(
@@ -135,23 +108,16 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, SuccessfulTransition) {
   EXPECT_FALSE(ProfileManager::GetPrimaryUserProfile()->GetPrefs()->GetBoolean(
       arc::prefs::kArcDataRemoveRequested));
 
-  login_manager_.WaitForActiveSession();
+  logged_in_user_mixin().WaitForActiveSession();
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, PRE_TransitionTimeout) {
-  LogIn(user_);
-  login_manager_.WaitForActiveSession();
-
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
   arc::SetArcPlayStoreEnabledForProfile(profile, true);
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
-  LoginManagerMixin::TestUserInfo transitioned_user(user_.account_id,
-                                                    GetTargetUserType());
-  LogIn(transitioned_user);
-
   OobeScreenWaiter(SupervisionTransitionScreenView::kScreenId).Wait();
 
   test::OobeJS().ExpectVisiblePath(
@@ -185,28 +151,22 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
 
   test::OobeJS().TapOnPath({"supervision-transition-md", "accept-button"});
 
-  login_manager_.WaitForActiveSession();
+  logged_in_user_mixin().WaitForActiveSession();
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                        PRE_SkipTransitionIfArcNeverStarted) {
-  LogIn(user_);
-  login_manager_.WaitForActiveSession();
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                        SkipTransitionIfArcNeverStarted) {
-  LoginManagerMixin::TestUserInfo transitioned_user(user_.account_id,
-                                                    GetTargetUserType());
-
   // Login should go through without being interrupted.
-  LogIn(transitioned_user);
-  login_manager_.WaitForActiveSession();
+  logged_in_user_mixin().WaitForActiveSession();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SupervisionTransitionScreenTest,
-                         testing::Values(user_manager::USER_TYPE_REGULAR,
-                                         user_manager::USER_TYPE_CHILD));
+                         testing::Values(LoggedInUserMixin::LogInType::kRegular,
+                                         LoggedInUserMixin::LogInType::kChild));
 
 }  // namespace chromeos

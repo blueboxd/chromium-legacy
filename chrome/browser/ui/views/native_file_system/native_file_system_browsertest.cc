@@ -4,9 +4,12 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -17,6 +20,8 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
+
+using safe_browsing::ClientDownloadRequest;
 
 namespace {
 
@@ -112,7 +117,7 @@ class NativeFileSystemBrowserTest : public InProcessBrowserTest {
     return icon_view && icon_view->GetVisible();
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
 };
@@ -209,6 +214,71 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, OpenFile) {
     EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
     EXPECT_EQ(file_contents, read_contents);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SafeBrowsing) {
+  const base::FilePath test_file = temp_dir_.GetPath().AppendASCII("test.exe");
+
+  std::vector<uint8_t> raw_expected_hash;
+  ASSERT_TRUE(base::HexStringToBytes(
+      "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD",
+      &raw_expected_hash));
+  std::string expected_hash(raw_expected_hash.begin(), raw_expected_hash.end());
+  std::string expected_url =
+      "blob:" + embedded_test_server()->base_url().spec() +
+      "native-file-system-write";
+  GURL frame_url = embedded_test_server()->GetURL("/title1.html");
+
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}));
+  ui_test_utils::NavigateToURL(browser(), frame_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  bool invoked_safe_browsing = false;
+
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+  safe_browsing::NativeFileSystemWriteRequestSubscription subscription =
+      sb_service->download_protection_service()
+          ->RegisterNativeFileSystemWriteRequestCallback(
+              base::BindLambdaForTesting(
+                  [&](const ClientDownloadRequest* request) {
+                    invoked_safe_browsing = true;
+
+                    EXPECT_EQ(request->url(), expected_url);
+                    EXPECT_EQ(request->digests().sha256(), expected_hash);
+                    EXPECT_EQ(request->length(), 3);
+                    EXPECT_EQ(request->file_basename(), "test.exe");
+                    EXPECT_EQ(request->download_type(),
+                              ClientDownloadRequest::WIN_EXECUTABLE);
+
+                    ASSERT_GE(request->resources_size(), 2);
+
+                    EXPECT_EQ(request->resources(0).type(),
+                              ClientDownloadRequest::DOWNLOAD_URL);
+                    EXPECT_EQ(request->resources(0).url(), expected_url);
+                    EXPECT_EQ(request->resources(0).referrer(), frame_url);
+
+                    // TODO(mek): Change test so that frame url and tab url are
+                    // not the same.
+                    EXPECT_EQ(request->resources(1).type(),
+                              ClientDownloadRequest::TAB_URL);
+                    EXPECT_EQ(request->resources(1).url(), frame_url);
+                    EXPECT_EQ(request->resources(1).referrer(), "");
+                  }));
+
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            content::EvalJs(web_contents,
+                            "(async () => {"
+                            "  let e = await self.chooseFileSystemEntries("
+                            "      {type: 'saveFile'});"
+                            "  const w = await e.createWriter();"
+                            "  await w.write(0, 'abc');"
+                            "  await w.close();"
+                            "  return e.name; })()"));
+
+  EXPECT_TRUE(invoked_safe_browsing);
 }
 
 // TODO(mek): Add more end-to-end test including other bits of UI.

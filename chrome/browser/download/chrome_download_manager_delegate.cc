@@ -40,6 +40,7 @@
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -1368,6 +1369,17 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
     }
   }
 
+  if (danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED)
+    return true;
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  if (item && item->GetTotalBytes() >= 0 &&
+      safe_browsing::BinaryUploadService::ShouldBlockFileSize(
+          size_t(item->GetTotalBytes()))) {
+    return true;
+  }
+#endif
+
   switch (download_restriction) {
     case (DownloadPrefs::DownloadRestriction::NONE):
       return false;
@@ -1394,6 +1406,7 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
       LOG(ERROR) << "Invalid download restruction value: "
                  << static_cast<int>(download_restriction);
   }
+
   return false;
 }
 

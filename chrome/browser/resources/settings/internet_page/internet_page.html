@@ -66,7 +66,7 @@
                 <cr-icon-button class$="[[getAddNetworkClass_('VPN')]]"
                     aria-label="$i18n{internetAddVPN}"></cr-icon-button>
               </div>
-              <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
+              <template is="dom-repeat" items="[[vpnProviders_]]">
                 <div actionable class="list-item"
                     on-click="onAddThirdPartyVpnTap_">
                   <div class="start settings-box-text">
@@ -75,16 +75,6 @@
                   <cr-icon-button class="icon-external"
                      aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
                   </cr-icon-button>
-                </div>
-              </template>
-              <template is="dom-if" if="[[arcVpnProviders_.length]]">
-                <div actionable class="list-item" id="addArcVpn"
-                    on-click="onAddArcVpnTap_">
-                  <div class="setting-box-text">
-                    $i18n{internetAddArcVPN}
-                  </div>
-                  <cr-icon-button class="icon-external"
-                      aria-label$="$i18n{internetAddArcVPN}"></cr-icon-button>
                 </div>
               </template>
             </div>
@@ -130,8 +120,7 @@
               device-state="[[getDeviceState_(subpageType_, deviceStates)]]"
               tether-device-state="[[getTetherDeviceState_(deviceStates)]]"
               global-policy="[[globalPolicy_]]"
-              third-party-vpn-providers="[[thirdPartyVpnProviders_]]"
-              arc-vpn-providers="[[arcVpnProviders_]]"
+              vpn-providers="[[vpnProviders_]]"
               show-spinner="{{showSpinner_}}">
           </settings-internet-subpage>
         </settings-subpage>

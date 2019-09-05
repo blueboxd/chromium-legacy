@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/process_manager.h"
 
 namespace extensions {
 
@@ -14,8 +13,7 @@ TestBackgroundPageFirstLoadObserver::TestBackgroundPageFirstLoadObserver(
     content::BrowserContext* browser_context,
     const ExtensionId& extension_id)
     : extension_id_(extension_id),
-      process_manager_(ProcessManager::Get(browser_context)),
-      process_manager_observer_(this) {
+      process_manager_(ProcessManager::Get(browser_context)) {
   process_manager_observer_.Add(process_manager_);
   extension_host_ =
       process_manager_->GetBackgroundHostForExtension(extension_id_);

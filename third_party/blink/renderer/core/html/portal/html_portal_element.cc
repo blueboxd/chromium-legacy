@@ -48,7 +48,7 @@ namespace blink {
 HTMLPortalElement::HTMLPortalElement(
     Document& document,
     const base::UnguessableToken& portal_token,
-    mojo::AssociatedRemote<mojom::blink::Portal> remote_portal,
+    mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         portal_client_receiver)
     : HTMLFrameOwnerElement(html_names::kPortalTag, document),

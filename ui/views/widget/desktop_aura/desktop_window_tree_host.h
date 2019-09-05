@@ -19,13 +19,13 @@ class Window;
 namespace client {
 class DragDropClient;
 class ScreenPositionClient;
-}
+}  // namespace client
 }  // namespace aura
 
 namespace gfx {
 class ImageSkia;
 class Rect;
-}
+}  // namespace gfx
 
 namespace views {
 namespace corewm {

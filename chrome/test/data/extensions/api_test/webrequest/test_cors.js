@@ -5,7 +5,7 @@
 const callbackPass = chrome.test.callbackPass;
 const listeningUrlPattern = '*://cors.example.com/*';
 
-function testOriginHeader(requiredNames, disallowedNames, extraInfoSpec) {
+function registerListeners(requiredNames, disallowedNames, extraInfoSpec) {
   let observed = false;
   const beforeSendHeadersListener = callbackPass(details => {
     observed = true;
@@ -23,24 +23,18 @@ function testOriginHeader(requiredNames, disallowedNames, extraInfoSpec) {
   });
   chrome.webRequest.onCompleted.addListener(
       onCompletedListener, {urls: [listeningUrlPattern]});
-
-  // Wait for the navigation to complete.
-  navigateAndWait(
-      getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
 }
 
 runTests([
-  function testOriginHeaderInvisible() {
-    const requiredNames = [];
-    const disallowedNames = ['origin'];
-    const extraInfoSpec = ['requestHeaders'];
-    testOriginHeader(requiredNames, disallowedNames, extraInfoSpec);
-  },
-  function testOriginHeaderVisible() {
-    const requiredNames = ['origin'];
-    const disallowedNames = [];
-    const extraInfoSpec = ['requestHeaders', 'extraHeaders'];
-    testOriginHeader(requiredNames, disallowedNames, extraInfoSpec);
+  function testOriginHeader() {
+    // Register two sets of listener. One with extraHeaders and the second one
+    // without it.
+    registerListeners([], ['origin'], ['requestHeaders']);
+    registerListeners(['origin'], [], ['requestHeaders', 'extraHeaders']);
+
+    // Wait for the navigation to complete.
+    navigateAndWait(
+        getServerURL('extensions/api_test/webrequest/cors/fetch.html'));
   }
 ]);
 

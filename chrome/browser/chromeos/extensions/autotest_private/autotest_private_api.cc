@@ -75,6 +75,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -293,8 +294,8 @@ std::unique_ptr<bool> ConvertMojomOptionalBool(
 std::string SetWhitelistedPref(Profile* profile,
                                const std::string& pref_name,
                                const base::Value& value) {
-  if (pref_name == arc::prefs::kVoiceInteractionEnabled ||
-      pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
+  if (pref_name == chromeos::assistant::prefs::kAssistantEnabled ||
+      pref_name == chromeos::assistant::prefs::kAssistantHotwordEnabled) {
     DCHECK(value.is_bool());
     ash::mojom::AssistantAllowedState allowed_state =
         assistant::IsAssistantAllowedForProfile(profile);
@@ -390,6 +391,8 @@ api::autotest_private::WindowStateType ToWindowStateType(
     case ash::WindowStateType::kRightSnapped:
       return api::autotest_private::WindowStateType::
           WINDOW_STATE_TYPE_RIGHTSNAPPED;
+    case ash::WindowStateType::kPip:
+      return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_PIP;
     default:
       NOTREACHED();
       return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NONE;
@@ -1578,7 +1581,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string& err_msg =
-      SetWhitelistedPref(profile, arc::prefs::kVoiceInteractionEnabled,
+      SetWhitelistedPref(profile, chromeos::assistant::prefs::kAssistantEnabled,
                          base::Value(params->enabled));
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));

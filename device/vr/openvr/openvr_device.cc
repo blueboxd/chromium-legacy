@@ -30,7 +30,6 @@ void OpenVRDevice::RecordRuntimeAvailability() {
 
 namespace {
 
-constexpr float kDefaultIPD = 0.06f;  // Default average IPD.
 constexpr base::TimeDelta kPollingInterval =
     base::TimeDelta::FromSecondsD(0.25);
 
@@ -61,6 +60,13 @@ gfx::Transform HmdMatrix34ToTransform(const vr::HmdMatrix34_t& mat) {
   // clang-format on
 }
 
+// OpenVR uses A_to_B convention for naming transformation matrices, but we pass
+// matrices through mojo using the B_from_A naming convention since that what
+// blink uses.
+gfx::Transform HeadFromEyeTransform(vr::IVRSystem* vr_system, vr::Hmd_Eye eye) {
+  return HmdMatrix34ToTransform(vr_system->GetEyeToHeadTransform(eye));
+}
+
 mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
                                             device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
@@ -83,15 +89,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
   left_eye->field_of_view = OpenVRFovToWebVRFov(vr_system, vr::Eye_Left);
   right_eye->field_of_view = OpenVRFovToWebVRFov(vr_system, vr::Eye_Right);
 
-  vr::TrackedPropertyError error = vr::TrackedProp_Success;
-  float ipd = vr_system->GetFloatTrackedDeviceProperty(
-      vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_UserIpdMeters_Float, &error);
-
-  if (error != vr::TrackedProp_Success)
-    ipd = kDefaultIPD;
-
-  left_eye->offset = gfx::Vector3dF(-ipd * 0.5, 0.0, 0.0);
-  right_eye->offset = gfx::Vector3dF(ipd * 0.5, 0.0, 0.0);
+  left_eye->head_from_eye = HeadFromEyeTransform(vr_system, vr::Eye_Left);
+  right_eye->head_from_eye = HeadFromEyeTransform(vr_system, vr::Eye_Right);
 
   uint32_t width, height;
   vr_system->GetRecommendedRenderTargetSize(&width, &height);

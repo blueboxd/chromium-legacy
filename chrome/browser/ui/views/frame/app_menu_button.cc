@@ -18,7 +18,9 @@ AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
     : ToolbarButton(nullptr) {
   std::unique_ptr<views::MenuButtonController> menu_button_controller =
       std::make_unique<views::MenuButtonController>(
-          this, menu_button_listener, CreateButtonControllerDelegate());
+          this, menu_button_listener,
+          std::make_unique<views::Button::DefaultButtonControllerDelegate>(
+              this));
   menu_button_controller_ = menu_button_controller.get();
   SetButtonController(std::move(menu_button_controller));
   SetProperty(views::kInternalPaddingKey, gfx::Insets());

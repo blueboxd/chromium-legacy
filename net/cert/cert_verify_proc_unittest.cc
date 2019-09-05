@@ -152,14 +152,6 @@ enum CertVerifyProcType {
   CERT_VERIFY_PROC_BUILTIN,
 };
 
-// Whether the test is running within the iphone simulator.
-const bool kTargetIsIphoneSimulator =
-#if TARGET_IPHONE_SIMULATOR
-    true;
-#else
-    false;
-#endif
-
 // Wrapper for base::mac::IsAtLeastOS10_12() to avoid littering ifdefs.
 bool IsMacAtLeastOS10_12() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -474,6 +466,25 @@ class CertBuilder {
     SetExtension(CrlDistributionPointsOid(), FinishCBB(cbb.get()));
   }
 
+  void SetSubjectCommonName(const std::string common_name) {
+    // See RFC 4519.
+    static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
+
+    // See RFC 5280, section 4.1.2.4.
+    bssl::ScopedCBB cbb;
+    CBB rdns, rdn, attr, type, value;
+    ASSERT_TRUE(CBB_init(cbb.get(), 64));
+    ASSERT_TRUE(CBB_add_asn1(cbb.get(), &rdns, CBS_ASN1_SEQUENCE));
+    ASSERT_TRUE(CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET));
+    ASSERT_TRUE(CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE));
+    ASSERT_TRUE(CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT));
+    ASSERT_TRUE(CBBAddBytes(&type, kCommonName));
+    ASSERT_TRUE(CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING));
+    ASSERT_TRUE(CBBAddBytes(&value, common_name));
+
+    subject_tlv_ = FinishCBB(cbb.get());
+  }
+
   // Sets the SAN for the certificate to a single dNSName.
   void SetSubjectAltName(const std::string& dns_name) {
     // From RFC 5280:
@@ -589,22 +600,7 @@ class CertBuilder {
     // Use a random common name comprised of 12 bytes in hex.
     std::string common_name = MakeRandomHexString(12);
 
-    // See RFC 4519.
-    static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
-
-    // See RFC 5280, section 4.1.2.4.
-    bssl::ScopedCBB cbb;
-    CBB rdns, rdn, attr, type, value;
-    ASSERT_TRUE(CBB_init(cbb.get(), 64));
-    ASSERT_TRUE(CBB_add_asn1(cbb.get(), &rdns, CBS_ASN1_SEQUENCE));
-    ASSERT_TRUE(CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET));
-    ASSERT_TRUE(CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE));
-    ASSERT_TRUE(CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT));
-    ASSERT_TRUE(CBBAddBytes(&type, kCommonName));
-    ASSERT_TRUE(CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING));
-    ASSERT_TRUE(CBBAddBytes(&value, common_name));
-
-    subject_tlv_ = FinishCBB(cbb.get());
+    SetSubjectCommonName(common_name);
   }
 
   // Parses |cert| and copies the following properties:
@@ -824,6 +820,37 @@ class CertBuilder {
 
   CertBuilder* issuer_ = nullptr;
 };
+
+// Creates a simple leaf->intermediate->root chain of CertBuilders with no AIA
+// or CrlDistributionPoint extensions, and leaf having a subjectAltName of
+// www.example.com.
+void CreateSimpleCertBuilderChain(
+    std::unique_ptr<CertBuilder>* out_leaf,
+    std::unique_ptr<CertBuilder>* out_intermediate,
+    std::unique_ptr<CertBuilder>* out_root) {
+  const char kHostname[] = "www.example.com";
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory()
+          .AppendASCII("verify_certificate_chain_unittest")
+          .AppendASCII("target-and-intermediate");
+
+  CertificateList orig_certs = CreateCertificateListFromFile(
+      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, orig_certs.size());
+
+  // Build slightly modified variants of |orig_certs|.
+  *out_root =
+      std::make_unique<CertBuilder>(orig_certs[2]->cert_buffer(), nullptr);
+  *out_intermediate = std::make_unique<CertBuilder>(
+      orig_certs[1]->cert_buffer(), out_root->get());
+  (*out_intermediate)->EraseExtension(CrlDistributionPointsOid());
+  (*out_intermediate)->EraseExtension(AuthorityInfoAccessOid());
+  *out_leaf = std::make_unique<CertBuilder>(orig_certs[0]->cert_buffer(),
+                                            out_intermediate->get());
+  (*out_leaf)->SetSubjectAltName(kHostname);
+  (*out_leaf)->EraseExtension(CrlDistributionPointsOid());
+  (*out_leaf)->EraseExtension(AuthorityInfoAccessOid());
+}
 
 }  // namespace
 
@@ -1180,55 +1207,90 @@ TEST_P(CertVerifyProcInternalTest, TrustedIntermediateCertWithEVPolicy) {
   }
 }
 
-// TODO(crbug.com/605457): the test expectation was incorrect on some
-// configurations, so disable the test until it is fixed (better to have
-// a bug to track a failing test than a false sense of security due to
-// false positive).
-TEST_P(CertVerifyProcInternalTest, DISABLED_PaypalNullCertParsing) {
-  // A certificate for www.paypal.com with a NULL byte in the common name.
-  // From http://www.gossamer-threads.com/lists/fulldisc/full-disclosure/70363
-  SHA256HashValue paypal_null_fingerprint = {{0x00}};
+TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndNoSAN) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
 
-  scoped_refptr<X509Certificate> paypal_null_cert(
-      X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(paypal_null_der),
-          sizeof(paypal_null_der)));
+  leaf->EraseExtension(SubjectAltNameOid());
 
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), paypal_null_cert.get());
+  std::string common_name;
+  common_name += "www.fake.com";
+  common_name += '\0';
+  common_name += "a" + MakeRandomHexString(12) + ".example.com";
+  leaf->SetSubjectCommonName(common_name);
 
-  EXPECT_EQ(paypal_null_fingerprint, X509Certificate::CalculateFingerprint256(
-                                         paypal_null_cert->cert_buffer()));
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
 
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(paypal_null_cert.get(), "www.paypal.com", flags,
-             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+      Verify(chain.get(), "www.fake.com", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_NSS ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
-    EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
-             kTargetIsIphoneSimulator) {
-    // iOS returns a ERR_CERT_INVALID error on the simulator, while returning
-    // ERR_CERT_AUTHORITY_INVALID on the real device.
-    EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-  } else {
-    // TODO(bulach): investigate why macosx and win aren't returning
-    // ERR_CERT_INVALID or ERR_CERT_COMMON_NAME_INVALID.
-    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
-  }
+  // This actually fails because Chrome only looks for hostnames in
+  // SubjectAltNames now and no SubjectAltName is present.
+  EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
+}
 
-  // Either the system crypto library should correctly report a certificate
-  // name mismatch, or our certificate block list should cause us to report an
-  // invalid certificate.
-  if (verify_proc_type() == CERT_VERIFY_PROC_NSS ||
-      verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    EXPECT_TRUE(verify_result.cert_status &
-                (CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_INVALID));
-  }
+TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndValidSAN) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
 
-  // TODO(crbug.com/649017): What expectations to use for the other verifiers?
+  leaf->SetSubjectAltName("www.fake.com");
+
+  std::string common_name;
+  common_name += "www.fake.com";
+  common_name += '\0';
+  common_name += "a" + MakeRandomHexString(12) + ".example.com";
+  leaf->SetSubjectCommonName(common_name);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.fake.com", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  // SubjectAltName is valid and Chrome does not use the common name.
+  EXPECT_THAT(error, IsOk());
+}
+
+TEST_P(CertVerifyProcInternalTest, CertWithNullInSAN) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  std::string hostname;
+  hostname += "www.fake.com";
+  hostname += '\0';
+  hostname += "a" + MakeRandomHexString(12) + ".example.com";
+  leaf->SetSubjectAltName(hostname);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.fake.com", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  // SubjectAltName is invalid.
+  EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
 }
 
 // Tests the case where the target certificate is accepted by
@@ -3096,37 +3158,6 @@ class CertVerifyProcInternalWithNetFetchingTest
   // Returns a URL to |path| for the current test server.
   GURL GetTestServerAbsoluteUrl(const std::string& path) {
     return test_server_.GetURL(path);
-  }
-
-  // Creates a simple leaf->intermediate->root chain of CertBuilders with no AIA
-  // or CrlDistributionPoint extensions, and leaf having a subjectAltName of
-  // www.example.com.
-  static void CreateSimpleCertBuilderChain(
-      std::unique_ptr<CertBuilder>* out_leaf,
-      std::unique_ptr<CertBuilder>* out_intermediate,
-      std::unique_ptr<CertBuilder>* out_root) {
-    const char kHostname[] = "www.example.com";
-    base::FilePath certs_dir =
-        GetTestNetDataDirectory()
-            .AppendASCII("verify_certificate_chain_unittest")
-            .AppendASCII("target-and-intermediate");
-
-    CertificateList orig_certs = CreateCertificateListFromFile(
-        certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
-    ASSERT_EQ(3U, orig_certs.size());
-
-    // Build slightly modified variants of |orig_certs|.
-    *out_root =
-        std::make_unique<CertBuilder>(orig_certs[2]->cert_buffer(), nullptr);
-    *out_intermediate = std::make_unique<CertBuilder>(
-        orig_certs[1]->cert_buffer(), out_root->get());
-    (*out_intermediate)->EraseExtension(CrlDistributionPointsOid());
-    (*out_intermediate)->EraseExtension(AuthorityInfoAccessOid());
-    *out_leaf = std::make_unique<CertBuilder>(orig_certs[0]->cert_buffer(),
-                                              out_intermediate->get());
-    (*out_leaf)->SetSubjectAltName(kHostname);
-    (*out_leaf)->EraseExtension(CrlDistributionPointsOid());
-    (*out_leaf)->EraseExtension(AuthorityInfoAccessOid());
   }
 
   // Creates a certificate chain for www.example.com, where the leaf certificate

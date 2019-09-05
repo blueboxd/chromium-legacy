@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/sync_device_info/device_info.h"
@@ -108,7 +109,7 @@ class SharingUiController {
   void MaybeShowErrorDialog();
 
   // Called by the SharingDialogView when the help text got clicked.
-  void OnHelpTextClicked();
+  virtual void OnHelpTextClicked(SharingDialogType dialog_type);
 
  protected:
   virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;

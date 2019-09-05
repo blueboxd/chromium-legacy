@@ -46,6 +46,7 @@ Polymer({
 
   listeners: {
     keydown: 'onKeyDown_',
+    mousedown: 'onMouseDown_',
   },
 
   /** @private {boolean} */
@@ -59,11 +60,17 @@ Polymer({
     this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-tabs');
   },
 
+  /** @private */
+  onMouseDown_: function() {
+    this.classList.remove('keyboard-focus');
+  },
+
   /**
    * @param {!KeyboardEvent} e
    * @private
    */
   onKeyDown_: function(e) {
+    this.classList.add('keyboard-focus');
     const count = this.tabNames.length;
     let newSelection;
     if (e.key == 'Home') {

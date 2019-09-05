@@ -106,9 +106,9 @@ class CAPTURE_EXPORT VideoCaptureDevice
         // Access a |VideoCaptureBufferHandle| for local, writable memory.
         virtual std::unique_ptr<VideoCaptureBufferHandle>
         GetHandleForInProcessAccess() = 0;
-#if defined(OS_CHROMEOS)
+
+        // Clone a |GpuMemoryBufferHandle| for IPC.
         virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() = 0;
-#endif
       };
 
       Buffer();

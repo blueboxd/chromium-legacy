@@ -71,6 +71,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
                     StartConnectCallback callback) override;
   void StartDisconnect(const std::string& guid,
                        StartDisconnectCallback callback) override;
+  void SetVpnProviders(std::vector<mojom::VpnProviderPtr> providers) override;
+  void GetVpnProviders(GetVpnProvidersCallback callback) override;
 
  private:
   void GetManagedPropertiesSuccess(int callback_id,
@@ -125,6 +127,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   NetworkConnectionHandler* network_connection_handler_;  // Unowned
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;
+
   int callback_id_ = 1;
   base::flat_map<int, GetManagedPropertiesCallback>
       get_managed_properties_callbacks_;
@@ -135,6 +138,9 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       select_cellular_mobile_network_callbacks_;
   base::flat_map<int, StartConnectCallback> start_connect_callbacks_;
   base::flat_map<int, StartDisconnectCallback> start_disconnect_callbacks_;
+
+  std::vector<mojom::VpnProviderPtr> vpn_providers_;
+
   base::WeakPtrFactory<CrosNetworkConfig> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfig);

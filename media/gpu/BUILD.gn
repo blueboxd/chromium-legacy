@@ -32,6 +32,7 @@ component("gpu") {
     "//components/arc/mojom:media",
     "//components/arc/video_accelerator",
     "//components/mirroring/service:mirroring_service",
+    "//components/chromeos_camera/*",
     "//components/viz/service/main",
     "//content/gpu:*",
     "//content/renderer:*",
@@ -530,7 +531,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
 }
 
 static_library("test_support") {
-  visibility = [ "//media:test_support" ]
+  visibility = [ "//media/gpu/*" ]
   testonly = true
   sources = [
     "test/fake_command_buffer_helper.cc",

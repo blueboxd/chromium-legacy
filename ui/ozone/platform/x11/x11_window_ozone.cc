@@ -25,7 +25,7 @@ namespace ui {
 
 X11WindowOzone::X11WindowOzone(PlatformWindowDelegate* delegate,
                                X11WindowManagerOzone* window_manager)
-    : X11Window(delegate, nullptr), window_manager_(window_manager) {
+    : X11Window(delegate), window_manager_(window_manager) {
   DCHECK(window_manager_);
 
   // Set a class property key, which allows |this| to be used for interactive

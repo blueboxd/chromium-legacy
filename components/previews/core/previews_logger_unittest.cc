@@ -539,7 +539,7 @@ TEST_F(PreviewsLoggerTest,
 
 TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRulesFailed) {
   std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
-      PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER,
+      PreviewsEligibilityReason::DEPRECATED_HOST_BLACKLISTED_BY_SERVER,
       true /* final_reason */);
   std::string expected_description = "Host blacklisted by server rules";
   EXPECT_EQ(expected_description, actual_description);
@@ -547,7 +547,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRulesFailed) {
 
 TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRulesChecked) {
   std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
-      PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER,
+      PreviewsEligibilityReason::DEPRECATED_HOST_BLACKLISTED_BY_SERVER,
       false /* final_reason */);
   std::string expected_description = "Host not blacklisted by server rules";
   EXPECT_EQ(expected_description, actual_description);
@@ -556,7 +556,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRulesChecked) {
 TEST_F(PreviewsLoggerTest,
        LogPreviewDecisionDescriptionNotWhitelisedByServerFailed) {
   std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
-      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+      PreviewsEligibilityReason::DEPRECATED_HOST_NOT_WHITELISTED_BY_SERVER,
       true /* final_reason */);
   std::string expected_description = "Host not whitelisted by server rules";
   EXPECT_EQ(expected_description, actual_description);
@@ -565,7 +565,7 @@ TEST_F(PreviewsLoggerTest,
 TEST_F(PreviewsLoggerTest,
        LogPreviewDecisionDescriptionNotWhitelisedByServerChecked) {
   std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
-      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+      PreviewsEligibilityReason::DEPRECATED_HOST_NOT_WHITELISTED_BY_SERVER,
       false /* final_reason */);
   std::string expected_description = "Host whitelisted by server rules";
   EXPECT_EQ(expected_description, actual_description);
@@ -604,6 +604,24 @@ TEST_F(PreviewsLoggerTest,
       PreviewsEligibilityReason::CACHE_CONTROL_NO_TRANSFORM,
       true /* final_reason */);
   std::string expected_description = "Cache-control no-transform received";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest,
+       LogPreviewDecisionDescriptionNotAllowedByOptimizationGuide) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE,
+      true /*final_reason */);
+  std::string expected_description = "Not allowed by server rules";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest,
+       LogPreviewDecisionDescriptionAllowedByOptimizationGuide) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE,
+      false /*final_reason */);
+  std::string expected_description = "Allowed by server rules";
   EXPECT_EQ(expected_description, actual_description);
 }
 

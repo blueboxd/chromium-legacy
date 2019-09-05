@@ -474,7 +474,13 @@ cr.define('downloads', function() {
         // Make the file name collapsible.
         p.collapsible = !!p.arg;
       });
-      cr.toastManager.getInstance().showForStringPieces(pieces, true);
+      cr.toastManager.getInstance().showForStringPieces(
+          /**
+           * @type {!Array<{collapsible: boolean,
+           *                 value: string,
+           *                 arg: (string|null)}>}
+           */
+          (pieces), true);
       this.mojoHandler_.remove(this.data.id);
     },
 

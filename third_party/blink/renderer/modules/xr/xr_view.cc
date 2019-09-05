@@ -23,7 +23,8 @@ XRView::XRView(XRSession* session, const XRViewData& view_data)
     default:
       eye_string_ = "none";
   }
-  transform_ = MakeGarbageCollected<XRRigidTransform>(view_data.Transform());
+  ref_space_from_eye_ =
+      MakeGarbageCollected<XRRigidTransform>(view_data.Transform());
   projection_matrix_ =
       transformationMatrixToDOMFloat32Array(view_data.ProjectionMatrix());
 }
@@ -80,10 +81,6 @@ void XRViewData::UpdateProjectionMatrixFromAspect(float fovy,
   inv_projection_dirty_ = true;
 }
 
-void XRViewData::UpdateOffset(float x, float y, float z) {
-  offset_.Set(x, y, z);
-}
-
 TransformationMatrix XRViewData::UnprojectPointer(double x,
                                                   double y,
                                                   double canvas_width,
@@ -129,19 +126,26 @@ TransformationMatrix XRViewData::UnprojectPointer(double x,
   return inv_pointer.Inverse();
 }
 
-void XRViewData::UpdatePoseMatrix(const TransformationMatrix& pose_matrix) {
-  transform_ = pose_matrix;
-  transform_.Translate3d(offset_.X(), offset_.Y(), offset_.Z());
+void XRViewData::SetHeadFromEyeTransform(
+    const TransformationMatrix& head_from_eye) {
+  head_from_eye_ = head_from_eye;
+}
+
+// ref_space_from_eye_ = ref_space_from_head * head_from_eye_
+void XRViewData::UpdatePoseMatrix(
+    const TransformationMatrix& ref_space_from_head) {
+  ref_space_from_eye_ = ref_space_from_head;
+  ref_space_from_eye_.Multiply(head_from_eye_);
 }
 
 XRRigidTransform* XRView::transform() const {
-  return transform_;
+  return ref_space_from_eye_;
 }
 
 void XRView::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(projection_matrix_);
-  visitor->Trace(transform_);
+  visitor->Trace(ref_space_from_eye_);
   ScriptWrappable::Trace(visitor);
 }
 

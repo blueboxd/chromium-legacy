@@ -605,6 +605,43 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                                 : ContentWidth();
   }
 
+  // CSS content-size getters. This property only applies if size containment is
+  // specified, hence the names have ForSizeContainment suffix to distinguish
+  // them from above.
+  bool HasSpecifiedContentSizeForSizeContainment() {
+    return !StyleRef().GetContentSize().IsNone();
+  }
+  LayoutSize ContentLogicalSizeForSizeContainment() const {
+    return LayoutSize(ContentLogicalWidthForSizeContainment(),
+                      ContentLogicalHeightForSizeContainment());
+  }
+  LayoutUnit ContentLogicalWidthForSizeContainment() const {
+    DCHECK(ShouldApplySizeContainment());
+    const auto& style = StyleRef();
+    const auto& content_size = style.GetContentSize();
+    if (content_size.IsNone())
+      return LayoutUnit();
+    const auto& logical_width = style.IsHorizontalWritingMode()
+                                    ? content_size.GetWidth()
+                                    : content_size.GetHeight();
+    DCHECK(logical_width.IsFixed());
+    DCHECK_GE(logical_width.Value(), 0.f);
+    return LayoutUnit(logical_width.Value());
+  }
+  LayoutUnit ContentLogicalHeightForSizeContainment() const {
+    DCHECK(ShouldApplySizeContainment());
+    const auto& style = StyleRef();
+    const auto& content_size = style.GetContentSize();
+    if (content_size.IsNone())
+      return LayoutUnit();
+    const auto& logical_height = style.IsHorizontalWritingMode()
+                                     ? content_size.GetHeight()
+                                     : content_size.GetWidth();
+    DCHECK(logical_height.IsFixed());
+    DCHECK_GE(logical_height.Value(), 0.f);
+    return LayoutUnit(logical_height.Value());
+  }
+
   // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
   // (LayoutFlow) to return the remaining width on a given line (and the height
   // of a single line).

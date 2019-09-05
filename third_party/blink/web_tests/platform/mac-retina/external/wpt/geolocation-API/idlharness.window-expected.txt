@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS Partial interface Navigator: original interface defined
+PASS Stringification of navigator.geolocation
+PASS Geolocation interface: navigator.geolocation must inherit property "getCurrentPosition(PositionCallback, PositionErrorCallback, PositionOptions)" with the proper type
+PASS Geolocation interface: calling getCurrentPosition(PositionCallback, PositionErrorCallback, PositionOptions) on navigator.geolocation with too few arguments must throw TypeError
+PASS Geolocation interface: navigator.geolocation must inherit property "watchPosition(PositionCallback, PositionErrorCallback, PositionOptions)" with the proper type
+PASS Geolocation interface: calling watchPosition(PositionCallback, PositionErrorCallback, PositionOptions) on navigator.geolocation with too few arguments must throw TypeError
+PASS Geolocation interface: navigator.geolocation must inherit property "clearWatch(long)" with the proper type
+PASS Geolocation interface: calling clearWatch(long) on navigator.geolocation with too few arguments must throw TypeError
+PASS Navigator interface: attribute geolocation
+PASS Navigator interface: navigator must inherit property "geolocation" with the proper type
+Harness: the test ran to completion.
+

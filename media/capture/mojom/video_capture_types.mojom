@@ -9,7 +9,6 @@ import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-[EnableIf=is_chromeos]
 import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gfx/mojom/color_space.mojom";
 
@@ -93,7 +92,6 @@ enum VideoCaptureBufferType {
 
   kMailboxHolder,
 
-  [EnableIf=is_chromeos]
   kGpuMemoryBuffer
 };
 
@@ -313,6 +311,5 @@ union VideoBufferHandle {
   mojo_base.mojom.ReadOnlySharedMemoryRegion read_only_shmem_region;
   SharedMemoryViaRawFileDescriptor shared_memory_via_raw_file_descriptor;
   MailboxBufferHandleSet mailbox_handles;
-  [EnableIf=is_chromeos]
   gfx.mojom.GpuMemoryBufferHandle gpu_memory_buffer_handle;
 };

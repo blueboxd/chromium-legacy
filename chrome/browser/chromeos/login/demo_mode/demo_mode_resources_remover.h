@@ -139,7 +139,7 @@ class DemoModeResourcesRemover
   void LowDiskSpace(uint64_t free_disk_space) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
-  void ActiveUserChanged(const user_manager::User* user) override;
+  void ActiveUserChanged(user_manager::User* user) override;
 
   // ui::UserActivityObserver:
   void OnUserActivity(const ui::Event* event) override;

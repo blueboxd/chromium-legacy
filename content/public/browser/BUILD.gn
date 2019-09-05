@@ -213,6 +213,8 @@ jumbo_source_set("browser_sources") {
     "native_file_system_permission_context.h",
     "native_file_system_permission_grant.cc",
     "native_file_system_permission_grant.h",
+    "native_file_system_write_item.cc",
+    "native_file_system_write_item.h",
     "native_web_keyboard_event.h",
     "navigation_controller.cc",
     "navigation_controller.h",

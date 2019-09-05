@@ -1282,7 +1282,7 @@ const char kNewUsbBackendDescription[] =
 
 const char kNewblueName[] = "Newblue";
 const char kNewblueDescription[] =
-    "Enables the use of newblue Bluetooth daemon.";
+    "Enables the use of Bluetooth dispatcher daemon.";
 
 const char kNewTabstripAnimationName[] = "New tabstrip animations";
 const char kNewTabstripAnimationDescription[] =
@@ -2391,10 +2391,6 @@ const char kDirectActionsName[] = "Direct actions";
 const char kDirectActionsDescription[] =
     "Enables direct actions (Android Q and more).";
 
-const char kDownloadProgressInfoBarName[] = "Enable download progress infobar";
-const char kDownloadProgressInfoBarDescription[] =
-    "Enables an infobar notifying users about status of current downloads.";
-
 const char kDownloadHomeV2Name[] = "Enable download home v2";
 const char kDownloadHomeV2Description[] =
     "Enables the new UI for download home";
@@ -3193,12 +3189,7 @@ const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
 const char kCrostiniUsbAllowUnsupportedName[] =
     "Crostini Usb Allow Unsupported";
 const char kCrostiniUsbAllowUnsupportedDescription[] =
-    "Allow mounting unsupported Usb devices in Crostini. At your own risk. "
-    "To enable, Crostini Usb Support must also be enabled.";
-
-const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
-const char kCrostiniUsbSupportDescription[] =
-    "Enable mounting Usb devices in Crostini.";
+    "Allow mounting unsupported Usb devices in Crostini. At your own risk. ";
 
 const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
@@ -3554,6 +3545,12 @@ const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
     "chrome://settings/display.";
 
+const char kUseFakeDeviceForMediaStreamName[] = "Use fake video capture device";
+const char kUseFakeDeviceForMediaStreamDescription[] =
+    "Forces Chrome to use a fake video capture device (a rolling pacman with a "
+    "timestamp) instead of the system audio/video devices, for debugging "
+    "purposes.";
+
 const char kUiDevToolsName[] = "Enable native UI inspection";
 const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
@@ -3676,6 +3673,10 @@ const char kClickToCallUIDescription[] =
 const char kProfileMenuRevampName[] = "Profile menu revamp";
 const char kProfileMenuRevampDescription[] =
     "Enables the new version of the profile menu (aka user menu).";
+
+const char kSyncClipboardServiceName[] = "Sync Clipboard Service";
+const char kSyncClipboardServiceDescription[] =
+    "Enables clipboard syncing via Chrome Sync.";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

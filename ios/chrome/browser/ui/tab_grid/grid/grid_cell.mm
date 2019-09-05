@@ -354,10 +354,10 @@ void PositionView(UIView* view, CGPoint point) {
 - (void)setupSelectedBackgroundView {
   self.selectedBackgroundView = [[UIView alloc] init];
   self.selectedBackgroundView.backgroundColor =
-      UIColorFromRGB(kGridBackgroundColor);
+      [UIColor colorNamed:kGridBackgroundColor];
   UIView* border = [[UIView alloc] init];
   border.translatesAutoresizingMaskIntoConstraints = NO;
-  border.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
+  border.backgroundColor = [UIColor colorNamed:kGridBackgroundColor];
   border.layer.cornerRadius = kGridCellCornerRadius +
                               kGridCellSelectionRingGapWidth +
                               kGridCellSelectionRingTintWidth;

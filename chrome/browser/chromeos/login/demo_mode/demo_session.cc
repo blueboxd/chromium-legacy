@@ -412,19 +412,12 @@ base::OneShotTimer* DemoSession::GetTimerForTesting() {
   return remove_splash_screen_fallback_timer_.get();
 }
 
-void DemoSession::ActiveUserChanged(const user_manager::User* user) {
+void DemoSession::ActiveUserChanged(user_manager::User* active_user) {
   const base::RepeatingClosure hide_web_store_icon = base::BindRepeating([]() {
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         prefs::kHideWebStoreIcon, true);
   });
-  user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  DCHECK_NE(active_user, user);
-  if (!active_user->is_profile_created()) {
-    active_user->AddProfileCreatedObserver(hide_web_store_icon);
-    return;
-  }
-  hide_web_store_icon.Run();
+  active_user->AddProfileCreatedObserver(hide_web_store_icon);
 }
 
 DemoSession::DemoSession()

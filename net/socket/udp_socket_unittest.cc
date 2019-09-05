@@ -199,9 +199,9 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   // Test asynchronous read. Server waits for message.
   base::RunLoop run_loop;
   int read_result = 0;
-  int rv = server->RecvFrom(
-      buffer_.get(), kMaxRead, &recv_from_address_,
-      base::Bind(&ReadCompleteCallback, &read_result, run_loop.QuitClosure()));
+  int rv = server->RecvFrom(buffer_.get(), kMaxRead, &recv_from_address_,
+                            base::BindOnce(&ReadCompleteCallback, &read_result,
+                                           run_loop.QuitClosure()));
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Client sends to the server.

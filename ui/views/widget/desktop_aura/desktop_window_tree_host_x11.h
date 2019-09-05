@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/scoped_window_targeter.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11_types.h"
@@ -27,7 +26,7 @@
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/x11/x11_window.h"
 #include "ui/views/views_export.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
 namespace gfx {
 class ImageSkia;
@@ -49,10 +48,9 @@ class NonClientFrameView;
 class X11DesktopWindowMoveClient;
 class WindowEventFilter;
 
-class VIEWS_EXPORT DesktopWindowTreeHostX11
-    : public DesktopWindowTreeHostPlatform,
-      public ui::WmMoveResizeHandler,
-      public ui::XEventDelegate {
+class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
+                                              public ui::WmMoveResizeHandler,
+                                              public ui::XEventDelegate {
  public:
   DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -170,9 +168,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool ShouldCreateVisibilityController() const override;
 
   // Overridden from aura::WindowTreeHost:
-  gfx::Transform GetRootTransform() const override;
   ui::EventSource* GetEventSource() override;
-  gfx::AcceleratedWidget GetAcceleratedWidget() override;
   void ShowImpl() override;
   void HideImpl() override;
   gfx::Rect GetBoundsInPixels() const override;
@@ -209,11 +205,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // along with all aura client objects that direct behavior.
   aura::WindowEventDispatcher* InitDispatcher(const Widget::InitParams& params);
 
-  // Adjusts |requested_size| to avoid the WM "feature" where setting the
-  // window size to the monitor size causes the WM to set the EWMH for
-  // fullscreen.
-  gfx::Size AdjustSize(const gfx::Size& requested_size);
-
   // Sets whether the window's borders are provided by the window manager.
   void SetUseNativeFrame(bool use_native_frame);
 
@@ -246,9 +237,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   void DelayedChangeFrameType(Widget::FrameType new_type);
 
-  gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
-  gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
-
   // Enables event listening after closing |dialog|.
   void EnableEventListening();
 
@@ -280,6 +268,13 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void OnXWindowDragDropEvent(XEvent* xev) override;
   void OnXWindowRawKeyEvent(XEvent* xev) override;
 
+  // Casts PlatformWindow into XWindow and returns the result. This is a temp
+  // solution to access XWindow, which is subclassed by the X11Window, which is
+  // PlatformWindow. This will be removed once we no longer to access XWindow
+  // directly. See https://crbug.com/990756.
+  ui::XWindow* GetXWindow();
+  const ui::XWindow* GetXWindow() const;
+
   // The bounds of our window before we were maximized.
   gfx::Rect restored_bounds_in_pixels_;
 
@@ -309,7 +304,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
-  static std::list<XID>* open_windows_;
+  static std::list<gfx::AcceleratedWidget>* open_windows_;
 
   // Cached value for SetVisible.  Not the same as the IsVisible public API.
   bool is_compositor_set_visible_ = false;
@@ -322,8 +317,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   uint32_t modal_dialog_counter_ = 0;
 
   std::unique_ptr<CompositorObserver> compositor_observer_;
-
-  std::unique_ptr<ui::X11Window> x11_window_;
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};

@@ -260,7 +260,7 @@ const base::Feature kWasmCodeCache = {"WasmCodeCache",
 
 // Writable files and native file system access. https://crbug.com/853326
 const base::Feature kNativeFileSystemAPI{"NativeFileSystemAPI",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // File handling integration. https://crbug.com/829689
 const base::Feature kFileHandlingAPI{"FileHandlingAPI",
@@ -428,6 +428,12 @@ const base::Feature kBlinkCompositorUseDisplayThreadPriority {
 const base::Feature kIgnoreCrossOriginWindowWhenNamedAccessOnWindow{
     "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, loading priority of JavaScript requests is lowered when they
+// are force deferred by the intervention.
+const base::Feature kLowerJavaScriptPriorityWhenForceDeferred{
+    "LowerJavaScriptPriorityWhenForceDeferred",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

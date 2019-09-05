@@ -152,7 +152,10 @@ std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
     [window close];
   }
   shades_.reset();
-  continue_alert_.reset();
+  if (continue_alert_) {
+    [[continue_alert_ window] close];
+    continue_alert_.reset();
+  }
 }
 
 - (void)onCancel:(id)sender {

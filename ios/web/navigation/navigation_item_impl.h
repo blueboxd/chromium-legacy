@@ -96,6 +96,11 @@ class NavigationItemImpl : public web::NavigationItem {
   void SetShouldSkipRepostFormConfirmation(bool skip);
   bool ShouldSkipRepostFormConfirmation() const;
 
+  // Whether or not to bypass serializing this item to session storage.  Set to
+  // YES to skip saving this page (and therefore restoring this page).
+  void SetShouldSkipSerialization(bool skip);
+  bool ShouldSkipSerialization() const;
+
   // Data submitted with a POST request, persisted for resubmits.
   void SetPostData(NSData* post_data);
   NSData* GetPostData() const;
@@ -153,6 +158,7 @@ class NavigationItemImpl : public web::NavigationItem {
   bool has_state_been_replaced_;
   bool is_created_from_hash_change_;
   bool should_skip_repost_form_confirmation_;
+  bool should_skip_serialization_;
   NSData* post_data_;
   ErrorRetryStateMachine error_retry_state_machine_;
 

@@ -26,6 +26,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/bluetooth_low_energy.h"
 
@@ -55,7 +56,6 @@ namespace extensions {
 class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyNotifySession;
 class Extension;
-class ExtensionRegistry;
 
 // The BluetoothLowEnergyEventRouter is used by the bluetoothLowEnergy API to
 // interface with the internal Bluetooth API in device/bluetooth.
@@ -573,7 +573,7 @@ class BluetoothLowEnergyEventRouter
   // requests.
   ExtensionToRequestsMap requests_;
   // The last request ID we used.
-  size_t last_callback_request_id_;
+  size_t last_callback_request_id_ = 0;
 
   // Map of locally hosted GATT service ids created by app_id. Used for cleanup.
   std::map<std::string, std::vector<std::string>> app_id_to_service_ids_;
@@ -583,7 +583,7 @@ class BluetoothLowEnergyEventRouter
 
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

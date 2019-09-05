@@ -73,10 +73,10 @@ int URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size) {
   base::PostTaskAndReply(
       FROM_HERE,
       {base::ThreadPool(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&CopyData, base::WrapRefCounted(buf), buf_size, data_,
-                 next_data_offset_),
-      base::Bind(&URLRequestSimpleJob::ReadRawDataComplete,
-                 weak_factory_.GetWeakPtr(), buf_size));
+      base::BindOnce(&CopyData, base::WrapRefCounted(buf), buf_size, data_,
+                     next_data_offset_),
+      base::BindOnce(&URLRequestSimpleJob::ReadRawDataComplete,
+                     weak_factory_.GetWeakPtr(), buf_size));
   next_data_offset_ += buf_size;
   return ERR_IO_PENDING;
 }
@@ -116,8 +116,8 @@ void URLRequestSimpleJob::StartAsync() {
 
   const int result =
       GetRefCountedData(&mime_type_, &charset_, &data_,
-                        base::Bind(&URLRequestSimpleJob::OnGetDataCompleted,
-                                   weak_factory_.GetWeakPtr()));
+                        base::BindOnce(&URLRequestSimpleJob::OnGetDataCompleted,
+                                       weak_factory_.GetWeakPtr()));
 
   if (result != ERR_IO_PENDING)
     OnGetDataCompleted(result);

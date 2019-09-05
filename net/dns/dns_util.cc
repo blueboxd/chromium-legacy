@@ -140,14 +140,11 @@ struct DohUpgradeEntry {
 };
 
 const std::vector<const DohUpgradeEntry>& GetDohUpgradeList() {
+  // The provider names in these entries should be kept in sync with the
+  // DohProviderId histogram suffix list in
+  // tools/metrics/histograms/histograms.xml.
   static const base::NoDestructor<std::vector<const DohUpgradeEntry>>
       upgradable_servers({
-          DohUpgradeEntry("Cisco",
-                          {"208.67.222.222", "208.67.220.220",
-                           "2620:119:35::35", "2620:119:53::53"},
-                          {""} /* DoT hostname */,
-                          {"https://doh.opendns.com/dns-query{?dns}",
-                           false /* use_post */}),
           DohUpgradeEntry(
               "CleanBrowsingAdult",
               {"185.228.168.10", "185.228.169.11", "2a0d:2a00:1::1",
@@ -190,6 +187,19 @@ const std::vector<const DohUpgradeEntry>& GetDohUpgradeList() {
               {"dns.google", "dns.google.com",
                "8888.google"} /* DoT hostname */,
               {"https://dns.google/dns-query{?dns}", false /* use_post */}),
+          DohUpgradeEntry("OpenDNS",
+                          {"208.67.222.222", "208.67.220.220",
+                           "2620:119:35::35", "2620:119:53::53"},
+                          {""} /* DoT hostname */,
+                          {"https://doh.opendns.com/dns-query{?dns}",
+                           false /* use_post */}),
+          DohUpgradeEntry(
+              "OpenDNSFamily",
+              {"208.67.222.123", "208.67.220.123", "2620:119:35::123",
+               "2620:119:53::123"},
+              {""} /* DoT hostname */,
+              {"https://doh.familyshield.opendns.com/dns-query{?dns}",
+               false /* use_post */}),
           DohUpgradeEntry(
               "Quad9Cdn",
               {"9.9.9.11", "149.112.112.11", "2620:fe::11", "2620:fe::fe:11"},
@@ -207,6 +217,28 @@ const std::vector<const DohUpgradeEntry>& GetDohUpgradeList() {
               {"https://dns.quad9.net/dns-query", true /* use_post */}),
       });
   return *upgradable_servers;
+}
+
+std::vector<const DohUpgradeEntry*> GetDohUpgradeEntriesFromNameservers(
+    const std::vector<IPEndPoint>& dns_servers,
+    const std::vector<std::string>& excluded_providers) {
+  const std::vector<const DohUpgradeEntry>& upgradable_servers =
+      GetDohUpgradeList();
+  std::vector<const DohUpgradeEntry*> entries;
+
+  for (const auto& server : dns_servers) {
+    for (const auto& upgrade_entry : upgradable_servers) {
+      if (base::Contains(excluded_providers, upgrade_entry.provider))
+        continue;
+
+      // DoH servers should only be added once.
+      if (base::Contains(upgrade_entry.ip_addresses, server.address()) &&
+          !base::Contains(entries, &upgrade_entry)) {
+        entries.push_back(&upgrade_entry);
+      }
+    }
+  }
+  return entries;
 }
 
 }  // namespace
@@ -408,23 +440,48 @@ std::vector<DnsConfig::DnsOverHttpsServerConfig>
 GetDohUpgradeServersFromNameservers(
     const std::vector<IPEndPoint>& dns_servers,
     const std::vector<std::string>& excluded_providers) {
-  const std::vector<const DohUpgradeEntry>& upgradable_servers =
-      GetDohUpgradeList();
+  std::vector<const DohUpgradeEntry*> entries =
+      GetDohUpgradeEntriesFromNameservers(dns_servers, excluded_providers);
   std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers;
-
-  for (const auto& server : dns_servers) {
-    for (const auto& upgrade_entry : upgradable_servers) {
-      if (base::Contains(excluded_providers, upgrade_entry.provider))
-        continue;
-
-      // DoH servers should only be added once.
-      if (base::Contains(upgrade_entry.ip_addresses, server.address()) &&
-          !base::Contains(doh_servers, upgrade_entry.dns_over_https_config)) {
-        doh_servers.push_back(upgrade_entry.dns_over_https_config);
-      }
-    }
+  for (const auto* entry : entries) {
+    doh_servers.push_back(entry->dns_over_https_config);
   }
   return doh_servers;
+}
+
+std::string GetDohProviderIdForHistogramFromDohConfig(
+    const DnsConfig::DnsOverHttpsServerConfig& doh_server) {
+  const std::vector<const DohUpgradeEntry>& upgradable_servers =
+      GetDohUpgradeList();
+  for (const auto& upgrade_entry : upgradable_servers) {
+    if (doh_server.server_template ==
+        upgrade_entry.dns_over_https_config.server_template) {
+      return upgrade_entry.provider;
+    }
+  }
+  return "Other";
+}
+
+std::string GetDohProviderIdForHistogramFromNameserver(
+    const IPEndPoint& nameserver) {
+  std::vector<const DohUpgradeEntry*> entries =
+      GetDohUpgradeEntriesFromNameservers({nameserver}, {});
+  if (entries.size() == 0)
+    return "Other";
+  else
+    return entries[0]->provider;
+}
+
+std::string SecureDnsModeToString(
+    const DnsConfig::SecureDnsMode secure_dns_mode) {
+  switch (secure_dns_mode) {
+    case DnsConfig::SecureDnsMode::OFF:
+      return "Off";
+    case DnsConfig::SecureDnsMode::AUTOMATIC:
+      return "Automatic";
+    case DnsConfig::SecureDnsMode::SECURE:
+      return "Secure";
+  }
 }
 
 }  // namespace net

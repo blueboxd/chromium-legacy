@@ -44,6 +44,9 @@ class MultiSourceMemoryPressureMonitor
 
   void ResetSystemEvaluatorForTesting();
 
+  void SetSystemEvaluator(
+      std::unique_ptr<SystemMemoryPressureEvaluator> evaluator);
+
  protected:
   void StartMetricsTimer();
   void StopMetricsTimer();
@@ -52,6 +55,8 @@ class MultiSourceMemoryPressureMonitor
   // Delegate implementation.
   void OnMemoryPressureLevelChanged(MemoryPressureLevel level) override;
   void OnNotifyListenersRequested() override;
+
+  void RecordCurrentPressureLevel();
 
   MemoryPressureLevel current_pressure_level_;
 

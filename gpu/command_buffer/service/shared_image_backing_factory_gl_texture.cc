@@ -271,8 +271,8 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
         promise_texture_(cached_promise_texture) {
     if (!promise_texture_) {
       GrBackendTexture backend_texture;
-      GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(), target,
-                          size(), service_id, format(), &backend_texture);
+      GetGrBackendTexture(context_state_->feature_info(), target, size(),
+                          service_id, format(), &backend_texture);
       promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
     }
 #if DCHECK_IS_ON()

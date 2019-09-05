@@ -47,12 +47,13 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
+                '-B', 'luci.chromium.try',
                 '-b', 'fake_blink_try_linux', '-b', 'fake_blink_try_win',
                 '--auth-refresh-token-json', 'token.json'
             ],
             [
                 'git', 'cl', 'try',
-                '-B', 'luci.chromium.try',
+                '-B', 'luci.chromium.android',
                 '-b', 'android_blink_rel',
                 '--auth-refresh-token-json', 'token.json'
             ],
@@ -66,6 +67,7 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [
             [
                 'git', 'cl', 'try',
+                '-B', 'luci.chromium.try',
                 '-b', 'fake_blink_try_linux', '-b', 'fake_blink_try_win',
                 '--auth-refresh-token-json', 'token.json'
             ],

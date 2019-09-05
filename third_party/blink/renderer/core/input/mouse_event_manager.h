@@ -50,9 +50,7 @@ class CORE_EXPORT MouseEventManager final
                                          const String& canvas_region_id,
                                          const FloatPoint* last_position,
                                          EventTarget* related_target,
-                                         bool check_for_listener = false,
-                                         const PointerId& pointer_id = 0,
-                                         const String& pointer_type = "");
+                                         bool check_for_listener = false);
 
   WebInputEventResult SetMousePositionAndDispatchMouseEvent(
       Element* target_element,
@@ -63,9 +61,7 @@ class CORE_EXPORT MouseEventManager final
   WebInputEventResult DispatchMouseClickIfNeeded(
       Element* mouse_release_target,
       const WebMouseEvent& mouse_event,
-      const String& canvas_region_id,
-      const PointerId& pointer_id,
-      const String& pointer_type);
+      const String& canvas_region_id);
 
   WebInputEventResult DispatchDragSrcEvent(const AtomicString& event_type,
                                            const WebMouseEvent&);

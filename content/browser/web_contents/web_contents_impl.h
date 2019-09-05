@@ -54,6 +54,7 @@
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_states.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
@@ -409,7 +410,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) override;
   void ReloadLoFiImages() override;
-  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
   PauseSubresourceLoading() override;
   void ExecuteCustomContextMenuCommand(
       int action,

@@ -251,10 +251,8 @@ EnumTraits<media::mojom::VideoCaptureBufferType,
           kSharedMemoryViaRawFileDescriptor;
     case media::VideoCaptureBufferType::kMailboxHolder:
       return media::mojom::VideoCaptureBufferType::kMailboxHolder;
-#if defined(OS_CHROMEOS)
     case media::VideoCaptureBufferType::kGpuMemoryBuffer:
       return media::mojom::VideoCaptureBufferType::kGpuMemoryBuffer;
-#endif
   }
   NOTREACHED();
   return media::mojom::VideoCaptureBufferType::kSharedMemory;
@@ -277,11 +275,9 @@ bool EnumTraits<media::mojom::VideoCaptureBufferType,
     case media::mojom::VideoCaptureBufferType::kMailboxHolder:
       *output = media::VideoCaptureBufferType::kMailboxHolder;
       return true;
-#if defined(OS_CHROMEOS)
     case media::mojom::VideoCaptureBufferType::kGpuMemoryBuffer:
       *output = media::VideoCaptureBufferType::kGpuMemoryBuffer;
       return true;
-#endif
   }
   NOTREACHED();
   return false;

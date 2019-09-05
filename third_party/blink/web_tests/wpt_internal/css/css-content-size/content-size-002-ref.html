@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf8">
+<title>CSS content-size: unsized div with max-content parent</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+
+<style>
+#border {
+  width: max-content;
+  border: 1px solid black;
+}
+#target {
+  background: lightblue;
+}
+#target > div {
+  width: 111px;
+  height: 222px;
+}
+</style>
+
+<div id=border>
+  <div id=target><div></div></div>
+</div>

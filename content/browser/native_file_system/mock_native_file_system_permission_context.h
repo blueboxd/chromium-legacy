@@ -61,6 +61,17 @@ class MockNativeFileSystemPermissionContext
            int process_id,
            int frame_id,
            base::OnceCallback<void(SensitiveDirectoryResult)>& callback));
+
+  void PerformSafeBrowsingChecks(
+      std::unique_ptr<NativeFileSystemWriteItem> item,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SafeBrowsingResult)> callback) override;
+  MOCK_METHOD4(PerformSafeBrowsingChecks_,
+               void(NativeFileSystemWriteItem* item,
+                    int process_id,
+                    int frame_id,
+                    base::OnceCallback<void(SafeBrowsingResult)>& callback));
 };
 
 }  // namespace content

@@ -871,6 +871,7 @@ Document* VRDisplay::GetDocument() {
 
 mojo::PendingRemote<device::mojom::blink::VRDisplayClient>
 VRDisplay::GetDisplayClient() {
+  display_client_receiver_.reset();
   // See https://bit.ly/2S0zRAS for task types.
   return display_client_receiver_.BindNewPipeAndPassRemote(
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));

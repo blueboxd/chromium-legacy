@@ -744,7 +744,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   if (LIKELY(is_last_fragment))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
-  box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
+  if (!constraint_space.IsFixedBlockSize()) {
+    // If we had a fixed block size, our children will have sized themselves
+    // relative to the fixed size, which would make our intrinsic size
+    // incorrect (too big).
+    box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
+  }
 
   // TODO(mstensho): This should always be done by the parent algorithm, since
   // we may have auto margins, which only the parent is able to resolve. Remove
@@ -1179,8 +1184,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
             old_space.PercentageResolutionSize();
     if (needs_cached_result_update) {
       layout_result = base::AdoptRef(new NGLayoutResult(
-          *layout_result, constraint_space, layout_result->BfcLineOffset(),
-          layout_result->BfcBlockOffset(),
+          *layout_result, constraint_space, layout_result->EndMarginStrut(),
+          layout_result->BfcLineOffset(), layout_result->BfcBlockOffset(),
           LayoutUnit() /* block_offset_delta */));
       box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
     }

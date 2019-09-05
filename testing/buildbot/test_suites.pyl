@@ -273,6 +273,19 @@
       'chromedriver_replay_unittests': {},
     },
 
+    'chromeos_device_all_chrome_tast_tests_informational': {
+      'chrome_all_tast_tests_informational': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        }
+      },
+      'chrome_login_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        }
+      },
+    },
+
     # Tests that run in Chrome OS VMs.
     # NOTE: We only want a small subset of test suites here, because most
     # suites assume that they stub out the underlying device hardware.
@@ -3428,6 +3441,24 @@
       },
     },
 
+    'gpu_dawn_perf_smoke_isolated_scripts': {
+      'dawn_perf_tests': {
+        'args': [
+          # Tell the tests to only run one step for faster iteration.
+          '--override-steps=1',
+          '--gtest-benchmark-name=dawn_perf_tests',
+          '-v',
+        ],
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+          # Does not upload to the perf dashboard
+          'args': [
+            '--smoke-test-mode',
+          ],
+        },
+      },
+    },
+
     'gpu_default_and_optional_win_specific_gtests': {
       'xr_browser_tests': {
         # The Windows machines this is run on should always meet all the
@@ -4171,8 +4202,14 @@
       },
       'webdriver_tests_suite': {
         'isolate_name': 'webdriver_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
         'swarming': {
-          'shards': 1,
+          'shards': 4,
         },
       },
     },
@@ -5296,6 +5333,20 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+    ],
+
+    'gpu_dawn_deps_isolated_scripts': [
+      'gpu_dawn_perf_smoke_isolated_scripts',
+      'gpu_webgpu_integration_isolated_scripts',
+    ],
+
+    'gpu_dawn_deps_win_x64_isolated_scripts': [
+      'gpu_dawn_perf_smoke_isolated_scripts',
+      'gpu_webgpu_integration_win_x64_isolated_scripts',
+    ],
+
+    'gpu_dawn_tot_isolated_scripts': [
+      'gpu_dawn_perf_smoke_isolated_scripts',
     ],
 
     'gpu_desktop_gtests': [

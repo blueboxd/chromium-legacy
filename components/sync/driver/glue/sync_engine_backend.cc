@@ -516,6 +516,10 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
   if (nigori_handler_proxy_) {
     sync_encryption_handler_->RemoveObserver(nigori_handler_proxy_.get());
   }
+  if (nigori_controller_) {
+    sync_manager_->GetModelTypeConnector()->DisconnectNonBlockingType(NIGORI);
+    nigori_controller_->Stop(reason, base::DoNothing());
+  }
   DoDestroySyncManager();
 
   registrar_ = nullptr;

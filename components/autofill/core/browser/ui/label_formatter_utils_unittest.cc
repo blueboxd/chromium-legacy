@@ -189,7 +189,7 @@ TEST(LabelFormatterUtilsTest, HaveSamePhoneNumbers_SamePhoneNumbers) {
   AutofillProfile profile2 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Maria", "Margaretha", "Winckelmann", "", "",
-                       "", "", "", "", "", "DE", "4903045042823");
+                       "", "", "", "", "", "DE", "493045042823");
   AutofillProfile profile3 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile3, "Maria", "Margaretha", "Winckelmann", "", "",

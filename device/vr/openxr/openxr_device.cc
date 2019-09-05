@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_render_loop.h"
+#include "device/vr/util/transform_utils.h"
 
 namespace device {
 
@@ -22,13 +23,9 @@ constexpr bool kCanPresent = true;
 
 constexpr float kFramebufferScale = 1.0f;
 constexpr float kFov = 45.0f;
-constexpr float kInterpupillaryDistance = 0.1f;  // 10cm
 
 constexpr unsigned int kRenderWidth = 1024;
 constexpr unsigned int kRenderHeight = 1024;
-
-constexpr gfx::Vector3dF kLeftOffset = {-kInterpupillaryDistance * 0.5, 0, 0};
-constexpr gfx::Vector3dF kRightOffset = {kInterpupillaryDistance * 0.5, 0, 0};
 
 constexpr float kStageSizeX = 0.0f;
 constexpr float kStageSizeZ = 0.0f;
@@ -58,8 +55,10 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   display_info->right_eye->field_of_view =
       display_info->left_eye->field_of_view.Clone();
 
-  display_info->left_eye->offset = kLeftOffset;
-  display_info->right_eye->offset = kRightOffset;
+  display_info->left_eye->head_from_eye =
+      vr_utils::DefaultHeadFromLeftEyeTransform();
+  display_info->right_eye->head_from_eye =
+      vr_utils::DefaultHeadFromRightEyeTransform();
 
   display_info->left_eye->render_width = kRenderWidth;
   display_info->left_eye->render_height = kRenderHeight;

@@ -26,6 +26,7 @@
 
 namespace network {
 struct ResourceResponse;
+class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace service_manager {
@@ -40,7 +41,6 @@ namespace download {
 
 class DownloadDBCache;
 class DownloadStartObserver;
-class DownloadURLLoaderFactoryGetter;
 class DownloadUrlParameters;
 struct DownloadDBEntry;
 
@@ -100,13 +100,13 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   DownloadItem* GetDownloadByGuid(const std::string& guid) override;
 
   // Called to start a download.
-  void BeginDownload(
-      std::unique_ptr<DownloadUrlParameters> params,
-      scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
-      bool is_new_download,
-      const GURL& site_url,
-      const GURL& tab_url,
-      const GURL& tab_referrer_url);
+  void BeginDownload(std::unique_ptr<DownloadUrlParameters> params,
+                     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                         url_loader_factory_info,
+                     bool is_new_download,
+                     const GURL& site_url,
+                     const GURL& tab_url,
+                     const GURL& tab_referrer_url);
 
   // Intercepts a download from navigation.
   void InterceptDownloadFromNavigation(
@@ -121,12 +121,13 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       scoped_refptr<network::ResourceResponse> response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter);
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info);
 
   void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,
       std::unique_ptr<InputStream> stream,
-      scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
       DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadUrlParameters::OnStartedCallback& on_started);
 
@@ -186,9 +187,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   }
   DownloadFileFactory* file_factory() { return file_factory_.get(); }
 
-  void set_url_loader_factory_getter(
-      scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter) {
-    url_loader_factory_getter_ = std::move(url_loader_factory_getter);
+  void set_url_loader_factory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    url_loader_factory_ = url_loader_factory;
   }
 
   void SetDelegate(Delegate* delegate);
@@ -210,7 +211,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
       std::unique_ptr<InputStream> input_stream,
-      scoped_refptr<DownloadURLLoaderFactoryGetter> shared_url_loader_factory,
+      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
       UrlDownloadHandler* downloader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
@@ -229,7 +230,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Start a DownloadItemImpl.
   void StartDownloadWithItem(
       std::unique_ptr<InputStream> stream,
-      scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
       DownloadJob::CancelRequestCallback cancel_request_callback,
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download,
@@ -288,9 +289,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // A list of download GUIDs that should not be persisted.
   std::set<std::string> non_persistent_download_guids_;
 
-  // URLLoaderFactoryGetter for issuing network request when DownloadMangerImpl
+  // URLLoaderFactory for issuing network request when DownloadManagerImpl
   // is not available.
-  scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Mapping between download URIs and display names.
   // TODO(qinmin): move display name to history and in-progress DB.

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 
 ArcAppContextMenu::ArcAppContextMenu(app_list::AppContextMenuDelegate* delegate,
                                      Profile* profile,
@@ -132,7 +133,8 @@ void ArcAppContextMenu::ShowPackageInfo() {
             << app_id() << ".";
     return;
   }
-  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
+      base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile(), app_id());
     return;
   }

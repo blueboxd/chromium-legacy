@@ -30,8 +30,7 @@ class PLATFORM_EXPORT DocumentResourceCoordinator final {
   void SetNetworkAlmostIdle();
   void SetLifecycleState(resource_coordinator::mojom::LifecycleState);
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
-  void SetInterventionPolicy(
-      resource_coordinator::mojom::PolicyControlledIntervention intervention,
+  void SetOriginTrialFreezePolicy(
       resource_coordinator::mojom::InterventionPolicy policy);
   // A one way switch that marks a frame as being an adframe.
   void SetIsAdFrame();

@@ -170,6 +170,12 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
                                  GetLastCommittedItemWithUserAgentType(),
                                  pending_item_.get());
 
+  if (!next_pending_url_should_skip_serialization_.is_empty() &&
+      url == next_pending_url_should_skip_serialization_) {
+    pending_item_->SetShouldSkipSerialization(true);
+  }
+  next_pending_url_should_skip_serialization_ = GURL::EmptyGURL();
+
   // No need to detect renderer-initiated back/forward navigation in detached
   // mode because there is no renderer.
   if (!web_view_cache_.IsAttachedToWebView())
@@ -189,7 +195,19 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   // between the URLs.
   id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
   WKBackForwardListItem* current_wk_item = proxy.backForwardList.currentItem;
-  const GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
+  GURL current_item_url = net::GURLWithNSURL(current_wk_item.URL);
+
+  // When reloading an target url redirect page, re-use the target url as the
+  // current item url.
+  GURL target_url;
+  if (ui::PageTransitionCoreTypeIs(navigation_type,
+                                   ui::PAGE_TRANSITION_RELOAD) &&
+      web::wk_navigation_util::IsRestoreSessionUrl(current_item_url) &&
+      web::wk_navigation_util::ExtractTargetURL(current_item_url,
+                                                &target_url)) {
+    current_item_url = target_url;
+  }
+
   if (proxy.backForwardList.currentItem &&
       IsSameOrPlaceholderOf(current_item_url, pending_item_->GetURL()) &&
       IsSameOrPlaceholderOf(current_item_url, net::GURLWithNSURL(proxy.URL))) {
@@ -622,6 +640,11 @@ void WKBasedNavigationManagerImpl::
   // with the wrong web content. The partial restore effectively forces a fresh
   // load of this item while maintaining forward history.
   UnsafeRestore(/*last_committed_item_index_=*/0, std::move(forward_items));
+}
+
+void WKBasedNavigationManagerImpl::SetWKWebViewNextPendingUrlNotSerializable(
+    const GURL& url) {
+  next_pending_url_should_skip_serialization_ = url;
 }
 
 void WKBasedNavigationManagerImpl::Restore(

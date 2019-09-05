@@ -540,8 +540,13 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, OpenNonSyncCheck) {
 // Keep in sync with UkmTest.testMetricConsent in
 // chrome/android/javatests/src/org/chromium/chrome/browser/sync/
 // UkmTest.java.
-
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MetricsConsentCheck) {
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/996823): Re-enable this test.
+#define MAYBE_MetricsConsentCheck DISABLED_MetricsConsentCheck
+#else
+#define MAYBE_MetricsConsentCheck MetricsConsentCheck
+#endif
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MAYBE_MetricsConsentCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();

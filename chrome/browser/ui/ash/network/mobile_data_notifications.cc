@@ -88,7 +88,7 @@ void MobileDataNotifications::ConnectFailed(const std::string& service_path,
 }
 
 void MobileDataNotifications::ActiveUserChanged(
-    const user_manager::User* active_user) {
+    user_manager::User* active_user) {
   ShowOptionalMobileDataNotification();
 }
 

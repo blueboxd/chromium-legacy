@@ -75,6 +75,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kPermissionDelegation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrioritizeBootstrapTasks,
+    &features::kQuietNotificationPrompts,
     &features::kServiceWorkerPaymentApps,
     &features::kShowTrustedPublisherURL,
     &features::kUserActivationV2,

@@ -335,6 +335,7 @@ public class StatusView extends LinearLayout {
         if (mIncognitoBadge == null) initializeIncognitoBadge();
 
         mIncognitoBadge.setVisibility(incognitoBadgeVisible ? View.VISIBLE : View.GONE);
+        updateTouchDelegate();
     }
 
     private void initializeIncognitoBadge() {
@@ -366,6 +367,15 @@ public class StatusView extends LinearLayout {
      * no work will be done.
      */
     private void updateTouchDelegate() {
+        if (mIconView.getVisibility() == GONE) {
+            // Tear down the existing delegate if it exists.
+            if (mTouchDelegate != null) {
+                mCompositeTouchDelegate.removeDelegateForDescendantView(mTouchDelegate);
+                mTouchDelegate = null;
+                mLastTouchDelegateRect = new Rect();
+            }
+            return;
+        }
         // Setup a touch delegate to increase the clickable area for the padlock.
         // See for more information.
         Rect touchDelegateBounds = new Rect();

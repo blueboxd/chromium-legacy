@@ -17,7 +17,6 @@ mojom("mojom") {
     "ime_info.mojom",
     "tray_action.mojom",
     "voice_interaction_controller.mojom",
-    "vpn_list.mojom",
   ]
 
   public_deps = [

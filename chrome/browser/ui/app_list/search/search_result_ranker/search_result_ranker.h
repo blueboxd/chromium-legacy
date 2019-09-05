@@ -95,6 +95,8 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
                            QueryMixedModelConfigDeployment);
   FRIEND_TEST_ALL_PREFIXES(SearchResultRankerTest,
                            QueryMixedModelDeletesURLCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(SearchResultRankerTest,
+                           ZeroStateGroupRankerUsesFinchConfig);
 
   // Saves |query_based_mixed_types_ranker_| to disk. Called after a delay when
   // URLs get deleted.

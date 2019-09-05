@@ -123,7 +123,7 @@ std::unique_ptr<views::View> SharingDialogView::CreateFootnoteView() {
 void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                const gfx::Range& range,
                                                int event_flags) {
-  controller_->OnHelpTextClicked();
+  controller_->OnHelpTextClicked(GetDialogType());
 }
 
 SharingDialogType SharingDialogView::GetDialogType() const {

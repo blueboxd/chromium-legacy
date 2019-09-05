@@ -30,9 +30,9 @@ public class PasswordEditingBridge {
     @CalledByNative
     private void showEditingUI(Context context, String site, String username, String password) {
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, username);
-        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, site);
-        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, password);
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, site);
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, username);
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, password);
         PreferencesLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
     }
 

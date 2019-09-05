@@ -11,9 +11,11 @@
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
+#include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -33,6 +35,11 @@ using blink::mojom::NativeFileSystemStatus;
 using storage::FileSystemURL;
 using storage::IsolatedContext;
 
+using testing::_;
+using testing::AllOf;
+using testing::Eq;
+using testing::Field;
+
 namespace content {
 
 std::string GetHexEncodedString(const std::string& input) {
@@ -45,6 +52,10 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kNativeFileSystemAPI);
+  }
+
+  virtual NativeFileSystemPermissionContext* permission_context() {
+    return nullptr;
   }
 
   void SetUp() override {
@@ -83,14 +94,13 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,
-        /*permission_context=*/nullptr,
+        /*permission_context=*/permission_context(),
         /*off_the_record=*/false);
 
     handle_ = std::make_unique<NativeFileSystemFileWriterImpl>(
         manager_.get(),
-        NativeFileSystemManagerImpl::BindingContext(
-            kTestOrigin, kTestURL, /*process_id=*/1,
-            /*frame_id=*/MSG_ROUTING_NONE),
+        NativeFileSystemManagerImpl::BindingContext(kTestOrigin, kTestURL,
+                                                    kProcessId, kFrameId),
         test_file_url_, test_swap_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, std::move(fs)),
@@ -235,6 +245,8 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
  protected:
   const GURL kTestURL = GURL("https://example.com/test");
   const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
+  const int kProcessId = 1;
+  const int kFrameId = 2;
   base::test::ScopedFeatureList scoped_feature_list_;
   BrowserTaskEnvironment task_environment_;
 
@@ -288,11 +300,13 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashSimpleOK) {
 
   base::RunLoop loop;
   handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
-      [&](base::File::Error result, const std::string& hash_value) {
+      [&](base::File::Error result, const std::string& hash_value,
+          int64_t size) {
         EXPECT_EQ(base::File::FILE_OK, result);
         EXPECT_EQ(
             "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD",
             GetHexEncodedString(hash_value));
+        EXPECT_EQ(3, size);
         loop.Quit();
       }));
   loop.Run();
@@ -301,11 +315,13 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashSimpleOK) {
 TEST_F(NativeFileSystemFileWriterImplTest, HashEmptyOK) {
   base::RunLoop loop;
   handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
-      [&](base::File::Error result, const std::string& hash_value) {
+      [&](base::File::Error result, const std::string& hash_value,
+          int64_t size) {
         EXPECT_EQ(base::File::FILE_OK, result);
         EXPECT_EQ(
             "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
             GetHexEncodedString(hash_value));
+        EXPECT_EQ(0, size);
         loop.Quit();
       }));
   loop.Run();
@@ -318,7 +334,8 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashNonExistingFileFails) {
                                         /*recursive=*/false));
   base::RunLoop loop;
   handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
-      [&](base::File::Error result, const std::string& hash_value) {
+      [&](base::File::Error result, const std::string& hash_value,
+          int64_t size) {
         EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, result);
         loop.Quit();
       }));
@@ -335,11 +352,13 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashLargerFileOK) {
 
   base::RunLoop loop;
   handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
-      [&](base::File::Error result, const std::string& hash_value) {
+      [&](base::File::Error result, const std::string& hash_value,
+          int64_t size) {
         EXPECT_EQ(base::File::FILE_OK, result);
         EXPECT_EQ(
             "34A82D28CB1E0BA92CADC4BE8497DC9EEA9AC4F63B9C445A9E52D298990AC491",
             GetHexEncodedString(hash_value));
+        EXPECT_EQ(int64_t{target_size}, size);
         loop.Quit();
       }));
   loop.Run();
@@ -477,5 +496,119 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteAfterCloseNotOK) {
 }
 
 // TODO(mek): More tests, particularly for error conditions.
+
+class NativeFileSystemFileWriterSafeBrowsingTest
+    : public NativeFileSystemFileWriterImplTest {
+ public:
+  NativeFileSystemPermissionContext* permission_context() override {
+    return &permission_context_;
+  }
+
+ protected:
+  testing::StrictMock<MockNativeFileSystemPermissionContext>
+      permission_context_;
+};
+
+TEST_F(NativeFileSystemFileWriterSafeBrowsingTest, Allow) {
+  uint64_t bytes_written;
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_EQ(bytes_written, 3u);
+
+  std::vector<uint8_t> raw_expected_hash;
+  ASSERT_TRUE(base::HexStringToBytes(
+      "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD",
+      &raw_expected_hash));
+  std::string expected_hash(raw_expected_hash.begin(), raw_expected_hash.end());
+
+  EXPECT_CALL(
+      permission_context_,
+      PerformSafeBrowsingChecks_(
+          AllOf(
+              Field(&NativeFileSystemWriteItem::target_file_path,
+                    Eq(test_file_url_.path())),
+              Field(&NativeFileSystemWriteItem::full_path,
+                    Eq(test_swap_url_.path())),
+              Field(&NativeFileSystemWriteItem::sha256_hash, Eq(expected_hash)),
+              Field(&NativeFileSystemWriteItem::size, Eq(3)),
+              Field(&NativeFileSystemWriteItem::frame_url, Eq(kTestURL)),
+              Field(&NativeFileSystemWriteItem::has_user_gesture, Eq(false))),
+          kProcessId, kFrameId, _))
+      .WillOnce(base::test::RunOnceCallback<3>(
+          NativeFileSystemPermissionContext::SafeBrowsingResult::kAllow));
+
+  result = CloseSync();
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(AsyncFileTestHelper::FileExists(
+      file_system_context_.get(), test_swap_url_,
+      AsyncFileTestHelper::kDontCheckSize));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(file_system_context_.get(),
+                                              test_file_url_, 3));
+}
+
+TEST_F(NativeFileSystemFileWriterSafeBrowsingTest, Block) {
+  uint64_t bytes_written;
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_EQ(bytes_written, 3u);
+
+  EXPECT_CALL(permission_context_,
+              PerformSafeBrowsingChecks_(_, kProcessId, kFrameId, _))
+      .WillOnce(base::test::RunOnceCallback<3>(
+          NativeFileSystemPermissionContext::SafeBrowsingResult::kBlock));
+
+  result = CloseSync();
+  EXPECT_EQ(result, NativeFileSystemStatus::kOperationAborted);
+
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(AsyncFileTestHelper::FileExists(
+      file_system_context_.get(), test_swap_url_,
+      AsyncFileTestHelper::kDontCheckSize));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(file_system_context_.get(),
+                                              test_file_url_, 0));
+}
+
+TEST_F(NativeFileSystemFileWriterSafeBrowsingTest, HandleCloseDuringCheck) {
+  uint64_t bytes_written;
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_EQ(bytes_written, 3u);
+
+  using SBCallback = base::OnceCallback<void(
+      NativeFileSystemPermissionContext::SafeBrowsingResult)>;
+  SBCallback sb_callback;
+  base::RunLoop loop;
+  EXPECT_CALL(permission_context_, PerformSafeBrowsingChecks_)
+      .WillOnce(
+          testing::Invoke([&](NativeFileSystemWriteItem* item, int process_id,
+                              int frame_id, SBCallback& callback) {
+            sb_callback = std::move(callback);
+            loop.Quit();
+          }));
+
+  handle_->Close(base::DoNothing());
+  loop.Run();
+
+  handle_.reset();
+  // Destructor should not have deleted swap file with an active safe browsing
+  // check pending.
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      file_system_context_.get(), test_swap_url_,
+      AsyncFileTestHelper::kDontCheckSize));
+
+  std::move(sb_callback)
+      .Run(NativeFileSystemPermissionContext::SafeBrowsingResult::kAllow);
+
+  // Swap file should now be deleted, target file should be unmodified.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(AsyncFileTestHelper::FileExists(
+      file_system_context_.get(), test_swap_url_,
+      AsyncFileTestHelper::kDontCheckSize));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(file_system_context_.get(),
+                                              test_file_url_, 0));
+}
 
 }  // namespace content

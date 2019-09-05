@@ -483,7 +483,7 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     // No more data to write.
     const int result = response_writer_->Finish(
         bytes_read > 0 ? OK : bytes_read,
-        base::Bind(&URLFetcherCore::DidFinishWriting, this));
+        base::BindOnce(&URLFetcherCore::DidFinishWriting, this));
     if (result != ERR_IO_PENDING)
       DidFinishWriting(result);
   }
@@ -527,7 +527,7 @@ void URLFetcherCore::StartOnIOThread() {
     response_writer_.reset(new URLFetcherStringWriter);
 
   const int result = response_writer_->Initialize(
-      base::Bind(&URLFetcherCore::DidInitializeWriter, this));
+      base::BindOnce(&URLFetcherCore::DidInitializeWriter, this));
   if (result != ERR_IO_PENDING)
     DidInitializeWriter(result);
 }
@@ -856,9 +856,8 @@ void URLFetcherCore::CompleteAddingUploadDataChunk(
 int URLFetcherCore::WriteBuffer(scoped_refptr<DrainableIOBuffer> data) {
   while (data->BytesRemaining() > 0) {
     const int result = response_writer_->Write(
-        data.get(),
-        data->BytesRemaining(),
-        base::Bind(&URLFetcherCore::DidWriteBuffer, this, data));
+        data.get(), data->BytesRemaining(),
+        base::BindOnce(&URLFetcherCore::DidWriteBuffer, this, data));
     if (result < 0) {
       if (result != ERR_IO_PENDING)
         DidWriteBuffer(data, result);

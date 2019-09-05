@@ -2364,7 +2364,8 @@ TEST_F(DnsTransactionTestWithMockTime, ProbeUntilSuccess) {
                       base::size(kT4ResponseDatagram), ASYNC, Transport::HTTPS,
                       nullptr /* opt_rdata */,
                       DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
-  transaction_factory_->StartDohProbes(&request_context);
+  transaction_factory_->StartDohProbes(&request_context,
+                                       false /* network_change */);
 
   // The first probe happens without any delay.
   RunUntilIdle();

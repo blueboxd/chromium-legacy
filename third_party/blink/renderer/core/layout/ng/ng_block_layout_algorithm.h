@@ -93,6 +93,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                               bool is_new_fc,
                               bool* margins_fully_resolved);
 
+  void StopMarginCollapsing(EMarginCollapse collapse_value,
+                            LayoutUnit this_margin,
+                            LayoutUnit* logical_block_offset,
+                            NGMarginStrut* margin_strut);
+
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(
       const NGLayoutInputNode child,
@@ -280,6 +285,18 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGPreviousInflowPosition* previous_inflow_position) {
     return ResolveBfcBlockOffset(previous_inflow_position,
                                  NextBorderEdge(*previous_inflow_position));
+  }
+
+  // Mark this fragment as modifying its incoming margin-strut if it hasn't
+  // resolved its BFC block-offset yet.
+  void SetSubtreeModifiedMarginStrutIfNeeded(const Length* margin = nullptr) {
+    if (container_builder_.BfcBlockOffset())
+      return;
+
+    if (margin && margin->IsZero())
+      return;
+
+    container_builder_.SetSubtreeModifiedMarginStrut();
   }
 
   // Return true if the BFC block offset has changed and this means that we

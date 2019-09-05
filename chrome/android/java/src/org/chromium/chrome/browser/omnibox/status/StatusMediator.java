@@ -340,16 +340,20 @@ class StatusMediator {
             mShouldCancelCustomFavicon = false;
             mModel.set(StatusProperties.STATUS_ICON_TINT_RES, /* no tint */ 0);
             if (mIsSearchEngineGoogle) {
-                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_24dp);
+                mModel.set(StatusProperties.STATUS_ICON_RES,
+                        SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere()
+                                ? R.drawable.omnibox_search
+                                : R.drawable.ic_logo_googleg_24dp);
             } else {
-                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
-                // TODO(crbug.com/985565): Cache this favicon in Java.
-                SearchEngineLogoUtils.getSearchEngineLogoFavicon(
-                        Profile.getLastUsedProfile().getOriginalProfile(), mResources,
-                        (favicon) -> {
-                            if (favicon == null || mShouldCancelCustomFavicon) return;
-                            mModel.set(StatusProperties.STATUS_ICON, favicon);
-                        });
+                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.omnibox_search);
+                if (!SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere()) {
+                    SearchEngineLogoUtils.getSearchEngineLogoFavicon(
+                            Profile.getLastUsedProfile().getOriginalProfile(), mResources,
+                            (favicon) -> {
+                                if (favicon == null || mShouldCancelCustomFavicon) return;
+                                mModel.set(StatusProperties.STATUS_ICON, favicon);
+                            });
+                }
             }
             return;
         } else {

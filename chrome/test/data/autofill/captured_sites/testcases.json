@@ -96,7 +96,7 @@
     { "site_name": "talbots" },
     { "site_name": "tennis_warehouse" },
     { "site_name": "therealreal" },
-    { "site_name": "threadless" },
+    { "site_name": "threadless", "expectation":"FAIL", "bug_number":996478 },
     { "site_name": "tickets" },
     { "site_name": "timberland", "disabled":true, "bug_number":993044 },
     { "site_name": "torrid" },

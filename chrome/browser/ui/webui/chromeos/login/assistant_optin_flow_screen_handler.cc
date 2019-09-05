@@ -21,7 +21,6 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
-#include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -215,7 +214,7 @@ void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
   }
 
   // Make sure enable Assistant service since we need it during the flow.
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, true);
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
 
   if (arc::VoiceInteractionControllerClient::Get()->voice_interaction_state() ==
       ash::mojom::VoiceInteractionState::NOT_READY) {
@@ -267,7 +266,7 @@ void AssistantOptInFlowScreenHandler::OnDialogClosed() {
   if (!voice_match_enrollment_done_ &&
       flow_type_ == ash::FlowType::kSpeakerIdEnrollment) {
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-        arc::prefs::kVoiceInteractionHotwordEnabled, false);
+        assistant::prefs::kAssistantHotwordEnabled, false);
   }
 }
 
@@ -339,7 +338,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
                   "opt-in flow.";
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
       prefs->SetBoolean(assistant::prefs::kAssistantDisabledByPolicy, true);
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+      prefs->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
       HandleFlowFinished();
       return;
     }
@@ -508,13 +507,13 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
     if (flow_type_ != ash::FlowType::kSpeakerIdRetrain) {
       // No need to disable hotword for retrain flow since user has a model.
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
+      prefs->SetBoolean(assistant::prefs::kAssistantHotwordEnabled, false);
     }
     StopSpeakerIdEnrollment();
     ShowNextScreen();
   } else if (action == kRecordPressed) {
-    if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled)) {
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
+    if (!prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled)) {
+      prefs->SetBoolean(assistant::prefs::kAssistantHotwordEnabled, true);
     }
 
     assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr;
@@ -575,7 +574,7 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
 void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
     const int flow_type) {
   auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled)) {
+  if (!prefs->GetBoolean(chromeos::assistant::prefs::kAssistantEnabled)) {
     HandleFlowFinished();
     return;
   }

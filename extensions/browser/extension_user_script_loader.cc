@@ -29,7 +29,6 @@
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_file_task_runner.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/file_util.h"
@@ -207,8 +206,7 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     bool listen_for_extension_system_loaded)
     : UserScriptLoader(browser_context, host_id),
       content_verifier_(
-          ExtensionSystem::Get(browser_context)->content_verifier()),
-      extension_registry_observer_(this) {
+          ExtensionSystem::Get(browser_context)->content_verifier()) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
     ExtensionSystem::Get(browser_context)

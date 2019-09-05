@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -30,6 +31,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
       ServiceWorkerVersion::Status status,
       ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence,
       const GURL& script_url,
+      const url::Origin& origin,
       int64_t registration_id,
       int64_t version_id,
       int process_id,
@@ -43,6 +45,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence;
   blink::mojom::NavigationPreloadState navigation_preload_state;
   GURL script_url;
+  url::Origin script_origin;
   int64_t registration_id;
   int64_t version_id;
   int process_id;

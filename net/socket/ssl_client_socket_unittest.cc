@@ -238,8 +238,8 @@ int ReadBufferingStreamSocket::DoRead() {
   state_ = STATE_READ_COMPLETE;
   return transport_->Read(
       read_buffer_.get(), read_buffer_->RemainingCapacity(),
-      base::Bind(&ReadBufferingStreamSocket::OnReadCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&ReadBufferingStreamSocket::OnReadCompleted,
+                     base::Unretained(this)));
 }
 
 int ReadBufferingStreamSocket::DoReadComplete(int result) {
@@ -466,10 +466,10 @@ int FakeBlockingStreamSocket::Read(IOBuffer* buf,
   DCHECK_EQ(ERR_IO_PENDING, pending_read_result_);
   DCHECK(!callback.is_null());
 
-  int rv =
-      transport_->Read(buf, len,
-                       base::Bind(&FakeBlockingStreamSocket::OnReadCompleted,
-                                  base::Unretained(this)));
+  int rv = transport_->Read(
+      buf, len,
+      base::BindOnce(&FakeBlockingStreamSocket::OnReadCompleted,
+                     base::Unretained(this)));
   if (rv == ERR_IO_PENDING || should_block_read_) {
     // Save the callback to be called later.
     pending_read_buf_ = buf;
@@ -501,8 +501,8 @@ int FakeBlockingStreamSocket::ReadIfReady(IOBuffer* buf,
   }
   scoped_refptr<IOBuffer> buf_copy = base::MakeRefCounted<IOBuffer>(len);
   int rv = Read(buf_copy.get(), len,
-                base::Bind(&FakeBlockingStreamSocket::CompleteReadIfReady,
-                           base::Unretained(this), buf_copy));
+                base::BindOnce(&FakeBlockingStreamSocket::CompleteReadIfReady,
+                               base::Unretained(this), buf_copy));
   if (rv > 0)
     memcpy(buf->data(), buf_copy->data(), rv);
   if (rv == ERR_IO_PENDING)

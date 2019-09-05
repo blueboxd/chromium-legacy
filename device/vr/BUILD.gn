@@ -28,6 +28,8 @@ if (enable_vr) {
       "util/sample_queue.h",
       "util/sliding_average.cc",
       "util/sliding_average.h",
+      "util/transform_utils.cc",
+      "util/transform_utils.h",
       "util/xr_standard_gamepad_builder.cc",
       "util/xr_standard_gamepad_builder.h",
       "vr_device.h",
@@ -69,6 +71,8 @@ if (enable_vr) {
         "android/gvr/gvr_gamepad_data_fetcher.cc",
         "android/gvr/gvr_gamepad_data_fetcher.h",
         "android/gvr/gvr_gamepad_data_provider.h",
+        "android/gvr/gvr_utils.cc",
+        "android/gvr/gvr_utils.h",
       ]
 
       if (enable_arcore) {

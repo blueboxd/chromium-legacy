@@ -41,14 +41,14 @@ TEST_F('CrElementsCheckboxV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var CrElementsToggleV3Test = class extends CrElementsV3FocusTest {
+var CrElementsIconButtonV3FocusTest = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test?module=cr_elements/cr_toggle_test.m.js';
+    return 'chrome://test?module=cr_elements/cr_icon_button_focus_tests.m.js';
   }
 };
 
-TEST_F('CrElementsToggleV3Test', 'All', function() {
+TEST_F('CrElementsIconButtonV3FocusTest', 'All', function() {
   mocha.run();
 });
 
@@ -65,13 +65,25 @@ TEST_F('CrElementsInputV3Test', 'DISABLED_All', function() {
 });
 
 // eslint-disable-next-line no-var
-var CrElementsIconButtonV3FocusTest = class extends CrElementsV3FocusTest {
+var CrElementsTabsV3Test = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test?module=cr_elements/cr_icon_button_focus_tests.m.js';
+    return 'chrome://test?module=cr_elements/cr_tabs_test.m.js';
   }
 };
 
-TEST_F('CrElementsIconButtonV3FocusTest', 'All', function() {
+TEST_F('CrElementsTabsV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrElementsToggleV3Test = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_toggle_test.m.js';
+  }
+};
+
+TEST_F('CrElementsToggleV3Test', 'All', function() {
   mocha.run();
 });

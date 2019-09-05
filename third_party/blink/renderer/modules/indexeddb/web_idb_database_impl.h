@@ -35,7 +35,8 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
                              mojom::blink::IDBTransaction> transaction_receiver,
                          int64_t transaction_id,
                          const Vector<int64_t>& scope,
-                         mojom::IDBTransactionMode mode) override;
+                         mojom::IDBTransactionMode mode,
+                         bool relaxed_durability) override;
 
   void Close() override;
   void VersionChangeIgnored() override;

@@ -130,9 +130,9 @@ class ScreenLocker : public AuthStatusConsumer,
   // the same login events that ScreenLocker does.
   void SetLoginStatusConsumer(chromeos::AuthStatusConsumer* consumer);
 
-  // Initialize or uninitialize the ScreenLocker class. It listens to
-  // NOTIFICATION_SESSION_STARTED so that the screen locker accepts lock
-  // requests only after a user has logged in.
+  // Initialize or uninitialize the ScreenLocker class. It observes
+  // SessionManager so that the screen locker accepts lock requests only after a
+  // user has logged in.
   static void InitClass();
   static void ShutDownClass();
 
@@ -185,6 +185,17 @@ class ScreenLocker : public AuthStatusConsumer,
     AUTH_FINGERPRINT = 2,
     AUTH_CHALLENGE_RESPONSE = 3,
     AUTH_COUNT
+  };
+
+  // State associated with a pending authentication attempt.
+  struct AuthState {
+    AuthState(AccountId account_id, base::OnceCallback<void(bool)> callback);
+    ~AuthState();
+
+    // Account that is being authenticated.
+    AccountId account_id;
+    // Callback that should be executed the authentication result is available.
+    base::OnceCallback<void(bool)> callback;
   };
 
   ~ScreenLocker() override;
@@ -269,8 +280,8 @@ class ScreenLocker : public AuthStatusConsumer,
   // Type of the last unlock attempt.
   UnlockType unlock_attempt_type_ = AUTH_PASSWORD;
 
-  // Callback to run, if any, when authentication is done.
-  AuthenticateCallback on_auth_complete_;
+  // State associated with a pending authentication attempt.
+  std::unique_ptr<AuthState> pending_auth_state_;
 
   scoped_refptr<input_method::InputMethodManager::State> saved_ime_state_;
 

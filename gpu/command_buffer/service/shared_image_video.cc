@@ -508,4 +508,43 @@ void SharedImageVideo::BeginGLReadAccess() {
   stream_texture_sii_->UpdateAndBindTexImage();
 }
 
+// Representation of SharedImageVideo as an overlay plane.
+class SharedImageRepresentationOverlayVideo
+    : public gpu::SharedImageRepresentationOverlay {
+ public:
+  SharedImageRepresentationOverlayVideo(gpu::SharedImageManager* manager,
+                                        SharedImageVideo* backing,
+                                        gpu::MemoryTypeTracker* tracker)
+      : gpu::SharedImageRepresentationOverlay(manager, backing, tracker),
+        stream_image_(backing->stream_texture_sii_) {}
+
+  void BeginReadAccess() override {
+    TRACE_EVENT0("media",
+                 "SharedImageRepresentationOverlayVideo::BeginReadAccess");
+    // A |CodecImage| could only be overlaied if it is already in a SurfaceView.
+    DCHECK(!stream_image_->HasTextureOwner());
+
+    stream_image_->RenderToOverlay();
+  }
+
+  void EndReadAccess() override {}
+
+  void NotifyOverlayPromotion(bool promotion,
+                              const gfx::Rect& bounds) override {
+    stream_image_->NotifyOverlayPromotion(promotion, bounds);
+  }
+
+ private:
+  scoped_refptr<StreamTextureSharedImageInterface> stream_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationOverlayVideo);
+};
+
+std::unique_ptr<gpu::SharedImageRepresentationOverlay>
+SharedImageVideo::ProduceOverlay(gpu::SharedImageManager* manager,
+                                 gpu::MemoryTypeTracker* tracker) {
+  return std::make_unique<SharedImageRepresentationOverlayVideo>(manager, this,
+                                                                 tracker);
+}
+
 }  // namespace gpu

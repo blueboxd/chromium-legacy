@@ -81,7 +81,7 @@ class CORE_EXPORT PortalActivateEvent : public Event {
   Member<HTMLPortalElement> adopted_portal_;
 
   base::UnguessableToken predecessor_portal_token_;
-  mojo::AssociatedRemote<mojom::blink::Portal> predecessor_portal_;
+  mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal_;
   mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
       predecessor_portal_client_receiver_;
 

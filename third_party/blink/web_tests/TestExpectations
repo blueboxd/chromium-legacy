@@ -3253,7 +3253,6 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
-crbug.com/626703 [ Linux ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/interfaces-sw.https.html [ Failure Crash ]
 crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
@@ -5877,9 +5876,6 @@ crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Fai
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
 
-# Native Filesystem tests depend on mojo interfaces that are only exposed behind a flag.
-crbug.com/853326 external/wpt/native-file-system/ [ Skip ]
-
 # These fail (some time out, some are flaky, etc.) when landing valid changes to Mojo bindings
 # dispatch timing. Many of them seem to fail for different reasons, but pretty consistently in most
 # cases it seems like a problem around test expectation timing rather than real bugs affecting
@@ -6517,8 +6513,6 @@ crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pas
 crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]
 
 crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
-crbug.com/1000124 [ Mac ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash ]
-crbug.com/1000124 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash ]
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
@@ -6534,6 +6528,11 @@ crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-nav
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/source-navigator-network-a11y-test.js [ Pass Failure ]
 crbug.com/1000336 [ Linux ] http/tests/devtools/a11y-axe-core/sources/sources-editor-pane-a11y-test.js [ Pass Failure ]
 crbug.com/1000396 [ Win ] virtual/audio-service/media/video-remove-insert-repaints.html [ Pass Failure ]
+crbug.com/1000396 [ Win ] media/video-remove-insert-repaints.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/geolocation-API/idlharness.window.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Pass Failure ]
+crbug.com/1000768 [ Linux ] external/wpt/storage/idlharness.https.any.html [ Pass Failure ]
 
 # Partial fix to avoid a regression on eval(string) with Trusted Types enabled in Chrome 77.
 crbug.com/992424 external/wpt/trusted-types/block-eval.tentative.html [ Failure ]

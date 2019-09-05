@@ -30,6 +30,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
@@ -631,7 +632,7 @@ class WebContents : public PageNavigator,
   // As long as these handles are not deleted, subresources will continue to be
   // deferred until an internal navigation happens in the frame. Holding handles
   // for deleted or re-navigated frames has no effect.
-  virtual std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  virtual std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
   PauseSubresourceLoading() = 0;
 
   // Editing commands ----------------------------------------------------------

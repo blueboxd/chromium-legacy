@@ -33,8 +33,8 @@ public final class BrowserController {
             throw new AndroidRuntimeException(e);
         }
 
-        mNavigationController = new NavigationController(this);
         mObservers = new CopyOnWriteArrayList<BrowserObserver>();
+        mNavigationController = NavigationController.create(mImpl);
     }
 
     @Override
@@ -77,15 +77,6 @@ public final class BrowserController {
             return ObjectWrapper.unwrap(mImpl.onCreateView(), View.class);
         } catch (RemoteException e) {
             Log.e(TAG, "Failed to call onCreateView.", e);
-            throw new AndroidRuntimeException(e);
-        }
-    }
-
-    void navigate(Uri uri) {
-        try {
-            mImpl.navigate(uri.toString());
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call navigate.", e);
             throw new AndroidRuntimeException(e);
         }
     }

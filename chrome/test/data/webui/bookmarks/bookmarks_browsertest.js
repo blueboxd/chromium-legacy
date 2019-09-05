@@ -131,6 +131,7 @@ BookmarksListTest.prototype = {
   __proto__: BookmarksBrowserTest.prototype,
 
   extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'list_test.js',
   ]),
 };

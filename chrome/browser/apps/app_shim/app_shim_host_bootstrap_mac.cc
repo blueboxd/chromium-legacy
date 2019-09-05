@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace {
@@ -31,7 +32,7 @@ void AppShimHostBootstrap::CreateForChannelAndPeerID(
 }
 
 AppShimHostBootstrap::AppShimHostBootstrap(base::ProcessId peer_pid)
-    : host_bootstrap_binding_(this), pid_(peer_pid) {}
+    : pid_(peer_pid) {}
 
 AppShimHostBootstrap::~AppShimHostBootstrap() {
   DCHECK(!launch_app_callback_);
@@ -43,11 +44,11 @@ void AppShimHostBootstrap::ServeChannel(
 
   mojo::ScopedMessagePipeHandle message_pipe =
       bootstrap_mojo_connection_.Connect(std::move(endpoint));
-  host_bootstrap_binding_.Bind(
-      chrome::mojom::AppShimHostBootstrapRequest(std::move(message_pipe)));
-  host_bootstrap_binding_.set_connection_error_with_reason_handler(
-      base::BindOnce(&AppShimHostBootstrap::ChannelError,
-                     base::Unretained(this)));
+  host_bootstrap_receiver_.Bind(
+      mojo::PendingReceiver<chrome::mojom::AppShimHostBootstrap>(
+          std::move(message_pipe)));
+  host_bootstrap_receiver_.set_disconnect_with_reason_handler(base::BindOnce(
+      &AppShimHostBootstrap::ChannelError, base::Unretained(this)));
 }
 
 void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,

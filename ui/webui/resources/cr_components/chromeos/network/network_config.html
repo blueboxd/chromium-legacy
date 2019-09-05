@@ -54,7 +54,8 @@
       <!-- Passphrase (WiFi) -->
       <template is="dom-if" if="[[configRequiresPassphrase_(type, security_)]]"
           restamp>
-        <network-password-input label="[[i18n('OncWiFi-Passphrase')]]"
+        <network-password-input id="wifi-passphrase"
+            label="[[i18n('OncWiFi-Passphrase')]]"
             value="{{configProperties_.WiFi.Passphrase}}"
             on-enter="onEnterPressedInInput_"
             property="[[managedProperties.WiFi.Passphrase]]">

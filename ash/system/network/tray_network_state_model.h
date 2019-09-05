@@ -75,6 +75,7 @@ class ASH_EXPORT TrayNetworkStateModel
       override;
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
+  void OnVpnProvidersChanged() override;
 
   void GetDeviceStateList();
   void OnGetDeviceStateList(

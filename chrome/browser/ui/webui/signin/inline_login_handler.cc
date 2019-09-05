@@ -46,6 +46,10 @@ void InlineLoginHandler::RegisterMessages() {
       base::BindRepeating(&InlineLoginHandler::HandleInitializeMessage,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "authExtensionReady",
+      base::BindRepeating(&InlineLoginHandler::HandleAuthExtensionReadyMessage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "completeLogin",
       base::BindRepeating(&InlineLoginHandler::HandleCompleteLoginMessage,
                           base::Unretained(this)));
@@ -233,6 +237,8 @@ void InlineLoginHandler::HandleNavigationButtonClicked(
 #if !defined(OS_CHROMEOS)
   NOTREACHED() << "The inline login handler is no longer used in a browser "
                   "or tab modal dialog.";
+#else
+  FireWebUIListener("navigateBackInWebview");
 #endif
 }
 

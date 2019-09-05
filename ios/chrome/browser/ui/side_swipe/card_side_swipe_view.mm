@@ -106,7 +106,7 @@ const CGFloat kResizeFactor = 4;
       [[background bottomAnchor] constraintEqualToAnchor:self.bottomAnchor]
     ]];
 
-    background.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
+    background.backgroundColor = [UIColor colorNamed:kGridBackgroundColor];
 
     _rightCard =
         [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin];

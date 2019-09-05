@@ -210,9 +210,8 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
-  ScopedObserver<content::RenderProcessHost,
-                 UIThreadWorkerResponseCallbackWrapper>
-      observer_;
+  ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
+      observer_{this};
   content::RenderProcessHost* const render_process_host_;
   const int worker_thread_id_;
   base::WeakPtrFactory<UIThreadWorkerResponseCallbackWrapper> weak_ptr_factory_{

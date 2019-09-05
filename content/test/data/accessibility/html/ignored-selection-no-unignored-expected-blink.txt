@@ -2,6 +2,8 @@ rootWebArea
 ++genericContainer ignored
 ++++genericContainer ignored
 ++++++genericContainer ignored invisible
+++++++++staticText ignored invisible name='Some ignored text'
 ++++++genericContainer ignored invisible
+++++++++staticText ignored invisible name='this text is also ignored'
 ++++staticText name='Done' TreeData.textSelEndOffset=0
 ++++++inlineTextBox name='Done'

@@ -110,6 +110,10 @@ class BinaryUploadService {
   // called on the UI thread.
   void UploadForDeepScanning(std::unique_ptr<Request> request);
 
+  // Returns whether a download should be blocked based on file size alone. It
+  // checks the enterprise policy BlockLargeFileTransfer to decide this.
+  static bool ShouldBlockFileSize(size_t file_size);
+
  private:
   friend class BinaryUploadServiceTest;
 

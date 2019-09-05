@@ -1432,6 +1432,31 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   EXPECT_FALSE(GetExpectCTState(&state, "simple-entry.example.com", &ct_state));
 }
 
+TEST_F(TransportSecurityStateTest, HstsHostBypassList) {
+  SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
+
+  TransportSecurityState::STSState sts_state;
+  TransportSecurityState::PKPState pkp_state;
+
+  std::string preloaded_tld = "example";
+  std::string subdomain = "sub.example";
+
+  {
+    TransportSecurityState state;
+    // Check that "example" is preloaded with subdomains.
+    EXPECT_TRUE(state.ShouldUpgradeToSSL(preloaded_tld));
+    EXPECT_TRUE(state.ShouldUpgradeToSSL(subdomain));
+  }
+
+  {
+    // Add "example" to the bypass list.
+    TransportSecurityState state({preloaded_tld});
+    EXPECT_FALSE(state.ShouldUpgradeToSSL(preloaded_tld));
+    // The preloaded entry should still apply to the subdomain.
+    EXPECT_TRUE(state.ShouldUpgradeToSSL(subdomain));
+  }
+}
+
 // Tests that TransportSecurityState always consults the RequireCTDelegate,
 // if supplied.
 TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {

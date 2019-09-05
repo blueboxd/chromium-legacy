@@ -282,7 +282,7 @@ TEST_F(PaymentRequestAddressEditMediatorTest, ValidateFieldInvalidValue) {
       initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
                    fieldType:EditorFieldTypeTextField
                        label:@""
-                       value:@"1506853121"  // Missing one last digit.
+                       value:@"15068531"  // It is too short.
                     required:YES];
   NSString* validationError =
       [mediator paymentRequestEditViewController:nil

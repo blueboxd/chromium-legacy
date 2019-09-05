@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "components/crash/core/common/crash_key.h"
+#include "media/audio/audio_device_description.h"
 #include "services/audio/input_stream.h"
 #include "services/audio/local_muter.h"
 #include "services/audio/loopback_stream.h"
@@ -128,7 +129,11 @@ void StreamFactory::CreateOutputStream(
   // See //chromecast/media/cast_audio_manager.h for more information.
   const std::string device_id_or_group_id =
 #if defined(IS_CHROMECAST)
-      (group_id.ToString().empty()) ? output_device_id : group_id.ToString();
+      (::media::AudioDeviceDescription::IsCommunicationsDevice(
+           output_device_id) ||
+       group_id.is_empty())
+          ? output_device_id
+          : group_id.ToString();
 #else
       output_device_id;
 #endif

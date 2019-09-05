@@ -12,6 +12,15 @@
 #include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/public/navigation_observer.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "weblayer/browser/java/jni/NavigationControllerImpl_jni.h"
+#endif
+
+#if defined(OS_ANDROID)
+using base::android::AttachCurrentThread;
+#endif
+
 namespace weblayer {
 
 NavigationControllerImpl::NavigationControllerImpl(
@@ -20,6 +29,31 @@ NavigationControllerImpl::NavigationControllerImpl(
       browser_controller_(browser_controller) {}
 
 NavigationControllerImpl::~NavigationControllerImpl() = default;
+
+#if defined(OS_ANDROID)
+void NavigationControllerImpl::SetNavigationControllerImpl(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& java_controller) {
+  java_controller_.Reset(env, java_controller);
+}
+
+void NavigationControllerImpl::Navigate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& url) {
+  Navigate(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+NavigationControllerImpl::GetNavigationEntryDisplayUri(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int index) {
+  return base::android::ScopedJavaLocalRef<jstring>(
+      base::android::ConvertUTF8ToJavaString(
+          env, GetNavigationEntryDisplayURL(index).spec()));
+}
+#endif
 
 void NavigationControllerImpl::AddObserver(NavigationObserver* observer) {
   observers_.AddObserver(observer);
@@ -84,6 +118,15 @@ void NavigationControllerImpl::DidStartNavigation(
   navigation_map_[navigation_handle] =
       std::make_unique<NavigationImpl>(navigation_handle);
   auto* navigation = navigation_map_[navigation_handle].get();
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_NavigationControllerImpl_createNavigation(
+        env, java_controller_, reinterpret_cast<jlong>(navigation));
+    Java_NavigationControllerImpl_navigationStarted(
+        env, java_controller_, navigation->java_navigation());
+  }
+#endif
   for (auto& observer : observers_)
     observer.NavigationStarted(navigation);
 }
@@ -95,6 +138,12 @@ void NavigationControllerImpl::DidRedirectNavigation(
 
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    Java_NavigationControllerImpl_navigationRedirected(
+        AttachCurrentThread(), java_controller_, navigation->java_navigation());
+  }
+#endif
   for (auto& observer : observers_)
     observer.NavigationRedirected(navigation);
 }
@@ -106,6 +155,12 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
 
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    Java_NavigationControllerImpl_navigationCommitted(
+        AttachCurrentThread(), java_controller_, navigation->java_navigation());
+  }
+#endif
   for (auto& observer : observers_)
     observer.NavigationCommitted(navigation);
 }
@@ -119,14 +174,38 @@ void NavigationControllerImpl::DidFinishNavigation(
   auto* navigation = navigation_map_[navigation_handle].get();
   if (navigation_handle->GetNetErrorCode() == net::OK &&
       !navigation_handle->IsErrorPage()) {
+#if defined(OS_ANDROID)
+    if (java_controller_) {
+      Java_NavigationControllerImpl_navigationCompleted(
+          AttachCurrentThread(), java_controller_,
+          navigation->java_navigation());
+    }
+#endif
     for (auto& observer : observers_)
       observer.NavigationCompleted(navigation);
   } else {
+#if defined(OS_ANDROID)
+    if (java_controller_) {
+      Java_NavigationControllerImpl_navigationFailed(
+          AttachCurrentThread(), java_controller_,
+          navigation->java_navigation());
+    }
+#endif
     for (auto& observer : observers_)
       observer.NavigationFailed(navigation);
   }
 
   navigation_map_.erase(navigation_map_.find(navigation_handle));
 }
+
+#if defined(OS_ANDROID)
+static jlong JNI_NavigationControllerImpl_GetNavigationController(
+    JNIEnv* env,
+    jlong browserController) {
+  return reinterpret_cast<jlong>(
+      reinterpret_cast<BrowserController*>(browserController)
+          ->GetNavigationController());
+}
+#endif
 
 }  // namespace weblayer

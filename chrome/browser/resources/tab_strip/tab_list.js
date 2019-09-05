@@ -18,6 +18,15 @@ class TabListElement extends CustomElement {
   constructor() {
     super();
 
+    /**
+     * A chain of promises that the tab list needs to keep track of. The chain
+     * is useful in cases when the list needs to wait for all animations to
+     * finish in order to get accurate pixels (such as getting the position of a
+     * tab) or accurate element counts.
+     * @type {!Promise}
+     */
+    this.animationPromises = Promise.resolve();
+
     /** @private {!Element} */
     this.pinnedTabsContainerElement_ =
         /** @type {!Element} */ (
@@ -36,6 +45,14 @@ class TabListElement extends CustomElement {
 
     /** @private {number} */
     this.windowId_;
+  }
+
+  /**
+   * @param {!Promise} promise
+   * @private
+   */
+  addAnimationPromise_(promise) {
+    this.animationPromises = this.animationPromises.then(() => promise);
   }
 
   connectedCallback() {
@@ -140,7 +157,9 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    this.insertTabOrMoveTo_(this.createTabElement_(tab), tab.index);
+    const tabElement = this.createTabElement_(tab);
+    this.insertTabOrMoveTo_(tabElement, tab.index);
+    this.addAnimationPromise_(tabElement.slideIn());
   }
 
   /**
@@ -171,8 +190,11 @@ class TabListElement extends CustomElement {
 
     const tabElement = this.findTabElement_(tabId);
     if (tabElement) {
-      tabElement.remove();
-      this.updatePinnedTabsState_();
+      this.addAnimationPromise_(new Promise(async resolve => {
+        await tabElement.slideOut();
+        this.updatePinnedTabsState_();
+        resolve();
+      }));
     }
   }
 

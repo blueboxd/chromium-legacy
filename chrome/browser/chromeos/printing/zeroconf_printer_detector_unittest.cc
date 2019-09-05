@@ -334,9 +334,17 @@ class ZeroconfPrinterDetectorTest : public testing::Test {
       const std::vector<PrinterDetector::DetectedPrinter>& printers) {
     // The last observer callback should tell us the same thing as the querying
     // the detector manually.
-    ASSERT_GE(printers_found_callbacks_.size(), 1U);
+    ASSERT_TRUE(!printers_found_callbacks_.empty());
     ExpectPrintersEq(printers, printers_found_callbacks_.back());
     ExpectPrintersEq(printers, detector_->GetPrinters());
+  }
+
+  // Expect that the detected printers list is empty.
+  void ExpectPrintersEmpty() {
+    // Assert that the most recent callbacks are empty.
+    ASSERT_TRUE(!printers_found_callbacks_.empty());
+    ASSERT_TRUE(printers_found_callbacks_.back().empty());
+    ASSERT_TRUE(detector_->GetPrinters().empty());
   }
 
   // Expect that the given vectors have the same contents.  The ordering
@@ -552,7 +560,7 @@ TEST_F(ZeroconfPrinterDetectorTest, ServiceTypePriorities) {
   ipp_lister_->Remove("Printer5");
   task_environment_.RunUntilIdle();
   // No entries left.
-  ExpectPrintersAre({});
+  ExpectPrintersEmpty();
 }
 
 // Test that cache flushes appropriately remove entries.
@@ -577,46 +585,23 @@ TEST_F(ZeroconfPrinterDetectorTest, CacheFlushes) {
   ipps_lister_->Clear();
 
   task_environment_.RunUntilIdle();
-  // With the IPPS lister cleared, Printer7 should fall back to the IPP listing.
-  ExpectPrintersAre({MakeExpectedPrinter("Printer6", 0),
-                     MakeExpectedPrinter("Printer7", 0),
-                     MakeExpectedPrinter("Printer8", kFlagIPPE),
-                     MakeExpectedPrinter("Printer9", kFlagSSL | kFlagIPPE),
-                     MakeExpectedPrinter("Printer10", kFlagSSL | kFlagIPPE)});
+  // With the IPPS lister cleared, all printers should be cleared.
+  ExpectPrintersEmpty();
 
   // We should have restarted discovery after dealing with the cache flush.
   EXPECT_TRUE(ipps_lister_->discovery_started());
 
-  ipp_lister_->Clear();
-  task_environment_.RunUntilIdle();
-  // With the IPP lister cleared, Printers 6 and 7 no longer should appear.
-  ExpectPrintersAre({MakeExpectedPrinter("Printer8", kFlagIPPE),
-                     MakeExpectedPrinter("Printer9", kFlagSSL | kFlagIPPE),
-                     MakeExpectedPrinter("Printer10", kFlagSSL | kFlagIPPE)});
-  EXPECT_TRUE(ipps_lister_->discovery_started());
-
-  ippse_lister_->Clear();
-  task_environment_.RunUntilIdle();
-  // With the IPPSE lister cleared, Printer10 should disappear, and Printer9
-  // should fall back to the IPPE.
-  ExpectPrintersAre({MakeExpectedPrinter("Printer8", kFlagIPPE),
-                     MakeExpectedPrinter("Printer9", kFlagIPPE)});
-  EXPECT_TRUE(ippse_lister_->discovery_started());
-
   // Just for kicks, announce something new at this point.
   ipps_lister_->Announce("Printer11");
   task_environment_.RunUntilIdle();
-  ExpectPrintersAre({MakeExpectedPrinter("Printer8", kFlagIPPE),
-                     MakeExpectedPrinter("Printer9", kFlagIPPE),
-                     MakeExpectedPrinter("Printer11", kFlagSSL)});
-
-  // Clear out the IPPE lister, leaving only the new printer we announced
-  // on the IPPS lister.
-  ippe_lister_->Clear();
-  task_environment_.RunUntilIdle();
-  // With the IPPSE lister cleared, Printer10 should disappear, and Printer9
-  // should fall back to the IPPE entry.
   ExpectPrintersAre({MakeExpectedPrinter("Printer11", kFlagSSL)});
+
+  // Clear out the IPPS lister, which will clear all printers too.
+  ipps_lister_->Clear();
+  task_environment_.RunUntilIdle();
+
+  // With the IPPS lister cleared, Printer11 should disappear.
+  ExpectPrintersEmpty();
   EXPECT_TRUE(ippe_lister_->discovery_started());
 }
 
@@ -647,18 +632,8 @@ TEST_F(ZeroconfPrinterDetectorTest, GeneralMixedTraffic) {
   ipp_lister_->Remove("NonexistantPrinter");
   ipps_lister_->Remove("Printer12");
   ipps_lister_->Clear();
-  ipp_lister_->Announce("Printer17");
   task_environment_.RunUntilIdle();
-  ExpectPrintersAre({MakeExpectedPrinter("Printer12", 0),
-                     MakeExpectedPrinter("Printer13", kFlagIPPE),
-                     MakeExpectedPrinter("Printer14", kFlagSSL | kFlagIPPE),
-                     MakeExpectedPrinter("Printer16", 0),
-                     MakeExpectedPrinter("Printer17", 0)});
-  ipp_lister_->Clear();
-  ippse_lister_->Clear();
-  ippe_lister_->Clear();
-  task_environment_.RunUntilIdle();
-  ExpectPrintersAre({});
+  ExpectPrintersEmpty();
 }
 
 }  // namespace

@@ -43,7 +43,7 @@ enum {
   kOsAndroid = 1 << 4,
   kOsCrOSOwnerOnly = 1 << 5,
   kOsIos = 1 << 6,
-  kEnterprise = 1 << 7,
+  kDeprecated = 1 << 7,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -

@@ -10,6 +10,9 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
@@ -19,6 +22,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -27,6 +31,7 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "skia/ext/skia_utils_ios.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,6 +51,11 @@
 // Whether an overlay is currently presented over the web content area.
 @property(nonatomic, assign, getter=isWebContentAreaShowingOverlay)
     BOOL webContentAreaShowingOverlay;
+
+// Whether an HTTP authentication dialog is currently presented over the
+// web content area.
+@property(nonatomic, assign, getter=isWebContentAreaShowingHTTPAuthDialog)
+    BOOL webContentAreaShowingHTTPAuthDialog;
 
 @end
 
@@ -136,16 +146,19 @@
   _webState = nullptr;
 }
 
-#pragma mark - OverlayPresesenterObserving
+#pragma mark - OverlayPresenterObserving
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
     willShowOverlayForRequest:(OverlayRequest*)request {
   self.webContentAreaShowingOverlay = YES;
+  self.webContentAreaShowingHTTPAuthDialog =
+      !!request->GetConfig<HTTPAuthOverlayRequestConfig>();
 }
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
     didHideOverlayForRequest:(OverlayRequest*)request {
   self.webContentAreaShowingOverlay = NO;
+  self.webContentAreaShowingHTTPAuthDialog = NO;
 }
 
 #pragma mark - WebStateListObserver
@@ -248,6 +261,17 @@
   [self.consumer updateLocationShareable:[self isSharingEnabled]];
 }
 
+- (void)setWebContentAreaShowingHTTPAuthDialog:
+    (BOOL)webContentAreaShowingHTTPAuthDialog {
+  if (_webContentAreaShowingHTTPAuthDialog ==
+      webContentAreaShowingHTTPAuthDialog) {
+    return;
+  }
+  _webContentAreaShowingHTTPAuthDialog = webContentAreaShowingHTTPAuthDialog;
+  [self notifyConsumerOfChangedLocation];
+  [self notifyConsumerOfChangedSecurityIcon];
+}
+
 #pragma mark - private
 
 - (void)notifyConsumerOfChangedLocation {
@@ -263,14 +287,14 @@
 
 - (void)notifyConsumerOfChangedSecurityIcon {
   [self.consumer updateLocationIcon:[self currentLocationIcon]
-                 securityStatusText:base::SysUTF16ToNSString(
-                                        self.locationBarModel
-                                            ->GetSecureAccessibilityText())];
+                 securityStatusText:[self securityStatusText]];
 }
 
 #pragma mark Location helpers
 
 - (NSString*)currentLocationString {
+  if (self.webContentAreaShowingHTTPAuthDialog)
+    return l10n_util::GetNSString(IDS_IOS_LOCATION_BAR_SIGN_IN);
   base::string16 string = self.locationBarModel->GetURLForDisplay();
   return base::SysUTF16ToNSString(string);
 }
@@ -278,6 +302,8 @@
 // Some URLs (data://) should have their tail clipped when presented; while for
 // others (http://) it would be more appropriate to clip the head.
 - (BOOL)locationShouldClipTail {
+  if (self.webContentAreaShowingHTTPAuthDialog)
+    return YES;
   GURL url = self.locationBarModel->GetURL();
   return url.SchemeIs(url::kDataScheme);
 }
@@ -285,7 +311,8 @@
 #pragma mark Security status icon helpers
 
 - (UIImage*)currentLocationIcon {
-  if (!self.locationBarModel->ShouldDisplayURL()) {
+  if (!self.locationBarModel->ShouldDisplayURL() ||
+      self.webContentAreaShowingHTTPAuthDialog) {
     return nil;
   }
 
@@ -301,6 +328,14 @@
 - (UIImage*)imageForOfflinePage {
   return [[UIImage imageNamed:@"location_bar_offline"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
+
+// The status text associated with the current location icon.
+- (NSString*)securityStatusText {
+  if (self.webContentAreaShowingHTTPAuthDialog)
+    return nil;
+  return base::SysUTF16ToNSString(
+      self.locationBarModel->GetSecureAccessibilityText());
 }
 
 #pragma mark Shareability helpers

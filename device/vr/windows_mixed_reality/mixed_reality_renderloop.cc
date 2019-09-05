@@ -20,6 +20,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_hstring.h"
 #include "device/vr/test/test_hook.h"
+#include "device/vr/util/transform_utils.h"
 #include "device/vr/windows/d3d11_texture_helper.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_input_helper.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
@@ -499,8 +500,8 @@ mojom::VRPosePtr GetMonoViewData(const HolographicStereoTransform& view) {
 
 struct PoseAndEyeTransform {
   mojom::VRPosePtr pose;
-  gfx::Vector3dF left_offset;
-  gfx::Vector3dF right_offset;
+  gfx::Transform head_from_left_eye;
+  gfx::Transform head_from_right_eye;
 };
 
 PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
@@ -512,25 +513,25 @@ PoseAndEyeTransform GetStereoViewData(const HolographicStereoTransform& view) {
       (left_eye.eye_in_world_space.z() + right_eye.eye_in_world_space.z()) / 2);
 
   // We calculate the overal headset pose to be the slerp of per-eye poses as
-  // calculated by the view transform's decompositions.  Although this works, we
-  // should consider using per-eye rotation as well as translation for eye
-  // parameters. See https://crbug.com/928433 for a similar issue.
+  // calculated by the view transform's decompositions.
   gfx::Quaternion world_to_view_rotation = left_eye.world_to_eye_rotation;
   world_to_view_rotation.Slerp(right_eye.world_to_eye_rotation, 0.5f);
 
   // Calculate new eye offsets.
   PoseAndEyeTransform ret;
-  ret.left_offset = left_eye.eye_in_world_space - center;
-  ret.right_offset = right_eye.eye_in_world_space - center;
+  gfx::Vector3dF left_offset = left_eye.eye_in_world_space - center;
+  gfx::Vector3dF right_offset = right_eye.eye_in_world_space - center;
 
   gfx::Transform transform(world_to_view_rotation);  // World to view.
   transform.Transpose();                             // Now it is view to world.
 
-  transform.TransformVector(&(ret.left_offset));  // Offset is now in view space
-  transform.TransformVector(&(ret.right_offset));
-
-  // TODO(https://crbug.com/928433): We don't currently support per-eye rotation
-  // in the mojo interface, but we should.
+  // TODO(crbug.com/980791): Get the actual eye-to-head transforms instead of
+  // building them from just the translation components so that angled screens
+  // are handled properly.
+  transform.TransformVector(&left_offset);  // Offset is now in view space
+  transform.TransformVector(&right_offset);
+  ret.head_from_left_eye = vr_utils::MakeTranslationTransform(left_offset);
+  ret.head_from_right_eye = vr_utils::MakeTranslationTransform(right_offset);
 
   ret.pose = mojom::VRPose::New();
 
@@ -793,21 +794,21 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     PoseAndEyeTransform pose_and_eye_transform = GetStereoViewData(view);
     ret->pose = std::move(pose_and_eye_transform.pose);
 
-    if (current_display_info_->left_eye->offset !=
-            pose_and_eye_transform.left_offset ||
-        current_display_info_->right_eye->offset !=
-            pose_and_eye_transform.right_offset) {
-      current_display_info_->left_eye->offset =
-          std::move(pose_and_eye_transform.left_offset);
-      current_display_info_->right_eye->offset =
-          std::move(pose_and_eye_transform.right_offset);
+    if (current_display_info_->left_eye->head_from_eye !=
+            pose_and_eye_transform.head_from_left_eye ||
+        current_display_info_->right_eye->head_from_eye !=
+            pose_and_eye_transform.head_from_right_eye) {
+      current_display_info_->left_eye->head_from_eye =
+          std::move(pose_and_eye_transform.head_from_left_eye);
+      current_display_info_->right_eye->head_from_eye =
+          std::move(pose_and_eye_transform.head_from_right_eye);
       send_new_display_info = true;
     }
   } else {
     ret->pose = GetMonoViewData(view);
-    gfx::Vector3dF offset;
-    if (current_display_info_->left_eye->offset != offset) {
-      current_display_info_->left_eye->offset = offset;
+    gfx::Transform head_from_eye;
+    if (current_display_info_->left_eye->head_from_eye != head_from_eye) {
+      current_display_info_->left_eye->head_from_eye = head_from_eye;
       send_new_display_info = true;
     }
   }

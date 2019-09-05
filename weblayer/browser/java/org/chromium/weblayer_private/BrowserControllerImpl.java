@@ -14,13 +14,13 @@ import android.widget.LinearLayout;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
@@ -38,6 +38,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     private ProfileImpl mProfile;
     private WebContents mWebContents;
     private BrowserObserverProxy mBrowserObserverProxy;
+    private NavigationControllerImpl mNavigationController;
     private View mTopView;
 
     private static class InternalAccessDelegateImpl
@@ -92,6 +93,18 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         mWebContents.onShow();
     }
 
+    long getNativeBrowserController() {
+        return mNativeBrowserController;
+    }
+
+    @Override
+    public NavigationControllerImpl createNavigationController(INavigationControllerClient client) {
+        // This should only be called once.
+        assert mNavigationController == null;
+        mNavigationController = new NavigationControllerImpl(this, client);
+        return mNavigationController;
+    }
+
     @Override
     public void setClient(IBrowserControllerClient client) {
         mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
@@ -100,6 +113,8 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     @Override
     public void destroy() {
         if (mBrowserObserverProxy != null) mBrowserObserverProxy.destroy();
+        mBrowserObserverProxy = null;
+        mNavigationController = null;
         nativeDeleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;
     }
@@ -120,12 +135,6 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     @Override
     public IObjectWrapper onCreateView() {
         return ObjectWrapper.wrap(mLinearLayout);
-    }
-
-    // TODO: this is temporary, move to NavigationControllerImpl.
-    @Override
-    public void navigate(String uri) {
-        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(uri));
     }
 
     private static native long nativeCreateBrowserController(long profile);

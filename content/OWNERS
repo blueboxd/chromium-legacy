@@ -17,6 +17,7 @@ per-file BUILD.gn=*
 
 # For threading (BrowserThread, BrowserMainLoop, ThreadPool, etc.)
 per-file *browser_main_loop*=gab@chromium.org
+per-file *browser_task_environment*=gab@chromium.org
 per-file *browser_thread*=gab@chromium.org
 
 # Mac Sandbox profiles.

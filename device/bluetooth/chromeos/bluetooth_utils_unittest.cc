@@ -71,8 +71,8 @@ class BluetoothUtilsTest : public testing::Test {
     EXPECT_EQ(num_expected_remaining_devices, filtered_device_list.size());
   }
 
-  void EnableAggressiveAppearanceFilter() {
-    feature_list_.InitAndEnableFeature(
+  void DisableAggressiveAppearanceFilter() {
+    feature_list_.InitAndDisableFeature(
         chromeos::features::kBluetoothAggressiveAppearanceFilter);
   }
 
@@ -180,8 +180,6 @@ TEST_F(
 TEST_F(
     BluetoothUtilsTest,
     TestFilterBluetoothDeviceList_FilterKnown_KeepDualDevicesWithNamesAndAppearances) {
-  EnableAggressiveAppearanceFilter();
-
   auto* mock_bluetooth_device =
       AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
   EXPECT_CALL(*mock_bluetooth_device, GetDeviceType)
@@ -194,6 +192,8 @@ TEST_F(
 TEST_F(
     BluetoothUtilsTest,
     TestFilterBluetoothDeviceList_FilterKnown_DualDevicesWithoutAppearances_KeepWithFilterFlagDisabled) {
+  DisableAggressiveAppearanceFilter();
+
   AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
 
   VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
@@ -203,8 +203,6 @@ TEST_F(
 TEST_F(
     BluetoothUtilsTest,
     TestFilterBluetoothDeviceList_FilterKnown_DualDevicesWithoutAppearances_RemoveWithFilterFlagEnabled) {
-  EnableAggressiveAppearanceFilter();
-
   AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
 
   VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
@@ -214,6 +212,8 @@ TEST_F(
 TEST_F(
     BluetoothUtilsTest,
     TestFilterBluetoothDeviceList_FilterKnown_AppearanceComputer_KeepWithFilterFlagDisabled) {
+  DisableAggressiveAppearanceFilter();
+
   auto* mock_bluetooth_device =
       AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_CLASSIC);
   ON_CALL(*mock_bluetooth_device, GetDeviceType)
@@ -226,8 +226,6 @@ TEST_F(
 TEST_F(
     BluetoothUtilsTest,
     TestFilterBluetoothDeviceList_FilterKnown_AppearanceComputer_RemoveWithFilterFlagEnabled) {
-  EnableAggressiveAppearanceFilter();
-
   auto* mock_bluetooth_device_1 =
       AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_CLASSIC);
   EXPECT_CALL(*mock_bluetooth_device_1, GetDeviceType)

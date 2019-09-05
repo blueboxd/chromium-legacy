@@ -692,14 +692,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       new NetworkThrottlingObserver(g_browser_process->local_state()));
 
   arc_service_launcher_ = std::make_unique<arc::ArcServiceLauncher>();
-  arc_voice_interaction_controller_client_ =
-      std::make_unique<arc::VoiceInteractionControllerClient>();
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  // Assistant has to be initialized before session_controller_client to avoid
-  // race of SessionChanged event and assistant_client initialization.
-  assistant_client_ = std::make_unique<AssistantClient>();
-#endif
 
   ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
@@ -779,8 +771,20 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   AccessibilityManager::Initialize();
 
   // Initialize magnification manager before ash tray is created. And this
-  // must be placed after UserManager::SessionStarted();
+  // must be placed after UserManager initialization.
   MagnificationManager::Initialize();
+
+  // Requires UserManager.
+  arc_voice_interaction_controller_client_ =
+      std::make_unique<arc::VoiceInteractionControllerClient>();
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  // Assistant has to be initialized before
+  // ChromeBrowserMainExtraPartsAsh::session_controller_client_ to avoid race of
+  // SessionChanged event and assistant_client initialization. It must come
+  // after VoiceInteractionControllerClient.
+  assistant_client_ = std::make_unique<AssistantClient>();
+#endif
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -1068,11 +1072,9 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   auto_screen_brightness_controller_ =
       std::make_unique<power::auto_screen_brightness::Controller>();
 
-  // Enable Chrome OS USB detection only if a USB feature is turned on.
-  if (base::FeatureList::IsEnabled(features::kCrostiniUsbSupport)) {
-    cros_usb_detector_ = std::make_unique<CrosUsbDetector>();
-    cros_usb_detector_->ConnectToDeviceManager();
-  }
+  // Enable Chrome OS USB detection.
+  cros_usb_detector_ = std::make_unique<CrosUsbDetector>();
+  cros_usb_detector_->ConnectToDeviceManager();
 
   crostini_unsupported_action_notifier_ =
       std::make_unique<crostini::CrostiniUnsupportedActionNotifier>();

@@ -158,7 +158,7 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
 
 IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
     leveldb::Status result)
-    : IndexedDBBackingStore::Transaction(nullptr), result_(result) {}
+    : IndexedDBBackingStore::Transaction(nullptr, true), result_(result) {}
 void IndexedDBFakeBackingStore::FakeTransaction::Begin(
     std::vector<ScopeLock> locks) {}
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
@@ -175,7 +175,7 @@ uint64_t IndexedDBFakeBackingStore::FakeTransaction::GetTransactionSize() {
 void IndexedDBFakeBackingStore::FakeTransaction::RollbackAndMaybeTearDown() {}
 
 std::unique_ptr<IndexedDBBackingStore::Transaction>
-IndexedDBFakeBackingStore::CreateTransaction() {
+IndexedDBFakeBackingStore::CreateTransaction(bool relaxed_durability) {
   return std::make_unique<FakeTransaction>(leveldb::Status::OK());
 }
 

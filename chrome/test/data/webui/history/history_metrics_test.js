@@ -88,17 +88,12 @@ suite('Metrics', function() {
     // period, with no regard to DST shifts.
     const weekAgo =
         new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000 - 1);
-    // Convert the date to ISO8601 format, i.e. YYYY-MM-DD. We can take
-    // advantage of the fact that the Belgian locale uses exactly this format.
-    const weekAgoISO = weekAgo.toLocaleString(
-        'be', {year: 'numeric', month: '2-digit', day: '2-digit'});
 
-    const historyEntry =
-        createHistoryEntry(weekAgoISO, 'http://www.google.com');
+    const historyEntry = createHistoryEntry(weekAgo, 'http://www.google.com');
     historyEntry.starred = true;
-    app.historyResult(createHistoryInfo(), [
-      createHistoryEntry(weekAgoISO, 'http://www.example.com'), historyEntry
-    ]);
+    app.historyResult(
+        createHistoryInfo(),
+        [createHistoryEntry(weekAgo, 'http://www.example.com'), historyEntry]);
 
     return test_util.flushTasks()
         .then(() => {
@@ -110,6 +105,10 @@ suite('Metrics', function() {
           assertEquals(1, histogramMap['HistoryPage.ClickPosition'][1]);
           assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][1]);
 
+          // TODO(https://crbug.com/1000573): Log the contents of this histogram
+          // for debugging in case the flakiness reoccurs.
+          console.log(Object.keys(histogramMap['HistoryPage.ClickAgeInDays']));
+
           // The "age in days" histogram should record 8 days, since the history
           // entry was created between 7 and 8 days ago and we round the
           // recorded value up.
@@ -120,9 +119,9 @@ suite('Metrics', function() {
           assertEquals(1, actionMap['Search']);
           app.set('queryState_.incremental', true);
           app.historyResult(createHistoryInfo('goog'), [
-            createHistoryEntry(weekAgoISO, 'http://www.google.com'),
-            createHistoryEntry(weekAgoISO, 'http://www.google.com'),
-            createHistoryEntry(weekAgoISO, 'http://www.google.com')
+            createHistoryEntry(weekAgo, 'http://www.google.com'),
+            createHistoryEntry(weekAgo, 'http://www.google.com'),
+            createHistoryEntry(weekAgo, 'http://www.google.com')
           ]);
           return test_util.flushTasks();
         })

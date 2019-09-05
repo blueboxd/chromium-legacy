@@ -25,10 +25,6 @@
 class SkColorSpace;
 class SkPromiseImageTexture;
 
-namespace gl {
-struct GLVersionInfo;
-}
-
 namespace gpu {
 class MailboxManager;
 class SharedContextState;
@@ -77,7 +73,6 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
       gpu::SharedContextState* context_state,
       gpu::SharedImageRepresentationFactory* representation_factory,
       gpu::MailboxManager* mailbox_manager,
-      const gl::GLVersionInfo* gl_version_info,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores);
   void EndAccessIfNecessary();

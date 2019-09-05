@@ -47,6 +47,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // still replaced with |nullopt|.
   NGLayoutResult(const NGLayoutResult& other,
                  const NGConstraintSpace& new_space,
+                 const NGMarginStrut& new_end_margin_strut,
                  LayoutUnit bfc_line_offset,
                  base::Optional<LayoutUnit> bfc_block_offset,
                  LayoutUnit block_offset_delta);
@@ -182,6 +183,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // block-size on them).
   bool HasDescendantThatDependsOnPercentageBlockSize() const {
     return bitfields_.has_descendant_that_depends_on_percentage_block_size;
+  }
+
+  // Returns true if this subtree modified the incoming margin-strut (i.e.
+  // appended a non-zero margin).
+  bool SubtreeModifiedMarginStrut() const {
+    return bitfields_.subtree_modified_margin_strut;
   }
 
   // Returns true if the space stored with this layout result, is valid.
@@ -330,6 +337,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
           is_initial_block_size_indefinite(false),
           has_descendant_that_depends_on_percentage_block_size(
               has_descendant_that_depends_on_percentage_block_size),
+          subtree_modified_margin_strut(false),
           initial_break_before(static_cast<unsigned>(EBreakBetween::kAuto)),
           final_break_after(static_cast<unsigned>(EBreakBetween::kAuto)),
           status(static_cast<unsigned>(kSuccess)) {}
@@ -348,6 +356,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
     unsigned is_initial_block_size_indefinite : 1;
     unsigned has_descendant_that_depends_on_percentage_block_size : 1;
+
+    unsigned subtree_modified_margin_strut : 1;
 
     unsigned initial_break_before : 4;  // EBreakBetween
     unsigned final_break_after : 4;     // EBreakBetween

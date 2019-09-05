@@ -31,14 +31,18 @@
  * '#cr-container-shadow-[top/bottom].has-shadow', or define their own styles.
  */
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js'
+// clang-format on
+
 /** @enum {string} */
-const CrContainerShadowSide = {
+/* #export */ const CrContainerShadowSide = {
   TOP: 'top',
   BOTTOM: 'bottom',
 };
 
 /** @polymerBehavior */
-const CrContainerShadowBehavior = {
+/* #export */ const CrContainerShadowBehavior = {
   /** @private {?IntersectionObserver} */
   intersectionObserver_: null,
 

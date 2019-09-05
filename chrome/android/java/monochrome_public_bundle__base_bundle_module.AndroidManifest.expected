@@ -966,6 +966,11 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <data android:scheme="https"/>
       </intent-filter>
+      <intent-filter>
+        <action
+            android:name="android.support.customtabs.action.ACTION_MANAGE_TRUSTED_WEB_ACTIVITY_DATA"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
     </activity>
     <activity
         android:exported="true"

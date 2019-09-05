@@ -235,7 +235,7 @@ cr.define('history', function() {
       }
 
       const ageInDays = Math.ceil(
-          (new Date() - new Date(this.item.dateRelativeDay)) / 1000 /* s/ms */ /
+          (new Date() - new Date(this.item.time)) / 1000 /* s/ms */ /
           60 /* m/s */ / 60 /* h/m */ / 24 /* d/h */);
 
       browserService.recordHistogram(

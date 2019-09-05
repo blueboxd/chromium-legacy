@@ -466,6 +466,33 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method readAsBinaryString
 [Worker]     method readAsDataURL
 [Worker]     method readAsText
+[Worker] interface FileSystemDirectoryHandle : FileSystemHandle
+[Worker]     static method getSystemDirectory
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getDirectory
+[Worker]     method getEntries
+[Worker]     method getFile
+[Worker]     method removeEntry
+[Worker] interface FileSystemFileHandle : FileSystemHandle
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method createWriter
+[Worker]     method getFile
+[Worker] interface FileSystemHandle
+[Worker]     attribute @@toStringTag
+[Worker]     getter isDirectory
+[Worker]     getter isFile
+[Worker]     getter name
+[Worker]     method constructor
+[Worker]     method queryPermission
+[Worker]     method requestPermission
+[Worker] interface FileSystemWriter
+[Worker]     attribute @@toStringTag
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method truncate
+[Worker]     method write
 [Worker] interface FontFace
 [Worker]     attribute @@toStringTag
 [Worker]     getter display

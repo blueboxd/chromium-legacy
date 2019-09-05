@@ -33,8 +33,9 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
@@ -397,10 +398,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Updates the frame color overlay to match the highlight ad setting.
   void UpdateAdHighlight();
 
-  // Binds |request| and prevents resource loading until either the frame is
-  // navigated or the request pipe is closed.
+  // Binds |receiver| and prevents resource loading until either the frame is
+  // navigated or the receiver pipe is closed.
   void PauseSubresourceLoading(
-      blink::mojom::blink::PauseSubresourceLoadingHandleRequest request);
+      mojo::PendingReceiver<blink::mojom::blink::PauseSubresourceLoadingHandle>
+          receiver);
 
   void ResumeSubresourceLoading();
 
@@ -517,8 +519,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete
   // them explicitly or the pipe closing to delete them.
-  mojo::StrongBindingSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
-      pause_handle_bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
+      pause_handle_receivers_;
 
   mutable FrameLoader loader_;
 

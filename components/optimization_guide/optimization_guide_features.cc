@@ -74,6 +74,15 @@ size_t MaxHostsForRecordingSuccessfullyCovered() {
       "max_hosts_for_recording_successfully_covered", 200);
 }
 
+double MinTopHostEngagementScoreThreshold() {
+  // The default initial site engagement score for a navigation is 3.0, 1.5
+  // points for a navigation from the omnibox and 1.5 points for the first
+  // navigation of the day.
+  return GetFieldTrialParamByFeatureAsDouble(
+      features::kOptimizationHintsFetching,
+      "min_top_host_engagement_score_threshold", 3.0);
+}
+
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
       features::kOptimizationHintsFetching,

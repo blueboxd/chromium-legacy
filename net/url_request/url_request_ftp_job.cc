@@ -102,8 +102,8 @@ void URLRequestFtpJob::Start() {
               proxy_resolution_service_);
     rv = proxy_resolution_service_->ResolveProxy(
         request_->url(), "GET", &proxy_info_,
-        base::Bind(&URLRequestFtpJob::OnResolveProxyComplete,
-                   base::Unretained(this)),
+        base::BindOnce(&URLRequestFtpJob::OnResolveProxyComplete,
+                       base::Unretained(this)),
         &proxy_resolve_request_, request_->net_log());
 
     if (rv == ERR_IO_PENDING)
@@ -162,7 +162,8 @@ void URLRequestFtpJob::StartFtpTransaction() {
   if (ftp_transaction_) {
     rv = ftp_transaction_->Start(
         &ftp_request_info_,
-        base::Bind(&URLRequestFtpJob::OnStartCompleted, base::Unretained(this)),
+        base::BindOnce(&URLRequestFtpJob::OnStartCompleted,
+                       base::Unretained(this)),
         request_->net_log(), request_->traffic_annotation());
     if (rv == ERR_IO_PENDING)
       return;

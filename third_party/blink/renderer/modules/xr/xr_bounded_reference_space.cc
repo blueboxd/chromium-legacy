@@ -82,7 +82,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
     bounds_geometry_.clear();
   }
 
-  OnReset();
+  DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
 }
 
 // Transforms a given pose from a "base" reference space used by the XR
@@ -117,7 +117,9 @@ void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {
 }
 
 void XRBoundedReferenceSpace::OnReset() {
-  DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
+  // Anything that would cause an external source to try to tell us that we've
+  // been reset should have also updated the stage_parameters, and thus caused
+  // us to reset via that mechanism instead.
 }
 
 XRBoundedReferenceSpace* XRBoundedReferenceSpace::cloneWithOriginOffset(

@@ -977,7 +977,22 @@ ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(
 
 void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  // The user intended to disable sync, so we need to clear all the data.
+  storage_->ClearData();
+  serialized_explicit_passphrase_key_ = "";
+  keystore_keys_.clear();
+  cryptographer_.CopyFrom(Cryptographer());
+  passphrase_type_ = NigoriSpecifics::UNKNOWN;
+  encrypt_everything_ = false;
+  custom_passphrase_time_ = base::Time();
+  keystore_migration_time_ = base::Time();
+  custom_passphrase_key_derivation_params_ = base::nullopt;
+  for (auto& observer : observers_) {
+    observer.OnCryptographerStateChanged(&cryptographer_);
+  }
+  for (auto& observer : observers_) {
+    observer.OnEncryptedTypesChanged(SensitiveTypes(), false);
+  }
 }
 
 const Cryptographer& NigoriSyncBridgeImpl::GetCryptographerForTesting() const {

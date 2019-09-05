@@ -80,12 +80,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       download::SimpleDownloadManager::DownloadVector* result) override;
   void GetUninitializedActiveDownloadsIfAny(
       download::SimpleDownloadManager::DownloadVector* result) override;
-  void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
-                     std::unique_ptr<download::InputStream> stream,
-                     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-                         url_loader_factory_getter,
-                     const download::DownloadUrlParameters::OnStartedCallback&
-                         on_started) override;
   int RemoveDownloadsByURLAndTime(
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
@@ -138,6 +132,11 @@ class CONTENT_EXPORT DownloadManagerImpl
   download::DownloadItem* GetDownload(uint32_t id) override;
   download::DownloadItem* GetDownloadByGuid(const std::string& guid) override;
   void GetNextId(GetNextIdCallback callback) override;
+
+  void StartDownload(
+      std::unique_ptr<download::DownloadCreateInfo> info,
+      std::unique_ptr<download::InputStream> stream,
+      const download::DownloadUrlParameters::OnStartedCallback& on_started);
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(

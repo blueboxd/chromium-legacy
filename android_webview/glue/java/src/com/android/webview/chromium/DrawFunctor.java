@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 package com.android.webview.chromium;
-import org.chromium.base.annotations.NativeMethods;
 
+import org.chromium.base.annotations.JniIgnoreNatives;
+
+@JniIgnoreNatives
 class DrawFunctor {
     public static long getDrawFnFunctionTable() {
-        return DrawFunctorJni.get().getFunctionTable();
+        return nativeGetFunctionTable();
     }
 
-    @NativeMethods
-    interface Natives {
-        long getFunctionTable();
-    }
+    // The Android framework performs manual JNI registration on this method,
+    // so the method signature cannot change without updating the framework.
+    private static native long nativeGetFunctionTable();
 }

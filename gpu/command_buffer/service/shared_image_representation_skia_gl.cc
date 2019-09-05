@@ -38,7 +38,7 @@ SharedImageRepresentationSkiaGL::Create(
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker) {
   GrBackendTexture backend_texture;
-  if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
+  if (!GetGrBackendTexture(context_state->feature_info(),
                            gl_representation->GetTexture()->target(),
                            backing->size(),
                            gl_representation->GetTexture()->service_id(),

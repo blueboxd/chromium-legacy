@@ -34,7 +34,6 @@
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scrollbar.h"
-#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -664,22 +663,22 @@ void ScrollableArea::CancelProgrammaticScrollAnimation() {
 }
 
 bool ScrollableArea::ShouldScrollOnMainThread() const {
+  return !!(GetMainThreadScrollingReasons() &
+            ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
+}
+
+MainThreadScrollingReasons ScrollableArea::GetMainThreadScrollingReasons()
+    const {
   if (GraphicsLayer* layer = LayerForScrolling()) {
-    // cc::Layer state is set through PaintArtifactCompositor::Update which is
-    // not run until the paint lifecycle phase.
-    DCHECK(!GetDocument() || GetDocument()->Lifecycle().GetState() >=
-                                 DocumentLifecycle::kInPaint);
-    // TODO(pdr): There is no need to read this data off the cc::Layer because
-    // we can query the blink-side property tree instead.
-    uint32_t reasons = layer->CcLayer()->GetMainThreadScrollingReasons();
-    // Should scroll on main thread unless the reason is the one that is set
-    // by the ScrollAnimator, in which case, the animation can still be
-    // scheduled on the compositor.
-    // TODO(ymalik): We have a non-transient "main thread scrolling reason"
-    // that doesn't actually cause shouldScrollOnMainThread() to be true.
-    // This is confusing and should be cleaned up.
-    return !!(reasons &
-              ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
+    // Property tree state is not available until the PrePaint lifecycle stage.
+    DCHECK(GetDocument()->Lifecycle().GetState() >=
+           DocumentLifecycle::kPrePaintClean);
+    if (const auto* scroll = layer->GetPropertyTreeState()
+                                 .Transform()
+                                 .NearestScrollTranslationNode()
+                                 .ScrollNode()) {
+      return scroll->GetMainThreadScrollingReasons();
+    }
   }
   return true;
 }

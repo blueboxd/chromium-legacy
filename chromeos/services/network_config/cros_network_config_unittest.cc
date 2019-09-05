@@ -324,6 +324,21 @@ class CrosNetworkConfigTest : public testing::Test {
     return success;
   }
 
+  std::vector<mojom::VpnProviderPtr> GetVpnProviders() {
+    std::vector<mojom::VpnProviderPtr> result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetVpnProviders(base::BindOnce(
+        [](std::vector<mojom::VpnProviderPtr>* result,
+           base::OnceClosure quit_closure,
+           std::vector<mojom::VpnProviderPtr> providers) {
+          *result = std::move(providers);
+          std::move(quit_closure).Run();
+        },
+        &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
   NetworkStateTestHelper& helper() { return helper_; }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
   CrosNetworkConfig* cros_network_config() {
@@ -869,6 +884,28 @@ TEST_F(CrosNetworkConfigTest, StartDisconnect) {
   // wifi1 is now disconnected, StartDisconnect should fail.
   success = StartDisconnect("wifi1_guid");
   EXPECT_FALSE(success);
+}
+
+TEST_F(CrosNetworkConfigTest, VpnProviders) {
+  SetupObserver();
+  ASSERT_EQ(0, observer()->vpn_providers_changed());
+
+  mojom::VpnProvider provider1(mojom::VpnType::kExtension, "provider1",
+                               "provider_name1", "", base::Time());
+  mojom::VpnProvider provider2(mojom::VpnType::kArc, "provider2",
+                               "provider_name2", "app2", base::Time());
+  std::vector<mojom::VpnProviderPtr> providers;
+  providers.push_back(provider1.Clone());
+  providers.push_back(provider2.Clone());
+  cros_network_config()->SetVpnProviders(std::move(providers));
+
+  std::vector<mojom::VpnProviderPtr> providers_received = GetVpnProviders();
+  ASSERT_EQ(2u, providers_received.size());
+  EXPECT_TRUE(providers_received[0]->Equals(provider1));
+  EXPECT_TRUE(providers_received[1]->Equals(provider2));
+
+  base::RunLoop().RunUntilIdle();  // Ensure observers run.
+  ASSERT_EQ(1, observer()->vpn_providers_changed());
 }
 
 TEST_F(CrosNetworkConfigTest, NetworkListChanged) {

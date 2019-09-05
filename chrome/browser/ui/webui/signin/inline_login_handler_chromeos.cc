@@ -132,6 +132,12 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
   params.SetBoolean("ignoreCrOSIdpSetting", true);
 }
 
+void InlineLoginHandlerChromeOS::HandleAuthExtensionReadyMessage(
+    const base::ListValue* args) {
+  AllowJavascript();
+  FireWebUIListener("showBackButton");
+}
+
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
                                                const std::string& password,
                                                const std::string& gaia_id,
@@ -159,6 +165,12 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
   new SigninHelper(account_manager, close_dialog_closure_,
                    account_manager->GetUrlLoaderFactory(), gaia_id, email,
                    auth_code);
+}
+
+void InlineLoginHandlerChromeOS::HandleDialogClose(
+    const base::ListValue* args) {
+  AllowJavascript();
+  close_dialog_closure_.Run();
 }
 
 void InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog(

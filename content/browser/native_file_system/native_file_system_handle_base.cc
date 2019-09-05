@@ -5,6 +5,7 @@
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 
 #include "base/task/post_task.h"
+#include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -164,7 +165,8 @@ void NativeFileSystemHandleBase::DoGetPermissionStatus(
 
 void NativeFileSystemHandleBase::DoRequestPermission(
     bool writable,
-    base::OnceCallback<void(PermissionStatus)> callback) {
+    base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                            PermissionStatus)> callback) {
   PermissionStatus current_status =
       writable ? GetWritePermissionStatus() : GetReadPermissionStatus();
   // If we already have a valid permission status, just return that. Also just
@@ -176,25 +178,61 @@ void NativeFileSystemHandleBase::DoRequestPermission(
   // to call chooseEntries(), they will be able to receive existing handles from
   // windows via postMessage() and IndexedDB.
   if (current_status != PermissionStatus::ASK || context_.is_worker()) {
-    std::move(callback).Run(current_status);
+    std::move(callback).Run(native_file_system_error::Ok(), current_status);
     return;
   }
   if (!writable) {
     handle_state_.read_grant->RequestPermission(
         context().process_id, context().frame_id,
-        base::BindOnce(&NativeFileSystemHandleBase::DoGetPermissionStatus,
+        base::BindOnce(&NativeFileSystemHandleBase::DidRequestPermission,
                        AsWeakPtr(), writable, std::move(callback)));
     return;
   }
 
-  // TODO(https://crbug.com/971401): Today read permission isn't revokable, so
-  // current status should always be GRANTED.
+  // TODO(https://crbug.com/971401): Today we can't prompt for read permission,
+  // and should never be in state "ASK". Since we already checked for DENIED
+  // above current status here should always be GRANTED.
   DCHECK_EQ(GetReadPermissionStatus(), PermissionStatus::GRANTED);
 
   handle_state_.write_grant->RequestPermission(
       context().process_id, context().frame_id,
-      base::BindOnce(&NativeFileSystemHandleBase::DoGetPermissionStatus,
+      base::BindOnce(&NativeFileSystemHandleBase::DidRequestPermission,
                      AsWeakPtr(), writable, std::move(callback)));
+}
+
+void NativeFileSystemHandleBase::DidRequestPermission(
+    bool writable,
+    base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                            PermissionStatus)> callback,
+    NativeFileSystemPermissionGrant::PermissionRequestOutcome outcome) {
+  using Outcome = NativeFileSystemPermissionGrant::PermissionRequestOutcome;
+  switch (outcome) {
+    case Outcome::kInvalidFrame:
+    case Outcome::kThirdPartyContext:
+      std::move(callback).Run(
+          native_file_system_error::FromStatus(
+              blink::mojom::NativeFileSystemStatus::kPermissionDenied,
+              "Not allowed to request permissions in this context."),
+          writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
+      break;
+    case Outcome::kNoUserActivation:
+      std::move(callback).Run(
+          native_file_system_error::FromStatus(
+              blink::mojom::NativeFileSystemStatus::kPermissionDenied,
+              "User activation is required to request permissions."),
+          writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
+      break;
+    case Outcome::kBlockedByContentSetting:
+    case Outcome::kUserGranted:
+    case Outcome::kUserDenied:
+    case Outcome::kUserDismissed:
+    case Outcome::kRequestAborted:
+      std::move(callback).Run(
+          native_file_system_error::Ok(),
+          writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
+      return;
+  }
+  NOTREACHED();
 }
 
 void NativeFileSystemHandleBase::UpdateUsage() {

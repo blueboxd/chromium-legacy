@@ -27,7 +27,6 @@
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -179,8 +178,6 @@ void BrowserContextKeyedAPIFactory<RuntimeAPI>::DeclareFactoryDependencies() {
 
 RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
     : browser_context_(context),
-      extension_registry_observer_(this),
-      process_manager_observer_(this),
       minimum_duration_between_restarts_(base::TimeDelta::FromHours(
           kMinDurationBetweenSuccessiveRestartsHours)),
       dispatch_chrome_updated_event_(false),

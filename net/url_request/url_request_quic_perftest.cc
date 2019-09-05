@@ -274,7 +274,8 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
 
       };
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, base::Bind(on_memory_dump_done, run_loop.QuitClosure(), context()));
+      args,
+      base::BindOnce(on_memory_dump_done, run_loop.QuitClosure(), context()));
   run_loop.Run();
   base::trace_event::MemoryDumpManager::GetInstance()->TeardownForTracing();
 }

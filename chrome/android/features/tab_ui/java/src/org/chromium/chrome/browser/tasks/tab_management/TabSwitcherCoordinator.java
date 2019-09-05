@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -227,11 +228,14 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int tabId) {
         int index = mTabListCoordinator.indexOfTab(tabId);
-        assert mTabListCoordinator.getContainerView().findViewHolderForAdapterPosition(index)
-                != null;
-        View itemView = mTabListCoordinator.getContainerView()
-                                .findViewHolderForAdapterPosition(index)
-                                .itemView;
+        // TODO(crbug.com/999372): This is band-aid fix that will show basic fade-in/fade-out
+        // animation when we cannot find the animation source view holder. This is happening due to
+        // current group id in TabGridDialog can not be indexed in TabListModel, which should never
+        // happen. Remove this when figure out the actual cause.
+        ViewHolder sourceViewHolder =
+                mTabListCoordinator.getContainerView().findViewHolderForAdapterPosition(index);
+        if (sourceViewHolder == null) return null;
+        View itemView = sourceViewHolder.itemView;
         Rect rect = mTabListCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
         return new TabGridDialogParent.AnimationParams(rect, itemView);
     }

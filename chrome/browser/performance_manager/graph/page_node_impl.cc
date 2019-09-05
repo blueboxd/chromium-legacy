@@ -17,20 +17,6 @@
 
 namespace performance_manager {
 
-namespace {
-
-constexpr size_t kMaxInterventionIndex = static_cast<size_t>(
-    resource_coordinator::mojom::PolicyControlledIntervention::kMaxValue);
-
-size_t ToIndex(
-    resource_coordinator::mojom::PolicyControlledIntervention intervention) {
-  const size_t kIndex = static_cast<size_t>(intervention);
-  DCHECK(kIndex <= kMaxInterventionIndex);
-  return kIndex;
-}
-
-}  // namespace
-
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy,
                            const std::string& browser_context_id,
@@ -62,8 +48,6 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   ++frame_node_count_;
   if (frame_node->parent_frame_node() == nullptr)
     main_frame_nodes_.insert(frame_node);
-
-  MaybeInvalidateInterventionPolicies(frame_node, true /* adding_frame */);
 }
 
 void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
@@ -77,8 +61,6 @@ void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
     size_t removed = main_frame_nodes_.erase(frame_node);
     DCHECK_EQ(1u, removed);
   }
-
-  MaybeInvalidateInterventionPolicies(frame_node, false /* adding_frame */);
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {
@@ -196,6 +178,12 @@ PageNodeImpl::LifecycleState PageNodeImpl::lifecycle_state() const {
   return lifecycle_state_.value();
 }
 
+PageNodeImpl::InterventionPolicy PageNodeImpl::origin_trial_freeze_policy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_trial_freeze_policy_.value();
+}
+
 const base::flat_set<FrameNodeImpl*>& PageNodeImpl::main_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return main_frame_nodes_;
@@ -260,57 +248,8 @@ void PageNodeImpl::set_has_nonempty_beforeunload(
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
-void PageNodeImpl::OnFrameInterventionPolicyChanged(
-    FrameNodeImpl* frame,
-    resource_coordinator::mojom::PolicyControlledIntervention intervention,
-    resource_coordinator::mojom::InterventionPolicy old_policy,
-    resource_coordinator::mojom::InterventionPolicy new_policy) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const size_t kIndex = ToIndex(intervention);
-
-  // Invalidate the local policy aggregation for this intervention. It will be
-  // recomputed on the next query to GetInterventionPolicy.
-  intervention_policy_[kIndex] =
-      resource_coordinator::mojom::InterventionPolicy::kUnknown;
-
-  // The first time a frame transitions away from kUnknown for the last policy,
-  // then that frame is considered to have checked in. Frames always provide
-  // initial policy values in order, ensuring this works.
-  if (old_policy == resource_coordinator::mojom::InterventionPolicy::kUnknown &&
-      new_policy != resource_coordinator::mojom::InterventionPolicy::kUnknown &&
-      intervention == resource_coordinator::mojom::
-                          PolicyControlledIntervention::kMaxValue) {
-    ++intervention_policy_frames_reported_;
-    DCHECK_LE(intervention_policy_frames_reported_, frame_node_count_);
-  }
-}
-
-resource_coordinator::mojom::InterventionPolicy
-PageNodeImpl::GetInterventionPolicy(
-    resource_coordinator::mojom::PolicyControlledIntervention intervention) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // If there are no frames, or they've not all reported, then return kUnknown.
-  if (frame_node_count_ == 0u ||
-      intervention_policy_frames_reported_ != frame_node_count_) {
-    return resource_coordinator::mojom::InterventionPolicy::kUnknown;
-  }
-
-  // Recompute the policy if it is currently invalid.
-  const size_t kIndex = ToIndex(intervention);
-  DCHECK_LE(kIndex, kMaxInterventionIndex);
-  if (intervention_policy_[kIndex] ==
-      resource_coordinator::mojom::InterventionPolicy::kUnknown) {
-    RecomputeInterventionPolicy(intervention);
-    DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
-              intervention_policy_[kIndex]);
-  }
-
-  return intervention_policy_[kIndex];
-}
-
 void PageNodeImpl::JoinGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  InvalidateAllInterventionPolicies();
 
   NodeBase::JoinGraph();
 }
@@ -363,6 +302,12 @@ PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
   return lifecycle_state();
 }
 
+PageNodeImpl::InterventionPolicy PageNodeImpl::GetOriginTrialFreezePolicy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_trial_freeze_policy();
+}
+
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
@@ -403,77 +348,9 @@ void PageNodeImpl::SetLifecycleState(LifecycleState lifecycle_state) {
   lifecycle_state_.SetAndMaybeNotify(this, lifecycle_state);
 }
 
-void PageNodeImpl::InvalidateAllInterventionPolicies() {
+void PageNodeImpl::SetOriginTrialFreezePolicy(InterventionPolicy policy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (size_t i = 0; i <= kMaxInterventionIndex; ++i)
-    intervention_policy_[i] =
-        resource_coordinator::mojom::InterventionPolicy::kUnknown;
-}
-
-// TODO(chrisha): Move this all out to a decorator.
-void PageNodeImpl::MaybeInvalidateInterventionPolicies(
-    FrameNodeImpl* frame_node,
-    bool adding_frame) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Ensure that the frame was already added or removed as expected.
-  DCHECK(!adding_frame || GraphImplOperations::HasFrame(this, frame_node));
-
-  // Determine whether or not the frames had all reported prior to this change.
-  const size_t prior_frame_count = frame_node_count_ + (adding_frame ? -1 : 1);
-  const bool frames_all_reported_prior =
-      prior_frame_count > 0 &&
-      intervention_policy_frames_reported_ == prior_frame_count;
-
-  // If the previous state was considered fully reported, then aggregation may
-  // have occurred. Adding or removing a frame (even one that is fully reported)
-  // needs to invalidate that aggregation. Invalidation could happen on every
-  // single frame addition and removal, but only doing this when the previous
-  // state was fully reported reduces unnecessary invalidations.
-  if (frames_all_reported_prior)
-    InvalidateAllInterventionPolicies();
-
-  // Update the reporting frame count.
-  const bool frame_reported = frame_node->AreAllInterventionPoliciesSet();
-  if (frame_reported)
-    intervention_policy_frames_reported_ += adding_frame ? 1 : -1;
-
-  DCHECK_LE(intervention_policy_frames_reported_, frame_node_count_);
-}
-
-void PageNodeImpl::RecomputeInterventionPolicy(
-    resource_coordinator::mojom::PolicyControlledIntervention intervention) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const size_t kIndex = ToIndex(intervention);
-
-  // This should never be called with an empty frame tree.
-  DCHECK_NE(0u, frame_node_count_);
-
-  resource_coordinator::mojom::InterventionPolicy policy =
-      resource_coordinator::mojom::InterventionPolicy::kDefault;
-  GraphImplOperations::VisitFrameTreePreOrder(
-      this, [&policy, &kIndex](FrameNodeImpl* frame) -> bool {
-        // No frame should have an unknown policy, as aggregation should only be
-        // invoked after all frames have checked in.
-        DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
-                  frame->intervention_policy_[kIndex]);
-
-        // If any frame opts out then the whole frame tree opts out, even if
-        // other frames have opted in.
-        if (frame->intervention_policy_[kIndex] ==
-            resource_coordinator::mojom::InterventionPolicy::kOptOut) {
-          policy = resource_coordinator::mojom::InterventionPolicy::kOptOut;
-          return false;
-        }
-
-        // If any frame opts in and none opt out, then the whole tree opts in.
-        if (frame->intervention_policy_[kIndex] ==
-            resource_coordinator::mojom::InterventionPolicy::kOptIn) {
-          policy = resource_coordinator::mojom::InterventionPolicy::kOptIn;
-        }
-        return true;
-      });
-
-  intervention_policy_[kIndex] = policy;
+  origin_trial_freeze_policy_.SetAndMaybeNotify(this, policy);
 }
 
 }  // namespace performance_manager

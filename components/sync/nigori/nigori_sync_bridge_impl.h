@@ -117,7 +117,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // Stores serialized sync_pb::NigoriKey derived from explicit passphrase and
   // loaded from the prefs. Empty if prefs doesn't contain this key or in case
   // of decryption/decoding errors.
-  const std::string serialized_explicit_passphrase_key_;
+  std::string serialized_explicit_passphrase_key_;
 
   // Base64 encoded keystore keys. The last element is the current keystore
   // key. These keys are not a part of Nigori node and are persisted

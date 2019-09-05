@@ -24,9 +24,9 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_job.h"
-#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
+#include "components/download/public/common/url_loader_factory_provider.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -309,11 +309,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the DownloadItem if Start() is being called in response for a
   // download resumption request.
-  virtual void Start(std::unique_ptr<DownloadFile> download_file,
-                     DownloadJob::CancelRequestCallback cancel_request_callback,
-                     const DownloadCreateInfo& new_create_info,
-                     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-                         url_loader_factory_getter);
+  virtual void Start(
+      std::unique_ptr<DownloadFile> download_file,
+      DownloadJob::CancelRequestCallback cancel_request_callback,
+      const DownloadCreateInfo& new_create_info,
+      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 

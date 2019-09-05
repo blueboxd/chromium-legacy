@@ -584,6 +584,7 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
   registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
+  registry->RegisterBooleanPref(prefs::kSettingsShowAboutOSBanner, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -1128,7 +1129,7 @@ void Preferences::UpdateAutoRepeatRate() {
       rate.repeat_interval_in_ms);
 }
 
-void Preferences::ActiveUserChanged(const user_manager::User* active_user) {
+void Preferences::ActiveUserChanged(user_manager::User* active_user) {
   if (active_user != user_)
     return;
   ApplyPreferences(REASON_ACTIVE_USER_CHANGED, "");

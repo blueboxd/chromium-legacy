@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_object_store.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_object_store_parameters.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_transaction_options.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
@@ -104,6 +105,7 @@ class MODULES_EXPORT IDBDatabase final
   IDBTransaction* transaction(ScriptState*,
                               const StringOrStringSequence& store_names,
                               const String& mode,
+                              const IDBTransactionOptions* options,
                               ExceptionState&);
   void deleteObjectStore(const String& name, ExceptionState&);
   void close();

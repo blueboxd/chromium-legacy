@@ -81,6 +81,9 @@ const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
 const base::Feature kUploadForMalwareCheck{"SafeBrowsingUploadForMalwareCheck",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDeepScanningOfDownloads{
+    "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
+
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 

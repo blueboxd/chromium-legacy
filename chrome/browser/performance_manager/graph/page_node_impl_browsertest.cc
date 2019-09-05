@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -162,21 +163,18 @@ void RunOriginTrialTestOnPMSequence(
   ASSERT_TRUE(perf_manager);
   base::RunLoop run_loop;
   perf_manager->CallOnGraph(
-      FROM_HERE,
-      base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             const resource_coordinator::mojom::InterventionPolicy
-                 expected_policy,
-             performance_manager::GraphImpl* graph) {
-            auto page_nodes = graph->GetAllPageNodeImpls();
-            EXPECT_EQ(1U, page_nodes.size());
-            auto policy = page_nodes[0]->GetInterventionPolicy(
-                resource_coordinator::mojom::PolicyControlledIntervention::
-                    kPageLifecycleTransitions);
-            EXPECT_EQ(expected_policy, policy);
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure(), expected_policy));
+      FROM_HERE, base::BindOnce(
+                     [](base::OnceClosure quit_closure,
+                        const resource_coordinator::mojom::InterventionPolicy
+                            expected_policy,
+                        performance_manager::GraphImpl* graph) {
+                       auto page_nodes = graph->GetAllPageNodeImpls();
+                       EXPECT_EQ(1U, page_nodes.size());
+                       EXPECT_EQ(expected_policy,
+                                 page_nodes[0]->origin_trial_freeze_policy());
+                       std::move(quit_closure).Run();
+                     },
+                     run_loop.QuitClosure(), expected_policy));
   run_loop.Run();
 }
 

@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
@@ -75,7 +75,8 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
                  LaunchAppCallback callback) override;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
-  mojo::Binding<chrome::mojom::AppShimHostBootstrap> host_bootstrap_binding_;
+  mojo::Receiver<chrome::mojom::AppShimHostBootstrap> host_bootstrap_receiver_{
+      this};
 
   // The arguments from the LaunchApp call, and whether or not it has happened
   // yet.

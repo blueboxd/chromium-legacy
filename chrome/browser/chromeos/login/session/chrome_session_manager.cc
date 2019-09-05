@@ -287,12 +287,6 @@ void ChromeSessionManager::SessionStarted() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager)
     user_manager->OnSessionStarted();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::Source<session_manager::SessionManager>(this),
-      content::Details<const user_manager::User>(
-          user_manager->GetActiveUser()));
 }
 
 void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,

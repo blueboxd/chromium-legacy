@@ -119,8 +119,9 @@ int URLRequestJob::Read(IOBuffer* buf, int buf_size) {
 
   pending_read_buffer_ = buf;
   int result = source_stream_->Read(
-      buf, buf_size, base::Bind(&URLRequestJob::SourceStreamReadComplete,
-                                weak_factory_.GetWeakPtr(), false));
+      buf, buf_size,
+      base::BindOnce(&URLRequestJob::SourceStreamReadComplete,
+                     weak_factory_.GetWeakPtr(), false));
   if (result == ERR_IO_PENDING)
     return ERR_IO_PENDING;
 

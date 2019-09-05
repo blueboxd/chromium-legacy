@@ -1642,6 +1642,16 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         // If URL is blocked due to Restriction, do not take any further
         // action as WKWebView will show a built-in error.
         if (!web::RequiresContentFilterBlockingWorkaround()) {
+          // On iOS13, immediately following this navigation, WebKit will
+          // navigate to an internal failure page. Unfortunately, due to how
+          // SlimNav session restoration works with same document navigations,
+          // this page blocked by a content filter puts WebKit into a state
+          // where all further restoration same-document navigations are 'stuck'
+          // on this failure page.  Instead, avoid restoring this page
+          // completely.  Consider revisiting this if and when a proper session
+          // restoration API is provided by WKWebView.
+          self.navigationManagerImpl->SetWKWebViewNextPendingUrlNotSerializable(
+              navigationContext->GetUrl());
           return;
         } else if (!PageTransitionIsNewNavigation(transition)) {
           if (transition & ui::PAGE_TRANSITION_RELOAD) {

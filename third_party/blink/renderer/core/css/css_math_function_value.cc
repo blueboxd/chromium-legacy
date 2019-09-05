@@ -88,6 +88,8 @@ bool CSSMathFunctionValue::AccumulateLengthArray(CSSLengthArray& length_array,
 
 Length CSSMathFunctionValue::ConvertToLength(
     const CSSToLengthConversionData& conversion_data) const {
+  if (IsLength())
+    return Length::Fixed(ComputeLengthPx(conversion_data));
   return Length(ToCalcValue(conversion_data));
 }
 

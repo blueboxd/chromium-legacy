@@ -84,10 +84,9 @@ class GitCL(object):
         # Sort both buckets and builders to ensure stable unit tests.
         for bucket in sorted(builders_by_bucket):
             command = ['try']
-            # Only specify bucket if it's explicitly given to us. Otherwise,
-            # `git cl` will figure out the appropriate bucket.
-            if bucket:
-                command.extend(['-B', bucket])
+            # Buckets are required by `git cl try`. When no bucket is specified,
+            # use the default bucket.
+            command.extend(['-B', bucket or 'luci.chromium.try'])
             for builder in sorted(builders_by_bucket[bucket]):
                 command.extend(['-b', builder])
             self.run(command)

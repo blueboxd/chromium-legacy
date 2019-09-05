@@ -30,10 +30,13 @@ class CrosNetworkConfigTestObserver : public mojom::CrosNetworkConfigObserver {
       override;
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
+  void OnVpnProvidersChanged() override;
 
   int active_networks_changed() const { return active_networks_changed_; }
   int network_state_list_changed() const { return network_state_list_changed_; }
   int device_state_list_changed() const { return device_state_list_changed_; }
+  int vpn_providers_changed() const { return vpn_providers_changed_; }
+
   int GetNetworkChangedCount(const std::string& guid) const;
   void ResetNetworkChanges();
 
@@ -49,6 +52,7 @@ class CrosNetworkConfigTestObserver : public mojom::CrosNetworkConfigObserver {
   std::map<std::string, int> networks_changed_;
   int network_state_list_changed_ = 0;
   int device_state_list_changed_ = 0;
+  int vpn_providers_changed_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfigTestObserver);
 };

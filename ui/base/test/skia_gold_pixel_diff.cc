@@ -122,8 +122,12 @@ bool FillInTestEnvironment(const base::FilePath& keys_file) {
 int SkiaGoldPixelDiff::LaunchProcess(const base::CommandLine& cmdline) const {
   base::Process sub_process =
       base::LaunchProcess(cmdline, base::LaunchOptionsForTest());
-  int exit_code;
-  sub_process.WaitForExit(&exit_code);
+  int exit_code = 0;
+  if (!sub_process.WaitForExit(&exit_code)) {
+    ADD_FAILURE() << "Failed to wait for process.";
+    // Return a non zero code indicating an error.
+    return 1;
+  }
   return exit_code;
 }
 

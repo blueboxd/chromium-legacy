@@ -46,9 +46,16 @@ class TabGridSheetProperties {
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableIntPropertyKey DIALOG_UNGROUP_BAR_TEXT_APPEARANCE =
             new PropertyModel.WritableIntPropertyKey();
+    /**
+     * Integer, but not {@link PropertyModel.WritableIntPropertyKey} so that we can force update on
+     * the same value.
+     */
+    public static final PropertyModel.WritableObjectPropertyKey INITIAL_SCROLL_INDEX =
+            new PropertyModel.WritableObjectPropertyKey(true);
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
             IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_PARAMS, UNGROUP_BAR_STATUS,
             DIALOG_BACKGROUND_RESOUCE_ID, DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
-            DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID, DIALOG_UNGROUP_BAR_TEXT_APPEARANCE};
+            DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID, DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
+            INITIAL_SCROLL_INDEX};
 }

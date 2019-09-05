@@ -180,8 +180,7 @@ Polymer({
    * @private
    */
   parseValueToPts_: function(value) {
-    // Removing whitespace anywhere in the string.
-    value = value.replace(/\s*/g, '');
+    value = value.trim();
     if (value.length == 0) {
       return null;
     }

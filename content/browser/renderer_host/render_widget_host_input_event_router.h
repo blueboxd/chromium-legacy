@@ -227,9 +227,16 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // properly fire. This method determines which RenderWidgetHostViews other
   // than the actual target require notification, and sends the appropriate
   // events to them. |event| should be in |root_view|'s coordinate space.
-  void SendMouseEnterOrLeaveEvents(const blink::WebMouseEvent& event,
-                                   RenderWidgetHostViewBase* target,
-                                   RenderWidgetHostViewBase* root_view);
+  // |include_target_view| indicates whether a MouseEnter should also be sent
+  // to |target|, which is typically not needed if this is invoked while a
+  // MouseMove already being sent there.
+  void SendMouseEnterOrLeaveEvents(
+      const blink::WebMouseEvent& event,
+      RenderWidgetHostViewBase* target,
+      RenderWidgetHostViewBase* root_view,
+      blink::WebInputEvent::Modifiers extra_modifiers =
+          blink::WebInputEvent::Modifiers::kNoModifiers,
+      bool include_target_view = false);
 
   void CancelScrollBubbling();
 

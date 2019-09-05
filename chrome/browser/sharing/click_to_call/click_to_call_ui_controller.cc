@@ -157,4 +157,9 @@ base::string16 ClickToCallUiController::GetEducationWindowTitleText() const {
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
 }
 
+void ClickToCallUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
+  LogClickToCallHelpTextClicked(dialog_type);
+  SharingUiController::OnHelpTextClicked(dialog_type);
+}
+
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

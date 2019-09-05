@@ -57,8 +57,8 @@ quic::WriteResult QuicSimpleServerPacketWriter::WritePacket(
   if (buf_len <= static_cast<size_t>(std::numeric_limits<int>::max())) {
     rv = socket_->SendTo(
         buf.get(), static_cast<int>(buf_len), ToIPEndPoint(peer_address),
-        base::Bind(&QuicSimpleServerPacketWriter::OnWriteComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&QuicSimpleServerPacketWriter::OnWriteComplete,
+                       weak_factory_.GetWeakPtr()));
   } else {
     rv = ERR_MSG_TOO_BIG;
   }

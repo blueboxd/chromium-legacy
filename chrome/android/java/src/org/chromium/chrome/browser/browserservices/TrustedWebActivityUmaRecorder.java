@@ -123,7 +123,8 @@ public class TrustedWebActivityUmaRecorder {
      * settings.
      */
     public void recordOpenedSettingsViaManageSpace() {
-        RecordUserAction.record("TrustedWebActivity.OpenedSettingsViaManageSpace");
+        doWhenNativeLoaded(() ->
+            RecordUserAction.record("TrustedWebActivity.OpenedSettingsViaManageSpace"));
     }
 
     /**

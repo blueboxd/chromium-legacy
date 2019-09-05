@@ -118,7 +118,7 @@ class DemoModeResourcesRemoverTest : public testing::Test {
   void AddAndLogInUser(TestUserType type, DemoModeResourcesRemover* remover) {
     FakeChromeUserManager* user_manager =
         static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
-    const user_manager::User* user = nullptr;
+    user_manager::User* user = nullptr;
     switch (type) {
       case TestUserType::kRegular:
         user =

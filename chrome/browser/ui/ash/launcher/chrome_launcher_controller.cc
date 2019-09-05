@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_window_shelf_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_app_service_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_crostini_app_updater.h"
@@ -1223,20 +1224,26 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
       base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromSync,
                  base::Unretained(this)));
 
-  std::unique_ptr<LauncherAppUpdater> extension_app_updater(
-      new LauncherExtensionAppUpdater(this, profile()));
-  app_updaters_.push_back(std::move(extension_app_updater));
+  if (app_service_enabled) {
+    std::unique_ptr<LauncherAppUpdater> app_service_app_updater(
+        new LauncherAppServiceAppUpdater(this, profile()));
+    app_updaters_.push_back(std::move(app_service_app_updater));
+  } else {
+    std::unique_ptr<LauncherAppUpdater> extension_app_updater(
+        new LauncherExtensionAppUpdater(this, profile()));
+    app_updaters_.push_back(std::move(extension_app_updater));
 
-  if (arc::IsArcAllowedForProfile(profile())) {
-    std::unique_ptr<LauncherAppUpdater> arc_app_updater(
-        new LauncherArcAppUpdater(this, profile()));
-    app_updaters_.push_back(std::move(arc_app_updater));
-  }
+    if (arc::IsArcAllowedForProfile(profile())) {
+      std::unique_ptr<LauncherAppUpdater> arc_app_updater(
+          new LauncherArcAppUpdater(this, profile()));
+      app_updaters_.push_back(std::move(arc_app_updater));
+    }
 
-  if (crostini::IsCrostiniUIAllowedForProfile(profile())) {
-    std::unique_ptr<LauncherAppUpdater> crostini_app_updater(
-        new LauncherCrostiniAppUpdater(this, profile()));
-    app_updaters_.push_back(std::move(crostini_app_updater));
+    if (crostini::IsCrostiniUIAllowedForProfile(profile())) {
+      std::unique_ptr<LauncherAppUpdater> crostini_app_updater(
+          new LauncherCrostiniAppUpdater(this, profile()));
+      app_updaters_.push_back(std::move(crostini_app_updater));
+    }
   }
 
   app_list::AppListSyncableService* app_list_syncable_service =

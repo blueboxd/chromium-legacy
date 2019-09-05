@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -29,9 +29,7 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -83,10 +81,6 @@ class OobeTest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
   WaitForGaiaPageLoad();
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   // Make the MountEx cryptohome call fail iff the |create| field is missing,
   // which simulates the real cryptohomed's behavior for the new user mount.
   FakeCryptohomeClient::Get()->set_mount_create_required(true);
@@ -96,12 +90,10 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
       ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
                                 FakeGaiaMixin::kFakeUserPassword,
                                 FakeGaiaMixin::kEmptyUserServices);
-
-  session_start_waiter.Wait();
+  test::WaitForPrimaryUserSessionStart();
 
   const AccountId account_id =
-      content::Details<const user_manager::User>(session_start_waiter.details())
-          ->GetAccountId();
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   EXPECT_FALSE(
       user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(account_id));
 

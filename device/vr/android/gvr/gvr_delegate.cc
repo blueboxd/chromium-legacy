@@ -5,6 +5,7 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 
 #include "base/trace_event/trace_event.h"
+#include "device/vr/android/gvr/gvr_utils.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
@@ -21,13 +22,6 @@ static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 // poses. The precise value shouldn't matter as long as it's nonzero and much
 // less than a frame.
 static constexpr int64_t kAngularVelocityEpsilonNanos = 1000000;
-
-void GvrMatToTransform(const gvr::Mat4f& in, gfx::Transform* out) {
-  *out = gfx::Transform(in.m[0][0], in.m[0][1], in.m[0][2], in.m[0][3],
-                        in.m[1][0], in.m[1][1], in.m[1][2], in.m[1][3],
-                        in.m[2][0], in.m[2][1], in.m[2][2], in.m[2][3],
-                        in.m[3][0], in.m[3][1], in.m[3][2], in.m[3][3]);
-}
 
 gfx::Vector3dF GetAngularVelocityFromPoses(gfx::Transform head_mat,
                                            gfx::Transform head_mat_2,
@@ -117,7 +111,7 @@ void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
   gvr::Mat4f head_mat = gvr_api->ApplyNeckModel(
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
 
-  GvrMatToTransform(head_mat, out);
+  gvr_utils::GvrMatToTransform(head_mat, out);
 }
 
 /* static */
@@ -141,7 +135,7 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   gfx::Transform head_mat;
   if (!head_mat_ptr)
     head_mat_ptr = &head_mat;
-  GvrMatToTransform(gvr_head_mat, head_mat_ptr);
+  gvr_utils::GvrMatToTransform(gvr_head_mat, head_mat_ptr);
 
   mojom::VRPosePtr pose = GvrDelegate::VRPosePtrFromGvrPose(*head_mat_ptr);
 
@@ -150,7 +144,7 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   gvr::Mat4f gvr_head_mat_2 =
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
   gfx::Transform head_mat_2;
-  GvrMatToTransform(gvr_head_mat_2, &head_mat_2);
+  gvr_utils::GvrMatToTransform(gvr_head_mat_2, &head_mat_2);
 
   // Add headset angular velocity to the pose.
   double epsilon_seconds = kAngularVelocityEpsilonNanos * 1e-9;

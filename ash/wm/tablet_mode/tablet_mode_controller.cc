@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
@@ -688,13 +689,21 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     state_ = State::kEnteringTabletMode;
 
     // Take a screenshot if there is a top window that will get animated.
+    // Since with ash::features::kDragToSnapInClamshellMode enabled, we'll keep
+    // overview active after clamshell <-> tablet mode transition if it was
+    // active before transition, do not take screenshot if overview is active
+    // in this case.
     // TODO(sammiequon): Handle the case where the top window is not on the
     // primary display.
     aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
-    bool top_window_on_primary_display =
+    const bool top_window_on_primary_display =
         top_window &&
         top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
-    if (use_screenshot_for_test && top_window_on_primary_display) {
+    const bool overview_remain_active =
+        IsClamshellSplitViewModeEnabled() &&
+        Shell::Get()->overview_controller()->InOverviewSession();
+    if (use_screenshot_for_test && top_window_on_primary_display &&
+        !overview_remain_active) {
       TakeScreenshot(top_window);
     } else {
       FinishInitTabletMode();

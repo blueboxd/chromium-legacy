@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_context.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 
 namespace extensions {
@@ -27,7 +26,6 @@ KeepAliveImpl::KeepAliveImpl(content::BrowserContext* context,
                              KeepAliveRequest request)
     : context_(context),
       extension_(extension),
-      extension_registry_observer_(this),
       binding_(this, std::move(request)) {
   ProcessManager::Get(context_)->IncrementLazyKeepaliveCount(
       extension_, Activity::MOJO, std::string());

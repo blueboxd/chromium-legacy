@@ -175,8 +175,13 @@ void ArImageTransport::CopyDrawnImageToFramebuffer(
   vr::WebXrSharedBuffer* shared_buffer =
       webxr_->GetRenderingFrame()->shared_buffer.get();
 
+  // Set the blend mode for combining the drawn image (source) with the camera
+  // image (destination). WebXR assumes that the canvas has premultiplied alpha,
+  // so the source blend function is GL_ONE. The destination blend function is
+  // (1 - src_alpha) as usual. (Setting that to GL_ONE would simulate an
+  // additive AR headset that can't draw opaque black.)
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
   CopyTextureToFramebuffer(shared_buffer->local_texture, frame_size,
                            uv_transform);

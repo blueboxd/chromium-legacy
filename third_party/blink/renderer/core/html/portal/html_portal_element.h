@@ -35,7 +35,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   explicit HTMLPortalElement(
       Document& document,
       const base::UnguessableToken& portal_token = base::UnguessableToken(),
-      mojo::AssociatedRemote<mojom::blink::Portal> remote_portal = {},
+      mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal = {},
       mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
           portal_client_receiver = {});
   ~HTMLPortalElement() override;

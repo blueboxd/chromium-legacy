@@ -235,6 +235,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     : version_id_(version_id),
       registration_id_(registration->id()),
       script_url_(script_url),
+      // Safe to convert GURL to Origin because service workers are restricted
+      // to secure contexts.
       script_origin_(url::Origin::Create(script_url_)),
       scope_(registration->scope()),
       script_type_(script_type),
@@ -371,8 +373,8 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   ServiceWorkerVersionInfo info(
       running_status(), status(), fetch_handler_existence(), script_url(),
-      registration_id(), version_id(), embedded_worker()->process_id(),
-      embedded_worker()->thread_id(),
+      script_origin(), registration_id(), version_id(),
+      embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
   for (const auto& controllee : controllee_map_) {
     const ServiceWorkerProviderHost* host = controllee.second;
@@ -1180,6 +1182,15 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
     return;
   }
 
+  if (!url.is_valid() ||
+      !url::Origin::Create(url).IsSameOriginWith(script_origin_)) {
+    mojo::ReportBadMessage(
+        "Received PaymentRequestEvent#openWindow() request for a cross-origin "
+        "URL.");
+    receiver_.reset();
+    return;
+  }
+
   PaymentHandlerSupport::ShowPaymentHandlerWindow(
       url, context_.get(),
       base::BindOnce(&DidShowPaymentHandlerWindow, url, context_),
@@ -1640,10 +1651,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   params->provider_info = std::move(provider_info);
 
-  embedded_worker_->Start(
-      std::move(params),
-      base::BindOnce(&ServiceWorkerVersion::OnStartSent,
-                     weak_factory_.GetWeakPtr()));
+  embedded_worker_->Start(std::move(params),
+                          base::BindOnce(&ServiceWorkerVersion::OnStartSent,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {
@@ -1835,8 +1845,7 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   message.append(".");
   OnReportException(base::UTF8ToUTF16(message), -1, -1, GURL());
   DVLOG(1) << message;
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.TimeoutPhase",
-                            phase,
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.TimeoutPhase", phase,
                             EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE);
 }
 

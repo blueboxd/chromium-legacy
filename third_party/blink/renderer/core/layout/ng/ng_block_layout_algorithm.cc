@@ -136,27 +136,6 @@ LogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
           child_bfc_offset.block_offset - parent_bfc_offset.block_offset};
 }
 
-// Stop margin collapsing on one side of a block when
-// -webkit-margin-{after,before}-collapse is something other than 'collapse'
-// (the initial value)
-void StopMarginCollapsing(EMarginCollapse collapse_value,
-                          LayoutUnit this_margin,
-                          LayoutUnit* logical_block_offset,
-                          NGMarginStrut* margin_strut) {
-  DCHECK_NE(collapse_value, EMarginCollapse::kCollapse);
-  if (collapse_value == EMarginCollapse::kSeparate) {
-    // Separate margins between previously adjoining margins and this margin,
-    // AND between this margin and adjoining margins to come.
-    *logical_block_offset += margin_strut->Sum() + this_margin;
-    *margin_strut = NGMarginStrut();
-    return;
-  }
-  DCHECK_EQ(collapse_value, EMarginCollapse::kDiscard);
-  // Discard previously adjoining margins, this margin AND all adjoining margins
-  // to come, so that the sum becomes 0.
-  margin_strut->discard_margins = true;
-}
-
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
@@ -1028,6 +1007,14 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     // The BFC block offset of this container gets resolved because of this
     // child.
     child_determined_bfc_offset = true;
+
+    // The block-start margin of the child will only affect the parent's
+    // position if it is adjoining.
+    if (!child_margin_got_separated) {
+      SetSubtreeModifiedMarginStrutIfNeeded(
+          &child_style.MarginBeforeUsing(Style()));
+    }
+
     if (!ResolveBfcBlockOffset(previous_inflow_position,
                                child_bfc_offset_estimate)) {
       // If we need to abort here, it means that we had preceding unpositioned
@@ -1432,6 +1419,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     // present, but we shouldn't apply it (instead preferring the child's new
     // BFC block-offset).
     DCHECK(!ConstraintSpace().AncestorHasClearancePastAdjoiningFloats());
+
     if (!ResolveBfcBlockOffset(previous_inflow_position, bfc_block_offset,
                                /* forced_bfc_block_offset */ base::nullopt))
       return false;
@@ -1468,6 +1456,10 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     // do it now to separate the child's collapsed margin from this container.
     if (!ResolveBfcBlockOffset(previous_inflow_position))
       return false;
+  } else if (layout_result->SubtreeModifiedMarginStrut()) {
+    // The child doesn't have clearance, and modified its incoming
+    // margin-strut. Propagate this information up to our parent if needed.
+    SetSubtreeModifiedMarginStrutIfNeeded();
   }
 
   bool self_collapsing_child_needs_relayout = false;
@@ -1717,6 +1709,7 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
   } else {
     margin_strut.Append(margins.block_start,
                         child.Style().HasMarginBeforeQuirk());
+    SetSubtreeModifiedMarginStrutIfNeeded(&child.Style().MarginBefore());
   }
 
   NGBfcOffset child_bfc_offset = {
@@ -1833,6 +1826,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
         (is_self_collapsing && child.Style().HasMarginBeforeQuirk()) ||
         child.Style().HasMarginAfterQuirk();
     margin_strut.Append(child_data.margins.block_end, is_quirky);
+    SetSubtreeModifiedMarginStrutIfNeeded(&child.Style().MarginAfter());
   }
 
   // This flag is subtle, but in order to determine our size correctly we need
@@ -2202,6 +2196,29 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     *margins_fully_resolved = true;
   }
   return margins;
+}
+
+// Stop margin collapsing on one side of a block when
+// -webkit-margin-{after,before}-collapse is something other than 'collapse'
+// (the initial value)
+void NGBlockLayoutAlgorithm::StopMarginCollapsing(
+    EMarginCollapse collapse_value,
+    LayoutUnit this_margin,
+    LayoutUnit* logical_block_offset,
+    NGMarginStrut* margin_strut) {
+  DCHECK_NE(collapse_value, EMarginCollapse::kCollapse);
+  if (collapse_value == EMarginCollapse::kSeparate) {
+    // Separate margins between previously adjoining margins and this margin,
+    // AND between this margin and adjoining margins to come.
+    *logical_block_offset += margin_strut->Sum() + this_margin;
+    *margin_strut = NGMarginStrut();
+    return;
+  }
+  DCHECK_EQ(collapse_value, EMarginCollapse::kDiscard);
+  // Discard previously adjoining margins, this margin AND all adjoining margins
+  // to come, so that the sum becomes 0.
+  margin_strut->discard_margins = true;
+  SetSubtreeModifiedMarginStrutIfNeeded();
 }
 
 NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(

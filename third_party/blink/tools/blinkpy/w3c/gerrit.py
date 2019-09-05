@@ -42,6 +42,12 @@ class GerritAPI(object):
         return json.loads(raw_data[5:])
 
     def post(self, path, data):
+        """Sends a POST request to path with data as the JSON payload.
+
+        The path has to be prefixed with '/a/':
+        https://gerrit-review.googlesource.com/Documentation/rest-api.html#authentication
+        """
+        assert path.startswith('/a/'), 'POST requests need to use authenticated routes.'
         url = URL_BASE + path
         assert self.user and self.token, 'Gerrit user and token required for authenticated routes.'
 

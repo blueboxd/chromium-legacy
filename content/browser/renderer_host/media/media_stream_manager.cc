@@ -520,6 +520,10 @@ MediaStreamManager::MediaStreamManager(
           /*tests_use_fake_render_frame_hosts=*/false);
     });
   }
+  if (base::FeatureList::IsEnabled(media::kUseFakeDeviceForMediaStream)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
+  }
 
   DCHECK(audio_system_);
 

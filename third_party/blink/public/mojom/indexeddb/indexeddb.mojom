@@ -342,7 +342,8 @@ interface IDBDatabase {
   CreateTransaction(pending_associated_receiver<IDBTransaction> transaction_receiver,
                     int64 transaction_id,
                     array<int64> object_store_ids,
-                    IDBTransactionMode mode);
+                    IDBTransactionMode mode,
+                    bool relaxed_durability);
   Close();
   VersionChangeIgnored();
   AddObserver(int64 transaction_id,

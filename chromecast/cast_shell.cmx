@@ -1,11 +1,11 @@
 {
   "sandbox": {
     "features": [
+      "deprecated-ambient-replace-as-executable",
       "isolated-persistent-storage",
+      "isolated-temp",
       "root-ssl-certificates",
-      "system-temp",
-      "vulkan",
-      "deprecated-ambient-replace-as-executable"
+      "vulkan"
     ],
     "dev": [
       "null",

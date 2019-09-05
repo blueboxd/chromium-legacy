@@ -96,7 +96,8 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
           const bool selectable = allowed && enabled && context && ready;
 
           assistant_state()->NotifyStatusChanged(state);
-          assistant_state()->NotifySettingsEnabled(enabled);
+          prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled,
+                              enabled);
           assistant_state()->NotifyFeatureAllowed(allowed_state);
           prefs()->SetBoolean(
               chromeos::assistant::prefs::kAssistantContextEnabled, context);
@@ -146,7 +147,7 @@ TEST_F(MetalayerToolTest, EnablingDisablingMetalayerEnablesDisablesController) {
 // Verifies that disabling the metalayer support disables the tool.
 TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
   assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
-  assistant_state()->NotifySettingsEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       true);
 
@@ -154,9 +155,9 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
   tool_->OnEnable();
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::METALAYER));
-  assistant_state()->NotifySettingsEnabled(false);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
-  assistant_state()->NotifySettingsEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
 
   tool_->OnEnable();
   EXPECT_CALL(*palette_tool_delegate_.get(),

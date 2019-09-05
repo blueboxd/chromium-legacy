@@ -76,9 +76,9 @@ void NGLayoutInputNode::IntrinsicSize(
     LogicalSize* aspect_ratio) const {
   DCHECK(IsReplaced());
   if (ShouldApplySizeContainment()) {
-    *computed_inline_size = LayoutUnit();
-    *computed_block_size = LayoutUnit();
-    *aspect_ratio = LogicalSize(LayoutUnit(), LayoutUnit());
+    *computed_inline_size = ContentInlineSizeForSizeContainment();
+    *computed_block_size = ContentBlockSizeForSizeContainment();
+    *aspect_ratio = LogicalSize(**computed_inline_size, **computed_block_size);
     return;
   }
   if (DisplayLockInducesSizeContainment()) {

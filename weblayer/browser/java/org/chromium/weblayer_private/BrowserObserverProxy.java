@@ -12,6 +12,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 
+/**
+ * Owns the c++ BrowserObserverProxy class, which is responsible for forwarding all
+ * BrowserObserver calls to this class, which in turn forwards to the BrowserControllerClient.
+ * To avoid unnecessary IPC only one BrowserObserverProxy is created per BrowserController.
+ */
 @JNINamespace("weblayer")
 public final class BrowserObserverProxy {
     private static final String TAG = "WL_BObserverProxy";
@@ -26,6 +31,7 @@ public final class BrowserObserverProxy {
 
     public void destroy() {
         nativeDeleteBrowserObserverProxy(mNativeBrowserObserverProxy);
+        mNativeBrowserObserverProxy = 0;
     }
 
     @CalledByNative

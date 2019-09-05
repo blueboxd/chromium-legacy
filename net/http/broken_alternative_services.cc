@@ -325,7 +325,7 @@ void BrokenAlternativeServices ::
   expiration_timer_.Stop();
   expiration_timer_.Start(
       FROM_HERE, delay,
-      base::Bind(
+      base::BindOnce(
           &BrokenAlternativeServices ::ExpireBrokenAlternateProtocolMappings,
           weak_ptr_factory_.GetWeakPtr()));
 }

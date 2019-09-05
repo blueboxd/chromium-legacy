@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
+
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -15,26 +17,41 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/service_manager/public/cpp/connector.h"
+
+using chromeos::network_config::mojom::VpnProvider;
+using chromeos::network_config::mojom::VpnProviderPtr;
 
 namespace mojo {
 
 template <>
-struct TypeConverter<ash::mojom::ArcVpnProviderPtr,
+struct TypeConverter<VpnProviderPtr,
                      app_list::ArcVpnProviderManager::ArcVpnProvider*> {
-  static ash::mojom::ArcVpnProviderPtr Convert(
+  static VpnProviderPtr Convert(
       const app_list::ArcVpnProviderManager::ArcVpnProvider* input) {
-    auto result = ash::mojom::ArcVpnProvider::New();
-    result->app_name = input->app_name;
-    result->package_name = input->package_name;
+    auto result = VpnProvider::New();
+    result->type = chromeos::network_config::mojom::VpnType::kArc;
+    result->provider_id = input->package_name;
+    result->provider_name = input->app_name;
     result->app_id = input->app_id;
     result->last_launch_time = input->last_launch_time;
+    return result;
+  }
+};
+
+template <>
+struct TypeConverter<VpnProviderPtr, const extensions::Extension*> {
+  static VpnProviderPtr Convert(const extensions::Extension* input) {
+    auto result = VpnProvider::New();
+    result->type = chromeos::network_config::mojom::VpnType::kExtension;
+    result->provider_id = input->id();
+    result->provider_name = input->name();
+    // For Extensions, the app id is the same as the provider id.
+    result->app_id = input->id();
     return result;
   }
 };
@@ -57,14 +74,6 @@ Profile* GetProfileForPrimaryUser() {
   return chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
 }
 
-// Connects to the VpnList mojo interface in ash.
-ash::mojom::VpnListPtr ConnectToVpnList() {
-  ash::mojom::VpnListPtr vpn_list;
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &vpn_list);
-  return vpn_list;
-}
-
 }  // namespace
 
 VpnListForwarder::VpnListForwarder() {
@@ -78,6 +87,9 @@ VpnListForwarder::VpnListForwarder() {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
   }
+
+  ash::GetNetworkConfigService(
+      cros_network_config_.BindNewPipeAndPassReceiver());
 }
 
 VpnListForwarder::~VpnListForwarder() {
@@ -85,46 +97,49 @@ VpnListForwarder::~VpnListForwarder() {
     extension_registry_->RemoveObserver(this);
   if (arc_vpn_provider_manager_)
     arc_vpn_provider_manager_->RemoveObserver(this);
-
-  vpn_list_ = nullptr;
 }
 
 void VpnListForwarder::OnArcVpnProvidersRefreshed(
     const std::vector<
         std::unique_ptr<app_list::ArcVpnProviderManager::ArcVpnProvider>>&
         arc_vpn_providers) {
-  std::vector<ash::mojom::ArcVpnProviderPtr> arc_vpn_provider_ptrs;
   for (const auto& arc_vpn_provider : arc_vpn_providers) {
-    arc_vpn_provider_ptrs.emplace_back(
-        ash::mojom::ArcVpnProvider::From(arc_vpn_provider.get()));
+    vpn_providers_[arc_vpn_provider->package_name] =
+        VpnProvider::From(arc_vpn_provider.get());
   }
-  vpn_list_->SetArcVpnProviders(std::move(arc_vpn_provider_ptrs));
+  SetVpnProviders();
 }
 
 void VpnListForwarder::OnArcVpnProviderUpdated(
     app_list::ArcVpnProviderManager::ArcVpnProvider* arc_vpn_provider) {
-  vpn_list_->AddOrUpdateArcVPNProvider(
-      ash::mojom::ArcVpnProvider::From(arc_vpn_provider));
+  vpn_providers_[arc_vpn_provider->package_name] =
+      VpnProvider::From(arc_vpn_provider);
+  SetVpnProviders();
 }
 
 void VpnListForwarder::OnArcVpnProviderRemoved(
     const std::string& package_name) {
-  vpn_list_->RemoveArcVPNProvider(package_name);
+  vpn_providers_.erase(package_name);
+  SetVpnProviders();
 }
 
 void VpnListForwarder::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  if (IsVPNProvider(extension))
-    UpdateVPNProviders();
+  if (!IsVPNProvider(extension))
+    return;
+  vpn_providers_[extension->id()] = VpnProvider::From(extension);
+  SetVpnProviders();
 }
 
 void VpnListForwarder::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
-  if (IsVPNProvider(extension))
-    UpdateVPNProviders();
+  if (!IsVPNProvider(extension))
+    return;
+  vpn_providers_.erase(extension->id());
+  SetVpnProviders();
 }
 
 void VpnListForwarder::OnShutdown(extensions::ExtensionRegistry* registry) {
@@ -155,36 +170,15 @@ void VpnListForwarder::Observe(int type,
                                 weak_factory_.GetWeakPtr()));
 }
 
-void VpnListForwarder::UpdateVPNProviders() {
-  DCHECK(extension_registry_);
-
-  std::vector<ash::mojom::ThirdPartyVpnProviderPtr> third_party_providers;
-  for (const auto& extension : extension_registry_->enabled_extensions()) {
-    if (!IsVPNProvider(extension.get()))
-      continue;
-
-    ash::mojom::ThirdPartyVpnProviderPtr provider =
-        ash::mojom::ThirdPartyVpnProvider::New();
-    provider->name = extension->name();
-    provider->extension_id = extension->id();
-    third_party_providers.push_back(std::move(provider));
-  }
-
-  // Ash starts without any third-party providers. If we've never sent one then
-  // there's no need to send an empty list. This case commonly occurs on startup
-  // when the user has no third-party VPN extensions installed.
-  if (!sent_providers_ && third_party_providers.empty())
-    return;
-
-  vpn_list_->SetThirdPartyVpnProviders(std::move(third_party_providers));
-
-  sent_providers_ = true;
+void VpnListForwarder::SetVpnProviders() {
+  std::vector<VpnProviderPtr> config_providers;
+  config_providers.reserve(vpn_providers_.size());
+  for (const auto& iter : vpn_providers_)
+    config_providers.push_back(iter.second->Clone());
+  cros_network_config_->SetVpnProviders(std::move(config_providers));
 }
 
 void VpnListForwarder::AttachToPrimaryUserProfile() {
-  DCHECK(!vpn_list_);
-  vpn_list_ = ConnectToVpnList();
-  DCHECK(vpn_list_);
   AttachToPrimaryUserExtensionRegistry();
   AttachToPrimaryUserArcVpnProviderManager();
 }
@@ -195,7 +189,12 @@ void VpnListForwarder::AttachToPrimaryUserExtensionRegistry() {
       extensions::ExtensionRegistry::Get(GetProfileForPrimaryUser());
   extension_registry_->AddObserver(this);
 
-  UpdateVPNProviders();
+  for (const auto& extension : extension_registry_->enabled_extensions()) {
+    if (!IsVPNProvider(extension.get()))
+      continue;
+    vpn_providers_[extension->id()] = VpnProvider::From(extension.get());
+  }
+  SetVpnProviders();
 }
 
 void VpnListForwarder::AttachToPrimaryUserArcVpnProviderManager() {

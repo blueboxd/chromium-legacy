@@ -236,20 +236,35 @@ void SearchResultRanker::InitializeRankers() {
         app_list_features::kEnableZeroStateMixedTypesRanker,
         "default_group_score", zero_state_default_group_score_);
 
-    // TODO(959679): Setup json deployment.
     // TODO(959679): Swap to a stochastic model by default and tweak params.
-    RecurrenceRankerConfigProto config;
-    config.set_min_seconds_between_saves(240u);
-    config.set_condition_limit(1u);
-    config.set_condition_decay(0.5f);
-    config.set_target_limit(5u);
-    config.set_target_decay(0.8f);
-    config.mutable_predictor()->mutable_default_predictor();
+    RecurrenceRankerConfigProto default_config;
+    default_config.set_min_seconds_between_saves(240u);
+    default_config.set_condition_limit(1u);
+    default_config.set_condition_decay(0.5f);
+    default_config.set_target_limit(5u);
+    default_config.set_target_decay(0.8f);
+    default_config.mutable_predictor()->mutable_default_predictor();
 
-    zero_state_group_ranker_ = std::make_unique<RecurrenceRanker>(
-        "ZeroStateGroups",
-        profile_->GetPath().AppendASCII("zero_state_group_ranker.pb"), config,
-        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
+    const std::string config_json = GetFieldTrialParamValueByFeature(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "config");
+    config_converter_.Convert(
+        config_json, "ZeroStateGroups",
+        base::BindOnce(
+            [](SearchResultRanker* ranker,
+               const RecurrenceRankerConfigProto& default_config,
+               base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+              if (ranker->json_config_parsed_for_testing_)
+                std::move(ranker->json_config_parsed_for_testing_).Run();
+              ranker->zero_state_group_ranker_ =
+                  std::make_unique<RecurrenceRanker>(
+                      "ZeroStateGroups",
+                      ranker->profile_->GetPath().AppendASCII(
+                          "zero_state_group_ranker.pb"),
+                      parsed_config ? parsed_config.value() : default_config,
+                      chromeos::ProfileHelper::IsEphemeralUserProfile(
+                          ranker->profile_));
+            },
+            base::Unretained(this), default_config));
   }
 
   app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();

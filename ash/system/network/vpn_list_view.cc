@@ -54,36 +54,37 @@ using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
+using chromeos::network_config::mojom::VpnProvider;
+using chromeos::network_config::mojom::VpnProviderPtr;
 using chromeos::network_config::mojom::VpnType;
 
 namespace ash {
 namespace tray {
 namespace {
 
-struct CompareArcVPNProviderByLastLaunchTime {
-  bool operator()(const VPNProvider& provider1, const VPNProvider& provider2) {
-    return provider1.last_launch_time > provider2.last_launch_time;
+struct CompareArcVpnProviderByLastLaunchTime {
+  bool operator()(const VpnProviderPtr& provider1,
+                  const VpnProviderPtr& provider2) {
+    return provider1->last_launch_time > provider2->last_launch_time;
   }
 };
 
 // Indicates whether |network| belongs to this VPN provider.
-bool VpnProviderMatchesNetwork(const VPNProvider& provider,
+bool VpnProviderMatchesNetwork(const VpnProvider* provider,
                                const NetworkStateProperties* network) {
   DCHECK(network);
   // Never display non-VPN networks or VPNs with no provider info.
   if (network->type != NetworkType::kVPN)
     return false;
 
-  // Package name is the vpn provider id for ArcVPNProvider in network state.
-  if (network->vpn->type == VpnType::kArc) {
-    return provider.provider_type == VPNProvider::ARC_VPN &&
-           network->vpn->provider_id == provider.package_name;
+  if (network->vpn->type == VpnType::kArc ||
+      network->vpn->type == VpnType::kExtension) {
+    return network->vpn->type == provider->type &&
+           network->vpn->provider_id == provider->provider_id;
   }
-  if (network->vpn->type == VpnType::kExtension) {
-    return provider.provider_type == VPNProvider::THIRD_PARTY_VPN &&
-           network->vpn->provider_id == provider.app_id;
-  }
-  return provider.provider_type == VPNProvider::BUILT_IN_VPN;
+
+  // Internal provider types all match the default internal provider.
+  return provider->type == VpnType::kOpenVPN;
 }
 
 // Returns the PrefService that should be used for kVpnConfigAllowed, which is
@@ -104,11 +105,11 @@ bool IsVpnConfigAllowed() {
 // A list entry that represents a VPN provider.
 class VPNListProviderEntry : public views::ButtonListener, public views::View {
  public:
-  VPNListProviderEntry(const VPNProvider& vpn_provider,
+  VPNListProviderEntry(const VpnProviderPtr& vpn_provider,
                        bool top_item,
                        const std::string& name,
                        int button_accessible_name_id)
-      : vpn_provider_(vpn_provider) {
+      : vpn_provider_(vpn_provider->Clone()) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(std::make_unique<views::FillLayout>());
     TriView* tri_view = TrayPopupUtils::CreateSubHeaderRowView(true);
@@ -143,15 +144,15 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     // If the user clicks on a provider entry, request that the "add network"
     // dialog for this provider be shown.
-    if (vpn_provider_.provider_type == VPNProvider::THIRD_PARTY_VPN) {
+    if (vpn_provider_->type == VpnType::kExtension) {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
       Shell::Get()->system_tray_model()->client()->ShowThirdPartyVpnCreate(
-          vpn_provider_.app_id);
-    } else if (vpn_provider_.provider_type == VPNProvider::ARC_VPN) {
+          vpn_provider_->app_id);
+    } else if (vpn_provider_->type == VpnType::kArc) {
       // TODO(lgcheng@) Add UMA status if needed.
       Shell::Get()->system_tray_model()->client()->ShowArcVpnCreate(
-          vpn_provider_.app_id);
+          vpn_provider_->app_id);
     } else {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
@@ -161,7 +162,7 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
   }
 
  private:
-  const VPNProvider vpn_provider_;
+  VpnProviderPtr vpn_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(VPNListProviderEntry);
 };
@@ -297,12 +298,12 @@ void VPNListView::UpdateNetworkList() {
 void VPNListView::OnGetNetworkStateList(NetworkStateList networks) {
   // Before updating the list, determine whether the user was hovering over one
   // of the VPN provider or network entries.
-  std::unique_ptr<VPNProvider> hovered_provider;
+  VpnProviderPtr hovered_provider;
   std::string hovered_network_guid;
-  for (const std::pair<const views::View* const, VPNProvider>& provider :
+  for (const std::pair<const views::View* const, VpnProviderPtr>& entry :
        provider_view_map_) {
-    if (provider.first->IsMouseHovered()) {
-      hovered_provider.reset(new VPNProvider(provider.second));
+    if (entry.first->IsMouseHovered()) {
+      hovered_provider = entry.second->Clone();
       break;
     }
   }
@@ -330,10 +331,10 @@ void VPNListView::OnGetNetworkStateList(NetworkStateList networks) {
   // will be scrolled to ensure the entry is visible.
   const views::View* scroll_to_show_view = nullptr;
   if (hovered_provider) {
-    for (const std::pair<const views::View* const, VPNProvider>& provider :
+    for (const std::pair<const views::View* const, VpnProviderPtr>& entry :
          provider_view_map_) {
-      if (provider.second == *hovered_provider) {
-        scroll_to_show_view = provider.first;
+      if (entry.second->Equals(*hovered_provider)) {
+        scroll_to_show_view = entry.first;
         break;
       }
     }
@@ -365,7 +366,7 @@ bool VPNListView::IsNetworkEntry(views::View* view, std::string* guid) const {
   return true;
 }
 
-void VPNListView::OnVPNProvidersChanged() {
+void VPNListView::OnVpnProvidersChanged() {
   UpdateNetworkList();
 }
 
@@ -385,32 +386,29 @@ void VPNListView::AddNetwork(const NetworkStateProperties* network) {
   list_empty_ = false;
 }
 
-void VPNListView::AddProviderAndNetworks(const VPNProvider& vpn_provider) {
-  AddProviderAndNetworks(vpn_provider, {});
-}
-
-void VPNListView::AddProviderAndNetworks(const VPNProvider& vpn_provider,
+void VPNListView::AddProviderAndNetworks(VpnProviderPtr vpn_provider,
                                          const NetworkStateList& networks) {
   // Add a visual separator, unless this is the topmost entry in the list.
   if (!list_empty_) {
     scroll_content()->AddChildView(CreateListSubHeaderSeparator());
   }
   std::string vpn_name =
-      vpn_provider.provider_type == VPNProvider::BUILT_IN_VPN
+      vpn_provider->type == VpnType::kOpenVPN
           ? l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER)
-          : vpn_provider.provider_name;
+          : vpn_provider->provider_name;
 
   // Add a list entry for the VPN provider.
   views::View* provider_view = nullptr;
   provider_view = new VPNListProviderEntry(vpn_provider, list_empty_, vpn_name,
                                            IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
   scroll_content()->AddChildView(provider_view);
-  provider_view_map_[provider_view] = vpn_provider;
+  const VpnProvider* vpn_providerp = vpn_provider.get();
+  provider_view_map_[provider_view] = std::move(vpn_provider);
   list_empty_ = false;
   // Add the networks belonging to this provider, in the priority order returned
   // by shill.
   for (const auto& network : networks) {
-    if (VpnProviderMatchesNetwork(vpn_provider, network.get()))
+    if (VpnProviderMatchesNetwork(vpn_providerp, network.get()))
       AddNetwork(network.get());
   }
 }
@@ -418,12 +416,12 @@ void VPNListView::AddProviderAndNetworks(const VPNProvider& vpn_provider,
 bool VPNListView::ProcessProviderForNetwork(
     const NetworkStateProperties* network,
     const NetworkStateList& networks,
-    std::vector<VPNProvider>* providers) {
+    std::vector<VpnProviderPtr>* providers) {
   for (auto provider_iter = providers->begin();
        provider_iter != providers->end(); ++provider_iter) {
-    if (!VpnProviderMatchesNetwork(*provider_iter, network))
+    if (!VpnProviderMatchesNetwork(provider_iter->get(), network))
       continue;
-    AddProviderAndNetworks(*provider_iter, networks);
+    AddProviderAndNetworks(std::move(*provider_iter), networks);
     providers->erase(provider_iter);
     return true;
   }
@@ -431,14 +429,22 @@ bool VPNListView::ProcessProviderForNetwork(
 }
 
 void VPNListView::AddProvidersAndNetworks(const NetworkStateList& networks) {
-  // Get the list of VPN providers enabled in the primary user's profile.
-  std::vector<VPNProvider> extension_providers =
-      Shell::Get()->vpn_list()->extension_vpn_providers();
-  // Get the list of Arc VPN providers installed in the primary user's profile.
-  std::vector<VPNProvider> arc_providers =
-      Shell::Get()->vpn_list()->arc_vpn_providers();
+  // Copy the list of Extension VPN providers enabled in the primary user's
+  // profile.
+  std::vector<VpnProviderPtr> extension_providers;
+  for (const VpnProviderPtr& provider :
+       Shell::Get()->vpn_list()->extension_vpn_providers()) {
+    extension_providers.push_back(provider->Clone());
+  }
+  // Copy the list of Arc VPN providers installed in the primary user's profile.
+  std::vector<VpnProviderPtr> arc_providers;
+  for (const VpnProviderPtr& provider :
+       Shell::Get()->vpn_list()->arc_vpn_providers()) {
+    arc_providers.push_back(provider->Clone());
+  }
+
   std::sort(arc_providers.begin(), arc_providers.end(),
-            CompareArcVPNProviderByLastLaunchTime());
+            CompareArcVpnProviderByLastLaunchTime());
 
   // Add connected ARCVPN network. If we can find the correct provider, nest
   // the network under the provider. Otherwise list it unnested.
@@ -462,13 +468,13 @@ void VPNListView::AddProvidersAndNetworks(const NetworkStateList& networks) {
 
   // Add providers without any configured networks, in the order that the
   // providers were returned by the extensions system.
-  for (const VPNProvider& extension_provider : extension_providers)
-    AddProviderAndNetworks(extension_provider);
+  for (VpnProviderPtr& extension_provider : extension_providers)
+    AddProviderAndNetworks(std::move(extension_provider), {});
 
   // Add Arc VPN providers without any connected or connecting networks. These
   // providers are sorted by last launch time.
-  for (const VPNProvider& arc_provider : arc_providers) {
-    AddProviderAndNetworks(arc_provider);
+  for (VpnProviderPtr& arc_provider : arc_providers) {
+    AddProviderAndNetworks(std::move(arc_provider), {});
   }
 }
 

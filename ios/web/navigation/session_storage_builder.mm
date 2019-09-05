@@ -43,8 +43,17 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
        ++index) {
     web::NavigationItemImpl* item =
         navigation_manager->GetNavigationItemImplAtIndex(index);
+    if (item->ShouldSkipSerialization()) {
+      if (index <= static_cast<size_t>(
+                       navigation_manager->GetLastCommittedItemIndex())) {
+        session_storage.lastCommittedItemIndex--;
+      }
+      continue;
+    }
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
+  DCHECK_LT(session_storage.lastCommittedItemIndex,
+            static_cast<NSInteger>(item_storages.count));
   session_storage.itemStorages = item_storages;
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   session_storage.certPolicyCacheStorage = cert_builder.BuildStorage(

@@ -702,7 +702,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
   BrowserInterfaceBrokerImpl<ServiceWorkerProviderHost,
-                             const ServiceWorkerRunningInfo&>
+                             const ServiceWorkerVersionInfo&>
       broker_{this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};

@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/language/core/browser/pref_names.h"
@@ -86,16 +85,6 @@ class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
 
 TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   PrefService* prefs = profile()->GetPrefs();
-
-  ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
-  prefs->SetBoolean(prefs::kVoiceInteractionEnabled, true);
-  ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
-  EXPECT_EQ(true, ash::AssistantState::Get()->settings_enabled());
-
-  ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
-  prefs->SetBoolean(prefs::kVoiceInteractionHotwordEnabled, true);
-  ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_EQ(true, ash::AssistantState::Get()->hotword_enabled());
 
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");

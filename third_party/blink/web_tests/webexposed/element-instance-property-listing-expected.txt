@@ -668,7 +668,6 @@ html element img
     property height
     property hspace
     property importance
-    property intrinsicSize
     property isMap
     property loading
     property longDesc
@@ -1154,7 +1153,6 @@ html element video
     property error
     property getVideoPlaybackQuality
     property height
-    property intrinsicSize
     property load
     property loop
     property mediaKeys
@@ -1932,7 +1930,6 @@ svg element image
     property getScreenCTM
     property height
     property href
-    property intrinsicSize
     property nearestViewportElement
     property preserveAspectRatio
     property requiredExtensions

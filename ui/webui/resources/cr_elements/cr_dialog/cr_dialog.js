@@ -253,7 +253,7 @@ Polymer({
    * @return {!HTMLDialogElement}
    */
   getNative: function() {
-    return this.$.dialog;
+    return /** @type {!HTMLDialogElement} */ (this.$.dialog);
   },
 
   /**
@@ -318,7 +318,7 @@ Polymer({
           {transform: 'scale(1.02)', offset: 0.6},
           {transform: 'scale(1)', offset: 1},
         ],
-        /** @type {!KeyframeEffectOptions} */ ({
+        /** @type {!KeyframeAnimationOptions} */ ({
           duration: 180,
           easing: 'ease-in-out',
           iterations: 1,

@@ -157,6 +157,12 @@ test('bookmarkManagerPrivate', async () => {
       // Copy the fooNode.
       doCopy([fooNode.id]);
 
+      // Ensure canPaste is now true.
+      bookmarkManager.canPaste('1', pass(function(result) {
+                                 assertTrue(
+                                     result, 'Should be able to paste now');
+                               }));
+
       // Paste it.
       doPaste('1');
 
@@ -183,6 +189,12 @@ test('bookmarkManagerPrivate', async () => {
                                      count -= 2;
                                      assertEquals(count, result.length);
                                    }));
+
+      // Ensure canPaste is still true.
+      bookmarkManager.canPaste('1', pass(function(result) {
+                                 assertTrue(
+                                     result, 'Should be able to paste now');
+                               }));
     },
 
     function clipboard4() {
@@ -222,6 +234,12 @@ test('bookmarkManagerPrivate', async () => {
       // Copy it.
       doCopy([emptyFolder.id]);
 
+      // Ensure canPaste is now true.
+      bookmarkManager.canPaste('1', pass(function(result) {
+                                 assertTrue(
+                                     result, 'Should be able to paste now');
+                               }));
+
       // Paste it at the end of a multiple selection.
       doPaste('1', [barNode.id, fooNode2.id]);
 
@@ -260,6 +278,14 @@ test('bookmarkManagerPrivate', async () => {
 
             // Pasting to a managed folder is not allowed.
             assertTrue(result[1].url === undefined);
+
+            bookmarkManager.canPaste(
+                result[1].id, pass(function(result) {
+                  assertFalse(
+                      result,
+                      'Should not be able to paste to managed folders.');
+                }));
+
             bookmarkManager.paste(result[1].id, fail(error));
           }));
     },

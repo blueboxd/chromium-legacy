@@ -106,8 +106,6 @@ const char kPasswordProtectionWarningTrigger[] =
     "safebrowsing.password_protection_warning_trigger";
 const char kAdvancedProtectionLastRefreshInUs[] =
     "safebrowsing.advanced_protection_last_refresh";
-const char kPasswordProtectedAllowed[] =
-    "safebrowsing.password_protected_allowed";
 const char kSafeBrowsingRealTimeLookupEnabled[] =
     "safebrowsing.real_time_lookup_enabled";
 const char kSafeBrowsingSendFilesForMalwareCheck[] =
@@ -187,7 +185,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);
   registry->RegisterInt64Pref(prefs::kAdvancedProtectionLastRefreshInUs, 0);
-  registry->RegisterBooleanPref(prefs::kPasswordProtectedAllowed, true);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                 false);
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
@@ -199,7 +196,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kUnsafeEventsReportingEnabled, false);
   registry->RegisterIntegerPref(prefs::kBlockLargeFileTransfer, 0);
   registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, 0);
-  registry->RegisterIntegerPref(prefs::kAllowPasswordProtectedFiles, 0);
+  registry->RegisterIntegerPref(
+      prefs::kAllowPasswordProtectedFiles,
+      AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   registry->RegisterIntegerPref(prefs::kCheckContentCompliance, 0);
 }
 

@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "components/download/public/common/download_features.h"
-#include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/browser_context.h"
@@ -99,9 +98,7 @@ DownloadManagerUtils::GetInProgressDownloadManager(ProfileKey* key) {
                                           key->IsOffTheRecord());
     scoped_refptr<network::SharedURLLoaderFactory> factory =
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
-    in_progress_manager->set_url_loader_factory_getter(
-        base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
-            factory->Clone()));
+    in_progress_manager->set_url_loader_factory(std::move(factory));
     map[key] = std::move(in_progress_manager);
   }
   return map[key].get();

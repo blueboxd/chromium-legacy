@@ -24,6 +24,7 @@
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/activity.h"
 #include "extensions/browser/event_page_tracker.h"
@@ -387,7 +388,7 @@ class ProcessManager : public KeyedService,
 
   // Observers of Service Worker RPH this ProcessManager manages.
   ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
-      process_observer_;
+      process_observer_{this};
   // Maps render render_process_id -> extension_id for all Service Workers this
   // ProcessManager manages.
   std::map<int, std::set<ExtensionId>> worker_process_to_extension_ids_;

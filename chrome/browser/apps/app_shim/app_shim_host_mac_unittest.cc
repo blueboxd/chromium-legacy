@@ -20,6 +20,8 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -33,8 +35,9 @@ class TestingAppShim : public chrome::mojom::AppShim {
     return base::BindOnce(&TestingAppShim::LaunchAppDone,
                           base::Unretained(this));
   }
-  chrome::mojom::AppShimHostBootstrapRequest GetHostBootstrapRequest() {
-    return mojo::MakeRequest(&host_bootstrap_ptr_);
+  mojo::PendingReceiver<chrome::mojom::AppShimHostBootstrap>
+  GetHostBootstrapReceiver() {
+    return host_bootstrap_remote_.BindNewPipeAndPassReceiver();
   }
 
   apps::AppShimLaunchResult GetLaunchResult() const {
@@ -59,7 +62,7 @@ class TestingAppShim : public chrome::mojom::AppShim {
   bool received_launch_done_result_ = false;
   apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
 
-  chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_ptr_;
+  mojo::Remote<chrome::mojom::AppShimHostBootstrap> host_bootstrap_remote_;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShim);
 };
 
@@ -81,11 +84,11 @@ class TestingAppShimHost : public AppShimHost {
 class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
   explicit TestingAppShimHostBootstrap(
-      chrome::mojom::AppShimHostBootstrapRequest host_request)
+      mojo::PendingReceiver<chrome::mojom::AppShimHostBootstrap> host_receiver)
       : AppShimHostBootstrap(getpid()), test_weak_factory_(this) {
-    // AppShimHost will bind to the request from ServeChannel. For testing
-    // purposes, have this request passed in at creation.
-    host_bootstrap_binding_.Bind(std::move(host_request));
+    // AppShimHost will bind to the receiver from ServeChannel. For testing
+    // purposes, have this receiver passed in at creation.
+    host_bootstrap_receiver_.Bind(std::move(host_receiver));
   }
 
   base::WeakPtr<TestingAppShimHostBootstrap> GetWeakPtr() {
@@ -118,7 +121,7 @@ class AppShimHostTest : public testing::Test,
 
   void LaunchApp(apps::AppShimLaunchType launch_type) {
     // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
-    (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapRequest()))
+    (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapReceiver()))
         ->LaunchApp(mojo::MakeRequest(&host_ptr_),
                     base::FilePath(kTestProfileDir), kTestAppId, launch_type,
                     std::vector<base::FilePath>(),

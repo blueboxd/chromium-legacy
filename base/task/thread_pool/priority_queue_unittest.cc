@@ -24,15 +24,6 @@ namespace internal {
 
 namespace {
 
-scoped_refptr<TaskSource> MakeSequenceWithTraitsAndTask(
-    const TaskTraits& traits) {
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
-      traits, nullptr, TaskSourceExecutionMode::kParallel);
-  sequence->BeginTransaction().PushTask(
-      Task(FROM_HERE, DoNothing(), TimeDelta()));
-  return sequence;
-}
-
 class PriorityQueueWithSequencesTest : public testing::Test {
  protected:
   void ExpectNumSequences(size_t num_best_effort,
@@ -46,13 +37,25 @@ class PriorityQueueWithSequencesTest : public testing::Test {
               num_user_blocking);
   }
 
-  void Push(scoped_refptr<TaskSource> task_source) {
+  scoped_refptr<TaskSource> MakeSequenceWithTraitsAndTask(
+      const TaskTraits& traits) {
     // FastForward time to ensure that queue order between task sources is well
     // defined.
     task_environment.FastForwardBy(TimeDelta::FromMicroseconds(1));
+    scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
+        traits, nullptr, TaskSourceExecutionMode::kParallel);
+    sequence->BeginTransaction().PushTask(
+        Task(FROM_HERE, DoNothing(), TimeDelta()));
+    return sequence;
+  }
+
+  void Push(scoped_refptr<TaskSource> task_source) {
     pq.Push(TransactionWithRegisteredTaskSource::FromTaskSource(
         RegisteredTaskSource::CreateForTesting(std::move(task_source))));
   }
+
+  test::TaskEnvironment task_environment{
+      test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   scoped_refptr<TaskSource> sequence_a = MakeSequenceWithTraitsAndTask(
       TaskTraits(ThreadPool(), TaskPriority::USER_VISIBLE));
@@ -71,8 +74,6 @@ class PriorityQueueWithSequencesTest : public testing::Test {
   SequenceSortKey sort_key_d = sequence_d->BeginTransaction().GetSortKey();
 
   PriorityQueue pq;
-  test::TaskEnvironment task_environment{
-      test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 }  // namespace

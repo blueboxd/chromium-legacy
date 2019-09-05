@@ -42,6 +42,8 @@ NGLayoutResult::NGLayoutResult(
                      /* cache_space */ true) {
   bitfields_.is_initial_block_size_indefinite =
       builder->is_initial_block_size_indefinite_;
+  bitfields_.subtree_modified_margin_strut =
+      builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
   if (builder->minimal_space_shortage_ != LayoutUnit::Max())
     EnsureRareData()->minimal_space_shortage = builder->minimal_space_shortage_;
@@ -77,6 +79,7 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
 
 NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                const NGConstraintSpace& new_space,
+                               const NGMarginStrut& new_end_margin_strut,
                                LayoutUnit bfc_line_offset,
                                base::Optional<LayoutUnit> bfc_block_offset,
                                LayoutUnit block_offset_delta)
@@ -108,6 +111,9 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
   } else {
     space_.ExclusionSpace().MoveDerivedGeometry(new_exclusion_space);
   }
+
+  if (new_end_margin_strut != NGMarginStrut() || HasRareData())
+    EnsureRareData()->end_margin_strut = new_end_margin_strut;
 }
 
 NGLayoutResult::NGLayoutResult(
@@ -220,6 +226,9 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
             other.bitfields_.is_pushed_by_floats);
   DCHECK_EQ(bitfields_.adjoining_object_types,
             other.bitfields_.adjoining_object_types);
+
+  DCHECK_EQ(bitfields_.subtree_modified_margin_strut,
+            other.bitfields_.subtree_modified_margin_strut);
 
   DCHECK_EQ(bitfields_.initial_break_before,
             other.bitfields_.initial_break_before);

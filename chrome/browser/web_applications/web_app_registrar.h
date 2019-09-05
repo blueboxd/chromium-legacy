@@ -21,7 +21,9 @@
 namespace web_app {
 
 class WebApp;
+class WebAppRegistryUpdate;
 
+// A registry. This is a read-only container, which owns WebApp objects.
 class WebAppRegistrar : public AppRegistrar {
  public:
   explicit WebAppRegistrar(Profile* profile, AbstractWebAppDatabase* database);
@@ -29,13 +31,19 @@ class WebAppRegistrar : public AppRegistrar {
 
   void RegisterApp(std::unique_ptr<WebApp> web_app);
   std::unique_ptr<WebApp> UnregisterApp(const AppId& app_id);
-
-  const WebApp* GetAppById(const AppId& app_id) const;
+  void UnregisterAll();
 
   bool is_empty() const { return registry_.empty(); }
 
-  // Clears registry.
-  void UnregisterAll();
+  const WebApp* GetAppById(const AppId& app_id) const;
+
+  using CommitCallback = base::OnceCallback<void(bool success)>;
+
+  // This is the writable API for the registry. Any updates should be written to
+  // LevelDb. There can be only 1 update at a time.
+  std::unique_ptr<WebAppRegistryUpdate> BeginUpdate();
+  void CommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update,
+                    CommitCallback callback);
 
   // AppRegistrar:
   void Init(base::OnceClosure callback) override;
@@ -107,11 +115,14 @@ class WebAppRegistrar : public AppRegistrar {
   const Registry& registry_for_testing() const { return registry_; }
 
  private:
+  friend class WebAppRegistryUpdate;
   FRIEND_TEST_ALL_PREFIXES(WebAppRegistrarTest, AllAppsMutable);
 
+  WebApp* GetAppByIdMutable(const AppId& app_id);
   AppSet AllAppsMutable();
 
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
+  void OnDataWritten(CommitCallback callback, bool success);
 
   void CountMutation();
 
@@ -119,6 +130,8 @@ class WebAppRegistrar : public AppRegistrar {
 
   // An abstract database, not owned by this registrar.
   AbstractWebAppDatabase* database_;
+
+  bool is_in_update_ = false;
 
 #if DCHECK_IS_ON()
   size_t mutations_count_ = 0;

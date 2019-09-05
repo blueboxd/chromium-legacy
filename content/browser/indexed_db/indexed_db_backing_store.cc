@@ -831,8 +831,9 @@ V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
 }
 
 std::unique_ptr<IndexedDBBackingStore::Transaction>
-IndexedDBBackingStore::CreateTransaction() {
-  return std::make_unique<IndexedDBBackingStore::Transaction>(this);
+IndexedDBBackingStore::CreateTransaction(bool relaxed_durability) {
+  return std::make_unique<IndexedDBBackingStore::Transaction>(
+      this, relaxed_durability);
 }
 
 leveldb::Status IndexedDBBackingStore::GetCompleteMetadata(
@@ -949,7 +950,8 @@ Status IndexedDBBackingStore::DeleteDatabase(
     need_cleanup = true;
   }
 
-  s = transaction->Commit();
+  bool sync_on_commit = false;
+  s = transaction->Commit(sync_on_commit);
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR_UNTESTED(DELETE_DATABASE);
     return s;
@@ -1359,9 +1361,10 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       int64_t database_id,
       base::WeakPtr<IndexedDBBackingStore> backing_store,
       WriteDescriptorVec* blobs,
+      bool relaxed_durability_,
       IndexedDBBackingStore::BlobWriteCallback callback) {
     auto writer = base::WrapRefCounted(new ChainedBlobWriterImpl(
-        database_id, backing_store, std::move(callback)));
+        database_id, backing_store, relaxed_durability_, std::move(callback)));
     writer->blobs_.swap(*blobs);
     writer->iter_ = writer->blobs_.begin();
     backing_store->task_runner()->PostTask(
@@ -1402,11 +1405,18 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     self_ref_ = this;
   }
 
+  storage::FlushPolicy GetFlushPolicy() const override {
+    return relaxed_durability_ ? storage::FlushPolicy::NO_FLUSH_ON_COMPLETION
+                               : storage::FlushPolicy::FLUSH_ON_COMPLETION;
+  }
+
  private:
   ChainedBlobWriterImpl(int64_t database_id,
                         base::WeakPtr<IndexedDBBackingStore> backing_store,
+                        bool relaxed_durability,
                         IndexedDBBackingStore::BlobWriteCallback callback)
       : waiting_for_callback_(false),
+        relaxed_durability_(relaxed_durability),
         database_id_(database_id),
         backing_store_(backing_store),
         callback_(std::move(callback)),
@@ -1434,6 +1444,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
   bool waiting_for_callback_;
+  bool relaxed_durability_;
   scoped_refptr<ChainedBlobWriterImpl> self_ref_;
   WriteDescriptorVec blobs_;
   WriteDescriptorVec::const_iterator iter_;
@@ -1501,7 +1512,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
             storage::FileStreamWriter::CREATE_NEW_FILE);
     std::unique_ptr<FileWriterDelegate> delegate(
         std::make_unique<FileWriterDelegate>(
-            std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));
+            std::move(writer), chained_blob_writer_->GetFlushPolicy()));
 
     DCHECK(blob);
     this->file_path_ = file_path;
@@ -2837,12 +2848,14 @@ void IndexedDBBackingStore::ForceRunBlobCleanup() {
 
 // |backing_store| can be null in unittests (see FakeTransaction).
 IndexedDBBackingStore::Transaction::Transaction(
-    IndexedDBBackingStore* backing_store)
+    IndexedDBBackingStore* backing_store,
+    bool relaxed_durability)
     : backing_store_(backing_store),
       leveldb_factory_(backing_store ? backing_store->leveldb_factory_
                                      : nullptr),
       database_id_(-1),
-      committing_(false) {}
+      committing_(false),
+      relaxed_durability_(relaxed_durability) {}
 
 IndexedDBBackingStore::Transaction::~Transaction() {
   DCHECK(!committing_);
@@ -3066,7 +3079,8 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   // Actually commit. If this succeeds, the journals will appropriately
   // reflect pending blob work - dead files that should be deleted
   // immediately, and live files to monitor.
-  s = transaction_->Commit();
+  bool sync_on_commit = !relaxed_durability_;
+  s = transaction_->Commit(sync_on_commit);
   transaction_ = nullptr;
 
   if (!s.ok()) {
@@ -3135,6 +3149,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   // can be destructed before the callback is triggered.
   chained_blob_writer_ = ChainedBlobWriterImpl::Create(
       database_id_, backing_store_->AsWeakPtr(), new_files_to_write,
+      relaxed_durability_,
       base::BindOnce(
           [](base::WeakPtr<IndexedDBBackingStore::Transaction> transaction,
              void* tracing_end_ptr, BlobWriteCallback final_callback,

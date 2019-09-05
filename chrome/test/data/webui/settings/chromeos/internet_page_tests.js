@@ -23,8 +23,6 @@ suite('InternetPage', function() {
       internetAddConnectionNotAllowed: 'internetAddConnectionNotAllowed',
       internetAddThirdPartyVPN: 'internetAddThirdPartyVPN',
       internetAddVPN: 'internetAddVPN',
-      internetAddArcVPN: 'internetAddArcVPN',
-      internetAddArcVPNProvider: 'internetAddArcVPNProvider',
       internetAddWiFi: 'internetAddWiFi',
       internetDetailPageTitle: 'internetDetailPageTitle',
       internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
@@ -63,10 +61,6 @@ suite('InternetPage', function() {
     api_.resetForTest();
     api_.addNetworksForTest(networks);
     api_.onNetworkListChanged.callListeners();
-  }
-
-  function setArcVpnProvidersForTest(arcVpnProviders) {
-    cr.webUIListenerCallback('sendArcVpnProviders', arcVpnProviders);
   }
 
   setup(function() {
@@ -148,34 +142,38 @@ suite('InternetPage', function() {
       });
     });
 
-    test('ArcVPNProvider', function() {
-      setArcVpnProvidersForTest([
+    test('VpnProviders', function() {
+      mojoApi_.setVpnProvidersForTest([
         {
-          Packagename: 'vpn.app.pacakge1',
-          ProviderName: 'MyArcVPN1',
-          AppID: 'arcid1',
-          LastLaunchTime: 0
+          type: chromeos.networkConfig.mojom.VpnType.kExtension,
+          providerId: 'extension_id1',
+          providerName: 'MyExtensionVPN1',
+          appId: 'extension_id1',
+          lastLaunchTime: {internalValue: 0},
         },
         {
-          Packagename: 'vpn.app.pacakge2',
-          ProviderName: 'MyArcVPN2',
-          AppID: 'arcid2',
-          LastLaunchTime: 1
+          type: chromeos.networkConfig.mojom.VpnType.kArc,
+          providerId: 'vpn.app.package1',
+          providerName: 'MyArcVPN1',
+          appId: 'arcid1',
+          lastLaunchTime: {internalValue: 1},
+        },
+        {
+          type: chromeos.networkConfig.mojom.VpnType.kArc,
+          providerId: 'vpn.app.package2',
+          providerName: 'MyArcVPN2',
+          appId: 'arcid2',
+          lastLaunchTime: {internalValue: 2},
         }
       ]);
       return flushAsync().then(() => {
-        const expandAddConnections = internetPage.$$('#expandAddConnections');
-        assertTrue(!!expandAddConnections);
-        assertTrue(!expandAddConnections.expanded);
-        internetPage.addConnectionExpanded_ = true;
-        return flushAsync().then(() => {
-          const addArcVpn = internetPage.$$('#addArcVpn');
-          assertTrue(!!addArcVpn);
-          addArcVpn.click();
-          return flushAsync().then(() => {
-            assertEquals(2, internetPage.arcVpnProviders_.length);
-          });
-        });
+        assertEquals(3, internetPage.vpnProviders_.length);
+        // Ensure providers are sorted by type and lastLaunchTime.
+        assertEquals('extension_id1', internetPage.vpnProviders_[0].providerId);
+        assertEquals(
+            'vpn.app.package2', internetPage.vpnProviders_[1].providerId);
+        assertEquals(
+            'vpn.app.package1', internetPage.vpnProviders_[2].providerId);
       });
     });
   });

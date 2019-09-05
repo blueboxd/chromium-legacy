@@ -758,7 +758,7 @@ function init() {
 
   utils.setPlatformClass(document.body);
   utils.disableOutlineOnMouseClick($(customize.IDS.EDIT_BG));
-  document.body.classList.add(CLASSES.INITED);
+  document.documentElement.classList.add(CLASSES.INITED);
 }
 
 /**

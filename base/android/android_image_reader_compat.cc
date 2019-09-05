@@ -10,17 +10,11 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 
-// Helper function to log errors from dlsym. Calling DLOG(ERROR) inside a macro
-// crashes clang code coverage. https://crbug.com/843356
-static void LogDlsymError(const char* func) {
-  DLOG(ERROR) << "Unable to load function " << func;
-}
-
 #define LOAD_FUNCTION(lib, func)                            \
   do {                                                      \
     func##_ = reinterpret_cast<p##func>(dlsym(lib, #func)); \
     if (!func##_) {                                         \
-      LogDlsymError(#func);                                 \
+      DLOG(ERROR) << "Unable to load function " << #func;   \
       return false;                                         \
     }                                                       \
   } while (0)

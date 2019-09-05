@@ -19,33 +19,32 @@ class FlagsUITest : public testing::Test {
   content::TestBrowserThreadBundle bundle_;
 };
 
-TEST_F(FlagsUITest, IsEnterpriseUrl) {
+TEST_F(FlagsUITest, IsDeprecatedUrl) {
   const struct {
     std::string url;
-    bool is_enterprise;
+    bool is_deprecated;
   } expectations[] = {
       {"chrome://flags", false},
-      {"chrome://flags/no/enterprise", false},
-      {"chrome://enterprise", false},
-      {"chrome://flags/enterprise", true},
-      {"chrome://flags/enterprise/", true},
-      {"chrome://flags//enterprise/yes?no", false},
+      {"chrome://flags/no/deprecated", false},
+      {"chrome://deprecated", false},
+      {"chrome://flags/deprecated", true},
+      {"chrome://flags/deprecated/", true},
+      {"chrome://flags//deprecated/yes?no", false},
   };
 
   for (const auto& expectation : expectations) {
-    EXPECT_EQ(expectation.is_enterprise,
-              FlagsEnterpriseUI::IsEnterpriseUrl(GURL(expectation.url)));
+    EXPECT_EQ(expectation.is_deprecated,
+              FlagsDeprecatedUI::IsDeprecatedUrl(GURL(expectation.url)));
   }
 }
 
-TEST_F(FlagsUITest, FlagsAndEnterpriseSources) {
+TEST_F(FlagsUITest, FlagsAndDeprecatedSources) {
   std::unique_ptr<content::TestWebUIDataSource> flags_strings =
       content::TestWebUIDataSource::Create("A");
-  std::unique_ptr<content::TestWebUIDataSource> enterprise_strings =
+  std::unique_ptr<content::TestWebUIDataSource> deprecated_strings =
       content::TestWebUIDataSource::Create("B");
-  FlagsUI::AddFlagsStrings(flags_strings->GetWebUIDataSource());
-  FlagsEnterpriseUI::AddEnterpriseStrings(
-      enterprise_strings->GetWebUIDataSource());
+  FlagsUI::AddStrings(flags_strings->GetWebUIDataSource());
+  FlagsDeprecatedUI::AddStrings(deprecated_strings->GetWebUIDataSource());
   EXPECT_EQ(flags_strings->GetLocalizedStrings()->size(),
-            enterprise_strings->GetLocalizedStrings()->size());
+            deprecated_strings->GetLocalizedStrings()->size());
 }

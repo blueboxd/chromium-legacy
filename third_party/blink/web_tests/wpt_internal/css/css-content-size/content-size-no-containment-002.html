@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf8">
+<title>CSS content-size: no size containment</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+<link rel="match" href="content-size-no-containment-002-ref.html">
+
+<style>
+#flex {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+
+#one {
+  background: lightblue;
+  content-size: 111px 222px;
+  flex-grow: 3;
+}
+#two {
+  background: lightgreen;
+  content-size: 333px 1px;
+  flex-grow: 2;
+}
+#three {
+  background: lightgrey;
+  content-size: 1px 444px;
+  flex-grow: 1;
+}
+</style>
+
+<div id=flex>
+  <div id=one>Lorem ipsum</div>
+  <div id=two>dolor sit amet</div>
+  <div id=three>consectetur adipiscing elit</div>
+</div>

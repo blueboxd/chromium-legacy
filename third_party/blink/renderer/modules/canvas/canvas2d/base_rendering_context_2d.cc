@@ -125,7 +125,6 @@ void BaseRenderingContext2D::UnwindStateStack() {
         sk_canvas->restore();
     }
   }
-  ValidateStateStack();
 }
 
 void BaseRenderingContext2D::Reset() {

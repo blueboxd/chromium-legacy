@@ -584,6 +584,13 @@
       },
     },
   },
+  'win10-1803': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-10-17134',
+      },
+    },
+  },
   'win10_amd_rx_550': {
     'swarming': {
       'dimensions': {

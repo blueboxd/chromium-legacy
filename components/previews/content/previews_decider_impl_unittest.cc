@@ -1003,7 +1003,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 
@@ -1034,7 +1034,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 
@@ -1138,7 +1138,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 
@@ -1216,11 +1216,13 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason",
-      static_cast<int>(PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER),
+      static_cast<int>(
+          PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER),
+      static_cast<int>(
+          PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
 }
 
@@ -1444,7 +1446,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 
@@ -1476,7 +1478,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 
@@ -1635,7 +1637,7 @@ TEST_F(PreviewsDeciderImplTest, DeferAllScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.DeferAllScript",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 
@@ -1667,7 +1669,7 @@ TEST_F(PreviewsDeciderImplTest, DeferAllScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.DeferAllScript",
         static_cast<int>(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+            PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
         1);
   }
 

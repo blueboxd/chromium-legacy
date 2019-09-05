@@ -135,9 +135,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     crostini_test_helper_.reset(new crostini::CrostiniTestHelper(profile()));
     scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kCrostiniUsbSupport,
-         chromeos::features::kCrostiniUsbAllowUnsupported},
-        {});
+        {chromeos::features::kCrostiniUsbAllowUnsupported}, {});
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());

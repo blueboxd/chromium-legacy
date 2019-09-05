@@ -12,7 +12,8 @@
 #include "chrome/browser/performance_manager/public/graph/node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom-shared.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
+#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 class GURL;
 
@@ -26,6 +27,7 @@ class PageNodeObserver;
 // Extensions.
 class PageNode : public Node {
  public:
+  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
@@ -65,6 +67,9 @@ class PageNode : public Node {
   // lifecycle state of each frame in the frame tree. See
   // PageNodeObserver::OnPageLifecycleStateChanged.
   virtual LifecycleState GetLifecycleState() const = 0;
+
+  // Returns the freeze policy set via origin trial.
+  virtual InterventionPolicy GetOriginTrialFreezePolicy() const = 0;
 
   // Returns the navigation ID associated with the last committed navigation
   // event for the main frame of this page.
@@ -116,22 +121,26 @@ class PageNodeObserver {
 
   // Notifications of property changes.
 
-  // Invoked when the |is_visible| property changes.
+  // Invoked when the IsVisible property changes.
   virtual void OnIsVisibleChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |is_audible| property changes.
+  // Invoked when the IsAudible property changes.
   virtual void OnIsAudibleChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |is_loading| property changes.
+  // Invoked when the IsLoading property changes.
   virtual void OnIsLoadingChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |ukm_source_id| property changes.
+  // Invoked when the UkmSourceId property changes.
   virtual void OnUkmSourceIdChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |lifecycle_state| property changes.
+  // Invoked when the PageLifecycleState property changes.
   virtual void OnPageLifecycleStateChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |page_almost_idle| property changes.
+  // Invoked when the OriginTrialFreezePolicy property changes.
+  virtual void OnPageOriginTrialFreezePolicyChanged(
+      const PageNode* page_node) = 0;
+
+  // Invoked when the PageAlmostIdle property changes.
   virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
 
   // This is fired when a main frame navigation commits. It indicates that the
@@ -172,6 +181,8 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnIsLoadingChanged(const PageNode* page_node) override {}
   void OnUkmSourceIdChanged(const PageNode* page_node) override {}
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {}
+  void OnPageOriginTrialFreezePolicyChanged(
+      const PageNode* page_node) override {}
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameNavigationCommitted(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}

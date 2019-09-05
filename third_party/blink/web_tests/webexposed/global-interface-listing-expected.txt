@@ -2383,6 +2383,33 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemDirectoryHandle : FileSystemHandle
+    static method getSystemDirectory
+    attribute @@toStringTag
+    method constructor
+    method getDirectory
+    method getEntries
+    method getFile
+    method removeEntry
+interface FileSystemFileHandle : FileSystemHandle
+    attribute @@toStringTag
+    method constructor
+    method createWriter
+    method getFile
+interface FileSystemHandle
+    attribute @@toStringTag
+    getter isDirectory
+    getter isFile
+    getter name
+    method constructor
+    method queryPermission
+    method requestPermission
+interface FileSystemWriter
+    attribute @@toStringTag
+    method close
+    method constructor
+    method truncate
+    method write
 interface FocusEvent : UIEvent
     attribute @@toStringTag
     getter relatedTarget
@@ -3296,7 +3323,6 @@ interface HTMLImageElement : HTMLElement
     getter height
     getter hspace
     getter importance
-    getter intrinsicSize
     getter isMap
     getter loading
     getter longDesc
@@ -3323,7 +3349,6 @@ interface HTMLImageElement : HTMLElement
     setter height
     setter hspace
     setter importance
-    setter intrinsicSize
     setter isMap
     setter loading
     setter longDesc
@@ -4133,7 +4158,6 @@ interface HTMLVideoElement : HTMLMediaElement
     getter autoPictureInPicture
     getter disablePictureInPicture
     getter height
-    getter intrinsicSize
     getter onenterpictureinpicture
     getter onleavepictureinpicture
     getter playsInline
@@ -4155,7 +4179,6 @@ interface HTMLVideoElement : HTMLMediaElement
     setter autoPictureInPicture
     setter disablePictureInPicture
     setter height
-    setter intrinsicSize
     setter onenterpictureinpicture
     setter onleavepictureinpicture
     setter playsInline
@@ -4377,7 +4400,6 @@ interface Image
     getter height
     getter hspace
     getter importance
-    getter intrinsicSize
     getter isMap
     getter loading
     getter longDesc
@@ -4404,7 +4426,6 @@ interface Image
     setter height
     setter hspace
     setter importance
-    setter intrinsicSize
     setter isMap
     setter loading
     setter longDesc
@@ -7005,7 +7026,6 @@ interface SVGImageElement : SVGGraphicsElement
     getter decoding
     getter height
     getter href
-    getter intrinsicSize
     getter preserveAspectRatio
     getter width
     getter x
@@ -7013,7 +7033,6 @@ interface SVGImageElement : SVGGraphicsElement
     method constructor
     method decode
     setter decoding
-    setter intrinsicSize
 interface SVGLength
     attribute @@toStringTag
     attribute SVG_LENGTHTYPE_CM
@@ -11341,6 +11360,7 @@ interface webkitURL
     method cancelIdleCallback
     method cancelPostAnimationFrame
     method captureEvents
+    method chooseFileSystemEntries
     method clearInterval
     method clearTimeout
     method close

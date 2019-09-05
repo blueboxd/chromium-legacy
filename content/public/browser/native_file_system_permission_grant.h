@@ -33,12 +33,27 @@ class CONTENT_EXPORT NativeFileSystemPermissionGrant
 
   virtual PermissionStatus GetStatus() = 0;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PermissionRequestOutcome {
+    kBlockedByContentSetting = 0,
+    kInvalidFrame = 1,
+    kNoUserActivation = 2,
+    kThirdPartyContext = 3,
+    kUserGranted = 4,
+    kUserDenied = 5,
+    kUserDismissed = 6,
+    kRequestAborted = 7,
+    kMaxValue = kRequestAborted
+  };
+
   // Call this method to request permission for this grant. The |callback|
   // should be called after the status of this grant has been updated with
   // the outcome of the request.
-  virtual void RequestPermission(int process_id,
-                                 int frame_id,
-                                 base::OnceClosure callback) = 0;
+  virtual void RequestPermission(
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(PermissionRequestOutcome)> callback) = 0;
 
   // This observer can be used to be notified of changes to the permission
   // status of a grant.

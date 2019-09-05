@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.provider.Settings;
@@ -115,8 +116,11 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
+        // clang-format on
         TabSwitcher.TabListDelegate delegate =
                 mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         assertEquals(0, delegate.getSoftCleanupDelayForTesting());
@@ -145,8 +149,11 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
+        // clang-format on
         TabSwitcher.TabListDelegate delegate =
                 mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         assertEquals(10000, delegate.getSoftCleanupDelayForTesting());
@@ -170,8 +177,11 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
+        // clang-format on
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -309,6 +319,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToCurrentLive() throws InterruptedException {
         prepareTabs(1, mUrl);
         testGridToTab(false, false);
@@ -316,6 +327,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @DisabledTest(message = "crbug.com/986047. This works on emulators but not on real devices.")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
         for (int i = 0; i < 10; i++) {
@@ -359,6 +371,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToOtherLive() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, false);
@@ -376,6 +389,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, true);

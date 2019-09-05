@@ -271,9 +271,9 @@ int SocketPosix::Read(IOBuffer* buf,
                       CompletionOnceCallback callback) {
   // Use base::Unretained() is safe here because OnFileCanReadWithoutBlocking()
   // won't be called if |this| is gone.
-  int rv =
-      ReadIfReady(buf, buf_len,
-                  base::Bind(&SocketPosix::RetryRead, base::Unretained(this)));
+  int rv = ReadIfReady(
+      buf, buf_len,
+      base::BindOnce(&SocketPosix::RetryRead, base::Unretained(this)));
   if (rv == ERR_IO_PENDING) {
     read_buf_ = buf;
     read_buf_len_ = buf_len;
@@ -502,7 +502,7 @@ void SocketPosix::RetryRead(int rv) {
   if (rv == OK) {
     rv = ReadIfReady(
         read_buf_.get(), read_buf_len_,
-        base::Bind(&SocketPosix::RetryRead, base::Unretained(this)));
+        base::BindOnce(&SocketPosix::RetryRead, base::Unretained(this)));
     if (rv == ERR_IO_PENDING)
       return;
   }

@@ -220,7 +220,30 @@ std::unique_ptr<SharedImageRepresentationDawn> SharedImageManager::ProduceDawn(
   auto representation = (*found)->ProduceDawn(this, tracker, device);
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to produce a "
-                  "Skia representation from an incompatible mailbox.";
+                  "Dawn representation from an incompatible mailbox.";
+    return nullptr;
+  }
+
+  return representation;
+}
+
+std::unique_ptr<SharedImageRepresentationOverlay>
+SharedImageManager::ProduceOverlay(const gpu::Mailbox& mailbox,
+                                   gpu::MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::ProduceOverlay: Trying to Produce a "
+                  "Overlay representation from a non-existent mailbox.";
+    return nullptr;
+  }
+
+  auto representation = (*found)->ProduceOverlay(this, tracker);
+  if (!representation) {
+    LOG(ERROR) << "SharedImageManager::ProduceOverlay: Trying to produce a "
+                  "Overlay representation from an incompatible mailbox.";
     return nullptr;
   }
 

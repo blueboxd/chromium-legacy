@@ -263,8 +263,10 @@ bool User::has_gaia_account() const {
 }
 
 void User::AddProfileCreatedObserver(base::OnceClosure on_profile_created) {
-  DCHECK(!profile_is_created_);
-  on_profile_created_observers_.push_back(std::move(on_profile_created));
+  if (profile_is_created_)
+    std::move(on_profile_created).Run();
+  else
+    on_profile_created_observers_.push_back(std::move(on_profile_created));
 }
 
 bool User::IsAffiliated() const {

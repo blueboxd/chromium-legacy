@@ -90,7 +90,8 @@ class BackendDatabaseWithMockedClose
                              mojom::blink::IDBTransaction> transaction_receiver,
                          int64_t transaction_id,
                          const WTF::Vector<int64_t>& object_store_ids,
-                         mojom::blink::IDBTransactionMode mode) override {}
+                         mojom::blink::IDBTransactionMode mode,
+                         bool relaxed_durability) override {}
   MOCK_METHOD0(Close, void());
   void VersionChangeIgnored() override {}
   void AddObserver(int64_t transaction_id,

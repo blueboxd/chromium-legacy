@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 // Redeclare for partial 10.9 availability.
 DISPATCH_EXPORT const struct dispatch_source_type_s
@@ -46,11 +47,23 @@ SystemMemoryPressureEvaluator::SystemMemoryPressureEvaluator(
           0,
           DISPATCH_MEMORYPRESSURE_WARN | DISPATCH_MEMORYPRESSURE_CRITICAL |
               DISPATCH_MEMORYPRESSURE_NORMAL,
-          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))) {
+          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))),
+      weak_ptr_factory_(this) {
+  // WeakPtr needed because there is no guarantee that |this| is still be alive
+  // when the task posted to the TaskRunner or event handler runs.
+  base::WeakPtr<SystemMemoryPressureEvaluator> weak_this =
+      weak_ptr_factory_.GetWeakPtr();
+  scoped_refptr<base::TaskRunner> task_runner =
+      base::SequencedTaskRunnerHandle::Get();
+
   // Attach an event handler to the memory pressure event source.
   if (memory_level_event_source_.get()) {
     dispatch_source_set_event_handler(memory_level_event_source_, ^{
-      OnMemoryPressureChanged(memory_level_event_source_.get());
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindRepeating(
+              &SystemMemoryPressureEvaluator::OnMemoryPressureChanged,
+              weak_this));
     });
 
     // Start monitoring the event source.
@@ -84,8 +97,7 @@ void SystemMemoryPressureEvaluator::UpdatePressureLevel() {
       GetMacMemoryPressureLevel()));
 }
 
-void SystemMemoryPressureEvaluator::OnMemoryPressureChanged(
-    dispatch_source_s* event_source) {
+void SystemMemoryPressureEvaluator::OnMemoryPressureChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The OS has sent a notification that the memory pressure level has changed.
   // Go through the normal memory pressure level checking mechanism so that

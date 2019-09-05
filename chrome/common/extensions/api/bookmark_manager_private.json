@@ -94,6 +94,17 @@
         ]
       },
       {
+        "name": "canPaste",
+        "type": "function",
+        "description": "Whether there are any bookmarks that can be pasted.",
+        "parameters": [
+          {"type": "string", "name": "parentId", "description": "The ID of the folder to paste into."},
+          {"type": "function", "name": "callback", "parameters": [
+            {"name": "result", "type": "boolean"}
+          ]}
+        ]
+      },
+      {
         "name": "sortChildren",
         "type": "function",
         "description": "Sorts the children of a given folder.",

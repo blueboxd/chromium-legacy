@@ -43,26 +43,6 @@ void AssistantState::NotifyStatusChanged(mojom::VoiceInteractionState state) {
       [state](auto* observer) { observer->OnAssistantStatusChanged(state); });
 }
 
-void AssistantState::NotifySettingsEnabled(bool enabled) {
-  if (settings_enabled_.has_value() && settings_enabled_.value() == enabled)
-    return;
-
-  UpdateSettingsEnabled(enabled);
-  remote_observers_.ForAllPtrs([enabled](auto* observer) {
-    observer->OnAssistantSettingsEnabled(enabled);
-  });
-}
-
-void AssistantState::NotifyHotwordEnabled(bool enabled) {
-  if (hotword_enabled_.has_value() && hotword_enabled_.value() == enabled)
-    return;
-
-  UpdateHotwordEnabled(enabled);
-  remote_observers_.ForAllPtrs([enabled](auto* observer) {
-    observer->OnAssistantHotwordEnabled(enabled);
-  });
-}
-
 void AssistantState::NotifyFeatureAllowed(mojom::AssistantAllowedState state) {
   if (allowed_state_ == state)
     return;

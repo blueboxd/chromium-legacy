@@ -156,7 +156,7 @@ static inline base::Optional<double> CalculateOverallProgress(
 // effect.
 // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration
 // -progress
-static inline double CalculateSimpleIterationProgress(
+static inline base::Optional<double> CalculateSimpleIterationProgress(
     Timing::Phase phase,
     base::Optional<double> overall_progress,
     double iteration_start,
@@ -165,7 +165,7 @@ static inline double CalculateSimpleIterationProgress(
     double iteration_count) {
   // 1. If the overall progress is unresolved, return unresolved.
   if (!overall_progress)
-    return NullValue();
+    return base::nullopt;
 
   // 2. If overall progress is infinity, let the simple iteration progress be
   // iteration start % 1.0, otherwise, let the simple iteration progress be
@@ -197,7 +197,7 @@ static inline double CalculateCurrentIteration(
     double active_time,
     double iteration_count,
     base::Optional<double> overall_progress,
-    double simple_iteration_progress) {
+    base::Optional<double> simple_iteration_progress) {
   // 1. If the active time is unresolved, return unresolved.
   if (IsNull(active_time))
     return NullValue();
@@ -211,9 +211,12 @@ static inline double CalculateCurrentIteration(
   if (!overall_progress)
     return NullValue();
 
+  // simple iteration progress can only be null if overall progress is null.
+  DCHECK(simple_iteration_progress);
+
   // 3. If the simple iteration progress is 1.0, return floor(overall progress)
   // - 1.
-  if (simple_iteration_progress == 1.0) {
+  if (simple_iteration_progress.value() == 1.0) {
     // Safeguard for zero duration animation (crbug.com/954558).
     return fmax(0, floor(overall_progress.value()) - 1);
   }
@@ -248,11 +251,11 @@ static inline bool IsCurrentDirectionForwards(
 
 // https://drafts.csswg.org/web-animations/#calculating-the-directed-progress
 static inline base::Optional<double> CalculateDirectedProgress(
-    double simple_iteration_progress,
+    base::Optional<double> simple_iteration_progress,
     double current_iteration,
     Timing::PlaybackDirection direction) {
   // 1. If the simple progress is unresolved, return unresolved.
-  if (IsNull(simple_iteration_progress))
+  if (!simple_iteration_progress)
     return base::nullopt;
 
   // 2. Calculate the current direction.
@@ -261,8 +264,8 @@ static inline base::Optional<double> CalculateDirectedProgress(
 
   // 3. If the current direction is forwards then return the simple iteration
   // progress. Otherwise return 1 - simple iteration progress.
-  return current_direction_is_forwards ? simple_iteration_progress
-                                       : 1 - simple_iteration_progress;
+  return current_direction_is_forwards ? simple_iteration_progress.value()
+                                       : 1 - simple_iteration_progress.value();
 }
 
 // https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress

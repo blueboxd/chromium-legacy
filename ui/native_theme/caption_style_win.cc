@@ -29,6 +29,14 @@ void LogCapStyleWinError(int line, HRESULT hr) {
   TRACE_EVENT2("ui", "LogWindowsCaptionStyleError", "line", line, "hr", hr);
 }
 
+// Adds !important to all captions styles. They should always override any
+// styles added by the video author or by a user stylesheet. This is because on
+// Windows, there is an option to turn off captions styles, so any time the
+// captions are on, the styles should take priority.
+std::string AddCSSImportant(std::string css_string) {
+  return css_string + " !important";
+}
+
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionStyle to a
 // CSS FontFamily value.
 // These fonts were chosen to satisfy the characteristics represented by values
@@ -209,10 +217,13 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   CaptionStyle caption_style;
   GetFontFamilyString(font_family, &(caption_style.font_family),
                       &(caption_style.font_variant));
-  caption_style.text_size = GetCaptionSizeString(font_size);
-  caption_style.text_shadow = GetEdgeEffectString(edge_effect);
-  caption_style.text_color = GetCssColor(font_color);
-  caption_style.background_color = GetCssColor(background_color);
+  caption_style.font_family = AddCSSImportant(caption_style.font_family);
+  caption_style.font_variant = AddCSSImportant(caption_style.font_variant);
+  caption_style.text_size = AddCSSImportant(GetCaptionSizeString(font_size));
+  caption_style.text_shadow = AddCSSImportant(GetEdgeEffectString(edge_effect));
+  caption_style.text_color = AddCSSImportant(GetCssColor(font_color));
+  caption_style.background_color =
+      AddCSSImportant(GetCssColor(background_color));
 
   return caption_style;
 }

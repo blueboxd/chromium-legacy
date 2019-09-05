@@ -222,7 +222,13 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
             GetOriginListText(contents, kSwitchName));
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagEnabled) {
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// TODO(https://crbug.com/1000714): Re-enable this test.
+#define MAYBE_OriginFlagEnabled DISABLED_OriginFlagEnabled
+#else
+#define MAYBE_OriginFlagEnabled OriginFlagEnabled
+#endif
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_OriginFlagEnabled) {
 #if !defined(OS_CHROMEOS)
   // On non-ChromeOS, the command line is modified after restart.
   EXPECT_EQ(

@@ -20,9 +20,8 @@ namespace safe_browsing {
 
 namespace {
 
-// TODO(vakh): Use the correct endpoint.
 const char kRealTimeLookupUrlPrefix[] =
-    "http://localhost:8000/safebrowsing/clientreport/realtime";
+    "https://safebrowsing.google.com/safebrowsing/clientreport/realtime";
 
 const size_t kMaxFailuresToEnforceBackoff = 3;
 

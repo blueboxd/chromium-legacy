@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/note_taking_client.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -29,17 +30,17 @@ class NoteTakingControllerClient
   void CreateNote() override;
 
   // user_manager::UserManager::UserSessionStateObserver:
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  void SetProfileForTesting(Profile* profile) { SetProfile(profile); }
+  void SetProfileForTesting(Profile* profile) { profile_ = profile; }
 
  private:
-  void SetProfile(Profile* profile);
+  void SetProfileByUser(const user_manager::User* user);
 
   // Unowned pointer to the note taking helper.
   NoteTakingHelper* helper_;
@@ -48,8 +49,7 @@ class NoteTakingControllerClient
   Profile* profile_ = nullptr;
 
   content::NotificationRegistrar registrar_;
-  std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
-      session_state_observer_;
+  base::WeakPtrFactory<NoteTakingControllerClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingControllerClient);
 };

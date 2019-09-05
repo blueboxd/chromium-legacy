@@ -155,12 +155,10 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
 
 ScreenLockObserver* g_screen_lock_observer = nullptr;
 
-PinDialogManager* GetLoginScreenPinDialogManager() {
+CertificateProviderService* GetLoginScreenCertProviderService() {
   DCHECK(ProfileHelper::IsSigninProfileInitialized());
-  CertificateProviderService* certificate_provider_service =
-      CertificateProviderServiceFactory::GetForBrowserContext(
-          ProfileHelper::GetSigninProfile());
-  return certificate_provider_service->pin_dialog_manager();
+  return CertificateProviderServiceFactory::GetForBrowserContext(
+      ProfileHelper::GetSigninProfile());
 }
 
 }  // namespace
@@ -196,7 +194,7 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
   fp_service_->AddFingerprintObserver(std::move(observer));
 
-  GetLoginScreenPinDialogManager()->AddPinDialogHost(
+  GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
       &security_token_pin_dialog_host_ash_impl_);
 }
 
@@ -253,8 +251,13 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthFailure(error);
 
-  if (on_auth_complete_)
-    std::move(on_auth_complete_).Run(false);
+  if (pending_auth_state_) {
+    GetLoginScreenCertProviderService()
+        ->AbortSignatureRequestsForAuthenticatingUser(
+            pending_auth_state_->account_id);
+    std::move(pending_auth_state_->callback).Run(false);
+    pending_auth_state_.reset();
+  }
 }
 
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
@@ -302,8 +305,10 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     NOTREACHED() << "Logged in user not found.";
   }
 
-  if (on_auth_complete_)
-    std::move(on_auth_complete_).Run(true);
+  if (pending_auth_state_) {
+    std::move(pending_auth_state_->callback).Run(true);
+    pending_auth_state_.reset();
+  }
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnAuthSuccess(user_context);
@@ -359,8 +364,9 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
     return;
   }
 
-  DCHECK(!on_auth_complete_);
-  on_auth_complete_ = std::move(callback);
+  DCHECK(!pending_auth_state_);
+  pending_auth_state_ = std::make_unique<AuthState>(user_context.GetAccountId(),
+                                                    std::move(callback));
   unlock_attempt_type_ = AUTH_PASSWORD;
 
   authentication_start_time_ = base::Time::Now();
@@ -410,8 +416,9 @@ void ScreenLocker::AuthenticateWithChallengeResponse(
     return;
   }
 
-  DCHECK(!on_auth_complete_);
-  on_auth_complete_ = std::move(callback);
+  DCHECK(!pending_auth_state_);
+  pending_auth_state_ =
+      std::make_unique<AuthState>(account_id, std::move(callback));
 
   unlock_attempt_type_ = AUTH_CHALLENGE_RESPONSE;
   challenge_response_auth_keys_loader_.LoadAvailableKeys(
@@ -425,8 +432,10 @@ void ScreenLocker::OnChallengeResponseKeysPrepared(
     std::vector<ChallengeResponseKey> challenge_response_keys) {
   if (challenge_response_keys.empty()) {
     // TODO(crbug.com/826417): Indicate the error in the UI.
-    if (on_auth_complete_)
-      std::move(on_auth_complete_).Run(false /* auth_success */);
+    if (pending_auth_state_) {
+      std::move(pending_auth_state_->callback).Run(/*auth_success=*/false);
+      pending_auth_state_.reset();
+    }
     return;
   }
 
@@ -682,12 +691,19 @@ void ScreenLocker::SetAuthenticatorsForTesting(
 ////////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, private:
 
+ScreenLocker::AuthState::AuthState(AccountId account_id,
+                                   base::OnceCallback<void(bool)> callback)
+    : account_id(account_id), callback(std::move(callback)) {}
+
+ScreenLocker::AuthState::~AuthState() = default;
+
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
-  GetLoginScreenPinDialogManager()->RemovePinDialogHost(
-      &security_token_pin_dialog_host_ash_impl_);
+  GetLoginScreenCertProviderService()
+      ->pin_dialog_manager()
+      ->RemovePinDialogHost(&security_token_pin_dialog_host_ash_impl_);
 
   if (authenticator_)
     authenticator_->SetConsumer(nullptr);

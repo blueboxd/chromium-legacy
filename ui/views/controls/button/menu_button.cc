@@ -18,8 +18,9 @@ MenuButton::MenuButton(const base::string16& text,
     : LabelButton(nullptr, text, button_context) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   std::unique_ptr<MenuButtonController> menu_button_controller =
-      std::make_unique<MenuButtonController>(this, menu_button_listener,
-                                             CreateButtonControllerDelegate());
+      std::make_unique<MenuButtonController>(
+          this, menu_button_listener,
+          std::make_unique<Button::DefaultButtonControllerDelegate>(this));
   menu_button_controller_ = menu_button_controller.get();
   SetButtonController(std::move(menu_button_controller));
 }

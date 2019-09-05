@@ -40,6 +40,10 @@ class ChromeMetricsPrivateDelegate;
 class FileManagerPrivateIsUMAEnabledFunction;
 }
 
+namespace first_run {
+class FirstRunMasterPrefsVariationsSeedTest;
+}
+
 namespace metrics {
 class UkmConsentParamBrowserTest;
 }
@@ -112,6 +116,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class NavigationMetricsRecorder;
 
   // Testing related friends.
+  friend class first_run::FirstRunMasterPrefsVariationsSeedTest;
   friend class ForceFieldTrialsBrowserTest;
   friend class MetricsReportingStateTest;
   friend class metrics::UkmConsentParamBrowserTest;

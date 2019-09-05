@@ -44,9 +44,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       var inlineSession = null
       function updateFOV() {
         var fov = document.getElementById("vertFOV").value;
-        inlineSession.updateRenderState({
-          inlineVerticalFieldOfView: fov
-        });
+        if (inlineSession) {
+          inlineSession.updateRenderState({
+            inlineVerticalFieldOfView: fov
+          });
+        }
       }
     </script>
   </head>
@@ -110,37 +112,56 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function initXR() {
         xrButton = new XRDeviceButton({
-          onRequestSession: onRequestSession,
-          onEndSession: onEndSession,
+          onRequestSession: requestImmersiveSession,
+          onEndSession: session => session.end(),
           supportedSessionTypes: ['immersive-vr']
         });
         xrButton.addToHeader();
 
+        // Pick an arbitrary device for the magic window content and start
+        // up a non-immersive non-local session.
+        requestInlineSession()
+        .then(session => {
+          // Once the initial inline session has been set up, create a session
+          // supporting the local reference space when we have user activation.
+          gl.canvas.addEventListener('touchend', () => {
+            session.end().then(() => requestInlineSession({optionalFeatures: ['local']}))
+          }, { once: true });
+        });
+      }
+
+      function requestSession(mode, options) {
         if (navigator.xr) {
-          // Pick an arbitrary device for the magic window content and start
-          // up a non-immersive session if possible.
-          navigator.xr.requestSession('inline', {optionalFeatures: ['local']}).then(onSessionStarted);
+          return navigator.xr.requestSession(mode, options).then(session => {
+            session.mode = mode;
+            return session;
+          });
+        } else {
+          return Promise.reject();
         }
       }
 
-      function onRequestSession() {
-        navigator.xr.requestSession('immersive-vr').then((session) => {
-          // Keep track of the session mode so that we use the correct reference
-          // space later.
-          session.mode = 'immersive-vr';
+      function requestImmersiveSession(options) {
+        return requestSession('immersive-vr', options).then(session => {
           xrButton.setSession(session);
-          onSessionStarted(session);
+          session.addEventListener('end', () => xrButton.setSession(null));
+
+          return onSessionStarted(session);
+        });
+      }
+
+      function requestInlineSession(options) {
+        return requestSession('inline', options).then(session => {
+          console.assert(inlineSession === null);
+          inlineSession = session;
+          session.addEventListener('end', () => inlineSession = null);
+          updateFOV();
+
+          return onSessionStarted(session);
         });
       }
 
       function onSessionStarted(session) {
-        if (!session.mode) {
-          session.mode = 'inline';
-          inlineSession = session;
-        }
-
-        session.addEventListener('end', onSessionEnded);
-
         if (!gl) {
           gl = createWebGLContext({
             xrCompatible: true
@@ -170,36 +191,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           baseLayer: new XRWebGLLayer(session, gl)
         });
 
-        if (session.mode === 'inline')
-          updateFOV();
-
-        session.requestReferenceSpace('local').then((refSpace) => {
-          return refSpace;
-        }, (e) => {
-          if (!session.mode.startsWith('immersive')) {
-            // If we're in inline mode, our underlying platform may not support
-            // the stationary reference space, but a viewer space is guaranteed.
+        // Try to get a local reference space, if possible
+        session.requestReferenceSpace('local')
+        .catch(e => {
+          if (session.mode === 'inline') {
+            // We can accept failure to get local reference space for inline sessions.
+            // Our underlying platform may not support local reference spaces, but a viewer space is guaranteed.
             return session.requestReferenceSpace('viewer');
           } else {
             throw e;
           }
-        }).then((refSpace) => {
+        }).then(refSpace => {
           // Since we're dealing with multple sessions now we need to track
           // which XRReferenceSpace is associated with which XRSession.
+          console.assert(!xrRefSpaces[session.mode]);
           xrRefSpaces[session.mode] = refSpace;
+          session.addEventListener('end', () => xrRefSpaces[session.mode] = null);
+
           session.requestAnimationFrame(onXRFrame);
         });
-      }
 
-      function onEndSession(session) {
-        session.end();
-      }
-
-      function onSessionEnded(event) {
-        // Only reset the button when the immersive session ends.
-        if (event.session.mode.startsWith('immersive')) {
-          xrButton.setSession(null);
-        }
+        return session;
       }
 
       // Allow the user to click and drag the mouse (or touch and drag the

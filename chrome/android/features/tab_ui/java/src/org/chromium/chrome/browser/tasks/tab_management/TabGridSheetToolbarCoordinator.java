@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.tab_ui.R;
@@ -32,11 +32,11 @@ class TabGridSheetToolbarCoordinator implements Destroyable {
      *                             the toolbar.
      */
     TabGridSheetToolbarCoordinator(
-            Context context, ViewGroup contentView, PropertyModel toolbarPropertyModel) {
+            Context context, RecyclerView contentView, PropertyModel toolbarPropertyModel) {
         this(context, contentView, toolbarPropertyModel, null);
     }
 
-    TabGridSheetToolbarCoordinator(Context context, ViewGroup contentView,
+    TabGridSheetToolbarCoordinator(Context context, RecyclerView contentView,
             PropertyModel toolbarPropertyModel, TabGridDialogParent dialog) {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);

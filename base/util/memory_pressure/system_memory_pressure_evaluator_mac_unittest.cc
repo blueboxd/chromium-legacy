@@ -73,6 +73,8 @@ TEST(MacSystemMemoryPressureEvaluatorTest,
 }
 
 TEST(MacSystemMemoryPressureEvaluatorTest, CurrentMemoryPressure) {
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   TestSystemMemoryPressureEvaluator evaluator(nullptr);
 
   base::MemoryPressureListener::MemoryPressureLevel memory_pressure =
@@ -87,6 +89,8 @@ TEST(MacSystemMemoryPressureEvaluatorTest, CurrentMemoryPressure) {
 }
 
 TEST(MacSystemMemoryPressureEvaluatorTest, MemoryPressureConversion) {
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   TestSystemMemoryPressureEvaluator evaluator(nullptr);
 
   evaluator.macos_pressure_level_for_testing_ = DISPATCH_MEMORYPRESSURE_NORMAL;

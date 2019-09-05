@@ -746,11 +746,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "download-progress-infobar",
-    "owners": [ "shaktisahu", "dtrainor" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "download-rename",
     "owners": [ "hesen", "dtrainor" ],
     "expiry_milestone": 76
@@ -2281,12 +2276,12 @@
   {
     "name": "interest-feed-content-suggestions",
     "owners": [ "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "interest-feed-notifications",
     "owners": [ "iwells", "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "isolate-origins",
@@ -3076,6 +3071,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "sync-clipboard-service",
+    "owners": [ "joaodasilva" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "sync-support-secondary-account",
     "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 80
@@ -3268,6 +3268,11 @@
     // promoting this to a chrome://settings entry, but it needs to be readily
     // available.
     "expiry_milestone": -1
+  },
+  {
+    "name": "use-fake-device-for-media-stream",
+    "owners": [ "mcasas", "chromeos-gfx@google.com" ],
+    "expiry_milestone": 81
   },
   {
     "name": "use_messages_google_com_domain",

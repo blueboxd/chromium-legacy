@@ -445,10 +445,14 @@ void SetIndividualRuntimeFeatures(
   if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
     WebRuntimeFeatures::EnableAccessibilityObjectModel(true);
 
-  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          blink::features::kNativeFileSystemAPI.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
     WebRuntimeFeatures::EnableFeatureFromString("NativeFileSystem", true);
-    if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))
-      WebRuntimeFeatures::EnableFeatureFromString("FileHandling", true);
+  }
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI) &&
+      base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+    WebRuntimeFeatures::EnableFeatureFromString("FileHandling", true);
   }
 
   if (base::FeatureList::IsEnabled(

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sms;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.SystemClock;
 import android.view.View;
 
 import org.chromium.base.Log;
@@ -27,6 +28,7 @@ public class SmsReceiverInfoBar extends ConfirmInfoBar {
     private static final boolean DEBUG = false;
     private String mMessage;
     private WindowAndroid mWindowAndroid;
+    private Long mKeyboardDismissedTime;
 
     @VisibleForTesting
     @CalledByNative
@@ -49,6 +51,7 @@ public class SmsReceiverInfoBar extends ConfirmInfoBar {
     @Override
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
+        SmsReceiverUma.recordInfobarAction(SmsReceiverUma.InfobarAction.SHOWN);
 
         Activity activity = mWindowAndroid.getActivity().get();
         if (activity != null) {
@@ -58,11 +61,23 @@ public class SmsReceiverInfoBar extends ConfirmInfoBar {
             if (focusedView != null
                     && keyboardVisibilityDelegate.isKeyboardShowing(activity, focusedView)) {
                 keyboardVisibilityDelegate.hideKeyboard(focusedView);
+                SmsReceiverUma.recordInfobarAction(SmsReceiverUma.InfobarAction.KEYBOARD_DISMISSED);
+                mKeyboardDismissedTime = SystemClock.uptimeMillis();
             }
         }
 
         Context context = layout.getContext();
         InfoBarControlLayout control = layout.addControlLayout();
         control.addDescription(mMessage);
+    }
+
+    @Override
+    public void onCloseButtonClicked() {
+        super.onCloseButtonClicked();
+
+        if (mKeyboardDismissedTime != null) {
+            SmsReceiverUma.recordCancelTimeAfterKeyboardDismissal(
+                    SystemClock.uptimeMillis() - mKeyboardDismissedTime);
+        }
     }
 }

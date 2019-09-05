@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -124,6 +126,7 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   svg_style_sheet_.Clear();
   mathml_style_sheet_.Clear();
   media_controls_style_sheet_.Clear();
+  text_track_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
@@ -186,6 +189,15 @@ CSSDefaultStyleSheets::EnsureTelevisionViewportStyleSheet() {
   return television_viewport_style_sheet_;
 }
 
+static void AddTextTrackCSSProperties(StringBuilder* builder,
+                                      CSSPropertyID propertyId,
+                                      String value) {
+  builder->Append(CSSProperty::Get(propertyId).GetPropertyNameString());
+  builder->Append(": ");
+  builder->Append(value);
+  builder->Append("; ");
+}
+
 bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     const Element& element) {
   bool changed_default_style = false;
@@ -220,6 +232,41 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     default_print_style_->AddRulesFromSheet(MediaControlsStyleSheet(),
                                             PrintEval());
     changed_default_style = true;
+  }
+
+  if (!text_track_style_sheet_ && IsHTMLVideoElement(element)) {
+    Settings* settings = element.GetDocument().GetSettings();
+    if (settings) {
+      StringBuilder builder;
+      builder.Append("video::-webkit-media-text-track-display { ");
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kBackgroundColor,
+                                settings->GetTextTrackWindowColor());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kPadding,
+                                settings->GetTextTrackWindowPadding());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kBorderRadius,
+                                settings->GetTextTrackWindowRadius());
+      builder.Append(" } video::cue { ");
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kBackgroundColor,
+                                settings->GetTextTrackBackgroundColor());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontFamily,
+                                settings->GetTextTrackFontFamily());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontStyle,
+                                settings->GetTextTrackFontStyle());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontVariant,
+                                settings->GetTextTrackFontVariant());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kColor,
+                                settings->GetTextTrackTextColor());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kTextShadow,
+                                settings->GetTextTrackTextShadow());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontSize,
+                                settings->GetTextTrackTextSize());
+      builder.Append(" } ");
+      text_track_style_sheet_ = ParseUASheet(builder.ToString());
+      default_style_->AddRulesFromSheet(text_track_style_sheet_, ScreenEval());
+      default_print_style_->AddRulesFromSheet(text_track_style_sheet_,
+                                              PrintEval());
+      changed_default_style = true;
+    }
   }
 
   DCHECK(!default_style_->Features().HasIdsInSelectors());
@@ -258,6 +305,7 @@ void CSSDefaultStyleSheets::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_style_sheet_);
   visitor->Trace(mathml_style_sheet_);
   visitor->Trace(media_controls_style_sheet_);
+  visitor->Trace(text_track_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
 }
 

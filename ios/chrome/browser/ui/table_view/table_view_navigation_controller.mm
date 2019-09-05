@@ -37,6 +37,7 @@
   self.navigationBar.prefersLargeTitles = YES;
 
   self.toolbar.translucent = NO;
+  self.toolbar.barTintColor = UIColor.cr_systemBackgroundColor;
 }
 
 @end

@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "extensions/browser/api/alarms/alarms_api_constants.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/state_store.h"
@@ -114,8 +113,7 @@ std::unique_ptr<base::ListValue> AlarmsToValue(
 AlarmManager::AlarmManager(content::BrowserContext* context)
     : browser_context_(context),
       clock_(base::DefaultClock::GetInstance()),
-      delegate_(new DefaultAlarmDelegate(context)),
-      extension_registry_observer_(this) {
+      delegate_(new DefaultAlarmDelegate(context)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
   StateStore* storage = ExtensionSystem::Get(browser_context_)->state_store();

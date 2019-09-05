@@ -75,15 +75,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsFormControlsRefreshEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsAutomaticUiAdjustmentsForTouchEnabled();
 
-#if defined(OS_MACOSX)
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kHostWindowsInAppShimProcess;
-
-// Returns true if the NSWindows for apps will be created in the app's process,
-// and will forward input to the browser process.
-COMPONENT_EXPORT(UI_BASE_FEATURES) bool HostWindowsInAppShimProcess();
-#endif  //  defined(OS_MACOSX)
-
 // Use mojo communication in the drm platform instead of paramtraits. Remove
 // this switch (and associated code) when the drm platform always uses mojo
 // communication.

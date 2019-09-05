@@ -71,11 +71,12 @@ class QueueMessageSwapPromiseTest : public testing::Test {
 
   ~QueueMessageSwapPromiseTest() override {}
 
-  std::unique_ptr<cc::SwapPromise> QueueMessageImpl(IPC::Message* msg,
-                                                    int source_frame_number) {
-    return RenderWidget::QueueMessageImpl(msg, frame_swap_message_queue_.get(),
-                                          sync_message_filter_,
-                                          source_frame_number);
+  std::unique_ptr<cc::SwapPromise> QueueMessageImpl(
+      std::unique_ptr<IPC::Message> msg,
+      int source_frame_number) {
+    return RenderWidget::QueueMessageImpl(
+        std::move(msg), frame_swap_message_queue_.get(), sync_message_filter_,
+        source_frame_number);
   }
 
   const std::vector<std::unique_ptr<IPC::Message>>& DirectSendMessages() {
@@ -119,8 +120,9 @@ class QueueMessageSwapPromiseTest : public testing::Test {
     for (size_t i = 0; i < count; ++i) {
       messages_.push_back(
           IPC::Message(0, i + 1, IPC::Message::PRIORITY_NORMAL));
-      promises_.push_back(QueueMessageImpl(new IPC::Message(messages_[i]),
-                                           source_frame_numbers[i]));
+      promises_.push_back(
+          QueueMessageImpl(std::make_unique<IPC::Message>(messages_[i]),
+                           source_frame_numbers[i]));
     }
   }
 

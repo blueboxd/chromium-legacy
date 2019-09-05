@@ -13,4 +13,9 @@ const base::Feature kDoubleTapToZoomInTabletMode{
     "DoubleTapToZoomInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+const base::Feature kSyncClipboardServiceFeature{
+    "SyncClipboardService", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_WIN || OS_MACOSX || OS_LINUX
+
 }  // namespace features

@@ -117,19 +117,23 @@ Status StubWebView::GetFrameByFunction(const std::string& frame,
 }
 
 Status StubWebView::DispatchMouseEvents(const std::list<MouseEvent>& events,
-                                        const std::string& frame) {
+                                        const std::string& frame,
+                                        bool async_dispatch_events) {
   return Status(kOk);
 }
 
-Status StubWebView::DispatchTouchEvent(const TouchEvent& event) {
+Status StubWebView::DispatchTouchEvent(const TouchEvent& event,
+                                       bool async_dispatch_events) {
   return Status(kOk);
 }
 
-Status StubWebView::DispatchTouchEvents(const std::list<TouchEvent>& events) {
+Status StubWebView::DispatchTouchEvents(const std::list<TouchEvent>& events,
+                                        bool async_dispatch_events) {
   return Status(kOk);
 }
 
-Status StubWebView::DispatchKeyEvents(const std::list<KeyEvent>& events) {
+Status StubWebView::DispatchKeyEvents(const std::list<KeyEvent>& events,
+                                      bool async_dispatch_events) {
   return Status(kOk);
 }
 
@@ -223,6 +227,10 @@ Status StubWebView::SynthesizeScrollGesture(int x,
                                             int xoffset,
                                             int yoffset) {
   return Status(kOk);
+}
+
+bool StubWebView::IsNonBlocking() {
+  return false;
 }
 
 bool StubWebView::IsOOPIF(const std::string& frame_id) {

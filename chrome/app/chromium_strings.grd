@@ -321,7 +321,7 @@ Chromium is unable to recover your settings.
         Chromium can help you remember your passwords so you don't have to.
       </message>
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_B" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
-        Save your passwords to Chromium to access them on all your devices. 
+        Save your passwords to Chromium to access them on all your devices.
       </message>
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_C" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
         Chromium can help you remember your passwords so you don't have to.
@@ -1055,7 +1055,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
          other {Chromium will restart in # seconds}}
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TITLE_ALTERNATE" desc="The title for a bubble that appears when there is a critical update and Chromium must restart to install it. The title was previously countng down to an automatic restart and now it has finished. Will only be seen if a web page stops the shutdown process.">
-        You should restart Chromium now
+        Please restart Chromium now
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="Explanation text for the bubble that appears when there is a critical update and Chromium must restart to install it.">
         A special security update for Chromium was just applied. Restart now and we'll restore your tabs.

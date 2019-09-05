@@ -645,6 +645,7 @@ modules_dictionary_idl_files =
           "indexeddb/idb_index_parameters.idl",
           "indexeddb/idb_object_store_parameters.idl",
           "indexeddb/idb_observer_init.idl",
+          "indexeddb/idb_transaction_options.idl",
           "indexeddb/idb_version_change_event_init.idl",
           "locks/lock_info.idl",
           "locks/lock_manager_snapshot.idl",

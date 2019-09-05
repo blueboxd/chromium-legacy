@@ -4,9 +4,16 @@
 
 import("//build/config/compiler/compiler.gni")
 import("//build/toolchain/win/midl.gni")
+import("//testing/test.gni")
 
 assert(is_win)
 assert(target_cpu == "x86" || target_cpu == "x64")
+
+declare_args() {
+  # If true, compile a BHO that doesn't depend on the CRT to significantly
+  # minimize binary size.
+  use_mini_bho = false
+}
 
 shared_library("browser_switcher_bho") {
   if (current_cpu == "x64") {
@@ -25,27 +32,58 @@ shared_library("browser_switcher_bho") {
     "_WINDLL",
   ]
 
-  # TODO(nicolaso): Reduce binary size as much as possible.
-  #
-  # TODO(nicolaso): Use ie_bho.def and ie_bho.rc.
-  #
+  if (use_mini_bho) {
+    configs += [ "//build/config/win:sdk_link" ]
+
+    no_default_deps = true
+
+    libs = [
+      # For buffer overflow checks with the /GS flag.
+      "bufferoverflowU.lib",
+    ]
+    ldflags = [
+      "/NODEFAULTLIB",
+      "/ENTRY:DllMain",
+    ]
+  }
+
   # TODO(nicolaso): avoid code duplication, by using BrowserSwitcherSitelist and
   # AlternativeBrowserDriver classes from chrome/browser_switcher/.
-  sources = [
-    "//base/win/atl.h",
-    "bho.cc",
-    "bho.h",
-    "browser_switcher_core.cc",
-    "browser_switcher_core.h",
-    "ie_bho.cc",
-    "ie_bho.def",
-    "ie_bho.h",
-    "logging.cc",
-    "logging.h",
-    "resource.h",
-  ]
+  if (use_mini_bho) {
+    sources = [
+      "mini_bho.cc",
+      "mini_bho.def",
+      "mini_bho_util.cc",
+      "mini_bho_util.h",
+    ]
+  } else {
+    sources = [
+      "//base/win/atl.h",
+      "bho.cc",
+      "bho.h",
+      "browser_switcher_core.cc",
+      "browser_switcher_core.h",
+      "ie_bho.cc",
+      "ie_bho.def",
+      "logging.cc",
+      "logging.h",
+      "resource.h",
+    ]
+  }
   deps = [
     ":ie_bho_idl",
+  ]
+}
+
+test("browser_switcher_bho_unittests") {
+  sources = [
+    "mini_bho_util.cc",
+    "mini_bho_util.h",
+    "mini_bho_util_unittest.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/gtest",
   ]
 }
 

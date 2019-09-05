@@ -450,10 +450,9 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
       gles2_texture = GenGLTexture();
       if (!gles2_texture)
         return nullptr;
-      GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                          gles2_texture->target(), size(),
-                          gles2_texture->service_id(), format(),
-                          &gr_backend_texture);
+      GetGrBackendTexture(
+          context_state->feature_info(), gles2_texture->target(), size(),
+          gles2_texture->service_id(), format(), &gr_backend_texture);
     }
     if (context_state->GrContextIsMetal()) {
       if (!mtl_texture_) {

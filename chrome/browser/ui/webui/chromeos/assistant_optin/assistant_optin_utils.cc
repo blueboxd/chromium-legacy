@@ -245,8 +245,8 @@ bool IsVoiceMatchEnforcedOff(const PrefService* prefs) {
   // If the hotword preference is managed to always disabled, then we should not
   // show Voice Match flow.
   return prefs->IsManagedPreference(
-             arc::prefs::kVoiceInteractionHotwordEnabled) &&
-         !prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled);
+             assistant::prefs::kAssistantHotwordEnabled) &&
+         !prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled);
 }
 
 }  // namespace chromeos

@@ -189,6 +189,11 @@ class CertificateProviderService : public KeyedService {
       const std::string& subject_public_key_info,
       std::vector<uint16_t>* supported_algorithms);
 
+  // Aborts all signature requests and related PIN dialogs that are associated
+  // with the authentication of the given user.
+  void AbortSignatureRequestsForAuthenticatingUser(
+      const AccountId& authenticating_user_account_id);
+
   PinDialogManager* pin_dialog_manager() { return &pin_dialog_manager_; }
 
  private:

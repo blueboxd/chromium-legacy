@@ -74,7 +74,7 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
 #elif defined(OS_WIN)
   platform_window_.reset(new ui::WinWindow(this, properties.bounds));
 #elif defined(USE_X11)
-  auto x11_window = std::make_unique<ui::X11Window>(this, nullptr);
+  auto x11_window = std::make_unique<ui::X11Window>(this);
   x11_window->Initialize(std::move(properties));
   SetPlatformWindow(std::move(x11_window));
 #else

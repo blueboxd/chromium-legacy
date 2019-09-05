@@ -26,7 +26,6 @@
 #include "extensions/browser/events/lazy_event_dispatcher.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
@@ -168,8 +167,6 @@ EventRouter::EventRouter(BrowserContext* browser_context,
                          ExtensionPrefs* extension_prefs)
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
-      extension_registry_observer_(this),
-      listeners_(this),
       lazy_event_dispatch_util_(browser_context_) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }

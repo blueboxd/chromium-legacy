@@ -66,7 +66,7 @@ class USER_MANAGER_EXPORT UserManager {
   class UserSessionStateObserver {
    public:
     // Called when active user has changed.
-    virtual void ActiveUserChanged(const User* active_user);
+    virtual void ActiveUserChanged(User* active_user);
 
     // Called when another user got added to the existing session.
     virtual void UserAddedToSession(const User* added_user);
@@ -406,19 +406,6 @@ class USER_MANAGER_EXPORT UserManager {
   // Sets UserManager instance to the given |user_manager|.
   // Returns the previous value of the instance.
   static UserManager* SetForTesting(UserManager* user_manager);
-};
-
-// TODO(xiyuan): Move this along with UserSessionStateObserver
-class USER_MANAGER_EXPORT ScopedUserSessionStateObserver {
- public:
-  explicit ScopedUserSessionStateObserver(
-      UserManager::UserSessionStateObserver* observer);
-  ~ScopedUserSessionStateObserver();
-
- private:
-  UserManager::UserSessionStateObserver* const observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUserSessionStateObserver);
 };
 
 }  // namespace user_manager

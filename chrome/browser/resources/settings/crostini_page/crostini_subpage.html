@@ -17,14 +17,12 @@
         label="$i18n{crostiniSharedPaths}"
         on-click="onSharedPathsClick_">
     </cr-link-row>
-    <template is="dom-if" if="[[enableCrostiniUsbDeviceSupport_]]">
-      <cr-link-row
-          class="hr"
-          label="$i18n{crostiniSharedUsbDevicesLabel}"
-          id="crostini-shared-usb-devices"
-          on-click="onSharedUsbDevicesClick_">
-      </cr-link-row>
-    </template>
+    <cr-link-row
+        class="hr"
+        label="$i18n{crostiniSharedUsbDevicesLabel}"
+        id="crostini-shared-usb-devices"
+        on-click="onSharedUsbDevicesClick_">
+    </cr-link-row>
     <template is="dom-if" if="[[showCrostiniExportImport_]]">
       <cr-link-row
           class="hr"

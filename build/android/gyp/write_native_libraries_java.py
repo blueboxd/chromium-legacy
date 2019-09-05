@@ -30,6 +30,8 @@ def main():
   parser.add_argument(
       '--enable-chromium-linker-tests', action='store_true', help='Run tests.')
   parser.add_argument(
+      '--use-modern-linker', action='store_true', help='To use ModernLinker.')
+  parser.add_argument(
       '--native-libraries-list', help='File with list of native libraries.')
   parser.add_argument(
       '--version-number',
@@ -77,6 +79,7 @@ def main():
       'USE_LINKER': bool_str(options.enable_chromium_linker),
       'USE_LIBRARY_IN_ZIP_FILE': bool_str(options.load_library_from_apk),
       'ENABLE_LINKER_TESTS': bool_str(options.enable_chromium_linker_tests),
+      'USE_MODERN_LINKER': bool_str(options.use_modern_linker),
       'LIBRARIES': ','.join(native_libraries_list),
       'VERSION_NUMBER': options.version_number,
       'CPU_FAMILY': options.cpu_family,

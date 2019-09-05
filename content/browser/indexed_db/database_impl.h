@@ -48,7 +48,8 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
                              blink::mojom::IDBTransaction> transaction_receiver,
                          int64_t transaction_id,
                          const std::vector<int64_t>& object_store_ids,
-                         blink::mojom::IDBTransactionMode mode) override;
+                         blink::mojom::IDBTransactionMode mode,
+                         bool relaxed_durability) override;
   void Close() override;
   void VersionChangeIgnored() override;
   void AddObserver(int64_t transaction_id,

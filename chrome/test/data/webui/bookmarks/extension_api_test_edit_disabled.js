@@ -64,8 +64,21 @@ test('bookmarkManagerPrivate with edit disabled', async () => {
       bookmarkManager.cut([bbb.id], fail(ERROR));
     },
 
+    function canPasteDisabled() {
+      bookmarkManager.canPaste(
+          folder.id, pass(function(result) {
+            assertFalse(result, 'Should not be able to paste bookmarks');
+          }));
+    },
+
     function pasteDisabled() {
       bookmarkManager.paste(folder.id, [bbb.id], fail(ERROR));
+    },
+
+    function editDisabled() {
+      bookmarkManager.canEdit(pass(function(result) {
+        assertFalse(result, 'Should not be able to edit bookmarks');
+      }));
     },
   ];
 

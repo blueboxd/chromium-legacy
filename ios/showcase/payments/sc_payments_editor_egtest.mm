@@ -98,16 +98,6 @@ id<GREYMatcher> KeyboardNextKey() {
 
 @implementation SCPaymentsEditorTestCase
 
-// Per crbug.com/845186, Disable flakey iPad Retina tests that are limited
-// to iOS 10.2.
-+ (NSArray*)testInvocations {
-#if TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && !base::ios::IsRunningOnOrLater(10, 3, 0))
-    return @[];
-#endif  // TARGET_IPHONE_SIMULATOR
-  return [super testInvocations];
-}
-
 - (void)setUp {
   [super setUp];
   Open(@"PaymentRequestEditViewController");
@@ -303,7 +293,8 @@ id<GREYMatcher> KeyboardNextKey() {
 // Tests tapping the return key on every textfield causes the next textfield to
 // get focus except for the last textfield in which case causes the focus to go
 // away from the textfield.
-- (void)testNavigationByTappingReturn {
+// TODO(crbug.com/997938): Test is Flaky on iOS13 iPad.
+- (void)FLAKY_testNavigationByTappingReturn {
   // Tap the name textfield.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       performAction:grey_tap()];

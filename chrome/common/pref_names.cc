@@ -998,6 +998,10 @@ const char kSettingsShowBrowserBanner[] = "settings.cros.show_browser_banner";
 // Boolean user profile pref that determines whether to show a banner in browser
 // settings that links to OS settings.
 const char kSettingsShowOSBanner[] = "settings.cros.show_os_banner";
+
+// Boolean user profile pref that determines whether to show a banner in browser
+// settings "About Chrome" that links to OS settings "About Chrome OS".
+const char kSettingsShowAboutOSBanner[] = "settings.cros.show_about_os_banner";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

@@ -477,7 +477,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             mHomeButton.setOnClickListener(this);
         }
 
-        if (getMenuButton() != null)
+        if (getMenuButton() != null) {
             getMenuButton().setOnKeyListener(new KeyboardNavigationListener() {
                 @Override
                 public View getNextFocusForward() {
@@ -494,6 +494,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     return getMenuButtonHelper().onEnterKeyPress(getMenuButton());
                 }
             });
+        }
         onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
                 || FeatureUtilities.isNewTabPageButtonEnabled()
                 || FeatureUtilities.isBottomToolbarEnabled());
@@ -1875,8 +1876,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     inTabSwitcherMode || mIsBottomToolbarVisible ? GONE : VISIBLE);
         }
 
-        if (getMenuButton() != null)
+        if (getMenuButton() != null) {
             getMenuButton().setVisibility(inTabSwitcherMode ? GONE : VISIBLE);
+        }
 
         triggerUrlFocusAnimation(inTabSwitcherMode && !urlHasFocus());
 
@@ -2466,8 +2468,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // This exception is to prevent early change of theme color when exiting the tab switcher
         // since currently visual state does not map correctly to tab switcher state. See
         // https://crbug.com/832594 for more info.
-        if (mTabSwitcherState != EXITING_TAB_SWITCHER)
+        if (mTabSwitcherState != EXITING_TAB_SWITCHER) {
             updateToolbarBackgroundFromState(mVisualState);
+        }
 
         if (!visualStateChanged) {
             if (mVisualState == VisualState.NEW_TAB_NORMAL) {

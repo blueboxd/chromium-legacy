@@ -11,12 +11,6 @@ interface AssistantStateObserver {
   // Called when Assistant state changes.
   OnAssistantStatusChanged(VoiceInteractionState state);
 
-  // Called when the Assistant is enabled/disabled in settings.
-  OnAssistantSettingsEnabled(bool enabled);
-
-  // Called when hotword listening is enabled/disabled.
-  OnAssistantHotwordEnabled(bool enabled);
-
   // Called when assistant feature allowed state has changed.
   OnAssistantFeatureAllowedChanged(AssistantAllowedState state);
 

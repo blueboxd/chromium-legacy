@@ -6,7 +6,6 @@ import 'chrome://tab-strip/tab.js';
 
 import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
-
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('Tab', function() {
@@ -27,6 +26,27 @@ suite('Tab', function() {
     tabElement = document.createElement('tabstrip-tab');
     tabElement.tab = tab;
     document.body.appendChild(tabElement);
+  });
+
+  test('slideIn animates in the element', async () => {
+    const animationPromise = tabElement.slideIn();
+    // Before animation completes
+    assertEquals('0', window.getComputedStyle(tabElement).opacity);
+    assertEquals('0px', window.getComputedStyle(tabElement).maxWidth);
+    await animationPromise;
+    // After animation completes
+    assertEquals('1', window.getComputedStyle(tabElement).opacity);
+    assertEquals('280px', window.getComputedStyle(tabElement).maxWidth);
+  });
+
+  test('slideOut animates out the element', async () => {
+    const animationPromise = tabElement.slideOut();
+    // Before animation completes
+    assertEquals('1', window.getComputedStyle(tabElement).opacity);
+    assertEquals('280px', window.getComputedStyle(tabElement).maxWidth);
+    await animationPromise;
+    // After animation completes
+    assertFalse(document.body.contains(tabElement));
   });
 
   test('toggles an [active] attribute when active', () => {

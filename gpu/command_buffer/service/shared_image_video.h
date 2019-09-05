@@ -70,6 +70,10 @@ class GPU_GLES2_EXPORT SharedImageVideo
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
 
+  std::unique_ptr<gpu::SharedImageRepresentationOverlay> ProduceOverlay(
+      gpu::SharedImageManager* manager,
+      gpu::MemoryTypeTracker* tracker) override;
+
   // TODO(vikassoni): Add overlay and AHardwareBuffer representations in future
   // patch. Overlays are anyways using legacy mailbox for now.
 
@@ -78,6 +82,7 @@ class GPU_GLES2_EXPORT SharedImageVideo
   friend class SharedImageRepresentationGLTexturePassthroughVideo;
   friend class SharedImageRepresentationVideoSkiaGL;
   friend class SharedImageRepresentationVideoSkiaVk;
+  friend class SharedImageRepresentationOverlayVideo;
 
   void BeginGLReadAccess();
 

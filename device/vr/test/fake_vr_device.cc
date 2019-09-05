@@ -4,6 +4,8 @@
 
 #include "device/vr/test/fake_vr_device.h"
 
+#include "ui/gfx/transform_util.h"
+
 namespace device {
 
 FakeVRDevice::FakeVRDevice(mojom::XRDeviceId id)
@@ -39,7 +41,9 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
   eye->field_of_view->left_degrees = fov;
   eye->field_of_view->right_degrees = fov;
 
-  eye->offset = gfx::Vector3dF(offset, 0.0f, 0.0f);
+  gfx::DecomposedTransform decomp;
+  decomp.translate[0] = offset;
+  eye->head_from_eye = gfx::ComposeTransform(decomp);
 
   eye->render_width = size;
   eye->render_height = size;

@@ -70,6 +70,7 @@ void WebSocketFrameHeader::CopyFrom(const WebSocketFrameHeader& source) {
   reserved3 = source.reserved3;
   opcode = source.opcode;
   masked = source.masked;
+  masking_key = source.masking_key;
   payload_length = source.payload_length;
 }
 

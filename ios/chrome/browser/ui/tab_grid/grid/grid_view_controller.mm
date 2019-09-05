@@ -96,7 +96,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.delegate = self;
   collectionView.backgroundView = [[UIView alloc] init];
   collectionView.backgroundView.backgroundColor =
-      UIColorFromRGB(kGridBackgroundColor);
+      [UIColor colorNamed:kGridBackgroundColor];
   // CollectionView, in contrast to TableView, doesn’t inset the
   // cell content to the safe area guide by default. We will just manage the
   // collectionView contentInset manually to fit in the safe area instead.

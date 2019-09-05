@@ -46,11 +46,16 @@ void CrosNetworkConfigTestObserver::OnDeviceStateListChanged() {
   device_state_list_changed_++;
 }
 
+void CrosNetworkConfigTestObserver::OnVpnProvidersChanged() {
+  vpn_providers_changed_++;
+}
+
 void CrosNetworkConfigTestObserver::ResetNetworkChanges() {
   active_networks_changed_ = 0;
   networks_changed_.clear();
   network_state_list_changed_ = 0;
   device_state_list_changed_ = 0;
+  vpn_providers_changed_ = 0;
 }
 
 void CrosNetworkConfigTestObserver::FlushForTesting() {

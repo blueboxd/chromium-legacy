@@ -967,6 +967,11 @@ by a child template that "extends" this file.
             <intent-filter>
                 <action android:name="android.support.customtabs.action.ACTION_MANAGE_TRUSTED_WEB_ACTIVITY_DATA" />
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- Legacy filter. We no longer need data, but must accept intents that provide data. -->
+            <intent-filter>
+                <action android:name="android.support.customtabs.action.ACTION_MANAGE_TRUSTED_WEB_ACTIVITY_DATA" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="https"/>
             </intent-filter>
         </activity>

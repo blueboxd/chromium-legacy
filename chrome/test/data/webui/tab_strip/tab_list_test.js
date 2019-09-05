@@ -65,6 +65,7 @@ suite('TabList', () => {
 
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
+
     return testTabsApiProxy.whenCalled('getCurrentWindow');
   });
 
@@ -114,13 +115,13 @@ suite('TabList', () => {
         assertEquals(currentWindow.tabs.length, tabElements.length);
       });
 
-  test('removes a tab when tab is removed from current window', () => {
+  test('removes a tab when tab is removed from current window', async () => {
     const tabToRemove = currentWindow.tabs[0];
     callbackRouter.onRemoved.dispatchEvent(tabToRemove.id, {
       windowId: currentWindow.id,
     });
-    const tabElements = getUnpinnedTabs();
-    assertEquals(currentWindow.tabs.length - 1, tabElements.length);
+    await tabList.animationPromises;
+    assertEquals(currentWindow.tabs.length - 1, getUnpinnedTabs().length);
   });
 
   test('updates a tab with new tab data when a tab is updated', () => {
@@ -181,7 +182,7 @@ suite('TabList', () => {
     assertEquals(unpinnedTabElements[0].tab.id, tabToPin.id);
   });
 
-  test('updates [empty] attribute on container for pinned tabs', () => {
+  test('updates [empty] attribute on container for pinned tabs', async () => {
     assertTrue(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
                    .hasAttribute('empty'));
     const tabToPin = currentWindow.tabs[1];
@@ -194,6 +195,7 @@ suite('TabList', () => {
     // Remove the pinned tab
     callbackRouter.onRemoved.dispatchEvent(
         tabToPin.id, {windowId: currentWindow.id});
+    await tabList.animationPromises;
     assertTrue(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
                    .hasAttribute('empty'));
   });

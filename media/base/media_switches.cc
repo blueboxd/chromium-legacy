@@ -573,6 +573,9 @@ const base::Feature kInternalMediaSession {
 #endif
 };
 
+const base::Feature kUseFakeDeviceForMediaStream{
+    "use-fake-device-for-media-stream", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedMjpegDecode)) {

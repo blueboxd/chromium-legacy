@@ -219,8 +219,12 @@ class PLATFORM_EXPORT Length {
     return GetFloatValue() < 0;
   }
 
+  // For the layout purposes, if this |Length| is a block-axis size, see
+  // |IsIntrinsicOrAuto()|, it is usually a better choice.
   bool IsAuto() const { return GetType() == kAuto; }
   bool IsFixed() const { return GetType() == kFixed; }
+  // For the block axis, intrinsic sizes such as `min-content` behave the same
+  // as `auto`. https://www.w3.org/TR/css-sizing-3/#valdef-width-min-content
   bool IsIntrinsicOrAuto() const { return GetType() == kAuto || IsIntrinsic(); }
   bool IsIntrinsic() const {
     return GetType() == kMinContent || GetType() == kMaxContent ||

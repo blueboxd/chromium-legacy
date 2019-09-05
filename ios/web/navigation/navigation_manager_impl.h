@@ -170,6 +170,10 @@ class NavigationManagerImpl : public NavigationManager {
   // Applies the workaround for crbug.com/887497.
   virtual void ApplyWKWebViewForwardHistoryClobberWorkaround();
 
+  // Set ShouldSkipSerialization to true for the next pending item, provided it
+  // matches |url|.  Applies the workaround for crbug.com/997182
+  virtual void SetWKWebViewNextPendingUrlNotSerializable(const GURL& url);
+
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
 

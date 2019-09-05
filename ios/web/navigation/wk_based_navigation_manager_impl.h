@@ -118,6 +118,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   bool IsRestoreSessionInProgress() const override;
   void SetPendingItemIndex(int index) override;
   void ApplyWKWebViewForwardHistoryClobberWorkaround() override;
+  void SetWKWebViewNextPendingUrlNotSerializable(const GURL& url) override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
@@ -299,6 +300,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // is useful to know when comparing the VisibleWebViewURL with the last
   // committed item.
   bool going_to_back_forward_list_item_ = false;
+
+  // Set to an URL when the next created pending item should set
+  // ShouldSkipSerialization to true, provided it matches |url|.
+  GURL next_pending_url_should_skip_serialization_;
 
   // Non null during the session restoration. Created when session restoration
   // is started and reset when the restoration is finished. Used to log UMA

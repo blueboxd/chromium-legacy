@@ -5756,11 +5756,9 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
                           bool* defer_redirect) override {
     *defer_redirect = true;
     AsyncDelegateLogger::Run(
-        request,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        base::Bind(
+        request, LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::BindOnce(
             &AsyncLoggingUrlRequestDelegate::OnReceivedRedirectLoggingComplete,
             base::Unretained(this), request, redirect_info));
   }
@@ -5769,18 +5767,15 @@ class AsyncLoggingUrlRequestDelegate : public TestDelegate {
     AsyncDelegateLogger::Run(
         request, LOAD_STATE_WAITING_FOR_DELEGATE,
         LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_WAITING_FOR_DELEGATE,
-        base::Bind(
+        base::BindOnce(
             &AsyncLoggingUrlRequestDelegate::OnResponseStartedLoggingComplete,
             base::Unretained(this), request, net_error));
   }
 
   void OnReadCompleted(URLRequest* request, int bytes_read) override {
     AsyncDelegateLogger::Run(
-        request,
-        LOAD_STATE_IDLE,
-        LOAD_STATE_IDLE,
-        LOAD_STATE_IDLE,
-        base::Bind(
+        request, LOAD_STATE_IDLE, LOAD_STATE_IDLE, LOAD_STATE_IDLE,
+        base::BindOnce(
             &AsyncLoggingUrlRequestDelegate::AfterReadCompletedLoggingComplete,
             base::Unretained(this), request, bytes_read));
   }
@@ -5833,11 +5828,9 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
     EXPECT_EQ(base::string16(), load_state.param);
 
     AsyncDelegateLogger::Run(
-        r.get(),
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_IDLE,
-        base::Bind(&URLRequest::Start, base::Unretained(r.get())));
+        r.get(), LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_IDLE,
+        base::BindOnce(&URLRequest::Start, base::Unretained(r.get())));
 
     request_delegate.RunUntilComplete();
 
@@ -11587,13 +11580,7 @@ TEST_F(HTTPSOCSPTest, ValidStapled) {
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
-// Disabled on NSS ports. See https://crbug.com/431716.
-#if defined(USE_NSS_CERTS)
-#define MAYBE_RevokedStapled DISABLED_RevokedStapled
-#else
-#define MAYBE_RevokedStapled RevokedStapled
-#endif
-TEST_F(HTTPSOCSPTest, MAYBE_RevokedStapled) {
+TEST_F(HTTPSOCSPTest, RevokedStapled) {
   if (!SystemSupportsOCSPStapling()) {
     LOG(WARNING)
         << "Skipping test because system doesn't support OCSP stapling";
@@ -11875,13 +11862,7 @@ class HTTPSOCSPVerifyTest
     : public HTTPSOCSPTest,
       public testing::WithParamInterface<OCSPVerifyTestData> {};
 
-// TODO(crbug.com/949958): The test is flaky on Mac
-#if defined(OS_MACOSX)
-#define MAYBE_VerifyResult DISABLED_VerifyResult
-#else
-#define MAYBE_VerifyResult VerifyResult
-#endif
-TEST_P(HTTPSOCSPVerifyTest, MAYBE_VerifyResult) {
+TEST_P(HTTPSOCSPVerifyTest, VerifyResult) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_AUTO);
   OCSPVerifyTestData test = GetParam();

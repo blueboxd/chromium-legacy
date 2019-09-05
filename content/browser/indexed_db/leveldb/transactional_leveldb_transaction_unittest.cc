@@ -253,7 +253,7 @@ TEST_F(TransactionalLevelDBTransactionTest, Commit) {
   TransactionPut(transaction.get(), key2, value2);
   TransactionPut(transaction.get(), key2, value3);
 
-  leveldb::Status status = transaction->Commit();
+  leveldb::Status status = transaction->Commit(/*sync_on_commit=*/false);
   EXPECT_TRUE(status.ok());
 
   Get(key1, &got_value, &found);
@@ -553,7 +553,7 @@ TEST_P(LevelDBTransactionRangeTest, RemoveRangeUpperClosed) {
   EXPECT_FALSE(TransactionHas(transaction_.get(), range_end_));
   EXPECT_TRUE(TransactionHas(transaction_.get(), key_after_range_));
 
-  status = transaction_->Commit();
+  status = transaction_->Commit(/*sync_on_commit=*/false);
   EXPECT_TRUE(status.ok());
 
   EXPECT_TRUE(Has(key_before_range_));
@@ -579,7 +579,7 @@ TEST_P(LevelDBTransactionRangeTest, RemoveRangeUpperOpen) {
   EXPECT_TRUE(TransactionHas(transaction_.get(), range_end_));
   EXPECT_TRUE(TransactionHas(transaction_.get(), key_after_range_));
 
-  status = transaction_->Commit();
+  status = transaction_->Commit(/*sync_on_commit=*/false);
   EXPECT_TRUE(status.ok());
 
   EXPECT_TRUE(Has(key_before_range_));
@@ -619,7 +619,7 @@ TEST_P(LevelDBTransactionRangeTest, RemoveRangeIteratorRetainsKey) {
   EXPECT_EQ(Compare(key_after_range_, it->Key()), 0)
       << key_after_range_ << " != " << it->Key().as_string();
 
-  status = transaction_->Commit();
+  status = transaction_->Commit(/*sync_on_commit=*/false);
   EXPECT_TRUE(status.ok());
 }
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_MAGNIFICATION_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -70,8 +71,9 @@ class MagnificationManager
                const content::NotificationDetails& details) override;
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
+  void SetProfileByUser(const user_manager::User* user);
   void SetProfile(Profile* profile);
 
   void SetMagnifierEnabledInternal(bool enabled);
@@ -91,8 +93,7 @@ class MagnificationManager
 
   content::NotificationRegistrar registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
-      session_state_observer_;
+  base::WeakPtrFactory<MagnificationManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationManager);
 };

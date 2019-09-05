@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabSwitcherMediator.INITIAL_SCROLL_INDEX_OFFSET;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.annotation.Nullable;
@@ -206,6 +208,7 @@ public class TabGridDialogMediator {
                 mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, params);
             }
             updateDialog();
+            updateDialogScrollPosition();
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         } else {
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
@@ -245,6 +248,19 @@ public class TabGridDialogMediator {
         mModel.set(TabGridSheetProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));
+    }
+
+    private void updateDialogScrollPosition() {
+        // If current selected tab is not within this dialog, always scroll to the top.
+        if (mCurrentTabId != mTabModelSelector.getCurrentTabId()) {
+            mModel.set(TabGridSheetProperties.INITIAL_SCROLL_INDEX, 0);
+            return;
+        }
+        List<Tab> relatedTabs = getRelatedTabs(mCurrentTabId);
+        Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
+        int initialPosition =
+                Math.max(relatedTabs.indexOf(currentTab) - INITIAL_SCROLL_INDEX_OFFSET, 0);
+        mModel.set(TabGridSheetProperties.INITIAL_SCROLL_INDEX, initialPosition);
     }
 
     private void setupToolbarClickHandlers() {

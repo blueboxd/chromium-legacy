@@ -145,8 +145,7 @@ void DemoModeResourcesRemover::LowDiskSpace(uint64_t free_disk_space) {
   AttemptRemoval(RemovalReason::kLowDiskSpace, RemovalCallback());
 }
 
-void DemoModeResourcesRemover::ActiveUserChanged(
-    const user_manager::User* user) {
+void DemoModeResourcesRemover::ActiveUserChanged(user_manager::User* user) {
   // Ignore user activity in guest sessions.
   if (user->GetType() == user_manager::USER_TYPE_GUEST)
     return;

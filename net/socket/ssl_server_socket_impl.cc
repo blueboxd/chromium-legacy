@@ -307,9 +307,8 @@ SSLServerContextImpl::SocketImpl::PrivateKeySignCallback(uint8_t* out,
   signature_result_ = ERR_IO_PENDING;
   context_->private_key_->Sign(
       algorithm, base::make_span(in, in_len),
-      base::BindRepeating(
-          &SSLServerContextImpl::SocketImpl::OnPrivateKeyComplete,
-          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SSLServerContextImpl::SocketImpl::OnPrivateKeyComplete,
+                     weak_factory_.GetWeakPtr()));
   return ssl_private_key_retry;
 }
 

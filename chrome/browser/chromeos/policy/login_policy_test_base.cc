@@ -115,7 +115,7 @@ void LoginPolicyTestBase::LogIn(const std::string& user_id,
       ->GetOobeUI()
       ->GetView<chromeos::GaiaScreenHandler>()
       ->ShowSigninScreenForTest(user_id, password, services);
-  chromeos::test::WaitForSessionStart();
+  chromeos::test::WaitForPrimaryUserSessionStart();
 }
 
 }  // namespace policy

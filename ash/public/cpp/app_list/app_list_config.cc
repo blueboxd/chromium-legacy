@@ -4,9 +4,11 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 
+#include <algorithm>
+
+#include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
-#include "base/no_destructor.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_palette.h"
 
@@ -14,36 +16,9 @@ namespace app_list {
 
 namespace {
 
-// The minimum scale that can be used when scaling down the app list view UI.
-// Selected so the grid tile height does not get smaller than 80 dip.
-constexpr float kMinimumConfigScale = 80. / 120.;
-
 // Scales |value| using the smaller one of |scale_1| and |scale_2|.
 int MinScale(int value, float scale_1, float scale_2) {
   return std::round(value * std::min(scale_1, scale_2));
-}
-
-// Determines the app list config that should be used for a display work area
-// size. It should not be used if ScalableAppList feature is disabled.
-ash::AppListConfigType GetConfigTypeForDisplaySize(
-    const gfx::Size& display_size) {
-  DCHECK(app_list_features::IsScalableAppListEnabled());
-
-  // Landscape:
-  if (display_size.width() > display_size.height()) {
-    if (display_size.width() >= 1200)
-      return ash::AppListConfigType::kLarge;
-    if (display_size.width() >= 960)
-      return ash::AppListConfigType::kMedium;
-    return ash::AppListConfigType::kSmall;
-  }
-
-  // Portrait:
-  if (display_size.width() >= 768)
-    return ash::AppListConfigType::kLarge;
-  if (display_size.width() >= 600)
-    return ash::AppListConfigType::kMedium;
-  return ash::AppListConfigType::kSmall;
 }
 
 int GridTileWidthForType(ash::AppListConfigType type) {
@@ -95,13 +70,12 @@ int GridIconDimensionForType(ash::AppListConfigType type) {
 int GridTitleTopPaddingForType(ash::AppListConfigType type) {
   switch (type) {
     case ash::AppListConfigType::kShared:
-      return 92;
     case ash::AppListConfigType::kLarge:
-      return 94;
+      return 92;
     case ash::AppListConfigType::kMedium:
-      return 58;
+      return 64;
     case ash::AppListConfigType::kSmall:
-      return 50;
+      return 56;
   }
 
   NOTREACHED();
@@ -183,12 +157,11 @@ int AppTitleMaxLineHeightForType(ash::AppListConfigType type) {
 gfx::FontList AppTitleFontForType(ash::AppListConfigType type) {
   switch (type) {
     case ash::AppListConfigType::kShared:
-      return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(1);
     case ash::AppListConfigType::kLarge:
-      return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(2);
+      return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(1);
     case ash::AppListConfigType::kMedium:
     case ash::AppListConfigType::kSmall:
-      return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(1);
+      return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(0);
   }
 
   NOTREACHED();
@@ -255,9 +228,6 @@ int ItemIconInFolderIconMarginForType(ash::AppListConfigType type) {
 }
 
 }  // namespace
-
-AppListConfig::AppListConfig()
-    : AppListConfig(ash::AppListConfigType::kShared) {}
 
 AppListConfig::AppListConfig(ash::AppListConfigType type)
     : type_(type),
@@ -457,71 +427,8 @@ AppListConfig::~AppListConfig() = default;
 
 // static
 AppListConfig& AppListConfig::instance() {
-  static base::NoDestructor<AppListConfig> instance;
-  return *instance;
-}
-
-std::unique_ptr<AppListConfig> AppListConfig::CreateForAppListWidget(
-    const gfx::Size& display_work_area_size,
-    const gfx::Size& available_grid_size,
-    const AppListConfig* current_config) {
-  DCHECK_EQ(this, &instance());
-
-  if (app_list_features::IsScalableAppListEnabled()) {
-    ash::AppListConfigType type =
-        GetConfigTypeForDisplaySize(display_work_area_size);
-    if (current_config && current_config->type_ == type)
-      return nullptr;
-    return std::make_unique<AppListConfig>(type);
-  }
-
-  const int min_grid_height =
-      (display_work_area_size.width() < display_work_area_size.height()
-           ? preferred_cols_
-           : preferred_rows_) *
-      grid_tile_height_;
-  const int min_grid_width =
-      (display_work_area_size.width() < display_work_area_size.height()
-           ? preferred_rows_
-           : preferred_cols_) *
-      grid_tile_width_;
-
-  float scale_x = 1;
-  float scale_y = 1;
-  float inner_tile_scale_y = 1;
-
-  if (available_grid_size.height() < min_grid_height) {
-    scale_y = std::max(
-        kMinimumConfigScale,
-        static_cast<float>(available_grid_size.height()) / min_grid_height);
-    // Adjust scale to reflect the fact the app list item title height does not
-    // get scaled. The adjustment is derived from:
-    // s * x + c = S * (x + c) and t = x + c
-    // With: S - the target grid scale,
-    //       x - scalable part of the tile (total title padding),
-    //       c - constant part of the tile,
-    //       t - tile height, and
-    //       s - the adjusted scale.
-    const int total_title_padding =
-        grid_title_bottom_padding_ + grid_title_top_padding_;
-    inner_tile_scale_y =
-        (grid_tile_height_ * (scale_y - 1) + total_title_padding) /
-        total_title_padding;
-  }
-
-  if (available_grid_size.width() < min_grid_width) {
-    scale_x = std::max(
-        kMinimumConfigScale,
-        static_cast<float>(available_grid_size.width()) / min_grid_width);
-  }
-
-  if (current_config && current_config->scale_x_ == scale_x &&
-      current_config->scale_y_ == scale_y) {
-    return nullptr;
-  }
-
-  return std::make_unique<AppListConfig>(*this, scale_x, scale_y,
-                                         inner_tile_scale_y);
+  return *AppListConfigProvider::Get().GetConfigForType(
+      ash::AppListConfigType::kShared, true /*can_create*/);
 }
 
 int AppListConfig::GetPreferredIconDimension(

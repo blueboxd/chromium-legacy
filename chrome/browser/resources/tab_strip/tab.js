@@ -7,6 +7,8 @@ import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js'
 import {CustomElement} from './custom_element.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
 
+export const DEFAULT_ANIMATION_DURATION = 125;
+
 export class TabElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
@@ -85,6 +87,45 @@ export class TabElement extends CustomElement {
 
     event.stopPropagation();
     this.tabsApi_.closeTab(this.tab_.id);
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  slideIn() {
+    return new Promise(resolve => {
+      const animation = this.animate(
+          [
+            {maxWidth: 0, opacity: 0},
+            {maxWidth: '280px', opacity: 1},
+          ],
+          {
+            duration: DEFAULT_ANIMATION_DURATION,
+            fill: 'forwards',
+          });
+      animation.onfinish = resolve;
+    });
+  }
+
+  /**
+   * @return {!Promise}
+   */
+  slideOut() {
+    return new Promise(resolve => {
+      const animation = this.animate(
+          [
+            {maxWidth: '280px', opacity: 1},
+            {maxWidth: 0, opacity: 0},
+          ],
+          {
+            duration: DEFAULT_ANIMATION_DURATION,
+            fill: 'forwards',
+          });
+      animation.onfinish = () => {
+        this.remove();
+        resolve();
+      };
+    });
   }
 }
 

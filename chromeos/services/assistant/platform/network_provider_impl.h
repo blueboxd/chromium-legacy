@@ -34,6 +34,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) NetworkProviderImpl
       override {}
   void OnNetworkStateListChanged() override {}
   void OnDeviceStateListChanged() override {}
+  void OnVpnProvidersChanged() override {}
 
  private:
   ConnectionStatus connection_status_;

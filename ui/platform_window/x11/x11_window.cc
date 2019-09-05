@@ -71,10 +71,8 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 
 }  // namespace
 
-X11Window::X11Window(PlatformWindowDelegateLinux* platform_window_delegate,
-                     XEventDelegate* x_event_delegate)
-    : platform_window_delegate_(platform_window_delegate),
-      x_event_delegate_(x_event_delegate) {}
+X11Window::X11Window(PlatformWindowDelegateLinux* platform_window_delegate)
+    : platform_window_delegate_(platform_window_delegate) {}
 
 X11Window::~X11Window() {
   PrepareForShutdown();
@@ -85,6 +83,11 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   XWindow::Configuration config =
       ConvertInitPropertiesToXWindowConfig(properties);
   Init(config);
+}
+
+void X11Window::SetXEventDelegate(XEventDelegate* delegate) {
+  DCHECK(!x_event_delegate_);
+  x_event_delegate_ = delegate;
 }
 
 void X11Window::Show() {

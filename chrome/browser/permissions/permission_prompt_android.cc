@@ -26,6 +26,16 @@ PermissionPromptAndroid::PermissionPromptAndroid(
       weak_factory_(this) {
   DCHECK(web_contents);
 
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (infobar_service &&
+      GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
+          GetContentSettingType(0u /* position */))) {
+    GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
+                                             infobar_service);
+    return;
+  }
+
   if (PermissionRequestNotificationAndroid::ShouldShowAsNotification(
           GetContentSettingType(0u /* position */))) {
     permission_request_notification_ =
@@ -72,7 +82,7 @@ size_t PermissionPromptAndroid::PermissionCount() const {
 ContentSettingsType PermissionPromptAndroid::GetContentSettingType(
     size_t position) const {
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
-  DCHECK_LT(position, requests.size());
+  CHECK_LT(position, requests.size());
   return requests[position]->GetContentSettingsType();
 }
 

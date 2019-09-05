@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "content/public/browser/native_file_system_permission_grant.h"
+#include "content/public/browser/native_file_system_write_item.h"
 #include "url/origin.h"
 
 namespace content {
@@ -92,6 +93,15 @@ class NativeFileSystemPermissionContext {
       int process_id,
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) = 0;
+
+  enum class SafeBrowsingResult { kAllow, kBlock };
+  // Runs a recently finished write operation through Safe Browsing code to
+  // determine if the write should be allowed or blocked.
+  virtual void PerformSafeBrowsingChecks(
+      std::unique_ptr<NativeFileSystemWriteItem> item,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SafeBrowsingResult)> callback) = 0;
 
  protected:
   virtual ~NativeFileSystemPermissionContext() = default;

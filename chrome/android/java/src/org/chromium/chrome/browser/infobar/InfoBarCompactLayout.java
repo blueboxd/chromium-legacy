@@ -139,18 +139,27 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
             return this;
         }
 
-        /** The link will be appended after the main message. */
-        public MessageBuilder withLink(@StringRes int textResId, Callback<View> onTapCallback) {
+        /** Appends a link after the main message, its displayed text being the specified string. */
+        public MessageBuilder withLink(CharSequence label, Callback<View> onTapCallback) {
             assert mLink == null;
 
             final Resources resources = mLayout.getResources();
-            String label = resources.getString(textResId);
             SpannableString link = new SpannableString(label);
             link.setSpan(new NoUnderlineClickableSpan(resources, onTapCallback), 0, label.length(),
                     Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             mLink = link;
 
             return this;
+        }
+
+        /**
+         * Appends a link after the main message, its displayed text being constructed from the
+         * given resource ID.
+         */
+        public MessageBuilder withLink(@StringRes int textResId, Callback<View> onTapCallback) {
+            final Resources resources = mLayout.getResources();
+            String label = resources.getString(textResId);
+            return withLink(label, onTapCallback);
         }
 
         /** Finalizes the message view as set up in the builder and inserts it into the layout. */

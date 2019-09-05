@@ -22,10 +22,9 @@ namespace performance_manager {
 
 class FrameNodeImpl;
 
-class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
-                     public TypedNodeBase<PageNodeImpl,
-                                          PageNode,
-                                          PageNodeObserver> {
+class PageNodeImpl
+    : public PublicNodeImpl<PageNodeImpl, PageNode>,
+      public TypedNodeBase<PageNodeImpl, PageNode, PageNodeObserver> {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
@@ -41,9 +40,9 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // dereferenced on the UI thread.
   const WebContentsProxy& contents_proxy() const;
 
-  void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
   void SetIsAudible(bool is_audible);
+  void SetIsLoading(bool is_loading);
   void SetUkmSourceId(ukm::SourceId ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
@@ -79,6 +78,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   bool is_loading() const;
   ukm::SourceId ukm_source_id() const;
   LifecycleState lifecycle_state() const;
+  InterventionPolicy origin_trial_freeze_policy() const;
   const base::flat_set<FrameNodeImpl*>& main_frame_nodes() const;
   base::TimeTicks usage_estimate_time() const;
   base::TimeDelta cumulative_cpu_usage_estimate() const;
@@ -94,34 +94,6 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
       uint64_t private_footprint_kb_estimate);
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload);
 
-  // Invoked when a frame belonging to this page changes intervention policy
-  // values.
-  // TODO(chrisha): Move this out to a decorator.
-  void OnFrameInterventionPolicyChanged(
-      FrameNodeImpl* frame,
-      resource_coordinator::mojom::PolicyControlledIntervention intervention,
-      resource_coordinator::mojom::InterventionPolicy old_policy,
-      resource_coordinator::mojom::InterventionPolicy new_policy);
-
-  // Gets the current policy for the specified |intervention|, recomputing it
-  // from individual frame policies if necessary. Returns kUnknown until there
-  // are 1 or more frames, and they have all computed their local policy
-  // settings.
-  resource_coordinator::mojom::InterventionPolicy GetInterventionPolicy(
-      resource_coordinator::mojom::PolicyControlledIntervention intervention);
-
-  // Similar to GetInterventionPolicy, but doesn't trigger recomputes.
-  resource_coordinator::mojom::InterventionPolicy
-  GetRawInterventionPolicyForTesting(
-      resource_coordinator::mojom::PolicyControlledIntervention intervention)
-      const {
-    return intervention_policy_[static_cast<size_t>(intervention)];
-  }
-
-  size_t GetInterventionPolicyFramesReportedForTesting() const {
-    return intervention_policy_frames_reported_;
-  }
-
   void SetLifecycleStateForTesting(LifecycleState lifecycle_state) {
     SetLifecycleState(lifecycle_state);
   }
@@ -132,6 +104,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
  private:
   friend class FrameNodeImpl;
+  friend class FreezeOriginTrialPolicyAggregatorAccess;
   friend class FrozenFrameAggregatorAccess;
   friend class PageAlmostIdleAccess;
 
@@ -144,6 +117,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   bool IsLoading() const override;
   ukm::SourceId GetUkmSourceID() const override;
   LifecycleState GetLifecycleState() const override;
+  InterventionPolicy GetOriginTrialFreezePolicy() const override;
   int64_t GetNavigationID() const override;
   base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
@@ -158,22 +132,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   void SetPageAlmostIdle(bool page_almost_idle);
   void SetLifecycleState(LifecycleState lifecycle_state);
-
-  // Invalidates all currently aggregated intervention policies.
-  void InvalidateAllInterventionPolicies();
-
-  // Invoked when adding or removing a frame. This will update
-  // |intervention_policy_frames_reported_| if necessary and potentially
-  // invalidate the aggregated intervention policies. This should be called
-  // after the frame has already been added or removed from
-  // |frame_nodes_|.
-  void MaybeInvalidateInterventionPolicies(FrameNodeImpl* frame_node,
-                                           bool adding_frame);
-
-  // Recomputes intervention policy aggregation. This is invoked on demand when
-  // a policy is queried.
-  void RecomputeInterventionPolicy(
-      resource_coordinator::mojom::PolicyControlledIntervention intervention);
+  void SetOriginTrialFreezePolicy(InterventionPolicy policy);
 
   // The WebContentsProxy associated with this page.
   const WebContentsProxy contents_proxy_;
@@ -220,49 +179,28 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // zero if the page has never committed a navigation.
   int64_t navigation_id_ = 0;
 
-  // The aggregate intervention policy states for this page. These are
-  // aggregated from the corresponding per-frame values. If an individual value
-  // is kUnknown then a frame in the frame tree has changed values and
-  // a new aggregation is required.
-  resource_coordinator::mojom::InterventionPolicy
-      intervention_policy_[static_cast<size_t>(
-                               resource_coordinator::mojom::
-                                   PolicyControlledIntervention::kMaxValue) +
-                           1];
-
-  // The number of child frames that have checked in with initial intervention
-  // policy values. If this doesn't match the number of known child frames, then
-  // aggregation isn't possible. Child frames check in with all properties once
-  // immediately after document parsing, and the *last* value being set
-  // is used as a signal that the frame has reported.
-  size_t intervention_policy_frames_reported_ = 0;
-
   // The unique ID of the browser context that this page belongs to.
   const std::string browser_context_id_;
 
   // Page almost idle state. This is the output that is driven by the
   // PageAlmostIdleDecorator.
-  ObservedProperty::NotifiesOnlyOnChanges<
-      bool,
-      &PageNodeObserver::OnPageAlmostIdleChanged>
-      page_almost_idle_{false};
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &PageNodeObserver::OnPageAlmostIdleChanged>
+          page_almost_idle_{false};
   // Whether or not the page is visible. Driven by browser instrumentation.
   // Initialized on construction.
-  ObservedProperty::NotifiesOnlyOnChanges<
-      bool,
-      &PageNodeObserver::OnIsVisibleChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &PageNodeObserver::OnIsVisibleChanged>
       is_visible_{false};
   // Whether or not the page is audible. Driven by browser instrumentation.
   // Initialized on construction.
-  ObservedProperty::NotifiesOnlyOnChanges<
-      bool,
-      &PageNodeObserver::OnIsAudibleChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &PageNodeObserver::OnIsAudibleChanged>
       is_audible_{false};
   // The loading state. This is driven by instrumentation in the browser
   // process.
-  ObservedProperty::NotifiesOnlyOnChanges<
-      bool,
-      &PageNodeObserver::OnIsLoadingChanged>
+  ObservedProperty::NotifiesOnlyOnChanges<bool,
+                                          &PageNodeObserver::OnIsLoadingChanged>
       is_loading_{false};
   // The UKM source ID associated with the URL of the main frame of this page.
   ObservedProperty::NotifiesOnlyOnChanges<
@@ -275,12 +213,22 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
       LifecycleState,
       &PageNodeObserver::OnPageLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
+  // The origin trial freeze policy of this page. This is aggregated from the
+  // origin trial freeze policy of each current frame in the frame tree.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      InterventionPolicy,
+      &PageNodeObserver::OnPageOriginTrialFreezePolicyChanged>
+      origin_trial_freeze_policy_{InterventionPolicy::kDefault};
 
   // Storage for PageAlmostIdle user data.
   std::unique_ptr<NodeAttachedData> page_almost_idle_data_;
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
+
+  // Inline storage for FreezeOriginTrialPolicyAggregatorAccess user data.
+  InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 16>
+      freeze_origin_trial_policy_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };

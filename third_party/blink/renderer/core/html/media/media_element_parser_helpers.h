@@ -14,15 +14,6 @@ class LayoutObject;
 
 namespace media_element_parser_helpers {
 
-// Parses the intrinsicSize attribute of HTMLImageElement, HTMLVideoElement, and
-// SVGImageElement. Returns true if the value is updated.
-// https://github.com/ojanvafai/intrinsicsize-attribute/blob/master/README.md
-bool ParseIntrinsicSizeAttribute(const String& value,
-                                 const Element* element,
-                                 IntSize* intrinsic_size,
-                                 bool* is_default_intrinsic_size,
-                                 String* message);
-
 // Returns true for elements that are either <img>, <svg:image> or <video> that
 // are not in an image or media document; returns false otherwise.
 bool IsMediaElement(const Element* element);

@@ -457,10 +457,10 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
 
     if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
                                               type)) {
-      return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
+      return PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE;
     }
     passed_reasons->push_back(
-        PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
+        PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE);
   }
 
   return PreviewsEligibilityReason::ALLOWED;
@@ -494,10 +494,10 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // Check if request URL is whitelisted by the optimization guide.
   if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
                                             type)) {
-    return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
+    return PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE;
   }
   passed_reasons->push_back(
-      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
+      PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE);
 
   // The url is whitelisted, now check some additional cases of the effective
   // network condition.

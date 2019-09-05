@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
@@ -386,10 +387,7 @@ class OAuth2Test : public OobeBaseTest {
                              account_id);
     user_context.SetKey(Key(password));
     controller->Login(user_context, SigninSpecifics());
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources())
-        .Wait();
+    test::WaitForPrimaryUserSessionStart();
     const user_manager::UserList& logged_users =
         user_manager::UserManager::Get()->GetLoggedInUsers();
     for (user_manager::UserList::const_iterator it = logged_users.begin();
@@ -430,10 +428,6 @@ class OAuth2Test : public OobeBaseTest {
     SimulateNetworkOnline();
     WaitForGaiaPageLoad();
 
-    content::WindowedNotificationObserver session_start_waiter(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources());
-
     // Use capitalized and dotted user name on purpose to make sure
     // our email normalization kicks in.
     LoginDisplayHost::default_host()
@@ -441,7 +435,7 @@ class OAuth2Test : public OobeBaseTest {
         ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
                                   kTestAccountServices);
-    session_start_waiter.Wait();
+    test::WaitForPrimaryUserSessionStart();
 
     if (wait_for_merge) {
       // Wait for the session merge to finish.

@@ -8,7 +8,6 @@
 #include "base/synchronization/lock.h"
 #include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_item.h"
-#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -20,8 +19,7 @@ UrlDownloadHandler::UniqueUrlDownloadHandlerPtr
 UrlDownloadHandlerFactory::Create(
     std::unique_ptr<download::DownloadUrlParameters> params,
     base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
     std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
@@ -30,8 +28,8 @@ UrlDownloadHandlerFactory::Create(
   return UrlDownloadHandler::UniqueUrlDownloadHandlerPtr(
       download::ResourceDownloader::BeginDownload(
           delegate, std::move(params), std::move(request),
-          std::move(url_loader_factory_getter), url_security_policy, GURL(),
-          GURL(), GURL(), true, true, std::move(connector),
+          std::move(url_loader_factory), url_security_policy, GURL(), GURL(),
+          GURL(), true, true, std::move(connector),
           false /* is_background_mode */, task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));

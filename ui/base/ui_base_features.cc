@@ -140,17 +140,6 @@ bool IsAutomaticUiAdjustmentsForTouchEnabled() {
 #endif
 }
 
-#if defined(OS_MACOSX)
-// When enabled, the NSWindows for apps will be created in the app's process,
-// and will forward input to the browser process.
-const base::Feature kHostWindowsInAppShimProcess{
-    "HostWindowsInAppShimProcess", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool HostWindowsInAppShimProcess() {
-  return base::FeatureList::IsEnabled(kHostWindowsInAppShimProcess);
-}
-#endif  //  defined(OS_MACOSX)
-
 const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 

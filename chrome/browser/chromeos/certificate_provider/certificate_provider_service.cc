@@ -370,7 +370,8 @@ void CertificateProviderService::ReplyToSignRequest(
   if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &certificate,
                                     &callback)) {
     LOG(ERROR) << "request id unknown.";
-    // Maybe multiple replies to the same request.
+    // The request was aborted before, or the extension replied multiple times
+    // to the same request.
     return;
   }
 
@@ -463,6 +464,30 @@ bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
   return true;
 }
 
+void CertificateProviderService::AbortSignatureRequestsForAuthenticatingUser(
+    const AccountId& authenticating_user_account_id) {
+  using ExtensionNameRequestIdPair =
+      certificate_provider::SignRequests::ExtensionNameRequestIdPair;
+
+  const std::vector<ExtensionNameRequestIdPair> sign_requests_to_abort =
+      sign_requests_.FindRequestsForAuthenticatingUser(
+          authenticating_user_account_id);
+
+  for (const ExtensionNameRequestIdPair& sign_request :
+       sign_requests_to_abort) {
+    const std::string& extension_id = sign_request.first;
+    const int sign_request_id = sign_request.second;
+    pin_dialog_manager_.AbortSignRequest(extension_id, sign_request_id);
+
+    scoped_refptr<net::X509Certificate> certificate;
+    net::SSLPrivateKey::SignCallback sign_callback;
+    if (sign_requests_.RemoveRequest(extension_id, sign_request_id,
+                                     &certificate, &sign_callback)) {
+      std::move(sign_callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
+    }
+  }
+}
+
 void CertificateProviderService::GetCertificatesFromExtensions(
     base::OnceCallback<void(net::ClientCertIdentityList)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -531,8 +556,9 @@ void CertificateProviderService::RequestSignatureFromExtension(
     net::SSLPrivateKey::SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const int sign_request_id =
-      sign_requests_.AddRequest(extension_id, certificate, std::move(callback));
+  const int sign_request_id = sign_requests_.AddRequest(
+      extension_id, certificate, authenticating_user_account_id,
+      std::move(callback));
   pin_dialog_manager_.AddSignRequestId(extension_id, sign_request_id,
                                        authenticating_user_account_id);
   if (!delegate_->DispatchSignRequestToExtension(

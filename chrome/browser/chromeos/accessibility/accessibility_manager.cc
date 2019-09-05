@@ -1165,22 +1165,13 @@ void AccessibilityManager::SetProfileByUser(const user_manager::User* user) {
   SetProfile(profile);
 }
 
-void AccessibilityManager::ActiveUserChanged(
-    const user_manager::User* active_user) {
+void AccessibilityManager::ActiveUserChanged(user_manager::User* active_user) {
   if (!active_user)
     return;
 
-  if (active_user->is_profile_created()) {
-    SetProfileByUser(active_user);
-  } else {
-    // |active_user| is unfortunately const.
-    user_manager::User* user =
-        user_manager::UserManager::Get()->GetActiveUser();
-    DCHECK_EQ(user, active_user);
-    user->AddProfileCreatedObserver(
-        base::BindOnce(&AccessibilityManager::SetProfileByUser,
-                       weak_ptr_factory_.GetWeakPtr(), user));
-  }
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&AccessibilityManager::SetProfileByUser,
+                     weak_ptr_factory_.GetWeakPtr(), active_user));
 }
 
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {

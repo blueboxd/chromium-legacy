@@ -1983,6 +1983,47 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
                      CertError::NONE, security_state::SECURE, AuthState::NONE);
 }
 
+// Visit an HTTPS page that has a certificate issued by a certificate authority
+// that is trusted in a root store that Chrome does not consider consistently
+// secure. In the case where the certificate was issued after the Certificate
+// Transparency requirement date of April 2018 the connection would normally be
+// blocked, as the server will not be providing CT details, and the Chrome CT
+// Policy should be being enforced; however, because a policy configuration
+// exists that disables CT enforcement for that Legacy cert, the connection
+// should succeed. For more detail, see /net/docs/certificate-transparency.md
+IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
+                       LegacyEnforcedAfterApril2018UnlessPoliciesSet) {
+  ASSERT_TRUE(https_server()->Start());
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "may_2018.pem");
+  ASSERT_TRUE(verify_result.verified_cert);
+  verify_result.is_issued_by_known_root = true;
+
+  // We'll use a SPKI hash corresponding to the Federal Common Policy CA as
+  // captured at https://fpki.idmanagement.gov/announcements/mspkichanges/
+  const net::SHA256HashValue legacy_spki_hash = {
+      0x8e, 0x8b, 0x56, 0xf5, 0x91, 0x8a, 0x25, 0xbd, 0x85, 0xdc, 0xe7,
+      0x66, 0x63, 0xfd, 0x94, 0xcc, 0x23, 0x69, 0x0f, 0x10, 0xea, 0x95,
+      0x86, 0x61, 0x31, 0x71, 0xc6, 0xf8, 0x37, 0x88, 0x90, 0xd5};
+  verify_result.public_key_hashes.push_back(net::HashValue(legacy_spki_hash));
+
+  mock_cert_verifier()->AddResultForCert(https_server()->GetCertificate().get(),
+                                         verify_result, net::OK);
+
+  ASSERT_NO_FATAL_FAILURE(ConfigureStringListPolicy(
+      browser()->profile()->GetPrefs(),
+      policy::key::kCertificateTransparencyEnforcementDisabledForLegacyCas,
+      certificate_transparency::prefs::kCTExcludedLegacySPKIs,
+      {verify_result.public_key_hashes.back().ToString()}));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
+                     CertError::NONE, security_state::SECURE, AuthState::NONE);
+}
+
 // Visit a HTTP page which request WSS connection to a server providing invalid
 // certificate. Close the page while WSS connection waits for SSLManager's
 // response from UI thread.

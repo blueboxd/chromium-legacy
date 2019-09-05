@@ -101,6 +101,10 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   virtual bool IsAccessibilityFeatureVisibleInTrayMenu(
       const std::string& path) = 0;
 
+  // Sets whether Switch Access ignores virtual key events.
+  virtual void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
+      bool should_ignore) = 0;
+
  protected:
   AccessibilityController();
   virtual ~AccessibilityController();

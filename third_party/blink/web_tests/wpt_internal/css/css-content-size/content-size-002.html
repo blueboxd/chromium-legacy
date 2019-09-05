@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf8">
+<title>CSS content-size: unsized div</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+<link rel="match" href="content-size-002-ref.html">
+
+<style>
+#border {
+  width: max-content;
+  border: 1px solid black;
+}
+#target {
+  background: lightblue;
+  content-size: 111px 222px;
+  contain: size;
+}
+</style>
+
+<div id=border>
+  <div id=target></div>
+</div>

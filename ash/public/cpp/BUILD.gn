@@ -24,6 +24,8 @@ component("cpp") {
     "app_list/app_list_client.h",
     "app_list/app_list_config.cc",
     "app_list/app_list_config.h",
+    "app_list/app_list_config_provider.cc",
+    "app_list/app_list_config_provider.h",
     "app_list/app_list_controller.cc",
     "app_list/app_list_controller.h",
     "app_list/app_list_features.cc",
@@ -305,6 +307,7 @@ source_set("manifest_for_tests") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "app_list/app_list_config_provider_unittest.cc",
     "default_scale_factor_retriever_unittest.cc",
     "pagination/pagination_model_unittest.cc",
     "power_utils_unittest.cc",

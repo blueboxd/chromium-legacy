@@ -284,18 +284,19 @@ leveldb::Status LevelDBScope::WriteChangesAndUndoLog() {
   return WriteChangesAndUndoLogInternal(false);
 }
 
-std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit() {
+std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit(
+    bool sync_on_commit) {
   DCHECK(!locks_.empty());
   leveldb::Status s;
   switch (mode_) {
     case Mode::kInMemory:
       // Don't bother hitting disk if we don't have anything.
       if (!buffer_batch_empty_)
-        s = WriteBufferBatch(true);
+        s = WriteBufferBatch(sync_on_commit);
       break;
     case Mode::kUndoLogOnDisk:
       AddCommitPoint();
-      s = WriteChangesAndUndoLogInternal(true);
+      s = WriteChangesAndUndoLogInternal(sync_on_commit);
       break;
     default:
       NOTREACHED();

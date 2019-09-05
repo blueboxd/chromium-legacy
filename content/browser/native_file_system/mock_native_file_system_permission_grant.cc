@@ -14,7 +14,7 @@ MockNativeFileSystemPermissionGrant::~MockNativeFileSystemPermissionGrant() =
 void MockNativeFileSystemPermissionGrant::RequestPermission(
     int process_id,
     int frame_id,
-    base::OnceClosure callback) {
+    base::OnceCallback<void(PermissionRequestOutcome)> callback) {
   RequestPermission_(process_id, frame_id, callback);
 }
 

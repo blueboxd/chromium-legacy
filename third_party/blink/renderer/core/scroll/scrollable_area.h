@@ -62,6 +62,8 @@ struct SerializedAnchor;
 class SmoothScrollSequencer;
 struct WebScrollIntoViewParams;
 
+using MainThreadScrollingReasons = uint32_t;
+
 enum IncludeScrollbarsInRect {
   kExcludeScrollbars,
   kIncludeScrollbars,
@@ -471,6 +473,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   bool HasBeenDisposed() const { return has_been_disposed_; }
 
   virtual const Document* GetDocument() const;
+
+  MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,

@@ -105,7 +105,7 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   void OnIsSyncingChanged() override;
 
   // Overriden form user_manager::UserManager::UserSessionStateObserver.
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   sync_preferences::PrefServiceSyncable* prefs_;
 

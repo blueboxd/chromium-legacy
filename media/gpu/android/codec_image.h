@@ -70,6 +70,9 @@ class MEDIA_GPU_EXPORT CodecImage
   bool CopyTexSubImage(unsigned target,
                        const gfx::Point& offset,
                        const gfx::Rect& rect) override;
+  // Currently this API is depended on the implementation of
+  // NotifyOverlayPromotion. since we expect overlay to use SharedImage in the
+  // future.
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
                             gfx::OverlayTransform transform,
@@ -86,6 +89,8 @@ class MEDIA_GPU_EXPORT CodecImage
   GetAHardwareBuffer() override;
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
+  // Currently this API is implemented by the NotifyOverlayPromotion, since this
+  // API is expected to be removed.
   void NotifyPromotionHint(bool promotion_hint,
                            int display_x,
                            int display_y,
@@ -98,6 +103,10 @@ class MEDIA_GPU_EXPORT CodecImage
   void UpdateAndBindTexImage() override;
   bool HasTextureOwner() const override;
   gpu::gles2::Texture* GetTexture() const override;
+  void NotifyOverlayPromotion(bool promotion, const gfx::Rect& bounds) override;
+  // Renders this image to the overlay. Returns true if the buffer is in the
+  // overlay front buffer. Returns false if the buffer was invalidated.
+  bool RenderToOverlay() override;
 
   // Whether the codec buffer has been rendered to the front buffer.
   bool was_rendered_to_front_buffer() const {
@@ -155,10 +164,6 @@ class MEDIA_GPU_EXPORT CodecImage
   // frame available event before calling UpdateTexImage().
   bool RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode);
   void EnsureBoundIfNeeded(BindingsMode mode);
-
-  // Renders this image to the overlay. Returns true if the buffer is in the
-  // overlay front buffer. Returns false if the buffer was invalidated.
-  bool RenderToOverlay();
 
   // The phase of the image buffer's lifecycle.
   Phase phase_ = Phase::kInvalidated;

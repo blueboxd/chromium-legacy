@@ -189,6 +189,9 @@ interface NativeWidgetNSWindow {
   // Set the NSWindow's title text.
   SetWindowTitle(mojo_base.mojom.String16 title);
 
+  // Ignore or accept mouse events on the NSWindow.
+  SetIgnoresMouseEvents(bool ignores_mouse_events);
+
   // Make the content view be the first responder for the NSWindow.
   MakeFirstResponder();
 

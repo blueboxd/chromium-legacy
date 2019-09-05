@@ -128,6 +128,32 @@ export function testScrollFromOffScreen(target) {
 }
 
 /**
+ * Make sure that an element that was hidden by the scroller does not
+ * remain hidden if it is moved out of the scroller.
+ */
+export function testUnlockAfterRemove(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    helpers.appendDivs(target, MORE_THAN_SCREENFUL, '10px');
+    helpers.nextFrame(() => {
+      const e = target.lastElementChild;
+      // Make sure the element can stay locked outside of the scroller.
+      e.style.contain = 'style layout';
+      target.parentElement.appendChild(e);
+
+      helpers.nextFrame(() => {
+        window.scrollBy(0, target.getBoundingClientRect().height);
+        helpers.stopWaiting();
+      });
+    });
+  });
+};
+
+/**
  * Runs |test| with a <virtual-scroller>, waiting until the custom element is
  * defined.
  */

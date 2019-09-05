@@ -93,7 +93,7 @@ class AppListClientImpl
       int position_index) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // AppListControllerDelegate overrides:
   void DismissView() override;

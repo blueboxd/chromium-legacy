@@ -914,9 +914,9 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_TRUE(ax_position_left.IsValid());
-  EXPECT_FALSE(ax_position_left.IsTextPosition());
-  EXPECT_EQ(ax_hidden, ax_position_left.ContainerObject());
-  EXPECT_EQ(0, ax_position_left.ChildIndex());
+  EXPECT_TRUE(ax_position_left.IsTextPosition());
+  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_left.ContainerObject());
+  EXPECT_EQ(0, ax_position_left.TextOffset());
   // This is an "after children" position.
   EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 
@@ -924,9 +924,9 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveRight);
   EXPECT_TRUE(ax_position_right.IsValid());
-  EXPECT_FALSE(ax_position_right.IsTextPosition());
-  EXPECT_EQ(ax_hidden, ax_position_right.ContainerObject());
-  EXPECT_EQ(0, ax_position_right.ChildIndex());
+  EXPECT_TRUE(ax_position_right.IsTextPosition());
+  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_right.ContainerObject());
+  EXPECT_EQ(0, ax_position_right.TextOffset());
   EXPECT_EQ(nullptr, ax_position_right.ChildAfterTreePosition());
 
   const auto position_before = Position::BeforeNode(*hidden);
@@ -956,7 +956,7 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_TRUE(ax_position_left.IsValid());
   EXPECT_FALSE(ax_position_left.IsTextPosition());
   EXPECT_EQ(ax_hidden, ax_position_left.ContainerObject());
-  EXPECT_EQ(0, ax_position_left.ChildIndex());
+  EXPECT_EQ(1, ax_position_left.ChildIndex());
   // This is an "after children" position.
   EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 

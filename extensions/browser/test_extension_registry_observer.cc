@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 
@@ -51,7 +50,6 @@ TestExtensionRegistryObserver::TestExtensionRegistryObserver(
       loaded_waiter_(std::make_unique<Waiter>()),
       ready_waiter_(std::make_unique<Waiter>()),
       unloaded_waiter_(std::make_unique<Waiter>()),
-      extension_registry_observer_(this),
       extension_id_(extension_id) {
   extension_registry_observer_.Add(registry);
 }

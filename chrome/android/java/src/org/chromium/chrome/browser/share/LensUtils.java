@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 
 /**
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.IntentHandler;
 public class LensUtils {
     private static final String LENS_CONTRACT_URI = "googleapp://lens";
     private static final String LENS_BITMAP_URI_KEY = "LensBitmapUriKey";
+    private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
 
     /**
@@ -47,18 +49,45 @@ public class LensUtils {
     }
 
     /**
+     * Gets the minimum AGSA version required to support the Lens context menu integration
+     * on this device.  Takes the value from a server provided value if a field trial is
+     * active but otherwise will take the value from a client side default (unless the
+     * lens feature is not enabled at all, in which case return an empty string).
+     *
+     * @return The minimum version name string or an empty string if not available.
+     */
+    private static String getMinimumAgsaVersionForLensSupport() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS)) {
+            final String serverProvidedMinAgsaVersion =
+                    ChromeFeatureList.getFieldTrialParamByFeature(
+                            ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                            MIN_AGSA_VERSION_FEATURE_PARAM_NAME);
+            if (TextUtils.isEmpty(serverProvidedMinAgsaVersion)) {
+                // Falls into this block if the user enabled the feature using chrome://flags and
+                // the param was not set by the server.
+                return MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE;
+            }
+            return serverProvidedMinAgsaVersion;
+        }
+        // The feature is disabled so no need to return a minimum version.
+        return "";
+    }
+
+    /**
      * Checks if the AGSA version is below a certain {@code String} version name
      * which denotes support for the Lens postcapture experience.
      * @param installedVersionName The AGSA version installed on this device,
      * @return Whether the AGSA version on the device is high enough.
      */
     public static boolean isAgsaVersionBelowMinimum(String installedVersionName) {
-        if (TextUtils.isEmpty(installedVersionName)) {
+        String minimumAllowedAgsaVersionName = getMinimumAgsaVersionForLensSupport();
+        if (TextUtils.isEmpty(installedVersionName)
+                || TextUtils.isEmpty(minimumAllowedAgsaVersionName)) {
             return true;
         }
 
         String[] agsaNumbers = installedVersionName.split("\\.", -1);
-        String[] targetAgsaNumbers = MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE.split("\\.", -1);
+        String[] targetAgsaNumbers = minimumAllowedAgsaVersionName.split("\\.", -1);
 
         // To avoid IndexOutOfBounds
         int maxIndex = Math.min(agsaNumbers.length, targetAgsaNumbers.length);

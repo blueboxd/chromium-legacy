@@ -13,9 +13,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -26,8 +26,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -62,10 +60,6 @@ class LoginUtilsTest : public OobeBaseTest {
   PrefService* local_state() { return g_browser_process->local_state(); }
 
   void Login(const std::string& username) {
-    content::WindowedNotificationObserver session_started_observer(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources());
-
     LoginDisplayHost::default_host()
         ->GetOobeUI()
         ->GetView<GaiaScreenHandler>()
@@ -73,7 +67,7 @@ class LoginUtilsTest : public OobeBaseTest {
 
     // Wait for the session to start after submitting the credentials. This
     // will wait until all the background requests are done.
-    session_started_observer.Wait();
+    test::WaitForPrimaryUserSessionStart();
   }
 
  private:

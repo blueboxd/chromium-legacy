@@ -103,10 +103,14 @@ class WebViewImpl : public WebView {
                             const base::ListValue& args,
                             std::string* out_frame) override;
   Status DispatchMouseEvents(const std::list<MouseEvent>& events,
-                             const std::string& frame) override;
-  Status DispatchTouchEvent(const TouchEvent& event) override;
-  Status DispatchTouchEvents(const std::list<TouchEvent>& events) override;
-  Status DispatchKeyEvents(const std::list<KeyEvent>& events) override;
+                             const std::string& frame,
+                             bool async_dispatch_events = false) override;
+  Status DispatchTouchEvent(const TouchEvent& event,
+                            bool async_dispatch_events = false) override;
+  Status DispatchTouchEvents(const std::list<TouchEvent>& events,
+                             bool async_dispatch_events = false) override;
+  Status DispatchKeyEvents(const std::list<KeyEvent>& events,
+                           bool async_dispatch_events = false) override;
   Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
                     const std::string& current_page_url) override;
   Status DeleteCookie(const std::string& name,
@@ -151,6 +155,7 @@ class WebViewImpl : public WebView {
                                  int y,
                                  int xoffset,
                                  int yoffset) override;
+  bool IsNonBlocking() override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;

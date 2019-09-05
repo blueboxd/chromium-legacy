@@ -588,7 +588,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
 
   mock_download_item_factory_->set_is_download_persistent(true);
   download_manager_->StartDownload(
-      std::move(info), std::move(input_stream), nullptr,
+      std::move(info), std::move(input_stream),
       download::DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
 }
@@ -623,7 +623,7 @@ TEST_F(DownloadManagerTest, StartDownloadWithoutHistoryDB) {
       .WillOnce(Return(mock_file));
 
   download_manager_->StartDownload(
-      std::move(info), std::move(input_stream), nullptr,
+      std::move(info), std::move(input_stream),
       download::DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(1));
 }

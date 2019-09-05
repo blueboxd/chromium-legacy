@@ -6,16 +6,20 @@
 
 #include <stdint.h>
 
+#include <cstdlib>
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sample_vector.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -282,7 +286,10 @@ void DnsSession::SetProbeSuccess(unsigned doh_server_index, bool success) {
 
 void DnsSession::RecordRTT(unsigned server_index,
                            bool is_doh_server,
-                           base::TimeDelta rtt) {
+                           base::TimeDelta rtt,
+                           int rv) {
+  RecordRTTForHistogram(server_index, is_doh_server, rtt, rv);
+
   ServerStats* stats = GetServerStats(server_index, is_doh_server);
 
   // Jacobson/Karels algorithm for TCP.
@@ -377,6 +384,44 @@ void DnsSession::FreeSocket(unsigned server_index,
   socket->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
 
   socket_pool_->FreeSocket(server_index, std::move(socket));
+}
+
+void DnsSession::RecordRTTForHistogram(unsigned server_index,
+                                       bool is_doh_server,
+                                       base::TimeDelta rtt,
+                                       int rv) {
+  std::string query_type;
+  std::string provider_id;
+  if (is_doh_server) {
+    // Secure queries are validated if the DoH server state is available.
+    if (doh_server_stats_[server_index].second)
+      query_type = "SecureValidated";
+    else
+      query_type = "SecureNotValidated";
+    provider_id = GetDohProviderIdForHistogramFromDohConfig(
+        config_.dns_over_https_servers[server_index]);
+  } else {
+    query_type = "Insecure";
+    provider_id = GetDohProviderIdForHistogramFromNameserver(
+        config_.nameservers[server_index]);
+  }
+  if (rv == OK || rv == ERR_NAME_NOT_RESOLVED) {
+    base::UmaHistogramMediumTimes(
+        base::StringPrintf("Net.DNS.DnsTransaction.%s.%s.SuccessTime",
+                           query_type.c_str(), provider_id.c_str()),
+        rtt);
+  } else {
+    base::UmaHistogramMediumTimes(
+        base::StringPrintf("Net.DNS.DnsTransaction.%s.%s.FailureTime",
+                           query_type.c_str(), provider_id.c_str()),
+        rtt);
+    if (is_doh_server) {
+      base::UmaHistogramSparse(
+          base::StringPrintf("Net.DNS.DnsTransaction.%s.%s.FailureError",
+                             query_type.c_str(), provider_id.c_str()),
+          std::abs(rv));
+    }
+  }
 }
 
 }  // namespace net

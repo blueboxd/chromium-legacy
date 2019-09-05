@@ -10,7 +10,7 @@ import org.chromium.weblayer_private.aidl.IObjectWrapper;
 interface IBrowserController {
   void setClient(in IBrowserControllerClient client) = 0;
 
-  void navigate(in String url) = 1;
+  INavigationController createNavigationController(in INavigationControllerClient client) = 1;
 
   void setTopView(in IObjectWrapper view) = 2;
 

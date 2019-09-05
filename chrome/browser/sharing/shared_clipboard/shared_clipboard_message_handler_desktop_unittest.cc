@@ -132,5 +132,4 @@ TEST_F(SharedClipboardMessageHandlerTest, NotificationDisplayed) {
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
   EXPECT_EQ("Text shared from " + std::string(kClientName),
             base::UTF16ToUTF8(notification.title()));
-  EXPECT_FALSE(notification.icon().IsEmpty());
 }

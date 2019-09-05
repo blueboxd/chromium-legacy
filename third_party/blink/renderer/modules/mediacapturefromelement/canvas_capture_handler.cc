@@ -173,8 +173,9 @@ void CanvasCaptureHandler::SendNewFrame(
     sk_sp<SkImage> image,
     blink::WebGraphicsContext3DProvider* context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  DCHECK(image);
   TRACE_EVENT0("webrtc", "CanvasCaptureHandler::SendNewFrame");
+  if (!image)
+    return;
 
   // Initially try accessing pixels directly if they are in memory.
   SkPixmap pixmap;

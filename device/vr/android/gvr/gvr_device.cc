@@ -18,6 +18,7 @@
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
+#include "device/vr/android/gvr/gvr_utils.h"
 #include "device/vr/jni_headers/NonPresentingGvrContext_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -86,8 +87,14 @@ mojom::VREyeParametersPtr CreateEyeParamater(
   eye_params->field_of_view->right_degrees = eye_fov.right;
 
   gvr::Mat4f eye_mat = gvr_api->GetEyeFromHeadMatrix(eye);
-  eye_params->offset =
-      gfx::Vector3dF(-eye_mat.m[0][3], -eye_mat.m[1][3], -eye_mat.m[2][3]);
+  gfx::Transform eye_from_head;
+  gvr_utils::GvrMatToTransform(eye_mat, &eye_from_head);
+  DCHECK(eye_from_head.IsInvertible());
+  gfx::Transform head_from_eye;
+  if (eye_from_head.GetInverse(&head_from_eye)) {
+    eye_params->head_from_eye = head_from_eye;
+  }
+
   return eye_params;
 }
 

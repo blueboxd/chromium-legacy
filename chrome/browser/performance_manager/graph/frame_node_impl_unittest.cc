@@ -127,6 +127,9 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnIsCurrentChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNetworkAlmostIdleChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameLifecycleStateChanged, void(const FrameNode*));
+  MOCK_METHOD2(OnOriginTrialFreezePolicyChanged,
+               void(const FrameNode*,
+                    resource_coordinator::mojom::InterventionPolicy));
   MOCK_METHOD1(OnURLChanged, void(const FrameNode*));
   MOCK_METHOD1(OnIsAdFrameChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));

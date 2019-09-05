@@ -73,18 +73,18 @@ struct PlatformWindowInitProperties {
   bool remove_standard_frame = false;
   std::string workspace;
 
-#if defined(USE_X11)
-  // Only used by X11:
+#if defined(OS_LINUX)
   bool prefer_dark_theme = false;
   gfx::ImageSkia* icon = nullptr;
   base::Optional<int> background_color;
-#endif
+
   // Specifies the res_name and res_class fields,
   // respectively, of the WM_CLASS window property. Controls window grouping
   // and desktop file matching in Linux window managers.
   std::string wm_role_name;
   std::string wm_class_name;
   std::string wm_class_class;
+#endif
 };
 
 }  // namespace ui

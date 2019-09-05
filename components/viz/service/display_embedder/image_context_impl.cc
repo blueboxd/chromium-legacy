@@ -68,7 +68,6 @@ void ImageContextImpl::BeginAccessIfNecessary(
     gpu::SharedContextState* context_state,
     gpu::SharedImageRepresentationFactory* representation_factory,
     gpu::MailboxManager* mailbox_manager,
-    const gl::GLVersionInfo* gl_version_info,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   // Prepare for accessing shared image.
@@ -161,9 +160,9 @@ void ImageContextImpl::BeginAccessIfNecessary(
   }
 
   GrBackendTexture backend_texture;
-  gpu::GetGrBackendTexture(gl_version_info, texture_base->target(), size(),
-                           texture_base->service_id(), resource_format(),
-                           &backend_texture);
+  gpu::GetGrBackendTexture(
+      context_state->feature_info(), texture_base->target(), size(),
+      texture_base->service_id(), resource_format(), &backend_texture);
   if (!backend_texture.isValid()) {
     DLOG(ERROR) << "Failed to fulfill the promise texture.";
     CreateFallbackImage(context_state);

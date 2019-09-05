@@ -55,12 +55,10 @@ struct VideoCaptureImpl::BufferContext
       case VideoFrameBufferHandleType::MAILBOX_HANDLES:
         InitializeFromMailbox(std::move(buffer_handle->get_mailbox_handles()));
         break;
-#if defined(OS_CHROMEOS)
       case VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE:
         // TODO(jcliang): Implement this.
         NOTREACHED();
         break;
-#endif
     }
   }
 
@@ -451,12 +449,10 @@ void VideoCaptureImpl::OnBufferReady(
           info->timestamp);
       break;
     }
-#if defined(OS_CHROMEOS)
     case VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE:
       // TODO(jcliang): Implement this.
       NOTREACHED();
       break;
-#endif
   }
   if (!frame) {
     OnFrameDropped(media::VideoCaptureFrameDropReason::

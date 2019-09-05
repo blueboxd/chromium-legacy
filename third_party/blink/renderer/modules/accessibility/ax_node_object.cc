@@ -674,7 +674,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   // The HTML element should not be exposed as an element. That's what the
   // LayoutView element does.
-  if (IsHTMLHtmlElement(*GetNode()))
+  if (IsA<HTMLHtmlElement>(GetNode()))
     return ax::mojom::Role::kIgnored;
 
   // Treat <iframe> and <frame> the same.

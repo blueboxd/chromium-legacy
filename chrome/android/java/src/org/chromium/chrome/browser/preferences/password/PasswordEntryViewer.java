@@ -183,7 +183,7 @@ public class PasswordEntryViewer
                     "PasswordManager.Android.PasswordExceptionEntry", PASSWORD_ENTRY_ACTION_VIEWED,
                     PASSWORD_ENTRY_ACTION_BOUNDARY);
         }
-        PasswordManagerHandlerProvider.getInstance().addObserver(this);
+
         return inflatedView;
     }
 
@@ -196,12 +196,13 @@ public class PasswordEntryViewer
 
             if (mCopyButtonPressed) copyPassword();
         }
+        PasswordManagerHandlerProvider.getInstance().addObserver(this);
     }
 
     @Override
-    public void onDestroyView() {
+    public void onPause() {
+        super.onPause();
         PasswordManagerHandlerProvider.getInstance().removeObserver(this);
-        super.onDestroyView();
     }
 
     private boolean isPasswordSyncingUser() {

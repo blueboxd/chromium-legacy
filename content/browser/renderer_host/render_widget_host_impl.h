@@ -594,15 +594,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Allows the main frame's page scale state to be tracked.
   void SetPageScaleState(float page_scale_factor, bool is_pinch_gesture_active);
 
-  // Fills in the |visual_properties| struct.
-  // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetVisualProperties(VisualProperties* visual_properties,
-                           bool* needs_ack);
+  // Generates a filled in VisualProperties struct representing the current
+  // properties of this widget.
+  VisualProperties GetVisualProperties();
 
   // Sets the |visual_properties| that were sent to the renderer bundled with
   // the request to create a new RenderWidget.
-  void SetInitialVisualProperties(const VisualProperties& visual_properties,
-                                  bool needs_ack);
+  void SetInitialVisualProperties(const VisualProperties& visual_properties);
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
@@ -896,6 +894,24 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+
+  // Returns true if the |new_visual_properties| differs from
+  // |old_page_visual_properties| in a way that indicates a size changed.
+  static bool DidVisualPropertiesSizeChange(
+      const VisualProperties& old_visual_properties,
+      const VisualProperties& new_visual_properties);
+
+  // Returns true if the new visual properties requires an ack from a
+  // synchronization message.
+  static bool DoesVisualPropertiesNeedAck(
+      const std::unique_ptr<VisualProperties>& old_visual_properties,
+      const VisualProperties& new_visual_properties);
+
+  // Returns true if |old_visual_properties| is out of sync with
+  // |new_visual_properties|.
+  static bool StoredVisualPropertiesNeedsUpdate(
+      const std::unique_ptr<VisualProperties>& old_visual_properties,
+      const VisualProperties& new_visual_properties);
 
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.

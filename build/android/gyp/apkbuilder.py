@@ -203,20 +203,23 @@ def _CreateAssetsList(path_tuples):
 
 def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
   """Add native libraries to APK."""
-  has_crazy_linker = any('android_linker' in os.path.basename(p)
-                         for p in native_libs)
+  has_crazy_linker = any(
+      'android_linker' in os.path.basename(p) for p in native_libs)
+  has_monochrome = any('monochrome' in os.path.basename(p) for p in native_libs)
+
   for path in native_libs:
     basename = os.path.basename(path)
-
     compress = None
-    if (uncompress and os.path.splitext(basename)[1] == '.so'
-        and 'android_linker' not in basename
-        and (not has_crazy_linker or 'clang_rt' not in basename)
-        and (not has_crazy_linker or 'crashpad_handler' not in basename)):
-      compress = False
-      # Add prefix to prevent android install from extracting upon install.
-      if has_crazy_linker:
-        basename = 'crazy.' + basename
+    if uncompress and os.path.splitext(basename)[1] == '.so':
+      # Trichrome
+      if has_crazy_linker and has_monochrome:
+        compress = False
+      elif ('android_linker' not in basename
+            and (not has_crazy_linker or 'clang_rt' not in basename)
+            and (not has_crazy_linker or 'crashpad_handler' not in basename)):
+        compress = False
+        if has_crazy_linker and not has_monochrome:
+          basename = 'crazy.' + basename
 
     apk_path = 'lib/%s/%s' % (android_abi, basename)
     build_utils.AddToZipHermetic(out_apk,

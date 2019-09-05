@@ -144,6 +144,7 @@ cast_source_set("browser") {
     ":browser_buildflags",
     "//base",
     "//base:i18n",
+    "//base/util/memory_pressure",
     "//cc",
     "//chromecast:chromecast_buildflags",
     "//chromecast/activity",
@@ -229,8 +230,8 @@ cast_source_set("browser") {
 
   if (is_linux) {
     sources += [
-      "cast_memory_pressure_monitor.cc",
-      "cast_memory_pressure_monitor.h",
+      "cast_system_memory_pressure_evaluator.cc",
+      "cast_system_memory_pressure_evaluator.h",
       "memory_pressure_controller_impl.cc",
       "memory_pressure_controller_impl.h",
     ]

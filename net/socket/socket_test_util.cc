@@ -982,7 +982,7 @@ int MockTCPClientSocket::Read(IOBuffer* buf,
   // takes a weak ptr of the base class, MockClientSocket.
   int rv = ReadIfReadyImpl(
       buf, buf_len,
-      base::Bind(&MockTCPClientSocket::RetryRead, base::Unretained(this)));
+      base::BindOnce(&MockTCPClientSocket::RetryRead, base::Unretained(this)));
   if (rv == ERR_IO_PENDING) {
     DCHECK(callback);
 
@@ -1224,9 +1224,9 @@ void MockTCPClientSocket::RetryRead(int rv) {
   DCHECK_LT(0, pending_read_buf_len_);
 
   if (rv == OK) {
-    rv = ReadIfReadyImpl(
-        pending_read_buf_.get(), pending_read_buf_len_,
-        base::Bind(&MockTCPClientSocket::RetryRead, base::Unretained(this)));
+    rv = ReadIfReadyImpl(pending_read_buf_.get(), pending_read_buf_len_,
+                         base::BindOnce(&MockTCPClientSocket::RetryRead,
+                                        base::Unretained(this)));
     if (rv == ERR_IO_PENDING)
       return;
   }
@@ -2079,8 +2079,8 @@ MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() = default;
 
 int MockTransportClientSocketPool::MockConnectJob::Connect() {
   socket_->ApplySocketTag(socket_tag_);
-  int rv = socket_->Connect(base::Bind(&MockConnectJob::OnConnect,
-                                       base::Unretained(this)));
+  int rv = socket_->Connect(
+      base::BindOnce(&MockConnectJob::OnConnect, base::Unretained(this)));
   if (rv != ERR_IO_PENDING) {
     user_callback_.Reset();
     OnConnect(rv);

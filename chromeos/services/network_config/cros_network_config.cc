@@ -176,8 +176,19 @@ mojom::OncSource GetMojoOncSource(const NetworkState* network) {
   return mojom::OncSource::kNone;
 }
 
+const std::string& GetVpnProviderName(
+    const std::vector<mojom::VpnProviderPtr>& vpn_providers,
+    const std::string& provider_id) {
+  for (const mojom::VpnProviderPtr& provider : vpn_providers) {
+    if (provider->provider_id == provider_id)
+      return provider->provider_name;
+  }
+  return base::EmptyString();
+}
+
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
     NetworkStateHandler* network_state_handler,
+    const std::vector<mojom::VpnProviderPtr>& vpn_providers,
     const NetworkState* network) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
   if (type == mojom::NetworkType::kAll) {
@@ -268,8 +279,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
         vpn->type = OncVpnTypeToMojo(
             ShillToOnc(vpn_provider->type, onc::kVPNTypeTable));
         vpn->provider_id = vpn_provider->id;
-        // TODO(stevenjb): Set the provider name in network state.
-        // vpn->provider_name = vpn_provider->name;
+        vpn->provider_name =
+            GetVpnProviderName(vpn_providers, vpn_provider->id);
       }
       result->vpn = std::move(vpn);
       break;
@@ -1045,6 +1056,7 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
 
 mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
     const NetworkState* network_state,
+    const std::vector<mojom::VpnProviderPtr>& vpn_providers,
     const base::DictionaryValue* properties) {
   DCHECK(network_state);
   DCHECK(properties);
@@ -1233,6 +1245,10 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
             GetString(third_party_dict, ::onc::third_party_vpn::kProviderName);
         if (provider_name)
           vpn->provider_name = *provider_name;
+        if (vpn->provider_id && vpn->provider_name.empty()) {
+          vpn->provider_name =
+              GetVpnProviderName(vpn_providers, vpn->provider_id->active_value);
+        }
       }
       mojom::ManagedStringPtr managed_type =
           GetManagedString(vpn_dict, ::onc::vpn::kType);
@@ -1353,7 +1369,8 @@ void CrosNetworkConfig::GetNetworkState(const std::string& guid,
     std::move(callback).Run(nullptr);
     return;
   }
-  std::move(callback).Run(NetworkStateToMojo(network_state_handler_, network));
+  std::move(callback).Run(
+      NetworkStateToMojo(network_state_handler_, vpn_providers_, network));
 }
 
 void CrosNetworkConfig::GetNetworkStateList(
@@ -1392,7 +1409,7 @@ void CrosNetworkConfig::GetNetworkStateList(
       continue;
     }
     mojom::NetworkStatePropertiesPtr mojo_network =
-        NetworkStateToMojo(network_state_handler_, network);
+        NetworkStateToMojo(network_state_handler_, vpn_providers_, network);
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
@@ -1462,7 +1479,7 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
     return;
   }
   std::move(iter->second)
-      .Run(ManagedPropertiesToMojo(network_state, &properties));
+      .Run(ManagedPropertiesToMojo(network_state, vpn_providers_, &properties));
   get_managed_properties_callbacks_.erase(iter);
 }
 
@@ -1902,6 +1919,18 @@ void CrosNetworkConfig::StartDisconnectFailure(
   start_disconnect_callbacks_.erase(iter);
 }
 
+void CrosNetworkConfig::SetVpnProviders(
+    std::vector<mojom::VpnProviderPtr> providers) {
+  vpn_providers_ = std::move(providers);
+  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+    observer->OnVpnProvidersChanged();
+  });
+}
+
+void CrosNetworkConfig::GetVpnProviders(GetVpnProvidersCallback callback) {
+  std::move(callback).Run(mojo::Clone(vpn_providers_));
+}
+
 // NetworkStateHandlerObserver
 void CrosNetworkConfig::NetworkListChanged() {
   observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
@@ -1920,16 +1949,12 @@ void CrosNetworkConfig::ActiveNetworksChanged(
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : active_networks) {
     mojom::NetworkStatePropertiesPtr mojo_network =
-        NetworkStateToMojo(network_state_handler_, network);
+        NetworkStateToMojo(network_state_handler_, vpn_providers_, network);
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
   observers_.ForAllPtrs([&result](mojom::CrosNetworkConfigObserver* observer) {
-    std::vector<mojom::NetworkStatePropertiesPtr> result_copy;
-    result_copy.reserve(result.size());
-    for (const auto& network : result)
-      result_copy.push_back(network.Clone());
-    observer->OnActiveNetworksChanged(std::move(result_copy));
+    observer->OnActiveNetworksChanged(mojo::Clone(result));
   });
 }
 
@@ -1937,7 +1962,7 @@ void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
   if (network->type() == shill::kTypeEthernetEap)
     return;
   mojom::NetworkStatePropertiesPtr mojo_network =
-      NetworkStateToMojo(network_state_handler_, network);
+      NetworkStateToMojo(network_state_handler_, vpn_providers_, network);
   if (!mojo_network)
     return;
   observers_.ForAllPtrs(

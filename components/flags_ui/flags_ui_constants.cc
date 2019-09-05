@@ -7,7 +7,7 @@
 namespace flags_ui {
 
 // Resource paths.
-const char kEnterpriseFlagsCSS[] = "enterprise_flags.css";
+const char kFlagsDeprecatedCSS[] = "flags_deprecated.css";
 const char kFlagsJS[] = "flags.js";
 const char kFlagsCSS[] = "flags.css";
 const char kFlagsStyleLoaderJS[] = "flags_style_loader.js";

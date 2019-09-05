@@ -120,6 +120,7 @@ PermissionRequestNotificationAndroid::PermissionRequestNotificationAndroid(
       permission_request->GetOrigin(),
       message_center::NotifierId(permission_request->GetOrigin()), data,
       nullptr);
+  notification_->set_silent(true);
 
   permission_request_notification_handler_->AddNotificationDelegate(
       notification_->id(), this);

@@ -177,6 +177,12 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
   }
+  LayoutUnit ContentInlineSizeForSizeContainment() const {
+    return box_->ContentLogicalWidthForSizeContainment();
+  }
+  LayoutUnit ContentBlockSizeForSizeContainment() const {
+    return box_->ContentLogicalHeightForSizeContainment();
+  }
 
   // Display locking functionality.
   const DisplayLockContext& GetDisplayLockContext() const {

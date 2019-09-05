@@ -320,7 +320,10 @@ android_library("cronet_impl_common_base_java") {
 
 # cronet_impl_java_util_java.jar - Classes shared between Java Cronet implementations.
 android_library("cronet_impl_java_util_java") {
-  java_files = [ "java/src/org/chromium/net/impl/JavaUrlRequestUtils.java" ]
+  java_files = [
+    "java/src/org/chromium/net/impl/JavaUrlRequestUtils.java",
+    "java/src/org/chromium/net/impl/JavaUploadDataSinkBase.java",
+  ]
 
   deps = [
     ":cronet_api_java",

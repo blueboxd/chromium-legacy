@@ -46,10 +46,8 @@ struct TestParams {
       case media::VideoCaptureBufferType::kMailboxHolder:
         NOTREACHED();
         return media::mojom::VideoBufferHandle::Tag::SHARED_BUFFER_HANDLE;
-#if defined(OS_CHROMEOS)
       case media::VideoCaptureBufferType::kGpuMemoryBuffer:
         return media::mojom::VideoBufferHandle::Tag::GPU_MEMORY_BUFFER_HANDLE;
-#endif
     }
   }
 };

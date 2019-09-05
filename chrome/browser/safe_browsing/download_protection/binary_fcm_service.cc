@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
@@ -109,12 +110,15 @@ void BinaryFCMService::OnStoreReset() {
 
 void BinaryFCMService::OnMessage(const std::string& app_id,
                                  const gcm::IncomingMessage& message) {
-  auto serialized_proto = message.data.find(kBinaryFCMServiceMessageKey);
-  if (serialized_proto == message.data.end())
+  auto serialized_proto_iterator =
+      message.data.find(kBinaryFCMServiceMessageKey);
+  if (serialized_proto_iterator == message.data.end())
     return;
 
+  std::string serialized_proto;
+  base::Base64Decode(serialized_proto_iterator->second, &serialized_proto);
   DeepScanningClientResponse response;
-  if (!response.ParseFromString(serialized_proto->second))
+  if (!response.ParseFromString(serialized_proto))
     return;
 
   auto callback_it = message_token_map_.find(response.token());

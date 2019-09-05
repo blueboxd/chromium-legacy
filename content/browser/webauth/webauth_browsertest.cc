@@ -987,6 +987,26 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   }
 }
 
+// Test that unknown transport types are ignored.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       UnknownTransportType) {
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  virtual_device_factory->SetSupportedProtocol(device::ProtocolVersion::kCtap2);
+
+  GetParameters parameters;
+  parameters.allow_credentials =
+      "allowCredentials: [{"
+      "  type: 'public-key',"
+      "  id: new TextEncoder().encode('allowedCredential'),"
+      "  transports: ['carrierpigeon'],"
+      "}]";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildGetCallWithParameters(parameters), &result));
+  ASSERT_EQ(kNotAllowedErrorMessage, result);
+}
+
 // Tests that when navigator.credentials.get() is called with an empty
 // allowCredentials list, we get a NotSupportedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,

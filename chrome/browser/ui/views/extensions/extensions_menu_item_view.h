@@ -19,7 +19,6 @@ class ToolbarActionsModel;
 
 namespace views {
 class ImageButton;
-class MenuButton;
 }  // namespace views
 
 // ExtensionsMenuItemView is a single row inside the extensions menu for a
@@ -62,7 +61,7 @@ class ExtensionsMenuItemView : public views::View,
 
   std::unique_ptr<ToolbarActionViewController> controller_;
 
-  views::MenuButton* context_menu_button_ = nullptr;
+  views::ImageButton* context_menu_button_ = nullptr;
 
   ToolbarActionsModel* const model_;
 

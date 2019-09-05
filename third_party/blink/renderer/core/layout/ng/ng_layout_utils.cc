@@ -369,14 +369,19 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     const NGLayoutResult& cached_layout_result,
     const NGConstraintSpace& new_space,
     base::Optional<LayoutUnit>* bfc_block_offset,
-    LayoutUnit* block_offset_delta) {
+    LayoutUnit* block_offset_delta,
+    NGMarginStrut* end_margin_strut) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
   DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
   DCHECK(bfc_block_offset);
   DCHECK(block_offset_delta);
+  DCHECK(end_margin_strut);
 
   const NGConstraintSpace& old_space =
       cached_layout_result.GetConstraintSpaceForCaching();
+
+  bool is_margin_strut_equal =
+      old_space.MarginStrut() == new_space.MarginStrut();
 
   LayoutUnit old_clearance_offset = old_space.ClearanceOffset();
   LayoutUnit new_clearance_offset = new_space.ClearanceOffset();
@@ -385,6 +390,10 @@ bool MaySkipLayoutWithinBlockFormattingContext(
   bool is_pushed_by_floats = cached_layout_result.IsPushedByFloats();
   if (is_pushed_by_floats) {
     DCHECK(old_space.HasFloats());
+
+    // We don't attempt to reuse the cached result if our margins have changed.
+    if (!is_margin_strut_equal)
+      return false;
 
     // We don't attempt to reuse the cached result if the clearance offset
     // differs from the final BFC-block-offset.
@@ -409,6 +418,16 @@ bool MaySkipLayoutWithinBlockFormattingContext(
       return false;
     }
   }
+
+  // We can't reuse the layout result if the subtree modified its incoming
+  // margin-strut, and the incoming margin-strut has changed. E.g.
+  // <div style="margin-top: 5px;"> <!-- changes to 15px -->
+  //   <div style="margin-top: 10px;"></div>
+  //   text
+  // </div>
+  if (cached_layout_result.SubtreeModifiedMarginStrut() &&
+      !is_margin_strut_equal)
+    return false;
 
   const auto& physical_fragment = cached_layout_result.PhysicalFragment();
 
@@ -449,6 +468,15 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     // "resolved" BFC block-offset on their layout result.
     *bfc_block_offset = new_space.ForcedBfcBlockOffset();
 
+    // If this sub-tree didn't append any margins to the incoming margin-strut,
+    // the new "start" margin-strut becomes the new "end" margin-strut (as we
+    // are self-collapsing).
+    if (!cached_layout_result.SubtreeModifiedMarginStrut()) {
+      *end_margin_strut = new_space.MarginStrut();
+    } else {
+      DCHECK(is_margin_strut_equal);
+    }
+
     return true;
   }
 
@@ -482,12 +510,29 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     return false;
 
   if (is_pushed_by_floats || ancestor_has_clearance_past_adjoining_floats) {
+    // If we've been pushed by floats, we assume the new clearance offset.
     DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
     *block_offset_delta = new_clearance_offset - old_clearance_offset;
     *bfc_block_offset = new_clearance_offset;
-  } else {
+  } else if (is_margin_strut_equal) {
+    // If our incoming margin-strut is equal, we are just shifted by the BFC
+    // block-offset amount.
     *block_offset_delta =
         new_space.BfcOffset().block_offset - old_space.BfcOffset().block_offset;
+    *bfc_block_offset = **bfc_block_offset + *block_offset_delta;
+  } else {
+    // If our incoming margin-strut isn't equal, we need to account for the
+    // difference in the incoming margin-struts.
+#if DCHECK_IS_ON()
+    DCHECK(!cached_layout_result.SubtreeModifiedMarginStrut());
+    LayoutUnit old_bfc_block_offset =
+        old_space.BfcOffset().block_offset + old_space.MarginStrut().Sum();
+    DCHECK_EQ(old_bfc_block_offset, **bfc_block_offset);
+#endif
+
+    LayoutUnit new_bfc_block_offset =
+        new_space.BfcOffset().block_offset + new_space.MarginStrut().Sum();
+    *block_offset_delta = new_bfc_block_offset - **bfc_block_offset;
     *bfc_block_offset = **bfc_block_offset + *block_offset_delta;
   }
 

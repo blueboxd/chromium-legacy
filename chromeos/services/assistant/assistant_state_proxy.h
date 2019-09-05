@@ -43,8 +43,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantStateProxy
   // AssistantStateObserver:
   void OnAssistantStatusChanged(
       ash::mojom::VoiceInteractionState state) override;
-  void OnAssistantSettingsEnabled(bool enabled) override;
-  void OnAssistantHotwordEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override;
   void OnLocaleChanged(const std::string& locale) override;

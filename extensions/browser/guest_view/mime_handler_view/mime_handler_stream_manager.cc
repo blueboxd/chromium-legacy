@@ -12,7 +12,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 
@@ -110,12 +109,8 @@ class MimeHandlerStreamManager::EmbedderObserver
   content::RenderFrameHost* new_host_;
 };
 
-MimeHandlerStreamManager::MimeHandlerStreamManager()
-    : extension_registry_observer_(this) {
-}
-
-MimeHandlerStreamManager::~MimeHandlerStreamManager() {
-}
+MimeHandlerStreamManager::MimeHandlerStreamManager() = default;
+MimeHandlerStreamManager::~MimeHandlerStreamManager() = default;
 
 // static
 MimeHandlerStreamManager* MimeHandlerStreamManager::Get(

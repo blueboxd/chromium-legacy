@@ -17,7 +17,11 @@ which is equivalent to
 
     git checkout -b <branch_name> --track origin/master
 
-## 2. Make sure the code builds correctly
+## 2. Make your changes
+
+Do your thing. There's no further advice here about how to write or fix code.
+
+## 3. Make sure the code builds correctly
 
 After making your changes, check that common targets build correctly:
 
@@ -30,33 +34,43 @@ working on without realizing it. Even though the Commit Queue should catch any
 build errors, checking locally first can save you some time since the CQ Dry Run
 can take a while.
 
-## 3. Test your changes
+## 4. Test your changes
 
 Make sure you hit every code path you changed.
 
-## 4. Write unit or browser tests for any new code
+## 5. Write unit or browser tests for any new code
 
 Consider automating any manual testing you did in the previous step.
 
-## 5. Ensure the code is formatted nicely
+## 6. Ensure the code is formatted nicely
 
 Run `git cl format --js`. The `--js` option also formats JavaScript changes.
 
-## 6. Check over your changes
+## 7. Check over your changes
 
 Run `git upstream-diff` to check over all of the changes you've made from
 the most recent checkpoint on the remote repository.
 
-## 7. Stage relevant files for commit
+## 8. Stage relevant files for commit
 
 Run `git add <path_to_file>` for all of the relevant files you've modified.
 
-## 8. Commit your changes
+## 9. Commit your changes
 
 Run `git commit`. Here are some
 [tips for writing good commit messages][uploading-a-change-for-review].
 
-## 9. Rebase your local repository
+## 10. Squash your commits
+
+If you have many commits on your current branch, and you want to avoid some
+nasty commit-by-commit merge conflicts in the next step, it is recommended to
+squash your commits into a single commit. This is done by running `git rebase -i
+origin/master`. You should see a list of commits, each commit starting with the
+word "pick". Make sure the first commit says "pick" and change the rest from
+"pick" to "squash". This will squash each commit into the previous commit,
+which will continue until each commit is squashed into the first commit.
+
+## 11. Rebase your local repository
 
 Run `git rebase-update`. This command updates all of your local branches with
 remote changes that have landed since you started development work, which
@@ -69,7 +83,7 @@ into your CL.
 Note that rebasing has the potential to break your build, so you might want to
 try re-building afterwards.
 
-## 10. Upload the CL to Gerrit
+## 12. Upload the CL to Gerrit
 
 Run `git cl upload`. Some useful options include:
 
@@ -78,20 +92,20 @@ Run `git cl upload`. Some useful options include:
 * `-b <bug_number>` automatically populates the bug reference line of the commit
 message.
 
-## 11. Check the CL again in Gerrit
+## 13. Check the CL again in Gerrit
 
 Run `git cl web` to go to the Gerrit URL associated with the current branch.
 Open the latest patch set and verify that all of the uploaded files are
 correct. Click `Expand All` to check over all of the individual line-by-line
 changes again.
 
-## 12. Make sure all auto-regression tests pass
+## 14. Make sure all auto-regression tests pass
 
 Click `CQ Dry Run`. Fix any errors because otherwise the CL won't pass the
 commit queue (CQ) checks. Consider waiting for the CQ Dry Run to pass before
 notifying your reviewers, in case the results require major changes in your CL.
 
-## 13. Add reviewers to review your code
+## 15. Add reviewers to review your code
 
 Click `Find Owners` or run `git cl owners` to find file owners to review your
 code and instruct them about which parts you want them to focus on. Add anyone
@@ -100,7 +114,7 @@ approval from an owner for each file you've changed, unless you are an owner of
 some files, in which case you don't need separate owner approval for those
 files.
 
-## 14. Implement feedback from your reviewers
+## 16. Implement feedback from your reviewers
 
 Then go through this commit checklist again. Reply to all comments from the
 reviewers on Gerrit and mark all resolved issues as resolved (clicking `Done` or
@@ -109,7 +123,7 @@ receive a notification. Doing this signals that your CL is ready for review
 again, since the assumption is that your CL is not ready for review until you
 hit reply.
 
-## 15. Land your CL
+## 17. Land your CL
 
 Once you have obtained a Looks Good To Me (LGTM), which is reflected by a
 Code-Review+1 in Gerrit, from at least one owner for each file, then you have

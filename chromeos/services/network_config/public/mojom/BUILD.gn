@@ -11,6 +11,7 @@ mojom("mojom") {
   ]
 
   deps = [
+    "//mojo/public/mojom/base",
     "//services/network/public/mojom:mojom_ip_address",
   ]
 }

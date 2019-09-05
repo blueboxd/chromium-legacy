@@ -92,6 +92,11 @@ extern const base::Feature kUseLocalBlacklistsV2;
 // scanning.
 extern const base::Feature kUploadForMalwareCheck;
 
+// Controls whether to do deep scanning of downloads. If both this feature and
+// the enterprise policies are enabled, the downloaded file is sent for
+// scanning.
+extern const base::Feature kDeepScanningOfDownloads;
+
 base::ListValue GetFeatureStatusList();
 
 // Returns whether or not to stop filling in the SyncAccountType and

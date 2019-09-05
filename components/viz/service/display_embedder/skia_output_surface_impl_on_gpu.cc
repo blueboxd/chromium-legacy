@@ -234,12 +234,6 @@ namespace {
 
 base::AtomicSequenceNumber g_next_command_buffer_id;
 
-scoped_refptr<gpu::gles2::FeatureInfo> CreateFeatureInfo(
-    SkiaOutputSurfaceDependency* deps) {
-  return base::MakeRefCounted<gpu::gles2::FeatureInfo>(
-      deps->GetGpuDriverBugWorkarounds(), deps->GetGpuFeatureInfo());
-}
-
 scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
     SkiaOutputSurfaceDependency* deps,
     gpu::SequenceId sequence_id) {
@@ -613,7 +607,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
     : dependency_(std::move(deps)),
-      feature_info_(CreateFeatureInfo(dependency_)),
+      feature_info_(dependency_->GetSharedContextState()->feature_info()),
       sync_point_client_state_(
           CreateSyncPointClientState(dependency_, sequence_id)),
       shared_image_representation_factory_(
@@ -1140,8 +1134,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
     } else {
       context->BeginAccessIfNecessary(
           context_state_.get(), shared_image_representation_factory_.get(),
-          dependency_->GetMailboxManager(), gl_version_info_, begin_semaphores,
-          end_semaphores);
+          dependency_->GetMailboxManager(), begin_semaphores, end_semaphores);
     }
   }
 }

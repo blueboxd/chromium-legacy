@@ -27,6 +27,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -856,12 +857,15 @@ class DnsOverHttpsProbeRunner {
     return probe_stats_[doh_server_index]->backoff_entry->GetTimeUntilRelease();
   }
 
-  void StartProbe(int doh_server_index, URLRequestContext* context) {
+  void StartProbe(int doh_server_index,
+                  URLRequestContext* context,
+                  bool network_change) {
     // Clear the existing probe stats.
     probe_stats_[doh_server_index] = std::make_unique<ProbeStats>();
     session_->SetProbeSuccess(doh_server_index, false /* success */);
     ContinueProbe(doh_server_index, context,
-                  probe_stats_[doh_server_index]->weak_factory.GetWeakPtr());
+                  probe_stats_[doh_server_index]->weak_factory.GetWeakPtr(),
+                  network_change, base::TimeTicks::Now());
   }
 
  private:
@@ -877,7 +881,9 @@ class DnsOverHttpsProbeRunner {
 
   void ContinueProbe(int doh_server_index,
                      URLRequestContext* context,
-                     base::WeakPtr<ProbeStats> probe_stats) {
+                     base::WeakPtr<ProbeStats> probe_stats,
+                     bool network_change,
+                     base::TimeTicks start_time) {
     // If the ProbeStats for which this probe was scheduled has been deleted,
     // don't continue to send probes.
     if (!probe_stats)
@@ -894,7 +900,7 @@ class DnsOverHttpsProbeRunner {
         FROM_HERE,
         base::BindOnce(&DnsOverHttpsProbeRunner::ContinueProbe,
                        base::Unretained(this), doh_server_index, context,
-                       probe_stats),
+                       probe_stats, network_change, start_time),
         probe_stats->backoff_entry->GetTimeUntilRelease());
 
     unsigned attempt_number = probe_stats->probe_attempts.size();
@@ -907,38 +913,46 @@ class DnsOverHttpsProbeRunner {
     probe_stats->probe_attempts.back()->Start(
         base::BindOnce(&DnsOverHttpsProbeRunner::ProbeComplete,
                        base::Unretained(this), attempt_number, doh_server_index,
-                       std::move(probe_stats), base::TimeTicks::Now()));
+                       std::move(probe_stats), network_change, start_time));
   }
 
   void ProbeComplete(unsigned attempt_number,
                      int doh_server_index,
                      base::WeakPtr<ProbeStats> probe_stats,
+                     bool network_change,
                      base::TimeTicks start,
                      int rv) {
-    if (rv != OK || !probe_stats)
-      return;
-
-    // Check that the response parses properly before considering it a success.
-    DCHECK_LT(attempt_number, probe_stats->probe_attempts.size());
-    const DnsAttempt* attempt =
-        probe_stats->probe_attempts[attempt_number].get();
-    const DnsResponse* response = attempt->GetResponse();
-    AddressList addresses;
-    base::TimeDelta ttl;
-    if (!response ||
-        attempt->GetResponse()->ParseToAddressList(&addresses, &ttl) !=
-            DnsResponse::DNS_PARSE_OK ||
-        addresses.empty()) {
-      return;
+    bool success = false;
+    if (rv == OK && probe_stats) {
+      // Check that the response parses properly before considering it a
+      // success.
+      DCHECK_LT(attempt_number, probe_stats->probe_attempts.size());
+      const DnsAttempt* attempt =
+          probe_stats->probe_attempts[attempt_number].get();
+      const DnsResponse* response = attempt->GetResponse();
+      AddressList addresses;
+      base::TimeDelta ttl;
+      if (response &&
+          attempt->GetResponse()->ParseToAddressList(&addresses, &ttl) ==
+              DnsResponse::DNS_PARSE_OK &&
+          !addresses.empty()) {
+        // The DoH probe queries don't go through the standard DnsAttempt path,
+        // so the ServerStats have not been updated yet.
+        session_->RecordServerSuccess(doh_server_index,
+                                      true /* is_doh_server */);
+        session_->RecordRTT(doh_server_index, true /* is_doh_server */,
+                            base::TimeTicks::Now() - start, rv);
+        session_->SetProbeSuccess(doh_server_index, true /* success */);
+        probe_stats_[doh_server_index] = nullptr;
+        success = true;
+      }
     }
 
-    // The DoH probe queries don't go through the standard DnsAttempt path, so
-    // the ServerStats have not been updated yet.
-    session_->RecordServerSuccess(doh_server_index, true /* is_doh_server */);
-    session_->RecordRTT(doh_server_index, true /* is_doh_server */,
-                        base::TimeTicks::Now() - start);
-    session_->SetProbeSuccess(doh_server_index, true /* success */);
-    probe_stats_[doh_server_index] = nullptr;
+    base::UmaHistogramLongTimes(
+        base::StringPrintf("Net.DNS.ProbeSequence.%s.%s.AttemptTime",
+                           network_change ? "NetworkChange" : "ConfigChange",
+                           success ? "Success" : "Failure"),
+        base::TimeTicks::Now() - start);
   }
 
   DnsSession* session_;
@@ -1263,7 +1277,7 @@ class DnsTransactionImpl : public DnsTransaction,
     const DnsAttempt* attempt = attempts_[attempt_number].get();
     if (record_rtt && attempt->GetResponse()) {
       session_->RecordRTT(attempt->server_index(), secure_ /* is_doh_server */,
-                          base::TimeTicks::Now() - start);
+                          base::TimeTicks::Now() - start, rv);
     }
     if (callback_.is_null())
       return;
@@ -1457,10 +1471,11 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
     return probe_runner_->GetDelayUntilNextProbeForTest(doh_server_index);
   }
 
-  void StartDohProbes(URLRequestContext* context) override {
+  void StartDohProbes(URLRequestContext* context,
+                      bool network_change) override {
     for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
          i++) {
-      probe_runner_->StartProbe(i, context);
+      probe_runner_->StartProbe(i, context, network_change);
     }
   }
 

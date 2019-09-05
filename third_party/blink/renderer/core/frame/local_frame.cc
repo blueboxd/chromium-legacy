@@ -1491,15 +1491,16 @@ void LocalFrame::UpdateAdHighlight() {
 }
 
 void LocalFrame::PauseSubresourceLoading(
-    blink::mojom::blink::PauseSubresourceLoadingHandleRequest request) {
+    mojo::PendingReceiver<blink::mojom::blink::PauseSubresourceLoadingHandle>
+        receiver) {
   auto handle = GetFrameScheduler()->GetPauseSubresourceLoadingHandle();
   if (!handle)
     return;
-  pause_handle_bindings_.AddBinding(std::move(handle), std::move(request));
+  pause_handle_receivers_.Add(std::move(handle), std::move(receiver));
 }
 
 void LocalFrame::ResumeSubresourceLoading() {
-  pause_handle_bindings_.CloseAllBindings();
+  pause_handle_receivers_.Clear();
 }
 
 void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {

@@ -34,6 +34,14 @@ class GPU_GLES2_EXPORT StreamTextureSharedImageInterface
   virtual bool HasTextureOwner() const = 0;
   virtual gles2::Texture* GetTexture() const = 0;
 
+  // Notify the texture of overlay decision, When overlay promotion is true,
+  // this also sets the bounds of where the overlay is.
+  virtual void NotifyOverlayPromotion(bool promotion,
+                                      const gfx::Rect& bounds) = 0;
+  // Render the video frame into an overlay plane. Should only be called after
+  // the overlay promotion. Return true if it could render to overlay correctly.
+  virtual bool RenderToOverlay() = 0;
+
  protected:
   ~StreamTextureSharedImageInterface() override = default;
 

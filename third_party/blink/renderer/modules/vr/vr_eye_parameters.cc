@@ -4,15 +4,20 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_eye_parameters.h"
 
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+
 namespace blink {
 
 VREyeParameters::VREyeParameters(
     const device::mojom::blink::VREyeParametersPtr& eye_parameters,
     double render_scale) {
+  // This only works if the transform only has the translation component.
+  // However, WebVR never worked with angled screens anyways.
+  const TransformationMatrix matrix(eye_parameters->head_from_eye.matrix());
   offset_ = DOMFloat32Array::Create(3);
-  offset_->Data()[0] = eye_parameters->offset.x();
-  offset_->Data()[1] = eye_parameters->offset.y();
-  offset_->Data()[2] = eye_parameters->offset.z();
+  offset_->Data()[0] = matrix.M41();  // x translation
+  offset_->Data()[1] = matrix.M42();  // y translation
+  offset_->Data()[2] = matrix.M43();  // z translation
 
   field_of_view_ = MakeGarbageCollected<VRFieldOfView>();
   field_of_view_->SetUpDegrees(eye_parameters->field_of_view->up_degrees);

@@ -529,7 +529,7 @@ class PolicyProvidedTrustAnchorsPublicSessionTest
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
                        DISABLED_AllowedInPublicSession) {
   StartLogin();
-  chromeos::test::WaitForSessionStart();
+  chromeos::test::WaitForPrimaryUserSessionStart();
 
   BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
@@ -589,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsOnUserSessionInitTest,
 
   EXPECT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
 
-  chromeos::test::WaitForSessionStart();
+  chromeos::test::WaitForPrimaryUserSessionStart();
   EXPECT_EQ(net::OK, VerifyTestServerCert(active_user_profile(), server_cert));
 }
 

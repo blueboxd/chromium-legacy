@@ -200,6 +200,11 @@ class AssociatedReceiver {
   // stimulus.
   void FlushForTesting() { binding_.FlushForTesting(); }
 
+  // Allows test code to swap the interface implementation.
+  ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+    return binding_.SwapImplForTesting(new_impl);
+  }
+
  private:
   // TODO(https://crbug.com/875030): Move AssociatedBinding details into this
   // class.

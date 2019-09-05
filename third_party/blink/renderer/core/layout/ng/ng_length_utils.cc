@@ -1223,9 +1223,12 @@ LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode& node,
                                    const NGBoxStrut& border_scrollbar_padding,
                                    LayoutUnit current_intrinsic_block_size) {
   // With contain: size, we ignore intrinsic sizing. If the block-size was
-  // specified as auto, its content-box size will become 0.
-  if (node.ShouldApplySizeContainment())
-    return border_scrollbar_padding.BlockSum();
+  // specified as auto, its content-box size will become 0, unless overridden by
+  // content-size.
+  if (node.ShouldApplySizeContainment()) {
+    return node.ContentBlockSizeForSizeContainment() +
+           border_scrollbar_padding.BlockSum();
+  }
 
   // If display locking induces size containment, then we replace its content
   // size with the locked content size.
@@ -1246,8 +1249,10 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
     sizes += border_scrollbar_padding.InlineSum();
 
   // Size contained elements don't consider children for intrinsic sizing.
-  if (node.ShouldApplySizeContainment())
+  if (node.ShouldApplySizeContainment()) {
+    sizes += node.ContentInlineSizeForSizeContainment();
     return sizes;
+  }
 
   // Display locked elements override the content size, without considering
   // children. Note that contain: size (above) takes precedence over display

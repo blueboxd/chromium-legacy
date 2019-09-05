@@ -111,6 +111,11 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING = 11;
 
     /**
+     * Unique identifier for ClickToCall error notification.
+     */
+    public static final int NOTIFICATION_ID_CLICK_TO_CALL_ERROR = 12;
+
+    /**
      * Separator used to separate the notification origin from additional data such as the
      * developer specified tag. This and the prefix following it need to be the same as the one
      * specified in notification_id_generator.cc.

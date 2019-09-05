@@ -62,6 +62,9 @@ void ExpectBypassLocalhost(
     "127.0.0.1",
     "127.100.0.2",
     "[::1]",
+    "[::0:FFFF:127.0.0.1]",
+    "[::fFfF:127.100.0.0]",
+    "[0::ffff:7f00:1]",
 #if defined(BYPASS_LOOPBACK)
     "loopback",
     "loopback.",
@@ -95,10 +98,11 @@ void ExpectBypassMisc(
     "[FD80::1]",
     "foo",
     "www.example3.com",
-    // TODO(crbug.com/997359): This should be moved into
-    // ExpectBypassLocalHost().
-    "[::ffff:127.0.0.1]",
-    "[::ffff:127.100.0.0]",
+    "[::ffff:128.0.0.1]",
+    "[::ffff:126.100.0.0]",
+    "[::ffff::ffff:127.0.0.1]",
+    "[::ffff:0:127.0.0.1]",
+    "[::127.0.0.1]",
 #if !defined(BYPASS_LOOPBACK)
     "loopback",
     "loopback.",

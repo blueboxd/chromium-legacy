@@ -27,6 +27,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withContentDesc
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
@@ -58,14 +59,17 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
+import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.SmallTest;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.view.menu.ActionMenuItemView;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
@@ -323,6 +327,30 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Matches any {@link EditText} which has the content visibility matching to |shouldBeVisible|.
+     * @return The matcher checking the input type.
+     */
+    private static Matcher<View> isVisiblePasswordInput(final boolean shouldBeVisible) {
+        return new BoundedMatcher<View, EditText>(EditText.class) {
+            @Override
+            public boolean matchesSafely(EditText editText) {
+                return ((editText.getInputType() & TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                               == TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                        == shouldBeVisible;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                if (shouldBeVisible) {
+                    description.appendText("The content should be visible.");
+                } else {
+                    description.appendText("The content should not be visible.");
+                }
+            }
+        };
+    }
+
+    /**
      * Looks for the icon by id. If it cannot be found, it's probably hidden in the overflow
      * menu. In that case, open the menu and search for its title.
      * @return Returns either the icon button or the menu option.
@@ -465,8 +493,9 @@ public class SavePasswordsPreferencesTest {
      */
     private void waitToFinish(Activity activity, long timeout) throws InterruptedException {
         long start_time = System.currentTimeMillis();
-        while (activity.isFinishing() && (System.currentTimeMillis() - start_time < timeout))
+        while (activity.isFinishing() && (System.currentTimeMillis() - start_time < timeout)) {
             Thread.sleep(100);
+        }
     }
 
     /**
@@ -786,14 +815,14 @@ public class SavePasswordsPreferencesTest {
     @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
     public void testPasswordDataDisplayedInEditingActivity() throws Exception {
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
-        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
-        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, "test password");
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, "test password");
         PreferencesLauncher.launchSettingsPage(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
-        Espresso.onView(withId(R.id.username_edit)).check(matches(withText("test user")));
         Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
+        Espresso.onView(withId(R.id.username_edit)).check(matches(withText("test user")));
         Espresso.onView(withId(R.id.password_edit)).check(matches(withText("test password")));
     }
 
@@ -828,6 +857,38 @@ public class SavePasswordsPreferencesTest {
         Espresso.pressBack();
         // Check if the password preferences activity has the updated data in the list of passwords.
         Espresso.onView(withText("test user new")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the stored password is visible after clicking the unmasking icon and invisible
+     * after another click.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testStoredPasswordCanBeUnmaskedAndMaskedAgain() throws Exception {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, "test password");
+        PreferencesLauncher.launchSettingsPage(
+                InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OverrideState.AVAILABLE);
+
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.BULK);
+
+        Espresso.onView(withId(R.id.password_entry_editor_view_password)).perform(click());
+
+        Espresso.onView(withId(R.id.password_edit)).check(matches(isVisiblePasswordInput(true)));
+
+        Espresso.onView(withId(R.id.password_entry_editor_view_password)).perform(click());
+
+        Espresso.onView(withId(R.id.password_edit)).check(matches(isVisiblePasswordInput(false)));
     }
 
     /**

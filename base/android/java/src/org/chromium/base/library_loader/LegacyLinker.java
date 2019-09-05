@@ -33,13 +33,14 @@ class LegacyLinker extends Linker {
 
     @Override
     @GuardedBy("sLock")
-    void loadLibraryImplLocked(String libFilePath, boolean isFixedAddressPermitted) {
+    void loadLibraryImplLocked(String library, boolean isFixedAddressPermitted) {
         ensureInitializedLocked();
         assert mState == State.INITIALIZED; // Only one successful call.
 
         boolean provideRelro = mInBrowserProcess;
         long loadAddress = isFixedAddressPermitted ? mBaseLoadAddress : 0;
 
+        String libFilePath = System.mapLibraryName(library);
         final String sharedRelRoName = libFilePath;
         LibInfo libInfo = new LibInfo();
         if (!nativeLoadLibrary(libFilePath, loadAddress, libInfo)) {

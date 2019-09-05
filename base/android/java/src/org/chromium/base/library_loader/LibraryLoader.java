@@ -36,6 +36,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -294,21 +295,20 @@ public class LibraryLoader {
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
     // Records UMA histograms depending on the results of loading.
-    @GuardedBy("mLock")
-    private void loadLibraryWithCustomLinkerAlreadyLocked(
-            Linker linker, String libFilePath, boolean isFirstAttempt) {
+    private static void loadLibraryWithCustomLinker(
+            Linker linker, String library, boolean isFirstAttempt) {
         // Attempt shared RELROs, and if that fails then retry without.
         boolean loadAtFixedAddress = true;
         boolean success = true;
         try {
-            linker.loadLibrary(libFilePath, true /* isFixedAddressPermitted */);
+            linker.loadLibrary(library, true /* isFixedAddressPermitted */);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
             sLoadStatusRecorder.recordLoadAttempt(
                     false /* success */, isFirstAttempt, true /* loadAtFixedAddress */);
             loadAtFixedAddress = false;
             success = false;
-            linker.loadLibrary(libFilePath, false /* isFixedAddressPermitted */);
+            linker.loadLibrary(library, false /* isFixedAddressPermitted */);
             success = true;
         } finally {
             sLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
@@ -326,93 +326,89 @@ public class LibraryLoader {
         return extractFileIfStale(appInfo, libraryEntry, makeLibraryDirAndSetPermission());
     }
 
+    private static void loadWithChromiumLinker(ApplicationInfo appInfo, String library) {
+        Linker linker = Linker.getInstance();
+
+        if (isInZipFile()) {
+            String sourceDir = appInfo.sourceDir;
+            linker.setApkFilePath(sourceDir);
+            Log.i(TAG, " Loading %s from within %s", library, sourceDir);
+        } else {
+            Log.i(TAG, "Loading %s", library);
+        }
+
+        try {
+            // Load the library using this Linker. May throw UnsatisfiedLinkError.
+            loadLibraryWithCustomLinker(linker, library, true /* isFirstAttempt */);
+        } catch (UnsatisfiedLinkError e) {
+            if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
+                loadLibraryWithCustomLinker(linker, getExtractedLibraryPath(appInfo, library),
+                        false /* isFirstAttempt */);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @GuardedBy("mLock")
+    @SuppressLint("UnsafeDynamicallyLoadedCode")
+    private void loadWithSystemLinkerAlreadyLocked(ApplicationInfo appInfo) {
+        setEnvForNative();
+        preloadAlreadyLocked(appInfo);
+
+        // If the libraries are located in the zip file, assert that the device API level is M or
+        // higher. On devices <=M, the libraries should always be loaded by LegacyLinker.
+        assert !isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
+
+        // Load libraries using the system linker.
+        for (String library : NativeLibraries.LIBRARIES) {
+            if (!isInZipFile()) {
+                // The extract and retry logic isn't needed because this path is used only for local
+                // development.
+                System.loadLibrary(library);
+            } else {
+                // Load directly from the APK.
+                boolean is64Bit = ApiHelperForM.isProcess64Bit();
+                String zipFilePath = appInfo.sourceDir;
+                String fullPath =
+                        zipFilePath + "!/" + makeLibraryPathInZipFile(library, false, is64Bit);
+
+                Log.i(TAG, "libraryName: %s", fullPath);
+                System.load(fullPath);
+            }
+        }
+    }
+
     // Invoke either Linker.loadLibrary(...), System.loadLibrary(...) or System.load(...),
     // triggering JNI_OnLoad in native code.
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint({"DefaultLocale", "UnsafeDynamicallyLoadedCode"})
     @GuardedBy("mLock")
     private void loadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote)
             throws ProcessInitException {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
             if (mLoaded) return;
-
             assert !mInitialized;
 
             long startTime = SystemClock.uptimeMillis();
 
             if (useChromiumLinker() && !inZygote) {
-                Linker linker = Linker.getInstance();
-
-                // See base/android/linker/config.gni, the chromium linker is only enabled when we
-                // have a single library.
+                // See base/android/linker/config.gni, the chromium linker is only enabled when
+                // we have a single library.
                 assert NativeLibraries.LIBRARIES.length == 1;
                 String library = NativeLibraries.LIBRARIES[0];
-
-                if (isInZipFile()) {
-                    String sourceDir = appInfo.sourceDir;
-                    linker.setApkFilePath(sourceDir);
-                    Log.i(TAG, " Loading %s from within %s", library, sourceDir);
-                } else {
-                    Log.i(TAG, "Loading %s", library);
-                }
-
-                try {
-                    // Load the library using this Linker. May throw UnsatisfiedLinkError.
-                    loadLibraryWithCustomLinkerAlreadyLocked(
-                            linker, System.mapLibraryName(library), true /* isFirstAttempt */);
-                } catch (UnsatisfiedLinkError e) {
-                    if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                        loadLibraryWithCustomLinkerAlreadyLocked(linker,
-                                getExtractedLibraryPath(appInfo, library),
-                                false /* isFirstAttempt */);
-                    } else {
-                        Log.e(TAG, "Unable to load library: " + library);
-                        throw(e);
-                    }
-                }
+                loadWithChromiumLinker(appInfo, library);
             } else {
-                setEnvForNative();
-                preloadAlreadyLocked(appInfo);
-
-                // If the libraries are located in the zip file, assert that the device API level is
-                // M or higher. On devices lower than M, the libraries should always be loaded by
-                // LegacyLinker.
-                assert !isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
-
-                // Load libraries using the system linker.
-                for (String library : NativeLibraries.LIBRARIES) {
-                    try {
-                        if (!isInZipFile()) {
-                            // The extract and retry logic isn't needed because this path is used
-                            // only for local development.
-                            System.loadLibrary(library);
-                        } else {
-                            // Load directly from the APK.
-                            boolean is64Bit = ApiHelperForM.isProcess64Bit();
-                            String zipFilePath = appInfo.sourceDir;
-                            // In API level 23 and above, it’s possible to open a .so file directly
-                            // from the APK of the path form
-                            // "my_zip_file.zip!/libs/libstuff.so". See:
-                            // https://android.googlesource.com/platform/bionic/+/master/android-changes-for-ndk-developers.md#opening-shared-libraries-directly-from-an-apk
-                            String libraryName = zipFilePath + "!/"
-                                    + makeLibraryPathInZipFile(library, true, is64Bit);
-                            Log.i(TAG, "libraryName: " + libraryName);
-                            System.load(libraryName);
-                        }
-                    } catch (UnsatisfiedLinkError e) {
-                        Log.e(TAG, "Unable to load library: " + library);
-                        throw(e);
-                    }
-                }
+                loadWithSystemLinkerAlreadyLocked(appInfo);
             }
 
             long stopTime = SystemClock.uptimeMillis();
             mLibraryLoadTimeMs = stopTime - startTime;
-            Log.i(TAG, "Time to load native libraries: %d ms (timestamps %d-%d)",
-                    mLibraryLoadTimeMs, startTime % 10000, stopTime % 10000);
+            Log.i(TAG, "Time to load native libraries: %d ms", mLibraryLoadTimeMs);
 
             mLoaded = true;
         } catch (UnsatisfiedLinkError e) {
+            // Callers typically call System.exit() when catching this exception, make sure that it
+            // doesn't get lost.
+            Log.e(TAG, "Unable to load library.", e);
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED, e);
         }
     }
@@ -453,7 +449,8 @@ public class LibraryLoader {
         // to the /data directory. The libraries can still be accessed directly by the Chromium
         // linker from the APK.
         String crazyPart = crazyPrefix ? "crazy." : "";
-        return String.format("lib/%s/%s%s", cpuAbi, crazyPart, System.mapLibraryName(library));
+        return String.format(
+                Locale.US, "lib/%s/%s%s", cpuAbi, crazyPart, System.mapLibraryName(library));
     }
 
     // The WebView requires the Command Line to be switched over before
@@ -508,9 +505,9 @@ public class LibraryLoader {
 
         // Check that the version of the library we have loaded matches the version we expect
         Log.i(TAG,
-                String.format("Expected native library version number \"%s\", "
-                                + "actual native library version number \"%s\"",
-                        NativeLibraries.sVersionNumber, LibraryLoaderJni.get().getVersionNumber()));
+                "Expected native library version number \"%s\", "
+                        + "actual native library version number \"%s\"",
+                NativeLibraries.sVersionNumber, LibraryLoaderJni.get().getVersionNumber());
         if (!NativeLibraries.sVersionNumber.equals(LibraryLoaderJni.get().getVersionNumber())) {
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
         }
@@ -558,11 +555,10 @@ public class LibraryLoader {
 
     // Called after all native initializations are complete.
     public void onBrowserNativeInitializationComplete() {
+        if (!useChromiumLinker()) return;
         synchronized (mLock) {
-            if (useChromiumLinker()) {
-                RecordHistogram.recordTimesHistogram(
-                        "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
-            }
+            RecordHistogram.recordTimesHistogram(
+                    "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
         }
     }
 
@@ -571,10 +567,9 @@ public class LibraryLoader {
     // time they are captured. This function stores a pending value, so that a later call to
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram() {
+        if (!useChromiumLinker()) return;
         synchronized (mLock) {
-            if (useChromiumLinker()) {
-                LibraryLoaderJni.get().recordRendererLibraryLoadTime(mLibraryLoadTimeMs);
-            }
+            LibraryLoaderJni.get().recordRendererLibraryLoadTime(mLibraryLoadTimeMs);
         }
     }
 
@@ -639,8 +634,9 @@ public class LibraryLoader {
             try {
                 zipFile = new ZipFile(apkPath);
                 ZipEntry zipEntry = zipFile.getEntry(pathWithinApk);
-                if (zipEntry == null)
+                if (zipEntry == null) {
                     throw new RuntimeException("Cannot find ZipEntry" + pathWithinApk);
+                }
                 InputStream inputStream = zipFile.getInputStream(zipEntry);
 
                 FileUtils.copyStreamToFile(inputStream, libraryFile);

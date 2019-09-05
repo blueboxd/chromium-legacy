@@ -72,7 +72,6 @@
     "linux-blink-rel": {
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
-        "master": "tryserver.blink",
         "has_webdriver_tests": true,
         "is_try_builder": true
     },

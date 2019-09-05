@@ -19,7 +19,6 @@ class Connector;
 }  // namespace service_manager
 
 namespace download {
-class DownloadURLLoaderFactoryGetter;
 
 // Helper class used to send subsequent range requests to fetch slices of the
 // file after handling response of the original non-range request.
@@ -50,8 +49,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   // Send network request to ask for a download.
   void SendRequest(
       std::unique_ptr<DownloadUrlParameters> params,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
+      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
       service_manager::Connector* connector);
 
   // Download operations.
@@ -64,8 +62,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> create_info,
       std::unique_ptr<InputStream> input_stream,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
+      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
       UrlDownloadHandler* downloader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;

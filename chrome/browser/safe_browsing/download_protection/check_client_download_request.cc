@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
@@ -87,8 +88,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
           item->GetURL(),
           item->GetTargetFilePath(),
           item->GetFullPath(),
-          item->GetTabUrl(),
-          item->GetTabReferrerUrl(),
+          {item->GetTabUrl(), item->GetTabReferrerUrl()},
           content::DownloadItemUtils::GetBrowserContext(item),
           std::move(callback),
           service,
@@ -278,6 +278,9 @@ void CheckClientDownloadRequest::NotifyRequestFinished(
 }
 
 bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
+  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+    return false;
+
   int check_content_compliance = g_browser_process->local_state()->GetInteger(
       prefs::kCheckContentCompliance);
   if (check_content_compliance !=
@@ -304,6 +307,9 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
 
 bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
     DownloadCheckResultReason reason) {
+  if (!base::FeatureList::IsEnabled(kDeepScanningOfDownloads))
+    return false;
+
   // If we know the file is malicious, we don't need to upload it.
   if (reason != DownloadCheckResultReason::REASON_DOWNLOAD_SAFE &&
       reason != DownloadCheckResultReason::REASON_DOWNLOAD_UNCOMMON &&

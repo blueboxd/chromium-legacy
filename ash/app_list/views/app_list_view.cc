@@ -19,6 +19,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -821,7 +822,7 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
   std::unique_ptr<AppListConfig> new_config =
-      AppListConfig::instance().CreateForAppListWidget(
+      AppListConfigProvider::Get().CreateForAppListWidget(
           display::Screen::GetScreen()
               ->GetDisplayNearestView(parent_window)
               .work_area()

@@ -71,7 +71,7 @@ body {
   min-height: 100%;
 }
 
-body.inited {
+html.inited body {
   display: block;
 }
 

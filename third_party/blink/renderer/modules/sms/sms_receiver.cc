@@ -31,11 +31,11 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
   DCHECK(context->IsContextThread());
 
   LocalFrame* frame = GetFrame();
-  if (!frame->IsMainFrame()) {
+  if (!frame->IsMainFrame() && frame->IsCrossOriginSubframe()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kNotAllowedError,
-                          "Must be in top-level browsing context."));
+                          "Must have the same origin as the top-level frame."));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

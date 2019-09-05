@@ -181,10 +181,12 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
 
   const int64_t transaction_id = 123;
   const std::vector<int64_t> scope;
+  const bool relaxed_durability = true;
   IndexedDBTransaction* transaction = request->connection()->CreateTransaction(
       transaction_id, std::set<int64_t>(scope.begin(), scope.end()),
       blink::mojom::IDBTransactionMode::ReadOnly,
-      new IndexedDBBackingStore::Transaction(backing_store_.get()));
+      new IndexedDBBackingStore::Transaction(backing_store_.get(),
+                                             relaxed_durability));
   db_->RegisterAndScheduleTransaction(transaction);
 
   request->connection()->CloseAndReportForceClose();

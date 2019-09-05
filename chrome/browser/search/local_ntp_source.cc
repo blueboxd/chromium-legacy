@@ -307,10 +307,13 @@ std::string GetThemeCSS(Profile* profile) {
       ThemeService::GetThemeProviderForProfile(profile)
           .GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
 
-  return base::StringPrintf("body { background-color: #%02X%02X%02X; }",
-                            SkColorGetR(background_color),
-                            SkColorGetG(background_color),
-                            SkColorGetB(background_color));
+  // Required to prevent the default background color from flashing before the
+  // page is initialized (the body, which contains theme color, is hidden until
+  // initialization finishes). Removed after initialization.
+  return base::StringPrintf(
+      "html:not(.inited) { background-color: #%02X%02X%02X; }",
+      SkColorGetR(background_color), SkColorGetG(background_color),
+      SkColorGetB(background_color));
 }
 
 std::string ReadBackgroundImageData(const base::FilePath& profile_path) {

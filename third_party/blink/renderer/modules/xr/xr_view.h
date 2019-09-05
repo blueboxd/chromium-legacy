@@ -41,7 +41,7 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
   XREye eye_;
   String eye_string_;
   Member<XRSession> session_;
-  Member<XRRigidTransform> transform_;
+  Member<XRRigidTransform> ref_space_from_eye_;
   Member<DOMFloat32Array> projection_matrix_;
 };
 
@@ -49,7 +49,7 @@ class MODULES_EXPORT XRViewData {
  public:
   XRViewData(XRView::XREye eye) : eye_(eye) {}
 
-  void UpdatePoseMatrix(const TransformationMatrix& pose_matrix);
+  void UpdatePoseMatrix(const TransformationMatrix& ref_space_from_head);
   void UpdateProjectionMatrixFromFoV(float up_rad,
                                      float down_rad,
                                      float left_rad,
@@ -61,9 +61,7 @@ class MODULES_EXPORT XRViewData {
                                         float near_depth,
                                         float far_depth);
 
-  // TODO(bajones): Should eventually represent this as a full transform.
-  const FloatPoint3D& offset() const { return offset_; }
-  void UpdateOffset(float x, float y, float z);
+  void SetHeadFromEyeTransform(const TransformationMatrix& head_from_eye);
 
   TransformationMatrix UnprojectPointer(double x,
                                         double y,
@@ -71,17 +69,17 @@ class MODULES_EXPORT XRViewData {
                                         double canvas_height);
 
   XRView::XREye Eye() const { return eye_; }
-  const TransformationMatrix& Transform() const { return transform_; }
+  const TransformationMatrix& Transform() const { return ref_space_from_eye_; }
   const TransformationMatrix& ProjectionMatrix() const {
     return projection_matrix_;
   }
 
  private:
   const XRView::XREye eye_;
-  TransformationMatrix transform_;
-  FloatPoint3D offset_;
+  TransformationMatrix ref_space_from_eye_;
   TransformationMatrix projection_matrix_;
   TransformationMatrix inv_projection_;
+  TransformationMatrix head_from_eye_;
   bool inv_projection_dirty_ = true;
 };
 

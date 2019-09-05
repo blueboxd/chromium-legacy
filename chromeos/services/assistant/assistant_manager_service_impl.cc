@@ -1608,14 +1608,22 @@ void AssistantManagerServiceImpl::SendAssistantFeedback(
 }
 
 void AssistantManagerServiceImpl::UpdateMediaState() {
-  if (media_session_info_ptr_ &&
-      media_session_info_ptr_->state ==
-          media_session::mojom::MediaSessionInfo::SessionState::kSuspended &&
-      media_session_info_ptr_->playback_state ==
-          media_session::mojom::MediaPlaybackState::kPlaying) {
-    // It is a intermediate state caused by some providers override the playback
-    // state. We considered it as invalid and skip reporting the state.
-    return;
+  if (media_session_info_ptr_) {
+    if (media_session_info_ptr_->is_sensitive) {
+      // Do not update media state if the session is considered to be sensitive
+      // (off the record profile).
+      return;
+    }
+
+    if (media_session_info_ptr_->state ==
+            media_session::mojom::MediaSessionInfo::SessionState::kSuspended &&
+        media_session_info_ptr_->playback_state ==
+            media_session::mojom::MediaPlaybackState::kPlaying) {
+      // It is an intermediate state caused by some providers override the
+      // playback state. We considered it as invalid and skip reporting the
+      // state.
+      return;
+    }
   }
 
   // MediaSession Integrated providers (include the libassistant internal

@@ -68,6 +68,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//media:test_support",
+    "//media/gpu:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

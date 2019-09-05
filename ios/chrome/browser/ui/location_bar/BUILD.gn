@@ -43,6 +43,7 @@ source_set("location_bar") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui:feature_flags",

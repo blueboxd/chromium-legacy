@@ -485,7 +485,8 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
     return base::TimeDelta();
   }
 
-  void StartDohProbes(URLRequestContext* url_request_context) override {}
+  void StartDohProbes(URLRequestContext* url_request_context,
+                      bool network_change) override {}
 
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
     return DnsConfig::SecureDnsMode::AUTOMATIC;

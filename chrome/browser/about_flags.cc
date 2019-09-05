@@ -220,7 +220,7 @@
 #endif  // defined(TOOLKIT_VIEWS)
 
 using flags_ui::FeatureEntry;
-using flags_ui::kEnterprise;
+using flags_ui::kDeprecated;
 using flags_ui::kOsAndroid;
 using flags_ui::kOsCrOS;
 using flags_ui::kOsCrOSOwnerOnly;
@@ -856,12 +856,18 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPOmnibox[] = {
+    {"ZeroSuggestVariant:7:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
     {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
+    {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmnibox,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
+     "t3316133" /* variation_id */},
     {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealbox,
      base::size(kOmniboxOnFocusSuggestionsParamNTPRealbox),
-     "t3316133" /* variation_id */}};
+     "t3316133" /* variation_id */},
+};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -1272,11 +1278,18 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 const FeatureEntry::FeatureParam
     kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
         {"rounded_edges", "true"}};
+const FeatureEntry::FeatureParam
+    kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant[] = {
+        {"loupe_everywhere", "true"}};
 const FeatureEntry::FeatureVariation
     kOmniboxSearchEngineLogoFeatureVariations[] = {
         {"(rounded edges)",
          kOmniboxSearchEngineLogoRoundedEdgesVariationConstant,
          base::size(kOmniboxSearchEngineLogoRoundedEdgesVariationConstant),
+         nullptr},
+        {"(loupe everywhere)",
+         kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant,
+         base::size(kOmniboxSearchEngineLogoLoupeEverywhereVariationConstant),
          nullptr}};
 #endif  // OS_ANDROID
 
@@ -2648,9 +2661,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniUsbAllowUnsupportedName,
      flag_descriptions::kCrostiniUsbAllowUnsupportedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbAllowUnsupported)},
-    {"crostini-usb-support", flag_descriptions::kCrostiniUsbSupportName,
-     flag_descriptions::kCrostiniUsbSupportDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbSupport)},
     {"file-manager-feedback-panel",
      flag_descriptions::kFileManagerFeedbackPanelName,
      flag_descriptions::kFileManagerFeedbackPanelDescription, kOsCrOS,
@@ -3047,13 +3057,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-async-dns", flag_descriptions::kAsyncDnsName,
      flag_descriptions::kAsyncDnsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAsyncDns)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    {"download-progress-infobar",
-     flag_descriptions::kDownloadProgressInfoBarName,
-     flag_descriptions::kDownloadProgressInfoBarDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDownloadProgressInfoBar)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -3889,6 +3892,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableOverviewRoundedCornersName,
      flag_descriptions::kAshEnableOverviewRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableOverviewRoundedCorners)},
+
+    {"use-fake-device-for-media-stream",
+     flag_descriptions::kUseFakeDeviceForMediaStreamName,
+     flag_descriptions::kUseFakeDeviceForMediaStreamDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(media::kUseFakeDeviceForMediaStream)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -4169,7 +4177,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-popups-during-page-unload",
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
      flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
-     kOsAll | kEnterprise,
+     kOsAll | kDeprecated,
      SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
@@ -4499,6 +4507,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"sync-clipboard-service", flag_descriptions::kSyncClipboardServiceName,
+     flag_descriptions::kSyncClipboardServiceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSyncClipboardServiceFeature)},
+#endif  // OS_WIN || OS_MACOSX || OS_LINUX
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -4525,8 +4539,8 @@ class FlagsStateSingleton {
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
 };
 
-bool ShouldSkipNonEnterpriseFeatureEntry(const FeatureEntry& entry) {
-  return ~entry.supported_platforms & kEnterprise;
+bool ShouldSkipNonDeprecatedFeatureEntry(const FeatureEntry& entry) {
+  return ~entry.supported_platforms & kDeprecated;
 }
 
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
@@ -4659,13 +4673,14 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
       base::Bind(&SkipConditionalFeatureEntry));
 }
 
-void GetFlagFeatureEntriesForEnterprises(flags_ui::FlagsStorage* flags_storage,
-                                         flags_ui::FlagAccess access,
-                                         base::ListValue* supported_entries,
-                                         base::ListValue* unsupported_entries) {
+void GetFlagFeatureEntriesForDeprecatedPage(
+    flags_ui::FlagsStorage* flags_storage,
+    flags_ui::FlagAccess access,
+    base::ListValue* supported_entries,
+    base::ListValue* unsupported_entries) {
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
-      base::Bind(&ShouldSkipNonEnterpriseFeatureEntry));
+      base::Bind(&ShouldSkipNonDeprecatedFeatureEntry));
 }
 
 bool IsRestartNeededToCommitChanges() {

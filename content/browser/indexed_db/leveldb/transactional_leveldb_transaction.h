@@ -63,7 +63,7 @@ class CONTENT_EXPORT TransactionalLevelDBTransaction
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
                               bool* found) WARN_UNUSED_RESULT;
-  virtual leveldb::Status Commit() WARN_UNUSED_RESULT;
+  virtual leveldb::Status Commit(bool sync_on_commit) WARN_UNUSED_RESULT;
 
   // In the right circumstances (system failing too much, and the revert fails
   // as well), a rollback can cause the entire IndexedDBOriginState to be torn

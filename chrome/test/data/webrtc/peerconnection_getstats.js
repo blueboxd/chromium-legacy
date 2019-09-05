@@ -190,6 +190,7 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   averageRtcpInterval: 'number',
   qualityLimitationReason: 'string',
   qualityLimitationDurations: 'object',
+  qualityLimitationResolutionChanges: 'number',
   perDscpPacketsSent: 'object',
   nackCount: 'number',
   firCount: 'number',

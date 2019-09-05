@@ -184,6 +184,11 @@
 }
 
 - (void)openReauthDialogAsSyncIsInAuthError {
+  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
+  if (self.authService->HasCachedMDMErrorForIdentity(identity)) {
+    self.authService->ShowMDMErrorDialogForIdentity(identity);
+    return;
+  }
   // Sync enters in a permanent auth error state when fetching an access token
   // fails with invalid credentials. This corresponds to Gaia responding with an
   // "invalid grant" error. The current implementation of the iOS SSOAuth

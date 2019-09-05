@@ -519,8 +519,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
 
   if (transaction_.get()) {
     rv = transaction_->RestartWithAuth(
-        auth_credentials_, base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                                      base::Unretained(this)));
+        auth_credentials_, base::BindOnce(&URLRequestHttpJob::OnStartCompleted,
+                                          base::Unretained(this)));
     auth_credentials_ = AuthCredentials();
   } else {
     DCHECK(request_->context()->http_transaction_factory());
@@ -549,8 +549,9 @@ void URLRequestHttpJob::StartTransactionInternal() {
       if (!throttling_entry_.get() ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
         rv = transaction_->Start(
-            &request_info_, base::Bind(&URLRequestHttpJob::OnStartCompleted,
-                                       base::Unretained(this)),
+            &request_info_,
+            base::BindOnce(&URLRequestHttpJob::OnStartCompleted,
+                           base::Unretained(this)),
             request_->net_log());
         start_time_ = base::TimeTicks::Now();
       } else {
@@ -628,8 +629,8 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
             request_->initiator(), request_->attach_same_site_cookies()));
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
-        base::Bind(&URLRequestHttpJob::SetCookieHeaderAndStart,
-                   weak_factory_.GetWeakPtr(), options));
+        base::BindOnce(&URLRequestHttpJob::SetCookieHeaderAndStart,
+                       weak_factory_.GetWeakPtr(), options));
   } else {
     StartTransaction();
   }
@@ -1238,7 +1239,8 @@ void URLRequestHttpJob::ContinueWithCertificate(
 
   int rv = transaction_->RestartWithCertificate(
       std::move(client_cert), std::move(client_private_key),
-      base::Bind(&URLRequestHttpJob::OnStartCompleted, base::Unretained(this)));
+      base::BindOnce(&URLRequestHttpJob::OnStartCompleted,
+                     base::Unretained(this)));
   if (rv == ERR_IO_PENDING)
     return;
 
@@ -1260,8 +1262,8 @@ void URLRequestHttpJob::ContinueDespiteLastError() {
 
   ResetTimer();
 
-  int rv = transaction_->RestartIgnoringLastError(
-      base::Bind(&URLRequestHttpJob::OnStartCompleted, base::Unretained(this)));
+  int rv = transaction_->RestartIgnoringLastError(base::BindOnce(
+      &URLRequestHttpJob::OnStartCompleted, base::Unretained(this)));
   if (rv == ERR_IO_PENDING)
     return;
 
@@ -1299,9 +1301,10 @@ int URLRequestHttpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
   DCHECK(!read_in_progress_);
 
-  int rv = transaction_->Read(
-      buf, buf_size,
-      base::Bind(&URLRequestHttpJob::OnReadCompleted, base::Unretained(this)));
+  int rv =
+      transaction_->Read(buf, buf_size,
+                         base::BindOnce(&URLRequestHttpJob::OnReadCompleted,
+                                        base::Unretained(this)));
 
   if (ShouldFixMismatchedContentLength(rv))
     rv = OK;

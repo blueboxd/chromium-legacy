@@ -4,16 +4,20 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/web_applications/abstract_web_app_database.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 
 namespace web_app {
 
@@ -54,17 +58,44 @@ std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
   return web_app;
 }
 
-const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
-  auto kv = registry_.find(app_id);
-  return kv == registry_.end() ? nullptr : kv->second.get();
-}
-
 void WebAppRegistrar::UnregisterAll() {
   CountMutation();
 
   // TODO(loyso): Expose CompletionCallback as UnregisterAll argument.
   database_->DeleteWebApps(GetAppIds(), base::DoNothing());
   registry_.clear();
+}
+
+const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
+  auto it = registry_.find(app_id);
+  return it == registry_.end() ? nullptr : it->second.get();
+}
+
+std::unique_ptr<WebAppRegistryUpdate> WebAppRegistrar::BeginUpdate() {
+  DCHECK(!is_in_update_);
+  is_in_update_ = true;
+
+  return base::WrapUnique(new WebAppRegistryUpdate(this));
+}
+
+void WebAppRegistrar::CommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update,
+                                   CommitCallback callback) {
+  DCHECK(is_in_update_);
+  is_in_update_ = false;
+  if (update == nullptr || update->apps_to_update_.empty()) {
+    std::move(callback).Run(/*success*/ true);
+    return;
+  }
+
+#if DCHECK_IS_ON()
+  for (auto* app : update->apps_to_update_)
+    DCHECK(GetAppById(app->app_id()));
+#endif
+
+  database_->WriteWebApps(
+      std::move(update->apps_to_update_),
+      base::BindOnce(&WebAppRegistrar::OnDataWritten,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebAppRegistrar::Init(base::OnceClosure callback) {
@@ -78,6 +109,13 @@ void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,
   DCHECK(is_empty());
   registry_ = std::move(registry);
   std::move(callback).Run();
+}
+
+void WebAppRegistrar::OnDataWritten(CommitCallback callback, bool success) {
+  if (!success)
+    DLOG(ERROR) << "WebAppRegistrar commit failed";
+
+  std::move(callback).Run(success);
 }
 
 WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
@@ -173,7 +211,10 @@ LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
 
 void WebAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
                                             LaunchContainer launch_container) {
-  NOTIMPLEMENTED();
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetLaunchContainer(launch_container);
 }
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
@@ -219,6 +260,10 @@ WebAppRegistrar::AppSet::const_iterator WebAppRegistrar::AppSet::end() const {
 
 const WebAppRegistrar::AppSet WebAppRegistrar::AllApps() const {
   return AppSet(this);
+}
+
+WebApp* WebAppRegistrar::GetAppByIdMutable(const AppId& app_id) {
+  return const_cast<WebApp*>(GetAppById(app_id));
 }
 
 WebAppRegistrar::AppSet WebAppRegistrar::AllAppsMutable() {

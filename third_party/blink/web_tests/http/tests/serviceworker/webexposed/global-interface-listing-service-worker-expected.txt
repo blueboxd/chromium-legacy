@@ -524,6 +524,33 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemDirectoryHandle : FileSystemHandle
+    static method getSystemDirectory
+    attribute @@toStringTag
+    method constructor
+    method getDirectory
+    method getEntries
+    method getFile
+    method removeEntry
+interface FileSystemFileHandle : FileSystemHandle
+    attribute @@toStringTag
+    method constructor
+    method createWriter
+    method getFile
+interface FileSystemHandle
+    attribute @@toStringTag
+    getter isDirectory
+    getter isFile
+    getter name
+    method constructor
+    method queryPermission
+    method requestPermission
+interface FileSystemWriter
+    attribute @@toStringTag
+    method close
+    method constructor
+    method truncate
+    method write
 interface FontFace
     attribute @@toStringTag
     getter display

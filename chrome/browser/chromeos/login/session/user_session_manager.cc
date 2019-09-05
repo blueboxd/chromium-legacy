@@ -2179,8 +2179,7 @@ void UserSessionManager::OnChildPolicyReady(
   InitializeBrowser(profile);
 }
 
-void UserSessionManager::ActiveUserChanged(
-    const user_manager::User* active_user) {
+void UserSessionManager::ActiveUserChanged(user_manager::User* active_user) {
   if (!user_manager::UserManager::Get()->IsCurrentUserNew())
     SendUserPodsMetrics();
 

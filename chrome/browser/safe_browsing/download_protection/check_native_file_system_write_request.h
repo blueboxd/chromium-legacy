@@ -17,36 +17,16 @@
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/native_file_system_write_item.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
-
-// TODO(https://crbug.com/995963): Move this struct to //content/public since
-// ultimately it will be code in //content that provides all this data.
-struct NativeFileSystemWriteItem {
-  NativeFileSystemWriteItem();
-  ~NativeFileSystemWriteItem();
-  NativeFileSystemWriteItem(const NativeFileSystemWriteItem&) = delete;
-  NativeFileSystemWriteItem& operator=(const NativeFileSystemWriteItem&) =
-      delete;
-
-  base::FilePath target_file_path;
-  base::FilePath full_path;
-  std::string sha256_hash;
-  int64_t size = 0;
-
-  GURL tab_url;
-  GURL frame_url;
-  bool has_user_gesture = false;
-  content::WebContents* web_contents = nullptr;
-  content::BrowserContext* browser_context = nullptr;
-};
 
 class CheckNativeFileSystemWriteRequest
     : public CheckClientDownloadRequestBase {
  public:
   CheckNativeFileSystemWriteRequest(
-      std::unique_ptr<NativeFileSystemWriteItem> item,
+      std::unique_ptr<content::NativeFileSystemWriteItem> item,
       CheckDownloadCallback callback,
       DownloadProtectionService* service,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
@@ -72,7 +52,7 @@ class CheckNativeFileSystemWriteRequest
   void NotifyRequestFinished(DownloadCheckResult result,
                              DownloadCheckResultReason reason) override;
 
-  const std::unique_ptr<NativeFileSystemWriteItem> item_;
+  const std::unique_ptr<content::NativeFileSystemWriteItem> item_;
   std::unique_ptr<ReferrerChainData> referrer_chain_data_;
 
   base::WeakPtrFactory<CheckNativeFileSystemWriteRequest> weakptr_factory_{

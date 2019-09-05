@@ -81,11 +81,12 @@ int URLFetcherFileWriter::Initialize(CompletionOnceCallback callback) {
                    weak_factory_.GetWeakPtr(),
                    base::Owned(temp_file_path)));
   } else {
-    result = file_stream_->Open(file_path_, base::File::FLAG_WRITE |
-                                                base::File::FLAG_ASYNC |
-                                                base::File::FLAG_CREATE_ALWAYS,
-                                base::Bind(&URLFetcherFileWriter::OnIOCompleted,
-                                           weak_factory_.GetWeakPtr()));
+    result =
+        file_stream_->Open(file_path_,
+                           base::File::FLAG_WRITE | base::File::FLAG_ASYNC |
+                               base::File::FLAG_CREATE_ALWAYS,
+                           base::BindOnce(&URLFetcherFileWriter::OnIOCompleted,
+                                          weak_factory_.GetWeakPtr()));
     DCHECK_NE(OK, result);
   }
 
@@ -105,9 +106,10 @@ int URLFetcherFileWriter::Write(IOBuffer* buffer,
   DCHECK(owns_file_);
   DCHECK(!callback_);
 
-  int result = file_stream_->Write(
-      buffer, num_bytes, base::Bind(&URLFetcherFileWriter::OnIOCompleted,
-                                    weak_factory_.GetWeakPtr()));
+  int result =
+      file_stream_->Write(buffer, num_bytes,
+                          base::BindOnce(&URLFetcherFileWriter::OnIOCompleted,
+                                         weak_factory_.GetWeakPtr()));
   if (result == ERR_IO_PENDING) {
     callback_ = std::move(callback);
     return result;
@@ -134,7 +136,7 @@ int URLFetcherFileWriter::Finish(int net_error,
   DCHECK(!callback_);
   // If the file_stream_ still exists at this point, close it.
   if (file_stream_) {
-    int result = file_stream_->Close(base::Bind(
+    int result = file_stream_->Close(base::BindOnce(
         &URLFetcherFileWriter::CloseComplete, weak_factory_.GetWeakPtr()));
     if (result == ERR_IO_PENDING) {
       callback_ = std::move(callback);
@@ -179,8 +181,8 @@ void URLFetcherFileWriter::DidCreateTempFile(base::FilePath* temp_file_path,
   const int result = file_stream_->Open(
       file_path_,
       base::File::FLAG_WRITE | base::File::FLAG_ASYNC | base::File::FLAG_OPEN,
-      base::Bind(&URLFetcherFileWriter::OnIOCompleted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&URLFetcherFileWriter::OnIOCompleted,
+                     weak_factory_.GetWeakPtr()));
   if (result != ERR_IO_PENDING)
     OnIOCompleted(result);
 }

@@ -327,15 +327,6 @@ void VRServiceImpl::RequestSession(
     return;
   }
 
-  // Check that the request is coming from a focused page if required.
-  if (!in_focused_frame_ && options->immersive) {
-    std::move(callback).Run(
-        device::mojom::RequestSessionResult::NewFailureReason(
-            device::mojom::RequestSessionError::
-                IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE));
-    return;
-  }
-
   if (runtime_manager_->IsOtherClientPresenting(this)) {
     // Can't create sessions while an immersive session exists.
     std::move(callback).Run(

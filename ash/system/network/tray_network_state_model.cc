@@ -111,6 +111,8 @@ void TrayNetworkStateModel::OnDeviceStateListChanged() {
   GetDeviceStateList();
 }
 
+void TrayNetworkStateModel::OnVpnProvidersChanged() {}
+
 void TrayNetworkStateModel::GetDeviceStateList() {
   DCHECK(remote_cros_network_config_);
   remote_cros_network_config_->GetDeviceStateList(base::BindOnce(

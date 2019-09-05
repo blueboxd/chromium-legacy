@@ -278,7 +278,7 @@ TEST_F(WKBasedNavigationManagerTest, GetItemAtIndexAfterCommitPending) {
 }
 
 // Tests that AddPendingItem does not create a new NavigationItem if the new
-// pending item is a back forward navigation.
+// pending item is a back forward navigation or when reloading a redirect page.
 TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
   // Simulate two regular navigations.
   [mock_wk_list_ setCurrentURL:@"http://www.1.com"
@@ -304,6 +304,20 @@ TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
       web::NavigationInitiationType::BROWSER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::MOBILE);
 
+  EXPECT_EQ(original_item0, manager_->GetPendingItem());
+
+  // Simulate reloading a redirect url.  This happens when one restores while
+  // offline.
+  GURL redirect_url = wk_navigation_util::CreateRedirectUrl(
+      manager_->GetPendingItem()->GetURL());
+  [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(redirect_url.spec())
+                  backListURLs:nil
+               forwardListURLs:nil];
+  original_item0 = manager_->GetItemAtIndex(0);
+  manager_->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_RELOAD,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::MOBILE);
   EXPECT_EQ(original_item0, manager_->GetPendingItem());
 }
 
@@ -1010,6 +1024,31 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, CachedPlaceholders) {
   EXPECT_EQ(url0_, manager_->GetNavigationItemImplAtIndex(0)->GetURL());
   EXPECT_EQ(url1_, manager_->GetNavigationItemImplAtIndex(1)->GetURL());
   EXPECT_EQ(url2_, manager_->GetNavigationItemImplAtIndex(2)->GetURL());
+}
+
+// Tests that pending item is set to serializable when appropriate.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, NotSerializable) {
+  manager_->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  EXPECT_FALSE(manager_->GetPendingItemInCurrentOrRestoredSession()
+                   ->ShouldSkipSerialization());
+
+  manager_->SetWKWebViewNextPendingUrlNotSerializable(GURL("http://www.1.com"));
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  EXPECT_TRUE(manager_->GetPendingItemInCurrentOrRestoredSession()
+                  ->ShouldSkipSerialization());
+
+  manager_->AddPendingItem(
+      GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP);
+  EXPECT_FALSE(manager_->GetPendingItemInCurrentOrRestoredSession()
+                   ->ShouldSkipSerialization());
 }
 
 }  // namespace web

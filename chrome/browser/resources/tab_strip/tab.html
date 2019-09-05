@@ -5,8 +5,9 @@
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    height: 230px;
     overflow: hidden;
-    transition: box-shadow 125ms;
+    width: 280px;
   }
 
   :host([active]) {
@@ -72,6 +73,11 @@
   }
 
   /* Pinned tab styles */
+  :host([pinned]) {
+    height: 50px;
+    width: 50px;
+  }
+
   :host([pinned]) #title {
     border-block-end: 0;
     height: 100%;

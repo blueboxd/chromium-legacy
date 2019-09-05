@@ -545,9 +545,7 @@ class CONTENT_EXPORT RenderWidget
   // This mechanism is not a drop-in replacement for IPC: messages sent this way
   // will not be automatically available to BrowserMessageFilter, for example.
   // FIFO ordering is preserved between messages enqueued.
-  //
-  // |msg| message to send, ownership of |msg| is transferred.
-  void QueueMessage(IPC::Message* msg);
+  void QueueMessage(std::unique_ptr<IPC::Message> msg);
 
   // Handle start and finish of IME event guard.
   void OnImeEventGuardStart(ImeEventGuard* guard);
@@ -852,7 +850,7 @@ class CONTENT_EXPORT RenderWidget
   // QueueMessage implementation extracted into a static method for easy
   // testing.
   static std::unique_ptr<cc::SwapPromise> QueueMessageImpl(
-      IPC::Message* msg,
+      std::unique_ptr<IPC::Message> msg,
       FrameSwapMessageQueue* frame_swap_message_queue,
       scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
       int source_frame_number);

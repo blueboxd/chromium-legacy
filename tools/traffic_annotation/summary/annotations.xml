@@ -200,8 +200,8 @@ Refer to README.md for content description and update process.
  <item id="ppapi_download_request" hash_code="135967426" type="0" content_hash_code="110461402" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/ppapi_download_request.cc"/>
  <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="21424542" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
  <item id="prefetch_visuals" hash_code="91068704" type="0" content_hash_code="90439946" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/visuals_fetch_by_url.cc"/>
- <item id="previews_litepage_prober" hash_code="33813109" type="0" content_hash_code="52572789" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_decider.cc"/>
  <item id="previews_litepage_origin_prober" hash_code="33703614" type="0" content_hash_code="116235355" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_redirect_url_loader.cc"/>
+ <item id="previews_litepage_prober" hash_code="33813109" type="0" content_hash_code="52572789" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_decider.cc"/>
  <item id="previews_prober" hash_code="41010697" type="0" deprecated="2019-07-24" content_hash_code="51581107" file_path=""/>
  <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>
@@ -269,6 +269,7 @@ Refer to README.md for content description and update process.
  <item id="supervised_users_blacklist" hash_code="78544924" type="0" deprecated="2019-07-30" content_hash_code="10924669" file_path=""/>
  <item id="sync_attachment_downloader" hash_code="26372521" type="0" deprecated="2018-02-08" content_hash_code="70097603" file_path=""/>
  <item id="sync_attachment_uploader" hash_code="132657055" type="0" deprecated="2018-02-08" content_hash_code="25152853" file_path=""/>
+ <item id="sync_clipboard_service" hash_code="109391496" type="0" content_hash_code="91758204" os_list="linux,windows" file_path="chrome/browser/sync/sync_clipboard_service.cc"/>
  <item id="sync_file_system" hash_code="102819690" type="0" content_hash_code="52153962" os_list="linux,windows" file_path="chrome/browser/sync_file_system/drive_backend/sync_engine.cc"/>
  <item id="sync_http_bridge" hash_code="57144960" type="0" content_hash_code="32868346" os_list="linux,windows" file_path="components/sync/engine/net/http_bridge.cc"/>
  <item id="sync_stop_reporter" hash_code="5021348" type="0" content_hash_code="56902850" os_list="linux,windows" file_path="components/sync/driver/sync_stopped_reporter.cc"/>

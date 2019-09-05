@@ -64,6 +64,13 @@ chrome.bookmarkManagerPrivate.cut = function(idList, callback) {};
 chrome.bookmarkManagerPrivate.paste = function(parentId, selectedIdList, callback) {};
 
 /**
+ * Whether there are any bookmarks that can be pasted.
+ * @param {string} parentId The ID of the folder to paste into.
+ * @param {function(boolean):void} callback
+ */
+chrome.bookmarkManagerPrivate.canPaste = function(parentId, callback) {};
+
+/**
  * Sorts the children of a given folder.
  * @param {string} parentId The ID of the folder to sort the children of.
  */

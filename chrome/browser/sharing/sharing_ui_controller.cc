@@ -209,7 +209,7 @@ bool SharingUiController::HasSendFailed() const {
   return send_result_ != SharingSendMessageResult::kSuccessful;
 }
 
-void SharingUiController::OnHelpTextClicked() {
+void SharingUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
   ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents()),
                    GURL(chrome::kSyncLearnMoreURL));
 }

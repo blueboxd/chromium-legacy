@@ -3,11 +3,18 @@
 // found in the LICENSE file.
 
 cr.define('cr.toastManager', () => {
+  /* eslint-disable */
+  /** @private {?CrToastManagerElement} */
+  let toastManagerInstance = null;
+  /* eslint-enable */
+
+  /** @return {!CrToastManagerElement} */
+  function getInstance() {
+    return assert(cr.toastManager.toastManagerInstance);
+  }
+
   return {
-    /** @private {?CrToastManagerElement} */
-    instance_: null,
-    /** @return {!CrToastManagerElement} */
-    getInstance: () => assert(cr.toastManager.instance_),
+    getInstance: getInstance,
   };
 });
 
@@ -43,13 +50,13 @@ Polymer({
 
   /** @override */
   attached: function() {
-    assert(!cr.toastManager.instance_);
-    cr.toastManager.instance_ = this;
+    assert(!cr.toastManager.toastManagerInstance);
+    cr.toastManager.toastManagerInstance = this;
   },
 
   /** @override */
   detached: function() {
-    cr.toastManager.instance_ = null;
+    cr.toastManager.toastManagerInstance = null;
   },
 
   /**

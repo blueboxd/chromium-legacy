@@ -42,4 +42,7 @@ const CrNetworkListenerBehavior = {
 
   /** CrosNetworkConfigObserver impl */
   onDeviceStateListChanged: function() {},
+
+  /** CrosNetworkConfigObserver impl */
+  onVpnProvidersChanged: function() {},
 };

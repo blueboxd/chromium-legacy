@@ -36,9 +36,6 @@
     readonly attribute unsigned long videoHeight;
     [CEReactions, Reflect, URL, Measure] attribute DOMString poster;
 
-    // github.com/ojanvafai/intrinsicsize-attribute/blob/master/README.md
-    [RuntimeEnabled=ExperimentalProductivityFeatures, CEReactions, Reflect] attribute DOMString intrinsicSize;
-
     // Non-standard APIs
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoSupportsFullscreen] readonly attribute boolean webkitSupportsFullscreen;
     [RuntimeEnabled=PrefixedVideoFullscreen, DeprecateAs=PrefixedVideoDisplayingFullscreen] readonly attribute boolean webkitDisplayingFullscreen;

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
+#include "chrome/common/chrome_features.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,7 +32,8 @@ AppShimHost::AppShimHost(AppShimHost::Client* client,
       launch_weak_factory_(this) {
   // Create the interfaces used to host windows, so that browser windows may be
   // created before the host process finishes launching.
-  if (uses_remote_views_) {
+  if (uses_remote_views_ &&
+      base::FeatureList::IsEnabled(features::kAppShimRemoteCocoa)) {
     // Create the interface that will be used by views::NativeWidgetMac to
     // create NSWindows hosted in the app shim process.
     remote_cocoa::mojom::ApplicationAssociatedRequest views_application_request;

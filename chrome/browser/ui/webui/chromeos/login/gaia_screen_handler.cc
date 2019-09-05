@@ -1437,7 +1437,6 @@ bool GaiaScreenHandler::BuildUserContextForGaiaSignIn(
     const SamlPasswordAttributes& password_attributes,
     UserContext* user_context,
     std::string* error_message) {
-  // TODO(emaxx,https://crbug.com/826417): Localize the error messages.
   *user_context = UserContext(user_type, account_id);
   if (using_saml && extension_provided_client_cert_usage_observer_ &&
       extension_provided_client_cert_usage_observer_->ClientCertsWereUsed()) {
@@ -1445,13 +1444,15 @@ bool GaiaScreenHandler::BuildUserContextForGaiaSignIn(
     std::vector<ChallengeResponseKey::SignatureAlgorithm> signature_algorithms;
     if (!extension_provided_client_cert_usage_observer_->GetOnlyUsedClientCert(
             &saml_client_cert, &signature_algorithms)) {
-      *error_message = "Multiple client certificates are not supported";
+      *error_message = l10n_util::GetStringUTF8(
+          IDS_CHALLENGE_RESPONSE_AUTH_MULTIPLE_CLIENT_CERTS_ERROR);
       return false;
     }
     ChallengeResponseKey challenge_response_key;
     if (!ExtractChallengeResponseKeyFromCert(
             *saml_client_cert, signature_algorithms, &challenge_response_key)) {
-      *error_message = "Internal error";
+      *error_message = l10n_util::GetStringUTF8(
+          IDS_CHALLENGE_RESPONSE_AUTH_INVALID_CLIENT_CERT_ERROR);
       return false;
     }
     user_context->GetMutableChallengeResponseKeys()->push_back(

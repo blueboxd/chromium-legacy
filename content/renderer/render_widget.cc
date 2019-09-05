@@ -1716,7 +1716,8 @@ void RenderWidget::IntrinsicSizingInfoChanged(
 
 void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
   if (layout_type == blink::WebMeaningfulLayout::kVisuallyNonEmpty) {
-    QueueMessage(new WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
+    QueueMessage(std::make_unique<WidgetHostMsg_DidFirstVisuallyNonEmptyPaint>(
+        routing_id_));
   }
 
   for (auto& observer : render_frames_)
@@ -1725,13 +1726,13 @@ void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
 
 // static
 std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
-    IPC::Message* msg,
+    std::unique_ptr<IPC::Message> msg,
     FrameSwapMessageQueue* frame_swap_message_queue,
     scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
     int source_frame_number) {
   bool first_message_for_frame = false;
   frame_swap_message_queue->QueueMessageForFrame(
-      source_frame_number, base::WrapUnique(msg), &first_message_for_frame);
+      source_frame_number, std::move(msg), &first_message_for_frame);
   if (!first_message_for_frame)
     return nullptr;
   return std::make_unique<QueueMessageSwapPromise>(
@@ -1742,18 +1743,18 @@ void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
   input_handler_->set_handling_input_event(handling_input_event);
 }
 
-void RenderWidget::QueueMessage(IPC::Message* msg) {
+void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
   if (closing_)
     return;
 
   // RenderThreadImpl::current() is NULL in some tests.
   if (!RenderThreadImpl::current()) {
-    Send(msg);
+    Send(msg.release());
     return;
   }
 
   std::unique_ptr<cc::SwapPromise> swap_promise =
-      QueueMessageImpl(msg, frame_swap_message_queue_.get(),
+      QueueMessageImpl(std::move(msg), frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
                        layer_tree_view_->GetSourceFrameNumber());
   if (swap_promise) {
@@ -3669,7 +3670,7 @@ void RenderWidget::UnregisterBrowserPlugin(BrowserPlugin* browser_plugin) {
 void RenderWidget::OnWaitNextFrameForTests(
     int main_frame_thread_observer_routing_id) {
   // Sends an ACK to the browser process during the next compositor frame.
-  QueueMessage(new WidgetHostMsg_WaitForNextFrameForTests_ACK(
+  QueueMessage(std::make_unique<WidgetHostMsg_WaitForNextFrameForTests_ACK>(
       main_frame_thread_observer_routing_id));
 }
 

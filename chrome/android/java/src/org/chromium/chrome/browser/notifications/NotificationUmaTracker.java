@@ -49,7 +49,9 @@ public class NotificationUmaTracker {
             SystemNotificationType.OFFLINE_CONTENT_SUGGESTION,
             SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES, SystemNotificationType.OFFLINE_PAGES,
             SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES,
-            SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD})
+            SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD,
+            SystemNotificationType.PERMISSION_REQUESTS,
+            SystemNotificationType.PERMISSION_REQUESTS_HIGH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -72,8 +74,10 @@ public class NotificationUmaTracker {
         int UPDATES = 16;
         int CLICK_TO_CALL = 17;
         int SHARED_CLIPBOARD = 18;
+        int PERMISSION_REQUESTS = 19;
+        int PERMISSION_REQUESTS_HIGH = 20;
 
-        int NUM_ENTRIES = 19;
+        int NUM_ENTRIES = 21;
     }
 
     /*

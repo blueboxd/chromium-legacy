@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_job.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -13,7 +14,7 @@
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
-#include "components/download/public/common/download_url_loader_factory_getter.h"
+#include "components/download/public/common/url_loader_factory_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace download {
@@ -163,8 +164,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& create_info,
     bool is_save_package_download,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter,
+    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
     service_manager::Connector* connector) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(
@@ -176,7 +176,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return std::make_unique<ParallelDownloadJob>(
         download_item, std::move(cancel_request_callback), create_info,
-        std::move(url_loader_factory_getter), connector);
+        url_loader_factory_provider, connector);
   }
 
   // An ordinary download job.

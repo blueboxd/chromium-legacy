@@ -11,12 +11,15 @@
 
 #include "base/bind_helpers.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -31,7 +34,11 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
   for (int i = 0; i < num_apps; ++i) {
     const auto url = base_url + base::NumberToString(i);
     const AppId app_id = GenerateAppIdFromURL(GURL(url));
+
     auto web_app = std::make_unique<WebApp>(app_id);
+    web_app->SetLaunchUrl(GURL(url));
+    web_app->SetLaunchContainer(LaunchContainer::kTab);
+
     registry.emplace(app_id, std::move(web_app));
   }
 
@@ -64,6 +71,19 @@ class WebAppRegistrarTest : public WebAppTest {
     return ids;
   }
 
+  AppId InitRegistrarWithApp(std::unique_ptr<WebApp> app) {
+    const AppId app_id = app->app_id();
+
+    registrar().Init(base::DoNothing());
+    DCHECK(registrar().is_empty());
+
+    Registry registry;
+    registry.emplace(app_id, std::move(app));
+
+    database().TakeOpenDatabaseCallback().Run(std::move(registry));
+    return app_id;
+  }
+
   std::set<AppId> InitRegistrarWithApps(const std::string& base_url,
                                         int num_apps) {
     std::set<AppId> app_ids;
@@ -78,7 +98,8 @@ class WebAppRegistrarTest : public WebAppTest {
     return app_ids;
   }
 
-  std::unique_ptr<WebApp> CreateWebApp(const GURL& launch_url) {
+  std::unique_ptr<WebApp> CreateWebApp(const std::string& url) {
+    const GURL launch_url(url);
     const AppId app_id = GenerateAppIdFromURL(launch_url);
 
     auto web_app = std::make_unique<WebApp>(app_id);
@@ -87,6 +108,17 @@ class WebAppRegistrarTest : public WebAppTest {
     web_app->SetLaunchUrl(launch_url);
     web_app->SetLaunchContainer(LaunchContainer::kWindow);
     return web_app;
+  }
+
+  void RegistrarCommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update) {
+    base::RunLoop run_loop;
+    registrar().CommitUpdate(std::move(update),
+                             base::BindLambdaForTesting([&](bool success) {
+                               EXPECT_TRUE(success);
+                               run_loop.Quit();
+                             }));
+
+    run_loop.Run();
   }
 
   void DestroySubsystems() {
@@ -270,16 +302,25 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   EXPECT_EQ(theme_color, registrar().GetAppThemeColor(app_id));
   EXPECT_EQ(launch_url, registrar().GetAppLaunchURL(app_id));
   EXPECT_EQ(launch_container, registrar().GetAppLaunchContainer(app_id));
-  EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
 
-  EXPECT_EQ(LaunchContainer::kDefault,
-            registrar().GetAppLaunchContainer("unknown"));
-  web_app_ptr->SetLaunchContainer(LaunchContainer::kTab);
-  EXPECT_EQ(LaunchContainer::kTab, registrar().GetAppLaunchContainer(app_id));
+  {
+    EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
 
-  EXPECT_FALSE(registrar().IsLocallyInstalled("unknown"));
-  web_app_ptr->SetIsLocallyInstalled(/*is_locally_installed*/ true);
-  EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
+    EXPECT_FALSE(registrar().IsLocallyInstalled("unknown"));
+    web_app_ptr->SetIsLocallyInstalled(/*is_locally_installed*/ true);
+    EXPECT_TRUE(registrar().IsLocallyInstalled(app_id));
+  }
+
+  {
+    EXPECT_EQ(LaunchContainer::kDefault,
+              registrar().GetAppLaunchContainer("unknown"));
+
+    web_app_ptr->SetLaunchContainer(LaunchContainer::kTab);
+    EXPECT_EQ(LaunchContainer::kTab, registrar().GetAppLaunchContainer(app_id));
+
+    registrar().SetAppLaunchContainer(app_id, LaunchContainer::kWindow);
+    EXPECT_EQ(LaunchContainer::kWindow, web_app_ptr->launch_container());
+  }
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
@@ -442,7 +483,7 @@ TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
 }
 
 TEST_F(WebAppRegistrarTest, DatabaseWriteAndDeleteAppsFail) {
-  auto app = CreateWebApp(GURL("https://example.com/path"));
+  auto app = CreateWebApp("https://example.com/path");
   auto app_id = app->app_id();
 
   database().SetNextWriteWebAppsResult(false);
@@ -456,6 +497,114 @@ TEST_F(WebAppRegistrarTest, DatabaseWriteAndDeleteAppsFail) {
 
   // nothing crashes, the production database impl would DLOG an error.
   EXPECT_TRUE(registrar().is_empty());
+}
+
+TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
+  std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
+
+  std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+
+  for (auto& app_id : ids) {
+    WebApp* app = update->UpdateApp(app_id);
+    EXPECT_TRUE(app);
+    app->SetName("New Name");
+  }
+
+  // Acquire each app second time to make sure update requests get merged.
+  for (auto& app_id : ids) {
+    WebApp* app = update->UpdateApp(app_id);
+    EXPECT_TRUE(app);
+    app->SetLaunchContainer(LaunchContainer::kWindow);
+  }
+
+  RegistrarCommitUpdate(std::move(update));
+
+  // Make sure that all app ids were written to the database.
+  EXPECT_EQ(ids.size(), database().write_web_app_ids().size());
+
+  for (auto& written_app_id : database().write_web_app_ids())
+    ids.erase(written_app_id);
+
+  EXPECT_TRUE(ids.empty());
+}
+
+TEST_F(WebAppRegistrarTest, CommitEmptyUpdate) {
+  std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
+
+  {
+    std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+    RegistrarCommitUpdate(std::move(update));
+
+    EXPECT_TRUE(database().write_web_app_ids().empty());
+  }
+
+  {
+    std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+    update.reset();
+    RegistrarCommitUpdate(std::move(update));
+
+    EXPECT_TRUE(database().write_web_app_ids().empty());
+  }
+
+  {
+    std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+
+    WebApp* app = update->UpdateApp("unknown");
+    EXPECT_FALSE(app);
+
+    RegistrarCommitUpdate(std::move(update));
+
+    EXPECT_TRUE(database().write_web_app_ids().empty());
+  }
+}
+
+TEST_F(WebAppRegistrarTest, CommitUpdateFailed) {
+  auto app = CreateWebApp("https://example.com/path");
+  auto app_id = InitRegistrarWithApp(std::move(app));
+  EXPECT_TRUE(database().write_web_app_ids().empty());
+
+  std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+
+  WebApp* update_app = update->UpdateApp(app_id);
+  EXPECT_TRUE(update_app);
+  update_app->SetName("New Name");
+
+  database().SetNextWriteWebAppsResult(false);
+
+  base::RunLoop run_loop;
+  registrar().CommitUpdate(std::move(update),
+                           base::BindLambdaForTesting([&](bool success) {
+                             EXPECT_FALSE(success);
+                             run_loop.Quit();
+                           }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
+  std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
+
+  // Test empty update first.
+  { ScopedRegistryUpdate update(&registrar()); }
+  EXPECT_TRUE(database().write_web_app_ids().empty());
+
+  {
+    ScopedRegistryUpdate update(&registrar());
+
+    for (auto& app_id : ids) {
+      WebApp* app = update->UpdateApp(app_id);
+      EXPECT_TRUE(app);
+      app->SetDescription("New Description");
+    }
+  }
+
+  // Make sure that all app ids were written to the database.
+  EXPECT_EQ(ids.size(), database().write_web_app_ids().size());
+
+  for (auto& written_app_id : database().write_web_app_ids())
+    ids.erase(written_app_id);
+
+  EXPECT_TRUE(ids.empty());
 }
 
 }  // namespace web_app

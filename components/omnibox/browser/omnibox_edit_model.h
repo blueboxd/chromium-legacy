@@ -121,8 +121,22 @@ class OmniboxEditModel {
   // case, will not be modified.
   //
   // |sel_min| gives the minimum of the selection, e.g. min(sel_start, sel_end).
-  // |text| is the currently selected text. If the copied text is interpreted
-  // as a URL, |write_url| is set to true and |url_from_text| set to the URL.
+  // |text| is the currently selected text, and may be modified by this method.
+  // |url_from_text| is the GURL interpretation of the selected text, and may
+  // be used for drag-and-drop models or writing hyperlink data types to
+  // system clipboards.
+  //
+  // If the copied text is interpreted as a URL:
+  //  - |write_url| is set to true.
+  //  - |url_from_text| is set to the URL.
+  //  - |text| is set to the URL's spec. The output will be pure ASCII and
+  //    %-escaped, since canonical URLs are always encoded to ASCII.
+  //
+  // If the copied text is *NOT* interpreted as a URL:
+  //  - |write_url| is set to false.
+  //  - |url_from_text| may be modified, but might not contain a valid GURL.
+  //  - |text| is full UTF-16 and not %-escaped. This is because we are not
+  //    interpreting |text| as a URL, so we leave the Unicode characters as-is.
   void AdjustTextForCopy(int sel_min,
                          base::string16* text,
                          GURL* url_from_text,

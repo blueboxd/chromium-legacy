@@ -63,13 +63,14 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            base::ListValue* supported_entries,
                            base::ListValue* unsupported_entries);
 
-// Gets the list of feature entries for enterprises. Entries that are available
-// for the current platform are appended to |supported_entries|; all other
-// entries are appended to |unsupported_entries|.
-void GetFlagFeatureEntriesForEnterprises(flags_ui::FlagsStorage* flags_storage,
-                                         flags_ui::FlagAccess access,
-                                         base::ListValue* supported_entries,
-                                         base::ListValue* unsupported_entries);
+// Gets the list of feature entries for the deprecated flags page. Entries that
+// are available for the current platform are appended to |supported_entries|;
+// all other entries are appended to |unsupported_entries|.
+void GetFlagFeatureEntriesForDeprecatedPage(
+    flags_ui::FlagsStorage* flags_storage,
+    flags_ui::FlagAccess access,
+    base::ListValue* supported_entries,
+    base::ListValue* unsupported_entries);
 
 // Returns true if one of the feature entry flags has been flipped since
 // startup.

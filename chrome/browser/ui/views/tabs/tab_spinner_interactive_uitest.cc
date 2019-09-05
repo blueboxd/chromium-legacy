@@ -59,8 +59,8 @@ class TabSpinnerTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabSpinnerTest);
 };
 
-// TODO(974349) This test is timeout on linux-chromeos-dbg.
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// TODO(974349) This test is timing out on ChromeOS and Mac.
+#if (defined(OS_CHROMEOS) || defined(OS_MACOSX)) && !defined(NDEBUG)
 #define MAYBE_LoadTabsOneByOne DISABLED_LoadTabsOneByOne
 #else
 #define MAYBE_LoadTabsOneByOne LoadTabsOneByOne

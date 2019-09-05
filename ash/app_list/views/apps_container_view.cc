@@ -196,6 +196,8 @@ void AppsContainerView::ReparentDragEnded() {
 void AppsContainerView::UpdateControlVisibility(
     ash::AppListViewState app_list_state,
     bool is_in_drag) {
+  if (app_list_state == ash::AppListViewState::kClosed)
+    return;
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
   page_switcher_->SetVisible(app_list_state ==
                                  ash::AppListViewState::kFullscreenAllApps ||

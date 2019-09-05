@@ -91,7 +91,8 @@ void NativeFileSystemFileHandle::QueryPermissionImpl(
 
 void NativeFileSystemFileHandle::RequestPermissionImpl(
     bool writable,
-    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+    base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
+                            mojom::blink::PermissionStatus)> callback) {
   mojo_ptr_->RequestPermission(writable, std::move(callback));
 }
 

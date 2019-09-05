@@ -170,6 +170,14 @@ gles2::Texture* StreamTexture::GetTexture() const {
   return gles2::Texture::CheckedCast(texture_owner_->GetTextureBase());
 }
 
+void StreamTexture::NotifyOverlayPromotion(bool promotion,
+                                           const gfx::Rect& bounds) {}
+
+bool StreamTexture::RenderToOverlay() {
+  NOTREACHED();
+  return false;
+}
+
 void StreamTexture::OnContextLost() {
   texture_owner_ = nullptr;
 }
@@ -347,6 +355,14 @@ bool StreamTexture::ScheduleOverlayPlane(
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   NOTREACHED();
   return false;
+}
+
+void StreamTexture::NotifyPromotionHint(bool promotion_hint,
+                                        int display_x,
+                                        int display_y,
+                                        int display_width,
+                                        int display_height) {
+  NOTREACHED();
 }
 
 void StreamTexture::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,

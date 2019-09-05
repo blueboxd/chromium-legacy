@@ -587,8 +587,7 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_in_column_bfc : 1;
 
     bool MaySkipLayout(const RareData& other) const {
-      return margin_strut == other.margin_strut &&
-             table_cell_borders == other.table_cell_borders &&
+      return table_cell_borders == other.table_cell_borders &&
              table_cell_intrinsic_padding ==
                  other.table_cell_intrinsic_padding &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
@@ -602,8 +601,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
-      return margin_strut == NGMarginStrut() &&
-             table_cell_borders == NGBoxStrut() &&
+      return table_cell_borders == NGBoxStrut() &&
              table_cell_intrinsic_padding == NGBoxStrut() &&
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&

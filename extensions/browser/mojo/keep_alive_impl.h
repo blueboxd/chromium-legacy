@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/mojom/keep_alive.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -48,7 +49,8 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
 
   content::BrowserContext* context_;
   const Extension* extension_;
-  ScopedObserver<ExtensionRegistry, KeepAliveImpl> extension_registry_observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_{this};
   mojo::Binding<KeepAlive> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveImpl);

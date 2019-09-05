@@ -295,8 +295,7 @@ void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
   result->OnVisibilityChanged(visibility);
 }
 
-void AppListClientImpl::ActiveUserChanged(
-    const user_manager::User* active_user) {
+void AppListClientImpl::ActiveUserChanged(user_manager::User* active_user) {
   if (!active_user->is_profile_created())
     return;
 

@@ -5,6 +5,10 @@
 #include "components/viz/common/gpu/metal_context_provider.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/time/time.h"
 #include "components/viz/common/gpu/metal_api_proxy.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -13,6 +17,77 @@
 namespace viz {
 
 namespace {
+
+const char* kTestShaderSource =
+    ""
+    "#include <metal_stdlib>\n"
+    "#include <simd/simd.h>\n"
+    "using namespace metal;\n"
+    "typedef struct {\n"
+    "    float4 clipSpacePosition [[position]];\n"
+    "    float4 color;\n"
+    "} RasterizerData;\n"
+    "\n"
+    "vertex RasterizerData vertexShader(\n"
+    "    uint vertexID [[vertex_id]],\n"
+    "    constant vector_float2 *positions[[buffer(0)]],\n"
+    "    constant vector_float4 *colors[[buffer(1)]]) {\n"
+    "  RasterizerData out;\n"
+    "  out.clipSpacePosition = vector_float4(0.0, 0.0, 0.0, 1.0);\n"
+    "  out.clipSpacePosition.xy = positions[vertexID].xy;\n"
+    "  out.color = colors[vertexID];\n"
+    "  return out;\n"
+    "}\n"
+    "\n"
+    "fragment float4 fragmentShader(RasterizerData in [[stage_in]]) {\n"
+    "    return in.color;\n"
+    "}\n"
+    "";
+
+// The timeout for compiling the test shader. Set to be much longer than any
+// shader compile should take, but still less than the watchdog timeout.
+constexpr base::TimeDelta kTestShaderCompileTimeout =
+    base::TimeDelta::FromSeconds(6);
+
+// State shared between the compiler callback and the caller.
+class API_AVAILABLE(macos(10.11)) TestShaderState
+    : public base::RefCountedThreadSafe<TestShaderState> {
+ public:
+  TestShaderState() : condition_variable(&lock) {}
+
+  base::Lock lock;
+  base::ConditionVariable condition_variable;
+  bool compile_has_completed = false;
+
+ protected:
+  friend class base::RefCountedThreadSafe<TestShaderState>;
+  virtual ~TestShaderState() {}
+};
+
+// Attempt to asynchronously compile a test shader. If the compile doesn't
+// complete within a timeout, then return false.
+bool CompileTestShader(id<MTLDevice> device) API_AVAILABLE(macos(10.11)) {
+  auto state = base::MakeRefCounted<TestShaderState>();
+
+  base::scoped_nsobject<NSString> source([[NSString alloc]
+      initWithCString:kTestShaderSource
+             encoding:NSASCIIStringEncoding]);
+  base::scoped_nsobject<MTLCompileOptions> options(
+      [[MTLCompileOptions alloc] init]);
+  MTLNewLibraryCompletionHandler completion_handler =
+      ^(id<MTLLibrary> library, NSError* error) {
+        base::AutoLock lock(state->lock);
+        state->compile_has_completed = true;
+        state->condition_variable.Signal();
+      };
+  [device newLibraryWithSource:source
+                       options:options
+             completionHandler:completion_handler];
+
+  base::AutoLock lock(state->lock);
+  state->condition_variable.TimedWait(kTestShaderCompileTimeout);
+  return state->compile_has_completed;
+}
 
 struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
     : public MetalContextProvider {
@@ -59,9 +134,20 @@ std::unique_ptr<MetalContextProvider> MetalContextProvider::Create() {
     // Failing that, use the system default device.
     if (!device_to_use)
       device_to_use.reset(MTLCreateSystemDefaultDevice());
-    if (device_to_use)
-      return std::make_unique<MetalContextProviderImpl>(device_to_use.get());
-    DLOG(ERROR) << "Failed to create MTLDevice.";
+    if (!device_to_use) {
+      DLOG(ERROR) << "Failed to find MTLDevice.";
+      return nullptr;
+    }
+    // Compile a test shader, to see if the MTLCompilerService is responding
+    // or not. If the compile times out, then don't try to use Metal.
+    // https://crbug.com/974219
+    bool did_compile = CompileTestShader(device_to_use);
+    UMA_HISTOGRAM_BOOLEAN("Gpu.Metal.TestShaderCompileSucceeded", did_compile);
+    if (!did_compile) {
+      DLOG(ERROR) << "Compiling test MTLLibrary timed out.";
+      return nullptr;
+    }
+    return std::make_unique<MetalContextProviderImpl>(device_to_use.get());
   }
   // If no device was found, or if the macOS version is too old for Metal,
   // return no context provider.

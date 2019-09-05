@@ -1079,7 +1079,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Linux x64 DEPS Release (NVIDIA)': {
@@ -1090,7 +1090,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Linux x64 Release (Intel HD 630)': {
@@ -1101,6 +1101,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Linux x64 Release (NVIDIA)': {
@@ -1111,6 +1112,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Mac x64 Builder' : {},
@@ -1123,7 +1125,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Mac x64 DEPS Release (Intel)': {
@@ -1134,7 +1136,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Mac x64 Release (AMD)': {
@@ -1145,6 +1147,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Mac x64 Release (Intel)': {
@@ -1155,6 +1158,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Builder' : {},
@@ -1167,7 +1171,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_win_x64_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_win_x64_isolated_scripts',
         },
       },
       'Dawn Win10 x64 DEPS Release (NVIDIA)': {
@@ -1178,7 +1182,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_win_x64_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_win_x64_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Release (Intel HD 630)': {
@@ -1189,6 +1193,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Release (NVIDIA)': {
@@ -1199,6 +1204,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Builder' : {},
@@ -1211,7 +1217,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Win10 x86 DEPS Release (NVIDIA)': {
@@ -1222,7 +1228,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_webgpu_integration_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Release (Intel HD 630)': {
@@ -1233,6 +1239,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
       'Dawn Win10 x86 Release (NVIDIA)': {
@@ -1243,6 +1250,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_gtests',
+          'isolated_scripts': 'gpu_dawn_tot_isolated_scripts',
         },
       },
     }
@@ -1521,6 +1529,17 @@
           'libANGLE',
         ],
       },
+      'Win10 Tests x64 1803': {
+        'mixins': [
+          'x86-64',
+          'win10-1803',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
+          'scripts': 'chromium_scripts',
+        },
+      },
       'Win7 Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
@@ -1641,6 +1660,7 @@
           ],
         },
         'test_suites': {
+          'gtest_tests': 'chromeos_device_all_chrome_tast_tests_informational',
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
         },
         'os_type': 'chromeos',
@@ -1897,7 +1917,7 @@
         },
         'swarming': {
           'dimension_sets': [
-            {
+            { # This should match Mac10.10 Tests on chromium.mac.
               'gpu': 'none',
               'os': 'Mac-10.10.5',
             }
@@ -1910,7 +1930,7 @@
         },
         'swarming': {
           'dimension_sets': [
-            {
+            { # This should match Mac10.10 Tests on chromium.mac.
               'gpu': 'none',
               'os': 'Mac-10.11.6',
             }
@@ -1923,8 +1943,9 @@
         },
         'swarming': {
           'dimension_sets': [
-            {
-              'gpu': 'none',
+            { # This should match Mac10.12 Tests on chromium.mac.
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
               'os': 'Mac-10.12.6',
             }
           ],
@@ -1937,6 +1958,7 @@
               # This matches the dimensions for "Chromium Mac10.13" in
               # chromium_fyi.py.
               'gpu': '8086:0a2e',
+              'hidpi': '0',
               'os': 'Mac-10.13.6',
             },
           ],

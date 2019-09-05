@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "device/vr/oculus/oculus_render_loop.h"
 #include "device/vr/oculus/oculus_type_converters.h"
+#include "device/vr/util/transform_utils.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 #include "third_party/libovr/src/Include/OVR_CAPI_D3D.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -39,8 +40,13 @@ mojom::VREyeParametersPtr GetEyeDetails(ovrSession session,
   eye_parameters->field_of_view->right_degrees =
       gfx::RadToDeg(atanf(render_desc.Fov.RightTan));
 
+  // TODO(crbug.com/999353): Query eye-to-head transform from the device and use
+  // that instead of just building a transformation matrix from the translation
+  // component. This requireds updating libovr to v1.25 because v1.16 doesn't
+  // have HmdToEyePose (tracked by crbug.com/999355).
   auto offset = render_desc.HmdToEyeOffset;
-  eye_parameters->offset = gfx::Vector3dF(offset.x, offset.y, offset.z);
+  eye_parameters->head_from_eye =
+      vr_utils::MakeTranslationTransform(offset.x, offset.y, offset.z);
 
   auto texture_size =
       ovr_GetFovTextureSize(session, eye, render_desc.Fov, 1.0f);

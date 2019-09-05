@@ -170,6 +170,12 @@ public class LocationBarPhone extends LocationBarLayout {
         notifyShouldAnimateIconChanges(isUrlBarFocused() || isUrlFocusChangeInProgress());
     }
 
+    @Override
+    public void setShowIconsWhenUrlFocused(boolean showIcon) {
+        super.setShowIconsWhenUrlFocused(showIcon);
+        mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
+    }
+
     /**
      * @param softInputMode The software input resize mode.
      * @param delay Delay the change in input mode.

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_handle_permission_descriptor.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -83,9 +84,13 @@ ScriptPromise NativeFileSystemHandle::requestPermission(
   RequestPermissionImpl(
       descriptor->writable(),
       WTF::Bind(
-          [](ScriptPromiseResolver* resolver,
-             mojom::blink::PermissionStatus result) {
-            resolver->Resolve(MojoPermissionStatusToString(result));
+          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
+             mojom::blink::PermissionStatus status) {
+            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver, *result);
+              return;
+            }
+            resolver->Resolve(MojoPermissionStatusToString(status));
           },
           WrapPersistent(resolver)));
 

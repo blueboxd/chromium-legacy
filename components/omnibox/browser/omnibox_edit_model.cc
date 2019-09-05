@@ -368,15 +368,21 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                          base::string16* text,
                                          GURL* url_from_text,
                                          bool* write_url) {
+  DCHECK(text);
+  DCHECK(url_from_text);
+  DCHECK(write_url);
+
   *write_url = false;
 
   // Do not adjust if selection did not start at the beginning of the field.
   if (sel_min != 0)
     return;
 
-  // If the user has not modified the display text and is copying the whole
-  // display text, copy the omnibox contents as a hyperlink to the current page.
-  if (!user_input_in_progress_ && *text == display_text_) {
+  // If the user has not modified the display text and is copying the whole URL
+  // text (whether it's in the elided or unelided form), copy the omnibox
+  // contents as a hyperlink to the current page.
+  if (!user_input_in_progress_ &&
+      (*text == display_text_ || *text == url_for_editing_)) {
     *url_from_text = controller()->GetLocationBarModel()->GetURL();
     *write_url = true;
 
@@ -402,8 +408,10 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   if (AutocompleteMatch::IsSearchType(match_from_text.type))
     return;
 
+  // Make our best GURL interpretation of |text|.
   *url_from_text = match_from_text.destination_url;
 
+  // Get the current page GURL (or the GURL of the currently selected match).
   GURL current_page_url = controller()->GetLocationBarModel()->GetURL();
   if (PopupIsOpen()) {
     AutocompleteMatch current_match = CurrentMatch(nullptr);
@@ -415,15 +423,16 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     }
   }
 
-  // Only if the user has not altered the host piece of the Omnibox text, then
-  // we can infer the correct scheme from the current page's URL, and prepend it
-  // to the selected text on-copy. Otherwise, we cannot guess at user intent, so
-  // we copy the Omnibox contents as plain text.
-  if (current_page_url.SchemeIsHTTPOrHTTPS() &&
-      url_from_text->SchemeIsHTTPOrHTTPS() &&
-      current_page_url.host_piece() == url_from_text->host_piece()) {
-    *write_url = true;
+  // If the user has altered the host piece of the omnibox text, then we cannot
+  // guess at user intent, so early exit and leave |text| as-is as plain text.
+  if (!current_page_url.SchemeIsHTTPOrHTTPS() ||
+      !url_from_text->SchemeIsHTTPOrHTTPS() ||
+      current_page_url.host_piece() != url_from_text->host_piece()) {
+    return;
+  }
 
+  // Infer the correct scheme for the copied text, and prepend it if necessary.
+  {
     base::string16 http = base::ASCIIToUTF16(url::kHttpScheme) +
                           base::ASCIIToUTF16(url::kStandardSchemeSeparator);
     base::string16 https = base::ASCIIToUTF16(url::kHttpsScheme) +
@@ -441,6 +450,13 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
       replace_scheme.SetSchemeStr(current_page_url.scheme_piece());
       *url_from_text = url_from_text->ReplaceComponents(replace_scheme);
     }
+  }
+
+  // If the URL derived from |text| is valid, mark |write_url| true, and modify
+  // |text| to contain the canonical URL spec with non-ASCII characters escaped.
+  if (url_from_text->is_valid()) {
+    *write_url = true;
+    *text = base::UTF8ToUTF16(url_from_text->spec());
   }
 }
 

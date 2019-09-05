@@ -36,7 +36,7 @@ interface NativeFileSystemDirectoryHandle {
 
   // Requests read and/or write permission for this handle. Returns the new
   // permission status for this handle.
-  RequestPermission(bool writable) => (PermissionStatus status);
+  RequestPermission(bool writable) => (NativeFileSystemError result, PermissionStatus status);
 
   // Returns a file with the given |basename| that is a child of this
   // directory. If no such file exists, and |create| is true, the file is first

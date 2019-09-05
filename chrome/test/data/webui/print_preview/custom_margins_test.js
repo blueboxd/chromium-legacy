@@ -451,6 +451,7 @@ cr.define('custom_margins_test', function() {
         return testAllTextboxes(controls, defaultMarginPts, value1, false)
             .then(() => testAllTextboxes(controls, newMargin1, 'abc', true))
             .then(() => testAllTextboxes(controls, newMargin1, '1.2abc', true))
+            .then(() => testAllTextboxes(controls, newMargin1, '1.   2', true))
             .then(() => testAllTextboxes(controls, newMargin1, value2, false))
             .then(() => testAllTextboxes(controls, newMargin2, value3, false))
             .then(

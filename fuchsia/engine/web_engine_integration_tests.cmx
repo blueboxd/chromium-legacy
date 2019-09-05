@@ -1,10 +1,10 @@
 {
   "sandbox": {
     "features": [
-      "isolated-persistent-storage",
       "deprecated-shell",
-      "system-temp",
-      "deprecated-ambient-replace-as-executable"
+      "deprecated-ambient-replace-as-executable",
+      "isolated-persistent-storage",
+      "isolated-temp"
     ],
     "services": [
       "fuchsia.deprecatedtimezone.Timezone",

@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/conversion_utils.h"
@@ -130,8 +129,7 @@ MediaPerceptionAPIManager::GetFactoryInstance() {
 MediaPerceptionAPIManager::MediaPerceptionAPIManager(
     content::BrowserContext* context)
     : browser_context_(context),
-      analytics_process_state_(AnalyticsProcessState::IDLE),
-      scoped_observer_(this) {
+      analytics_process_state_(AnalyticsProcessState::IDLE) {
   scoped_observer_.Add(chromeos::MediaAnalyticsClient::Get());
 }
 

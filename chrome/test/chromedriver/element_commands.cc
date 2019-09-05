@@ -201,8 +201,8 @@ Status ExecuteClickElement(Session* session,
     events.push_back(MouseEvent(kReleasedMouseEventType, kLeftMouseButton,
                                 location.x, location.y,
                                 session->sticky_modifiers, 1, 1));
-    status =
-        web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+    status = web_view->DispatchMouseEvents(events, session->GetCurrentFrameId(),
+                                           false);
     if (status.IsOk())
       session->mouse_position = location;
     return status;
@@ -226,7 +226,7 @@ Status ExecuteTouchSingleTap(Session* session,
         TouchEvent(kTouchStart, location.x, location.y));
     events.push_back(
         TouchEvent(kTouchEnd, location.x, location.y));
-    return web_view->DispatchTouchEvents(events);
+    return web_view->DispatchTouchEvents(events, false);
   }
   return web_view->SynthesizeTapGesture(location.x, location.y, 1, false);
 }
@@ -287,7 +287,7 @@ Status ExecuteFlick(Session* session,
     return Status(kInvalidArgument, "'speed' must be a positive integer");
 
   status = web_view->DispatchTouchEvent(
-      TouchEvent(kTouchStart, location.x, location.y));
+      TouchEvent(kTouchStart, location.x, location.y), false);
   if (status.IsError())
     return status;
 
@@ -301,16 +301,16 @@ Status ExecuteFlick(Session* session,
       (offset * kFlickTouchEventsPerSecond) / speed;
   for (int i = 0; i < total_events; i++) {
     status = web_view->DispatchTouchEvent(
-        TouchEvent(kTouchMove,
-                   location.x + xoffset_per_event * i,
-                   location.y + yoffset_per_event * i));
+        TouchEvent(kTouchMove, location.x + xoffset_per_event * i,
+                   location.y + yoffset_per_event * i),
+        false);
     if (status.IsError())
       return status;
     base::PlatformThread::Sleep(
         base::TimeDelta::FromMilliseconds(1000 / kFlickTouchEventsPerSecond));
   }
   return web_view->DispatchTouchEvent(
-      TouchEvent(kTouchEnd, location.x + xoffset, location.y + yoffset));
+      TouchEvent(kTouchEnd, location.x + xoffset, location.y + yoffset), false);
 }
 
 Status ExecuteClearElement(Session* session,

@@ -12,6 +12,7 @@
 
 module chromeos.network_config.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 
 // Activation state for Cellular networks.
@@ -125,8 +126,9 @@ enum VpnType {
   // Internal VPN types.
   kL2TPIPsec,
   kOpenVPN,
-  // External VPN types.
+  // VPN provided by a Chrome Extension.
   kExtension,
+  // VPN provided by an Arc++ app.
   kArc,
 };
 
@@ -316,6 +318,9 @@ struct FoundNetworkProperties {
   string? long_name;
 };
 
+// A routing prefix can not be 0. Use 0 to indicate an unset value.
+const int32 kNoRoutingPrefix = 0;
+
 struct IPConfigProperties {
   string? gateway;
   // The IP address represented as a string, as provided by the configuration
@@ -326,7 +331,7 @@ struct IPConfigProperties {
   array<string>? included_routes;
   array<string>? name_servers;
   array<string>? search_domains;
-  int32 routing_prefix = 0;
+  int32 routing_prefix = kNoRoutingPrefix;
   string? type;
   string? web_proxy_auto_discovery_url;
 };
@@ -699,6 +704,25 @@ struct GlobalPolicy {
   array<string> blocked_hex_ssids;
 };
 
+// VPN providers for type kExtension and kArc are set via SetVpnProviders and
+// stored in the service implementation. Clients may retrieve the current list
+// and receive observer events to track changes to the list. The list of
+// providers is only used by UI code, they are not sent to the connection
+// manager (Shill).
+struct VpnProvider {
+  // Only type kExtension and kArc should be used here. Other provider types
+  // are internal to Shill and implicit; VpnProvider properties will be ignored.
+  VpnType type;
+  // Extension id (GUID) or Arc package name, e.g. myvpn.app.package.
+  string provider_id;
+  // Extension provider name or Arc app name, e.g. MyVPN.
+  string provider_name;
+  // Extension id (GUID) or Arc app id (GUID), used to launch the VPN UI.
+  string app_id;
+  // Last launch time of the VPN.
+  mojo_base.mojom.Time last_launch_time;
+};
+
 // Interface for fetching and setting network configuration properties, e.g.
 // from Settings WebUI or the SystemTray.
 interface CrosNetworkConfig {
@@ -773,6 +797,13 @@ interface CrosNetworkConfig {
   // connected, or false if not. Use CrosNetworkConfigObserver to observe the
   // connection state after a successful request.
   StartDisconnect(string guid) => (bool success);
+
+  // Provides a list of external VPN providers. Used to populate provider name
+  // in VPN properties, returned from GetVpnProviders, and sent to observers.
+  SetVpnProviders(array<VpnProvider> providers);
+
+  // Returns the list of external VPN providers.
+  GetVpnProviders() => (array<VpnProvider> providers);
 };
 
 interface CrosNetworkConfigObserver {
@@ -795,4 +826,8 @@ interface CrosNetworkConfigObserver {
   // CrosNetworkConfig::GetDeviceStateList() can be used to retrieve the device
   // states.
   OnDeviceStateListChanged();
+
+  // Fired when the list of VPN providers changes. Use GetVpnProviders if the
+  // updated provider list is required.
+  OnVpnProvidersChanged();
 };

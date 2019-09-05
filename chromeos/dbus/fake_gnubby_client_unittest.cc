@@ -42,7 +42,8 @@ class FakeGnubbyClientTest : public testing::Test {
 
 TEST_F(FakeGnubbyClientTest, NotificationSent) {
   TestObserver observer;
-  ScopedObserver<GnubbyClient, TestObserver> scoped_observer(&observer);
+  ScopedObserver<GnubbyClient, GnubbyClient::Observer> scoped_observer(
+      &observer);
   scoped_observer.Add(&fake_gnubby_client_);
 
   EXPECT_EQ(fake_gnubby_client_.calls(), 0);

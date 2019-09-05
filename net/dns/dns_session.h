@@ -115,7 +115,8 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // Record how long it took to receive a response from the server.
   void RecordRTT(unsigned server_index,
                  bool is_doh_server,
-                 base::TimeDelta rtt);
+                 base::TimeDelta rtt,
+                 int rv);
 
   // Return the timeout for the next query. |attempt| counts from 0 and is used
   // for exponential backoff.
@@ -149,6 +150,12 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
 
   // Return the timeout for the next query.
   base::TimeDelta NextTimeoutHelper(ServerStats* server_stats, int attempt);
+
+  // Record the time to perform a query.
+  void RecordRTTForHistogram(unsigned server_index,
+                             bool is_doh_server,
+                             base::TimeDelta rtt,
+                             int rv);
 
   const DnsConfig config_;
   std::unique_ptr<DnsSocketPool> socket_pool_;

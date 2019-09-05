@@ -9,6 +9,85 @@
 (function() {
 'use strict';
 
+/**
+ * Returns the routing prefix as a string for a given prefix length. If
+ * |prefixLength| is invalid, returns undefined.
+ * @param {number} prefixLength The ONC routing prefix length.
+ * @return {string|undefined}
+ */
+const getRoutingPrefixAsNetmask = function(prefixLength) {
+  'use strict';
+  // Return the empty string for invalid inputs.
+  if (prefixLength <= 0 || prefixLength > 32) {
+    return undefined;
+  }
+  let netmask = '';
+  for (let i = 0; i < 4; ++i) {
+    let remainder = 8;
+    if (prefixLength >= 8) {
+      prefixLength -= 8;
+    } else {
+      remainder = prefixLength;
+      prefixLength = 0;
+    }
+    if (i > 0) {
+      netmask += '.';
+    }
+    let value = 0;
+    if (remainder != 0) {
+      value = ((2 << (remainder - 1)) - 1) << (8 - remainder);
+    }
+    netmask += value.toString();
+  }
+  return netmask;
+};
+
+/**
+ * Returns the routing prefix length as a number from the netmask string.
+ * @param {string} netmask The netmask string, e.g. 255.255.255.0.
+ * @return {number} The corresponding netmask or kNoRoutingPrefix if invalid.
+ */
+const getRoutingPrefixAsLength = function(netmask) {
+  'use strict';
+  let prefixLength = 0;
+  const tokens = netmask.split('.');
+  if (tokens.length != 4) {
+    return -1;
+  }
+  for (let i = 0; i < tokens.length; ++i) {
+    const token = tokens[i];
+    // If we already found the last mask and the current one is not
+    // '0' then the netmask is invalid. For example, 255.224.255.0
+    if (prefixLength / 8 != i) {
+      if (token != '0') {
+        return chromeos.networkConfig.mojom.kNoRoutingPrefix;
+      }
+    } else if (token == '255') {
+      prefixLength += 8;
+    } else if (token == '254') {
+      prefixLength += 7;
+    } else if (token == '252') {
+      prefixLength += 6;
+    } else if (token == '248') {
+      prefixLength += 5;
+    } else if (token == '240') {
+      prefixLength += 4;
+    } else if (token == '224') {
+      prefixLength += 3;
+    } else if (token == '192') {
+      prefixLength += 2;
+    } else if (token == '128') {
+      prefixLength += 1;
+    } else if (token == '0') {
+      prefixLength += 0;
+    } else {
+      // mask is not a valid number.
+      return chromeos.networkConfig.mojom.kNoRoutingPrefix;
+    }
+  }
+  return prefixLength;
+};
+
 Polymer({
   is: 'network-ip-config',
 
@@ -156,7 +235,10 @@ Polymer({
     for (const key in ipconfig) {
       const value = ipconfig[key];
       if (key == 'routingPrefix') {
-        result.routingPrefix = CrOnc.getRoutingPrefixAsNetmask(value);
+        const netmask = getRoutingPrefixAsNetmask(value);
+        if (netmask !== undefined) {
+          result.routingPrefix = netmask;
+        }
       } else {
         result[key] = value;
       }
@@ -176,7 +258,10 @@ Polymer({
     for (const key in ipconfig) {
       const value = ipconfig[key];
       if (key == 'routingPrefix') {
-        result.routingPrefix = CrOnc.getRoutingPrefixAsLength(value);
+        const routingPrefix = getRoutingPrefixAsLength(value);
+        if (routingPrefix != chromeos.networkConfig.mojom.kNoRoutingPrefix) {
+          result.routingPrefix = routingPrefix;
+        }
       } else {
         result[key] = value;
       }

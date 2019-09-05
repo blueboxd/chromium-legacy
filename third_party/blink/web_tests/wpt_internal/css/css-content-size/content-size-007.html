@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf8">
+<title>CSS content-size: div with border and scrollbars</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+<link rel="match" href="content-size-007-ref.html">
+
+<style>
+#border {
+  border: 1px solid blue;
+  width: max-content;
+}
+
+#target {
+  background: lightblue;
+  content-size: 55px 66px;
+  contain: size;
+  border-style: solid;
+  border-color: black;
+  border-width: 2px 3px 5px 7px;
+}
+</style>
+
+<div id=border>
+  <div id=target></div>
+</div>

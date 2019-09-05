@@ -21,7 +21,6 @@ class CAPTURE_EXPORT VideoCaptureBufferHandle {
   virtual const uint8_t* const_data() const = 0;
 };
 
-#if defined(OS_CHROMEOS)
 // This is a null implementation used by GpuMemoryBufferTracker, as
 // GpuMemoryBuffer should not be accessed on the CPU outside of the Chrome OS
 // VideoCaptureDevice implementation.
@@ -33,7 +32,6 @@ class CAPTURE_EXPORT NullHandle final : public VideoCaptureBufferHandle {
   uint8_t* data() const override;
   const uint8_t* const_data() const override;
 };
-#endif
 
 }  // namespace media
 

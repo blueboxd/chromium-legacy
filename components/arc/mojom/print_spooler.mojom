@@ -8,20 +8,24 @@ module arc.mojom;
 
 import "components/arc/mojom/print_common.mojom";
 
-// Allows ARC to interact with the ARC Custom Tab used for printing.
+// Represents the Chrome side of a print session. Used by ARC to send
+// print-related messages to Chrome and interact with the ARC Custom Tab used
+// for printing.
 // Closing the interface will close the ARC Custom Tab.
 // Next method ID: 0
-interface PrintSession {
+interface PrintSessionHost {
 };
 
-// Interface used by Chrome to ask ARC to render a print document for Chrome
-// print preview.
+// Represents the ARC side of a print session. Used by Chrome to send
+// print-related messages to ARC and request rendered print documents.
 // Next method ID: 0
-interface PrintRendererDelegate {
+interface PrintSessionInstance {
   // TODO(jschettler): Add methods to render a print document and signal the
   // close of Chrome print preview.
 };
 
+// Used by ARC to create a new print session. A print session is used to print a
+// document from ARC using Chrome print preview.
 // Next method ID: 1
 interface PrintSpoolerHost {
   // Opens the file owned by |scoped_handle| in Chrome print preview in an ARC
@@ -29,14 +33,14 @@ interface PrintSpoolerHost {
   // The |task_id| and |surface_id| specify the Android task and the surface on
   // which the ARC Custom Tab should be shown.
   // The |top_margin| is the height of the space at the top of the window.
-  // The returned |session| will be null if errors occur while saving the print
+  // The returned |host| will be null if errors occur while saving the print
   // document or locating the Android surface.
   [MinVersion=1] StartPrintInCustomTab@0(handle scoped_handle,
                                          int32 task_id,
                                          int32 surface_id,
                                          int32 top_margin,
-                                         PrintRendererDelegate delegate)
-      => (PrintSession? session);
+                                         PrintSessionInstance instance)
+      => (PrintSessionHost? host);
 };
 
 // Next method ID: 1

@@ -2023,13 +2023,7 @@
     <message name="IDS_SETTINGS_INTERNET_ADD_VPN" desc="Settings > Internet > Add VPN label.">
       Add OpenVPN / L2TP...
     </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN" desc="Settings > Internet > Add third party VPN label">
-      Add <ph name="PROVIDER_NAME">$1<ex>VPN Demo</ex></ph>...
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_ARC_VPN" desc="Settings > Internet > Add Arc VPN label.">
-      Add Android VPN...
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_ADD_ARC_VPN_PROVIDER" desc="Settings > Internet > Add Arc VPN provider label">
+    <message name="IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN" desc="Settings > Internet > Add third party (Extension or ARC) VPN label">
       Add <ph name="PROVIDER_NAME">$1<ex>VPN Demo</ex></ph>...
     </message>
     <message name="IDS_SETTINGS_INTERNET_DEVICE_ENABLING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is enabling.">

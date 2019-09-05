@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL idl_test setup promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
- define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
-                        ^ Trailing comma in arguments list"
-FAIL Partial interface HTMLMediaElement: original interface defined assert_true: Original interface should be defined expected true got false
-Harness: the test ran to completion.
-

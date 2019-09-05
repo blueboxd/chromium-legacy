@@ -203,11 +203,11 @@ class LevelDBTestTransaction : public TransactionalLevelDBTransaction {
     return leveldb::Status::Corruption("Corrupted for the test");
   }
 
-  leveldb::Status Commit() override {
+  leveldb::Status Commit(bool sync_on_commit) override {
     if ((fail_method_ != FAIL_METHOD_COMMIT &&
          fail_method_ != FAIL_METHOD_COMMIT_DISK_FULL) ||
         ++current_call_num_ != fail_on_call_num_)
-      return TransactionalLevelDBTransaction::Commit();
+      return TransactionalLevelDBTransaction::Commit(sync_on_commit);
 
     // TODO(jsbell): Consider parameterizing the failure mode.
     if (fail_method_ == FAIL_METHOD_COMMIT_DISK_FULL) {
@@ -243,9 +243,9 @@ class LevelDBTraceTransaction : public TransactionalLevelDBTransaction {
     return TransactionalLevelDBTransaction::Get(key, value, found);
   }
 
-  leveldb::Status Commit() override {
+  leveldb::Status Commit(bool sync_on_commit) override {
     commit_tracer_.log_call();
-    return TransactionalLevelDBTransaction::Commit();
+    return TransactionalLevelDBTransaction::Commit(sync_on_commit);
   }
 
  private:

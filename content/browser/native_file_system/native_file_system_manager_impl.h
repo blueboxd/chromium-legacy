@@ -159,6 +159,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   }
   storage::FileSystemOperationRunner* operation_runner();
 
+  NativeFileSystemPermissionContext* permission_context() {
+    return permission_context_;
+  }
+
   bool is_off_the_record() const { return off_the_record_; }
 
   void SetPermissionContextForTesting(

@@ -48,7 +48,7 @@ class MobileDataNotifications
                      const std::string& error_name) override;
 
   // UserSessionStateObserver:
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // SessionManagerObserver:
   void OnSessionStateChanged() override;

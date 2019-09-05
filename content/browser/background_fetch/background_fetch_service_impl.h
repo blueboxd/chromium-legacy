@@ -19,7 +19,7 @@
 
 namespace content {
 
-class BackgroundFetchContext;
+struct ServiceWorkerVersionInfo;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
     : public blink::mojom::BackgroundFetchService {
@@ -32,7 +32,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   ~BackgroundFetchServiceImpl() override;
 
   static void CreateForWorker(
-      const ServiceWorkerRunningInfo& info,
+      const ServiceWorkerVersionInfo& info,
       mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver);
 
   static void CreateForFrame(

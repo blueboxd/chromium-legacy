@@ -549,10 +549,8 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SetInitialVisualProperties() {
-    VisualProperties visual_properties;
-    bool needs_ack = false;
-    host_->GetVisualProperties(&visual_properties, &needs_ack);
-    host_->SetInitialVisualProperties(visual_properties, needs_ack);
+    VisualProperties visual_properties = host_->GetVisualProperties();
+    host_->SetInitialVisualProperties(visual_properties);
   }
 
   virtual void ConfigureView(TestView* view) {
@@ -1578,9 +1576,7 @@ TEST_F(RenderWidgetHostTest, VisualProperties) {
   view_->SetBounds(bounds);
   view_->SetMockCompositorViewportPixelSize(compositor_viewport_pixel_size);
 
-  VisualProperties visual_properties;
-  bool needs_ack = false;
-  host_->GetVisualProperties(&visual_properties, &needs_ack);
+  VisualProperties visual_properties = host_->GetVisualProperties();
   EXPECT_EQ(bounds.size(), visual_properties.new_size);
   EXPECT_EQ(compositor_viewport_pixel_size,
             visual_properties.compositor_viewport_pixel_size);

@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
@@ -122,8 +123,7 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     GURL source_url,
     base::FilePath target_file_path,
     base::FilePath full_path,
-    GURL tab_url,
-    GURL tab_referrer_url,
+    TabUrls tab_urls,
     content::BrowserContext* browser_context,
     CheckDownloadCallback callback,
     DownloadProtectionService* service,
@@ -132,8 +132,8 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     : source_url_(std::move(source_url)),
       target_file_path_(std::move(target_file_path)),
       full_path_(std::move(full_path)),
-      tab_url_(std::move(tab_url)),
-      tab_referrer_url_(std::move(tab_referrer_url)),
+      tab_url_(std::move(tab_urls.url)),
+      tab_referrer_url_(std::move(tab_urls.referrer)),
       callback_(std::move(callback)),
       service_(service),
       binary_feature_extractor_(std::move(binary_feature_extractor)),
@@ -154,9 +154,15 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
         profile &&
         AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
             ->RequestsAdvancedProtectionVerdicts();
+
+    int password_protected_allowed_policy =
+        g_browser_process->local_state()->GetInteger(
+            prefs::kAllowPasswordProtectedFiles);
     password_protected_allowed_ =
-        !profile ||
-        profile->GetPrefs()->GetBoolean(prefs::kPasswordProtectedAllowed);
+        (password_protected_allowed_policy ==
+             AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS ||
+         password_protected_allowed_policy ==
+             AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   }
 }
 

@@ -99,6 +99,42 @@ class PageFlipWaiter : public ash::PaginationModelObserver {
   DISALLOW_COPY_AND_ASSIGN(PageFlipWaiter);
 };
 
+// WindowDeletionWaiter waits for the specified window to be deleted.
+class WindowDeletionWaiter : aura::WindowObserver {
+ public:
+  explicit WindowDeletionWaiter(aura::Window* window) : window_(window) {
+    window_->AddObserver(this);
+  }
+  ~WindowDeletionWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    window->RemoveObserver(this);
+    run_loop_.QuitWhenIdle();
+  }
+
+  base::RunLoop run_loop_;
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowDeletionWaiter);
+};
+
+// Find the window with type WINDOW_TYPE_MENU and returns the firstly found one.
+// Returns nullptr if no such window exists.
+aura::Window* FindMenuWindow(aura::Window* root) {
+  if (root->type() == aura::client::WINDOW_TYPE_MENU)
+    return root;
+  for (auto* child : root->children()) {
+    auto* menu_in_child = FindMenuWindow(child);
+    if (menu_in_child)
+      return menu_in_child;
+  }
+  return nullptr;
+}
+
 // Dragging task to be run after page flip is observed.
 class DragAfterPageFlipTask : public ash::PaginationModelObserver {
  public:
@@ -786,6 +822,53 @@ TEST_F(AppsGridViewTest, AppIconSelectedWhenMenuIsShown) {
   // Cancel the menu, |app| should no longer be selected.
   app->CancelContextMenu();
   EXPECT_FALSE(apps_grid_view_->IsSelectedView(app));
+}
+
+// Tests that the context menu for app item appears at the right position.
+TEST_P(AppsGridViewTest, MenuAtRightPosition) {
+  const size_t kItemsInPage =
+      apps_grid_view_->cols() * apps_grid_view_->rows_per_page();
+  const size_t kPages = 2;
+  model_->PopulateApps(kItemsInPage * kPages);
+
+  auto* root = apps_grid_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+  gfx::Rect root_bounds = root->GetBoundsInScreen();
+
+  std::vector<int> pages_to_check = {1, 0};
+  for (int i : pages_to_check) {
+    apps_grid_view_->pagination_model()->SelectPage(i, /*animate=*/false);
+
+    for (size_t j = 0; j < kItemsInPage; ++j) {
+      const size_t idx = kItemsInPage * i + j;
+      AppListItemView* item_view = GetItemViewAt(idx);
+
+      // Send a mouse event which would show a context menu.
+      ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
+                                 gfx::Point(), ui::EventTimeForNow(),
+                                 ui::EF_RIGHT_MOUSE_BUTTON,
+                                 ui::EF_RIGHT_MOUSE_BUTTON);
+      static_cast<views::View*>(item_view)->OnMouseEvent(&press_event);
+
+      ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+                                   gfx::Point(), ui::EventTimeForNow(),
+                                   ui::EF_RIGHT_MOUSE_BUTTON,
+                                   ui::EF_RIGHT_MOUSE_BUTTON);
+      static_cast<views::View*>(item_view)->OnMouseEvent(&release_event);
+
+      // Make sure that the menu is drawn on screen.
+      auto* menu_window = FindMenuWindow(root);
+      gfx::Rect menu_bounds = menu_window->GetBoundsInScreen();
+      EXPECT_TRUE(root_bounds.Contains(menu_bounds))
+          << "menu bounds for " << idx << "-th item " << menu_bounds.ToString()
+          << " is outside of the screen bounds " << root_bounds.ToString();
+
+      // CancelContextMenu doesn't remove the menu window immediately, so wait
+      // for its actual deletion.
+      WindowDeletionWaiter waiter(menu_window);
+      item_view->CancelContextMenu();
+      waiter.Wait();
+    }
+  }
 }
 
 TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {

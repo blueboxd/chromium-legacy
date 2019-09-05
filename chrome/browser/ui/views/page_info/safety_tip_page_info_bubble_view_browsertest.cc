@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -27,6 +28,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
@@ -401,4 +403,46 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithEditDistance);
+}
+
+// Tests that the SafetyTipShown histogram triggers correctly.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       SafetyTipShownHistogram) {
+  const char kHistogramName[] = "Security.SafetyTips.SafetyTipShown";
+  base::HistogramTester histograms;
+
+  auto kNavigatedUrl = GetURL("site1.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  histograms.ExpectBucketCount(kHistogramName,
+                               security_state::SafetyTipStatus::kNone, 1);
+
+  auto kBadRepUrl = GetURL("site2.com");
+  TriggerWarning(browser(), kBadRepUrl, WindowOpenDisposition::CURRENT_TAB);
+  CloseWarningLeaveSite(browser());
+  histograms.ExpectBucketCount(
+      kHistogramName, security_state::SafetyTipStatus::kBadReputation, 1);
+
+  const GURL kLookalikeUrl = GetURL("googlé.sk");
+  SetEngagementScore(browser(), kLookalikeUrl, kLowEngagement);
+  NavigateToURL(browser(), kLookalikeUrl, WindowOpenDisposition::CURRENT_TAB);
+  histograms.ExpectBucketCount(kHistogramName,
+                               security_state::SafetyTipStatus::kLookalike, 1);
+  histograms.ExpectTotalCount(kHistogramName, 3);
+}
+
+// Tests that the SafetyTipIgnoredPageLoad histogram triggers correctly.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       SafetyTipIgnoredPageLoadHistogram) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
+  base::HistogramTester histograms;
+  auto kNavigatedUrl = GetURL("site1.com");
+  TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  CloseWarningIgnore();
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  histograms.ExpectBucketCount("Security.SafetyTips.SafetyTipIgnoredPageLoad",
+                               security_state::SafetyTipStatus::kBadReputation,
+                               1);
 }

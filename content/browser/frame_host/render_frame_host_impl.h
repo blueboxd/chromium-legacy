@@ -284,8 +284,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
                         blink::PolicyValue threshold_value) override;
   void ViewSource() override;
-  blink::mojom::PauseSubresourceLoadingHandlePtr PauseSubresourceLoading()
-      override;
+  mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
+  PauseSubresourceLoading() override;
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
       const blink::WebMediaPlayerAction& action) override;

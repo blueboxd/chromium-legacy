@@ -300,7 +300,7 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   const base::Time time_b = base::Time::Now();
   PreviewsType type_b = PreviewsType::OFFLINE;
   std::vector<PreviewsEligibilityReason> passed_reasons_b = {
-      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+      PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
   };
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons_b(

@@ -41,7 +41,6 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -59,7 +58,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/base/cocoa/focus_window_set.h"
-#include "ui/base/ui_base_features.h"
 
 using extensions::AppWindow;
 using extensions::AppWindowRegistry;
@@ -411,8 +409,6 @@ AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
 }
 
 AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
-  if (!features::HostWindowsInAppShimProcess())
-    return nullptr;
   Profile* profile = Profile::FromBrowserContext(browser->profile());
   const Extension* extension =
       apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);

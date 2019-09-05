@@ -9,7 +9,6 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -40,8 +39,7 @@ void SharedClipboardMessageHandlerDesktop::ShowNotification(
           base::UTF8ToUTF16(device_name)),
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION),
-      gfx::Image(gfx::CreateVectorIcon(vector_icons::kDevicesIcon, 64,
-                                       gfx::kChromeIconGrey)),
+      /* icon= */ gfx::Image(),
       /* display_source= */ base::string16(),
       /* origin_url= */ GURL(), message_center::NotifierId(),
       message_center::RichNotificationData(),

@@ -16,7 +16,7 @@
 #include "base/timer/timer.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
@@ -48,7 +48,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   ~NavigationPredictor() override;
 
   // Create and bind NavigationPredictor.
-  static void Create(mojo::InterfaceRequest<AnchorElementMetricsHost> request,
+  static void Create(mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
                      content::RenderFrameHost* render_frame_host);
 
   // Enum describing the possible set of actions that navigation predictor may

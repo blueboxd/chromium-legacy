@@ -18,7 +18,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
-#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 
 using chromeos::assistant::ConsentFlowUi;
@@ -82,7 +81,7 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
       prefs->SetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy,
                         true);
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+      prefs->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
       return;
     }
   } else {

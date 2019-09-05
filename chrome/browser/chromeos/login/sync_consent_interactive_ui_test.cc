@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -285,10 +286,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
   screen->OnStateChanged(nullptr);
 
   // Expect for other screens to be skipped and begin user session.
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-  observer.Wait();
+  test::WaitForPrimaryUserSessionStart();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,

@@ -96,8 +96,9 @@ bool AndroidDlopenExt(const char* filename,
   android_dlextinfo ext = dlextinfo->extinfo;
   LOG_INFO(
       "android_dlopen_ext:"
-      " flags=0x%llx, reserved_addr=%p, reserved_size=%d, relro_fd=%d",
-      static_cast<long long>(ext.flags), ext.reserved_addr,
+      " filename=%s, flags=0x%llx, reserved_addr=%p, reserved_size=%d,"
+      " relro_fd=%d",
+      filename, static_cast<long long>(ext.flags), ext.reserved_addr,
       static_cast<int>(ext.reserved_size), ext.relro_fd);
 
   *status = android_dlopen_ext(filename, flag, &ext);
@@ -341,6 +342,7 @@ void ResizeMapping(const ScopedAnonymousMmap& mapping) {
 // Calls JNI_OnLoad() in the library referenced by |handle|.
 // Returns true for success.
 bool CallJniOnLoad(void* handle) {
+  LOG_INFO("Entering");
   // Locate and if found then call the loaded library's JNI_OnLoad() function.
   using JNI_OnLoadFunctionPtr = int (*)(void* vm, void* reserved);
   auto jni_onload =
@@ -353,6 +355,7 @@ bool CallJniOnLoad(void* handle) {
       return false;
     }
   }
+
   return true;
 }
 
@@ -394,7 +397,7 @@ int LoadCreateSharedRelocations(const String& path,
   ResizeMapping(mapping);
   if (!CallJniOnLoad(handle)) {
     unlink(relocations_path.c_str());
-    return false;
+    return -1;
   }
   relro_fd.ReopenReadOnly(relocations_path);
   return relro_fd.Release();

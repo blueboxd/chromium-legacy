@@ -39,8 +39,6 @@ source_set("internal") {
     "download_stats.cc",
     "download_task_runner.cc",
     "download_ukm_helper.cc",
-    "download_url_loader_factory_getter.cc",
-    "download_url_loader_factory_getter_impl.cc",
     "download_utils.cc",
     "download_worker.cc",
     "download_worker.h",
@@ -59,6 +57,7 @@ source_set("internal") {
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",
     "url_download_request_handle.cc",
+    "url_loader_factory_provider.cc",
   ]
 
   public_deps = [

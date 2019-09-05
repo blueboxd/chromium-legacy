@@ -98,7 +98,6 @@ VideoCaptureBufferPoolImpl::GetHandleForInProcessAccess(int buffer_id) {
   return tracker->GetMemoryMappedAccess();
 }
 
-#if defined(OS_CHROMEOS)
 gfx::GpuMemoryBufferHandle VideoCaptureBufferPoolImpl::GetGpuMemoryBufferHandle(
     int buffer_id) {
   base::AutoLock lock(lock_);
@@ -111,7 +110,6 @@ gfx::GpuMemoryBufferHandle VideoCaptureBufferPoolImpl::GetGpuMemoryBufferHandle(
 
   return tracker->GetGpuMemoryBufferHandle();
 }
-#endif
 
 VideoCaptureDevice::Client::ReserveResult
 VideoCaptureBufferPoolImpl::ReserveForProducer(

@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "net/base/auth.h"
 #include "net/base/request_priority.h"
@@ -32,6 +33,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
@@ -1393,6 +1395,91 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
       EXPECT_EQ(1u, r->url_chain().size());
     }
     EXPECT_EQ(GURL(test.url_expected), r->url());
+  }
+}
+
+TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectCallback) {
+  EmbeddedTestServer https_test(EmbeddedTestServer::TYPE_HTTPS);
+  https_test.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(https_test.Start());
+
+  TestURLRequestContext context;
+  context.transport_security_state()->AddHSTS(
+      "127.0.0.1", base::Time::Now() + base::TimeDelta::FromSeconds(10), true);
+  ASSERT_TRUE(
+      context.transport_security_state()->ShouldUpgradeToSSL("127.0.0.1"));
+
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("http");
+
+  {
+    GURL url(
+        https_test.GetURL("/echoheader").ReplaceComponents(replace_scheme));
+    TestDelegate delegate;
+    HttpRequestHeaders extra_headers;
+    extra_headers.SetHeader("X-HSTS-Test", "1");
+
+    HttpRawRequestHeaders raw_req_headers;
+
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetExtraRequestHeaders(extra_headers);
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+
+    r->Start();
+    delegate.RunUntilRedirect();
+
+    EXPECT_FALSE(raw_req_headers.headers().empty());
+    std::string value;
+    EXPECT_TRUE(raw_req_headers.FindHeaderForTest("X-HSTS-Test", &value));
+    EXPECT_EQ("1", value);
+    EXPECT_EQ("GET /echoheader HTTP/1.1\r\n", raw_req_headers.request_line());
+
+    raw_req_headers = HttpRawRequestHeaders();
+
+    r->FollowDeferredRedirect(base::nullopt /* removed_headers */,
+                              base::nullopt /* modified_headers */);
+    delegate.RunUntilComplete();
+
+    EXPECT_FALSE(raw_req_headers.headers().empty());
+  }
+
+  {
+    GURL url(https_test.GetURL("/echoheader?foo=bar")
+                 .ReplaceComponents(replace_scheme));
+    TestDelegate delegate;
+
+    HttpRawRequestHeaders raw_req_headers;
+
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+
+    r->Start();
+    delegate.RunUntilRedirect();
+
+    EXPECT_EQ("GET /echoheader?foo=bar HTTP/1.1\r\n",
+              raw_req_headers.request_line());
+  }
+
+  {
+    GURL url(
+        https_test.GetURL("/echoheader#foo").ReplaceComponents(replace_scheme));
+    TestDelegate delegate;
+
+    HttpRawRequestHeaders raw_req_headers;
+
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+
+    r->Start();
+    delegate.RunUntilRedirect();
+
+    EXPECT_EQ("GET /echoheader HTTP/1.1\r\n", raw_req_headers.request_line());
   }
 }
 

@@ -88,6 +88,7 @@
 
 using base::RunLoop;
 using content::BrowserThread;
+using content::NativeFileSystemWriteItem;
 using ::testing::_;
 using ::testing::Assign;
 using ::testing::ContainerEq;
@@ -488,7 +489,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     result->full_path = in->full_path;
     result->sha256_hash = in->sha256_hash;
     result->size = in->size;
-    result->tab_url = in->tab_url;
     result->frame_url = in->frame_url;
     result->has_user_gesture = in->has_user_gesture;
     result->web_contents = in->web_contents;
@@ -502,8 +502,10 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     update.Get()->AppendString(domain);
   }
 
-  void SetPasswordProtectedAllowedPref(bool value) {
-    profile()->GetPrefs()->SetBoolean(prefs::kPasswordProtectedAllowed, value);
+  void SetPasswordProtectedAllowedPref(
+      AllowPasswordProtectedFilesValues value) {
+    g_browser_process->local_state()->SetInteger(
+        prefs::kAllowPasswordProtectedFiles, value);
   }
 
   // Helper function to simulate a user gesture, then a link click.
@@ -2819,7 +2821,8 @@ TEST_F(DownloadProtectionServiceTest,
   content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
 
   {
-    SetPasswordProtectedAllowedPref(false);
+    SetPasswordProtectedAllowedPref(
+        AllowPasswordProtectedFilesValues::ALLOW_NONE);
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -2831,7 +2834,8 @@ TEST_F(DownloadProtectionServiceTest,
   }
 
   {
-    SetPasswordProtectedAllowedPref(true);
+    SetPasswordProtectedAllowedPref(
+        AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
@@ -2930,6 +2934,7 @@ TEST_F(DownloadProtectionServiceTest,
         /*tmp_path=*/FILE_PATH_LITERAL("a.txt.crswap"),
         /*final_path=*/FILE_PATH_LITERAL("a.txt"));
     item->browser_context = profile()->GetOffTheRecordProfile();
+
     RunLoop run_loop;
     download_service_->CheckNativeFileSystemWrite(
         std::move(item),
@@ -3076,7 +3081,15 @@ TEST_F(DownloadProtectionServiceTest,
       /*tmp_path=*/FILE_PATH_LITERAL("a.exe.crswap"),
       /*final_path=*/FILE_PATH_LITERAL("a.exe"));
   item->frame_url = GURL("http://www.google.com/");
-  item->tab_url = GURL("http://tab.com/final");
+
+  GURL tab_url("http://tab.com/final");
+  GURL tab_referrer("http://tab.com/referrer");
+
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      tab_url, web_contents());
+  navigation->SetReferrer(blink::mojom::Referrer::New(
+      tab_referrer, network::mojom::ReferrerPolicy::kDefault));
+  navigation->Commit();
 
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
@@ -3126,7 +3139,7 @@ TEST_F(DownloadProtectionServiceTest,
         "blob:http://www.google.com/native-file-system-write",
         referrer_.spec()));
     EXPECT_TRUE(RequestContainsResource(request, ClientDownloadRequest::TAB_URL,
-                                        item->tab_url.spec(), ""));
+                                        tab_url.spec(), tab_referrer.spec()));
     EXPECT_TRUE(request.has_signature());
     ASSERT_EQ(1, request.signature().certificate_chain_size());
     const ClientDownloadRequest_CertificateChain& chain =
@@ -3162,10 +3175,10 @@ TEST_F(DownloadProtectionServiceTest,
     history::RedirectList redirects;
     redirects.push_back(GURL("http://tab.com/ref1"));
     redirects.push_back(GURL("http://tab.com/ref2"));
-    redirects.push_back(item->tab_url);
+    redirects.push_back(tab_url);
     HistoryServiceFactory::GetForProfile(profile(),
                                          ServiceAccessType::EXPLICIT_ACCESS)
-        ->AddPage(item->tab_url, base::Time::Now(),
+        ->AddPage(tab_url, base::Time::Now(),
                   reinterpret_cast<history::ContextID>(1), 0, GURL(), redirects,
                   ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
 
@@ -3199,7 +3212,7 @@ TEST_F(DownloadProtectionServiceTest,
                                         ClientDownloadRequest::TAB_REDIRECT,
                                         "http://tab.com/ref2", ""));
     EXPECT_TRUE(RequestContainsResource(request, ClientDownloadRequest::TAB_URL,
-                                        item->tab_url.spec(), ""));
+                                        tab_url.spec(), tab_referrer.spec()));
     EXPECT_TRUE(request.has_signature());
     ASSERT_EQ(1, request.signature().certificate_chain_size());
     const ClientDownloadRequest_CertificateChain& chain =

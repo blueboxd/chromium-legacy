@@ -13,6 +13,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "device/vr/util/transform_utils.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
@@ -44,9 +45,8 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   left_eye->field_of_view = mojom::VRFieldOfView::New(45, 45, 45, 45);
   right_eye->field_of_view = mojom::VRFieldOfView::New(45, 45, 45, 45);
 
-  constexpr float interpupillary_distance = 0.1f;  // 10cm
-  left_eye->offset = {-interpupillary_distance * 0.5, 0, 0};
-  right_eye->offset = {interpupillary_distance * 0.5, 0, 0};
+  left_eye->head_from_eye = vr_utils::DefaultHeadFromLeftEyeTransform();
+  right_eye->head_from_eye = vr_utils::DefaultHeadFromRightEyeTransform();
 
   constexpr uint32_t width = 1024;
   constexpr uint32_t height = 1024;

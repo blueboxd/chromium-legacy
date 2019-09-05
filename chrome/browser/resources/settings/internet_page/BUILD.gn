@@ -27,6 +27,7 @@ js_library("internet_page") {
     "../settings_page:settings_animated_pages",
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
@@ -35,7 +36,6 @@ js_library("internet_page") {
   ]
   externs_list = [
     "$externs_path/chrome_send.js",
-    "$externs_path/management.js",
     "$externs_path/networking_private.js",
   ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]

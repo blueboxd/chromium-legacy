@@ -5,6 +5,7 @@
 #ifndef PRINTING_BACKEND_PRINT_BACKEND_CUPS_H_
 #define PRINTING_BACKEND_PRINT_BACKEND_CUPS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
@@ -27,6 +28,11 @@ class PrintBackendCUPS : public PrintBackend {
       PrinterBasicInfo* printer_info);
 
  private:
+  struct DestinationDeleter {
+    void operator()(cups_dest_t* dest) const;
+  };
+  using ScopedDestination = std::unique_ptr<cups_dest_t, DestinationDeleter>;
+
   ~PrintBackendCUPS() override {}
 
   // PrintBackend implementation.
@@ -49,9 +55,8 @@ class PrintBackendCUPS : public PrintBackend {
   int GetDests(cups_dest_t** dests);
   base::FilePath GetPPD(const char* name);
 
-  // Wrapper around cupsGetNamedDest(). Returned result should be freed with
-  // cupsFreeDests().
-  cups_dest_t* GetNamedDest(const std::string& printer_name);
+  // Wrapper around cupsGetNamedDest().
+  ScopedDestination GetNamedDest(const std::string& printer_name);
 
   GURL print_server_url_;
   http_encryption_t cups_encryption_;

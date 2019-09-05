@@ -9050,10 +9050,13 @@ Called by update_net_error_codes.py.-->
   <int value="-603" label="FTP_TRANSFER_ABORTED"/>
   <int value="-602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="-601" label="FTP_FAILED"/>
+  <int value="-505" label="INVALID_BUNDLED_EXCHANGES"/>
   <int value="-504" label="INVALID_SIGNED_EXCHANGE"/>
   <int value="-503" label="ADD_USER_CERT_FAILED"/>
   <int value="-502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="-501" label="INSECURE_RESPONSE"/>
+  <int value="-413" label="CACHE_OPEN_OR_CREATE_FAILURE"/>
+  <int value="-412" label="CACHE_DOOM_FAILURE"/>
   <int value="-411" label="CACHE_ENTRY_NOT_SUITABLE"/>
   <int value="-410" label="CACHE_AUTH_FAILURE_AFTER_READ"/>
   <int value="-409" label="CACHE_LOCK_TIMEOUT"/>
@@ -9066,13 +9069,13 @@ Called by update_net_error_codes.py.-->
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
-  <int value="-378" label="SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
-  <int value="-377" label="SPDY_CLIENT_REFUSED_STREAM"/>
-  <int value="-376" label="SPDY_STREAM_CLOSED"/>
+  <int value="-378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
+  <int value="-377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
+  <int value="-376" label="HTTP2_STREAM_CLOSED"/>
   <int value="-375" label="TOO_MANY_RETRIES"/>
-  <int value="-374" label="SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
-  <int value="-373" label="SPDY_PUSHED_STREAM_NOT_AVAILABLE"/>
-  <int value="-372" label="SPDY_RST_STREAM_NO_ERROR_RECEIVED"/>
+  <int value="-374" label="HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
+  <int value="-373" label="HTTP2_PUSHED_STREAM_NOT_AVAILABLE"/>
+  <int value="-372" label="HTTP2_RST_STREAM_NO_ERROR_RECEIVED"/>
   <int value="-371" label="CONTENT_DECODING_INIT_FAILED"/>
   <int value="-370" label="INVALID_HTTP_RESPONSE"/>
   <int value="-369" label="TEMPORARY_BACKOFF"/>
@@ -9081,22 +9084,22 @@ Called by update_net_error_codes.py.-->
   <int value="-366" label="PROXY_HTTP_1_1_REQUIRED"/>
   <int value="-365" label="HTTP_1_1_REQUIRED"/>
   <int value="-364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
-  <int value="-363" label="SPDY_COMPRESSION_ERROR"/>
-  <int value="-362" label="SPDY_FRAME_SIZE_ERROR"/>
-  <int value="-361" label="SPDY_FLOW_CONTROL_ERROR"/>
-  <int value="-360" label="SPDY_INADEQUATE_TRANSPORT_SECURITY"/>
+  <int value="-363" label="HTTP2_COMPRESSION_ERROR"/>
+  <int value="-362" label="HTTP2_FRAME_SIZE_ERROR"/>
+  <int value="-361" label="HTTP2_FLOW_CONTROL_ERROR"/>
+  <int value="-360" label="HTTP2_INADEQUATE_TRANSPORT_SECURITY"/>
   <int value="-359" label="REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC"/>
   <int value="-358" label="QUIC_HANDSHAKE_FAILED"/>
   <int value="-357" label="RESPONSE_HEADERS_TRUNCATED"/>
   <int value="-356" label="QUIC_PROTOCOL_ERROR"/>
   <int value="-355" label="INCOMPLETE_CHUNKED_ENCODING"/>
   <int value="-354" label="CONTENT_LENGTH_MISMATCH"/>
-  <int value="-352" label="SPDY_PING_FAILED"/>
-  <int value="-351" label="SPDY_SERVER_REFUSED_STREAM"/>
+  <int value="-352" label="HTTP2_PING_FAILED"/>
+  <int value="-351" label="HTTP2_SERVER_REFUSED_STREAM"/>
   <int value="-350" label="RESPONSE_HEADERS_MULTIPLE_LOCATION"/>
   <int value="-349" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION"/>
   <int value="-348" label="PAC_NOT_IN_DHCP"/>
-  <int value="-347" label="INCOMPLETE_SPDY_HEADERS"/>
+  <int value="-347" label="INCOMPLETE_HTTP2_HEADERS"/>
   <int value="-346" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH"/>
   <int value="-345" label="RESPONSE_BODY_TOO_BIG_TO_DRAIN"/>
   <int value="-344" label="UNDOCUMENTED_SECURITY_LIBRARY_STATUS"/>
@@ -9106,7 +9109,7 @@ Called by update_net_error_codes.py.-->
   <int value="-340" label="ENCODING_DETECTION_FAILED"/>
   <int value="-339" label="UNSUPPORTED_AUTH_SCHEME"/>
   <int value="-338" label="INVALID_AUTH_CREDENTIALS"/>
-  <int value="-337" label="SPDY_PROTOCOL_ERROR"/>
+  <int value="-337" label="HTTP2_PROTOCOL_ERROR"/>
   <int value="-336" label="NO_SUPPORTED_PROXIES"/>
   <int value="-335" label="INVALID_SPDY_STREAM"/>
   <int value="-334" label="UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT"/>
@@ -9131,6 +9134,7 @@ Called by update_net_error_codes.py.-->
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
+  <int value="-216" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="-215" label="CERT_SYMANTEC_LEGACY"/>
   <int value="-214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="-213" label="CERT_VALIDITY_TOO_LONG"/>
@@ -9146,6 +9150,7 @@ Called by update_net_error_codes.py.-->
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-181" label="SSL_KEY_USAGE_INCOMPATIBLE"/>
   <int value="-180" label="TLS13_DOWNGRADE_DETECTED"/>
   <int value="-179" label="WRONG_VERSION_ON_EARLY_DATA"/>
   <int value="-178" label="EARLY_DATA_REJECTED"/>
@@ -11573,6 +11578,13 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Start selection"/>
   <int value="1" label="Cancel speech"/>
   <int value="2" label="Cancel selection"/>
+</enum>
+
+<enum name="CrosSettingsBrowserBannerInteraction">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Shown"/>
+  <int value="2" label="Clicked"/>
+  <int value="3" label="Closed"/>
 </enum>
 
 <enum name="CrosShelfClickTarget">
@@ -24559,6 +24571,7 @@ Called by update_net_error_codes.py.-->
   <int value="3015" label="V8Window_ChooseFileSystemEntries_Method"/>
   <int value="3016"
       label="V8FileSystemDirectoryHandle_GetSystemDirectory_Method"/>
+  <int value="3017" label="NotificationShowTrigger"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -25869,6 +25882,32 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Other error"/>
   <int value="1" label="Found"/>
   <int value="2" label="Not found"/>
+</enum>
+
+<enum name="FingerprintUpdaterReason">
+  <int value="0" label="None"/>
+  <int value="1" label="Mismatched RW Version"/>
+  <int value="2" label="Mismatched RO Version"/>
+  <int value="3" label="Mismatched RW and RO Version"/>
+  <int value="4" label="Active Image RO"/>
+  <int value="5" label="Mismatched RW Version + Active Image RO"/>
+  <int value="6" label="Mismatched RO Version + Active Image RO"/>
+  <int value="7" label="Mismatched RW and RO Version + Active Image RO"/>
+</enum>
+
+<enum name="FingerprintUpdaterStatus">
+  <int value="0" label="Update was unnecessary"/>
+  <int value="1" label="Update was successful"/>
+  <int value="2" label="Failed - Found more than one viable firmware file"/>
+  <int value="3" label="Failed - Firmware file disappeared before decoding"/>
+  <int value="4" label="Failed - Error opening firmware file"/>
+  <int value="5" label="Failed - Error decoding fmap"/>
+  <int value="6" label="Failed - Error checking MCU version before update"/>
+  <int value="7" label="Failed - Error checking MCU version after update"/>
+  <int value="8" label="Failed - Error checking MCU version during update"/>
+  <int value="9" label="Failed - Error checking MCU flash protect status"/>
+  <int value="10" label="Failed - Error flashing RO"/>
+  <int value="11" label="Failed - Error flashing RW"/>
 </enum>
 
 <enum name="FirebaseConfiguredState">
@@ -35586,6 +35625,7 @@ from previous Chrome versions.
   <int value="-705746939" label="ChromeDuet:enabled"/>
   <int value="-704232562" label="UseMonitorColorSpace:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
+  <int value="-700300613" label="use-fake-device-for-media-stream:disabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-699198009" label="KeyboardShortcutViewer:enabled"/>
   <int value="-697887799"
@@ -35713,6 +35753,7 @@ from previous Chrome versions.
   <int value="-513305102" label="LanguagesPreference:enabled"/>
   <int value="-513066193" label="SyncUSSPasswords:enabled"/>
   <int value="-512971943" label="disable-one-copy"/>
+  <int value="-512786338" label="SyncClipboardService:enabled"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
@@ -36443,6 +36484,7 @@ from previous Chrome versions.
   <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
+  <int value="515951869" label="SyncClipboardService:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
@@ -37271,6 +37313,7 @@ from previous Chrome versions.
   <int value="1677167062" label="AutomaticPasswordGeneration:enabled"/>
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
   <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
+  <int value="1680248931" label="use-fake-device-for-media-stream:enabled"/>
   <int value="1684043382" label="AssistantKeyRemapping:enabled"/>
   <int value="1685280468" label="AppServiceShelf:enabled"/>
   <int value="1688075820" label="OmniboxExperimentalKeywordMode:disabled"/>
@@ -49192,6 +49235,7 @@ Called by update_net_trust_anchors.py.-->
              password."/>
   <int value="17" label="Optimization hints not loaded."/>
   <int value="18" label="The navigation URL had an excluded media suffix."/>
+  <int value="19" label="Not allowed by server rules provided to the client."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
@@ -52481,6 +52525,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Safety Tip status unknown/not applicable"/>
   <int value="1" label="No Safety Tip"/>
   <int value="2" label="Safety Tip for bad reputation"/>
+  <int value="3" label="Safety Tip for lookalike URL"/>
 </enum>
 
 <enum name="SamlInSessionPasswordChangeEvent">
@@ -55829,6 +55874,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Authenticated channel dropped"/>
 </enum>
 
+<enum name="SMSReceiverInfobarAction">
+  <int value="0" label="Baseline: InfobarShown"/>
+  <int value="1" label="KeyboardDismissed"/>
+</enum>
+
 <enum name="SMSReceiverOutcome">
   <int value="0" label="Success"/>
   <int value="1" label="Timed out"/>
@@ -58618,6 +58668,8 @@ would be helpful to identify which type is being sent.
   <int value="16" label="Updates"/>
   <int value="17" label="Click To Call"/>
   <int value="18" label="Shared Clipboard"/>
+  <int value="19" label="Permission Requests"/>
+  <int value="20" label="Permission Requests High"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">
@@ -65415,6 +65467,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WMIRefresherInitStatus">
+  <obsolete>
+    Removed from code 08/2019.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Local WMI Connection error"/>
   <int value="2" label="Refresher creation error"/>
@@ -65423,6 +65478,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WMIRefresherRefreshStatus">
+  <obsolete>
+    Removed from code 08/2019.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Call to Refresh failed"/>
   <int value="2" label="Call to GetObjects failed"/>

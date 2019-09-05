@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf8">
+<title>CSS content-size: unsized div, content-size is small</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+
+<style>
+#target {
+  background: lightblue;
+}
+#target > div {
+  height: 6px;
+  contain: size;
+}
+</style>
+
+<div id=target><div>Lorem ipsum</div></div>
+

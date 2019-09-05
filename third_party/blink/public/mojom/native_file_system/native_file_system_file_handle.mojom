@@ -19,7 +19,7 @@ interface NativeFileSystemFileHandle {
 
   // Requests read and/or write permission for this handle. Returns the new
   // permission status for this handle.
-  RequestPermission(bool writable) => (PermissionStatus status);
+  RequestPermission(bool writable) => (NativeFileSystemError result, PermissionStatus status);
 
   // Returns a blob representing the current state of this file.
   AsBlob() => (NativeFileSystemError result, SerializedBlob? blob);

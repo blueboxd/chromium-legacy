@@ -74,7 +74,7 @@ void ArcPrintSpoolerBridge::StartPrintInCustomTab(
     int32_t task_id,
     int32_t surface_id,
     int32_t top_margin,
-    mojom::PrintRendererDelegatePtr delegate,
+    mojom::PrintSessionInstancePtr instance,
     StartPrintInCustomTabCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskAndReplyWithResult(
@@ -82,14 +82,14 @@ void ArcPrintSpoolerBridge::StartPrintInCustomTab(
       base::BindOnce(&SavePrintDocument, std::move(scoped_handle)),
       base::BindOnce(&ArcPrintSpoolerBridge::OnPrintDocumentSaved,
                      weak_ptr_factory_.GetWeakPtr(), task_id, surface_id,
-                     top_margin, std::move(delegate), std::move(callback)));
+                     top_margin, std::move(instance), std::move(callback)));
 }
 
 void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
     int32_t task_id,
     int32_t surface_id,
     int32_t top_margin,
-    mojom::PrintRendererDelegatePtr delegate,
+    mojom::PrintSessionInstancePtr instance,
     StartPrintInCustomTabCallback callback,
     base::FilePath file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -111,7 +111,7 @@ void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
       ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
   auto web_contents = CreateArcCustomTabWebContents(profile_, url);
   std::move(callback).Run(PrintSessionImpl::Create(
-      std::move(web_contents), std::move(custom_tab), std::move(delegate)));
+      std::move(web_contents), std::move(custom_tab), std::move(instance)));
 }
 
 }  // namespace arc

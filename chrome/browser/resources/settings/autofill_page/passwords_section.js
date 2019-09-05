@@ -375,7 +375,7 @@ Polymer({
   onMenuRemovePasswordTap_: function() {
     this.passwordManager_.removeSavedPassword(
         this.activePassword.item.entry.id);
-    cr.toastManager.getInstance().show(this.i18n('passwordDeleted'));
+    cr.toastManager.getInstance().show(this.i18n('passwordDeleted'), false);
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },
 

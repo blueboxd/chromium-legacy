@@ -4,6 +4,7 @@
 
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -76,6 +77,9 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     security_state::SafetyTipStatus safety_tip_status,
     bool user_ignored,
     const GURL& url) {
+  UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
+                            safety_tip_status);
+
   if (safety_tip_status == security_state::SafetyTipStatus::kNone) {
     MaybeCallReputationCheckCallback();
     return;
@@ -84,9 +88,12 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   // TODO(crbug/987754): Record metrics here.
 
   if (user_ignored) {
+    UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipIgnoredPageLoad",
+                              safety_tip_status);
     MaybeCallReputationCheckCallback();
     return;
   }
+
   // Set this field independent of whether the feature to show the UI is
   // enabled/disabled. Metrics code uses this field and we want to record
   // metrics regardless of the feature being enabled/disabled.

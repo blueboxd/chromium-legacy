@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/deferred_start_render_host_observer.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension_id.h"
 
@@ -21,7 +22,6 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionHost;
-class ProcessManager;
 
 class TestBackgroundPageFirstLoadObserver
     : public ProcessManagerObserver,
@@ -48,7 +48,7 @@ class TestBackgroundPageFirstLoadObserver
   ExtensionHost* extension_host_ = nullptr;
   base::RunLoop run_loop_;
   ScopedObserver<ProcessManager, ProcessManagerObserver>
-      process_manager_observer_;
+      process_manager_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundPageFirstLoadObserver);
 };

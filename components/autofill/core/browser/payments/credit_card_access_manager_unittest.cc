@@ -280,6 +280,7 @@ class CreditCardAccessManagerTest : public testing::Test {
 
   void InvokeUnmaskDetailsTimeout() {
     credit_card_access_manager_->ready_to_start_authentication_.Signal();
+    credit_card_access_manager_->can_fetch_unmask_details_.Signal();
   }
 
   void WaitForCallbacks() { task_environment_.RunUntilIdle(); }
@@ -651,5 +652,8 @@ TEST_F(CreditCardAccessManagerTest, AuthenticationInProgress) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_FALSE(IsAuthenticationInProgress());
 }
+
+// TODO(crbug/949269): Once metrics are added, create test to ensure that
+// PrepareToFetchCreditCard() is properly rate limited.
 
 }  // namespace autofill

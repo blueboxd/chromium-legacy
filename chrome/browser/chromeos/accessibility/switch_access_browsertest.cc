@@ -33,6 +33,16 @@ class SwitchAccessTest : public InProcessBrowserTest {
     EXPECT_TRUE(manager->IsSwitchAccessEnabled());
   }
 
+  std::string GetInputString() {
+    std::string output;
+    std::string script =
+        "window.domAutomationController.send("
+        "document.getElementById('in').value)";
+    CHECK(ExecuteScriptAndExtractString(
+        browser()->tab_strip_model()->GetWebContentsAt(0), script, &output));
+    return output;
+  }
+
  protected:
   SwitchAccessTest() = default;
   ~SwitchAccessTest() override = default;
@@ -47,20 +57,41 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest, IgnoresVirtualKeyEvents) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html;charset=utf-8,<input type=text id=in>"));
 
-  // Put focus in the text box
+  // Put focus in the text box.
   SendVirtualKeyPress(ui::KeyboardCode::VKEY_TAB);
 
-  // Send a virtual key event for one of the keys taken by switch access
+  // Send a virtual key event for one of the keys taken by Switch Access.
   SendVirtualKeyPress(ui::KeyboardCode::VKEY_1);
 
-  // Check that the text field received the keystroke
-  std::string output;
-  std::string script =
-      "window.domAutomationController.send("
-      "document.getElementById('in').value)";
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetWebContentsAt(0), script, &output));
-  EXPECT_STREQ("1", output.c_str());
+  // Check that the text field received the keystroke.
+  EXPECT_STREQ("1", GetInputString().c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(SwitchAccessTest, ConsumesKeyEvents) {
+  EnableSwitchAccess({'1', '2', '3', '4'});
+  // Switch Access generally ignores virtual key events. Disable that for
+  // testing.
+  ash::AccessibilityController::Get()
+      ->SetSwitchAccessIgnoreVirtualKeyEventForTesting(false);
+
+  // Load a webpage with a text box.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;charset=utf-8,<input type=text id=in>"));
+
+  // Put focus in the text box.
+  SendVirtualKeyPress(ui::KeyboardCode::VKEY_TAB);
+
+  // Send a key event for a character consumed by Switch Access.
+  SendVirtualKeyPress(ui::KeyboardCode::VKEY_1);
+
+  // Check that the text field did not receive the character.
+  EXPECT_STREQ("", GetInputString().c_str());
+
+  // Send a key event for a character not consumed by Switch Access.
+  SendVirtualKeyPress(ui::KeyboardCode::VKEY_X);
+
+  // Check that the text field received the character.
+  EXPECT_STREQ("x", GetInputString().c_str());
 }
 
 }  // namespace chromeos

@@ -41,12 +41,10 @@ constexpr char kLoginDisplay[] = "login";
 constexpr char kAccelSendFeedback[] = "send_feedback";
 constexpr char kAccelReset[] = "reset";
 
-PinDialogManager* GetLoginScreenPinDialogManager() {
+CertificateProviderService* GetLoginScreenCertProviderService() {
   DCHECK(ProfileHelper::IsSigninProfileInitialized());
-  CertificateProviderService* certificate_provider_service =
-      CertificateProviderServiceFactory::GetForBrowserContext(
-          ProfileHelper::GetSigninProfile());
-  return certificate_provider_service->pin_dialog_manager();
+  return CertificateProviderServiceFactory::GetForBrowserContext(
+      ProfileHelper::GetSigninProfile());
 }
 
 }  // namespace
@@ -69,13 +67,14 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
   // Preload webui-based OOBE for add user, kiosk apps, etc.
   LoadOobeDialog();
 
-  GetLoginScreenPinDialogManager()->AddPinDialogHost(
+  GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
       &security_token_pin_dialog_host_ash_impl_);
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
-  GetLoginScreenPinDialogManager()->RemovePinDialogHost(
-      &security_token_pin_dialog_host_ash_impl_);
+  GetLoginScreenCertProviderService()
+      ->pin_dialog_manager()
+      ->RemovePinDialogHost(&security_token_pin_dialog_host_ash_impl_);
   LoginScreenClient::Get()->SetDelegate(nullptr);
   if (dialog_) {
     dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
@@ -431,6 +430,9 @@ void LoginDisplayHostMojo::OnAuthFailure(const AuthFailure& error) {
   // called directly.
   if (pending_auth_state_) {
     login_display_->UpdatePinKeyboardState(pending_auth_state_->account_id);
+    GetLoginScreenCertProviderService()
+        ->AbortSignatureRequestsForAuthenticatingUser(
+            pending_auth_state_->account_id);
     std::move(pending_auth_state_->callback).Run(false);
     pending_auth_state_.reset();
   }

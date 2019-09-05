@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
+import org.chromium.chrome.browser.permissions.PermissionFieldTrial;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
@@ -548,12 +549,15 @@ public class NotificationPlatformBridge {
                 notificationBuilder, notificationType, notificationId, origin, actions, image);
 
         // Store notification if its origin is suspended.
+        // TODO(knollr): By-pass the NotificationSuspender for non-site notifications.
         NotificationSuspender.maybeSuspendNotification(notification).then((suspended) -> {
             if (suspended) return;
             // Display notification as Chrome.
             mNotificationManager.notify(notification);
             NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.SITES,
+                    notificationType == NotificationType.PERMISSION_REQUEST
+                            ? PermissionFieldTrial.systemNotificationTypeToUse()
+                            : NotificationUmaTracker.SystemNotificationType.SITES,
                     notification.getNotification());
         });
     }
@@ -592,7 +596,16 @@ public class NotificationPlatformBridge {
                         .setHideLargeIcon(notificationType == NotificationType.PERMISSION_REQUEST);
 
         if (notificationType == NotificationType.PERMISSION_REQUEST) {
-            notificationBuilder.setChannelId(ChannelDefinitions.ChannelId.BROWSER);
+            @PermissionFieldTrial.UIFlavor
+            int ui_flavor = PermissionFieldTrial.uiFlavorToUse();
+
+            assert ui_flavor != PermissionFieldTrial.UIFlavor.MINI_INFOBAR;
+            assert ui_flavor != PermissionFieldTrial.UIFlavor.NONE;
+
+            // Notification priority is used before Android O instead of channel importance to
+            // determine how to display the notification.
+            notificationBuilder.setPriority(PermissionFieldTrial.notificationPriorityToUse());
+            notificationBuilder.setChannelId(PermissionFieldTrial.notificationChannelIdToUse());
         } else if (shouldSetChannelId(forWebApk)) {
             // TODO(crbug.com/773738): Channel ID should be retrieved from cache in native and
             // passed through to here with other notification parameters.
@@ -675,7 +688,9 @@ public class NotificationPlatformBridge {
         notificationBuilder.addSettingsAction(settingsIconId, settingsTitle, pendingSettingsIntent);
 
         return notificationBuilder.build(
-                new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.SITES,
+                new NotificationMetadata(notificationType == NotificationType.PERMISSION_REQUEST
+                                ? PermissionFieldTrial.systemNotificationTypeToUse()
+                                : NotificationUmaTracker.SystemNotificationType.SITES,
                         notificationId /* notificationTag */, PLATFORM_ID /* notificationId */));
     }
 

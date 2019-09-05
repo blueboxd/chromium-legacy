@@ -775,8 +775,8 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSwitchAccess() {
       prefs::kAccessibilitySwitchAccessEnabled);
 }
 
-void AccessibilityControllerImpl::SetSwitchAccessIgnoreVirtualKeyEvent(
-    bool should_ignore) {
+void AccessibilityControllerImpl::
+    SetSwitchAccessIgnoreVirtualKeyEventForTesting(bool should_ignore) {
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
 }
 

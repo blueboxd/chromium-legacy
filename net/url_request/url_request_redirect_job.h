@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/http/http_raw_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_job.h"
 
@@ -49,6 +50,7 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   void Start() override;
   void Kill() override;
   bool CopyFragmentOnRedirect(const GURL& location) const override;
+  void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
 
  private:
   void StartAsync();
@@ -60,6 +62,8 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   std::string redirect_reason_;
 
   scoped_refptr<HttpResponseHeaders> fake_headers_;
+
+  RequestHeadersCallback request_headers_callback_;
 
   base::WeakPtrFactory<URLRequestRedirectJob> weak_factory_{this};
 };

@@ -85,7 +85,7 @@ class StreamTexture : public StreamTextureSharedImageInterface,
                            int display_x,
                            int display_y,
                            int display_width,
-                           int display_height) override {}
+                           int display_height) override;
 
   // gpu::StreamTextureSharedImageInterface implementation.
   void ReleaseResources() override {}
@@ -93,6 +93,8 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   void UpdateAndBindTexImage() override;
   bool HasTextureOwner() const override;
   gles2::Texture* GetTexture() const override;
+  void NotifyOverlayPromotion(bool promotion, const gfx::Rect& bounds) override;
+  bool RenderToOverlay() override;
 
   // SharedContextState::ContextLostObserver implementation.
   void OnContextLost() override;

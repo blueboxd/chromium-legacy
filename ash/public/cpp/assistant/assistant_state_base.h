@@ -28,15 +28,15 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
 
   virtual void OnAssistantConsentStatusChanged(int consent_status) {}
   virtual void OnAssistantContextEnabled(bool enabled) {}
+  virtual void OnAssistantSettingsEnabled(bool enabled) {}
   virtual void OnAssistantHotwordAlwaysOn(bool hotword_always_on) {}
+  virtual void OnAssistantHotwordEnabled(bool enabled) {}
   virtual void OnAssistantLaunchWithMicOpen(bool launch_with_mic_open) {}
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
 
   // mojom::AssistantStateObserver:
   void OnAssistantStatusChanged(
       ash::mojom::VoiceInteractionState state) override {}
-  void OnAssistantSettingsEnabled(bool enabled) override {}
-  void OnAssistantHotwordEnabled(bool enabled) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
   void OnArcPlayStoreEnabledChanged(bool enabled) override {}
@@ -115,14 +115,14 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // Called when the related preferences are obtained from the pref service.
   void UpdateConsentStatus();
   void UpdateContextEnabled();
+  void UpdateSettingsEnabled();
   void UpdateHotwordAlwaysOn();
+  void UpdateHotwordEnabled();
   void UpdateLaunchWithMicOpen();
   void UpdateNotificationEnabled();
 
   // Called when new values of the listened states are received.
   void UpdateAssistantStatus(mojom::VoiceInteractionState state);
-  void UpdateSettingsEnabled(bool enabled);
-  void UpdateHotwordEnabled(bool enabled);
   void UpdateFeatureAllowedState(mojom::AssistantAllowedState state);
   void UpdateLocale(const std::string& locale);
   void UpdateArcPlayStoreEnabled(bool enabled);

@@ -321,42 +321,36 @@ function createFileEntry(fileName) {
 /**
  * In-memory test implementation of {@code RecordStorage}.
  *
- * @constructor
  * @implements {importer.RecordStorage}
- * @struct
  */
-var TestRecordStorage = function() {
-  const timeStamp = importer.toSecondsFromEpoch(FILE_LAST_MODIFIED);
+class TestRecordStorage {
+  constructor() {
+    const timeStamp = importer.toSecondsFromEpoch(FILE_LAST_MODIFIED);
 
-  // Pre-populate the store with some "previously written" data <wink>.
-  /** @private {!Array<!Array<string>>} */
-  this.records_ = [
-    [1, timeStamp + '_' + FILE_SIZE, GOOGLE_DRIVE],
-    [
-      0,
-      timeStamp + '_' + FILE_SIZE,
-      'google-drive',
-      '$/some/url/snazzy.pants',
-      '$/someother/url/snazzy.pants',
-    ],
-    [1, '99999_99999', SPACE_CAMP],
-  ];
+    // Pre-populate the store with some "previously written" data <wink>.
+    /** @private {!Array<!Array<string>>} */
+    this.records_ = [
+      [1, timeStamp + '_' + FILE_SIZE, GOOGLE_DRIVE],
+      [
+        0,
+        timeStamp + '_' + FILE_SIZE,
+        'google-drive',
+        '$/some/url/snazzy.pants',
+        '$/someother/url/snazzy.pants',
+      ],
+      [1, '99999_99999', SPACE_CAMP],
+    ];
+  }
 
-  /**
-   * @override
-   * @this {TestRecordStorage}
-   */
-  this.readAll = function(recordCallback) {
+  /** @override */
+  readAll(recordCallback) {
     this.records_.forEach(recordCallback);
     return Promise.resolve(this.records_);
-  };
+  }
 
-  /**
-   * @override
-   * @this {TestRecordStorage}
-   */
-  this.write = function(record) {
+  /** @override */
+  write(record) {
     this.records_.push(record);
     return Promise.resolve();
-  };
-};
+  }
+}

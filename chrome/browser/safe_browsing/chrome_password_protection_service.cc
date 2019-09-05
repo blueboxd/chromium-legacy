@@ -832,8 +832,19 @@ void ChromePasswordProtectionService::
 
     WebUIInfoSingleton::GetInstance()->AddToSecurityEvents(
         gaia_password_reuse_event);
-    SecurityEventRecorderFactory::GetForProfile(profile_)
-        ->RecordGaiaPasswordReuse(gaia_password_reuse_event);
+
+    auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
+        profile_->GetOriginalProfile());
+    if (identity_manager) {
+      CoreAccountInfo unconsented_primary_account_info =
+          identity_manager->GetUnconsentedPrimaryAccountInfo();
+      // SecurityEventRecorder only supports unconsented primary accounts.
+      if (gaia::AreEmailsSame(unconsented_primary_account_info.email,
+                              username_for_last_shown_warning())) {
+        SecurityEventRecorderFactory::GetForProfile(profile_)
+            ->RecordGaiaPasswordReuse(gaia_password_reuse_event);
+      }
+    }
   } else {
     syncer::UserEventService* user_event_service =
         browser_sync::UserEventServiceFactory::GetForProfile(profile_);

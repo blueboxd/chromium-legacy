@@ -37,9 +37,6 @@ class BrowserControllerImpl : public BrowserController,
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void Navigate(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
-                const base::android::JavaParamRef<jstring>& path);
 #endif
 
  private:

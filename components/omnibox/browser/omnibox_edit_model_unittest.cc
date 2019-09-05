@@ -96,7 +96,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
       // a scheme.
       {"a.de/", 0, "", false, "http://a.de/", "http://a.de/", true,
        "http://a.de/"},
-      {"a.de/", 0, "", false, "HTtp://a.de/", "HTtp://a.de/", true,
+      {"a.de/", 0, "", false, "HTtp://a.de/", "http://a.de/", true,
        "http://a.de/"},
       {"https://a.de/", 0, "", false, "https://a.de/", "https://a.de/", true,
        "https://a.de/"},
@@ -134,13 +134,35 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
       // Steady State Elisions test for re-adding an elided 'https://'.
       {"https://a.de/b", 0, "", false, "a.de/b", "https://a.de/b", true,
        "https://a.de/b", "a.de/b"},
+
+      // Verifies that non-ASCII characters are %-escaped for valid copied URLs,
+      // as long as the host has not been modified from the page URL.
+      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       u8"https://ja.wikipedia.org/wiki/目次",
+       "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1", true,
+       "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1"},
+      // Test escaping when part of the path was not copied.
+      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       u8"https://ja.wikipedia.org/wiki/目",
+       "https://ja.wikipedia.org/wiki/%E7%9B%AE", true,
+       "https://ja.wikipedia.org/wiki/%E7%9B%AE"},
+      // Correctly handle escaping in the scheme-elided case as well.
+      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       u8"ja.wikipedia.org/wiki/目次",
+       "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1", true,
+       "https://ja.wikipedia.org/wiki/%E7%9B%AE%E6%AC%A1",
+       u8"ja.wikipedia.org/wiki/目次"},
+      // Don't escape when host was modified.
+      {u8"https://ja.wikipedia.org/wiki/目次", 0, "", false,
+       u8"https://wikipedia.org/wiki/目次", u8"https://wikipedia.org/wiki/目次",
+       false, ""},
   };
 
   for (size_t i = 0; i < base::size(input); ++i) {
     location_bar_model()->set_formatted_full_url(
-        base::ASCIIToUTF16(input[i].url_for_editing));
+        base::UTF8ToUTF16(input[i].url_for_editing));
     location_bar_model()->set_url_for_display(
-        base::ASCIIToUTF16(input[i].url_for_display));
+        base::UTF8ToUTF16(input[i].url_for_display));
 
     // Set the location bar model's URL to be a valid GURL that would generate
     // the test case's url_for_editing.
@@ -156,11 +178,11 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
     match.destination_url = GURL(input[i].match_destination_url);
     model()->SetCurrentMatchForTest(match);
 
-    base::string16 result = base::ASCIIToUTF16(input[i].input);
+    base::string16 result = base::UTF8ToUTF16(input[i].input);
     GURL url;
     bool write_url;
     model()->AdjustTextForCopy(input[i].sel_start, &result, &url, &write_url);
-    EXPECT_EQ(base::ASCIIToUTF16(input[i].expected_output), result)
+    EXPECT_EQ(base::UTF8ToUTF16(input[i].expected_output), result)
         << "@: " << i;
     EXPECT_EQ(input[i].write_url, write_url) << " @" << i;
     if (write_url)

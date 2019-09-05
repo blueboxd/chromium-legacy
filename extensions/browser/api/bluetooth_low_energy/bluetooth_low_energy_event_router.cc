@@ -29,7 +29,6 @@
 #include "extensions/browser/api/bluetooth_low_energy/utils.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 #include "extensions/common/extension.h"
 
@@ -237,10 +236,7 @@ BluetoothLowEnergyEventRouter::AttributeValueRequest::~AttributeValueRequest() =
 
 BluetoothLowEnergyEventRouter::BluetoothLowEnergyEventRouter(
     content::BrowserContext* context)
-    : adapter_(NULL),
-      last_callback_request_id_(0),
-      browser_context_(context),
-      extension_registry_observer_(this) {
+    : browser_context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context_);
   VLOG(1) << "Initializing BluetoothLowEnergyEventRouter.";

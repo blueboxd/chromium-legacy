@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
@@ -326,6 +327,7 @@ void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  graph_.PassToGraph(std::make_unique<FreezeOriginTrialPolicyAggregator>());
   graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
   graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
   graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());

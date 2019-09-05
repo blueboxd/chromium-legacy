@@ -82,7 +82,7 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
         switches::kEnableExperimentalAccessibilitySwitchAccess);
     controller_->SetSwitchAccessEnabled(true);
     controller_->SetSwitchAccessEventHandlerDelegate(delegate_.get());
-    controller_->SetSwitchAccessIgnoreVirtualKeyEvent(false);
+    controller_->SetSwitchAccessIgnoreVirtualKeyEventForTesting(false);
   }
 
   void TearDown() override {

@@ -23,12 +23,13 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                void(int64_t transaction_id,
                     int64_t object_store_id,
                     const String& new_name));
-  MOCK_METHOD4(CreateTransaction,
+  MOCK_METHOD5(CreateTransaction,
                void(mojo::PendingAssociatedReceiver<
                         mojom::blink::IDBTransaction> receiver,
                     int64_t id,
                     const Vector<int64_t>& scope,
-                    mojom::IDBTransactionMode));
+                    mojom::IDBTransactionMode,
+                    bool relaxed_durability));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(VersionChangeIgnored, void());
   MOCK_METHOD1(Abort, void(int64_t transaction_id));

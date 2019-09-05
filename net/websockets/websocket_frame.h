@@ -61,15 +61,13 @@ struct NET_EXPORT WebSocketFrameHeader {
     kMaskingKeyLength = 4
   };
 
+  // Contains four-byte data representing "masking key" of WebSocket frames.
+  struct WebSocketMaskingKey {
+    char key[WebSocketFrameHeader::kMaskingKeyLength];
+  };
+
   // Constructor to avoid a lot of repetitive initialisation.
-  explicit WebSocketFrameHeader(OpCode opCode)
-      : final(false),
-        reserved1(false),
-        reserved2(false),
-        reserved3(false),
-        opcode(opCode),
-        masked(false),
-        payload_length(0) {}
+  explicit WebSocketFrameHeader(OpCode opCode) : opcode(opCode) {}
 
   // Create a clone of this object on the heap.
   std::unique_ptr<WebSocketFrameHeader> Clone() const;
@@ -79,13 +77,14 @@ struct NET_EXPORT WebSocketFrameHeader {
 
   // Members below correspond to each item in WebSocket frame header.
   // See <http://tools.ietf.org/html/rfc6455#section-5.2> for details.
-  bool final;
-  bool reserved1;
-  bool reserved2;
-  bool reserved3;
+  bool final = false;
+  bool reserved1 = false;
+  bool reserved2 = false;
+  bool reserved3 = false;
   OpCode opcode;
-  bool masked;
-  uint64_t payload_length;
+  bool masked = false;
+  WebSocketMaskingKey masking_key = {};
+  uint64_t payload_length = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketFrameHeader);
@@ -140,10 +139,7 @@ struct NET_EXPORT WebSocketFrameChunk {
   scoped_refptr<IOBufferWithSize> data;
 };
 
-// Contains four-byte data representing "masking key" of WebSocket frames.
-struct WebSocketMaskingKey {
-  char key[WebSocketFrameHeader::kMaskingKeyLength];
-};
+using WebSocketMaskingKey = WebSocketFrameHeader::WebSocketMaskingKey;
 
 // Returns the size of WebSocket frame header. The size of WebSocket frame
 // header varies from 2 bytes to 14 bytes depending on the payload length

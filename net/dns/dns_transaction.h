@@ -93,7 +93,8 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       unsigned doh_server_index) = 0;
 
   // Initiate probe sequences to all configured DoH resolvers.
-  virtual void StartDohProbes(URLRequestContext* context) = 0;
+  virtual void StartDohProbes(URLRequestContext* context,
+                              bool network_change) = 0;
 
   // Returns the default SecureDnsMode in the config.
   virtual DnsConfig::SecureDnsMode GetSecureDnsModeForTest() = 0;

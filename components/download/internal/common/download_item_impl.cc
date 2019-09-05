@@ -1417,8 +1417,7 @@ void DownloadItemImpl::Start(
     std::unique_ptr<DownloadFile> file,
     DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& new_create_info,
-    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter) {
+    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!download_file_);
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
@@ -1427,7 +1426,7 @@ void DownloadItemImpl::Start(
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(
       this, std::move(cancel_request_callback), new_create_info, false,
-      std::move(url_loader_factory_getter),
+      url_loader_factory_provider,
       delegate_ ? delegate_->GetServiceManagerConnector() : nullptr);
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());

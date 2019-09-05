@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_address.h"
+#include "net/base/net_errors.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log_source.h"
@@ -276,9 +277,9 @@ TEST_F(DnsSessionTest, HistogramTimeoutLong) {
 TEST_F(DnsSessionTest, NegativeRtt) {
   Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
   session_->RecordRTT(0, false /* is_doh_server */,
-                      base::TimeDelta::FromMilliseconds(-1));
+                      base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
   session_->RecordRTT(0, true /* is_doh_server */,
-                      base::TimeDelta::FromMilliseconds(-1));
+                      base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
 }
 
 TEST_F(DnsSessionTest, DohServerAvailability) {

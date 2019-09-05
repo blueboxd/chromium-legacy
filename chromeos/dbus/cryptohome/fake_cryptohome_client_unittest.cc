@@ -57,7 +57,8 @@ TEST_F(FakeCryptohomeClientTest, SignSimpleChallenge) {
   constexpr char kChallenge[] = "challenge";
 
   TestObserver observer;
-  ScopedObserver<CryptohomeClient, TestObserver> scoped_observer(&observer);
+  ScopedObserver<CryptohomeClient, CryptohomeClient::Observer> scoped_observer(
+      &observer);
   scoped_observer.Add(&fake_cryptohome_client_);
 
   cryptohome::AccountIdentifier cryptohome_id;

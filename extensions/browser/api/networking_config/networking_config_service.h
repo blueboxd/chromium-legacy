@@ -133,7 +133,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   base::Closure authentication_callback_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 
   std::unique_ptr<EventDelegate> event_delegate_;
 

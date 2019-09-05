@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL test setup (worker registration) promise_test: Unhandled rejection with value: object "WebIDLParseError: Syntax error at line 1471, since `interface CustomElementRegistry`:
- define(DOMString name, CustomElementConstructor constructor, optional ElementDefinitionOptions
-                        ^ Trailing comma in arguments list"
-PASS navigator.serviceWorker is not available in a data: iframe
-Harness: the test ran to completion.
-

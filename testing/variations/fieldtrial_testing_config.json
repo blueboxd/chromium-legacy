@@ -2251,6 +2251,27 @@
             ]
         }
     ],
+    "EnableHistoryFaviconsGoogleServerQuery": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableHistoryFaviconsGoogleServerQuery"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableMediaRouter": [
         {
             "platforms": [
@@ -3576,6 +3597,7 @@
     "NetworkServiceSandbox": [
         {
             "platforms": [
+                "mac",
                 "windows"
             ],
             "experiments": [

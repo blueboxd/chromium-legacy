@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -41,6 +42,9 @@ public class SmsReceiverInfoBarTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     private ChromeActivity mActivity;
+    private final static String INFOBAR_HISTOGRAM = "Blink.Sms.Receive.Infobar";
+    private final static String TIME_CANCEL_ON_KEYBOARD_DISMISSAL_HISTOGRAM =
+            "Blink.Sms.Receive.TimeCancelOnKeyboardDismissal";
 
     @Before
     public void setUp() throws Exception {
@@ -59,6 +63,15 @@ public class SmsReceiverInfoBarTest {
         });
     }
 
+    private void assertHistogramRecordedCount(String name, int expectedCount) {
+        Assert.assertEquals(expectedCount, RecordHistogram.getHistogramTotalCountForTesting(name));
+    }
+
+    private void assertHistogramRecordedCount(String name, int sample, int expectedCount) {
+        Assert.assertEquals(
+                expectedCount, RecordHistogram.getHistogramValueCountForTesting(name, sample));
+    }
+
     @Test
     @MediumTest
     @Feature({"InfoBars", "UiCatalogue"})
@@ -69,6 +82,10 @@ public class SmsReceiverInfoBarTest {
 
         // Click primary button.
         Assert.assertTrue(InfoBarUtil.clickPrimaryButton(infoBar));
+
+        assertHistogramRecordedCount(INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.SHOWN, 1);
+        assertHistogramRecordedCount(
+                INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.KEYBOARD_DISMISSED, 0);
     }
 
     @Test
@@ -81,6 +98,10 @@ public class SmsReceiverInfoBarTest {
 
         // Close infobar.
         Assert.assertTrue(InfoBarUtil.clickCloseButton(infoBar));
+
+        assertHistogramRecordedCount(INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.SHOWN, 1);
+        assertHistogramRecordedCount(
+                INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.KEYBOARD_DISMISSED, 0);
     }
 
     @Test
@@ -106,5 +127,43 @@ public class SmsReceiverInfoBarTest {
         // Keyboard is hidden after info bar is created and shown.
         CriteriaHelper.pollUiThread(Criteria.equals(
                 false, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+
+        assertHistogramRecordedCount(INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.SHOWN, 1);
+        assertHistogramRecordedCount(
+                INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.KEYBOARD_DISMISSED, 1);
+        assertHistogramRecordedCount(TIME_CANCEL_ON_KEYBOARD_DISMISSAL_HISTOGRAM, 0);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"InfoBars", "UiCatalogue"})
+    public void testUMARecordedWhenInfobarDismissedAfterHidingKeyboard() {
+        KeyboardVisibilityDelegate keyboardVisibilityDelegate =
+                mActivityTestRule.getKeyboardDelegate();
+        EditText editText = new EditText(mActivity);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity.setContentView(editText);
+            editText.requestFocus();
+            keyboardVisibilityDelegate.showKeyboard(editText);
+        });
+
+        // Wait until the keyboard is showing.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                true, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+
+        SmsReceiverInfoBar infoBar = createInfoBar();
+
+        // Keyboard is hidden after info bar is created and shown.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                false, () -> keyboardVisibilityDelegate.isKeyboardShowing(mActivity, editText)));
+
+        // Close info bar.
+        InfoBarUtil.clickCloseButton(infoBar);
+
+        assertHistogramRecordedCount(INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.SHOWN, 1);
+        assertHistogramRecordedCount(
+                INFOBAR_HISTOGRAM, SmsReceiverUma.InfobarAction.KEYBOARD_DISMISSED, 1);
+        assertHistogramRecordedCount(TIME_CANCEL_ON_KEYBOARD_DISMISSAL_HISTOGRAM, 1);
     }
 }

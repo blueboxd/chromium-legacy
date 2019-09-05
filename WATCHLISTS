@@ -1054,6 +1054,9 @@
                   'testing/buildbot|'\
                   'tools/mb',
     },
+    'infra_docs': {
+      'filepath': 'docs/infra',
+    },
     'ink_drop': {
       'filepath': 'ui/views/animation/test/.*ink_drop.*|' \
                   'ui/views/animation/.*ink_drop.*'
@@ -1862,6 +1865,9 @@
     'webgpu': {
         'filepath': 'third_party/blink/renderer/modules/webgpu/',
     },
+    'weblayer': {
+        'filepath': 'weblayer/',
+    },
     'webrtc_browser_tests': {
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
@@ -2355,6 +2361,7 @@
     'incident_reporting': ['grt+watch@chromium.org'],
     'indexed_db': ['jsbell+idb@chromium.org'],
     'infra': ['jbudorick+watch@chromium.org'],
+    'infra_docs': ['martiniss+watch@chromium.org'],
     'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org',
               'nzolghadr+chromiumwatch@chromium.org'],
@@ -2667,6 +2674,7 @@
     'webauthn': ['webauthn-reviews@chromium.org'],
     'webgpu': ['cwallez+watch@chromium.org',
                'kainino+watch@chromium.org'],
+    'weblayer': ['cricke+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['dullweber+watch@chromium.org',
                          'msramek+watch@chromium.org'],

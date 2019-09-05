@@ -65,8 +65,10 @@ InspectorAnimationAgent::InspectorAnimationAgent(
       playback_rate_(&agent_state_, /*default_value=*/1.0) {}
 
 void InspectorAnimationAgent::Restore() {
-  if (enabled_.Get())
+  if (enabled_.Get()) {
+    instrumenting_agents_->AddInspectorAnimationAgent(this);
     setPlaybackRate(playback_rate_.Get());
+  }
 }
 
 Response InspectorAnimationAgent::enable() {

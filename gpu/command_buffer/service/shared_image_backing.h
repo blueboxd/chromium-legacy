@@ -40,6 +40,7 @@ class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTexturePassthrough;
 class SharedImageRepresentationSkia;
 class SharedImageRepresentationDawn;
+class SharedImageRepresentationOverlay;
 class MemoryTypeTracker;
 
 // Represents the actual storage (GL texture, VkImage, GMB) for a SharedImage.
@@ -125,6 +126,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       DawnDevice device);
+  virtual std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker);
 
   // Used by subclasses in Destroy.
   bool have_context() const;

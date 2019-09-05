@@ -2950,14 +2950,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::EnsureCookiesFlushed(profile());
 }
 
-// TODO(crbug.com/994789): Flaky on MSan.
-#if defined(MEMORY_SANITIZER)
+// TODO(crbug.com/994789): Flaky on ChromeOS. Fix and re-enable the test.
+#if defined(OS_CHROMEOS)
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DISABLED_DownloadCookieIsolation_CrossSession
 #else
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DownloadCookieIsolation_CrossSession
-#endif  // !defined(MEMORY_SANITIZER)
+#endif  // !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_DownloadCookieIsolation_CrossSession) {

@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/flex_layout.h"
@@ -62,28 +63,17 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
   pin_button_ = pin_button.get();
   AddChildView(std::move(pin_button));
 
-  // TODO(pbos): There's complicated configuration code in place since menus
-  // can't be triggered from ImageButtons. When MenuRunner::RunMenuAt accepts
-  // views::Buttons, turn this into a views::ImageButton and use
-  // image_button_factory.h methods to configure it.
-  auto context_menu_button =
-      std::make_unique<views::MenuButton>(base::string16(), this);
+  auto context_menu_button = views::CreateVectorImageButton(nullptr);
+  views::SetImageFromVectorIcon(context_menu_button.get(), kBrowserToolsIcon,
+                                kSecondaryIconSizeDp, icon_color);
   context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
   context_menu_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
-
-  context_menu_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kBrowserToolsIcon, kSecondaryIconSizeDp,
-                            icon_color));
-
-  context_menu_button->set_ink_drop_base_color(icon_color);
-  context_menu_button->SetBorder(
-      views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_VECTOR_IMAGE_BUTTON)));
-
-  context_menu_button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  context_menu_button->set_has_ink_drop_action_on_click(true);
+  context_menu_button->SetButtonController(
+      std::make_unique<views::MenuButtonController>(
+          context_menu_button.get(), this,
+          std::make_unique<views::Button::DefaultButtonControllerDelegate>(
+              context_menu_button.get())));
 
   context_menu_button_ = context_menu_button.get();
   AddChildView(std::move(context_menu_button));

@@ -48,6 +48,15 @@ MockRuntime.prototype.forceActivate = function(reason) {
   this.displayClient_.onActivate(reason);
 };
 
+function getGFXTransformFromPosition(x, y, z) {
+  let transform = new gfx.mojom.Transform();
+  transform.matrix = getMatrixFromTransform({
+    position: [x, y, z],
+    orientation: [0, 0, 0, 1]
+  });
+  return transform;
+}
+
 function vr_test(func, vrDisplays, name, properties) {
   let chain = Promise.resolve();
   let firstDeviceController;
@@ -86,14 +95,14 @@ function fakeVRDisplays(){
 
   let generic_left_eye = {
     fieldOfView : generic_left_fov,
-    offset : { x: -0.03, y: 0, z: 0 },
+    headFromEye : getGFXTransformFromPosition(-0.03, 0, 0),
     renderWidth : 1024,
     renderHeight : 1024
   };
 
   let generic_right_eye = {
-    fieldOfView :generic_right_fov,
-    offset : { x: 0.03, y: 0, z: 0 },
+    fieldOfView : generic_right_fov,
+    headFromEye : getGFXTransformFromPosition(0.03, 0, 0),
     renderWidth : 1024,
     renderHeight : 1024
   };
@@ -152,7 +161,7 @@ function fakeVRDisplays(){
           leftDegrees : 35.197,
           rightDegrees : 50.899,
         },
-        offset : { x: -0.032, y: 0, z: 0 },
+        headFromEye : getGFXTransformFromPosition(-0.032, 0, 0),
         renderWidth : 1920,
         renderHeight : 2160
       },
@@ -163,7 +172,7 @@ function fakeVRDisplays(){
           leftDegrees: 50.899,
           rightDegrees: 35.197
         },
-        offset : { x: 0.032, y: 0, z: 0 },
+        headFromEye : getGFXTransformFromPosition(0.032, 0, 0),
         renderWidth : 1920,
         renderHeight : 2160
       },

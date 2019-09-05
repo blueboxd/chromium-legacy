@@ -892,8 +892,10 @@ void ClientControlledShellSurface::InitializeWindowState(
   // when maximized, or the entire display when fullscreen.
   window_state->set_allow_set_bounds_direct(true);
   window_state->set_ignore_keyboard_bounds_change(true);
-  if (container_ == ash::kShellWindowId_SystemModalContainer)
+  if (container_ == ash::kShellWindowId_SystemModalContainer ||
+      container_ == ash::kShellWindowId_ArcVirtualKeyboardContainer) {
     DisableMovement();
+  }
   ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   frame_view->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
       frame_visible_button_mask_, frame_enabled_button_mask_));

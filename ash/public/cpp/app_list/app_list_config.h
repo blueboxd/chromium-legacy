@@ -21,16 +21,13 @@ namespace app_list {
 // obtain the AppListConfig.
 class ASH_PUBLIC_EXPORT AppListConfig {
  public:
-  // Constructor for default kShared configuration.
-  AppListConfig();
-
   // Constructor for unscaled configurations of the provided type.
   explicit AppListConfig(ash::AppListConfigType type);
 
   // Constructor for scaled app list configuration.
   // Used only if kScalableAppList feature is not enabled, in which case the
   // app list configuration for small screens is created by scaling down
-  // AppListCondigType::kShared configuration.
+  // AppListConfigType::kShared configuration.
   //
   // |scale_x| - The scale at which apps grid tile should be scaled
   // horizontally.
@@ -48,23 +45,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // Gets default app list configuration.
   static AppListConfig& instance();
 
-  // Returns the app list config that should be used by an app list instance
-  // based on the app list display, and available size for the apps grid.
-  // Returns nullptr if the new app list config is the same as |current_config|.
-  // |work_area_size|: The work area size of the display showing the app list.
-  // |available_grid_size|: The size of the bounds available for the apps grid.
-  // |current_config|: If not null, the app list config currently used by the
-  // app list.
-  // NOTE: This should only be called on AppListConfig::instance().
-  // TODO(crbug.com/976947): Once ScalableAppList feature is removed (and
-  // enabled by default), this should return a reference or a pointer to an
-  // AppListConfig owned by |this|, as then the number of possible different
-  // configs will be restricted to the number of supported config types.
-  std::unique_ptr<AppListConfig> CreateForAppListWidget(
-      const gfx::Size& display_work_area_size,
-      const gfx::Size& available_grid_size,
-      const AppListConfig* current_config);
-
+  ash::AppListConfigType type() const { return type_; }
+  float scale_x() const { return scale_x_; }
+  float scale_y() const { return scale_y_; }
   int grid_tile_width() const { return grid_tile_width_; }
   int grid_tile_height() const { return grid_tile_height_; }
   int grid_tile_spacing() const { return grid_tile_spacing_; }

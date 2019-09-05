@@ -23,7 +23,7 @@ namespace net {
 //
 // Specification of WebSocket frame format is available at
 // <http://tools.ietf.org/html/rfc6455#section-5>.
-
+// This class does *NOT* unmask frame payload.
 class NET_EXPORT WebSocketFrameParser {
  public:
   WebSocketFrameParser();
@@ -74,7 +74,6 @@ class NET_EXPORT WebSocketFrameParser {
   // Frame header and masking key of the current frame.
   // |masking_key_| is filled with zeros if the current frame is not masked.
   std::unique_ptr<WebSocketFrameHeader> current_frame_header_;
-  WebSocketMaskingKey masking_key_;
 
   // Amount of payload data read so far for the current frame.
   uint64_t frame_offset_;

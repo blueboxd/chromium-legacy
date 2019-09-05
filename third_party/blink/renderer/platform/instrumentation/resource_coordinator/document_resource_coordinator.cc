@@ -15,7 +15,6 @@ namespace blink {
 namespace {
 
 using resource_coordinator::mojom::InterventionPolicy;
-using resource_coordinator::mojom::PolicyControlledIntervention;
 
 }  // namespace
 
@@ -51,10 +50,9 @@ void DocumentResourceCoordinator::SetHasNonEmptyBeforeUnload(
   service_->SetHasNonEmptyBeforeUnload(has_nonempty_beforeunload);
 }
 
-void DocumentResourceCoordinator::SetInterventionPolicy(
-    PolicyControlledIntervention intervention,
+void DocumentResourceCoordinator::SetOriginTrialFreezePolicy(
     InterventionPolicy policy) {
-  service_->SetInterventionPolicy(intervention, policy);
+  service_->SetOriginTrialFreezePolicy(policy);
 }
 
 void DocumentResourceCoordinator::SetIsAdFrame() {

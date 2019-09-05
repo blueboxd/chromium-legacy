@@ -157,7 +157,7 @@ void MetalayerMode::OnAssistantStatusChanged(
 }
 
 void MetalayerMode::OnAssistantSettingsEnabled(bool enabled) {
-  voice_interaction_enabled_ = enabled;
+  assistant_enabled_ = enabled;
   UpdateState();
 }
 

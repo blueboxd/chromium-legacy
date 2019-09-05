@@ -31,7 +31,6 @@
 
 namespace {
 
-#if !defined(OS_MACOSX)
 const int kContentsBorderThickness = 10;
 const float kContentsBorderOpacity = 0.24;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
@@ -70,7 +69,6 @@ void InitContentsBorderWidget(content::WebContents* contents) {
 
   browser_view->set_contents_border_widget(widget);
 }
-#endif
 
 void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
   if (!contents)
@@ -113,10 +111,7 @@ TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
           media_id.web_contents_id.main_render_frame_id));
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
-#if !defined(OS_MACOSX)
-  // TODO(https://crbug.com/991896) fix contents border on Mac.
   InitContentsBorderWidget(shared_tab_);
-#endif
 }
 
 TabSharingUIViews::~TabSharingUIViews() {

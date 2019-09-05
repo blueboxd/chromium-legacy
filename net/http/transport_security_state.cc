@@ -404,6 +404,10 @@ void SetTransportSecurityStateSourceForTesting(
 }
 
 TransportSecurityState::TransportSecurityState()
+    : TransportSecurityState(std::vector<std::string>()) {}
+
+TransportSecurityState::TransportSecurityState(
+    std::vector<std::string> hsts_host_bypass_list)
     : enable_static_pins_(true),
       enable_static_expect_ct_(true),
       enable_pkp_bypass_for_local_trust_anchors_(true),
@@ -415,6 +419,11 @@ TransportSecurityState::TransportSecurityState()
   enable_static_pins_ = false;
   enable_static_expect_ct_ = false;
 #endif
+  // Check that there no invalid entries in the static HSTS bypass list.
+  for (auto& host : hsts_host_bypass_list) {
+    DCHECK(host.find('.') == std::string::npos);
+    hsts_host_bypass_list_.insert(host);
+  }
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -1140,7 +1149,8 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   if (!DecodeHSTSPreload(host, &result))
     return false;
 
-  if (result.force_https) {
+  if (hsts_host_bypass_list_.find(host) == hsts_host_bypass_list_.end() &&
+      result.force_https) {
     sts_result->domain = host.substr(result.hostname_offset);
     sts_result->include_subdomains = result.sts_include_subdomains;
     sts_result->last_observed = base::GetBuildTime();

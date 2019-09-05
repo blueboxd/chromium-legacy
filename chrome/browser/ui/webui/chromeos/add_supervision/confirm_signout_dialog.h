@@ -9,6 +9,10 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace views {
+class Widget;
+}
+
 namespace chromeos {
 
 // Dialog shown when the user tries to close the flow when account has already
@@ -28,9 +32,11 @@ class ConfirmSignoutDialog : public views::DialogDelegateView {
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   static void Show();
+  static bool IsShowing();
 
  private:
   ConfirmSignoutDialog();
+  static views::Widget* current_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmSignoutDialog);
 };

@@ -2110,6 +2110,9 @@ New Search
       <message name="IDS_IOS_NAVIGATION_BAR_ADD_BUTTON" desc="Label of the button allowing the user to add a new credit card to the list of their saved credit cards.">
           Add
       </message>
+      <message name="IDS_IOS_LOCATION_BAR_SIGN_IN" desc="Text shown in the location bar while an HTTP authentication dialog is displayed.">
+          Sign in to website
+      </message>
     </messages>
   </release>
 </grit>

@@ -14,7 +14,6 @@ class Connector;
 }  // namespace service_manager
 
 namespace download {
-class DownloadURLLoaderFactoryGetter;
 class DownloadUrlParameters;
 
 // Class for handling the creation of a URLDownloadHandler. This is used to
@@ -27,8 +26,7 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandlerFactory {
   static UrlDownloadHandler::UniqueUrlDownloadHandlerPtr Create(
       std::unique_ptr<download::DownloadUrlParameters> params,
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const URLSecurityPolicy& url_security_policy,
       std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);

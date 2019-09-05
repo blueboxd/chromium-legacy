@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -45,18 +46,37 @@ bool IsEqual(const base::Optional<DnsConfig>& c1, const DnsConfig* c2) {
 void UpdateConfigForDohUpgrade(DnsConfig* config) {
   // TODO(crbug.com/878582): Reconsider whether the hardcoded mapping should
   // also be applied in SECURE mode.
-  if (config->allow_dns_over_https_upgrade &&
-      config->dns_over_https_servers.empty() &&
+  bool has_doh_servers = !config->dns_over_https_servers.empty();
+  if (config->allow_dns_over_https_upgrade && !has_doh_servers &&
       config->secure_dns_mode == DnsConfig::SecureDnsMode::AUTOMATIC) {
     // If we're in strict mode on Android, only attempt to upgrade the
     // specified DoT hostname.
     if (!config->dns_over_tls_hostname.empty()) {
       config->dns_over_https_servers = GetDohUpgradeServersFromDotHostname(
           config->dns_over_tls_hostname, config->disabled_upgrade_providers);
+      has_doh_servers = !config->dns_over_https_servers.empty();
+      UMA_HISTOGRAM_BOOLEAN("Net.DNS.UpgradeConfig.DotUpgradeSucceeded",
+                            has_doh_servers);
     } else {
+      bool all_local = true;
+      for (const auto& server : config->nameservers) {
+        if (server.address().IsPubliclyRoutable()) {
+          all_local = false;
+          break;
+        }
+      }
+      UMA_HISTOGRAM_BOOLEAN("Net.DNS.UpgradeConfig.HasPublicInsecureNameserver",
+                            !all_local);
+
       config->dns_over_https_servers = GetDohUpgradeServersFromNameservers(
           config->nameservers, config->disabled_upgrade_providers);
+      has_doh_servers = !config->dns_over_https_servers.empty();
+      UMA_HISTOGRAM_BOOLEAN("Net.DNS.UpgradeConfig.InsecureUpgradeSucceeded",
+                            has_doh_servers);
     }
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("Net.DNS.UpgradeConfig.Ineligible.DohSpecified",
+                          has_doh_servers);
   }
 }
 
@@ -230,7 +250,7 @@ class DnsClientImpl : public DnsClient,
           new DnsSession(std::move(new_effective_config).value(),
                          std::move(socket_pool), rand_int_callback_, net_log_);
       factory_ = DnsTransactionFactory::CreateFactory(session_.get());
-      StartDohProbes();
+      StartDohProbes(false /* network_change*/);
     }
   }
 
@@ -242,19 +262,19 @@ class DnsClientImpl : public DnsClient,
       if (base::FieldTrialList::FindFullName(kTrialName) == "enable")
         session_->InitializeServerStats();
       if (type != NetworkChangeNotifier::CONNECTION_NONE)
-        StartDohProbes();
+        StartDohProbes(true /* network_change */);
     }
   }
 
-  void StartDohProbes() {
+  void StartDohProbes(bool network_change) {
     if (probes_allowed_) {
-      factory_->StartDohProbes(url_request_context_for_probes_);
+      factory_->StartDohProbes(url_request_context_for_probes_, network_change);
     } else {
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&DnsTransactionFactory::StartDohProbes,
                          factory_->weak_factory_.GetWeakPtr(),
-                         url_request_context_for_probes_),
+                         url_request_context_for_probes_, network_change),
           delayed_probes_allowed_timer_.GetCurrentDelay());
     }
   }

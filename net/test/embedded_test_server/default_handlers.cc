@@ -713,10 +713,9 @@ class ExabyteResponse : public net::test_server::BasicHttpResponse {
   // for the purpose of testing.
   static void SendExabyte(const net::test_server::SendBytesCallback& send) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindRepeating(
-            send, "echo",
-            base::BindRepeating(&ExabyteResponse::SendExabyte, send)));
+        FROM_HERE, base::BindOnce(send, "echo",
+                                  base::BindRepeating(
+                                      &ExabyteResponse::SendExabyte, send)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ExabyteResponse);

@@ -2368,6 +2368,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
   LayoutUnit block_offset_delta;
+  NGMarginStrut end_margin_strut = cached_layout_result->EndMarginStrut();
 
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
@@ -2388,6 +2389,8 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return nullptr;
   }
 
+  bool is_margin_strut_equal =
+      new_space.MarginStrut() == old_space.MarginStrut();
   bool is_exclusion_space_equal =
       new_space.ExclusionSpace() == old_space.ExclusionSpace();
 
@@ -2401,6 +2404,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // layout result.
   if (!is_new_formatting_context &&
       (!are_bfc_offsets_equal || !is_exclusion_space_equal ||
+       !is_margin_strut_equal ||
        new_space.ClearanceOffset() != old_space.ClearanceOffset())) {
     DCHECK(!CreatesNewFormattingContext());
 
@@ -2416,9 +2420,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
     DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
 
-    if (!MaySkipLayoutWithinBlockFormattingContext(*cached_layout_result,
-                                                   new_space, &bfc_block_offset,
-                                                   &block_offset_delta))
+    if (!MaySkipLayoutWithinBlockFormattingContext(
+            *cached_layout_result, new_space, &bfc_block_offset,
+            &block_offset_delta, &end_margin_strut))
       return nullptr;
   }
 
@@ -2458,7 +2462,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // We can safely reuse this result if our BFC and "input" exclusion spaces
   // were equal.
   if (are_bfc_offsets_equal && is_exclusion_space_equal &&
-      !needs_cached_result_update) {
+      is_margin_strut_equal && !needs_cached_result_update) {
     // In order not to rebuild the internal derived-geometry "cache" of float
     // data, we need to move this to the new "output" exclusion space.
     cached_layout_result->ExclusionSpace().MoveAndUpdateDerivedGeometry(
@@ -2466,9 +2470,10 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return cached_layout_result;
   }
 
-  scoped_refptr<const NGLayoutResult> new_result = base::AdoptRef(
-      new NGLayoutResult(*cached_layout_result, new_space, bfc_line_offset,
-                         bfc_block_offset, block_offset_delta));
+  scoped_refptr<const NGLayoutResult> new_result =
+      base::AdoptRef(new NGLayoutResult(*cached_layout_result, new_space,
+                                        end_margin_strut, bfc_line_offset,
+                                        bfc_block_offset, block_offset_delta));
 
   if (needs_cached_result_update)
     SetCachedLayoutResult(*new_result, break_token);
@@ -2895,8 +2900,9 @@ DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
   if (ShouldApplySizeContainment()) {
-    computed_values.extent_ =
-        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+    computed_values.extent_ = ContentLogicalWidthForSizeContainment() +
+                              BorderAndPaddingLogicalWidth() +
+                              ScrollbarLogicalWidth();
   } else if (DisplayLockInducesSizeContainment()) {
     computed_values.extent_ =
         BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth() +
@@ -3401,7 +3407,8 @@ void LayoutBox::ComputeLogicalHeight(
   // out what happens here if IsLayoutGrid() is true and size containment is
   // specified while the box is locked.
   if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
-    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+    height = ContentLogicalHeightForSizeContainment() +
+             BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
   } else if (DisplayLockInducesSizeContainment()) {
     height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
              GetDisplayLockContext()->GetLockedContentLogicalHeight();
@@ -3542,12 +3549,17 @@ void LayoutBox::ComputeLogicalHeight(
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
   LogicalExtentComputedValues computed_values;
 
-  if (!SelfNeedsLayout() && !ShouldApplySizeContainment() &&
-      DisplayLockInducesSizeContainment()) {
-    ComputeLogicalHeight(
-        BorderAndPaddingLogicalHeight() +
-            GetDisplayLockContext()->GetLockedContentLogicalHeight(),
-        LayoutUnit(), computed_values);
+  if (!SelfNeedsLayout()) {
+    if (ShouldApplySizeContainment()) {
+      ComputeLogicalHeight(ContentLogicalHeightForSizeContainment() +
+                               BorderAndPaddingLogicalHeight(),
+                           LayoutUnit(), computed_values);
+    } else if (DisplayLockInducesSizeContainment()) {
+      ComputeLogicalHeight(
+          BorderAndPaddingLogicalHeight() +
+              GetDisplayLockContext()->GetLockedContentLogicalHeight(),
+          LayoutUnit(), computed_values);
+    }
   } else {
     // TODO(cbiesinger): We should probably return something other than just
     // border + padding, but for now we have no good way to do anything else

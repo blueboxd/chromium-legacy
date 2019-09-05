@@ -69,6 +69,14 @@ class MenuManager {
     this.selectionExists_ = false;
 
     /**
+     * Callback for reloading the menu when the text selection has changed.
+     * Bind creates a new function, so this function is saved as a field to
+     * add and remove the selection event listener properly.
+     * @private {function(chrome.automation.AutomationEvent): undefined}
+     */
+    this.onSelectionChanged_ = this.reloadMenuForSelectionChange_.bind(this);
+
+    /**
      * Keeps track of when the clipboard is empty.
      * @private {boolean}
      */
@@ -142,10 +150,11 @@ class MenuManager {
     this.closeCurrentMenu_();
     this.inMenu_ = false;
 
-    if (window.switchAccess.improvedTextInputEnabled()) {
+    if (window.switchAccess.improvedTextInputEnabled() &&
+        this.menuOriginNode_) {
       this.menuOriginNode_.removeEventListener(
           chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
+          this.onSelectionChanged_, false /** Don't use capture. */);
     }
     this.menuOriginNode_ = null;
 
@@ -220,14 +229,22 @@ class MenuManager {
     if (!shouldReloadMenu && window.switchAccess.improvedTextInputEnabled()) {
       this.menuOriginNode_.addEventListener(
           chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
+          this.onSelectionChanged_, false /** Don't use capture. */);
     }
 
     if (shouldReloadMenu && actionNode) {
-      // Highlight the same action that was highlighted before the menu was
-      // reloaded.
-      this.node_ = actionNode;
-      this.updateFocusRing_();
+      let buttonId = actionNode.htmlAttributes.id;
+      if (actions.includes(buttonId)) {
+        // Highlight the same action that was highlighted before the menu was
+        // reloaded.
+        this.node_ = actionNode;
+        this.updateFocusRing_();
+      } else {
+        while (!actions.includes(buttonId) && buttonId != 'back') {
+          this.moveForward();
+          buttonId = this.node_.htmlAttributes.id;
+        }
+      }
     }
     return true;
   }
@@ -488,7 +505,6 @@ class MenuManager {
    * @returns {boolean} whether or not there's a selection
    */
   nodeHasSelection_() {
-    let previousSelectionState = this.selectionExists_;
     if (this.menuOriginNode_) {
       if (this.menuOriginNode_.textSelStart !==
           this.menuOriginNode_.textSelEnd) {
@@ -505,12 +521,18 @@ class MenuManager {
    * reload the menu if so.
    * @private
    */
-  onSelectionChanged_() {
+  reloadMenuForSelectionChange_() {
     let newSelectionState = this.nodeHasSelection_();
     if (this.selectionExists_ != newSelectionState) {
       this.selectionExists_ = newSelectionState;
-      if (this.menuOriginNode_) {
-        this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
+      if (this.menuOriginNode_ &&
+          !this.navigationManager_.currentlySelecting()) {
+        let currentMenuId = this.menuPanel_.currentMenuId();
+        if (currentMenuId) {
+          this.openMenu_(this.menuOriginNode_, currentMenuId);
+        } else {
+          this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
+        }
       }
     }
   }
@@ -555,7 +577,7 @@ class MenuManager {
           node.state[StateType.FOCUSED]) {
         actions.push(SAConstants.MenuAction.MOVE_CURSOR);
         actions.push(SAConstants.MenuAction.SELECT_START);
-        if (this.navigationManager_.selectionStarted()) {
+        if (this.navigationManager_.currentlySelecting()) {
           actions.push(SAConstants.MenuAction.SELECT_END);
         }
         if (this.selectionExists_) {
@@ -682,7 +704,9 @@ class MenuManager {
         }
         break;
       case SAConstants.MenuAction.SELECT_END:
-        this.navigationManager_.saveSelectEnd();
+        this.navigationManager_.endSelection();
+        if (this.menuOriginNode_)
+          this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
         break;
       default:
         if (window.switchAccess.improvedTextInputEnabled()) {

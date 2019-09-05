@@ -537,6 +537,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return redundant_state_callstack_;
   }
 
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerHost>&
+  service_worker_host_receiver_for_testing() {
+    return receiver_;
+  }
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;

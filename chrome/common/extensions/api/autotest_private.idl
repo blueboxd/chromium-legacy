@@ -55,7 +55,8 @@ namespace autotestPrivate {
     Maximized,
     Fullscreen,
     LeftSnapped,
-    RightSnapped
+    RightSnapped,
+    PIP
   };
 
   // A subset of WM event types in ash::WMEventType. We may add more in the

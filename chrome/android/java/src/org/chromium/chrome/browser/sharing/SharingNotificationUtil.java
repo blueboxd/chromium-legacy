@@ -39,6 +39,9 @@ public final class SharingNotificationUtil {
     private static final String EXTRA_NOTIFICATION_TOKEN = "notification_token";
     private static final int REQUEST_CODE_DISMISS = 100;
 
+    // TODO(himanshujaju) - We have only two small icons, one for error and one for non error. We
+    // could avoid passing them around.
+
     private static HashSet<Integer> sDismissedSendingNotifications = new HashSet<>();
     private static int sSendingNotificationCount;
 
@@ -70,12 +73,12 @@ public final class SharingNotificationUtil {
      * @param contentIntent The notification content intent.
      * @param contentTitle  The notification title text.
      * @param contentText   The notification content text.
-     * @param smallIconId   The small notification icon resource id.
      * @param largeIconId   The large notification icon resource id, 0 if not used.
+     * @param color         The color to be used for the notification.
      */
     public static void showNotification(@SystemNotificationType int type, String group, int id,
             PendingIntentProvider contentIntent, String contentTitle, String contentText,
-            @DrawableRes int smallIconId, @DrawableRes int largeIconId) {
+            @DrawableRes int smallIconId, @DrawableRes int largeIconId, int color) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
         ChromeNotificationBuilder builder =
@@ -87,8 +90,7 @@ public final class SharingNotificationUtil {
                         .setContentIntent(contentIntent)
                         .setContentTitle(contentTitle)
                         .setContentText(contentText)
-                        .setColor(ApiCompatibilityUtils.getColor(
-                                context.getResources(), R.color.default_icon_color_blue))
+                        .setColor(ApiCompatibilityUtils.getColor(context.getResources(), color))
                         .setGroup(group)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])

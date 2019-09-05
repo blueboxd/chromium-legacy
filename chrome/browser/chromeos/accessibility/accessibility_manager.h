@@ -222,7 +222,7 @@ class AccessibilityManager
   bool IsBrailleDisplayConnected() const;
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // Initiates play of shutdown sound and returns it's duration.
   base::TimeDelta PlayShutdownSound();

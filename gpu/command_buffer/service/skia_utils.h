@@ -22,26 +22,32 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
-namespace gl {
-struct GLVersionInfo;
-}  // namespace gl
-
 namespace viz {
 class VulkanContextProvider;
 }  // namespace viz
 
 namespace gpu {
 
+namespace gles2 {
+class FeatureInfo;
+}  // namespace gles2
+
 class SharedContextState;
+
+// Returns internal gl format of texture for Skia
+GPU_GLES2_EXPORT GLuint
+GetGrGLBackendTextureFormat(const gles2::FeatureInfo* feature_info,
+                            viz::ResourceFormat resource_format);
 
 // Creates a GrBackendTexture from a service ID. Skia does not take ownership.
 // Returns true on success.
-GPU_GLES2_EXPORT bool GetGrBackendTexture(const gl::GLVersionInfo* version_info,
-                                          GLenum target,
-                                          const gfx::Size& size,
-                                          GLuint service_id,
-                                          viz::ResourceFormat resource_format,
-                                          GrBackendTexture* gr_texture);
+GPU_GLES2_EXPORT bool GetGrBackendTexture(
+    const gles2::FeatureInfo* feature_info,
+    GLenum target,
+    const gfx::Size& size,
+    GLuint service_id,
+    viz::ResourceFormat resource_format,
+    GrBackendTexture* gr_texture);
 
 // Adds a task to be executed when the flush in |flush_info| is complete.
 GPU_GLES2_EXPORT void AddCleanupTaskForSkiaFlush(base::OnceClosure task,

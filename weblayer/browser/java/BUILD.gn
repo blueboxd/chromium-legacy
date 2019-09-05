@@ -9,6 +9,8 @@ android_library("java") {
   java_files = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/NavigationControllerImpl.java",
+    "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
   ]
@@ -27,6 +29,8 @@ generate_jni("jni") {
   sources = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/NavigationControllerImpl.java",
+    "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
   ]
 }
@@ -42,6 +46,10 @@ android_aidl("aidl") {
   sources = [
     "org/chromium/weblayer_private/aidl/IBrowserController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserControllerClient.aidl",
+    "org/chromium/weblayer_private/aidl/IClientNavigation.aidl",
+    "org/chromium/weblayer_private/aidl/INavigation.aidl",
+    "org/chromium/weblayer_private/aidl/INavigationController.aidl",
+    "org/chromium/weblayer_private/aidl/INavigationControllerClient.aidl",
     "org/chromium/weblayer_private/aidl/IObjectWrapper.aidl",
     "org/chromium/weblayer_private/aidl/IProfile.aidl",
     "org/chromium/weblayer_private/aidl/IWebLayer.aidl",

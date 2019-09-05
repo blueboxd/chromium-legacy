@@ -28,7 +28,7 @@ class FlagsUI : public content::WebUIController {
   explicit FlagsUI(content::WebUI* web_ui);
   ~FlagsUI() override;
 
-  static void AddFlagsStrings(content::WebUIDataSource* source);
+  static void AddStrings(content::WebUIDataSource* source);
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
@@ -38,17 +38,17 @@ class FlagsUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);
 };
 
-class FlagsEnterpriseUI : public content::WebUIController {
+class FlagsDeprecatedUI : public content::WebUIController {
  public:
-  explicit FlagsEnterpriseUI(content::WebUI* web_ui);
-  ~FlagsEnterpriseUI() override;
+  explicit FlagsDeprecatedUI(content::WebUI* web_ui);
+  ~FlagsDeprecatedUI() override;
 
-  static void AddEnterpriseStrings(content::WebUIDataSource* source);
-  static bool IsEnterpriseUrl(const GURL& url);
+  static void AddStrings(content::WebUIDataSource* source);
+  static bool IsDeprecatedUrl(const GURL& url);
 
  private:
-  base::WeakPtrFactory<FlagsEnterpriseUI> weak_factory_{this};
+  base::WeakPtrFactory<FlagsDeprecatedUI> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(FlagsEnterpriseUI);
+  DISALLOW_COPY_AND_ASSIGN(FlagsDeprecatedUI);
 };
 #endif  // CHROME_BROWSER_UI_WEBUI_FLAGS_UI_H_

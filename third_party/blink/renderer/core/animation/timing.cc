@@ -167,9 +167,10 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   const base::Optional<double> overall_progress =
       CalculateOverallProgress(current_phase, active_time, iteration_duration,
                                iteration_count, iteration_start);
-  const double simple_iteration_progress = CalculateSimpleIterationProgress(
-      current_phase, overall_progress, iteration_start, active_time,
-      active_duration, iteration_count);
+  const base::Optional<double> simple_iteration_progress =
+      CalculateSimpleIterationProgress(current_phase, overall_progress,
+                                       iteration_start, active_time,
+                                       active_duration, iteration_count);
   const double current_iteration =
       CalculateCurrentIteration(current_phase, active_time, iteration_count,
                                 overall_progress, simple_iteration_progress);

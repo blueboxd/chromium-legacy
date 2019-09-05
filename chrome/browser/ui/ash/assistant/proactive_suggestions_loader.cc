@@ -7,6 +7,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
@@ -38,17 +39,27 @@ constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
 
 // Returns the url to retrieve proactive content suggestions for a given |url|.
 GURL CreateProactiveSuggestionsUrl(const GURL& url) {
-  static constexpr char kProactiveSuggestionsEndpoint[] =
+  constexpr char kProactiveSuggestionsEndpoint[] =
       "https://assistant.google.com/proactivesuggestions/embeddedview";
   GURL result = GURL(kProactiveSuggestionsEndpoint);
 
+  // The proactive suggestions service needs to be told which experiments, if
+  // any, to trigger on the backend.
+  const std::string experiment_ids = chromeos::assistant::features::
+      GetProactiveSuggestionsServerExperimentIds();
+  if (!experiment_ids.empty()) {
+    constexpr char kExperimentIdsParamKey[] = "experimentIds";
+    result = net::AppendOrReplaceQueryParameter(result, kExperimentIdsParamKey,
+                                                experiment_ids);
+  }
+
   // The proactive suggestions service needs to be aware of the device locale.
-  static constexpr char kLocaleParamKey[] = "hl";
+  constexpr char kLocaleParamKey[] = "hl";
   result = net::AppendOrReplaceQueryParameter(
       result, kLocaleParamKey, base::i18n::GetConfiguredLocale());
 
   // The proactive suggestions service needs to be informed of the given |url|.
-  static constexpr char kUrlParamKey[] = "url";
+  constexpr char kUrlParamKey[] = "url";
   return net::AppendOrReplaceQueryParameter(result, kUrlParamKey, url.spec());
 }
 
@@ -56,9 +67,9 @@ GURL CreateProactiveSuggestionsUrl(const GURL& url) {
 void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
                                        std::string* description,
                                        bool* has_content) {
-  static constexpr char kDescriptionHeaderName[] =
+  constexpr char kDescriptionHeaderName[] =
       "x-assistant-proactive-suggestions-description";
-  static constexpr char kHasContentHeaderName[] =
+  constexpr char kHasContentHeaderName[] =
       "x-assistant-proactive-suggestions-has-ui-content";
 
   DCHECK(description->empty());

@@ -275,9 +275,9 @@ external/wpt/orientation-event/devicemotionevent-init.html
 external/wpt/pointerevents/pointerevent_touch-action-illegal.html
 external/wpt/preload/avoid-delaying-onload-link-preload.html
 external/wpt/referrer-policy/generic/subresource-test/attr-referrer-invalid-value.html
-external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/cross-origin/http-http/fetch-request/no-redirect/insecure-protocol.http.html
-external/wpt/referrer-policy/origin/meta-referrer/cross-origin/http-http/xhr-request/no-redirect/generic.http.html
-external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/cross-origin/http-http/xhr-request/no-redirect/cross-origin.http.html
+external/wpt/referrer-policy/gen/top.http-rp/no-referrer-when-downgrade/fetch/cross-http.no-redirect.http.html
+external/wpt/referrer-policy/gen/top.meta/origin/xhr/cross-http.no-redirect.http.html
+external/wpt/referrer-policy/gen/top.meta/origin-when-cross-origin/xhr/cross-http.no-redirect.http.html
 external/wpt/selection/Document-open.html
 external/wpt/service-workers/service-worker/rejections.https.html
 external/wpt/shadow-dom/Element-interface-shadowRoot-attribute.html

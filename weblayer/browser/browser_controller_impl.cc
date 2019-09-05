@@ -80,14 +80,6 @@ BrowserControllerImpl::GetWebContents(
     const base::android::JavaParamRef<jobject>& obj) {
   return web_contents_->GetJavaWebContents();
 }
-
-void BrowserControllerImpl::Navigate(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& path) {
-  GetNavigationController()->Navigate(
-      GURL(base::android::ConvertJavaStringToUTF8(env, path)));
-}
 #endif
 
 void BrowserControllerImpl::LoadingStateChanged(content::WebContents* source,

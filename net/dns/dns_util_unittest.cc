@@ -199,4 +199,21 @@ TEST_F(DNSUtilTest, GetDohUpgradeServersFromNameservers) {
             doh_servers[0].server_template);
 }
 
+TEST_F(DNSUtilTest, GetDohProviderIdForHistogramFromDohConfig) {
+  EXPECT_EQ("Cloudflare", GetDohProviderIdForHistogramFromDohConfig(
+                              {"https://chrome.cloudflare-dns.com/dns-query",
+                               true /* use_post */}));
+  EXPECT_EQ("Other", GetDohProviderIdForHistogramFromDohConfig(
+                         {"https://unexpected.dohserver.com/dns-query",
+                          true /* use_post */}));
+}
+
+TEST_F(DNSUtilTest, GetDohProviderIdForHistogramFromNameserver) {
+  EXPECT_EQ("CleanBrowsingSecure",
+            GetDohProviderIdForHistogramFromNameserver(IPEndPoint(
+                IPAddress(185, 228, 169, 9), dns_protocol::kDefaultPort)));
+  EXPECT_EQ("Other", GetDohProviderIdForHistogramFromNameserver(IPEndPoint(
+                         IPAddress(1, 2, 3, 4), dns_protocol::kDefaultPort)));
+}
+
 }  // namespace net

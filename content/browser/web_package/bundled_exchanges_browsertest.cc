@@ -7,6 +7,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -36,8 +38,18 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
   ~BundledExchangesTrustableFileBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    original_client_ = SetBrowserClientForTesting(&browser_client_);
     ContentBrowserTest::SetUpOnMainThread();
+#if defined(OS_ANDROID)
+    // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+    // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+    // this test available on KitKat.
+    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                                 &bugfix_version);
+    if (major_version < 5)
+      return;
+#endif
+    original_client_ = SetBrowserClientForTesting(&browser_client_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -53,6 +65,8 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
 
   const base::FilePath& test_data_path() const { return test_data_path_; }
 
+  ContentBrowserClient* original_client_ = nullptr;
+
  private:
   base::FilePath GetTestDataPath() {
     base::FilePath test_data_dir;
@@ -65,7 +79,6 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
   }
 
   TestBrowserClient browser_client_;
-  ContentBrowserClient* original_client_;
   const base::FilePath test_data_path_;
 
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesTrustableFileBrowserTest);
@@ -73,6 +86,11 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest,
                        TrustableBundledExchangesFile) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+
   base::string16 expected_title = base::ASCIIToUTF16("Done");
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   EXPECT_TRUE(NavigateToURL(shell()->web_contents(),

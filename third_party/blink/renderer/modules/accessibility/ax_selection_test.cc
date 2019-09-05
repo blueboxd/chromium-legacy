@@ -390,18 +390,18 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreakInEditableText) {
 //
 // Get selection tests.
 // Retrieving a selection with endpoints which have no corresponding objects in
-// the accessibility tree, e.g. which are aria-hidden, should shrink or extend
+// the accessibility tree, e.g. which are display:none, should shrink or extend
 // the |AXSelection| to valid endpoints.
 //
 
-TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
+TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
   SetBodyInnerHTML(R"HTML(
       <div id="main" role="main">
-        <p id="beforeHidden">Before aria-hidden.</p>
-        <p id="hidden1" aria-hidden="true" style="display:inline">Aria-hidden 1.</p>
-        <p id="betweenHidden">In between two aria-hidden elements.</p>
-        <p id="hidden2" aria-hidden="true" style="display:inline">Aria-hidden 2.</p>
-        <p id="afterHidden">After aria-hidden.</p>
+        <p id="beforeHidden">Before display:none.</p>
+        <p id="hidden1" style="display:none">Display:none 1.</p>
+        <p id="betweenHidden">In between two display:none elements.</p>
+        <p id="hidden2" style="display:none">Display:none 2.</p>
+        <p id="afterHidden">After display:none.</p>
       </div>
       )HTML");
 
@@ -456,8 +456,8 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
   EXPECT_EQ(1, ax_selection_shrink.Extent().ChildIndex());
 
   // The extended selection should start after the children of the paragraph
-  // before the first aria-hidden element and end right before the paragraph
-  // after the last aria-hidden element.
+  // before the first display:none element and end right before the paragraph
+  // after the last display:none element.
   ASSERT_FALSE(ax_selection_extend.Base().IsTextPosition());
   EXPECT_EQ(ax_before, ax_selection_extend.Base().ContainerObject());
   EXPECT_EQ(1, ax_selection_extend.Base().ChildIndex());
@@ -469,17 +469,17 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
   // Even though the two AX selections have different anchors and foci, the text
   // selected in the accessibility tree should not differ, because any
   // differences in the equivalent DOM selections concern elements that are
-  // aria-hidden. However, the AX selections should still differ if converted to
-  // DOM selections.
+  // display:none. However, the AX selections should still differ if converted
+  // to DOM selections.
   const std::string selection_text(
       "++<GenericContainer>\n"
       "++++<Main>\n"
       "++++++<Paragraph>\n"
-      "++++++++<StaticText: Before aria-hidden.>\n"
+      "++++++++<StaticText: Before display:none.>\n"
       "^++++++<Paragraph>\n"
-      "++++++++<StaticText: In between two aria-hidden elements.>\n"
+      "++++++++<StaticText: In between two display:none elements.>\n"
       "|++++++<Paragraph>\n"
-      "++++++++<StaticText: After aria-hidden.>\n");
+      "++++++++<StaticText: After display:none.>\n");
   EXPECT_EQ(selection_text, GetSelectionText(ax_selection_shrink));
   EXPECT_EQ(selection_text, GetSelectionText(ax_selection_extend));
 }

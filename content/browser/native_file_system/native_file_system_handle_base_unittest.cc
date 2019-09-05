@@ -162,10 +162,13 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission_AlreadyGranted) {
   base::RunLoop loop;
   handle.DoRequestPermission(
       /*writable=*/true,
-      base::BindLambdaForTesting([&](PermissionStatus result) {
-        EXPECT_EQ(PermissionStatus::GRANTED, result);
-        loop.Quit();
-      }));
+      base::BindLambdaForTesting(
+          [&](blink::mojom::NativeFileSystemErrorPtr error,
+              PermissionStatus result) {
+            EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, error->status);
+            EXPECT_EQ(PermissionStatus::GRANTED, result);
+            loop.Quit();
+          }));
   loop.Run();
 }
 
@@ -190,7 +193,9 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
         .WillOnce(testing::Return(PermissionStatus::ASK));
     EXPECT_CALL(*write_grant_,
                 RequestPermission_(kProcessId, kFrameId, testing::_))
-        .WillOnce(RunOnceCallback<2>());
+        .WillOnce(
+            RunOnceCallback<2>(NativeFileSystemPermissionGrant::
+                                   PermissionRequestOutcome::kUserGranted));
     EXPECT_CALL(*write_grant_, GetStatus())
         .WillOnce(testing::Return(PermissionStatus::GRANTED));
   }
@@ -198,10 +203,13 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
   base::RunLoop loop;
   handle.DoRequestPermission(
       /*writable=*/true,
-      base::BindLambdaForTesting([&](PermissionStatus result) {
-        EXPECT_EQ(PermissionStatus::GRANTED, result);
-        loop.Quit();
-      }));
+      base::BindLambdaForTesting(
+          [&](blink::mojom::NativeFileSystemErrorPtr error,
+              PermissionStatus result) {
+            EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, error->status);
+            EXPECT_EQ(PermissionStatus::GRANTED, result);
+            loop.Quit();
+          }));
   loop.Run();
 }
 

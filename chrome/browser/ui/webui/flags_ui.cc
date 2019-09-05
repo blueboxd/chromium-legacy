@@ -77,8 +77,8 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->AddResourcePath(flags_ui::kFlagsStyleLoaderJS,
                           IDR_FLAGS_UI_FLAGS_STYLE_LOADER_JS);
-  source->AddResourcePath(flags_ui::kEnterpriseFlagsCSS,
-                          IDR_FLAGS_UI_FLAGS_ENTERPRISE_CSS);
+  source->AddResourcePath(flags_ui::kFlagsDeprecatedCSS,
+                          IDR_FLAGS_UI_FLAGS_DEPRECATED_CSS);
   source->AddResourcePath(flags_ui::kFlagsCSS, IDR_FLAGS_UI_FLAGS_CSS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   return source;
@@ -121,7 +121,7 @@ void FinishInitialization(base::WeakPtr<T> flags_ui,
 }  // namespace
 
 // static
-void FlagsUI::AddFlagsStrings(content::WebUIDataSource* source) {
+void FlagsUI::AddStrings(content::WebUIDataSource* source) {
   // Strings added here are all marked a non-translatable, so they are not
   // actually localized.
   source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
@@ -149,34 +149,34 @@ void FlagsUI::AddFlagsStrings(content::WebUIDataSource* source) {
 }
 
 // static
-void FlagsEnterpriseUI::AddEnterpriseStrings(content::WebUIDataSource* source) {
+void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
-                             IDS_ENTERPRISE_SETTINGS_RELAUNCH_NOTICE);
+                             IDS_DEPRECATED_FEATURES_RELAUNCH_NOTICE);
   source->AddLocalizedString("available",
-                             IDS_ENTERPRISE_SETTINGS_AVAILABLE_FEATURE);
-  source->AddLocalizedString("clear-search", IDS_ENTERPRISE_UI_CLEAR_SEARCH);
+                             IDS_DEPRECATED_FEATURES_AVAILABLE_FEATURE);
+  source->AddLocalizedString("clear-search", IDS_DEPRECATED_UI_CLEAR_SEARCH);
   source->AddLocalizedString("disabled",
-                             IDS_ENTERPRISE_SETTINGS_DISABLED_FEATURE);
+                             IDS_DEPRECATED_FEATURES_DISABLED_FEATURE);
   source->AddLocalizedString("enabled",
-                             IDS_ENTERPRISE_SETTINGS_ENABLED_FEATURE);
+                             IDS_DEPRECATED_FEATURES_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
-                             IDS_ENTERPRISE_UI_EXPERIMENT_ENABLED);
-  source->AddLocalizedString("no-results", IDS_ENTERPRISE_SETTINGS_NO_RESULTS);
+                             IDS_DEPRECATED_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("no-results", IDS_DEPRECATED_FEATURES_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
-                             IDS_ENTERPRISE_SETTINGS_NOT_AVAILABLE_ON_PLATFORM);
+                             IDS_DEPRECATED_FEATURES_NOT_AVAILABLE_ON_PLATFORM);
   source->AddLocalizedString("page-warning",
-                             IDS_ENTERPRISE_SETTINGS_PAGE_WARNING);
+                             IDS_DEPRECATED_FEATURES_PAGE_WARNING);
   source->AddLocalizedString("page-warning-explanation",
-                             IDS_ENTERPRISE_SETTINGS_PAGE_WARNING_EXPLANATION);
-  source->AddLocalizedString("relaunch", IDS_ENTERPRISE_SETTINGS_RELAUNCH);
-  source->AddLocalizedString("reset", IDS_ENTERPRISE_SETTINGS_PAGE_RESET);
+                             IDS_DEPRECATED_FEATURES_PAGE_WARNING_EXPLANATION);
+  source->AddLocalizedString("relaunch", IDS_DEPRECATED_FEATURES_RELAUNCH);
+  source->AddLocalizedString("reset", IDS_DEPRECATED_FEATURES_PAGE_RESET);
   source->AddLocalizedString("reset-acknowledged",
-                             IDS_ENTERPRISE_UI_RESET_ACKNOWLEDGED);
+                             IDS_DEPRECATED_UI_RESET_ACKNOWLEDGED);
   source->AddLocalizedString("search-placeholder",
-                             IDS_ENTERPRISE_SETTINGS_SEARCH_PLACEHOLDER);
-  source->AddLocalizedString("title", IDS_ENTERPRISE_SETTINGS_TITLE);
+                             IDS_DEPRECATED_FEATURES_SEARCH_PLACEHOLDER);
+  source->AddLocalizedString("title", IDS_DEPRECATED_FEATURES_TITLE);
   source->AddLocalizedString("unavailable",
-                             IDS_ENTERPRISE_SETTINGS_UNAVAILABLE_FEATURE);
+                             IDS_DEPRECATED_FEATURES_UNAVAILABLE_FEATURE);
 }
 
 template <class T>
@@ -216,11 +216,11 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   auto* handler = InitializeHandler(web_ui, profile, weak_factory_);
   DCHECK(handler);
-  handler->set_enterprise_features_only(false);
+  handler->set_deprecated_features_only(false);
 
   // Set up the about:flags source.
   auto* source = CreateFlagsUIHTMLSource();
-  AddFlagsStrings(source);
+  AddStrings(source);
   content::WebUIDataSource::Add(profile, source);
 }
 
@@ -234,22 +234,22 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
       IDR_FLAGS_FAVICON, scale_factor);
 }
 
-FlagsEnterpriseUI::FlagsEnterpriseUI(content::WebUI* web_ui)
+FlagsDeprecatedUI::FlagsDeprecatedUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   auto* handler = InitializeHandler(web_ui, profile, weak_factory_);
   DCHECK(handler);
-  handler->set_enterprise_features_only(true);
+  handler->set_deprecated_features_only(true);
 
-  // Set up the about:enterprise-flags source.
+  // Set up the about:flags/deprecated source.
   auto* source = CreateFlagsUIHTMLSource();
-  AddEnterpriseStrings(source);
+  AddStrings(source);
   content::WebUIDataSource::Add(profile, source);
 }
 
-FlagsEnterpriseUI::~FlagsEnterpriseUI() {}
+FlagsDeprecatedUI::~FlagsDeprecatedUI() {}
 
 // static
-bool FlagsEnterpriseUI::IsEnterpriseUrl(const GURL& url) {
-  return url.path() == "/enterprise" || url.path() == "/enterprise/";
+bool FlagsDeprecatedUI::IsDeprecatedUrl(const GURL& url) {
+  return url.path() == "/deprecated" || url.path() == "/deprecated/";
 }

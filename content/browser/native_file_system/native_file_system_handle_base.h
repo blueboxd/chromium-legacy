@@ -62,8 +62,10 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
       base::OnceCallback<void(PermissionStatus)> callback);
   // Implementation for the RequestPermission method in the
   // blink::mojom::NativeFileSystemFileHandle and DirectoryHandle interfaces.
-  void DoRequestPermission(bool writable,
-                           base::OnceCallback<void(PermissionStatus)> callback);
+  void DoRequestPermission(
+      bool writable,
+      base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                              PermissionStatus)> callback);
 
   // Invokes |callback|, possibly after first requesting write permission. If
   // permission isn't granted, |permission_denied| is invoked instead. The
@@ -93,6 +95,12 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
   void OnPermissionStatusChanged() override;
 
  private:
+  void DidRequestPermission(
+      bool writable,
+      base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                              PermissionStatus)> callback,
+      NativeFileSystemPermissionGrant::PermissionRequestOutcome outcome);
+
   // The NativeFileSystemManagerImpl that owns this instance.
   NativeFileSystemManagerImpl* const manager_;
   const BindingContext context_;
@@ -120,6 +128,7 @@ void NativeFileSystemHandleBase::RunWithWritePermission(
           [](base::OnceCallback<void(CallbackArgType)> callback,
              base::OnceCallback<void(CallbackArgType)> no_permission_callback,
              CallbackArgType callback_arg,
+             blink::mojom::NativeFileSystemErrorPtr result,
              blink::mojom::PermissionStatus status) {
             if (status == blink::mojom::PermissionStatus::GRANTED) {
               std::move(callback).Run(std::move(callback_arg));

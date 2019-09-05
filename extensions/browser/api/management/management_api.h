@@ -291,7 +291,7 @@ class ManagementEventRouter : public ExtensionRegistryObserver {
   content::BrowserContext* browser_context_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ManagementEventRouter);
 };

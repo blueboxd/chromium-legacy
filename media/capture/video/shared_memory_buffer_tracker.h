@@ -33,9 +33,7 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
   base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override;
   mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override;
   std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;
-#if defined(OS_CHROMEOS)
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
-#endif
   uint32_t GetMemorySizeInBytes() override;
 
  private:

@@ -250,6 +250,16 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
     }
 
     /**
+     * Sets content description for the specified button.
+     * @param buttonType The {@link ModalDialogProperties.ButtonType} of the button.
+     * @param contentDescription The content description to be set for the specified button.
+     */
+    void setButtonContentDescription(
+            @ModalDialogProperties.ButtonType int buttonType, String contentDescription) {
+        getButton(buttonType).setContentDescription(contentDescription);
+    }
+
+    /**
      * @param buttonType The {@link ModalDialogProperties.ButtonType} of the button.
      * @param enabled Whether the specified button should be enabled.
      */

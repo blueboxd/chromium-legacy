@@ -119,7 +119,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 #elif defined(OS_WIN)
     return std::make_unique<ui::WinWindow>(this, props.bounds);
 #elif defined(USE_X11)
-    auto x11_window = std::make_unique<ui::X11Window>(this, nullptr);
+    auto x11_window = std::make_unique<ui::X11Window>(this);
     x11_window->Initialize(std::move(props));
     return x11_window;
 #else

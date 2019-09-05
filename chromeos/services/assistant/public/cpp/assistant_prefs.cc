@@ -27,11 +27,18 @@ const char kAssistantContextEnabled[] =
 // This preference should only be changed in browser.
 const char kAssistantDisabledByPolicy[] =
     "settings.assistant.disabled_by_policy";
+// A preference that indicates the user has enabled the Assistant services.
+const char kAssistantEnabled[] = "settings.voice_interaction.enabled";
 // A preference that indicates the user has chosen to always keep hotword
 // listening on even without DSP support.
 // This preference should only be changed in browser.
 const char kAssistantHotwordAlwaysOn[] =
     "settings.voice_interaction.hotword.always_on";
+// A preference that indicates the user has allowed the Assistant services
+// to use hotword listening. This preference can be overridden by the
+// VoiceInteractionHotwordEnabled administrator policy.
+const char kAssistantHotwordEnabled[] =
+    "settings.voice_interaction.hotword.enabled";
 // A preference that indicates whether microphone should be open when the
 // Assistant launches.
 // This preference should only be changed in browser.
@@ -50,7 +57,10 @@ void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry) {
                                 PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(kAssistantDisabledByPolicy, false,
                                 PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantEnabled, false, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(kAssistantHotwordAlwaysOn, false,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantHotwordEnabled, false,
                                 PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(kAssistantLaunchWithMicOpen, false,
                                 PrefRegistry::PUBLIC);
@@ -68,7 +78,9 @@ void RegisterProfilePrefsForeign(PrefRegistrySimple* registry, bool for_test) {
   registry->RegisterForeignPref(kAssistantConsentStatus);
   registry->RegisterForeignPref(kAssistantContextEnabled);
   registry->RegisterForeignPref(kAssistantDisabledByPolicy);
+  registry->RegisterForeignPref(kAssistantEnabled);
   registry->RegisterForeignPref(kAssistantHotwordAlwaysOn);
+  registry->RegisterForeignPref(kAssistantHotwordEnabled);
   registry->RegisterForeignPref(kAssistantLaunchWithMicOpen);
   registry->RegisterForeignPref(kAssistantNotificationEnabled);
 }

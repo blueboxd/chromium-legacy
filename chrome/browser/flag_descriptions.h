@@ -1421,9 +1421,6 @@ extern const char kDirectActionsDescription[];
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
 
-extern const char kDownloadProgressInfoBarName[];
-extern const char kDownloadProgressInfoBarDescription[];
-
 extern const char kDownloadHomeV2Name[];
 extern const char kDownloadHomeV2Description[];
 
@@ -1907,9 +1904,6 @@ extern const char kCrostiniGpuSupportDescription[];
 extern const char kCrostiniUsbAllowUnsupportedName[];
 extern const char kCrostiniUsbAllowUnsupportedDescription[];
 
-extern const char kCrostiniUsbSupportName[];
-extern const char kCrostiniUsbSupportDescription[];
-
 extern const char kCrostiniWebUIInstallerName[];
 extern const char kCrostiniWebUIInstallerDescription[];
 
@@ -2141,6 +2135,9 @@ extern const char kUiSlowAnimationsDescription[];
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];
 
+extern const char kUseFakeDeviceForMediaStreamName[];
+extern const char kUseFakeDeviceForMediaStreamDescription[];
+
 extern const char kUseMonitorColorSpaceName[];
 extern const char kUseMonitorColorSpaceDescription[];
 
@@ -2214,6 +2211,9 @@ extern const char kClickToCallUIDescription[];
 
 extern const char kProfileMenuRevampName[];
 extern const char kProfileMenuRevampDescription[];
+
+extern const char kSyncClipboardServiceName[];
+extern const char kSyncClipboardServiceDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

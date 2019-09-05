@@ -345,7 +345,7 @@ bool SessionControllerClientImpl::IsMultiProfileAvailable() {
   return (users_logged_in + users_available_to_add) > 1;
 }
 
-void SessionControllerClientImpl::ActiveUserChanged(const User* active_user) {
+void SessionControllerClientImpl::ActiveUserChanged(User* active_user) {
   SendSessionInfoIfChanged();
 
   // UserAddedToSession is not called for the primary user session so its meta

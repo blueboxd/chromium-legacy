@@ -36,7 +36,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/cast_feature_list_creator.h"
-#include "chromecast/browser/cast_memory_pressure_monitor.h"
+#include "chromecast/browser/cast_system_memory_pressure_evaluator.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
@@ -485,7 +485,10 @@ int CastBrowserMainParts::PreCreateThreads() {
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-  memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());
+  memory_pressure_monitor_.reset(new util::MultiSourceMemoryPressureMonitor());
+  memory_pressure_monitor_->SetSystemEvaluator(
+      std::make_unique<CastSystemMemoryPressureEvaluator>(
+          memory_pressure_monitor_->CreateVoter()));
 
   // base::Unretained() is safe because the browser client will outlive any
   // component in the browser; this factory method will not be called after

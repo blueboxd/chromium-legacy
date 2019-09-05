@@ -22,6 +22,13 @@ namespace {
 
 constexpr auto kUserDomain = kMACaptionAppearanceDomainUser;
 
+// Adds !important to captions styles which are marked as important. They should
+// override any styles added by the video author or by a user stylesheet.
+std::string MaybeAddCSSImportant(std::string css_string, bool important) {
+  std::string important_string = important ? " !important" : "";
+  return css_string + important_string;
+}
+
 // Each of these functions returns a MediaAccessibility (MA) default value as a
 // CSS specifier string whose format is appropriate to the property. Some notes
 // about these:
@@ -39,36 +46,50 @@ constexpr auto kUserDomain = kMACaptionAppearanceDomainUser;
 //      system domain's values never change.
 
 std::string GetMAForegroundColorAndOpacityAsCSSColor() {
+  MACaptionAppearanceBehavior behavior;
   base::ScopedCFTypeRef<CGColorRef> cg_color(
-      MACaptionAppearanceCopyForegroundColor(kUserDomain, nullptr));
-  float opacity = MACaptionAppearanceGetForegroundOpacity(kUserDomain, nullptr);
+      MACaptionAppearanceCopyForegroundColor(kUserDomain, &behavior));
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
+  float opacity =
+      MACaptionAppearanceGetForegroundOpacity(kUserDomain, &behavior);
+  important |= (behavior == kMACaptionAppearanceBehaviorUseValue);
 
   SkColor rgba_color =
       SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
-  return color_utils::SkColorToRgbaString(rgba_color);
+  return MaybeAddCSSImportant(color_utils::SkColorToRgbaString(rgba_color),
+                              important);
 }
 
 std::string GetMABackgroundColorAndOpacityAsCSSColor() {
+  MACaptionAppearanceBehavior behavior;
   base::ScopedCFTypeRef<CGColorRef> cg_color(
-      MACaptionAppearanceCopyBackgroundColor(kUserDomain, nullptr));
-  float opacity = MACaptionAppearanceGetBackgroundOpacity(kUserDomain, nullptr);
+      MACaptionAppearanceCopyBackgroundColor(kUserDomain, &behavior));
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
+  float opacity =
+      MACaptionAppearanceGetBackgroundOpacity(kUserDomain, &behavior);
+  important |= (behavior == kMACaptionAppearanceBehaviorUseValue);
 
   SkColor rgba_color =
       SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
-  return color_utils::SkColorToRgbaString(rgba_color);
+  return MaybeAddCSSImportant(color_utils::SkColorToRgbaString(rgba_color),
+                              important);
 }
 
 // The MA text scale is a float between 0.0 and 2.0; this function converts it
 // to a CSS string specifying a percentage to scale the text by.
 std::string GetMATextScaleAsCSSPercent() {
+  MACaptionAppearanceBehavior behavior;
   int percent =
-      100 * MACaptionAppearanceGetRelativeCharacterSize(kUserDomain, nullptr);
-  return base::StringPrintf("%d%%", percent);
+      100 * MACaptionAppearanceGetRelativeCharacterSize(kUserDomain, &behavior);
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
+  return MaybeAddCSSImportant(base::StringPrintf("%d%%", percent), important);
 }
 
 std::string GetMATextEdgeStyleAsCSSShadow() {
+  MACaptionAppearanceBehavior behavior;
   MACaptionAppearanceTextEdgeStyle style =
-      MACaptionAppearanceGetTextEdgeStyle(kUserDomain, nullptr);
+      MACaptionAppearanceGetTextEdgeStyle(kUserDomain, &behavior);
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
 
   // The MACaptionAppearanceTextEdgeStyle -> CSS shadow specs in this function
   // were found by experimentation and eyeballing - there's no known
@@ -80,21 +101,24 @@ std::string GetMATextEdgeStyleAsCSSShadow() {
       // treated as a synonym for None.
       return "";
     case kMACaptionAppearanceTextEdgeStyleRaised:
-      return "-2px -2px 4px rgba(0, 0, 0, 0.5)";
+      return MaybeAddCSSImportant("-2px -2px 4px rgba(0, 0, 0, 0.5)",
+                                  important);
     case kMACaptionAppearanceTextEdgeStyleDepressed:
-      return "2px 2px 4px rgba(0, 0, 0, 0.5)";
+      return MaybeAddCSSImportant("2px 2px 4px rgba(0, 0, 0, 0.5)", important);
     case kMACaptionAppearanceTextEdgeStyleUniform:
       // This system style looks like a 2px black stroke drawn around the edge
       // of the text. This isn't doable using CSS shadows, but drawing black
       // shadows around all the edges of the text produces a reasonable
       // imitation.
-      return "-1px 0px 0px black, 0px -1px 0px black, "
-             " 1px 0px 0px black, 0px  1px 0px black";
+      return MaybeAddCSSImportant("-1px 0px 0px black, 0px -1px 0px black, "
+                                  " 1px 0px 0px black, 0px  1px 0px black",
+                                  important);
     case kMACaptionAppearanceTextEdgeStyleDropShadow:
       // Compose a pair of shadows to create the "drop" effect - a
       // semi-transparent shadow around the text, then a darker shadow below and
       // to the right of it.
-      return "0px 0px 2px rgba(0, 0, 0, 0.5), 2px 2px 2px black";
+      return MaybeAddCSSImportant(
+          "0px 0px 2px rgba(0, 0, 0, 0.5), 2px 2px 2px black", important);
   }
 }
 
@@ -122,30 +146,35 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
 }
 
 std::string GetMAWindowColorAsCSSColor() {
+  MACaptionAppearanceBehavior behavior;
   base::ScopedCFTypeRef<CGColorRef> cg_color(
-      MACaptionAppearanceCopyWindowColor(kUserDomain, nullptr));
-  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, nullptr);
+      MACaptionAppearanceCopyWindowColor(kUserDomain, &behavior));
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
+  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, &behavior);
+  important |= (behavior == kMACaptionAppearanceBehaviorUseValue);
 
   SkColor rgba_color =
       SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
-  return color_utils::SkColorToRgbaString(rgba_color);
+  return MaybeAddCSSImportant(color_utils::SkColorToRgbaString(rgba_color),
+                              important);
 }
 
 // If the window is visible (its opacity is greater than 0), give it padding so
 // it surrounds the text track cue. If it is not visible, its padding should be
 // 0. Webkit uses 0.4em padding so we match that here.
 std::string GetMAWindowPaddingAsCSSNumberInEm() {
-  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, nullptr);
-  if (opacity > 0)
-    return "0.4em";
-
-  return "";
+  MACaptionAppearanceBehavior behavior;
+  float opacity = MACaptionAppearanceGetWindowOpacity(kUserDomain, &behavior);
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
+  return MaybeAddCSSImportant(opacity > 0 ? "0.4em" : "0em", important);
 }
 
 std::string GetMAWindowRadiusAsCSSNumberInPixels() {
+  MACaptionAppearanceBehavior behavior;
   float radius =
-      MACaptionAppearanceGetWindowRoundedCornerRadius(kUserDomain, nullptr);
-  return base::StringPrintf("%fpx", radius);
+      MACaptionAppearanceGetWindowRoundedCornerRadius(kUserDomain, &behavior);
+  bool important = behavior == kMACaptionAppearanceBehaviorUseValue;
+  return MaybeAddCSSImportant(base::StringPrintf("%fpx", radius), important);
 }
 
 }  // namespace

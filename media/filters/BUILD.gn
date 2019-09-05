@@ -319,6 +319,7 @@ source_set("unit_tests") {
     sources += [ "fuchsia/fuchsia_video_decoder_unittest.cc" ]
     deps += [
       "//components/viz/test:test_support",
+      "//gpu/command_buffer/client",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk:sysmem",
     ]

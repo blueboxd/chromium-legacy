@@ -20,7 +20,8 @@
 namespace vr {
 
 namespace {
-bool IsValidStandingTransform(const gfx::Transform& transform) {
+bool IsValidTransform(const gfx::Transform& transform,
+                      float max_translate_meters) {
   if (!transform.IsInvertible() || transform.HasPerspective())
     return false;
 
@@ -29,7 +30,6 @@ bool IsValidStandingTransform(const gfx::Transform& transform) {
     return false;
 
   float kEpsilon = 0.1f;
-  float kMaxTranslate = 1000000;  // Maximum 1000km translation.
   if (abs(decomp.perspective[3] - 1) > kEpsilon) {
     // If testing with unexpectedly high values, catch on debug builds rather
     // than silently change data.  On release builds its better to be safe and
@@ -44,7 +44,7 @@ bool IsValidStandingTransform(const gfx::Transform& transform) {
       return false;
     if (abs(decomp.perspective[i]) > kEpsilon)
       return false;
-    if (abs(decomp.translate[i]) > kMaxTranslate)
+    if (abs(decomp.translate[i]) > max_translate_meters)
       return false;
   }
 
@@ -83,14 +83,12 @@ device::mojom::VREyeParametersPtr ValidateEyeParameters(
     ret->field_of_view->right_degrees = kDefaultFOV;
   }
 
-  // Offset
-  float kMaxOffset = 10;
-  if (abs(eye->offset.x()) < kMaxOffset && abs(eye->offset.y()) < kMaxOffset &&
-      abs(eye->offset.z()) < kMaxOffset) {
-    ret->offset = eye->offset;
-  } else {
-    ret->offset = gfx::Vector3dF(0, 0, 0);
+  // Head-from-Eye Transform
+  // Maximum 10m translation.
+  if (IsValidTransform(eye->head_from_eye, 10)) {
+    ret->head_from_eye = eye->head_from_eye;
   }
+  // else, ret->head_from_eye remains the identity transform
 
   // Renderwidth/height
   uint32_t kMaxSize = 16384;
@@ -123,8 +121,9 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
       info->capabilities->has_external_display, info->capabilities->can_present,
       info->capabilities->can_provide_environment_integration);
 
+  // Maximum 1000km translation.
   if (info->stage_parameters &&
-      IsValidStandingTransform(info->stage_parameters->standing_transform)) {
+      IsValidTransform(info->stage_parameters->standing_transform, 1000000)) {
     ret->stage_parameters = device::mojom::VRStageParameters::New(
         info->stage_parameters->standing_transform,
         info->stage_parameters->size_x, info->stage_parameters->size_z,

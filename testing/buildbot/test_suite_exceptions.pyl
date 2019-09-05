@@ -1778,45 +1778,27 @@
       },
       'mac10.10-blink-rel-dummy': {
         'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.10 Tests on chromium.mac.
-              'gpu': 'none',
-              'os': 'Mac-10.10',
-            }
-          ]
+          'shards': 20,
         },
       },
       'mac10.11-blink-rel-dummy': {
         'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.11 Tests on chromium.mac.
-              'gpu': 'none',
-              'os': 'Mac-10.11',
-            }
-          ]
+          'shards': 20,
         },
       },
       'mac10.12-blink-rel-dummy': {
         'swarming': {
-          'dimension_sets': [
-            { # This should match Mac10.12 Tests on chromium.mac.
-              'gpu': '8086:0a2e',
-              'hidpi': '0',
-              'os': 'Mac-10.12.6',
-            },
-          ],
+          'shards': 20,
         },
       },
       'mac10.13-blink-rel-dummy': {
         'swarming': {
-          'dimension_sets': [
-            { # This should match "Mac10.13 Tests" on the main waterfall.
-              'gpu': '8086:0a2e',
-              'hidpi': '0',
-              'os': 'Mac-10.13.6',
-            },
-          ],
-          'shards': 12,
+          'shards': 20,
+        },
+      },
+      'mac10.13_retina-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
         },
       },
       'WebKit Linux composite_after_paint Dummy Builder': {
@@ -1861,6 +1843,7 @@
               'os': 'Mac-10.10.5',
             },
           ],
+          'shards': 20,
         },
       },
       'Mac10.11 Tests': {
@@ -1872,11 +1855,12 @@
               'os': 'Mac-10.11.6',
             },
           ],
+          'shards': 20,
         },
       },
       'Mac10.12 Tests': {
         'swarming': {
-          'shards': 12,
+          'shards': 20,
         },
       },
       'Mac10.13 Tests': {
@@ -1888,7 +1872,7 @@
               'gpu': '8086:0a2e',
             },
           ],
-          'shards': 12,
+          'shards': 20,
         },
       },
       'Mac10.13 Tests (dbg)': {

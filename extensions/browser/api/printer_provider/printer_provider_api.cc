@@ -302,10 +302,10 @@ class PrinterProviderAPIImpl : public PrinterProviderAPI,
       pending_usb_printer_info_requests_;
 
   ScopedObserver<PrinterProviderInternalAPI, PrinterProviderInternalAPIObserver>
-      internal_api_observer_;
+      internal_api_observer_{this};
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrinterProviderAPIImpl);
 };
@@ -503,9 +503,7 @@ void PendingUsbPrinterInfoRequests::FailAll() {
 
 PrinterProviderAPIImpl::PrinterProviderAPIImpl(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
-      internal_api_observer_(this),
-      extension_registry_observer_(this) {
+    : browser_context_(browser_context) {
   internal_api_observer_.Add(
       PrinterProviderInternalAPI::GetFactoryInstance()->Get(browser_context));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));

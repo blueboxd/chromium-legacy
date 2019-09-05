@@ -231,8 +231,8 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
                               ASCIIToUTF16("123")));  // Incorrect city code.
   EXPECT_TRUE(number4.SetInfo(AutofillType(PHONE_HOME_NUMBER),
                               ASCIIToUTF16("2345680")));
-  EXPECT_FALSE(number4.ParseNumber(profile, "en-US", &parsed_phone));
-  EXPECT_EQ(base::string16(), parsed_phone);
+  EXPECT_TRUE(number4.ParseNumber(profile, "en-US", &parsed_phone));
+  EXPECT_EQ(ASCIIToUTF16("1232345680"), parsed_phone);
 
   PhoneNumber::PhoneCombineHelper number5;
   EXPECT_TRUE(number5.SetInfo(AutofillType(PHONE_HOME_CITY_AND_NUMBER),

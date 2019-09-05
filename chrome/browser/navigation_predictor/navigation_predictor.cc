@@ -27,7 +27,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -228,7 +228,6 @@ NavigationPredictor::NavigationPredictor(
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
-  DCHECK_LE(0, prefetch_url_score_threshold_);
 
   if (!IsMainFrame(render_frame_host))
     return;
@@ -251,7 +250,7 @@ NavigationPredictor::~NavigationPredictor() {
 }
 
 void NavigationPredictor::Create(
-    blink::mojom::AnchorElementMetricsHostRequest request,
+    mojo::PendingReceiver<blink::mojom::AnchorElementMetricsHost> receiver,
     content::RenderFrameHost* render_frame_host) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
@@ -259,9 +258,9 @@ void NavigationPredictor::Create(
   if (render_frame_host->GetParent())
     return;
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<NavigationPredictor>(render_frame_host),
-      std::move(request));
+      std::move(receiver));
 }
 
 bool NavigationPredictor::IsValidMetricFromRenderer(

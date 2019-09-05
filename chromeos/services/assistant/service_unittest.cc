@@ -46,7 +46,9 @@ constexpr base::TimeDelta kDefaultTokenExpirationDelay =
 class FakePrefConnectionDelegate : public PrefConnectionDelegate {
  public:
   FakePrefConnectionDelegate()
-      : pref_service_(std::make_unique<TestingPrefServiceSimple>()) {}
+      : pref_service_(std::make_unique<TestingPrefServiceSimple>()) {
+    prefs::RegisterProfilePrefsForBrowser(pref_service_->registry());
+  }
   ~FakePrefConnectionDelegate() override = default;
 
   // PrefConnectionDelegate overrides:
@@ -54,7 +56,6 @@ class FakePrefConnectionDelegate : public PrefConnectionDelegate {
       mojo::PendingRemote<::prefs::mojom::PrefStoreConnector> connector,
       scoped_refptr<PrefRegistrySimple> pref_registry,
       ::prefs::ConnectCallback callback) override {
-    prefs::RegisterProfilePrefsForBrowser(pref_service_->registry());
     callback.Run(std::move(pref_service_));
   }
 
@@ -207,11 +208,14 @@ class AssistantServiceTest : public testing::Test {
     assistant_state()->NotifyArcPlayStoreEnabledChanged(true);
     assistant_state()->NotifyFeatureAllowed(
         ash::mojom::AssistantAllowedState::ALLOWED);
-    assistant_state()->NotifyHotwordEnabled(true);
     assistant_state()->NotifyLocaleChanged("en_US");
-    assistant_state()->NotifySettingsEnabled(true);
 
     auto fake_pref_connection = std::make_unique<FakePrefConnectionDelegate>();
+    pref_service_ = fake_pref_connection->pref_service();
+
+    pref_service()->SetBoolean(prefs::kAssistantEnabled, true);
+    pref_service()->SetBoolean(prefs::kAssistantHotwordEnabled, true);
+
     fake_pref_connection_ = fake_pref_connection.get();
     service_ =
         std::make_unique<Service>(remote_service_.BindNewPipeAndPassReceiver(),
@@ -254,6 +258,8 @@ class AssistantServiceTest : public testing::Test {
 
   ash::AssistantState* assistant_state() { return &assistant_state_; }
 
+  PrefService* pref_service() { return pref_service_; }
+
   base::TestMockTimeTaskRunner* mock_task_runner() {
     return mock_task_runner_.get();
   }
@@ -271,6 +277,7 @@ class AssistantServiceTest : public testing::Test {
   FakeDeviceActions fake_device_actions_;
 
   FakePrefConnectionDelegate* fake_pref_connection_;
+  PrefService* pref_service_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -332,7 +339,7 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::RUNNING);
 
-  assistant_state()->NotifySettingsEnabled(false);
+  pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(assistant_manager()->GetState(),
@@ -342,7 +349,7 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
 TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
   // Test is set up as |State::STARTED|, turning settings off will trigger
   // logic to try to stop it.
-  assistant_state()->NotifySettingsEnabled(false);
+  pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
 
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::STARTED);

@@ -20,7 +20,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -184,7 +183,7 @@ void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
 
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   const bool completed =
-      prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantEnabled) &&
       (prefs->GetInteger(assistant::prefs::kAssistantConsentStatus) ==
        assistant::prefs::ConsentStatus::kActivityControlAccepted);
   std::move(callback_).Run(completed);

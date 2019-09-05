@@ -196,6 +196,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Authenticate() is called when signaled.
   base::WaitableEvent ready_to_start_authentication_;
 
+  // Required to avoid any unnecessary preflight calls to Payments servers.
+  // Initial state is signaled. Resets when PrepareToFetchCreditCard() is
+  // called. Signaled after an authentication is complete or after a timeout.
+  // GetUnmaskDetailsIfUserIsVerifiable() is not called unless this is signaled.
+  base::WaitableEvent can_fetch_unmask_details_;
+
   // The credit card being accessed.
   const CreditCard* card_;
 

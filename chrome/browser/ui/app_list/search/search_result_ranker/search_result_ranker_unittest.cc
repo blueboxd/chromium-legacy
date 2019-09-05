@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -45,6 +46,7 @@ using ResultType = ash::SearchResultType;
 using base::ScopedTempDir;
 using base::test::ScopedFeatureList;
 using testing::ElementsAre;
+using testing::StrEq;
 using testing::UnorderedElementsAre;
 using testing::WhenSorted;
 
@@ -832,6 +834,31 @@ TEST_F(SearchResultRankerTest, ZeroStateLowScoringResultIgnored) {
               WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
                                      HasId("O2"), HasId("Z1"), HasId("Z2"),
                                      HasId("Z3"), HasId("D1"))));
+}
+
+TEST_F(SearchResultRankerTest, ZeroStateGroupRankerUsesFinchConfig) {
+  const std::string json = R"({
+      "min_seconds_between_saves": 250,
+      "target_limit": 100,
+      "target_decay": 0.5,
+      "condition_limit": 50,
+      "condition_decay": 0.7,
+      "predictor": {
+        "predictor_type": "fake"
+      }
+    })";
+
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {{"config", json}});
+
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // We expect a FakePredictor to have been loaded because predictor_type is set
+  // to "fake" in the json config.
+  ASSERT_THAT(ranker->zero_state_group_ranker_->GetPredictorNameForTesting(),
+              StrEq(FakePredictor::kPredictorName));
 }
 
 }  // namespace app_list

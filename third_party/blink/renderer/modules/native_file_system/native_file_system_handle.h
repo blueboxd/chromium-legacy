@@ -45,7 +45,8 @@ class NativeFileSystemHandle : public ScriptWrappable {
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) = 0;
   virtual void RequestPermissionImpl(
       bool writable,
-      base::OnceCallback<void(mojom::blink::PermissionStatus)>) = 0;
+      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
+                              mojom::blink::PermissionStatus)>) = 0;
 
   String name_;
 };

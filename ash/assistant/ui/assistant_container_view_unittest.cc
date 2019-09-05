@@ -8,6 +8,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -40,7 +41,8 @@ class AssistantContainerViewTest : public AshTestBase {
     DCHECK(ui_controller_);
 
     // Enable Assistant in settings.
-    AssistantState::Get()->NotifySettingsEnabled(true);
+    Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
+        chromeos::assistant::prefs::kAssistantEnabled, true);
 
     // After mocks are set up our Assistant service is ready for use. Indicate
     // this by changing status from NOT_READY to STOPPED.

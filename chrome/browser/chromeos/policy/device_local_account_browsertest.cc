@@ -736,7 +736,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     if (IsSessionStarted())
       return;
     chromeos::WizardController::SkipPostLoginScreensForTesting();
-    chromeos::test::WaitForSessionStart();
+    chromeos::test::WaitForPrimaryUserSessionStart();
   }
 
   void WaitUntilLocalStateChanged() {

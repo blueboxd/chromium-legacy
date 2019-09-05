@@ -334,17 +334,17 @@ class NavigationManager {
    * Sets the selectionEnd variable based on the selection of the current node.
    * @public
    */
-  saveSelectEnd() {
-    this.textNavigationManager_.saveSelectEnd();
+  endSelection() {
+    this.textNavigationManager_.resetCurrentlySelecting();
   }
 
   /**
-   * Returns whether or not the first selection index has been set.
+   * Returns whether or not a selection is being made.
    * @return {boolean}
    * @public
    */
-  selectionStarted() {
-    return this.textNavigationManager_.isSelectionStarted();
+  currentlySelecting() {
+    return this.textNavigationManager_.currentlySelecting();
   }
 
   /**

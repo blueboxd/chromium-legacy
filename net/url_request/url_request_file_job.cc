@@ -70,11 +70,10 @@ void URLRequestFileJob::Start() {
   FileMetaInfo* meta_info = new FileMetaInfo();
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&URLRequestFileJob::FetchMetaInfo, file_path_,
-                 base::Unretained(meta_info)),
-      base::Bind(&URLRequestFileJob::DidFetchMetaInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(meta_info)));
+      base::BindOnce(&URLRequestFileJob::FetchMetaInfo, file_path_,
+                     base::Unretained(meta_info)),
+      base::BindOnce(&URLRequestFileJob::DidFetchMetaInfo,
+                     weak_ptr_factory_.GetWeakPtr(), base::Owned(meta_info)));
 }
 
 void URLRequestFileJob::Kill() {
@@ -96,10 +95,10 @@ int URLRequestFileJob::ReadRawData(IOBuffer* dest, int dest_size) {
   if (!dest_size)
     return 0;
 
-  int rv = stream_->Read(
-      dest, dest_size,
-      base::Bind(&URLRequestFileJob::DidRead, weak_ptr_factory_.GetWeakPtr(),
-                 base::WrapRefCounted(dest)));
+  int rv = stream_->Read(dest, dest_size,
+                         base::BindOnce(&URLRequestFileJob::DidRead,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        base::WrapRefCounted(dest)));
   if (rv >= 0) {
     remaining_bytes_ -= rv;
     DCHECK_GE(remaining_bytes_, 0);
@@ -258,8 +257,8 @@ void URLRequestFileJob::DidFetchMetaInfo(const FileMetaInfo* meta_info) {
               base::File::FLAG_READ |
               base::File::FLAG_ASYNC;
   int rv = stream_->Open(file_path_, flags,
-                         base::Bind(&URLRequestFileJob::DidOpen,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&URLRequestFileJob::DidOpen,
+                                        weak_ptr_factory_.GetWeakPtr()));
   if (rv != ERR_IO_PENDING)
     DidOpen(rv);
 }
@@ -283,8 +282,8 @@ void URLRequestFileJob::DidOpen(int result) {
 
   if (remaining_bytes_ > 0 && byte_range_.first_byte_position() != 0) {
     int rv = stream_->Seek(byte_range_.first_byte_position(),
-                           base::Bind(&URLRequestFileJob::DidSeek,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&URLRequestFileJob::DidSeek,
+                                          weak_ptr_factory_.GetWeakPtr()));
     if (rv != ERR_IO_PENDING)
       DidSeek(ERR_REQUEST_RANGE_NOT_SATISFIABLE);
   } else {

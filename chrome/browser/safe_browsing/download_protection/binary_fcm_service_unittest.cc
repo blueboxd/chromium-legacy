@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 
+#include "base/base64.h"
 #include "base/run_loop.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -85,6 +86,7 @@ TEST_F(BinaryFCMServiceTest, RoutesMessages) {
   // Test that a message with token1 is routed only to the first callback.
   message.set_token("token1");
   ASSERT_TRUE(message.SerializeToString(&serialized_message));
+  base::Base64Encode(serialized_message, &serialized_message);
   incoming_message.data["proto"] = serialized_message;
   binary_fcm_service_->OnMessage("app_id", incoming_message);
   EXPECT_EQ(response1.token(), "token1");
@@ -93,6 +95,7 @@ TEST_F(BinaryFCMServiceTest, RoutesMessages) {
   // Test that a message with token2 is routed only to the second callback.
   message.set_token("token2");
   ASSERT_TRUE(message.SerializeToString(&serialized_message));
+  base::Base64Encode(serialized_message, &serialized_message);
   incoming_message.data["proto"] = serialized_message;
   binary_fcm_service_->OnMessage("app_id", incoming_message);
   EXPECT_EQ(response1.token(), "token1");

@@ -326,8 +326,8 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectTotalCount("Previews.PreviewShown.DeferAllScript", 0);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 0);

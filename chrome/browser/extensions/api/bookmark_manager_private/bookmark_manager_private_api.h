@@ -173,6 +173,19 @@ class BookmarkManagerPrivatePasteFunction
   bool RunOnReady() override;
 };
 
+class BookmarkManagerPrivateCanPasteFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.canPaste",
+                             BOOKMARKMANAGERPRIVATE_CANPASTE)
+
+ protected:
+  ~BookmarkManagerPrivateCanPasteFunction() override {}
+
+  // ExtensionFunction:
+  bool RunOnReady() override;
+};
+
 class BookmarkManagerPrivateSortChildrenFunction
     : public extensions::BookmarksFunction {
  public:

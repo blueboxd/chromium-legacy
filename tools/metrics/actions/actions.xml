@@ -4560,6 +4560,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContentSuggestions.RemoteSuggestionsPreferenceOn">
+  <obsolete>Removed as of 09/2019.</obsolete>
   <owner>dgn@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
   <description>

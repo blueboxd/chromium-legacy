@@ -20,8 +20,6 @@ suite('InternetSubpage', function() {
       internetAddConnectionNotAllowed: 'internetAddConnectionNotAllowed',
       internetAddThirdPartyVPN: 'internetAddThirdPartyVPN',
       internetAddVPN: 'internetAddVPN',
-      internetAddArcVPN: 'internetAddArcVPN',
-      internetAddArcVPNProvider: 'internetAddArcVPNProvider',
       internetAddWiFi: 'internetAddWiFi',
       internetDetailPageTitle: 'internetDetailPageTitle',
       internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
@@ -63,10 +61,6 @@ suite('InternetSubpage', function() {
     internetSubpage.defaultNetwork = networks[0];
     internetSubpage.deviceState = mojoApi_.getDeviceStateForTest(type);
     api_.onNetworkListChanged.callListeners();
-  }
-
-  function setArcVpnProvidersForTest(arcVpnProviders) {
-    cr.webUIListenerCallback('sendArcVpnProviders', arcVpnProviders);
   }
 
   setup(function() {
@@ -147,6 +141,29 @@ suite('InternetSubpage', function() {
     });
 
     test('VPN', function() {
+      internetSubpage.vpnProviders = [
+        {
+          type: chromeos.networkConfig.mojom.VpnType.kExtension,
+          providerId: 'extension_id1',
+          providerName: 'MyExtensionVPN1',
+          appId: 'extension_id1',
+          lastLaunchTime: {internalValue: 0},
+        },
+        {
+          type: chromeos.networkConfig.mojom.VpnType.kExtension,
+          providerId: 'extension_id2',
+          providerName: 'MyExtensionVPN2',
+          appId: 'extension_id2',
+          lastLaunchTime: {internalValue: 0},
+        },
+        {
+          type: chromeos.networkConfig.mojom.VpnType.kArc,
+          providerId: 'vpn.app.package1',
+          providerName: 'MyArcVPN1',
+          appId: 'arcid1',
+          lastLaunchTime: {internalValue: 1},
+        },
+      ];
       setNetworksForTest('VPN', [
         {GUID: 'vpn1_guid', Name: 'vpn1', Type: 'VPN'},
         {GUID: 'vpn2_guid', Name: 'vpn1', Type: 'VPN'},
@@ -156,7 +173,10 @@ suite('InternetSubpage', function() {
           Type: 'VPN',
           VPN: {
             Type: 'ThirdPartyVPN',
-            ThirdPartyVPN: {ExtensionID: 'id1', ProviderName: 'pname1'}
+            ThirdPartyVPN: {
+              ExtensionID: 'extension_id1',
+              ProviderName: 'MyExntensionVPN1',
+            }
           }
         },
         {
@@ -165,7 +185,10 @@ suite('InternetSubpage', function() {
           Type: 'VPN',
           VPN: {
             Type: 'ThirdPartyVPN',
-            ThirdPartyVPN: {ExtensionID: 'id1', ProviderName: 'pname1'}
+            ThirdPartyVPN: {
+              ExtensionID: 'extension_id1',
+              ProviderName: 'MyExntensionVPN1',
+            }
           }
         },
         {
@@ -174,17 +197,53 @@ suite('InternetSubpage', function() {
           Type: 'VPN',
           VPN: {
             Type: 'ThirdPartyVPN',
-            ThirdPartyVPN: {ExtensionID: 'id2', ProviderName: 'pname2'}
+            ThirdPartyVPN: {
+              ExtensionID: 'extension_id2',
+              ProviderName: 'MyExntensionVPN2',
+            }
+          }
+        },
+        {
+          GUID: 'arc_vpn1_guid',
+          Name: 'vpn6',
+          Type: 'VPN',
+          ConnectionState: 'Connected',
+          VPN: {
+            Type: 'ARCVPN',
+            ThirdPartyVPN: {
+              ExtensionID: 'vpn.app.package1',
+              ProviderName: 'MyArcVPN1',
+            }
+          }
+        },
+        {
+          GUID: 'arc_vpn2_guid',
+          Name: 'vpn7',
+          Type: 'VPN',
+          ConnectionState: 'NotConnected',
+          VPN: {
+            Type: 'ARCVPN',
+            ThirdPartyVPN: {
+              ExtensionID: 'vpn.app.package1',
+              ProviderName: 'MyArcVPN1',
+            }
           }
         },
       ]);
       return flushAsync().then(() => {
         assertEquals(2, internetSubpage.networkStateList_.length);
-        const networkList = internetSubpage.$$('#networkList');
-        assertTrue(!!networkList);
-        assertEquals(2, networkList.networks.length);
-        // TODO(stevenjb): Implement fake management API and test third
-        // party provider sections.
+        const allNetworkLists =
+            internetSubpage.shadowRoot.querySelectorAll('cr-network-list');
+        // Internal networks + 2 extension ids + 1 arc id (package name) = 4
+        assertEquals(4, allNetworkLists.length);
+        // 2 internal networks
+        assertEquals(2, allNetworkLists[0].networks.length);
+        // 2 networks with extension id 'extension_id1'
+        assertEquals(2, allNetworkLists[1].networks.length);
+        // 1 network with extension id 'extension_id2'
+        assertEquals(1, allNetworkLists[2].networks.length);
+        // 1 connected network with arc id 'vpn.app.package1'
+        assertEquals(1, allNetworkLists[3].networks.length);
       });
     });
   });

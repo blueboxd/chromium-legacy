@@ -18,6 +18,7 @@ import android.support.test.filters.MediumTest;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,8 +66,14 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     private UserActionTester mActionTester;
 
+    @Before
+    public void setUp() {
+        MainIntentBehaviorMetrics.setShouldTrackBehaviorSourceForTesting(true);
+    }
+
     @After
     public void tearDown() {
+        MainIntentBehaviorMetrics.setShouldTrackBehaviorSourceForTesting(false);
         if (mActionTester != null) mActionTester.tearDown();
     }
 
@@ -343,9 +350,16 @@ public class MainIntentBehaviorMetricsIntegrationTest {
         CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return mActivityTestRule.getActivity()
-                        .getMainIntentBehaviorMetricsForTesting()
-                        .getLastMainIntentBehaviorForTesting();
+                MainIntentBehaviorMetrics behaviorMetrics =
+                        mActivityTestRule.getActivity().getMainIntentBehaviorMetricsForTesting();
+                Integer actual = behaviorMetrics.getLastMainIntentBehaviorForTesting();
+                if (actual != null && !actual.equals(expected)) {
+                    IllegalStateException ex = new IllegalStateException(
+                            "Expected main behavior: " + expected + ", actual: " + actual);
+                    ex.setStackTrace(behaviorMetrics.getMainIntentBehaviorSourceForTesting());
+                    throw ex;
+                }
+                return actual;
             }
         }));
     }

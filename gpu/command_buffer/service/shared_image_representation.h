@@ -15,6 +15,7 @@
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 
@@ -305,6 +306,26 @@ class SharedImageRepresentationDawn : public SharedImageRepresentation {
   // usage is invalid.
   virtual DawnTexture BeginAccess(DawnTextureUsage usage) = 0;
   virtual void EndAccess() = 0;
+};
+
+class SharedImageRepresentationOverlay : public SharedImageRepresentation {
+ public:
+  SharedImageRepresentationOverlay(SharedImageManager* manager,
+                                   SharedImageBacking* backing,
+                                   MemoryTypeTracker* tracker)
+      : SharedImageRepresentation(manager, backing, tracker) {}
+
+  // TODO(weiliangc): Currently this only handles Android pre-SurfaceControl
+  // case. Add appropriate fence later.
+  virtual void BeginReadAccess() = 0;
+  virtual void EndReadAccess() = 0;
+
+  // TODO(weiliangc): Add API to backing AHardwareBuffer.
+
+#if defined(OS_ANDROID)
+  virtual void NotifyOverlayPromotion(bool promotion,
+                                      const gfx::Rect& bounds) = 0;
+#endif
 };
 
 }  // namespace gpu

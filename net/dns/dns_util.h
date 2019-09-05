@@ -128,6 +128,19 @@ GetDohUpgradeServersFromNameservers(
     const std::vector<IPEndPoint>& dns_servers,
     const std::vector<std::string>& excluded_providers);
 
+// Returns the provider id to use in UMA histogram names. If there is no
+// provider id that matches |doh_server|, returns "Other".
+NET_EXPORT_PRIVATE std::string GetDohProviderIdForHistogramFromDohConfig(
+    const DnsConfig::DnsOverHttpsServerConfig& doh_server);
+
+// Returns the provider id to use in UMA histogram names. If there is no
+// provider id that matches |nameserver|, returns "Other".
+NET_EXPORT_PRIVATE std::string GetDohProviderIdForHistogramFromNameserver(
+    const IPEndPoint& nameserver);
+
+NET_EXPORT_PRIVATE std::string SecureDnsModeToString(
+    const DnsConfig::SecureDnsMode secure_dns_mode);
+
 }  // namespace net
 
 #endif  // NET_DNS_DNS_UTIL_H_

@@ -18,6 +18,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -339,7 +340,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // PauseSubresourceLoadingHandle that controls the pausing behavior.  As long
   // as this handle is live, pausing will continue until an internal
   // navigation happens in the frame.
-  virtual blink::mojom::PauseSubresourceLoadingHandlePtr
+  virtual mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
   PauseSubresourceLoading() = 0;
 
   // Run the given action on the media player location at the given point.

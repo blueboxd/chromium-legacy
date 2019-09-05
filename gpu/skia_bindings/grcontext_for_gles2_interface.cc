@@ -29,10 +29,6 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
     size_t max_resource_cache_bytes,
     size_t max_glyph_cache_texture_bytes)
     : context_support_(context_support) {
-  // The limit of the number of GPU resources we hold in the GrContext's
-  // GPU cache.
-  static const int kMaxGaneshResourceCacheCount = 16384;
-
   GrContextOptions options;
   options.fGlyphCacheTextureMaximumBytes = max_glyph_cache_texture_bytes;
   options.fAvoidStencilBuffers = capabilities.avoid_stencil_buffers;
@@ -46,8 +42,7 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
       skia_bindings::CreateGLES2InterfaceBindings(gl, context_support));
   gr_context_ = GrContext::MakeGL(std::move(interface), options);
   if (gr_context_) {
-    gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                        max_resource_cache_bytes);
+    gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
     context_support_->SetGrContext(gr_context_.get());
   }
 }

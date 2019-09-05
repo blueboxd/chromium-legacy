@@ -42,9 +42,14 @@
   native <methods>;
 }
 
-# Remove methods annotated with this if their return value is unused.
 -assumenosideeffects class ** {
+  # Remove @RemovableInRelease methods so long as return values are unused.
   @org.chromium.base.annotations.RemovableInRelease <methods>;
+  # Remove object @RemovableInRelease methods even when return value is used.
+  # Note: * in return type does not match primitives.
+  @org.chromium.base.annotations.RemovableInRelease * *(...) return null;
+  # Remove boolean @RemovableInRelease methods even when return value is used.
+  @org.chromium.base.annotations.RemovableInRelease boolean *(...) return false;
 }
 
 # Never inline classes or methods with this annotation, but allow shrinking and

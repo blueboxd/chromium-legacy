@@ -2785,7 +2785,7 @@ base::Value RenderFrameImpl::GetJavaScriptExecutionResult(
 
 void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
   GetLocalRootRenderWidget()->QueueMessage(
-      new FrameHostMsg_VisualStateResponse(routing_id_, id));
+      std::make_unique<FrameHostMsg_VisualStateResponse>(routing_id_, id));
 }
 
 void RenderFrameImpl::OnSetAccessibilityMode(ui::AXMode new_mode) {
@@ -7462,7 +7462,7 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
       &FrameInputHandlerImpl::CreateMojoService, weak_factory_.GetWeakPtr()));
 
   registry_.AddInterface(
-      base::BindRepeating(&InputTargetClientImpl::BindToRequest,
+      base::BindRepeating(&InputTargetClientImpl::BindToReceiver,
                           base::Unretained(&input_target_client_impl_)));
 
   registry_.AddInterface(base::BindRepeating(&RenderFrameImpl::BindWidget,

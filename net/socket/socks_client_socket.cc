@@ -371,7 +371,7 @@ int SOCKSClientSocket::DoHandshakeWrite() {
          handshake_buf_len);
   return transport_socket_->Write(
       handshake_buf_.get(), handshake_buf_len,
-      base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)),
+      base::BindOnce(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)),
       traffic_annotation_);
 }
 
@@ -406,7 +406,7 @@ int SOCKSClientSocket::DoHandshakeRead() {
   handshake_buf_ = base::MakeRefCounted<IOBuffer>(handshake_buf_len);
   return transport_socket_->Read(
       handshake_buf_.get(), handshake_buf_len,
-      base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)));
+      base::BindOnce(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)));
 }
 
 int SOCKSClientSocket::DoHandshakeReadComplete(int result) {

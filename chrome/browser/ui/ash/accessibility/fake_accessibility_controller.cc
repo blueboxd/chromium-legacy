@@ -62,3 +62,6 @@ bool FakeAccessibilityController::IsAccessibilityFeatureVisibleInTrayMenu(
     const std::string& path) {
   return true;
 }
+
+void FakeAccessibilityController::
+    SetSwitchAccessIgnoreVirtualKeyEventForTesting(bool should_ignore) {}

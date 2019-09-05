@@ -73,8 +73,16 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
       base::BindRepeating(&AssistantStateBase::UpdateContextEnabled,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantEnabled,
+      base::BindRepeating(&AssistantStateBase::UpdateSettingsEnabled,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
       chromeos::assistant::prefs::kAssistantHotwordAlwaysOn,
       base::BindRepeating(&AssistantStateBase::UpdateHotwordAlwaysOn,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantHotwordEnabled,
+      base::BindRepeating(&AssistantStateBase::UpdateHotwordEnabled,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
       chromeos::assistant::prefs::kAssistantLaunchWithMicOpen,
@@ -87,7 +95,9 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
 
   UpdateConsentStatus();
   UpdateContextEnabled();
+  UpdateSettingsEnabled();
   UpdateHotwordAlwaysOn();
+  UpdateHotwordEnabled();
   UpdateLaunchWithMicOpen();
   UpdateNotificationEnabled();
 }
@@ -97,8 +107,12 @@ void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
     observer->OnAssistantConsentStatusChanged(consent_status_.value());
   if (context_enabled_.has_value())
     observer->OnAssistantContextEnabled(context_enabled_.value());
+  if (settings_enabled_.has_value())
+    observer->OnAssistantSettingsEnabled(settings_enabled_.value());
   if (hotword_always_on_.has_value())
     observer->OnAssistantHotwordAlwaysOn(hotword_always_on_.value());
+  if (hotword_enabled_.has_value())
+    observer->OnAssistantHotwordEnabled(hotword_enabled_.value());
   if (launch_with_mic_open_.has_value())
     observer->OnAssistantLaunchWithMicOpen(launch_with_mic_open_.value());
   if (notification_enabled_.has_value())
@@ -110,10 +124,6 @@ void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
 void AssistantStateBase::InitializeObserverMojom(
     mojom::AssistantStateObserver* observer) {
   observer->OnAssistantStatusChanged(voice_interaction_state_);
-  if (settings_enabled_.has_value())
-    observer->OnAssistantSettingsEnabled(settings_enabled_.value());
-  if (hotword_enabled_.has_value())
-    observer->OnAssistantHotwordEnabled(hotword_enabled_.value());
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
@@ -146,6 +156,18 @@ void AssistantStateBase::UpdateContextEnabled() {
     observer.OnAssistantContextEnabled(context_enabled_.value());
 }
 
+void AssistantStateBase::UpdateSettingsEnabled() {
+  auto settings_enabled = pref_change_registrar_->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantEnabled);
+  if (settings_enabled_.has_value() &&
+      settings_enabled_.value() == settings_enabled) {
+    return;
+  }
+  settings_enabled_ = settings_enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantSettingsEnabled(settings_enabled_.value());
+}
+
 void AssistantStateBase::UpdateHotwordAlwaysOn() {
   auto hotword_always_on = pref_change_registrar_->prefs()->GetBoolean(
       chromeos::assistant::prefs::kAssistantHotwordAlwaysOn);
@@ -156,6 +178,18 @@ void AssistantStateBase::UpdateHotwordAlwaysOn() {
   hotword_always_on_ = hotword_always_on;
   for (auto& observer : observers_)
     observer.OnAssistantHotwordAlwaysOn(hotword_always_on_.value());
+}
+
+void AssistantStateBase::UpdateHotwordEnabled() {
+  auto hotword_enabled = pref_change_registrar_->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantHotwordEnabled);
+  if (hotword_enabled_.has_value() &&
+      hotword_enabled_.value() == hotword_enabled) {
+    return;
+  }
+  hotword_enabled_ = hotword_enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantHotwordEnabled(hotword_enabled_.value());
 }
 
 void AssistantStateBase::UpdateLaunchWithMicOpen() {
@@ -187,18 +221,6 @@ void AssistantStateBase::UpdateAssistantStatus(
   voice_interaction_state_ = state;
   for (auto& observer : observers_)
     observer.OnAssistantStatusChanged(voice_interaction_state_);
-}
-
-void AssistantStateBase::UpdateSettingsEnabled(bool enabled) {
-  settings_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnAssistantSettingsEnabled(settings_enabled_.value());
-}
-
-void AssistantStateBase::UpdateHotwordEnabled(bool enabled) {
-  hotword_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnAssistantHotwordEnabled(hotword_enabled_.value());
 }
 
 void AssistantStateBase::UpdateFeatureAllowedState(

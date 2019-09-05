@@ -3,20 +3,21 @@
 // found in the LICENSE file.
 
 package com.android.webview.chromium;
-import org.chromium.base.annotations.NativeMethods;
 
+import org.chromium.base.annotations.JniIgnoreNatives;
+
+@JniIgnoreNatives
 abstract class GraphicsUtils {
     public static long getDrawSWFunctionTable() {
-        return GraphicsUtilsJni.get().getDrawSWFunctionTable();
+        return nativeGetDrawSWFunctionTable();
     }
 
     public static long getDrawGLFunctionTable() {
-        return GraphicsUtilsJni.get().getDrawGLFunctionTable();
+        return nativeGetDrawGLFunctionTable();
     }
 
-    @NativeMethods
-    interface Natives {
-        long getDrawSWFunctionTable();
-        long getDrawGLFunctionTable();
-    }
+    // The Android framework performs manual JNI registration on these methods,
+    // so the method signatures cannot change without updating the framework.
+    private static native long nativeGetDrawSWFunctionTable();
+    private static native long nativeGetDrawGLFunctionTable();
 }

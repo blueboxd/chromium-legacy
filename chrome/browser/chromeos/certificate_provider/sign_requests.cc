@@ -4,15 +4,16 @@
 
 #include "chrome/browser/chromeos/certificate_provider/sign_requests.h"
 
-#include <utility>
-
 namespace chromeos {
 namespace certificate_provider {
 
 SignRequests::Request::Request(
     const scoped_refptr<net::X509Certificate>& certificate,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     net::SSLPrivateKey::SignCallback callback)
-    : certificate(certificate), callback(std::move(callback)) {}
+    : certificate(certificate),
+      authenticating_user_account_id(authenticating_user_account_id),
+      callback(std::move(callback)) {}
 
 SignRequests::Request::Request(Request&& other) = default;
 
@@ -33,12 +34,33 @@ SignRequests::~SignRequests() {}
 int SignRequests::AddRequest(
     const std::string& extension_id,
     const scoped_refptr<net::X509Certificate>& certificate,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     net::SSLPrivateKey::SignCallback callback) {
   RequestsState& state = extension_to_requests_[extension_id];
   const int request_id = state.next_free_id++;
-  state.pending_requests.emplace(request_id,
-                                 Request(certificate, std::move(callback)));
+  state.pending_requests.emplace(
+      request_id, Request(certificate, authenticating_user_account_id,
+                          std::move(callback)));
   return request_id;
+}
+
+std::vector<SignRequests::ExtensionNameRequestIdPair>
+SignRequests::FindRequestsForAuthenticatingUser(
+    const AccountId& authenticating_user_account_id) const {
+  std::vector<ExtensionNameRequestIdPair> found_requests;
+  for (const auto& extension_entry : extension_to_requests_) {
+    const std::string& extension_id = extension_entry.first;
+    const RequestsState& extension_requests = extension_entry.second;
+    for (const auto& entry : extension_requests.pending_requests) {
+      const int request_id = entry.first;
+      const Request& request = entry.second;
+      if (request.authenticating_user_account_id ==
+          authenticating_user_account_id) {
+        found_requests.emplace_back(extension_id, request_id);
+      }
+    }
+  }
+  return found_requests;
 }
 
 bool SignRequests::RemoveRequest(

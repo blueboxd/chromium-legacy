@@ -34,6 +34,8 @@ using content::WebContentsTester;
 using UserAction = ChromeNativeFileSystemPermissionContext::UserAction;
 using PermissionStatus =
     content::NativeFileSystemPermissionGrant::PermissionStatus;
+using PermissionRequestOutcome =
+    content::NativeFileSystemPermissionGrant::PermissionRequestOutcome;
 using SensitiveDirectoryResult =
     ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
@@ -432,7 +434,10 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest, RequestPermission) {
       UserAction::kOpen);
 
   base::RunLoop loop;
-  grant->RequestPermission(process_id(), frame_id(), loop.QuitClosure());
+  grant->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
@@ -447,7 +452,10 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       UserAction::kSave);
 
   base::RunLoop loop;
-  grant->RequestPermission(process_id(), frame_id(), loop.QuitClosure());
+  grant->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
@@ -466,7 +474,10 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       UserAction::kOpen);
 
   base::RunLoop loop;
-  grant->RequestPermission(process_id(), frame_id(), loop.QuitClosure());
+  grant->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
 
@@ -475,7 +486,10 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       UserAction::kOpen);
 
   base::RunLoop loop2;
-  grant2->RequestPermission(process_id(), frame_id(), loop2.QuitClosure());
+  grant2->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop2.Quit(); }));
   loop2.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
 
@@ -489,7 +503,10 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       UserAction::kOpen);
 
   base::RunLoop loop3;
-  grant2->RequestPermission(process_id(), frame_id(), loop3.QuitClosure());
+  grant2->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop3.Quit(); }));
   loop3.Run();
   EXPECT_EQ(PermissionStatus::ASK, grant2->GetStatus());
 }
@@ -511,12 +528,18 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       CONTENT_SETTING_BLOCK);
 
   base::RunLoop loop;
-  grant->RequestPermission(process_id(), frame_id(), loop.QuitClosure());
+  grant->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop.Quit(); }));
   loop.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant->GetStatus());
 
   base::RunLoop loop2;
-  grant2->RequestPermission(process_id(), frame_id(), loop2.QuitClosure());
+  grant2->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop2.Quit(); }));
   loop2.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
 
@@ -534,12 +557,18 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       UserAction::kOpen);
 
   base::RunLoop loop3;
-  grant->RequestPermission(process_id(), frame_id(), loop3.QuitClosure());
+  grant->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop3.Quit(); }));
   loop3.Run();
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 
   base::RunLoop loop4;
-  grant2->RequestPermission(process_id(), frame_id(), loop4.QuitClosure());
+  grant2->RequestPermission(
+      process_id(), frame_id(),
+      base::BindLambdaForTesting(
+          [&](PermissionRequestOutcome outcome) { loop4.Quit(); }));
   loop4.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
 }

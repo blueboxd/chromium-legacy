@@ -73,7 +73,7 @@ Status SendKeysOnWindow(
       keys, release_modifiers, &sticky_modifiers_tmp, &events);
   if (status.IsError())
     return status;
-  status = web_view->DispatchKeyEvents(events);
+  status = web_view->DispatchKeyEvents(events, false);
   if (status.IsOk())
     *sticky_modifiers = sticky_modifiers_tmp;
   return status;

@@ -9,11 +9,11 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
@@ -26,8 +26,6 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_utils.h"
 
 namespace {
 
@@ -98,13 +96,6 @@ class DeviceIDTest : public OobeBaseTest,
     }
   }
 
-  void WaitForSessionStart() {
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources())
-        .Wait();
-  }
-
   void SignInOnline(const std::string& user_id,
                     const std::string& password,
                     const std::string& refresh_token,
@@ -122,7 +113,7 @@ class DeviceIDTest : public OobeBaseTest,
         ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(user_id, password, "[]");
 
-    WaitForSessionStart();
+    test::WaitForPrimaryUserSessionStart();
   }
 
   void SignInOffline(const std::string& user_id, const std::string& password) {
@@ -131,7 +122,7 @@ class DeviceIDTest : public OobeBaseTest,
     test::OobeJS().ExecuteAsync(base::StringPrintf(
         "chrome.send('authenticateUser', ['%s', '%s', false])", user_id.c_str(),
         password.c_str()));
-    WaitForSessionStart();
+    test::WaitForPrimaryUserSessionStart();
   }
 
   void RemoveUser(const AccountId& account_id) {

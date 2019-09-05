@@ -37,6 +37,10 @@ size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 // fetcher.
 size_t MaxHostsForRecordingSuccessfullyCovered();
 
+// The minimum score required to be considered a top host and be included in a
+// hints fetch request.
+double MinTopHostEngagementScoreThreshold();
+
 // The amount of time a fetched hint will be considered fresh enough
 // to be used and remain in the HintCacheStore.
 base::TimeDelta StoredFetchedHintsFreshnessDuration();

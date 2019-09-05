@@ -5,20 +5,23 @@
 #ifndef CHROME_BROWSER_UI_ASH_VPN_LIST_FORWARDER_H_
 #define CHROME_BROWSER_UI_ASH_VPN_LIST_FORWARDER_H_
 
-#include "ash/public/mojom/vpn_list.mojom.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/arc/arc_vpn_provider_manager.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace extensions {
 class ExtensionRegistry;
 }
 
-// Forwards the list of extension-backed VPN providers in the primary user's
-// profile to ash over mojo.
+// Forwards a list of third party (Extension and Arc) VPN providers in the
+// primary user's profile to the chromeos.network_config.mojom service for
+// use in the Settings and Ash UI code.
 class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
                          public extensions::ExtensionRegistryObserver,
                          public content::NotificationObserver {
@@ -49,11 +52,8 @@ class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
                const content::NotificationDetails& details) override;
 
  private:
-  // Retrieves the current list of VPN providers enabled in the primary user's
-  // profile and notifies observers that it has changed. Must only be called
-  // when a user is logged in and the primary user's extension registry is being
-  // observed.
-  void UpdateVPNProviders();
+  // Calls cros_network_config_->SetVpnProviders with the current provider list.
+  void SetVpnProviders();
 
   // Starts to observe extension registry and ArcAppListPrefs. Must only be
   // called when a user is logged in.
@@ -69,16 +69,18 @@ class VpnListForwarder : public app_list::ArcVpnProviderManager::Observer,
   // profile. Must only be called when a user is logged in.
   void AttachToPrimaryUserArcVpnProviderManager();
 
-  // Whether this object has ever sent a third-party provider list to ash.
-  bool sent_providers_ = false;
-
   // The primary user's extension registry, if a user is logged in.
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 
   // The primary user's app_list::ArcVpnProviderManger, if a user is logged in.
   app_list::ArcVpnProviderManager* arc_vpn_provider_manager_ = nullptr;
 
-  ash::mojom::VpnListPtr vpn_list_ = nullptr;
+  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
+      cros_network_config_;
+
+  // Map of unique provider id to VpnProvider dictionary.
+  base::flat_map<std::string, chromeos::network_config::mojom::VpnProviderPtr>
+      vpn_providers_;
 
   content::NotificationRegistrar registrar_;
 

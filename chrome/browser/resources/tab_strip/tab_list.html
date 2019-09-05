@@ -35,11 +35,11 @@
   }
 
   #tabsContainer {
-    display: grid;
-    grid-auto-columns: 280px;
-    grid-auto-flow: column;
-    grid-gap: 16px;
-    grid-template-rows: 230px;
+    display: flex;
+  }
+
+  #tabsContainer tabstrip-tab:not(:last-child) {
+    margin-inline-end: 16px;
   }
 </style>
 

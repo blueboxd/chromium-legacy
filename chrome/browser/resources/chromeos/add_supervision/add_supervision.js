@@ -33,7 +33,6 @@ function isAllowedRequest(requestDetails) {
               requestUrl.host.endsWith('.' + allowedHost));
 }
 
-let server = null;
 const addSupervisionHandler =
     addSupervision.mojom.AddSupervisionHandler.getRemote();
 
@@ -42,7 +41,7 @@ Polymer({
 
   /** Attempts to close the dialog */
   closeDialog_: function() {
-    server.requestClose();
+    this.server.requestClose();
   },
 
   /** @override */
@@ -95,7 +94,8 @@ Polymer({
       webview.src = url.toString();
 
       // Set up the server.
-      server = new AddSupervisionAPIServer(webview, url, eventOriginFilter);
+      this.server =
+          new AddSupervisionAPIServer(webview, url, eventOriginFilter);
     });
   },
 });

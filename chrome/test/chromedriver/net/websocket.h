@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_frame_parser.h"
 #include "url/gurl.h"
 
@@ -78,6 +79,9 @@ class WebSocket {
 
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
   net::WebSocketFrameParser parser_;
+  net::WebSocketMaskingKey current_masking_key_ = {};
+  bool is_current_frame_masked_ = false;
+  uint64_t current_frame_offset_ = 0;
   std::string next_message_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);

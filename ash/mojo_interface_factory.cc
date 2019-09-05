@@ -14,7 +14,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/network/vpn_list.h"
 #include "ash/tray_action/tray_action.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -44,11 +43,6 @@ void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
     Shell::Get()->tray_action()->BindRequest(std::move(request));
 }
 
-void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
-  if (Shell::HasInstance())
-    Shell::Get()->vpn_list()->BindRequest(std::move(request));
-}
-
 }  // namespace
 
 void RegisterInterfaces(
@@ -63,8 +57,6 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindTrayActionRequestOnMainThread),
       main_thread_task_runner);
-  registry->AddInterface(base::BindRepeating(&BindVpnListRequestOnMainThread),
-                         main_thread_task_runner);
 
   // Inject additional optional interfaces.
   if (g_register_interfaces_callback.Get()) {

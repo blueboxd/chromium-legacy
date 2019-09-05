@@ -1208,12 +1208,14 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (IsLineBreakingObject())
     return true;
 
-  // Allow the browser side ax tree to access "visibility: hidden" and
-  // "visibility: collapse" nodes. This is useful for APIs that return the node
-  // referenced by aria-labeledby and aria-describedby
-  if (GetLayoutObject() &&
-      GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible) {
-    return true;
+  // Allow the browser side ax tree to access aria-hidden="true", "visibility:
+  // hidden", and "visibility: collapse" nodes. This is useful for APIs that
+  // return the node referenced by aria-labeledby and aria-describedby
+  if (GetLayoutObject()) {
+    if (GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible)
+      return true;
+    if (AriaHiddenRoot())
+      return true;
   }
 
   return false;

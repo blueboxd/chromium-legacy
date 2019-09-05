@@ -647,6 +647,12 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
   }
 }
 
+void UkmPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
+      navigation_handle, GetDelegate());
+}
+
 void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::CpuTiming& timing) {

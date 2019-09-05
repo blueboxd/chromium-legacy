@@ -3649,9 +3649,10 @@ void WebContentsImpl::ReloadLoFiImages() {
     observer.DidReloadLoFiImages();
 }
 
-std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
 WebContentsImpl::PauseSubresourceLoading() {
-  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr> handles;
+  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
+      handles;
   for (RenderFrameHost* rfh : GetAllFrames()) {
     if (!rfh->IsRenderFrameLive())
       continue;

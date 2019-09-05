@@ -8,6 +8,7 @@
 
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_gamepad_helper.h"
+#include "device/vr/util/transform_utils.h"
 
 namespace device {
 
@@ -226,12 +227,15 @@ bool OpenXrRenderLoop::UpdateEye(const XrView& view,
                                  mojom::VREyeParametersPtr* eye) const {
   bool changed = false;
 
-  gfx::Vector3dF offset = gfx::Vector3dF(view.pose.position.x - center.x(),
-                                         view.pose.position.y - center.y(),
-                                         view.pose.position.z - center.z());
+  // TODO(crbug.com/999573): Query eye-to-head transform from the device and use
+  // that instead of just building a transformation matrix from the translation
+  // component.
+  gfx::Transform head_from_eye = vr_utils::MakeTranslationTransform(
+      view.pose.position.x - center.x(), view.pose.position.y - center.y(),
+      view.pose.position.z - center.z());
 
-  if ((*eye)->offset != offset) {
-    (*eye)->offset = offset;
+  if ((*eye)->head_from_eye != head_from_eye) {
+    (*eye)->head_from_eye = head_from_eye;
     changed = true;
   }
 

@@ -117,7 +117,8 @@ def main():
 
     test_server = None
     if args.enable_test_server:
-      test_server = SetupTestServer(target, test_concurrency)
+      test_server = SetupTestServer(target, test_concurrency,
+                                    args.package_name)
 
     run_package_args = RunPackageArgs.FromCommonArgs(args)
     returncode = RunPackage(

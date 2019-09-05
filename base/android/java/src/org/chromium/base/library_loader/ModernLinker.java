@@ -23,31 +23,23 @@ class ModernLinker extends Linker {
     // Log tag for this class.
     private static final String TAG = "ModernLinker";
 
-    @GuardedBy("sLock")
-    private boolean mLoadFromApk;
-
     ModernLinker() {}
 
     @Override
-    void setApkFilePath(String path) {
-        synchronized (sLock) {
-            mLoadFromApk = true;
-        }
-    }
-
-    @Override
     @GuardedBy("sLock")
-    void loadLibraryImplLocked(String libFilePath, boolean isFixedAddressPermitted) {
-        if (DEBUG) Log.i(TAG, "loadLibraryImpl: " + libFilePath + ", " + isFixedAddressPermitted);
+    void loadLibraryImplLocked(String library, boolean isFixedAddressPermitted) {
+        // We expect to load monochrome, if it's not the case, log.
+        if (!"monochrome".equals(library) || DEBUG) {
+            Log.i(TAG, "loadLibraryImpl: %s, %b", library, isFixedAddressPermitted);
+        }
 
         ensureInitializedLocked();
         assert mState == State.INITIALIZED; // Only one successful call.
 
+        String libFilePath = System.mapLibraryName(library);
         boolean loadNoRelro = !isFixedAddressPermitted;
         boolean provideRelro = isFixedAddressPermitted && mInBrowserProcess;
         long loadAddress = isFixedAddressPermitted ? mBaseLoadAddress : 0;
-
-        if (mLoadFromApk) libFilePath = "crazy." + libFilePath;
 
         if (loadNoRelro) {
             // Cannot use System.loadLibrary(), as the library name is transformed (adding the "lib"
@@ -84,6 +76,20 @@ class ModernLinker extends Linker {
             mLibInfo.close();
             mLibInfo = null;
             mState = State.DONE;
+        }
+
+        // Load the library a second time, in order to keep using lazy JNI registration.  When
+        // loading the library with the Chromium linker, ART doesn't know about our library, so
+        // cannot resolve JNI methods lazily. Loading the library a second time makes sure it
+        // knows about us.
+        //
+        // This is not wasteful though, as libraries are reference-counted, and as a consequence the
+        // library is not really loaded a second time, and we keep relocation sharing.
+        try {
+            System.loadLibrary(library);
+        } catch (UnsatisfiedLinkError e) {
+            throw new UnsatisfiedLinkError(
+                    "Unable to load the library a second time with the system linker");
         }
     }
 

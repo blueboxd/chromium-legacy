@@ -130,6 +130,10 @@ void LogSharingMessageAckTime(base::TimeDelta time);
 // Logs to UMA the |type| of dialog shown for sharing feature.
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
 
+// Logs the dialog type when a user clicks on the help text in the Click to Call
+// dialog.
+void LogClickToCallHelpTextClicked(SharingDialogType type);
+
 // Logs to UMA result of sending a SharingMessage. This should not be called for
 // sending ack messages.
 void LogSendSharingMessageResult(SharingSendMessageResult result);

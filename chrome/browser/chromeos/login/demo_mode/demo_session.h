@@ -155,7 +155,7 @@ class DemoSession : public session_manager::SessionManagerObserver,
   base::OneShotTimer* GetTimerForTesting();
 
   // user_manager::UserManager::UserSessionStateObserver:
-  void ActiveUserChanged(const user_manager::User* user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // extensions::AppWindowRegistry::Observer:
   void OnAppWindowActivated(extensions::AppWindow* app_window) override;

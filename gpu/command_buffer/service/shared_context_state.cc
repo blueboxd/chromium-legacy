@@ -168,9 +168,7 @@ void SharedContextState::InitializeGrContext(
     LOG(ERROR) << "OOP raster support disabled: GrContext creation "
                   "failed.";
   } else {
-    constexpr int kMaxGaneshResourceCacheCount = 16384;
-    gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                        max_resource_cache_bytes_);
+    gr_context_->setResourceCacheLimit(max_resource_cache_bytes_);
   }
   transfer_cache_ = std::make_unique<ServiceTransferCache>();
 }

@@ -8,6 +8,7 @@
 
 #include "chrome/browser/android/dev_ui/dev_ui_module_provider.h"
 #include "chrome/common/webui_url_constants.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace chrome {
@@ -32,12 +33,11 @@ bool HandleDfmifiedDevUiPageURL(
     // No need to check ModuleInstalled(): It's implied by ModuleLoaded().
     return false;
   }
-  // Provide |url->host()| so the DevUI loader can redirect to the proper page
-  // after install / load.
-  // TODO(huangs): Escape /path?query#fragment and pass these; unescape in
-  // chrome://dev-ui-loader when redirecting.
-  *url = GURL(std::string(kChromeUIDevUiLoaderURL) +
-              "dev_ui_loader.html?page=" + url->host());
+  // Create URL to the DevUI loader with "?url=<escaped original URL>" so that
+  // after install / load, the loader can redirect to the original URL.
+  *url = net::AppendQueryParameter(
+      GURL(std::string(kChromeUIDevUiLoaderURL) + "dev_ui_loader.html"), "url",
+      url->spec());
   return true;
 }
 

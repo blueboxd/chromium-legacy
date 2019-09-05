@@ -71,6 +71,12 @@ std::unique_ptr<SharedImageRepresentationDawn> SharedImageBacking::ProduceDawn(
   return nullptr;
 }
 
+std::unique_ptr<SharedImageRepresentationOverlay>
+SharedImageBacking::ProduceOverlay(SharedImageManager* manager,
+                                   MemoryTypeTracker* tracker) {
+  return nullptr;
+}
+
 void SharedImageBacking::AddRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);
 

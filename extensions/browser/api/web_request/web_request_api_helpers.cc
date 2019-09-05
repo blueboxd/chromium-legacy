@@ -43,6 +43,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_event_type.h"
+#include "services/network/public/cpp/features.h"
 #include "url/url_constants.h"
 
 // TODO(battre): move all static functions into an anonymous namespace at the
@@ -87,6 +88,16 @@ bool ParseCookieLifetime(const net::ParsedCookie& cookie,
     return *seconds_till_expiry >= 0;
   }
   return false;
+}
+
+std::set<std::string> GetExtraHeaderRequestHeaders() {
+  std::set<std::string> headers(
+      {"accept-encoding", "accept-language", "cookie", "referer"});
+
+  if (network::features::ShouldEnableOutOfBlinkCors())
+    headers.insert("origin");
+
+  return headers;
 }
 
 void RecordRequestHeaderRemoved(RequestHeaderType type) {
@@ -1466,12 +1477,8 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
 }
 
 bool ShouldHideRequestHeader(int extra_info_spec, const std::string& name) {
-  static const std::set<std::string> kRequestHeaders{
-      "accept-encoding",
-      "accept-language",
-      "cookie",
-      "referer",
-  };
+  static const std::set<std::string> kRequestHeaders =
+      GetExtraHeaderRequestHeaders();
   return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
          kRequestHeaders.find(base::ToLowerASCII(name)) !=
              kRequestHeaders.end();

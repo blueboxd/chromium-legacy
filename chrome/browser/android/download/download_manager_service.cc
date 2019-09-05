@@ -36,7 +36,6 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_stats.h"
-#include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "components/download/public/task/task_manager_impl.h"

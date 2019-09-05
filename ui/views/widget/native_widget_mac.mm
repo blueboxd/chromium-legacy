@@ -221,6 +221,8 @@ void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
   if (params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal)
     SetZOrderLevel(params.EffectiveZOrderLevel());
 
+  GetNSWindowMojo()->SetIgnoresMouseEvents(!params.accept_events);
+
   delegate_->OnNativeWidgetCreated();
 
   DCHECK(GetWidget()->GetRootView());

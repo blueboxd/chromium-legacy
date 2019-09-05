@@ -69,10 +69,13 @@ TEST_F(TableViewTextItemTest, ConfigureCellWithStyler) {
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
   UIColor* testTextColor = UIColor.redColor;
   styler.cellTitleColor = testTextColor;
-  UIColor* testBackgroundColor = UIColor.blueColor;
-  styler.tableViewBackgroundColor = testBackgroundColor;
+  UIColor* testCellBackgroundColor = UIColor.blueColor;
+  styler.tableViewBackgroundColor = testCellBackgroundColor;
   [item configureCell:cell withStyler:styler];
-  EXPECT_NSEQ(testBackgroundColor, cell.textLabel.backgroundColor);
+  EXPECT_NSEQ(testCellBackgroundColor, cell.backgroundColor);
+  // TextLabel.backgroundColor has to be clear in (IOS 13) as the cell
+  // background color doesn't apply to the textlabel background color anymore.
+  EXPECT_NSEQ(UIColor.clearColor, cell.textLabel.backgroundColor);
   EXPECT_NSEQ(testTextColor, cell.textLabel.textColor);
 }
 

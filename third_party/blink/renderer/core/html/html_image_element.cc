@@ -103,7 +103,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
-      sizes_set_width_(false),
       is_legacy_format_or_unoptimized_image_(false),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
   SetHasCustomStyleCallbacks();
@@ -231,7 +230,6 @@ void HTMLImageElement::ResetFormOwner() {
 
 void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
     const ImageCandidate& candidate) {
-  sizes_set_width_ = false;
   best_fit_image_url_ = candidate.Url();
   float candidate_density = candidate.Density();
   float old_image_device_pixel_ratio = image_device_pixel_ratio_;
@@ -241,7 +239,6 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
   bool intrinsic_sizing_viewport_dependant = false;
   if (candidate.GetResourceWidth() > 0) {
     intrinsic_sizing_viewport_dependant = true;
-    sizes_set_width_ = true;
     UseCounter::Count(GetDocument(), WebFeature::kSrcsetWDescriptor);
   } else if (!candidate.SrcOrigin()) {
     UseCounter::Count(GetDocument(), WebFeature::kSrcsetXDescriptor);
@@ -290,23 +287,6 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == kDecodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
-  } else if (name == kIntrinsicsizeAttr &&
-             RuntimeEnabledFeatures::
-                 ExperimentalProductivityFeaturesEnabled()) {
-    String message;
-    bool intrinsic_size_changed =
-        media_element_parser_helpers::ParseIntrinsicSizeAttribute(
-            params.new_value, this, &overridden_intrinsic_size_,
-            &is_default_overridden_intrinsic_size_, &message);
-    if (!message.IsEmpty()) {
-      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kOther,
-          mojom::ConsoleMessageLevel::kWarning, message));
-    }
-
-    if (intrinsic_size_changed && GetLayoutObject() &&
-        GetLayoutObject()->IsLayoutImage())
-      ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
   } else if (name == kLoadingAttr &&
              EqualIgnoringASCIICase(params.new_value, "eager") &&
              !GetDocument().IsLazyLoadPolicyEnforced()) {
@@ -601,14 +581,6 @@ void HTMLImageElement::setHeight(unsigned value) {
 }
 
 IntSize HTMLImageElement::GetOverriddenIntrinsicSize() const {
-  if (sizes_set_width_ && !overridden_intrinsic_size_.IsEmpty()) {
-    float width = GetResourceWidth().width;
-    return IntSize(
-        RoundToInt(LayoutUnit(width)),
-        RoundToInt(LayoutUnit(
-            width * overridden_intrinsic_size_.Height() /
-            static_cast<float>(overridden_intrinsic_size_.Width()))));
-  }
   return overridden_intrinsic_size_;
 }
 

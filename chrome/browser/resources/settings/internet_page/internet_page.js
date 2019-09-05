@@ -15,6 +15,7 @@ Polymer({
   is: 'settings-internet-page',
 
   behaviors: [
+    CrNetworkListenerBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
@@ -97,23 +98,11 @@ Polymer({
     },
 
     /**
-     * List of third party VPN providers.
-     * @type {!Array<!settings.ThirdPartyVPNProperties>}
+     * List of third party (Extension + Arc) VPN providers.
+     * @type {!Array<!chromeos.networkConfig.mojom.VpnProvider>}
      * @private
      */
-    thirdPartyVpnProviders_: {
-      type: Array,
-      value: function() {
-        return [];
-      }
-    },
-
-    /**
-     * List of Arc VPN providers.
-     * @type {!Array<!settings.ArcVpnProvider>}
-     * @private
-     */
-    arcVpnProviders_: {
+    vpnProviders_: {
       type: Array,
       value: function() {
         return [];
@@ -142,16 +131,6 @@ Polymer({
     'show-networks': 'onShowNetworks_',
   },
 
-  // chrome.management listeners
-  /** @private {Function} */
-  onExtensionAddedListener_: null,
-
-  /** @private {Function} */
-  onExtensionRemovedListener_: null,
-
-  /** @private {Function} */
-  onExtensionDisabledListener_: null,
-
   /** @private  {?settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
@@ -171,45 +150,11 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
-    this.browserProxy_.setUpdateArcVpnProvidersCallback(
-        this.onArcVpnProvidersReceived_.bind(this));
-    this.browserProxy_.requestArcVpnProviders();
-  },
-
-  /** @override */
   attached: function() {
-    this.onExtensionAddedListener_ =
-        this.onExtensionAddedListener_ || this.onExtensionAdded_.bind(this);
-    chrome.management.onInstalled.addListener(this.onExtensionAddedListener_);
-    chrome.management.onEnabled.addListener(this.onExtensionAddedListener_);
-
-    this.onExtensionRemovedListener_ =
-        this.onExtensionRemovedListener_ || this.onExtensionRemoved_.bind(this);
-    chrome.management.onUninstalled.addListener(
-        this.onExtensionRemovedListener_);
-
-    this.onExtensionDisabledListener_ = this.onExtensionDisabledListener_ ||
-        this.onExtensionDisabled_.bind(this);
-    chrome.management.onDisabled.addListener(this.onExtensionDisabledListener_);
-
-    chrome.management.getAll(this.onGetAllExtensions_.bind(this));
-
     this.networkConfig_.getGlobalPolicy().then(response => {
       this.globalPolicy_ = response.result;
     });
-  },
-
-  /** @override */
-  detached: function() {
-    chrome.management.onInstalled.removeListener(
-        assert(this.onExtensionAddedListener_));
-    chrome.management.onEnabled.removeListener(
-        assert(this.onExtensionAddedListener_));
-    chrome.management.onUninstalled.removeListener(
-        assert(this.onExtensionRemovedListener_));
-    chrome.management.onDisabled.removeListener(
-        assert(this.onExtensionDisabledListener_));
+    this.onVpnProvidersChanged();
   },
 
   /**
@@ -272,6 +217,15 @@ Polymer({
     } else {
       this.focusConfig_.delete(oldRoute.path);
     }
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onVpnProvidersChanged: function() {
+    this.networkConfig_.getVpnProviders().then(response => {
+      const providers = response.providers;
+      providers.sort(this.compareVpnProviders_);
+      this.vpnProviders_ = providers;
+    });
   },
 
   /**
@@ -450,17 +404,12 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item: !settings.ThirdPartyVPNProperties}}} event
+   * @param {!{model: !{item: !mojom.VpnProvider}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.extensionId);
-  },
-
-  /** @private */
-  onAddArcVpnTap_: function() {
-    this.showNetworksSubpage_(mojom.NetworkType.kVPN);
+    this.browserProxy_.addThirdPartyVpn(provider.appId);
   },
 
   /**
@@ -477,97 +426,28 @@ Polymer({
   },
 
   /**
-   * chrome.management.getAll callback.
-   * @param {!Array<!chrome.management.ExtensionInfo>} extensions
-   * @private
+   * @param {!mojom.VpnProvider} vpnProvider1
+   * @param {!mojom.VpnProvider} vpnProvider2
+   * @return {number}
    */
-  onGetAllExtensions_: function(extensions) {
-    const vpnProviders = [];
-    for (let i = 0; i < extensions.length; ++i) {
-      this.addVpnProvider_(vpnProviders, extensions[i]);
-    }
-    this.thirdPartyVpnProviders_ = vpnProviders;
-  },
-
-  /**
-   * If |extension| is a third-party VPN provider, add it to |vpnProviders|.
-   * @param {!Array<!settings.ThirdPartyVPNProperties>} vpnProviders
-   * @param {!chrome.management.ExtensionInfo} extension
-   * @private
-   */
-  addVpnProvider_: function(vpnProviders, extension) {
-    if (!extension.enabled ||
-        extension.permissions.indexOf('vpnProvider') == -1) {
-      return;
-    }
-    if (vpnProviders.find(function(provider) {
-          return provider.extensionId == extension.id;
-        })) {
-      return;
-    }
-    const newProvider = {
-      extensionId: extension.id,
-      providerName: extension.name,
-    };
-    vpnProviders.push(newProvider);
-  },
-
-  /**
-   * chrome.management.onInstalled or onEnabled event.
-   * @param {!chrome.management.ExtensionInfo} extension
-   * @private
-   */
-  onExtensionAdded_: function(extension) {
-    this.addVpnProvider_(this.thirdPartyVpnProviders_, extension);
-  },
-
-  /**
-   * chrome.management.onUninstalled event.
-   * @param {string} extensionId
-   * @private
-   */
-  onExtensionRemoved_: function(extensionId) {
-    for (let i = 0; i < this.thirdPartyVpnProviders_.length; ++i) {
-      const provider = this.thirdPartyVpnProviders_[i];
-      if (provider.extensionId == extensionId) {
-        this.splice('thirdPartyVpnProviders_', i, 1);
-        break;
-      }
-    }
-  },
-
-  /**
-   * Compares Arc VPN Providers based on LastlauchTime
-   * @param {!settings.ArcVpnProvider} arcVpnProvider1
-   * @param {!settings.ArcVpnProvider} arcVpnProvider2
-   * @private
-   */
-  compareArcVpnProviders_: function(arcVpnProvider1, arcVpnProvider2) {
-    if (arcVpnProvider1.LastLaunchTime > arcVpnProvider2.LastLaunchTime) {
+  compareVpnProviders_: function(vpnProvider1, vpnProvider2) {
+    // Show Extension VPNs before Arc VPNs.
+    if (vpnProvider1.type < vpnProvider2.type) {
       return -1;
     }
-    if (arcVpnProvider1.LastLaunchTime < arcVpnProvider2.LastLaunchTime) {
+    if (vpnProvider1.type > vpnProvider2.type) {
+      return 1;
+    }
+    // Show VPNs of the same type by lastLaunchTime.
+    if (vpnProvider1.lastLaunchTime.internalValue >
+        vpnProvider2.lastLaunchTime.internalValue) {
+      return -1;
+    }
+    if (vpnProvider1.lastLaunchTime.internalValue <
+        vpnProvider2.lastLaunchTime.internalValue) {
       return 1;
     }
     return 0;
-  },
-
-  /**
-   * @param {?Array<!settings.ArcVpnProvider>} arcVpnProviders
-   * @private
-   */
-  onArcVpnProvidersReceived_: function(arcVpnProviders) {
-    arcVpnProviders.sort(this.compareArcVpnProviders_);
-    this.arcVpnProviders_ = arcVpnProviders;
-  },
-
-  /**
-   * chrome.management.onDisabled event.
-   * @param {{id: string}} extension
-   * @private
-   */
-  onExtensionDisabled_: function(extension) {
-    this.onExtensionRemoved_(extension.id);
   },
 
   /**
@@ -599,7 +479,7 @@ Polymer({
   },
 
   /**
-   * @param {!settings.ThirdPartyVPNProperties} provider
+   * @param {!mojom.VpnProvider} provider
    * @return {string}
    */
   getAddThirdPartyVpnLabel_: function(provider) {

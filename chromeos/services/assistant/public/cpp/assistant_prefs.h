@@ -33,7 +33,9 @@ enum ConsentStatus {
 extern const char kAssistantConsentStatus[];
 extern const char kAssistantContextEnabled[];
 extern const char kAssistantDisabledByPolicy[];
+extern const char kAssistantEnabled[];
 extern const char kAssistantHotwordAlwaysOn[];
+extern const char kAssistantHotwordEnabled[];
 extern const char kAssistantLaunchWithMicOpen[];
 extern const char kAssistantNotificationEnabled[];
 

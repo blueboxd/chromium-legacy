@@ -148,7 +148,7 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
       // serializing DOM.
       param->skip_meta_element = element;
       *need_skip = true;
-    } else if (IsHTMLHtmlElement(*element)) {
+    } else if (IsA<HTMLHtmlElement>(element)) {
       // Check something before processing the open tag of HEAD element.
       // First we add doc type declaration if original document has it.
       if (!param->have_seen_doc_type) {

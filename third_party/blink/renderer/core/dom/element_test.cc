@@ -28,7 +28,7 @@ class ElementTest : public EditingTestBase {};
 
 TEST_F(ElementTest, SupportsFocus) {
   Document& document = GetDocument();
-  DCHECK(IsHTMLHtmlElement(document.documentElement()));
+  DCHECK(IsA<HTMLHtmlElement>(document.documentElement()));
   document.setDesignMode("on");
   document.View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);

@@ -41,13 +41,13 @@ class ArcPrintSpoolerBridge : public KeyedService,
                              int32_t task_id,
                              int32_t surface_id,
                              int32_t top_margin,
-                             mojom::PrintRendererDelegatePtr delegate,
+                             mojom::PrintSessionInstancePtr instance,
                              StartPrintInCustomTabCallback callback) override;
 
   void OnPrintDocumentSaved(int32_t task_id,
                             int32_t surface_id,
                             int32_t top_margin,
-                            mojom::PrintRendererDelegatePtr delegate,
+                            mojom::PrintSessionInstancePtr instance,
                             StartPrintInCustomTabCallback callback,
                             base::FilePath file_path);
 

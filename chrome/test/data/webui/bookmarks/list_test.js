@@ -184,11 +184,17 @@ suite('<bookmarks-list> command manager integration test', function() {
     Polymer.dom.flush();
   });
 
-  test('show context menu', () => {
+  test('show context menu', async () => {
+    const commandManager = app.$$('bookmarks-command-manager');
+    commandManager.updateForPaste_ = function() {
+      this.canPaste_ = true;
+      return Promise.resolve();
+    };
+
     const list = app.$$('bookmarks-list');
     list.fire('contextmenu', {clientX: 0, clientY: 0});
 
-    const commandManager = app.$$('bookmarks-command-manager');
+    await test_util.flushTasks();
 
     assertEquals(MenuSource.LIST, commandManager.menuSource_);
     assertDeepEquals(

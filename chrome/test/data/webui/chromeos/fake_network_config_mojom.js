@@ -22,6 +22,9 @@ class FakeNetworkConfig {
         this.onDeviceStateListChanged.bind(this));
     extensionApi.onActiveNetworksChanged.addListener(
         this.onActiveNetworksChanged.bind(this));
+
+    this.vpnProviders_ =
+        /** @type {!Array<!chromeos.networkConfig.mojom.VpnProvider>}*/ ([]);
   }
 
   onNetworkListChanged(networks) {
@@ -38,6 +41,10 @@ class FakeNetworkConfig {
    */
   onActiveNetworksChanged(networks) {
     this.observers_.forEach(o => o.onActiveNetworksChanged(networks));
+  }
+
+  onVpnProvidersChanged() {
+    this.observers_.forEach(o => o.onVpnProvidersChanged());
   }
 
   /**
@@ -147,11 +154,27 @@ class FakeNetworkConfig {
   }
 
   /**
+   * @return { !Promise<{
+   *     result: !Array<!chromeos.networkConfig.mojom.VpnProvider>}>}
+   */
+  getVpnProviders() {
+    return new Promise(resolve => {
+      resolve({providers: this.vpnProviders_});
+    });
+  }
+
+  /**
    * @param {string} type
    * @return {?chrome.networkingPrivate.DeviceStateProperties}
    */
   getDeviceStateForTest(type) {
     return this.deviceToMojo(this.extensionApi_.getDeviceStateForTest(type));
+  }
+
+  /** @param {!Array<!chromeos.networkConfig.mojom.VpnProvider>} providers */
+  setVpnProvidersForTest(providers) {
+    this.vpnProviders_ = providers;
+    this.onVpnProvidersChanged();
   }
 
   /**

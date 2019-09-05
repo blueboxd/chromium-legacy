@@ -133,19 +133,33 @@ bool CodecImage::ScheduleOverlayPlane(
     return false;
   }
 
-  // Move the overlay if needed.
-  if (most_recent_bounds_ != bounds_rect) {
-    most_recent_bounds_ = bounds_rect;
-    // Note that, if we're actually promoted to overlay, that this is where the
-    // hint is sent to the callback.  NotifyPromotionHint detects this case and
-    // lets us do it.  If we knew that we were going to get promotion hints,
-    // then we could always let NotifyPromotionHint do it.  Unfortunately, we
-    // don't know that.
-    promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds_rect, true));
-  }
-
+  NotifyOverlayPromotion(true, bounds_rect);
   RenderToOverlay();
   return true;
+}
+
+void CodecImage::NotifyOverlayPromotion(bool promotion,
+                                        const gfx::Rect& bounds) {
+  if (!codec_buffer_wait_coordinator_ && promotion) {
+    // When |CodecImage| is already backed by SurfaceView, and it should be used
+    // as overlay.
+
+    // Move the overlay if needed.
+    if (most_recent_bounds_ != bounds) {
+      most_recent_bounds_ = bounds;
+      // Note that, if we're actually promoted to overlay, that this is where
+      // the hint is sent to the callback.  NotifyPromotionHint detects this
+      // case and lets us do it.  If we knew that we were going to get promotion
+      // hints, then we could always let NotifyPromotionHint do it.
+      // Unfortunately, we don't know that.
+      promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds, promotion));
+    }
+  } else {
+    // This could be when |CodecImage| is backed by SurfaceTexture but should be
+    // promoted, or when this is backed by either SurfaceView or SurfaceTexture
+    // but should not be promoted.
+    promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds, promotion));
+  }
 }
 
 void CodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
@@ -177,14 +191,9 @@ void CodecImage::NotifyPromotionHint(bool promotion_hint,
                                      int display_y,
                                      int display_width,
                                      int display_height) {
-  // If this is promotable, and we're using an overlay, then skip sending this
-  // hint.  ScheduleOverlayPlane will do it.
-  if (promotion_hint && !codec_buffer_wait_coordinator_)
-    return;
-
-  promotion_hint_cb_.Run(PromotionHintAggregator::Hint(
-      gfx::Rect(display_x, display_y, display_width, display_height),
-      promotion_hint));
+  NotifyOverlayPromotion(
+      promotion_hint,
+      gfx::Rect(display_x, display_y, display_width, display_height));
 }
 
 void CodecImage::ReleaseResources() {

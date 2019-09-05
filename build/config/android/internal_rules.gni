@@ -786,6 +786,19 @@ template("test_runner_script") {
     } else {
       wrapper_script = "$root_build_dir/bin/run_${_test_name}"
     }
+
+    if (defined(invoker.modules)) {
+      foreach(module, invoker.modules) {
+        executable_args += [
+          "--module",
+          module,
+        ]
+      }
+    }
+
+    if (defined(invoker.command_line_args)) {
+      executable_args += invoker.command_line_args
+    }
   }
 }
 

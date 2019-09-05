@@ -101,18 +101,18 @@ void MagnificationManager::SetProfileForTest(Profile* profile) {
 MagnificationManager::MagnificationManager() {
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
   // TODO(warx): observe focus changed in page notification when either
   // fullscreen magnifier or docked magnifier is enabled.
   registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                  content::NotificationService::AllSources());
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
 MagnificationManager::~MagnificationManager() {
   CHECK(this == g_magnification_manager);
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
 void MagnificationManager::Observe(
@@ -127,15 +127,6 @@ void MagnificationManager::Observe(
         SetProfile(profile);
       break;
     }
-    case chrome::NOTIFICATION_SESSION_STARTED:
-      // Update |profile_| when entering a session.
-      SetProfile(ProfileManager::GetActiveUserProfile());
-
-      // Add a session state observer to be able to monitor session changes.
-      if (!session_state_observer_.get())
-        session_state_observer_.reset(
-            new user_manager::ScopedUserSessionStateObserver(this));
-      break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       // Update |profile_| when exiting a session or shutting down.
       Profile* profile = content::Source<Profile>(source).ptr();
@@ -150,10 +141,17 @@ void MagnificationManager::Observe(
   }
 }
 
-void MagnificationManager::ActiveUserChanged(
-    const user_manager::User* active_user) {
-  if (active_user && active_user->is_profile_created())
-    SetProfile(ProfileManager::GetActiveUserProfile());
+void MagnificationManager::ActiveUserChanged(user_manager::User* active_user) {
+  if (!active_user)
+    return;
+
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&MagnificationManager::SetProfileByUser,
+                     weak_ptr_factory_.GetWeakPtr(), active_user));
+}
+
+void MagnificationManager::SetProfileByUser(const user_manager::User* user) {
+  SetProfile(ProfileHelper::Get()->GetProfileByUser(user));
 }
 
 void MagnificationManager::SetProfile(Profile* profile) {

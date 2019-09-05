@@ -111,18 +111,12 @@ base::AtomicSequenceNumber g_next_transaction_id;
 
 uint64_t g_agb_required_usage_bits = AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
 
-// Helper function to log errors from dlsym. Calling LOG(ERROR) inside a macro
-// crashes clang code coverage. https://crbug.com/843356
-void LogDlsymError(const char* func) {
-  LOG(ERROR) << "Unable to load function " << func;
-}
-
 #define LOAD_FUNCTION(lib, func)                             \
   do {                                                       \
     func##Fn = reinterpret_cast<p##func>(dlsym(lib, #func)); \
     if (!func##Fn) {                                         \
       supported = false;                                     \
-      LogDlsymError(#func);                                  \
+      LOG(ERROR) << "Unable to load function " << #func;     \
     }                                                        \
   } while (0)
 

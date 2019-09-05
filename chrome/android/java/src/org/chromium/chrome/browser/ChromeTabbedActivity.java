@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.incognito.IncognitoTabSnapshotController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -284,6 +285,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
     private boolean mCreatedTabOnStartup;
+
+    // Whether or not the initial tab is being created.
+    private boolean mPendingInitialTabCreation;
 
     /**
      *  Keeps track of the pref for the last time since this activity was stopped.
@@ -983,7 +987,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         mMainIntentMetrics.logLaunchBehavior();
         super.onStartWithNative();
 
-        setInitialOverviewState();
+        // Don't call setInitialOverviewState if we're waiting for the tab's creation or we risk
+        // showing a glimpse of the tab selector during start up.
+        if (!mPendingInitialTabCreation) setInitialOverviewState();
 
         if (isMainIntentFromLauncher(getIntent()) && isInOverviewMode()) {
             RecordUserAction.record("MobileStartup.UserEnteredTabSwitcher");
@@ -1237,6 +1243,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 // If homepage URI is not determined, due to PartnerBrowserCustomizations provider
                 // async reading, then create a tab at the async reading finished. If it takes
                 // too long, just create NTP.
+
+                mPendingInitialTabCreation = true;
                 PartnerBrowserCustomizations.setOnInitializeAsyncFinished(
                         () -> {
                             mMainIntentMetrics.setIgnoreEvents(true);
@@ -1252,10 +1260,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         }
     }
 
+    private boolean hasStartWithNativeBeenCalled() {
+        int activity_state = getLifecycleDispatcher().getCurrentActivityState();
+        return activity_state == ActivityLifecycleDispatcher.ActivityState.STARTED_WITH_NATIVE
+                || activity_state == ActivityLifecycleDispatcher.ActivityState.RESUMED_WITH_NATIVE;
+    }
+
     /**
      * Create an initial tab for cold start without restored tabs.
      */
     private void createInitialTab() {
+        mPendingInitialTabCreation = false;
+
         // If the grid tab switcher is enabled and the tab switcher will be shown on start,
         //  do not create a new tab. With the grid, creating a new tab is now a one tap action.
         if (shouldShowTabSwitcherOnStart() && FeatureUtilities.isGridTabSwitcherEnabled()) return;
@@ -1276,6 +1292,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         }
 
         getTabCreator(false).launchUrl(url, TabLaunchType.FROM_CHROME_UI);
+
+        // If we didn't call setInitialOverviewState() in startWithNative() because
+        // mPendingInitialTabCreation was true then do so now.
+        if (hasStartWithNativeBeenCalled()) setInitialOverviewState();
     }
 
     @Override

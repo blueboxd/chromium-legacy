@@ -271,7 +271,8 @@ std::vector<std::string> DataSaverTopHostProvider::GetTopHosts(
     // prevents hosts that have not been engaged recently from having hints
     // requested for them. The engagement_details are sorted above in descending
     // order by engagement score.
-    if (detail.total_score <= GetMinTopHostEngagementThreshold())
+    if (detail.total_score <
+        optimization_guide::features::MinTopHostEngagementScoreThreshold())
       return top_hosts;
     // TODO(b/968542): Skip origins that are local hosts (e.g., IP addresses,
     // localhost:8080 etc.).
@@ -282,13 +283,4 @@ std::vector<std::string> DataSaverTopHostProvider::GetTopHosts(
   }
 
   return top_hosts;
-}
-
-size_t DataSaverTopHostProvider::GetMinTopHostEngagementThreshold() const {
-  // The base score for the first navigation of a host when added to the site
-  // engagement service. The threshold corresponds to the minimum score that a
-  // host is considered to be a top host, hosts with a lower score have not
-  // been navigated to recently.
-  return SiteEngagementScore::GetNavigationPoints() +
-         SiteEngagementScore::GetFirstDailyEngagementPoints();
 }

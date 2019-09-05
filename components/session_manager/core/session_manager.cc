@@ -67,9 +67,6 @@ bool SessionManager::IsSessionStarted() const {
 }
 
 void SessionManager::SessionStarted() {
-  if (session_started_)
-    return;
-
   session_started_ = true;
 
   bool is_primary = sessions_.size() == 1;

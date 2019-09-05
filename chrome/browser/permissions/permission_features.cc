@@ -11,6 +11,8 @@
 
 #if defined(OS_ANDROID)
 
+// Keep in sync with "PermissionFieldTrial.java"
+
 const char kQuietNotificationPromptsUIFlavourParameterName[] = "ui_flavour";
 const char kQuietNotificationPromptsHeadsUpNotification[] =
     "heads_up_notification";

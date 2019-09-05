@@ -281,9 +281,10 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     auto processor =
         std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
     processor_ = processor.get();
+    auto storage = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+    storage_ = storage.get();
     bridge_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(processor),
-        std::make_unique<testing::NiceMock<MockNigoriStorage>>(), &encryptor_,
+        std::move(processor), std::move(storage), &encryptor_,
         /*packed_explicit_passphrase_key=*/std::string());
     bridge_->AddObserver(&observer_);
   }
@@ -293,12 +294,14 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   NigoriSyncBridgeImpl* bridge() { return bridge_.get(); }
   MockNigoriLocalChangeProcessor* processor() { return processor_; }
   MockObserver* observer() { return &observer_; }
+  MockNigoriStorage* storage() { return storage_; }
 
  private:
   const FakeEncryptor encryptor_;
   std::unique_ptr<NigoriSyncBridgeImpl> bridge_;
   // Ownership transferred to |bridge_|.
   testing::NiceMock<MockNigoriLocalChangeProcessor>* processor_;
+  testing::NiceMock<MockNigoriStorage>* storage_;
   testing::NiceMock<MockObserver> observer_;
 };
 
@@ -530,6 +533,23 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
   EXPECT_CALL(*processor(), Put(_)).Times(0);
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Ne(base::nullopt));
+}
+
+TEST_F(NigoriSyncBridgeImplTest, ShouldClearDataWhenSyncDisabled) {
+  const std::string kRawKeystoreKey = "raw_keystore_key";
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams},
+      /*keystore_decryptor_params=*/kKeystoreKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(*storage(), ClearData);
+  bridge()->ApplyDisableSyncChanges();
+  EXPECT_FALSE(bridge()->GetCryptographerForTesting().is_initialized());
 }
 
 // Tests decryption logic for explicit passphrase. In order to check that we're

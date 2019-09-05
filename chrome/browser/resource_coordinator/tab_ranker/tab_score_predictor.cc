@@ -100,6 +100,21 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
   return result;
 }
 
+std::map<int32_t, float> TabScorePredictor::ScoreTabs(
+    const std::map<int32_t, base::Optional<TabFeatures>>& tabs) {
+  std::map<int32_t, float> reactivation_scores;
+  for (const auto& pair : tabs) {
+    float score = 0.0f;
+    if (pair.second &&
+        (ScoreTab(pair.second.value(), &score) == TabRankerResult::kSuccess)) {
+      reactivation_scores[pair.first] = score;
+    } else {
+      reactivation_scores[pair.first] = std::numeric_limits<float>::max();
+    }
+  }
+  return reactivation_scores;
+}
+
 TabRankerResult TabScorePredictor::ScoreTabWithMLScorer(const TabFeatures& tab,
                                                         float* score) {
   // No error is expected, but something could conceivably be misconfigured.

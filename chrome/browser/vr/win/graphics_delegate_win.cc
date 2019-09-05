@@ -216,13 +216,12 @@ CameraModel CameraModelViewProjFromVREyeParameters(
     const device::mojom::VREyeParametersPtr& eye_params,
     gfx::Transform head_from_world) {
   CameraModel model = {};
+
+  DCHECK(eye_params->head_from_eye.IsInvertible());
   gfx::Transform eye_from_head;
-  // We have offsets of the eyes in head space, so invert the translation to
-  // calculate the transform from head space to eye space.  For example,
-  // (0, 0, 0) in head space is (-offset.x, -offset.y, -offset.z) in eye space,
-  // and (offset.x, offset.y, offset.z) in head space is (0, 0, 0) in eye space.
-  eye_from_head.Translate3d(-eye_params->offset);
-  model.view_matrix = eye_from_head * head_from_world;
+  if (eye_params->head_from_eye.GetInverse(&eye_from_head)) {
+    model.view_matrix = eye_from_head * head_from_world;
+  }
 
   float up_tan =
       tanf(eye_params->field_of_view->up_degrees * base::kPiFloat / 180.0);

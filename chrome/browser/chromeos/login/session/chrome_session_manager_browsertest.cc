@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
-
 #include <memory>
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -28,7 +27,6 @@
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "rlz/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,16 +113,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
                                                     "fake_sid", "fake_lsid");
   StartSignInScreen();
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
-  session_start_waiter.Wait();
+  test::WaitForPrimaryUserSessionStart();
 
   // Verify that session state is ACTIVE with one user session.
   EXPECT_EQ(session_manager::SessionState::ACTIVE, manager->session_state());
@@ -203,16 +197,12 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
                                                       "fake_sid", "fake_lsid");
     StartSignInScreen();
 
-    content::WindowedNotificationObserver session_start_waiter(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources());
-
     LoginDisplayHost::default_host()
         ->GetOobeUI()
         ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
-    session_start_waiter.Wait();
+    test::WaitForPrimaryUserSessionStart();
 
     // Verify that session state is ACTIVE with one user session.
     EXPECT_EQ(session_manager::SessionState::ACTIVE, manager->session_state());

@@ -24,11 +24,13 @@ class Navigation {
   // there will be one entry in the list).
   virtual const std::vector<GURL>& GetRedirectChain() = 0;
 
+  // These types are sent over IPC and across different versions. Never remove
+  // or change the order.
   enum State {
-    kWaitingResponse,
-    kReceivingBytes,
-    kComplete,
-    kFailed,
+    kWaitingResponse = 0,
+    kReceivingBytes = 1,
+    kComplete = 2,
+    kFailed = 3,
   };
 
   virtual State GetState() = 0;

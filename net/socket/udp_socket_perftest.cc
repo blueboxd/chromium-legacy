@@ -74,12 +74,12 @@ void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
   memset(io_buffer->data(), 'G', kPacketSize);
 
   while (num_of_packets) {
-    int rv =
-        socket->Write(io_buffer.get(), io_buffer->size(),
-                      base::Bind(&UDPSocketPerfTest::DoneWritePacketsToSocket,
-                                 weak_factory_.GetWeakPtr(), socket,
-                                 num_of_packets - 1, done_callback),
-                      TRAFFIC_ANNOTATION_FOR_TESTS);
+    int rv = socket->Write(
+        io_buffer.get(), io_buffer->size(),
+        base::BindOnce(&UDPSocketPerfTest::DoneWritePacketsToSocket,
+                       weak_factory_.GetWeakPtr(), socket, num_of_packets - 1,
+                       done_callback),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     if (rv == ERR_IO_PENDING)
       break;
     --num_of_packets;

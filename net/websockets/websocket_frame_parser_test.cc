@@ -98,7 +98,11 @@ TEST(WebSocketFrameParserTest, DecodeMaskedFrame) {
   EXPECT_TRUE(frame->final_chunk);
 
   ASSERT_EQ(static_cast<int>(kHelloLength), frame->data->size());
-  EXPECT_TRUE(std::equal(kHello, kHello + kHelloLength, frame->data->data()));
+
+  std::string payload(frame->data->data(), frame->data->size());
+  MaskWebSocketFramePayload(header->masking_key, 0, &payload[0],
+                            payload.size());
+  EXPECT_EQ(payload, kHello);
 }
 
 TEST(WebSocketFrameParserTest, DecodeManyFrames) {
@@ -260,17 +264,20 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
     if (!frame1)
       continue;
     EXPECT_FALSE(frame1->final_chunk);
-    if (expected1.size() == 0) {
-      EXPECT_EQ(NULL, frame1->data.get());
-    } else {
-      ASSERT_EQ(expected1.size(), static_cast<uint64_t>(frame1->data->size()));
-      EXPECT_TRUE(
-          std::equal(expected1.begin(), expected1.end(), frame1->data->data()));
-    }
     const WebSocketFrameHeader* header1 = frame1->header.get();
     EXPECT_TRUE(header1 != nullptr);
     if (!header1)
       continue;
+    if (expected1.size() == 0) {
+      EXPECT_EQ(NULL, frame1->data.get());
+    } else {
+      ASSERT_EQ(expected1.size(), static_cast<uint64_t>(frame1->data->size()));
+      std::vector<char> payload1(frame1->data->data(),
+                                 frame1->data->data() + frame1->data->size());
+      MaskWebSocketFramePayload(header1->masking_key, 0, &payload1[0],
+                                payload1.size());
+      EXPECT_EQ(expected1, payload1);
+    }
     EXPECT_TRUE(header1->final);
     EXPECT_FALSE(header1->reserved1);
     EXPECT_FALSE(header1->reserved2);
@@ -294,8 +301,11 @@ TEST(WebSocketFrameParserTest, DecodePartialMaskedFrame) {
       EXPECT_EQ(NULL, frame2->data.get());
     } else {
       ASSERT_EQ(expected2.size(), static_cast<uint64_t>(frame2->data->size()));
-      EXPECT_TRUE(
-          std::equal(expected2.begin(), expected2.end(), frame2->data->data()));
+      std::vector<char> payload2(frame2->data->data(),
+                                 frame2->data->data() + frame2->data->size());
+      MaskWebSocketFramePayload(header1->masking_key, cutting_pos, &payload2[0],
+                                payload2.size());
+      EXPECT_EQ(expected2, payload2);
     }
     const WebSocketFrameHeader* header2 = frame2->header.get();
     EXPECT_TRUE(header2 == nullptr);

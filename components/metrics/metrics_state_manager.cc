@@ -159,6 +159,11 @@ MetricsStateManager::MetricsStateManager(
     // UMA is not enabled at this point, it's unlikely it will be enabled in
     // the same session since that requires the user to manually do that via
     // settings page after they unchecked it on the download page.
+    //
+    // Note: Windows first run is covered by browser tests
+    // FirstRunMasterPrefsVariationsSeedTest.PRE_SecondRun and
+    // FirstRunMasterPrefsVariationsSeedTest.SecondRun. If the platform ifdef
+    // for this logic changes, the tests should be updated as well.
     if (client_id_.empty())
       provisional_client_id_ = base::GenerateGUID();
 #endif  // !defined(OS_WIN)

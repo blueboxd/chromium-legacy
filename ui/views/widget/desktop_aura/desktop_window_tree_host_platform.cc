@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
@@ -25,6 +26,68 @@
 #include "ui/wm/core/window_util.h"
 
 namespace views {
+
+namespace {
+
+ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
+    const Widget::InitParams& params) {
+  ui::PlatformWindowInitProperties properties;
+
+  switch (params.type) {
+    case Widget::InitParams::TYPE_WINDOW:
+      properties.type = ui::PlatformWindowType::kWindow;
+      break;
+
+    case Widget::InitParams::TYPE_MENU:
+      properties.type = ui::PlatformWindowType::kMenu;
+      break;
+
+    case Widget::InitParams::TYPE_TOOLTIP:
+      properties.type = ui::PlatformWindowType::kTooltip;
+      break;
+
+    case Widget::InitParams::TYPE_DRAG:
+      properties.type = ui::PlatformWindowType::kDrag;
+      break;
+
+    case Widget::InitParams::TYPE_BUBBLE:
+      properties.type = ui::PlatformWindowType::kBubble;
+      break;
+
+    default:
+      properties.type = ui::PlatformWindowType::kPopup;
+      break;
+  }
+
+  properties.bounds = params.bounds;
+  properties.activatable =
+      params.activatable == Widget::InitParams::ACTIVATABLE_YES;
+  properties.force_show_in_taskbar = params.force_show_in_taskbar;
+  properties.keep_on_top =
+      params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal;
+  properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
+  properties.remove_standard_frame = params.remove_standard_frame;
+  properties.workspace = params.workspace;
+
+  if (params.parent && params.parent->GetHost())
+    properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
+
+  switch (params.opacity) {
+    case Widget::InitParams::WindowOpacity::INFER_OPACITY:
+      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
+      break;
+    case Widget::InitParams::WindowOpacity::OPAQUE_WINDOW:
+      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
+      break;
+    case Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW:
+      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
+      break;
+  }
+
+  return properties;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostPlatform:
@@ -46,15 +109,22 @@ DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
+  if (params.type == Widget::InitParams::TYPE_WINDOW)
+    content_window()->SetProperty(aura::client::kAnimationsDisabledKey, true);
+
   ui::PlatformWindowInitProperties properties =
       ConvertWidgetInitParamsToInitProperties(params);
+  AddAdditionalInitProperties(params, &properties);
 
   CreateAndSetPlatformWindow(std::move(properties));
-  CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
-  aura::WindowTreeHost::OnAcceleratedWidgetAvailable();
+  // Disable compositing on tooltips as a workaround for
+  // https://crbug.com/442111.
+  CreateCompositor(viz::FrameSinkId(),
+                   params.force_software_compositing ||
+                       params.type == Widget::InitParams::TYPE_TOOLTIP);
+
+  WindowTreeHost::OnAcceleratedWidgetAvailable();
   InitHost();
-  if (!params.bounds.IsEmpty())
-    SetBoundsInDIP(params.bounds);
   window()->Show();
 }
 
@@ -85,18 +155,6 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
 void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {}
 
 void DesktopWindowTreeHostPlatform::OnActiveWindowChanged(bool active) {}
-
-base::Optional<gfx::Size>
-DesktopWindowTreeHostPlatform::GetMinimumSizeForWindow() {
-  return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMinimumSize()))
-      .size();
-}
-
-base::Optional<gfx::Size>
-DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
-  return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMaximumSize()))
-      .size();
-}
 
 std::unique_ptr<corewm::Tooltip>
 DesktopWindowTreeHostPlatform::CreateTooltip() {
@@ -479,6 +537,19 @@ bool DesktopWindowTreeHostPlatform::ShouldCreateVisibilityController() const {
   return true;
 }
 
+gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  if (IsVisible()) {
+    display = display::Screen::GetScreen()->GetDisplayNearestWindow(
+        GetWidget()->GetNativeWindow());
+  }
+
+  float scale = display.device_scale_factor();
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  return transform;
+}
+
 void DesktopWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 #if defined(USE_OZONE)
   // Make sure the |event| is marked as a non-client if it's a non-client
@@ -537,70 +608,34 @@ void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
-ui::PlatformWindowInitProperties
-DesktopWindowTreeHostPlatform::ConvertWidgetInitParamsToInitProperties(
-    const Widget::InitParams& params) {
-  ui::PlatformWindowInitProperties properties;
+base::Optional<gfx::Size>
+DesktopWindowTreeHostPlatform::GetMinimumSizeForWindow() {
+  return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMinimumSize()))
+      .size();
+}
 
-  switch (params.type) {
-    case Widget::InitParams::TYPE_WINDOW:
-      properties.type = ui::PlatformWindowType::kWindow;
-      break;
-
-    case Widget::InitParams::TYPE_MENU:
-      properties.type = ui::PlatformWindowType::kMenu;
-      break;
-
-    case Widget::InitParams::TYPE_TOOLTIP:
-      properties.type = ui::PlatformWindowType::kTooltip;
-      break;
-
-    case Widget::InitParams::TYPE_DRAG:
-      properties.type = ui::PlatformWindowType::kDrag;
-      break;
-
-    case Widget::InitParams::TYPE_BUBBLE:
-      properties.type = ui::PlatformWindowType::kBubble;
-      break;
-
-    default:
-      properties.type = ui::PlatformWindowType::kPopup;
-      break;
-  }
-
-  properties.bounds = params.bounds;
-  properties.activatable =
-      params.activatable == Widget::InitParams::ACTIVATABLE_YES;
-  properties.force_show_in_taskbar = params.force_show_in_taskbar;
-  properties.keep_on_top =
-      params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal;
-  properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
-  properties.remove_standard_frame = params.remove_standard_frame;
-  properties.workspace = params.workspace;
-  properties.wm_class_name = params.wm_class_name;
-  properties.wm_class_class = params.wm_class_class;
-  properties.wm_role_name = params.wm_role_name;
-
-  if (params.parent && params.parent->GetHost())
-    properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
-
-  switch (params.opacity) {
-    case Widget::InitParams::WindowOpacity::INFER_OPACITY:
-      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
-      break;
-    case Widget::InitParams::WindowOpacity::OPAQUE_WINDOW:
-      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
-      break;
-    case Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW:
-      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
-      break;
-  }
-
-  return properties;
+base::Optional<gfx::Size>
+DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
+  return ToPixelRect(gfx::Rect(native_widget_delegate()->GetMaximumSize()))
+      .size();
 }
 
 aura::Window* DesktopWindowTreeHostPlatform::content_window() {
   return desktop_native_widget_aura_->content_window();
+}
+
+gfx::Rect DesktopWindowTreeHostPlatform::ToDIPRect(
+    const gfx::Rect& rect_in_pixels) const {
+  gfx::RectF rect_in_dip = gfx::RectF(rect_in_pixels);
+  GetRootTransform().TransformRectReverse(&rect_in_dip);
+  return gfx::ToEnclosingRect(rect_in_dip);
+}
+
+gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
+    const gfx::Rect& rect_in_dip) const {
+  gfx::RectF rect_in_pixels = gfx::RectF(rect_in_dip);
+  GetRootTransform().TransformRect(&rect_in_pixels);
+  return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
 void DesktopWindowTreeHostPlatform::Relayout() {
@@ -627,19 +662,13 @@ Widget* DesktopWindowTreeHostPlatform::GetWidget() {
   return native_widget_delegate_->AsWidget();
 }
 
-gfx::Rect DesktopWindowTreeHostPlatform::ToDIPRect(
-    const gfx::Rect& rect_in_pixels) const {
-  gfx::RectF rect_in_dip = gfx::RectF(rect_in_pixels);
-  GetRootTransform().TransformRectReverse(&rect_in_dip);
-  return gfx::ToEnclosingRect(rect_in_dip);
+const Widget* DesktopWindowTreeHostPlatform::GetWidget() const {
+  return native_widget_delegate_->AsWidget();
 }
 
-gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
-    const gfx::Rect& rect_in_dip) const {
-  gfx::RectF rect_in_pixels = gfx::RectF(rect_in_dip);
-  GetRootTransform().TransformRect(&rect_in_pixels);
-  return gfx::ToEnclosingRect(rect_in_pixels);
-}
+void DesktopWindowTreeHostPlatform::AddAdditionalInitProperties(
+    const Widget::InitParams& params,
+    ui::PlatformWindowInitProperties* properties) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHost:

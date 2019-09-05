@@ -47,6 +47,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -158,7 +159,6 @@ bool ContainsIcannNameCollisionIp(const AddressList& addr_list) {
 
 // True if |hostname| ends with either ".local" or ".local.".
 bool ResemblesMulticastDNSName(const std::string& hostname) {
-  DCHECK(!hostname.empty());
   const char kSuffix[] = ".local.";
   const size_t kSuffixLen = sizeof(kSuffix) - 1;
   const size_t kSuffixLenTrimmed = kSuffixLen - 1;
@@ -478,53 +478,6 @@ class PriorityTracker {
   size_t total_count_;
   size_t counts_[NUM_PRIORITIES];
 };
-
-// Is |dns_server| within the list of known DNS servers that also support
-// DNS-over-HTTPS?
-bool DnsServerSupportsDoh(const IPAddress& dns_server) {
-  static const base::NoDestructor<std::unordered_set<std::string>>
-      upgradable_servers(std::initializer_list<std::string>({
-          // Google Public DNS
-          "8.8.8.8",
-          "8.8.4.4",
-          "2001:4860:4860::8888",
-          "2001:4860:4860::8844",
-          // Cloudflare DNS
-          "1.1.1.1",
-          "1.0.0.1",
-          "2606:4700:4700::1111",
-          "2606:4700:4700::1001",
-          // Quad9 DNS
-          "9.9.9.9",
-          "149.112.112.112",
-          "2620:fe::fe",
-          "2620:fe::9",
-      }));
-  return upgradable_servers->find(dns_server.ToString()) !=
-         upgradable_servers->end();
-}
-
-bool HasDoHUpgradeableServer(std::vector<IPEndPoint> nameservers) {
-  for (const auto& dns_server : nameservers) {
-    if (DnsServerSupportsDoh(dns_server.address()))
-      return true;
-  }
-  return false;
-}
-
-bool DotServerSupportsDoh(std::string dot_server) {
-  static const base::NoDestructor<std::unordered_set<std::string>>
-      upgradable_servers(std::initializer_list<std::string>({
-          // Google Public DNS
-          "dns.google",
-          // Cloudflare DNS
-          "1dot1dot1dot1.cloudflare-dns.com",
-          "cloudflare-dns.com",
-          // Quad9 DNS
-          "dns.quad9.net",
-      }));
-  return upgradable_servers->find(dot_server) != upgradable_servers->end();
-}
 
 void NetLogHostCacheEntry(const NetLogWithSource& net_log,
                           NetLogEventType type,
@@ -1979,7 +1932,18 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
                         bool secure) {
     DCHECK_NE(OK, failure_results.error());
 
-    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.FailureTime", duration);
+    if (secure_dns_mode_ == DnsConfig::SecureDnsMode::SECURE) {
+      DCHECK(secure);
+      UMA_HISTOGRAM_LONG_TIMES_100(
+          "Net.DNS.SecureDnsTask.DnsModeSecure.FailureTime", duration);
+    } else if (secure_dns_mode_ == DnsConfig::SecureDnsMode::AUTOMATIC &&
+               secure) {
+      UMA_HISTOGRAM_LONG_TIMES_100(
+          "Net.DNS.SecureDnsTask.DnsModeAutomatic.FailureTime", duration);
+    } else {
+      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.InsecureDnsTask.FailureTime",
+                                   duration);
+    }
 
     if (!dns_task)
       return;
@@ -2265,7 +2229,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         // Record effective total time from creation to completion.
         resolver_->RecordTotalTime(
             req->parameters().is_speculative, false /* from_cache */,
-            tick_clock_->NowTicks() - req->request_time());
+            secure_dns_mode_, tick_clock_->NowTicks() - req->request_time());
       }
       if (results.error() == OK && !req->parameters().is_speculative) {
         req->set_results(
@@ -2651,7 +2615,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
       request->set_stale_info(std::move(stale_info).value());
     LogFinishRequest(request->source_net_log(), results.error());
     RecordTotalTime(request->parameters().is_speculative, true /* from_cache */,
-                    base::TimeDelta());
+                    effective_secure_dns_mode, base::TimeDelta());
     return results.error();
   }
 
@@ -2681,7 +2645,15 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   IPAddress* ip_address_ptr = nullptr;
   if (ip_address.AssignFromIPLiteral(hostname)) {
     ip_address_ptr = &ip_address;
-  } else {
+  }
+
+  GetEffectiveParametersForRequest(
+      hostname, dns_query_type, source, flags, secure_dns_mode_override,
+      cache_usage, ip_address_ptr, source_net_log, out_effective_query_type,
+      out_effective_host_resolver_flags, out_effective_secure_dns_mode,
+      out_tasks);
+
+  if (!ip_address.IsValid()) {
     // Check that the caller supplied a valid hostname to resolve. For
     // MULTICAST_DNS, we are less restrictive.
     // TODO(ericorth): Control validation based on an explicit flag rather
@@ -2694,12 +2666,6 @@ HostCache::Entry HostResolverManager::ResolveLocally(
                               HostCache::Entry::SOURCE_UNKNOWN);
     }
   }
-
-  GetEffectiveParametersForRequest(
-      hostname, dns_query_type, source, flags, secure_dns_mode_override,
-      cache_usage, ip_address_ptr, source_net_log, out_effective_query_type,
-      out_effective_host_resolver_flags, out_effective_secure_dns_mode,
-      out_tasks);
 
   bool resolve_canonname =
       *out_effective_host_resolver_flags & HOST_RESOLVER_CANONNAME;
@@ -2962,36 +2928,17 @@ void HostResolverManager::CacheResult(HostCache* cache,
 }
 
 // Record time from Request creation until a valid DNS response.
-void HostResolverManager::RecordTotalTime(bool speculative,
-                                          bool from_cache,
-                                          base::TimeDelta duration) const {
+void HostResolverManager::RecordTotalTime(
+    bool speculative,
+    bool from_cache,
+    DnsConfig::SecureDnsMode secure_dns_mode,
+    base::TimeDelta duration) const {
   if (!speculative) {
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime", duration);
-
-    switch (DetermineModeForHistogram()) {
-      case MODE_FOR_HISTOGRAM_SYSTEM:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.System", duration);
-        break;
-      case MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.SystemSupportsDoh",
-                                   duration);
-        break;
-      case MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.SystemPrivate",
-                                   duration);
-        break;
-      case MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH:
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Net.DNS.TotalTimeTyped.SystemPrivateSupportsDoh", duration);
-        break;
-      case MODE_FOR_HISTOGRAM_ASYNC_DNS:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.TotalTimeTyped.Async", duration);
-        break;
-      case MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH:
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Net.DNS.TotalTimeTyped.AsyncPrivateSupportsDoh", duration);
-        break;
-    }
+    UmaHistogramMediumTimes(
+        base::StringPrintf("Net.DNS.SecureDnsMode.%s.TotalTime",
+                           SecureDnsModeToString(secure_dns_mode).c_str()),
+        duration);
 
     if (!from_cache)
       UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTimeNotCached", duration);
@@ -3479,36 +3426,6 @@ int HostResolverManager::GetOrCreateMdnsClient(MDnsClient** out_client) {
   NOTREACHED();
   return ERR_UNEXPECTED;
 #endif
-}
-
-// TODO(crbug.com/985589): Update these metrics when DoH upgrade starts
-// happening in practice.
-HostResolverManager::ModeForHistogram
-HostResolverManager::DetermineModeForHistogram() const {
-  if (!dns_client_)
-    return MODE_FOR_HISTOGRAM_SYSTEM;
-
-  const DnsConfig* config = dns_client_->GetEffectiveConfig();
-
-  if (config && config->dns_over_tls_active) {
-    if ((config->dns_over_tls_hostname.empty() &&
-         HasDoHUpgradeableServer(config->nameservers)) ||
-        DotServerSupportsDoh(config->dns_over_tls_hostname)) {
-      return MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH;
-    }
-    return MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS;
-  }
-
-  if (dns_client_->CanUseInsecureDnsTransactions()) {
-    if (HasDoHUpgradeableServer(config->nameservers))
-      return MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH;
-    return MODE_FOR_HISTOGRAM_ASYNC_DNS;
-  }
-
-  if (config && HasDoHUpgradeableServer(config->nameservers))
-    return MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH;
-
-  return MODE_FOR_HISTOGRAM_SYSTEM;
 }
 
 void HostResolverManager::InvalidateCaches() {

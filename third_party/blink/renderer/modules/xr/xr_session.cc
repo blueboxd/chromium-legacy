@@ -83,7 +83,8 @@ void UpdateViewFromEyeParameters(
       fov->left_degrees * kDegToRad, fov->right_degrees * kDegToRad, depth_near,
       depth_far);
 
-  view.UpdateOffset(eye->offset.x(), eye->offset.y(), eye->offset.z());
+  const TransformationMatrix matrix(eye->head_from_eye.matrix());
+  view.SetHeadFromEyeTransform(matrix);
 }
 
 // Returns the session feature corresponding to the given reference space type.
@@ -980,7 +981,6 @@ WTF::Vector<XRViewData>& XRSession::views() {
     } else {
       if (views_.IsEmpty()) {
         views_.emplace_back(XRView::kEyeNone);
-        views_[kMonoOrStereoLeftView].UpdateOffset(0, 0, 0);
       }
 
       float aspect = 1.0f;

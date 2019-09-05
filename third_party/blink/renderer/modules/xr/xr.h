@@ -8,6 +8,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
@@ -42,8 +43,13 @@ class XR final : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
-  ScriptPromise supportsSession(ScriptState*, const String&);
-  ScriptPromise requestSession(ScriptState*, const String&, XRSessionInit*);
+  ScriptPromise supportsSession(ScriptState*,
+                                const String&,
+                                ExceptionState& exception_state);
+  ScriptPromise requestSession(ScriptState*,
+                               const String&,
+                               XRSessionInit*,
+                               ExceptionState& exception_state);
 
   XRFrameProvider* frameProvider();
 
@@ -91,6 +97,14 @@ class XR final : public EventTargetWithInlineData,
     kMaxValue = kOtherError,
   };
 
+  struct RequestedXRSessionFeatureSet {
+    // Set of requested features which are known and valid for the current mode.
+    XRSessionFeatureSet valid_features;
+
+    // Whether any requested features were unknown or invalid
+    bool invalid_features = false;
+  };
+
   // Encapsulates blink-side `XR::requestSession()` call. It is a wrapper around
   // ScriptPromiseResolver that allows us to add additional logic as certain
   // things related to promise's life cycle happen.
@@ -100,21 +114,39 @@ class XR final : public EventTargetWithInlineData,
     PendingRequestSessionQuery(int64_t ukm_source_id,
                                ScriptPromiseResolver* resolver,
                                XRSession::SessionMode mode,
-                               XRSessionFeatureSet required_features,
-                               XRSessionFeatureSet optional_features);
+                               RequestedXRSessionFeatureSet required_features,
+                               RequestedXRSessionFeatureSet optional_features);
     virtual ~PendingRequestSessionQuery() = default;
 
     // Resolves underlying promise with passed in XR session.
     void Resolve(XRSession* session);
-    // Rejects underlying promise with passed in DOM exception.
-    void Reject(DOMException* exception);
-    // Rejects underlying promise with passed in v8 value. Used to raise
-    // TypeError which is not a DOM exception.
-    void Reject(v8::Local<v8::Value> value);
+
+    // Rejects underlying promise with a DOMException.
+    // Do not call this with |DOMExceptionCode::kSecurityError|, use
+    // |RejectWithSecurityError| for that. If the exception is thrown
+    // synchronously, an ExceptionState must be passed in. Otherwise it may be
+    // null.
+    void RejectWithDOMException(DOMExceptionCode exception_code,
+                                const String& message,
+                                ExceptionState* exception_state);
+
+    // Rejects underlying promise with a SecurityError.
+    // If the exception is thrown synchronously, an ExceptionState must
+    // be passed in. Otherwise it may be null.
+    void RejectWithSecurityError(const String& sanitized_message,
+                                 ExceptionState* exception_state);
+
+    // Rejects underlying promise with a TypeError.
+    // If the exception is thrown synchronously, an ExceptionState must
+    // be passed in. Otherwise it may be null.
+    void RejectWithTypeError(const String& message,
+                             ExceptionState* exception_state);
 
     XRSession::SessionMode mode() const;
-    XRSessionFeatureSet const& RequiredFeatures() const;
-    XRSessionFeatureSet const& OptionalFeatures() const;
+    const XRSessionFeatureSet& RequiredFeatures() const;
+    const XRSessionFeatureSet& OptionalFeatures() const;
+    bool InvalidRequiredFeatures() const;
+    bool InvalidOptionalFeatures() const;
 
     // Returns underlying resolver's script state.
     ScriptState* GetScriptState() const;
@@ -126,13 +158,16 @@ class XR final : public EventTargetWithInlineData,
 
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
-    XRSessionFeatureSet required_features_;
-    XRSessionFeatureSet optional_features_;
+    RequestedXRSessionFeatureSet required_features_;
+    RequestedXRSessionFeatureSet optional_features_;
 
     const int64_t ukm_source_id_;
 
     DISALLOW_COPY_AND_ASSIGN(PendingRequestSessionQuery);
   };
+
+  static device::mojom::blink::XRSessionOptionsPtr XRSessionOptionsFromQuery(
+      const PendingRequestSessionQuery& query);
 
   // Encapsulates blink-side `XR::supportsSession()` call.  It is a wrapper
   // around ScriptPromiseResolver that allows us to add additional logic as
@@ -145,11 +180,27 @@ class XR final : public EventTargetWithInlineData,
 
     // Resolves underlying promise.
     void Resolve();
-    // Rejects underlying promise with passed in DOM exception.
-    void Reject(DOMException* exception);
-    // Rejects underlying promise with passed in v8 value. Used to raise
-    // TypeError which is not a DOM exception.
-    void Reject(v8::Local<v8::Value> value);
+
+    // Rejects underlying promise with a DOMException.
+    // Do not call this with |DOMExceptionCode::kSecurityError|, use
+    // |RejectWithSecurityError| for that. If the exception is thrown
+    // synchronously, an ExceptionState must be passed in. Otherwise it may be
+    // null.
+    void RejectWithDOMException(DOMExceptionCode exception_code,
+                                const String& message,
+                                ExceptionState* exception_state);
+
+    // Rejects underlying promise with a SecurityError.
+    // If the exception is thrown synchronously, an ExceptionState must
+    // be passed in. Otherwise it may be null.
+    void RejectWithSecurityError(const String& sanitized_message,
+                                 ExceptionState* exception_state);
+
+    // Rejects underlying promise with a TypeError.
+    // If the exception is thrown synchronously, an ExceptionState must
+    // be passed in. Otherwise it may be null.
+    void RejectWithTypeError(const String& message,
+                             ExceptionState* exception_state);
 
     XRSession::SessionMode mode() const;
 
@@ -161,6 +212,21 @@ class XR final : public EventTargetWithInlineData,
 
     DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
+
+  const char* CheckInlineSessionRequestAllowed(
+      LocalFrame* frame,
+      Document* doc,
+      const PendingRequestSessionQuery& query);
+
+  void RequestImmersiveSession(LocalFrame* frame,
+                               Document* doc,
+                               PendingRequestSessionQuery* query,
+                               ExceptionState* exception_state);
+
+  void RequestInlineSession(LocalFrame* frame,
+                            Document* doc,
+                            PendingRequestSessionQuery* query,
+                            ExceptionState* exception_state);
 
   void OnRequestSessionReturned(
       PendingRequestSessionQuery*,
@@ -192,10 +258,6 @@ class XR final : public EventTargetWithInlineData,
   void OnEnvironmentProviderDisconnect();
   void OnMagicWindowProviderDisconnect();
 
-  // Reports that session request has returned.
-  void ReportRequestSessionResult(XRSession::SessionMode session_mode,
-                                  SessionRequestStatus status);
-
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_supports_immersive_ = false;
 
@@ -206,6 +268,7 @@ class XR final : public EventTargetWithInlineData,
 
   HeapHashSet<Member<PendingSupportsSessionQuery>> outstanding_support_queries_;
   HeapHashSet<Member<PendingRequestSessionQuery>> outstanding_request_queries_;
+  bool has_outstanding_immersive_request_ = false;
 
   Vector<EnvironmentProviderErrorCallback>
       environment_provider_error_callbacks_;

@@ -521,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   SigninFrameJS().TapOn("Submit");
 
   // Login should finish login and a session should start.
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   // Regression test for http://crbug.com/490737: Verify that the user's actual
   // password was used, not the contents of the first type=password input field
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
   } while (message != "\"fake_password\"");
 
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
 
   // Scraping a single password should finish the login and start the session.
   SigninFrameJS().TapOn("Submit");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
   // Either scraped password should be able to sign-in.
   SendConfirmPassword("password1");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -643,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 
   // Two matching passwords should let the user to sign in.
   SetManualPasswords("Test1", "Test1");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -665,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   SigninFrameJS().TapOn("Submit");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
@@ -1190,7 +1190,7 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
 
   // Scraping a single password should finish the login right away.
   SigninFrameJS().TapOn("Submit");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 }
 
 std::string SAMLPolicyTest::GetCookieValue(const std::string& name) {
@@ -1234,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, PRE_NoSAML) {
       ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kNonSAMLUserEmail, "password", "[]");
 
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 }
 
 // Verifies that the offline login time limit does not affect a user who
@@ -1400,7 +1400,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
 
   // Scraping one password should finish login.
   SigninFrameJS().TapOn("Submit");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 }
 
 // Ensure that the permission status of getUserMedia requests from SAML login
@@ -1490,7 +1490,7 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   SigninFrameJS().TapOn("Submit");
-  test::WaitForSessionStart();
+  test::WaitForPrimaryUserSessionStart();
 
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(
       user_manager::UserManager::Get()->GetPrimaryUser());

@@ -34,7 +34,6 @@
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service.h"
-#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/dns/mock_host_resolver.h"
@@ -508,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -548,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -588,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -628,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -652,7 +651,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kUnknown,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -693,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -737,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -770,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -802,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -891,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -943,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -999,7 +998,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_EQ(assistant::prefs::ConsentStatus::kActivityControlAccepted,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -1016,8 +1015,8 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
@@ -1035,8 +1034,8 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantDisabledByPolicy));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 

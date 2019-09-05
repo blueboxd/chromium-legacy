@@ -991,9 +991,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   }
   ClearRecordedNames();
 
-  if (base::FeatureList::IsEnabled(
-          features::kManagedGuestSessionNotification) &&
-      public_session_auto_login_account_id_.is_valid() &&
+  if (public_session_auto_login_account_id_.is_valid() &&
       public_session_auto_login_account_id_ == user_context.GetAccountId() &&
       last_login_attempt_was_auto_login_) {
     const std::string& user_id = user_context.GetAccountId().GetUserEmail();

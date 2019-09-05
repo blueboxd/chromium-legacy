@@ -114,7 +114,7 @@ bool AnchorElementMetricsSender::AssociateInterface() {
     return false;
 
   document->GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&metrics_host_));
+      metrics_host_.BindNewPipeAndPassReceiver());
   return true;
 }
 

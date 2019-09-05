@@ -21,8 +21,8 @@ FixedNativeFileSystemPermissionGrant::GetStatus() {
 void FixedNativeFileSystemPermissionGrant::RequestPermission(
     int process_id,
     int frame_id,
-    base::OnceClosure callback) {
-  std::move(callback).Run();
+    base::OnceCallback<void(PermissionRequestOutcome)> callback) {
+  std::move(callback).Run(PermissionRequestOutcome::kRequestAborted);
 }
 
 }  // namespace content

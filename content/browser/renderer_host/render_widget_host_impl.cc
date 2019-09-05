@@ -764,26 +764,24 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
 }
 #endif
 
-bool RenderWidgetHostImpl::GetVisualProperties(
-    VisualProperties* visual_properties,
-    bool* needs_ack) {
+VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // This is only called while the RenderWidgetHost is attached to a delegate
   // still.
   DCHECK(delegate_);
 
-  *visual_properties = VisualProperties();
+  VisualProperties visual_properties;
 
-  GetScreenInfo(&visual_properties->screen_info);
+  GetScreenInfo(&visual_properties.screen_info);
 
-  visual_properties->is_fullscreen_granted =
+  visual_properties.is_fullscreen_granted =
       delegate_->IsFullscreenForCurrentTab();
-  visual_properties->display_mode = delegate_->GetDisplayMode(this);
-  visual_properties->zoom_level = delegate_->GetPendingPageZoomLevel();
+  visual_properties.display_mode = delegate_->GetDisplayMode(this);
+  visual_properties.zoom_level = delegate_->GetPendingPageZoomLevel();
 
   RenderViewHostDelegateView* rvh_delegate_view = delegate_->GetDelegateView();
   DCHECK(rvh_delegate_view);
 
-  visual_properties->browser_controls_shrink_blink_size =
+  visual_properties.browser_controls_shrink_blink_size =
       rvh_delegate_view->DoBrowserControlsShrinkRendererSize();
 
   float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
@@ -794,126 +792,54 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   // in DIPs then.
   if (!IsUseZoomForDSFEnabled()) {
     browser_controls_dsf_multiplier =
-        visual_properties->screen_info.device_scale_factor;
+        visual_properties.screen_info.device_scale_factor;
   }
-  visual_properties->top_controls_height =
+  visual_properties.top_controls_height =
       top_controls_height / browser_controls_dsf_multiplier;
-  visual_properties->bottom_controls_height =
+  visual_properties.bottom_controls_height =
       bottom_controls_height / browser_controls_dsf_multiplier;
 
-  visual_properties->auto_resize_enabled = auto_resize_enabled_;
-  visual_properties->min_size_for_auto_resize = min_size_for_auto_resize_;
-  visual_properties->max_size_for_auto_resize = max_size_for_auto_resize_;
+  visual_properties.auto_resize_enabled = auto_resize_enabled_;
+  visual_properties.min_size_for_auto_resize = min_size_for_auto_resize_;
+  visual_properties.max_size_for_auto_resize = max_size_for_auto_resize_;
 
-  visual_properties->page_scale_factor = page_scale_factor_;
-  visual_properties->is_pinch_gesture_active = is_pinch_gesture_active_;
+  visual_properties.page_scale_factor = page_scale_factor_;
+  visual_properties.is_pinch_gesture_active = is_pinch_gesture_active_;
 
   if (view_) {
-    visual_properties->new_size = view_->GetRequestedRendererSize();
-    visual_properties->capture_sequence_number =
+    visual_properties.new_size = view_->GetRequestedRendererSize();
+    visual_properties.capture_sequence_number =
         view_->GetCaptureSequenceNumber();
-    visual_properties->compositor_viewport_pixel_size =
+    visual_properties.compositor_viewport_pixel_size =
         view_->GetCompositorViewportPixelSize();
-    visual_properties->visible_viewport_size = view_->GetVisibleViewportSize();
+    visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
     viz::LocalSurfaceIdAllocation local_surface_id_allocation =
         view_->GetLocalSurfaceIdAllocation();
     if (local_surface_id_allocation.IsValid()) {
-      visual_properties->local_surface_id_allocation =
+      visual_properties.local_surface_id_allocation =
           local_surface_id_allocation;
     }
   }
 
   if (screen_orientation_type_for_testing_) {
-    visual_properties->screen_info.orientation_type =
+    visual_properties.screen_info.orientation_type =
         *screen_orientation_type_for_testing_;
   }
 
   if (screen_orientation_angle_for_testing_) {
-    visual_properties->screen_info.orientation_angle =
+    visual_properties.screen_info.orientation_angle =
         *screen_orientation_angle_for_testing_;
   }
 
-  const bool size_changed =
-      !old_visual_properties_ ||
-      old_visual_properties_->auto_resize_enabled !=
-          visual_properties->auto_resize_enabled ||
-      (old_visual_properties_->auto_resize_enabled &&
-       (old_visual_properties_->min_size_for_auto_resize !=
-            visual_properties->min_size_for_auto_resize ||
-        old_visual_properties_->max_size_for_auto_resize !=
-            visual_properties->max_size_for_auto_resize)) ||
-      (!old_visual_properties_->auto_resize_enabled &&
-       (old_visual_properties_->new_size != visual_properties->new_size ||
-        (old_visual_properties_->compositor_viewport_pixel_size.IsEmpty() &&
-         !visual_properties->compositor_viewport_pixel_size.IsEmpty())));
-
-  viz::LocalSurfaceIdAllocation old_parent_local_surface_id_allocation =
-      old_visual_properties_
-          ? old_visual_properties_->local_surface_id_allocation.value_or(
-                viz::LocalSurfaceIdAllocation())
-          : viz::LocalSurfaceIdAllocation();
-  const viz::LocalSurfaceId& old_parent_local_surface_id =
-      old_parent_local_surface_id_allocation.local_surface_id();
-
-  viz::LocalSurfaceIdAllocation new_parent_local_surface_id_allocation =
-      visual_properties->local_surface_id_allocation.value_or(
-          viz::LocalSurfaceIdAllocation());
-  const viz::LocalSurfaceId& new_parent_local_surface_id =
-      new_parent_local_surface_id_allocation.local_surface_id();
-
-  const bool parent_local_surface_id_changed =
-      !old_visual_properties_ ||
-      old_parent_local_surface_id.parent_sequence_number() !=
-          new_parent_local_surface_id.parent_sequence_number() ||
-      old_parent_local_surface_id.embed_token() !=
-          new_parent_local_surface_id.embed_token();
-
-  const bool zoom_changed =
-      !old_visual_properties_ ||
-      old_visual_properties_->zoom_level != visual_properties->zoom_level;
-
-  bool dirty =
-      zoom_changed || size_changed || parent_local_surface_id_changed ||
-      old_visual_properties_->screen_info != visual_properties->screen_info ||
-      old_visual_properties_->compositor_viewport_pixel_size !=
-          visual_properties->compositor_viewport_pixel_size ||
-      old_visual_properties_->is_fullscreen_granted !=
-          visual_properties->is_fullscreen_granted ||
-      old_visual_properties_->display_mode != visual_properties->display_mode ||
-      old_visual_properties_->top_controls_height !=
-          visual_properties->top_controls_height ||
-      old_visual_properties_->browser_controls_shrink_blink_size !=
-          visual_properties->browser_controls_shrink_blink_size ||
-      old_visual_properties_->bottom_controls_height !=
-          visual_properties->bottom_controls_height ||
-      old_visual_properties_->visible_viewport_size !=
-          visual_properties->visible_viewport_size ||
-      old_visual_properties_->capture_sequence_number !=
-          visual_properties->capture_sequence_number ||
-      old_visual_properties_->page_scale_factor !=
-          visual_properties->page_scale_factor ||
-      old_visual_properties_->is_pinch_gesture_active !=
-          visual_properties->is_pinch_gesture_active;
-
-  // We should throttle sending updated VisualProperties to the renderer to
-  // the rate of commit. This ensures we don't overwhelm the renderer with
-  // visual updates faster than it can keep up.  |needs_ack| corresponds to
-  // cases where a commit is expected.
-  *needs_ack = g_check_for_pending_visual_properties_ack &&
-               !visual_properties->auto_resize_enabled &&
-               !visual_properties->new_size.IsEmpty() &&
-               !visual_properties->compositor_viewport_pixel_size.IsEmpty() &&
-               visual_properties->local_surface_id_allocation && size_changed;
-
-  return dirty;
+  return visual_properties;
 }
 
 void RenderWidgetHostImpl::SetInitialVisualProperties(
-    const VisualProperties& visual_properties,
-    bool needs_ack) {
-  visual_properties_ack_pending_ = needs_ack;
+    const VisualProperties& visual_properties) {
+  visual_properties_ack_pending_ =
+      DoesVisualPropertiesNeedAck(old_visual_properties_, visual_properties);
   old_visual_properties_ =
       std::make_unique<VisualProperties>(visual_properties);
 }
@@ -941,9 +867,11 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   }
 
   auto visual_properties = std::make_unique<VisualProperties>();
-  bool needs_ack = false;
-  if (!GetVisualProperties(visual_properties.get(), &needs_ack))
+  *visual_properties = GetVisualProperties();
+  if (!StoredVisualPropertiesNeedsUpdate(old_visual_properties_,
+                                         *visual_properties))
     return false;
+
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
@@ -995,7 +923,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
         "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
         visual_properties->local_surface_id_allocation->local_surface_id()
             .ToString());
-    visual_properties_ack_pending_ = needs_ack;
+    visual_properties_ack_pending_ =
+        DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
     if (delegate() && visible_viewport_size_changed) {
       delegate()->NotifyVisibleViewportSizeChanged(
           visual_properties->visible_viewport_size);
@@ -2301,6 +2230,105 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
         metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
     delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip);
   }
+}
+
+// static
+bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
+    const VisualProperties& old_visual_properties,
+    const VisualProperties& new_visual_properties) {
+  return old_visual_properties.auto_resize_enabled !=
+             new_visual_properties.auto_resize_enabled ||
+         (old_visual_properties.auto_resize_enabled &&
+          (old_visual_properties.min_size_for_auto_resize !=
+               new_visual_properties.min_size_for_auto_resize ||
+           old_visual_properties.max_size_for_auto_resize !=
+               new_visual_properties.max_size_for_auto_resize)) ||
+         (!old_visual_properties.auto_resize_enabled &&
+          (old_visual_properties.new_size != new_visual_properties.new_size ||
+           (old_visual_properties.compositor_viewport_pixel_size.IsEmpty() &&
+            !new_visual_properties.compositor_viewport_pixel_size.IsEmpty())));
+}
+
+// static
+bool RenderWidgetHostImpl::DoesVisualPropertiesNeedAck(
+    const std::unique_ptr<VisualProperties>& old_visual_properties,
+    const VisualProperties& new_visual_properties) {
+  // We should throttle sending updated VisualProperties to the renderer to
+  // the rate of commit. This ensures we don't overwhelm the renderer with
+  // visual updates faster than it can keep up.  |needs_ack| corresponds to
+  // cases where a commit is expected.
+  bool is_acking_applicable =
+      g_check_for_pending_visual_properties_ack &&
+      !new_visual_properties.auto_resize_enabled &&
+      !new_visual_properties.new_size.IsEmpty() &&
+      !new_visual_properties.compositor_viewport_pixel_size.IsEmpty() &&
+      new_visual_properties.local_surface_id_allocation;
+
+  // If acking is applicable, then check if there has been an
+  // |old_visual_properties| stored which would indicate an update has been
+  // sent. If so, then acking is defined by size changing.
+  return is_acking_applicable &&
+         (!old_visual_properties ||
+          DidVisualPropertiesSizeChange(*old_visual_properties,
+                                        new_visual_properties));
+}
+
+// static
+bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
+    const std::unique_ptr<VisualProperties>& old_visual_properties,
+    const VisualProperties& new_visual_properties) {
+  if (!old_visual_properties)
+    return true;
+
+  const bool size_changed = DidVisualPropertiesSizeChange(
+      *old_visual_properties, new_visual_properties);
+
+  // Hold on the the LocalSurfaceIdAllocation in a local variable otherwise the
+  // LocalSurfaceId may become invalid when used later.
+  viz::LocalSurfaceIdAllocation old_parent_local_surface_id_allocation =
+      old_visual_properties->local_surface_id_allocation.value_or(
+          viz::LocalSurfaceIdAllocation());
+  viz::LocalSurfaceIdAllocation new_parent_local_surface_id_allocation =
+      new_visual_properties.local_surface_id_allocation.value_or(
+          viz::LocalSurfaceIdAllocation());
+
+  const viz::LocalSurfaceId& old_parent_local_surface_id =
+      old_parent_local_surface_id_allocation.local_surface_id();
+  const viz::LocalSurfaceId& new_parent_local_surface_id =
+      new_parent_local_surface_id_allocation.local_surface_id();
+
+  const bool parent_local_surface_id_changed =
+      old_parent_local_surface_id.parent_sequence_number() !=
+          new_parent_local_surface_id.parent_sequence_number() ||
+      old_parent_local_surface_id.embed_token() !=
+          new_parent_local_surface_id.embed_token();
+
+  const bool zoom_changed =
+      old_visual_properties->zoom_level != new_visual_properties.zoom_level;
+
+  return zoom_changed || size_changed || parent_local_surface_id_changed ||
+         old_visual_properties->screen_info !=
+             new_visual_properties.screen_info ||
+         old_visual_properties->compositor_viewport_pixel_size !=
+             new_visual_properties.compositor_viewport_pixel_size ||
+         old_visual_properties->is_fullscreen_granted !=
+             new_visual_properties.is_fullscreen_granted ||
+         old_visual_properties->display_mode !=
+             new_visual_properties.display_mode ||
+         old_visual_properties->top_controls_height !=
+             new_visual_properties.top_controls_height ||
+         old_visual_properties->browser_controls_shrink_blink_size !=
+             new_visual_properties.browser_controls_shrink_blink_size ||
+         old_visual_properties->bottom_controls_height !=
+             new_visual_properties.bottom_controls_height ||
+         old_visual_properties->visible_viewport_size !=
+             new_visual_properties.visible_viewport_size ||
+         old_visual_properties->capture_sequence_number !=
+             new_visual_properties.capture_sequence_number ||
+         old_visual_properties->page_scale_factor !=
+             new_visual_properties.page_scale_factor ||
+         old_visual_properties->is_pinch_gesture_active !=
+             new_visual_properties.is_pinch_gesture_active;
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {

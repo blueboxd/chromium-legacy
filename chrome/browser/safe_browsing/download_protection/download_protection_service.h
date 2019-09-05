@@ -35,6 +35,7 @@
 
 namespace content {
 class PageNavigator;
+struct NativeFileSystemWriteItem;
 }  // namespace content
 
 namespace download {
@@ -55,8 +56,6 @@ class CheckClientDownloadRequest;
 class CheckClientDownloadRequestBase;
 class CheckNativeFileSystemWriteRequest;
 class PPAPIDownloadRequest;
-
-struct NativeFileSystemWriteItem;
 
 // This class provides an asynchronous API to check whether a particular
 // client download is malicious or not.
@@ -111,7 +110,7 @@ class DownloadProtectionService {
   // will also be invoked on the UI thread.  This method must be called once the
   // write is finished and data has been written to disk.
   virtual void CheckNativeFileSystemWrite(
-      std::unique_ptr<NativeFileSystemWriteItem> item,
+      std::unique_ptr<content::NativeFileSystemWriteItem> item,
       CheckDownloadCallback callback);
 
   // Display more information to the user regarding the download specified by
@@ -239,7 +238,7 @@ class DownloadProtectionService {
   // Identify referrer chain info of a native file system write. This function
   // also records UMA stats of download attribution result.
   std::unique_ptr<ReferrerChainData> IdentifyReferrerChain(
-      const NativeFileSystemWriteItem& item);
+      const content::NativeFileSystemWriteItem& item);
 
   // Identify referrer chain of the PPAPI download based on the frame URL where
   // the download is initiated. Then add referrer chain info to

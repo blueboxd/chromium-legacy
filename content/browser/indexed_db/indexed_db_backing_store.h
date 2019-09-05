@@ -30,6 +30,7 @@
 #include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -135,7 +136,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   class CONTENT_EXPORT Transaction {
    public:
-    explicit Transaction(IndexedDBBackingStore* backing_store);
+    explicit Transaction(IndexedDBBackingStore* backing_store,
+                         bool relaxed_durability);
     virtual ~Transaction();
 
     virtual void Begin(std::vector<ScopeLock> locks);
@@ -233,6 +235,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
       virtual void Abort() = 0;
 
+      // Whether to flush to the file system when writing or not.
+      virtual storage::FlushPolicy GetFlushPolicy() const = 0;
+
      protected:
       friend class base::RefCountedThreadSafe<ChainedBlobWriter>;
       virtual ~ChainedBlobWriter() {}
@@ -294,6 +299,11 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // indicate that the committing_transaction_count_ on the backing store
     // has been bumped, and journal cleaning should be deferred.
     bool committing_;
+
+    // This flag is passed to LevelDBScopes as |sync_on_commit|.
+    // If |relaxed_durability| is false, the commit flushes to disk.
+    // If true, it avoids the flush for performance at the cost of durability.
+    bool relaxed_durability_;
 
     base::WeakPtrFactory<Transaction> ptr_factory_{this};
 
@@ -573,7 +583,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   bool is_incognito() const { return backing_store_mode_ == Mode::kInMemory; }
 
-  virtual std::unique_ptr<Transaction> CreateTransaction();
+  virtual std::unique_ptr<Transaction> CreateTransaction(
+      bool relaxed_durability);
 
   base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();

@@ -758,7 +758,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // TODO(https://crbug.com/1000654): Re-enable this test.
 #define MAYBE_TestDevToolsOnDevTools DISABLED_TestDevToolsOnDevTools
 #else

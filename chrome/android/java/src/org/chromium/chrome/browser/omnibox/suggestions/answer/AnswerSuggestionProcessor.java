@@ -82,11 +82,11 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        maybeFetchAnswerIcon(suggestion, model);
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
         setStateForNewSuggestion(model, suggestion, delegate);
+        maybeFetchAnswerIcon(suggestion, model);
     }
 
     @Override

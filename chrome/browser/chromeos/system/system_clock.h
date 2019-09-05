@@ -10,6 +10,7 @@
 #include "base/callback_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -51,14 +52,15 @@ class SystemClock : public chromeos::LoginState::Observer,
                const content::NotificationDetails& details) override;
 
   // user_manager::UserManager::UserSessionStateObserver overrides
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
  private:
   // Should be the same as CrosSettings::ObserverSubscription.
   typedef base::CallbackList<void(void)>::Subscription
       CrosSettingsObserverSubscription;
 
-  void OnActiveProfileChanged(Profile* profile);
+  void SetProfileByUser(const user_manager::User* user);
+  void SetProfile(Profile* profile);
   bool OnProfileDestroyed(Profile* profile);
 
   // LoginState::Observer overrides.
@@ -68,16 +70,18 @@ class SystemClock : public chromeos::LoginState::Observer,
 
   void UpdateClockType();
 
-  bool user_pod_was_focused_;
-  base::HourClockType last_focused_pod_hour_clock_type_;
+  bool user_pod_was_focused_ = false;
+  base::HourClockType last_focused_pod_hour_clock_type_ = base::k12HourClock;
 
-  Profile* user_profile_;
-  std::unique_ptr<content::NotificationRegistrar> registrar_;
+  Profile* user_profile_ = nullptr;
+  content::NotificationRegistrar registrar_;
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
 
   base::ObserverList<SystemClockObserver>::Unchecked observer_list_;
 
   std::unique_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
+
+  base::WeakPtrFactory<SystemClock> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemClock);
 };

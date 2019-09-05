@@ -18,7 +18,10 @@ namespace {
 
 TEST(XRViewTest, UpdatePoseMatrix) {
   XRViewData view(XRView::kEyeLeft);
-  view.UpdateOffset(-1.0, 2.0, 3.0);
+
+  TransformationMatrix head_from_eye;
+  head_from_eye.Translate3d(-1.0, 2.0, 3.0);
+  view.SetHeadFromEyeTransform(head_from_eye);
 
   DOMPointInit* position = MakePointForTest(1.0, -1.0, 4.0, 1.0);
   DOMPointInit* orientation =

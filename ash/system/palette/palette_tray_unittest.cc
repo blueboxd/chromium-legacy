@@ -339,7 +339,7 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
-  assistant_state()->NotifySettingsEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       true);
 
@@ -419,7 +419,7 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   assistant_state()->NotifyStatusChanged(
       mojom::VoiceInteractionState::NOT_READY);
-  assistant_state()->NotifySettingsEnabled(false);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       false);
 
@@ -448,7 +448,7 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
                              false /* no highlighter on press */);
 
   // Enable the other user pref, still not sufficient.
-  assistant_state()->NotifySettingsEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   WaitDragAndAssertMetalayer("two prefs enabled", origin,
                              ui::EF_LEFT_MOUSE_BUTTON, false /* no metalayer */,
                              false /* no highlighter on press */);

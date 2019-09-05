@@ -131,7 +131,6 @@ source_set("test_support") {
     "//media/base/android:test_support",
     "//media/filters:test_support",
     "//media/formats:test_support",
-    "//media/gpu:test_support",
     "//media/video:test_support",
   ]
 }

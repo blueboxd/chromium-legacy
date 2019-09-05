@@ -7,11 +7,14 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
+#include "components/account_id/account_id.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
 
@@ -20,14 +23,23 @@ namespace certificate_provider {
 
 class SignRequests {
  public:
+  using ExtensionNameRequestIdPair = std::pair<std::string, int>;
+
   SignRequests();
   ~SignRequests();
 
   // Returns the id of the new request. The returned request id is specific to
   // the given extension.
-  int AddRequest(const std::string& extension_id,
-                 const scoped_refptr<net::X509Certificate>& certificate,
-                 net::SSLPrivateKey::SignCallback callback);
+  int AddRequest(
+      const std::string& extension_id,
+      const scoped_refptr<net::X509Certificate>& certificate,
+      const base::Optional<AccountId>& authenticating_user_account_id,
+      net::SSLPrivateKey::SignCallback callback);
+
+  // Returns the list of requests that correspond to the authentication of the
+  // given user.
+  std::vector<ExtensionNameRequestIdPair> FindRequestsForAuthenticatingUser(
+      const AccountId& authenticating_user_account_id) const;
 
   // Returns false if no request with the given id for |extension_id|
   // could be found. Otherwise removes the request and sets |certificate| and
@@ -45,12 +57,14 @@ class SignRequests {
  private:
   struct Request {
     Request(const scoped_refptr<net::X509Certificate>& certificate,
+            const base::Optional<AccountId>& authenticating_user_account_id,
             net::SSLPrivateKey::SignCallback callback);
     Request(Request&& other);
     ~Request();
     Request& operator=(Request&&);
 
     scoped_refptr<net::X509Certificate> certificate;
+    base::Optional<AccountId> authenticating_user_account_id;
     net::SSLPrivateKey::SignCallback callback;
 
    private:

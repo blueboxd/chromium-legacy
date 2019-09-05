@@ -28,6 +28,14 @@ const char ZeroconfPrinterDetector::kIppEverywhereServiceName[] =
 const char ZeroconfPrinterDetector::kIppsEverywhereServiceName[] =
     "_print._sub._ipps._tcp.local";
 
+// These service names are ordered in priority. In other words, earlier
+// service types in this list will be used preferentially over later ones.
+constexpr std::array<const char*, 4> kServiceNames = {
+    ZeroconfPrinterDetector::kIppsEverywhereServiceName,
+    ZeroconfPrinterDetector::kIppEverywhereServiceName,
+    ZeroconfPrinterDetector::kIppsServiceName,
+    ZeroconfPrinterDetector::kIppServiceName};
+
 namespace {
 
 using local_discovery::ServiceDescription;
@@ -208,10 +216,9 @@ class ZeroconfPrinterDetectorImpl : public ZeroconfPrinterDetector {
   // Normal constructor, connects to service discovery.
   ZeroconfPrinterDetectorImpl()
       : discovery_client_(ServiceDiscoverySharedClient::GetInstance()) {
-    CreateDeviceLister(kIppServiceName);
-    CreateDeviceLister(kIppsServiceName);
-    CreateDeviceLister(kIppEverywhereServiceName);
-    CreateDeviceLister(kIppsEverywhereServiceName);
+    for (const char* service_type : kServiceNames) {
+      CreateDeviceLister(service_type);
+    }
   }
 
   // Testing constructor, uses injected backends.
@@ -280,12 +287,13 @@ class ZeroconfPrinterDetectorImpl : public ZeroconfPrinterDetector {
     }
   }
 
-  // Remove all devices that originated on this service type, and request
-  // a new round of discovery.
+  // Remove all devices that originated on all services types, and request
+  // a new round of discovery. We clear all printers to prevent
+  // |on_printers_found_callback| from returning stale cached printers.
   void OnDeviceCacheFlushed(const std::string& service_type) override {
     base::AutoLock auto_lock(printers_lock_);
-    if (!printers_[service_type].empty()) {
-      printers_[service_type].clear();
+    if (!IsPrintersEmpty()) {
+      ClearPrinters();
       if (on_printers_found_callback_) {
         on_printers_found_callback_.Run(GetPrintersLocked());
       }
@@ -317,10 +325,7 @@ class ZeroconfPrinterDetectorImpl : public ZeroconfPrinterDetector {
     // service types in this list will be used preferentially over later ones.
     // This depends on the fact that map::insert will fail if the entry already
     // exists.
-    for (const char* service_type : {
-             kIppsEverywhereServiceName, kIppEverywhereServiceName,
-             kIppsServiceName, kIppServiceName,
-         }) {
+    for (const char* service_type : kServiceNames) {
       for (const auto& entry : printers_[service_type]) {
         unified.insert({entry.first, entry.second});
       }
@@ -331,6 +336,26 @@ class ZeroconfPrinterDetectorImpl : public ZeroconfPrinterDetector {
       ret.push_back(entry.second);
     }
     return ret;
+  }
+
+  // Clear all printers for every service type.
+  void ClearPrinters() {
+    printers_lock_.AssertAcquired();
+    for (const char* service_type : kServiceNames) {
+      printers_[service_type].clear();
+    }
+  }
+
+  // Returns true if all the service names in |printers_| are empty.
+  bool IsPrintersEmpty() const {
+    printers_lock_.AssertAcquired();
+    for (const char* service_type : kServiceNames) {
+      DCHECK(base::Contains(printers_, service_type));
+      if (!printers_.at(service_type).empty()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   SEQUENCE_CHECKER(sequence_);

@@ -137,7 +137,8 @@ class CONTENT_EXPORT LevelDBScope {
   // status & the mode of this scope. The caller (LevelDBScopes) is expected to
   // queue up a cleanup task if the mode is kUndoLogOnDisk. This instance should
   // not be used after this call.
-  std::pair<leveldb::Status, Mode> Commit() WARN_UNUSED_RESULT;
+  std::pair<leveldb::Status, Mode> Commit(bool sync_on_commit)
+      WARN_UNUSED_RESULT;
 
   // Submits pending changes & the undo log to LevelDB. Required to be able to
   // read any keys that have been submitted to Put, Delete, or

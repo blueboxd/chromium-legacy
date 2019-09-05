@@ -501,7 +501,7 @@ bool SpatialNavigationController::IsValidCandidate(
   // issues since the document/body will likely contain most of the other
   // content on the page.
   if (frame->IsMainFrame()) {
-    if (IsHTMLHtmlElement(element) || IsA<HTMLBodyElement>(element))
+    if (IsA<HTMLHtmlElement>(element) || IsA<HTMLBodyElement>(element))
       return false;
   }
 

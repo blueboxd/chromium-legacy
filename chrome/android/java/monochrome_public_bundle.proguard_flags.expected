@@ -129,20 +129,11 @@
     public static **[] values();
 }
 
-# Allows Proguard freedom in removing these log related calls. We ask for debug
-# and verbose logs to be stripped out in base.Log, so we are just ensuring we
-# get rid of all other debug/verbose logs.
+# Allows Proguard freedom in removing these log related calls.
 -assumenosideeffects class android.util.Log {
   static *** d(...);
   static *** v(...);
-  static *** isLoggable(...);
-}
--checkdiscard class org.chromium.base.Log {
-  public static void d(...);
-  public static void v(...);
-  private static void debug(...);
-  private static void verbose(...);
-  private static String getCallOrigin(...);
+  static boolean isLoggable(...);
 }
 
 # The following chart was created on July 20, 2016, to decide on 3 optimization
@@ -167,6 +158,11 @@
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
 -dontwarn android.support.**
+
+# Ensure @RemovableInRelease actually works.
+-checkdiscard class ** {
+  @org.chromium.base.annotations.RemovableInRelease *;
+}
 
 ################################################################################
 # ../../base/android/proguard/chromium_code.flags
@@ -215,9 +211,14 @@
   native <methods>;
 }
 
-# Remove methods annotated with this if their return value is unused.
 -assumenosideeffects class ** {
+  # Remove @RemovableInRelease methods so long as return values are unused.
   @org.chromium.base.annotations.RemovableInRelease <methods>;
+  # Remove object @RemovableInRelease methods even when return value is used.
+  # Note: * in return type does not match primitives.
+  @org.chromium.base.annotations.RemovableInRelease * *(...) return null;
+  # Remove boolean @RemovableInRelease methods even when return value is used.
+  @org.chromium.base.annotations.RemovableInRelease boolean *(...) return false;
 }
 
 # Never inline classes or methods with this annotation, but allow shrinking and

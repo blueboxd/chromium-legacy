@@ -99,6 +99,8 @@ public class WebappActivity extends SingleTabActivity {
 
     private Runnable mSetImmersiveRunnable;
 
+    private static Integer sOverrideCoreCountForTesting;
+
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {
         // This static map is used to cache WebappInfo objects between their initial creation in
@@ -204,6 +206,16 @@ public class WebappActivity extends SingleTabActivity {
         initializeUI(getSavedInstanceState());
     }
 
+    @VisibleForTesting
+    public static void setOverrideCoreCount(int coreCount) {
+        sOverrideCoreCountForTesting = coreCount;
+    }
+
+    private static int getCoreCount() {
+        if (sOverrideCoreCountForTesting != null) return sOverrideCoreCountForTesting;
+        return Runtime.getRuntime().availableProcessors();
+    }
+
     @Override
     protected void doLayoutInflation() {
         // Because we delay the layout inflation, the CompositorSurfaceManager and its
@@ -216,25 +228,33 @@ public class WebappActivity extends SingleTabActivity {
         // transparency hint need not change and no flickering occurs.
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
         // No need to inflate layout synchronously since splash screen is displayed.
-        new Thread() {
-            @Override
-            public void run() {
-                ViewGroup mainView = WarmupManager.inflateViewHierarchy(
-                        WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
-                if (isActivityFinishingOrDestroyed()) return;
-                if (mainView != null) {
-                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                        if (isActivityFinishingOrDestroyed()) return;
-                        onLayoutInflated(mainView);
-                    });
-                } else {
+        Runnable inflateTask = () -> {
+            ViewGroup mainView = WarmupManager.inflateViewHierarchy(
+                    WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
+            if (isActivityFinishingOrDestroyed()) return;
+            if (mainView != null) {
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                     if (isActivityFinishingOrDestroyed()) return;
-                    PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                            () -> WebappActivity.super.doLayoutInflation());
-                }
+                    onLayoutInflated(mainView);
+                });
+            } else {
+                if (isActivityFinishingOrDestroyed()) return;
+                PostTask.postTask(
+                        UiThreadTaskTraits.DEFAULT, () -> WebappActivity.super.doLayoutInflation());
             }
+        };
+
+        // Conditionally do layout inflation synchronously if device has low core count.
+        // When layout inflation is done asynchronously, it blocks UI thread startup. While
+        // blocked, the UI thread will draw unnecessary frames - causing the lower priority
+        // layout inflation thread to be de-scheduled significantly more often, especially on
+        // devices with low core count. Thus for low core count devices, there is a startup
+        // performance improvement incurred by doing layout inflation synchronously.
+        if (getCoreCount() > 2) {
+            new Thread(inflateTask).start();
+        } else {
+            inflateTask.run();
         }
-                .start();
     }
 
     private void onLayoutInflated(ViewGroup mainView) {

@@ -55,19 +55,19 @@
         disabled="[[isEditingDisabled_(isOwner_, isWhitelistManaged_)]]"
         inverted>
     </settings-toggle-button>
-    <div class="list-frame">
-      <settings-user-list prefs="[[prefs]]"
-          disabled="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
-              prefs.cros.accounts.allowGuest.value, isChild_)]]">
-      </settings-user-list>
-      <div id="add-user-button" class="list-item"
-          hidden="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
-              prefs.cros.accounts.allowGuest.value, isChild_)]]">
-        <a is="action-link" class="list-button" on-click="openAddUserDialog_">
-          $i18n{addUsers}
-        </a>
+    <template is="dom-if"
+        if="[[isEditingUsersEnabled_(isOwner_, isWhitelistManaged_,
+            prefs.cros.accounts.allowGuest.value, isChild_)]]">
+      <div class="list-frame" >
+        <settings-user-list prefs="[[prefs]]">
+        </settings-user-list>
+        <div id="add-user-button" class="list-item">
+          <a is="action-link" class="list-button" on-click="openAddUserDialog_">
+            $i18n{addUsers}
+          </a>
+        </div>
       </div>
-    </div>
+    </template>
     <settings-users-add-user-dialog id="addUserDialog"
         on-close="onAddUserDialogClose_">
     </settings-users-add-user-dialog>

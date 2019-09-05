@@ -245,7 +245,7 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
 }
 
 void DownloadProtectionService::CheckNativeFileSystemWrite(
-    std::unique_ptr<NativeFileSystemWriteItem> item,
+    std::unique_ptr<content::NativeFileSystemWriteItem> item,
     CheckDownloadCallback callback) {
   if (MatchesEnterpriseWhitelist(
           Profile::FromBrowserContext(item->browser_context),
@@ -448,7 +448,7 @@ DownloadProtectionService::IdentifyReferrerChain(
 
 std::unique_ptr<ReferrerChainData>
 DownloadProtectionService::IdentifyReferrerChain(
-    const NativeFileSystemWriteItem& item) {
+    const content::NativeFileSystemWriteItem& item) {
   // If navigation_observer_manager_ is null, return immediately. This could
   // happen in tests.
   if (!navigation_observer_manager_)
@@ -462,9 +462,12 @@ DownloadProtectionService::IdentifyReferrerChain(
       "SafeBrowsing.ReferrerHasInvalidTabID.NativeFileSystemWriteAttribution",
       !tab_id.is_valid());
 
+  GURL tab_url =
+      item.web_contents ? item.web_contents->GetVisibleURL() : GURL();
+
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainByHostingPage(
-          item.frame_url, item.tab_url, tab_id, item.has_user_gesture,
+          item.frame_url, tab_url, tab_id, item.has_user_gesture,
           kDownloadAttributionUserGestureLimit, referrer_chain.get());
 
   UMA_HISTOGRAM_ENUMERATION(

@@ -149,6 +149,10 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
       type);
 }
 
+void LogClickToCallHelpTextClicked(SharingDialogType type) {
+  base::UmaHistogramEnumeration("Sharing.ClickToCallHelpTextClicked", type);
+}
+
 void LogSendSharingMessageResult(SharingSendMessageResult result) {
   base::UmaHistogramEnumeration("Sharing.SendMessageResult", result);
 }

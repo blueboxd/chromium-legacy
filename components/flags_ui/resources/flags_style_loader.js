@@ -2,9 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-if (window.location.href.startsWith("chrome://flags/enterprise")) {
+if (window.location.href.startsWith("chrome://flags/deprecated")) {
   const styles = document.createElement('link');
   styles.rel = 'stylesheet';
-  styles.href = 'chrome://flags/enterprise_flags.css';
+  styles.href = 'chrome://flags/flags_deprecated.css';
   document.querySelector('head').appendChild(styles);
 }

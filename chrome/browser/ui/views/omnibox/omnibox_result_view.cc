@@ -305,7 +305,7 @@ void OmniboxResultView::Layout() {
   keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
                            height());
   if (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
-      match_.IsTabSwitchSuggestion()) {
+      match_.IsSubMatch()) {
     suggestion_view_->SetBounds(kKeywordSuggestionIndent, 0,
                                 suggestion_width - kKeywordSuggestionIndent,
                                 height());

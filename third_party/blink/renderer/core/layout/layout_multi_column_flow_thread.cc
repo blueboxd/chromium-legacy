@@ -1345,7 +1345,8 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
 
   DCHECK(!MultiColumnBlockFlow()->DisplayLockInducesSizeContainment());
   if (MultiColumnBlockFlow()->ShouldApplySizeContainment()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
+    min_preferred_logical_width_ = max_preferred_logical_width_ =
+        MultiColumnBlockFlow()->ContentLogicalWidthForSizeContainment();
     ClearPreferredLogicalWidthsDirty();
   } else {
     // Calculate and set new min_preferred_logical_width_ and

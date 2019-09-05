@@ -589,8 +589,10 @@ IN_PROC_BROWSER_TEST_P(
     DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted_Iframe)) {
   GURL url = https_url_iframe();
 
-  // Whitelist resource loading hints for https_url_iframe()'s' host.
-  SetDefaultOnlyResourceLoadingHints(https_url_iframe());
+  // Whitelist resource loading hints for https_url_iframe()'s' host, which is
+  // the same as the hint setup URL. Having this be https_url_iframe() makes the
+  // test flaky.
+  SetDefaultOnlyResourceLoadingHints(https_hint_setup_url());
 
   // Loading of these two resources should not be blocked since they are loaded
   // by a webpage inside an iframe.
@@ -792,8 +794,8 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectTotalCount(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
@@ -855,8 +857,8 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester_2.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester_2.ExpectTotalCount(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
@@ -957,8 +959,8 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectTotalCount(
       "Previews.PreviewShown.ResourceLoadingHints", 0);

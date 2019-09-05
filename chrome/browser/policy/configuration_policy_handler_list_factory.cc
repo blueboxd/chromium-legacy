@@ -762,7 +762,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     chromeos::assistant::prefs::kAssistantContextEnabled,
     base::Value::Type::BOOLEAN },
   { key::kVoiceInteractionHotwordEnabled,
-    arc::prefs::kVoiceInteractionHotwordEnabled,
+    chromeos::assistant::prefs::kAssistantHotwordEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDevicePowerPeakShiftEnabled,
     ash::prefs::kPowerPeakShiftEnabled,

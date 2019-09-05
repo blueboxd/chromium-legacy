@@ -6,7 +6,12 @@
 #define WEBLAYER_BROWSER_NAVIGATION_IMPL_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "weblayer/public/navigation.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 namespace content {
 class NavigationHandle;
@@ -19,6 +24,25 @@ class NavigationImpl : public Navigation {
   explicit NavigationImpl(content::NavigationHandle* navigation_handle);
   ~NavigationImpl() override;
 
+#if defined(OS_ANDROID)
+  void SetJavaNavigation(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& java_navigation);
+  int GetState(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+    return static_cast<int>(GetState());
+  }
+  base::android::ScopedJavaLocalRef<jstring> GetUri(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jobject> GetRedirectChain(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation() {
+    return java_navigation_;
+  }
+#endif
+
  private:
   // Navigation implementation:
   GURL GetURL() override;
@@ -26,6 +50,10 @@ class NavigationImpl : public Navigation {
   State GetState() override;
 
   content::NavigationHandle* navigation_handle_;
+
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_navigation_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(NavigationImpl);
 };

@@ -383,10 +383,10 @@ std::unique_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
 }
 
 void EmbeddedTestServer::DoAcceptLoop() {
-  while (
-      listen_socket_->Accept(&accepted_socket_,
-                             base::Bind(&EmbeddedTestServer::OnAcceptCompleted,
-                                        base::Unretained(this))) == OK) {
+  while (listen_socket_->Accept(
+             &accepted_socket_,
+             base::BindOnce(&EmbeddedTestServer::OnAcceptCompleted,
+                            base::Unretained(this))) == OK) {
     HandleAcceptResult(std::move(accepted_socket_));
   }
 }
@@ -434,8 +434,8 @@ void EmbeddedTestServer::HandleAcceptResult(
     SSLServerSocket* ssl_socket =
         static_cast<SSLServerSocket*>(http_connection->socket_.get());
     int rv = ssl_socket->Handshake(
-        base::Bind(&EmbeddedTestServer::OnHandshakeDone, base::Unretained(this),
-                   http_connection));
+        base::BindOnce(&EmbeddedTestServer::OnHandshakeDone,
+                       base::Unretained(this), http_connection));
     if (rv != ERR_IO_PENDING)
       OnHandshakeDone(http_connection, rv);
   } else {
@@ -445,9 +445,9 @@ void EmbeddedTestServer::HandleAcceptResult(
 
 void EmbeddedTestServer::ReadData(HttpConnection* connection) {
   while (true) {
-    int rv =
-        connection->ReadData(base::Bind(&EmbeddedTestServer::OnReadCompleted,
-                                        base::Unretained(this), connection));
+    int rv = connection->ReadData(
+        base::BindOnce(&EmbeddedTestServer::OnReadCompleted,
+                       base::Unretained(this), connection));
     if (rv == ERR_IO_PENDING)
       return;
     if (!HandleReadResult(connection, rv))

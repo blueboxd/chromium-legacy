@@ -1207,6 +1207,11 @@ void NativeWidgetNSWindowBridge::SetCALayerParams(
   }
 }
 
+void NativeWidgetNSWindowBridge::SetIgnoresMouseEvents(
+    bool ignores_mouse_events) {
+  [window_ setIgnoresMouseEvents:ignores_mouse_events];
+}
+
 void NativeWidgetNSWindowBridge::MakeFirstResponder() {
   [window_ makeFirstResponder:bridged_view_];
 }

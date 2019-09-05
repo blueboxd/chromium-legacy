@@ -209,7 +209,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     "MobileDownload.ContextMenu.SaveImage", type, TypeSaveImage.NUM_ENTRIES);
         }
 
-        // Note: these values must match the ContextMenuSaveImage enum in enums.xml.
+        // Note: these values must match the ContextMenuLensSupportStatus enum in enums.xml.
         // Only add new values at the end, right before NUM_ENTRIES.
         @IntDef({LensSupportStatus.LENS_SUPPORTED, LensSupportStatus.NON_GOOGLE_SEARCH_ENGINE,
                 LensSupportStatus.ACTIVITY_NOT_ACCESSIBLE, LensSupportStatus.OUT_OF_DATE,

@@ -1800,23 +1800,27 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
   OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_IN_MEMORY);
 
+  base::HistogramTester histogram_tester;
+
   UpdateResponseDataList updates;
   updates.push_back(worker()->GenerateUpdateData(
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
-
-  base::HistogramTester histogram_tester;
   worker()->UpdateFromServer(std::move(updates));
 
-  // The duration should get recorded.
+  ASSERT_EQ(1, bridge()->merge_call_count());
+  // The duration should get recorded into the right histogram.
   histogram_tester.ExpectTotalCount(
       "Sync.ModelTypeConfigurationTime.Ephemeral.PREFERENCE",
       /*count=*/1);
+  histogram_tester.ExpectTotalCount(
+      "Sync.ModelTypeConfigurationTime.Persistent.PREFERENCE",
+      /*count=*/0);
 }
 
 // Tests that initial updates for persistent storage do not result in reporting
 // setup duration.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldNotReportEphemeralConfigurationTimeForPersistentStorage) {
+       ShouldReportPersistentConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
   OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_ON_DISK);
 
@@ -1828,9 +1832,13 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   worker()->UpdateFromServer(std::move(updates));
 
   ASSERT_EQ(1, bridge()->merge_call_count());
+  // The duration should get recorded into the right histogram.
   histogram_tester.ExpectTotalCount(
       "Sync.ModelTypeConfigurationTime.Ephemeral.PREFERENCE",
       /*count=*/0);
+  histogram_tester.ExpectTotalCount(
+      "Sync.ModelTypeConfigurationTime.Persistent.PREFERENCE",
+      /*count=*/1);
 }
 
 class FullUpdateClientTagBasedModelTypeProcessorTest

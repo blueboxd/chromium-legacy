@@ -236,6 +236,11 @@ Polymer({
     if (!this.prefs || !this.currentRoute_) {
       return;
     }
+    // Don't show the banner when SplitSettings is disabled (and hence this page
+    // is already showing OS settings).
+    if (loadTimeData.getBoolean('showOSSettings')) {
+      return false;
+    }
     const showPref = /** @type {boolean} */ (
         this.getPref('settings.cros.show_os_banner').value);
 

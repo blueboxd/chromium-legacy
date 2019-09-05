@@ -10,8 +10,9 @@ namespace chromeos {
 
 namespace test {
 
-void WaitForSessionStart() {
-  SessionStateWaiter().Wait();
+void WaitForPrimaryUserSessionStart() {
+  if (!session_manager::SessionManager::Get()->IsSessionStarted())
+    SessionStateWaiter().Wait();
 }
 
 }  // namespace test
@@ -23,11 +24,6 @@ SessionStateWaiter::SessionStateWaiter(
 SessionStateWaiter::~SessionStateWaiter() = default;
 
 void SessionStateWaiter::Wait() {
-  if (!target_state_ &&
-      session_manager::SessionManager::Get()->IsSessionStarted()) {
-    return;
-  }
-
   if (session_manager::SessionManager::Get()->session_state() ==
       target_state_) {
     return;

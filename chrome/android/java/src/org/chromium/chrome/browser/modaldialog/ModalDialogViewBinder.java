@@ -32,6 +32,9 @@ public class ModalDialogViewBinder
             assert checkFilterTouchConsistency(model);
             view.setButtonText(ModalDialogProperties.ButtonType.POSITIVE,
                     model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT));
+        } else if (ModalDialogProperties.POSITIVE_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
+            view.setButtonContentDescription(ModalDialogProperties.ButtonType.POSITIVE,
+                    model.get(ModalDialogProperties.POSITIVE_BUTTON_CONTENT_DESCRIPTION));
         } else if (ModalDialogProperties.POSITIVE_BUTTON_DISABLED == propertyKey) {
             view.setButtonEnabled(ModalDialogProperties.ButtonType.POSITIVE,
                     !model.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED));
@@ -39,6 +42,9 @@ public class ModalDialogViewBinder
             assert checkFilterTouchConsistency(model);
             view.setButtonText(ModalDialogProperties.ButtonType.NEGATIVE,
                     model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
+        } else if (ModalDialogProperties.NEGATIVE_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
+            view.setButtonContentDescription(ModalDialogProperties.ButtonType.NEGATIVE,
+                    model.get(ModalDialogProperties.NEGATIVE_BUTTON_CONTENT_DESCRIPTION));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_DISABLED == propertyKey) {
             view.setButtonEnabled(ModalDialogProperties.ButtonType.NEGATIVE,
                     !model.get(ModalDialogProperties.NEGATIVE_BUTTON_DISABLED));

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -76,7 +77,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                          views::style::CONTEXT_BUTTON),
       listener_(button_listener) {
   SetButtonController(std::make_unique<HoverButtonController>(
-      this, listener_, CreateButtonControllerDelegate()));
+      this, listener_,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
 
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -87,6 +89,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
   SetInkDropMode(InkDropMode::ON);
 
+  set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                              ui::EF_RIGHT_MOUSE_BUTTON);
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
 }

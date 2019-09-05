@@ -436,6 +436,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
     {"aboutDetailedBuildInfo", IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO},
     {"aboutFirmwareLabel", IDS_SETTINGS_ABOUT_PAGE_FIRMWARE},
+    {"aboutOSBanner", IDS_SETTINGS_ABOUT_OS_BANNER},
     {"aboutPlatformLabel", IDS_SETTINGS_ABOUT_PAGE_PLATFORM},
     {"aboutRelaunchAndPowerwash",
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
@@ -577,9 +578,6 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showCrostiniExportImport",
       crostini::IsCrostiniExportImportUIAllowedForProfile(profile));
-  html_source->AddBoolean(
-      "enableCrostiniUsbDeviceSupport",
-      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,
@@ -1428,8 +1426,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED},
       {"internetAddThirdPartyVPN", IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN},
       {"internetAddVPN", IDS_SETTINGS_INTERNET_ADD_VPN},
-      {"internetAddArcVPN", IDS_SETTINGS_INTERNET_ADD_ARC_VPN},
-      {"internetAddArcVPNProvider", IDS_SETTINGS_INTERNET_ADD_ARC_VPN_PROVIDER},
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetConfigName", IDS_SETTINGS_INTERNET_CONFIG_NAME},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},

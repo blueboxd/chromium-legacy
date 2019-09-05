@@ -17479,13 +17479,13 @@
       'tags': [],
       'desc': '''Controls whether users are allowed to upload or download password protected files when scanning is required.  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
 
-      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> blocks the user from upload or download password protected files.
+      If this policy is set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> blocks the user from upload or download password protected files.
 
       If this policy is set to 'Allow downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to download password protected files.
 
       If this policy is set to 'Allow uploads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to upload password protected files.
 
-      If this policy is set to 'Allow uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Allow downloads' and 'Allow uploads'.
+      If this policy is not set or set to 'Allow uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Allow downloads' and 'Allow uploads'.
       '''
     },
     {

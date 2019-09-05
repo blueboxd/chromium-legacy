@@ -14,11 +14,9 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/system/buffer.h"
 
-#if defined(OS_CHROMEOS)
 namespace gfx {
 struct GpuMemoryBufferHandle;
 }
-#endif
 
 namespace media {
 
@@ -51,10 +49,7 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
 
   virtual base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() = 0;
   virtual mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() = 0;
-
-#if defined(OS_CHROMEOS)
   virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() = 0;
-#endif
 
  private:
   // Indicates whether this VideoCaptureBufferTracker is currently referenced by

@@ -101,14 +101,14 @@ INSTANTIATE_TEST_SUITE_P(
         ParseNumberTestCase{false, "1234", "US"},
         // Too long strings should not be parsed.
         ParseNumberTestCase{false, GenerateTooLongString(), "US"},
-        // Test for string with exactly 7 digits.
-        // Still a possible number with unknown("ZZ") deduced region.
-        ParseNumberTestCase{true, "17134567", "US", "7134567", "", "1", "ZZ"},
+        // Test for string with exactly 7 digits. It is too short.
+        // Should fail parsing in US.
+        ParseNumberTestCase{false, "17134567", "US"},
         // Does not have area code, but still a possible number with
         // unknown("ZZ") deduced region.
         ParseNumberTestCase{true, "7134567", "US", "7134567", "", "", "ZZ"},
         // Valid Canadian toll-free number.
-        ParseNumberTestCase{true, "3101234", "US", "3101234", "", "", "CA"},
+        ParseNumberTestCase{true, "3101234", "CA", "3101234", "", "", "ZZ"},
         // Test for string with greater than 7 digits but less than 10 digits.
         // Should fail parsing in US.
         ParseNumberTestCase{false, "123456789", "US"},
@@ -132,8 +132,10 @@ INSTANTIATE_TEST_SUITE_P(
         ParseNumberTestCase{false, "1\xC0", "US"},
         // Test for string with exactly 10 digits.
         // Should give back phone number and city code.
-        // This one going to fail because of the incorrect area code.
-        ParseNumberTestCase{false, "1234567890", "US"},
+        // This one has an incorrect area code but could still be a possible
+        // number with unknown("ZZ") deducted region.
+        ParseNumberTestCase{true, "1234567890", "US", "1234567890", "", "",
+                            "ZZ"},
         // This is actually not a valid number because the first number after
         // area code is 1. But it's still a possible number, just with deduced
         // country set to unknown("ZZ").
@@ -401,8 +403,8 @@ INSTANTIATE_TEST_SUITE_P(
         // A US phone with the country code is correctly formatted as an US
         // number.
         PhoneNumberFormatCase("+1 415-555-5555", "MX", "+1 415-555-5555"),
-        // "+52 1 415 555 5555" is a valid number for Mexico,
-        PhoneNumberFormatCase("1 415-555-5555", "MX", "+52 1 415 555 5555"),
+        // "+52 415 555 5555" is a valid number for Mexico,
+        PhoneNumberFormatCase("1 415-555-5555", "MX", "+52 415 555 5555"),
         // Without a country code, the phone is formatted for the profile's
         // country.
         PhoneNumberFormatCase("415-555-5555", "MX", "+52 415 555 5555"),

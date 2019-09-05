@@ -160,14 +160,6 @@ enum NotificationType {
   // The details are a Profile object.
   NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
 
-  // Sent when the chromium session of a particular user is started.
-  // If this is a new user on the machine this will not be sent until a profile
-  // picture has been selected, unlike NOTIFICATION_LOGIN_USER_CHANGED
-  // (obsolete) which was sent immediately after the user has logged in. This
-  // will be sent again if the browser crashes and restarts. The details are a
-  // chromeos::User object.
-  NOTIFICATION_SESSION_STARTED,
-
   // Sent when a network error message is displayed on the WebUI login screen.
   // First paint event of this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,

@@ -25,6 +25,10 @@ const base::Feature kAssistantAppSupport{"AssistantAppSupport",
 const base::Feature kAssistantProactiveSuggestions{
     "AssistantProactiveSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::FeatureParam<std::string>
+    kAssistantProactiveSuggestionsServerExperimentIds{
+        &kAssistantProactiveSuggestions, "server-experiment-ids", ""};
+
 const base::FeatureParam<bool> kAssistantProactiveSuggestionsSuppressDuplicates{
     &kAssistantProactiveSuggestions, "suppress-duplicates", true};
 
@@ -68,6 +72,10 @@ const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
 const base::Feature kEnableMediaSessionIntegration{
     "AssistantEnableMediaSessionIntegration",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+std::string GetProactiveSuggestionsServerExperimentIds() {
+  return kAssistantProactiveSuggestionsServerExperimentIds.Get();
+}
 
 bool IsAlarmTimerManagerEnabled() {
   return base::FeatureList::IsEnabled(kEnableAssistantAlarmTimerManager);

@@ -1074,7 +1074,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
          other {Google Chrome will restart in # seconds}}
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TITLE_ALTERNATE" desc="The title for a bubble that appears when there is a critical update and Chrome must restart to install it. The title was previously countng down to an automatic restart and now it has finished. Will only be seen if a web page stops the shutdown process.">
-        You should restart Google Chrome now
+        Please restart Chrome now
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="Explanation text for the bubble that appears when there is a critical update and Chrome must restart to install it.">
         A special security update for Google Chrome was just applied. Restart now and we'll restore your tabs.

@@ -1235,6 +1235,12 @@
   <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_MIGRATION_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view for Chrome OS Secondary Accounts that have not been migrated to Chrome OS Account Manager.">
     Account update required
   </message>
+  <message name="IDS_CHALLENGE_RESPONSE_AUTH_MULTIPLE_CLIENT_CERTS_ERROR" desc="Error message shown when multiple client certificates were used during the challenge-response based authentication.">
+    Multiple client certificates are not supported
+  </message>
+  <message name="IDS_CHALLENGE_RESPONSE_AUTH_INVALID_CLIENT_CERT_ERROR" desc="Error message shown when client certificate attributes extraction failed during the challenge-response based authentication.">
+    Invalid client certificate
+  </message>
 
   <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
   <message name="IDS_NETWORK_LIST_INITIALIZING" desc="Text in the network list element when a Cellular network is initiailizing.">

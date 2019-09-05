@@ -59,7 +59,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id,
   left_eye->field_of_view->right_degrees = horizontal_degrees;
   left_eye->field_of_view->up_degrees = vertical_degrees;
   left_eye->field_of_view->down_degrees = vertical_degrees;
-  left_eye->offset = {0.0f, 0.0f, 0.0f};
   left_eye->render_width = width;
   left_eye->render_height = height;
   return device;

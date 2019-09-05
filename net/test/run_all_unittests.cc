@@ -53,6 +53,6 @@ int main(int argc, char** argv) {
   net::TransportClientSocketPool::set_connect_backup_jobs_enabled(false);
 
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&NetTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&NetTestSuite::Run, base::Unretained(&test_suite)));
 }

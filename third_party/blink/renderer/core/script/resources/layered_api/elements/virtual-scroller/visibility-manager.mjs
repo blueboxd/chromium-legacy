@@ -389,15 +389,13 @@ export class VisibilityManager {
       element => {
         // Removed children should be made visible again. We should stop
         // observing them and discard any size info we have for them as it
-        // may have become incorrect.
-        //
-        // TODO(fergal): Decide whether to also unlock if
-        // displayLock.locked is true. That would only be necessary if we
-        // got out of sync between this.#revealed and the locked state. So
-        // for now, assume are not buggy.
-        if (this.#revealed.has(element)) {
-          this.#unlock(element);
-        }
+        // may have become incorrect. We unlock unconditionally,
+        // because it's simple and because it defends against
+        // potential bugs in our own tracking of what is locked. Users
+        // must not lock the children in the light tree, so there is
+        // no concern about this having an impact on the users'
+        // locking plans.
+        this.#unlock(element);
         this.#revealed.delete(element);
         this.#unobserve(element);
         this.#sizeManager.remove(element);

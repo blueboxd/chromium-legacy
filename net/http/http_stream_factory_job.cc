@@ -767,9 +767,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       // delay the main job.
       delegate_->MaybeSetWaitTimeForMainJob(
           quic_request_.GetTimeDelayForWaitingJob());
-      expect_on_quic_host_resolution_ =
-          quic_request_.WaitForHostResolution(base::BindRepeating(
-              &Job::OnQuicHostResolution, base::Unretained(this)));
+      expect_on_quic_host_resolution_ = quic_request_.WaitForHostResolution(
+          base::BindOnce(&Job::OnQuicHostResolution, base::Unretained(this)));
     }
     return rv;
   }

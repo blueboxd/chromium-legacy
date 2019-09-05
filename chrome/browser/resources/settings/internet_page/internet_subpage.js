@@ -48,16 +48,10 @@ Polymer({
     globalPolicy: Object,
 
     /**
-     * List of third party VPN providers.
-     * @type {!Array<!settings.ThirdPartyVPNProperties>|undefined}
+     * List of third party (Extension + Arc) VPN providers.
+     * @type {!Array<!chromeos.networkConfig.mojom.VpnProvider>}
      */
-    thirdPartyVpnProviders: Array,
-
-    /**
-     * List of Arc VPN providers.
-     * @type {!Array<!settings.ArcVpnProvider>|undefined}
-     */
-    arcVpnProviders: Array,
+    vpnProviders: Array,
 
     showSpinner: {
       type: Boolean,
@@ -85,17 +79,6 @@ Polymer({
       value: function() {
         return {};
       },
-    },
-
-    /**
-     * Dictionary of lists of network states for Arc VPNs.
-     * @private {!Object<!Array<!OncMojo.NetworkStateProperties>>}
-     */
-    arcVpns_: {
-      type: Object,
-      value: function() {
-        return {};
-      }
     },
 
     /**
@@ -181,7 +164,6 @@ Polymer({
     // Clear any stale data.
     this.networkStateList_ = [];
     this.thirdPartyVpns_ = {};
-    this.arcVpns_ = {};
     this.hasCompletedScanSinceLastEnabled_ = false;
     this.showSpinner = false;
 
@@ -318,11 +300,10 @@ Polymer({
       return;
     }
 
-    // For VPNs, separate out third party VPNs and Arc VPNs.
+    // For VPNs, separate out third party (Extension + Arc) VPNs.
     if (this.deviceState.type == mojom.NetworkType.kVPN) {
       const builtinNetworkStates = [];
       const thirdPartyVpns = {};
-      const arcVpns = {};
       networkStates.forEach(state => {
         assert(state.type == mojom.NetworkType.kVPN);
         switch (state.vpn.type) {
@@ -330,23 +311,21 @@ Polymer({
           case mojom.VpnType.kOpenVPN:
             builtinNetworkStates.push(state);
             break;
-          case mojom.VpnType.kExtension:
-            const providerName = state.vpn.providerName;
-            thirdPartyVpns[providerName] = thirdPartyVpns[providerName] || [];
-            thirdPartyVpns[providerName].push(state);
-            break;
           case mojom.VpnType.kArc:
-            const arcProviderName = this.get('VPN.Host', state);
-            if (OncMojo.connectionStateIsConnected(state.connectionState)) {
-              arcVpns[arcProviderName] = arcVpns[arcProviderName] || [];
-              arcVpns[arcProviderName].push(state);
+            // Only show connected Arc VPNs.
+            if (!OncMojo.connectionStateIsConnected(state.connectionState)) {
+              break;
             }
+            // Otherwise Arc VPNs are treated the same as Extension VPNs.
+          case mojom.VpnType.kExtension:
+            const providerId = state.vpn.providerId;
+            thirdPartyVpns[providerId] = thirdPartyVpns[providerId] || [];
+            thirdPartyVpns[providerId].push(state);
             break;
         }
       });
       networkStates = builtinNetworkStates;
       this.thirdPartyVpns_ = thirdPartyVpns;
-      this.arcVpns_ = arcVpns;
     }
 
     this.networkStateList_ = networkStates;
@@ -425,21 +404,12 @@ Polymer({
   },
 
   /**
-   * @param {!settings.ThirdPartyVPNProperties} vpnState
+   * @param {!mojom.VpnProvider} provider
    * @return {string}
    * @private
    */
-  getAddThirdPartyVpnA11yString_: function(vpnState) {
-    return this.i18n('internetAddThirdPartyVPN', vpnState.providerName || '');
-  },
-
-  /**
-   * @param {!settings.ArcVpnProvider} arcVpn
-   * @return {string}
-   * @private
-   */
-  getAddArcVpnAllyString_: function(arcVpn) {
-    return this.i18n('internetAddArcVPNProvider', arcVpn.ProviderName);
+  getAddThirdPartyVpnA11yString_: function(provider) {
+    return this.i18n('internetAddThirdPartyVPN', provider.providerName || '');
   },
 
   /**
@@ -476,21 +446,12 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item: !settings.ThirdPartyVPNProperties}}} event
+   * @param {!{model: !{item: !mojom.VpnProvider}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.extensionId);
-  },
-
-  /**
-   * @param {!{model: !{item: !settings.ArcVpnProvider}}} event
-   * @private
-   */
-  onAddArcVpnTap_: function(event) {
-    const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.AppID);
+    this.browserProxy_.addThirdPartyVpn(provider.appId);
   },
 
   /**
@@ -526,43 +487,22 @@ Polymer({
 
   /**
    * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
-   * @param {!settings.ThirdPartyVPNProperties} vpnState
+   * @param {!mojom.VpnProvider} provider
    * @return {!Array<!OncMojo.NetworkStateProperties>}
    * @private
    */
-  getThirdPartyVpnNetworks_: function(thirdPartyVpns, vpnState) {
-    return thirdPartyVpns[vpnState.providerName] || [];
+  getThirdPartyVpnNetworks_: function(thirdPartyVpns, provider) {
+    return thirdPartyVpns[provider.providerId] || [];
   },
 
   /**
    * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
-   * @param {!settings.ThirdPartyVPNProperties} vpnState
+   * @param {!mojom.VpnProvider} provider
    * @return {boolean}
    * @private
    */
-  haveThirdPartyVpnNetwork_: function(thirdPartyVpns, vpnState) {
-    const list = this.getThirdPartyVpnNetworks_(thirdPartyVpns, vpnState);
-    return !!list.length;
-  },
-
-  /**
-   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} arcVpns
-   * @param {!settings.ArcVpnProvider} arcVpnProvider
-   * @return {!Array<!OncMojo.NetworkStateProperties>}
-   * @private
-   */
-  getArcVpnNetworks_: function(arcVpns, arcVpnProvider) {
-    return arcVpns[arcVpnProvider.PackageName] || [];
-  },
-
-  /**
-   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} arcVpns
-   * @param {!settings.ArcVpnProvider} arcVpnProvider
-   * @return {boolean}
-   * @private
-   */
-  haveArcVpnNetwork_: function(arcVpns, arcVpnProvider) {
-    const list = this.getArcVpnNetworks_(arcVpns, arcVpnProvider);
+  haveThirdPartyVpnNetwork_: function(thirdPartyVpns, provider) {
+    const list = this.getThirdPartyVpnNetworks_(thirdPartyVpns, provider);
     return !!list.length;
   },
 

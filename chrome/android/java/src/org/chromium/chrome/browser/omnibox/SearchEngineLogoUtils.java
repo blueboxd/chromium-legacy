@@ -32,6 +32,7 @@ import java.util.Map;
  */
 public class SearchEngineLogoUtils {
     private static final String ROUNDED_EDGES_VARIANT = "rounded_edges";
+    private static final String LOUPE_EVERYWHERE_VARIANT = "loupe_everywhere";
     private static final String DUMMY_URL_QUERY = "replace_me";
 
     // Cache the logo and return it when the logo url that's cached matches the current logo url.
@@ -59,10 +60,16 @@ public class SearchEngineLogoUtils {
     }
 
     public static boolean shouldRoundedSearchEngineLogo() {
-        return ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+        return shouldShowSearchEngineLogo() && ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                         ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO, ROUNDED_EDGES_VARIANT, false);
+    }
+
+    public static boolean shouldShowSearchLoupeEverywhere() {
+        return shouldShowSearchEngineLogo()
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO, LOUPE_EVERYWHERE_VARIANT,
+                        false);
     }
 
     /**

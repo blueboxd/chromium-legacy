@@ -420,10 +420,11 @@ void TestWebContents::SaveFrameWithHeaders(
   suggested_filename_ = suggested_filename;
 }
 
-std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
 TestWebContents::PauseSubresourceLoading() {
   pause_subresource_loading_called_ = true;
-  return std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>();
+  return std::vector<
+      mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>();
 }
 
 bool TestWebContents::GetPauseSubresourceLoadingCalled() {

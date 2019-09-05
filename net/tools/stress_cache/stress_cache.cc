@@ -169,7 +169,7 @@ void EntryWrapper::DoOpen(int key) {
   state_ = OPEN;
   disk_cache::EntryResult result = g_data->cache->OpenEntry(
       g_data->keys[key], net::HIGHEST,
-      base::Bind(&EntryWrapper::OnOpenDone, base::Unretained(this), key));
+      base::BindOnce(&EntryWrapper::OnOpenDone, base::Unretained(this), key));
   if (result.net_error() != net::ERR_IO_PENDING)
     OnOpenDone(key, std::move(result));
 }
@@ -184,7 +184,7 @@ void EntryWrapper::OnOpenDone(int key, disk_cache::EntryResult result) {
   state_ = CREATE;
   result = g_data->cache->CreateEntry(
       g_data->keys[key], net::HIGHEST,
-      base::Bind(&EntryWrapper::OnOpenDone, base::Unretained(this), key));
+      base::BindOnce(&EntryWrapper::OnOpenDone, base::Unretained(this), key));
   if (result.net_error() != net::ERR_IO_PENDING)
     OnOpenDone(key, std::move(result));
 }
@@ -198,7 +198,7 @@ void EntryWrapper::DoRead() {
   memset(buffer_->data(), 'k', kReadSize);
   int rv = entry_->ReadData(
       0, 0, buffer_.get(), kReadSize,
-      base::Bind(&EntryWrapper::OnReadDone, base::Unretained(this)));
+      base::BindOnce(&EntryWrapper::OnReadDone, base::Unretained(this)));
   if (rv != net::ERR_IO_PENDING)
     OnReadDone(rv);
 }
@@ -219,7 +219,7 @@ void EntryWrapper::DoWrite() {
                  g_data->writes, g_data->iteration, size, truncate ? 1 : 0);
   int rv = entry_->WriteData(
       0, 0, buffer_.get(), size,
-      base::Bind(&EntryWrapper::OnWriteDone, base::Unretained(this), size),
+      base::BindOnce(&EntryWrapper::OnWriteDone, base::Unretained(this), size),
       truncate);
   if (rv != net::ERR_IO_PENDING)
     OnWriteDone(size, rv);
@@ -251,7 +251,7 @@ void EntryWrapper::DoDelete(const std::string& key) {
   state_ = DOOM;
   int rv = g_data->cache->DoomEntry(
       key, net::HIGHEST,
-      base::Bind(&EntryWrapper::OnDeleteDone, base::Unretained(this)));
+      base::BindOnce(&EntryWrapper::OnDeleteDone, base::Unretained(this)));
   if (rv != net::ERR_IO_PENDING)
     OnDeleteDone(rv);
 }

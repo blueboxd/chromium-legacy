@@ -8,7 +8,6 @@
 #include <CoreFoundation/CFDate.h>
 #include <dispatch/dispatch.h>
 
-#include "base/base_export.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_dispatch_object.h"
 #include "base/macros.h"
@@ -45,12 +44,14 @@ class SystemMemoryPressureEvaluator
   void UpdatePressureLevel();
 
   // Run |dispatch_callback| on memory pressure notifications from the OS.
-  void OnMemoryPressureChanged(dispatch_source_s* event_source);
+  void OnMemoryPressureChanged();
 
   // The dispatch source that generates memory pressure change notifications.
   base::ScopedDispatchObject<dispatch_source_t> memory_level_event_source_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SystemMemoryPressureEvaluator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMemoryPressureEvaluator);
 };

@@ -81,9 +81,6 @@ extern const char kPasswordProtectionWarningTrigger[];
 // microseconds);
 extern const char kAdvancedProtectionLastRefreshInUs[];
 
-// Whether or not to allow downloads of password-protected files.
-extern const char kPasswordProtectedAllowed[];
-
 // Whether or not to check URLs in real time. This is configured by enterprise
 // policy. For consumers, this pref is irrelevant.
 extern const char kSafeBrowsingRealTimeLookupEnabled[];
@@ -176,10 +173,28 @@ enum SendFilesForMalwareCheckValues {
 // Enum representing possible values of the CheckContentCompliance policy. This
 // must be kept in sync with policy_templates.json
 enum CheckContentComplianceValues {
-  NONE = 0,
+  CHECK_NONE = 0,
   CHECK_DOWNLOADS = 1,
   CHECK_UPLOADS = 2,
   CHECK_UPLOADS_AND_DOWNLOADS = 3,
+};
+
+// Enum representing possible values of the AllowPasswordProtectedFiles policy.
+// This must be kept in sync with policy_templates.json
+enum AllowPasswordProtectedFilesValues {
+  ALLOW_NONE = 0,
+  ALLOW_DOWNLOADS = 1,
+  ALLOW_UPLOADS = 2,
+  ALLOW_UPLOADS_AND_DOWNLOADS = 3,
+};
+
+// Enum representing possible values of the BlockLargeFileTransfer policy. This
+// must be kept in sync with policy_templates.json
+enum BlockLargeFileTransferValues {
+  BLOCK_NONE = 0,
+  BLOCK_LARGE_DOWNLOADS = 1,
+  BLOCK_LARGE_UPLOADS = 2,
+  BLOCK_LARGE_UPLOADS_AND_DOWNLOADS = 3,
 };
 
 // Returns whether the currently active Safe Browsing Extended Reporting

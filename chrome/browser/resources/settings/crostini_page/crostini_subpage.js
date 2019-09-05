@@ -20,17 +20,6 @@ Polymer({
     },
 
     /**
-     * Whether CrostiniUsbSupport flag is enabled.
-     * @private {boolean}
-     */
-    enableCrostiniUsbDeviceSupport_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableCrostiniUsbDeviceSupport');
-      },
-    },
-
-    /**
      * Whether export / import UI should be displayed.
      * @private {boolean}
      */

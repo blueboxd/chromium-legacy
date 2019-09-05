@@ -41,12 +41,17 @@ namespace safe_browsing {
 
 class CheckClientDownloadRequestBase {
  public:
+  // URL and referrer of the window the download was started from.
+  struct TabUrls {
+    GURL url;
+    GURL referrer;
+  };
+
   CheckClientDownloadRequestBase(
       GURL source_url,
       base::FilePath target_file_path,
       base::FilePath full_path,
-      GURL tab_url,
-      GURL tab_referrer_url,
+      TabUrls tab_urls,
       content::BrowserContext* browser_context,
       CheckDownloadCallback callback,
       DownloadProtectionService* service,

@@ -507,6 +507,7 @@ if (is_android) {
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
+      "../browser/payments/payment_handler_exploit_browsertest.cc",
       "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "../browser/payments/personal_data_manager_test_util.cc",
       "../browser/payments/personal_data_manager_test_util.h",
@@ -979,6 +980,7 @@ if (!is_android) {
       "../browser/net/websocket_browsertest.cc",
       "../browser/no_best_effort_tasks_browsertest.cc",
       "../browser/no_best_effort_tasks_during_startup_browsertest.cc",
+      "../browser/notifications/scheduler/notification_schedule_service_browsertest.cc",
       "../browser/ntp_snippets/content_suggestions_service_factory_browsertest.cc",
       "../browser/ntp_tiles/ntp_tiles_browsertest.cc",
       "../browser/optimization_guide/optimization_guide_keyed_service_browsertest.cc",
@@ -1799,6 +1801,7 @@ if (!is_android) {
         "../browser/payments/has_enrolled_instrument_browsertest.cc",
         "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
         "../browser/payments/manifest_verifier_browsertest.cc",
+        "../browser/payments/payment_handler_exploit_browsertest.cc",
         "../browser/payments/payment_manifest_parser_browsertest.cc",
         "../browser/payments/payment_request_can_make_payment_browsertest.cc",
         "../browser/payments/personal_data_manager_test_util.cc",
@@ -2262,6 +2265,7 @@ if (!is_android) {
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_launcher_view_browsertest.cc",
+        "../browser/ui/webui/chromeos/add_supervision/add_supervision_ui_browsertest.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.h",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app_test.cc",
@@ -2614,9 +2618,9 @@ if (is_linux || is_mac || is_win) {
       ":browser_tests",
     ]
     data = [
-      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/apprtc/out/app_engine/",
-      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/apprtc/temp/google-cloud-sdk/",
-      "//third_party/webrtc/rtc_tools/testing/webrtc_apprtc_browsertest/collider/",
+      "//third_party/webrtc/rtc_tools/testing/browsertest/apprtc/out/app_engine/",
+      "//third_party/webrtc/rtc_tools/testing/browsertest/apprtc/temp/google-cloud-sdk/",
+      "//third_party/webrtc/rtc_tools/testing/browsertest/collider/",
     ]
     if (is_win) {
       write_runtime_deps = "$root_out_dir/$target_name.exe.runtime_deps"
@@ -2721,6 +2725,16 @@ group("angle_perftests") {
   ]
   if (is_win || is_linux || is_android) {
     data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
+  }
+}
+
+group("dawn_perf_tests") {
+  testonly = true
+  data_deps = [
+    "//testing:run_perf_test",
+  ]
+  if (is_win || is_linux || is_mac) {
+    data_deps += [ "//third_party/dawn:dawn_perf_tests_temp_group" ]
   }
 }
 
@@ -3018,6 +3032,7 @@ test("unit_tests") {
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
     "../browser/password_manager/password_store_x_unittest.cc",
     "../browser/payments/payment_handler_permission_context_unittest.cc",
+    "../browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/decorators/process_metrics_decorator_unittest.cc",
@@ -5357,6 +5372,7 @@ if (!is_android) {
       "../browser/password_manager/password_manager_interactive_test_base.cc",
       "../browser/password_manager/password_manager_interactive_test_base.h",
       "../browser/password_manager/password_manager_interactive_uitest.cc",
+      "../browser/popup_operations_interactive_uitest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
       "../browser/resource_coordinator/tab_metrics_logger_interactive_uitest.cc",

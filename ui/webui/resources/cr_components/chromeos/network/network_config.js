@@ -1557,6 +1557,10 @@ Polymer({
       console.error(
           errorMessage + ', GUID: ' + guid + ', error: ' + this.error);
       this.propertiesSent_ = false;
+      const passphraseInput = this.$$('#wifi-passphrase');
+      if (passphraseInput) {
+        passphraseInput.focus();
+      }
       return;
     }
     if (connect) {

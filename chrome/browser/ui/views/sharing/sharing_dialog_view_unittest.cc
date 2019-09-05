@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -35,6 +36,7 @@ class ClickToCallUiControllerMock : public ClickToCallUiController {
 
   MOCK_METHOD1(OnDeviceChosen, void(const syncer::DeviceInfo& device));
   MOCK_METHOD1(OnAppChosen, void(const App& app));
+  MOCK_METHOD1(OnHelpTextClicked, void(SharingDialogType dialog_type));
 };
 
 class SharingDialogViewMock : public SharingDialogView {
@@ -79,9 +81,6 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
 
     controller_ =
         std::make_unique<ClickToCallUiControllerMock>(web_contents_.get());
-
-    controller_->set_devices_for_testing(SetUpDevices(3));
-    controller_->set_apps_for_testing(SetUpApps());
   }
 
   void TearDown() override {
@@ -89,7 +88,7 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> SetUpDevices(int count) {
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> CreateDevices(int count) {
     std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
     for (int i = 0; i < count; i++) {
       devices.emplace_back(std::make_unique<syncer::DeviceInfo>(
@@ -102,13 +101,26 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
     return devices;
   }
 
-  std::vector<ClickToCallUiController::App> SetUpApps() {
+  std::vector<ClickToCallUiController::App> CreateApps(int count) {
     std::vector<ClickToCallUiController::App> apps;
-    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
-                      base::UTF8ToUTF16("app_1"), std::string());
-    apps.emplace_back(&vector_icons::kOpenInNewIcon, gfx::Image(),
-                      base::UTF8ToUTF16("app_2"), std::string());
+    for (int i = 0; i < count; i++) {
+      apps.emplace_back(
+          &vector_icons::kOpenInNewIcon, gfx::Image(),
+          base::UTF8ToUTF16(base::StrCat({"app", base::NumberToString(i)})),
+          base::StrCat({"app_id_", base::NumberToString(i)}));
+    }
     return apps;
+  }
+
+  std::unique_ptr<SharingDialogView> CreateDialogView(int devices, int apps) {
+    controller_->set_devices_for_testing(CreateDevices(devices));
+    controller_->set_apps_for_testing(CreateApps(apps));
+
+    auto dialog = std::make_unique<SharingDialogViewMock>(
+        anchor_widget_->GetContentsView(), /*web_contents=*/nullptr,
+        controller_.get());
+    dialog->Init();
+    return dialog;
   }
 
   std::unique_ptr<TestingProfile> profile_;
@@ -118,12 +130,9 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
 };
 
 TEST_F(SharingDialogViewTest, PopulateDialogView) {
-  std::unique_ptr<SharingDialogView> bubble_view_ =
-      std::make_unique<SharingDialogViewMock>(anchor_widget_->GetContentsView(),
-                                              nullptr, controller_.get());
+  auto dialog = CreateDialogView(/*devices=*/3, /*apps=*/2);
 
-  bubble_view_->Init();
-  EXPECT_EQ(5UL, bubble_view_->dialog_buttons_.size());
+  EXPECT_EQ(5UL, dialog->dialog_buttons_.size());
 }
 
 TEST_F(SharingDialogViewTest, DevicePressed) {
@@ -134,34 +143,47 @@ TEST_F(SharingDialogViewTest, DevicePressed) {
       /* send_tab_to_self_receiving_enabled= */ false);
   EXPECT_CALL(*controller_.get(), OnDeviceChosen(DeviceEquals(&device_info)));
 
-  std::unique_ptr<SharingDialogView> bubble_view_ =
-      std::make_unique<SharingDialogViewMock>(anchor_widget_->GetContentsView(),
-                                              nullptr, controller_.get());
-
-  bubble_view_->Init();
+  auto dialog = CreateDialogView(/*devices=*/3, /*apps=*/2);
 
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
 
-  // Choose second device: device1(tag=0), device2(tag=1)
-  bubble_view_->ButtonPressed(bubble_view_->dialog_buttons_[1], event);
+  // Choose second device: device0(tag=0), device1(tag=1)
+  dialog->ButtonPressed(dialog->dialog_buttons_[1], event);
 }
 
 TEST_F(SharingDialogViewTest, AppPressed) {
   ClickToCallUiController::App app(&vector_icons::kOpenInNewIcon, gfx::Image(),
-                                   base::UTF8ToUTF16("app_1"), std::string());
+                                   base::UTF8ToUTF16("app0"), std::string());
   EXPECT_CALL(*controller_.get(), OnAppChosen(AppEquals(&app)));
 
-  std::unique_ptr<SharingDialogView> bubble_view_ =
-      std::make_unique<SharingDialogViewMock>(anchor_widget_->GetContentsView(),
-                                              nullptr, controller_.get());
-
-  bubble_view_->Init();
+  auto dialog = CreateDialogView(/*devices=*/3, /*apps=*/2);
 
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
 
-  // Choose first app: device1(tag=0), device2(tag=1), device3(tag=2),
-  // app1(tag=3)
-  bubble_view_->ButtonPressed(bubble_view_->dialog_buttons_[3], event);
+  // Choose first app: device0(tag=0), device1(tag=1), device2(tag=2),
+  // app0(tag=3)
+  dialog->ButtonPressed(dialog->dialog_buttons_[3], event);
+}
+
+TEST_F(SharingDialogViewTest, HelpTextClickedEmpty) {
+  EXPECT_CALL(*controller_.get(),
+              OnHelpTextClicked(SharingDialogType::kEducationalDialog));
+
+  auto dialog = CreateDialogView(/*devices=*/0, /*apps=*/0);
+
+  dialog->StyledLabelLinkClicked(/*label=*/nullptr, /*range=*/{},
+                                 /*event_flags=*/0);
+}
+
+TEST_F(SharingDialogViewTest, HelpTextClickedOnlyApps) {
+  EXPECT_CALL(
+      *controller_.get(),
+      OnHelpTextClicked(SharingDialogType::kDialogWithoutDevicesWithApp));
+
+  auto dialog = CreateDialogView(/*devices=*/0, /*apps=*/1);
+
+  dialog->StyledLabelLinkClicked(/*label=*/nullptr, /*range=*/{},
+                                 /*event_flags=*/0);
 }

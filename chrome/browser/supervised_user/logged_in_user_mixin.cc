@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 
+#include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -48,12 +49,13 @@ LoggedInUserMixin::~LoggedInUserMixin() = default;
 void LoggedInUserMixin::SetUpOnMainThreadHelper(
     net::RuleBasedHostResolverProc* host_resolver,
     InProcessBrowserTest* test_base,
-    bool issue_any_scope_token) {
+    bool issue_any_scope_token,
+    bool wait_for_active_session) {
   // By default, browser tests block anything that doesn't go to localhost, so
   // account.google.com requests would never reach fake GAIA server without
   // this.
   host_resolver->AddRule("*", "127.0.0.1");
-  LogInUser(issue_any_scope_token);
+  LogInUser(issue_any_scope_token, wait_for_active_session);
   // Set the private |browser_| member in InProcessBrowserTest.
   // Otherwise calls to InProcessBrowserTest::browser() returns null and leads
   // to segmentation faults.
@@ -62,7 +64,8 @@ void LoggedInUserMixin::SetUpOnMainThreadHelper(
   test_base->SelectFirstBrowser();
 }
 
-void LoggedInUserMixin::LogInUser(bool issue_any_scope_token) {
+void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
+                                  bool wait_for_active_session) {
   UserContext user_context = LoginManagerMixin::CreateDefaultUserContext(user_);
   if (user_.user_type == user_manager::USER_TYPE_CHILD) {
     fake_gaia_.SetupFakeGaiaForChildUser(
@@ -74,7 +77,12 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token) {
                                      FakeGaiaMixin::kFakeRefreshToken);
   }
   user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
-  login_manager_.LoginAndWaitForActiveSession(user_context);
+  if (wait_for_active_session) {
+    login_manager_.LoginAndWaitForActiveSession(user_context);
+  } else {
+    login_manager_.AttemptLoginUsingAuthenticator(
+        user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+  }
 }
 
 }  // namespace chromeos

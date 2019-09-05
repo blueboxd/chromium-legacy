@@ -287,4 +287,15 @@ public class WebappSplashScreenTest {
         Assert.assertEquals(0, rules[RelativeLayout.CENTER_IN_PARENT]);
         Assert.assertEquals(R.id.webapp_splash_space, rules[RelativeLayout.ABOVE]);
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testSplashScreenWithSynchronousLayoutInflation() throws Exception {
+        WebappActivity.setOverrideCoreCount(2);
+
+        mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
+        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
+        Assert.assertTrue(mActivityTestRule.getActivity().isInitialLayoutInflationComplete());
+    }
 }

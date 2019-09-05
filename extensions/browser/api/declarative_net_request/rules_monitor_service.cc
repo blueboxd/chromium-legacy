@@ -26,7 +26,6 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_service_factory.h"
@@ -145,8 +144,7 @@ void RulesMonitorService::UpdateDynamicRules(
 
 RulesMonitorService::RulesMonitorService(
     content::BrowserContext* browser_context)
-    : registry_observer_(this),
-      file_sequence_bridge_(std::make_unique<FileSequenceBridge>()),
+    : file_sequence_bridge_(std::make_unique<FileSequenceBridge>()),
       prefs_(ExtensionPrefs::Get(browser_context)),
       extension_registry_(ExtensionRegistry::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),

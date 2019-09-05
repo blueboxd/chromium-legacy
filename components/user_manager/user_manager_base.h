@@ -168,7 +168,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       std::set<AccountId>* device_local_accounts_set) = 0;
 
   // Notifies observers that active user has changed.
-  void NotifyActiveUserChanged(const User* active_user);
+  void NotifyActiveUserChanged(User* active_user);
 
   // Notifies that user has logged in.
   virtual void NotifyOnLogin();

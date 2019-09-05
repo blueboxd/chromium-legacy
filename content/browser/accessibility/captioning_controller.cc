@@ -28,6 +28,14 @@ int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   return 0;
 }
 
+// Adds !important to all captions styles. They should always override any
+// styles added by the video author or by a user stylesheet. This is because in
+// Chrome, there is an option to turn off captions styles, so any time the
+// captions are on, the styles should take priority.
+std::string AddCSSImportant(std::string css_string) {
+  return css_string + " !important";
+}
+
 }  // namespace
 
 CaptioningController::CaptioningController(JNIEnv* env,
@@ -83,18 +91,19 @@ void CaptioningController::SetTextTrackSettings(
   FrameMsg_TextTrackSettings_Params params;
   params.text_tracks_enabled = textTracksEnabled;
   params.text_track_background_color =
-      ConvertJavaStringToUTF8(env, textTrackBackgroundColor);
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackBackgroundColor));
   params.text_track_font_family =
-      ConvertJavaStringToUTF8(env, textTrackFontFamily);
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackFontFamily));
   params.text_track_font_style =
-      ConvertJavaStringToUTF8(env, textTrackFontStyle);
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackFontStyle));
   params.text_track_font_variant =
-      ConvertJavaStringToUTF8(env, textTrackFontVariant);
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackFontVariant));
   params.text_track_text_color =
-      ConvertJavaStringToUTF8(env, textTrackTextColor);
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextColor));
   params.text_track_text_shadow =
-      ConvertJavaStringToUTF8(env, textTrackTextShadow);
-  params.text_track_text_size = ConvertJavaStringToUTF8(env, textTrackTextSize);
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextShadow));
+  params.text_track_text_size =
+      AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextSize));
   static_cast<WebContentsImpl*>(web_contents())
       ->GetMainFrame()
       ->SetTextTrackSettings(params);

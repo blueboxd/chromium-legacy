@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -258,10 +259,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   ASSERT_TRUE(LoginDisplayHost::default_host());
   EXPECT_TRUE(LoginDisplayHost::default_host()->GetWebUILoginView());
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
   SigninFrameJS().TapOn("nextButton");
@@ -270,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   ui_test_utils::WaitForBrowserToOpen();
   EXPECT_FALSE(LoginDisplayHost::default_host()->GetWebUILoginView());
 
-  session_start_waiter.Wait();
+  test::WaitForPrimaryUserSessionStart();
 
   // Wait for the LoginDisplayHost to delete itself, which is a posted task.
   base::RunLoop().RunUntilIdle();
@@ -305,16 +302,12 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, MAYBE_BackButton) {
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   // Finish sign-up.
   SigninFrameJS().TypeIntoPath("[]", {"services"});
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
   SigninFrameJS().TapOn("nextButton");
 
-  session_start_waiter.Wait();
+  test::WaitForPrimaryUserSessionStart();
 }
 
 // Create new account option should be available only if the settings allow it.

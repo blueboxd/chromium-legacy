@@ -327,6 +327,43 @@ public class ChannelsInitializerTest {
         assertThat(getChannelsIgnoringDefault(), hasSize(2));
     }
 
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
+    public void testEnsureInitialized_permissionRequests() throws Exception {
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.PERMISSION_REQUESTS);
+
+        assertThat(getChannelsIgnoringDefault(), hasSize(1));
+        NotificationChannel channel = getChannelsIgnoringDefault().get(0);
+        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.PERMISSION_REQUESTS));
+        assertThat(channel.getName().toString(),
+                is(mContext.getString(
+                        org.chromium.chrome.R.string.notification_category_permission_requests)));
+        assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
+        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
+    public void testEnsureInitialized_permissionRequestsHigh() throws Exception {
+        mChannelsInitializer.ensureInitialized(
+                ChannelDefinitions.ChannelId.PERMISSION_REQUESTS_HIGH);
+
+        assertThat(getChannelsIgnoringDefault(), hasSize(1));
+        NotificationChannel channel = getChannelsIgnoringDefault().get(0);
+        assertThat(channel.getId(), is(ChannelDefinitions.ChannelId.PERMISSION_REQUESTS_HIGH));
+        assertThat(channel.getName().toString(),
+                is(mContext.getString(
+                        org.chromium.chrome.R.string.notification_category_permission_requests)));
+        assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_HIGH));
+        assertThat(channel.getGroup(), is(ChannelDefinitions.ChannelGroupId.GENERAL));
+    }
+
     /**
      * Gets the current notification channels from the notification manager, except for any with
      * the default ID, which will be removed from the list before returning.

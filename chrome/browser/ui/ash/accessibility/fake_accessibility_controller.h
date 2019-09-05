@@ -45,6 +45,8 @@ class FakeAccessibilityController : ash::AccessibilityController {
   void NotifyAccessibilityStatusChanged() override;
   bool IsAccessibilityFeatureVisibleInTrayMenu(
       const std::string& path) override;
+  void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
+      bool should_ignore) override;
 
  private:
   bool was_client_set_ = false;

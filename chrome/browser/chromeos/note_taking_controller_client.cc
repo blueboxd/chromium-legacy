@@ -14,13 +14,14 @@ namespace chromeos {
 
 NoteTakingControllerClient::NoteTakingControllerClient(NoteTakingHelper* helper)
     : helper_(helper) {
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
-NoteTakingControllerClient::~NoteTakingControllerClient() = default;
+NoteTakingControllerClient::~NoteTakingControllerClient() {
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+}
 
 bool NoteTakingControllerClient::CanCreateNote() {
   return profile_ && helper_->IsAppAvailable(profile_);
@@ -31,37 +32,29 @@ void NoteTakingControllerClient::CreateNote() {
 }
 
 void NoteTakingControllerClient::ActiveUserChanged(
-    const user_manager::User* active_user) {
-  SetProfile(ProfileHelper::Get()->GetProfileByUser(active_user));
+    user_manager::User* active_user) {
+  if (!active_user)
+    return;
+
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&NoteTakingControllerClient::SetProfileByUser,
+                     weak_ptr_factory_.GetWeakPtr(), active_user));
 }
 
 void NoteTakingControllerClient::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_SESSION_STARTED:
-      // Update |profile_| when entering a session.
-      SetProfile(ProfileManager::GetActiveUserProfile());
-
-      // Add a session state observer to be able to monitor session changes.
-      if (!session_state_observer_.get()) {
-        session_state_observer_.reset(
-            new user_manager::ScopedUserSessionStateObserver(this));
-      }
-      break;
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      // Update |profile_| when exiting a session or shutting down.
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_ == profile)
-        SetProfile(nullptr);
-      break;
-    }
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+  // Update |profile_| when exiting a session or shutting down.
+  Profile* profile = content::Source<Profile>(source).ptr();
+  if (profile_ == profile)
+    profile_ = nullptr;
 }
 
-void NoteTakingControllerClient::SetProfile(Profile* profile) {
-  profile_ = profile;
+void NoteTakingControllerClient::SetProfileByUser(
+    const user_manager::User* user) {
+  profile_ = ProfileHelper::Get()->GetProfileByUser(user);
 }
 
 }  // namespace chromeos

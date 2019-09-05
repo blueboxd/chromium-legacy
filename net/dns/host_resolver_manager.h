@@ -215,7 +215,6 @@ class NET_EXPORT HostResolverManager
  private:
   friend class HostResolverManagerTest;
   friend class HostResolverManagerDnsTest;
-  FRIEND_TEST_ALL_PREFIXES(HostResolverManagerDnsTest, ModeForHistogram);
   class Job;
   struct JobKey;
   class ProcTask;
@@ -223,25 +222,6 @@ class NET_EXPORT HostResolverManager
   class DnsTask;
   class RequestImpl;
   using JobMap = std::map<JobKey, std::unique_ptr<Job>>;
-
-  // Current resolver mode, useful for breaking down histograms.
-  enum ModeForHistogram {
-    // Using the system (i.e. O/S's) resolver.
-    MODE_FOR_HISTOGRAM_SYSTEM,
-    // Using the system resolver, which is in turn using private DNS.
-    MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS,
-    // Using the system resolver, which is using DNS servers which offer
-    // DNS-over-HTTPS service.
-    MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH,
-    // Using private DNS via the system resolver, which is using DoT servers
-    // which offer DNS-over-HTTPS service.
-    MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH,
-    // Using Chromium DNS resolver.
-    MODE_FOR_HISTOGRAM_ASYNC_DNS,
-    // Using Chromium DNS resolver which is using DNS servers which offer
-    // DNS-over-HTTPS service.
-    MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH,
-  };
 
   // Task types that a Job might run.
   enum class TaskType {
@@ -402,6 +382,7 @@ class NET_EXPORT HostResolverManager
   // Record time from Request creation until a valid DNS response.
   void RecordTotalTime(bool speculative,
                        bool from_cache,
+                       DnsConfig::SecureDnsMode secure_dns_mode,
                        base::TimeDelta duration) const;
 
   // Removes |job_it| from |jobs_| and return.
@@ -441,8 +422,6 @@ class NET_EXPORT HostResolverManager
   void OnFallbackResolve(int dns_task_error);
 
   int GetOrCreateMdnsClient(MDnsClient** out_client);
-
-  ModeForHistogram DetermineModeForHistogram() const;
 
   void InvalidateCaches();
 

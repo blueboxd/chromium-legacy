@@ -940,7 +940,7 @@ void UserManagerBase::RegularUserLoggedInAsEphemeral(
   known_user::SetIsEphemeralUser(active_user_->GetAccountId(), true);
 }
 
-void UserManagerBase::NotifyActiveUserChanged(const User* active_user) {
+void UserManagerBase::NotifyActiveUserChanged(User* active_user) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   for (auto& observer : session_state_observer_list_)
     observer.ActiveUserChanged(active_user);

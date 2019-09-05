@@ -34,12 +34,21 @@ quarantine::mojom::QuarantineFileResult AnnotateFileSync(
   return result;
 }
 
-std::pair<base::File::Error, std::string> ReadAndComputeSHA256Checksum(
-    const base::FilePath& path) {
+// For safe browsing we need the hash and size of the file. That data is
+// calculated on a worker thread, and this struct is used to pass it back.
+struct HashResult {
+  base::File::Error status;
+  // SHA256 hash of the file contents, an empty string if some error occurred.
+  std::string hash;
+  // Can be -1 to indicate an error calculating the hash and/or size.
+  int64_t file_size = -1;
+};
+
+HashResult ReadAndComputeSHA256ChecksumAndSize(const base::FilePath& path) {
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
 
   if (!file.IsValid())
-    return std::make_pair(file.error_details(), std::string());
+    return {file.error_details(), std::string(), -1};
 
   std::unique_ptr<crypto::SecureHash> hash =
       crypto::SecureHash::Create(crypto::SecureHash::SHA256);
@@ -53,12 +62,12 @@ std::pair<base::File::Error, std::string> ReadAndComputeSHA256Checksum(
 
   // If bytes_read is -ve, it means there were issues reading from disk.
   if (bytes_read < 0)
-    return std::make_pair(file.error_details(), std::string());
+    return {file.error_details(), std::string(), -1};
 
   std::string hash_str(hash->GetHashLength(), 0);
   hash->Finish(base::data(hash_str), hash_str.size());
 
-  return std::make_pair(file.error_details(), hash_str);
+  return {file.error_details(), hash_str, file.GetLength()};
 }
 
 }  // namespace
@@ -283,13 +292,85 @@ void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
 
   // Should the writer be destructed at this point, we want to allow the
   // close operation to run its course, so we should not purge the swap file.
+  // If the safe browsing check fails, the callback for that will clean up the
+  // swap file even if the writer was destroyed at that point.
   state_ = State::kClosePending;
 
+  if (!require_safe_browsing_check() || !manager()->permission_context()) {
+    DidPassSafeBrowsingCheck(std::move(callback));
+    return;
+  }
+
+  ComputeHashForSwapFile(base::BindOnce(
+      &NativeFileSystemFileWriterImpl::DoSafeBrowsingCheck,
+      weak_factory_.GetWeakPtr(), swap_url().path(), std::move(callback)));
+}
+
+// static
+void NativeFileSystemFileWriterImpl::DoSafeBrowsingCheck(
+    base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
+    const base::FilePath& swap_path,
+    NativeFileSystemFileWriterImpl::CloseCallback callback,
+    base::File::Error hash_result,
+    const std::string& hash,
+    int64_t size) {
+  if (!file_writer || hash_result != base::File::FILE_OK) {
+    // If writer was deleted, or calculating the hash failed try deleting the
+    // swap file and invoke the callback.
+    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                   base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                  swap_path, /*recursive=*/false));
+    std::move(callback).Run(native_file_system_error::FromStatus(
+        NativeFileSystemStatus::kOperationAborted,
+        "Failed to perform Safe Browsing check."));
+    return;
+  }
+
+  auto item = std::make_unique<NativeFileSystemWriteItem>();
+  item->target_file_path = file_writer->url().path();
+  item->full_path = file_writer->swap_url().path();
+  item->sha256_hash = hash;
+  item->size = size;
+  item->frame_url = file_writer->context().url;
+  item->has_user_gesture = file_writer->has_transient_user_activation_;
+  file_writer->manager()->permission_context()->PerformSafeBrowsingChecks(
+      std::move(item), file_writer->context().process_id,
+      file_writer->context().frame_id,
+      base::BindOnce(&NativeFileSystemFileWriterImpl::DidSafeBrowsingCheck,
+                     file_writer, swap_path, std::move(callback)));
+}
+
+// static
+void NativeFileSystemFileWriterImpl::DidSafeBrowsingCheck(
+    base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
+    const base::FilePath& swap_path,
+    NativeFileSystemFileWriterImpl::CloseCallback callback,
+    NativeFileSystemPermissionContext::SafeBrowsingResult result) {
+  if (file_writer &&
+      result == NativeFileSystemPermissionContext::SafeBrowsingResult::kAllow) {
+    file_writer->DidPassSafeBrowsingCheck(std::move(callback));
+    return;
+  }
+
+  // Writer is gone, or safe browsing check failed. In this case we should
+  // try deleting the swap file and call the callback to report that close
+  // failed.
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                swap_path, /*recursive=*/false));
+  std::move(callback).Run(native_file_system_error::FromStatus(
+      NativeFileSystemStatus::kOperationAborted,
+      "Write operation blocked by Safe Browsing."));
+  return;
+}
+
+void NativeFileSystemFileWriterImpl::DidPassSafeBrowsingCheck(
+    CloseCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If the move operation succeeds, the path pointing to the swap file
   // will not exist anymore.
   // In case of error, the swap file URL will point to a valid filesystem
   // location. The file at this URL will be deleted when the mojo pipe closes.
-  // TODO(https://crbug.com/968556): Hook safebrowsing here, before the move.
   operation_runner()->Move(
       swap_url(), url(),
       storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
@@ -355,11 +436,11 @@ void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
   DCHECK_EQ(swap_url().type(), storage::kFileSystemTypeNativeLocal);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&ReadAndComputeSHA256Checksum, swap_url().path()),
+      base::BindOnce(&ReadAndComputeSHA256ChecksumAndSize, swap_url().path()),
       base::BindOnce(
-          [](HashCallback callback,
-             const std::pair<base::File::Error, std::string>& result) {
-            std::move(callback).Run(result.first, result.second);
+          [](HashCallback callback, HashResult result) {
+            std::move(callback).Run(result.status, result.hash,
+                                    result.file_size);
           },
           std::move(callback)));
 }

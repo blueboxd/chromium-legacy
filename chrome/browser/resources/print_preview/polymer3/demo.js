@@ -4,11 +4,13 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
@@ -67,6 +69,26 @@ class HelloPolymer3Element extends PolymerElement {
           <div class="drawer-content">Content of drawer</div>
         </cr-drawer>
       </div>
+
+      <div>
+        <cr-tabs selected="{{selectedSubpage_}}" tab-names="[[tabNames_]]">
+        </cr-tabs>
+        <div>
+          <template is="dom-if" if="[[isTabASelected_(selectedSubpage_)]]">
+            <span>This is Tab A</span>
+          </template>
+          <template is="dom-if" if="[[isTabBSelected_(selectedSubpage_)]]">
+            <span>This is Tab B</span>
+          </template>
+        </div>
+      </div>
+
+      <div>
+        <cr-button on-click="showDialog_">Click to open dialog</cr-button>
+        <cr-dialog id="dialog">
+          <div slot="title">I am a dialog</div>
+        </cr-dialog>
+      </div>
     `;
   }
 
@@ -77,6 +99,18 @@ class HelloPolymer3Element extends PolymerElement {
 
       /** @private */
       checkboxChecked_: Boolean,
+
+      /** @private */
+      selectedSubpage_: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @private {Array<string>} */
+      tabNames_: {
+        type: Array,
+        value: () => (['A', 'B']),
+      },
     };
   }
 
@@ -88,6 +122,27 @@ class HelloPolymer3Element extends PolymerElement {
   /** @private */
   showDrawer_() {
     this.shadowRoot.querySelector('cr-drawer').openDrawer();
+  }
+
+  /** @private */
+  showDialog_() {
+    this.shadowRoot.querySelector('cr-dialog').showModal();
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isTabASelected_() {
+    return this.selectedSubpage_ === 0;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isTabBSelected_() {
+    return this.selectedSubpage_ === 1;
   }
 }  // class HelloPolymer3
 

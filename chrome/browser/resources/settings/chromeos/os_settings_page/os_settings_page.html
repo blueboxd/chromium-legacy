@@ -106,25 +106,19 @@
     </style>
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
-      <template is="dom-if"
-          if="[[prefs.settings.cros.show_browser_banner.value]]">
-        <div id="browserSettingsBanner" hidden="[[isSubpage_]]"
-            class="settings-box banner">
-          <div class="start">
-            <span>$i18nRaw{browserSettingsBannerText}</span>
-            <!-- Use role="presentation" because the <span> has an accessible
-                 link to settings.-->
-            <a href="chrome://settings" target="_blank"
-                tabindex="-1" role="presentation">
-            </a>
-          </div>
-          <cr-icon-button class="icon-clear"
-              aria-label="$i18n{clear}"
-              on-click="onHideBrowserSettingsBannerClick_">
-          </cr-icon-button>
-        </div>
-      </template>
       <div id="basicPage">
+        <template is="dom-if" if="[[showBrowserSettingsBanner_]]">
+          <div id="browserSettingsBanner" class="settings-box banner">
+            <div class="start" on-click="onBrowserSettingsClick_">
+              $i18nRaw{browserSettingsBannerText}
+            </div>
+            <cr-icon-button class="icon-clear"
+                id="closeBrowserSettings"
+                aria-label="$i18n{clear}"
+                on-click="onBrowserSettingsBannerClosed_">
+            </cr-icon-button>
+          </div>
+        </template>
         <div id="secondaryUserBanner" class="banner"
             hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>

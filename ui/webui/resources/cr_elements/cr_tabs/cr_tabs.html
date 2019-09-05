@@ -26,8 +26,11 @@
         height: 100%;
         justify-content: center;
         opacity: .8;
-        outline: none;
         transition: opacity 100ms cubic-bezier(.4, 0, 1, 1);
+      }
+
+      :host(:not(.keyboard-focus)) .tab {
+        outline: none;
       }
 
       .selected {

@@ -600,7 +600,7 @@ TEST_F(URLFetcherTest, SequencedTaskTest) {
                   EXPECT_EQ(kDefaultResponseBody, data);
                   std::move(quit_closure).Run();
                 },
-                base::Passed(&quit_closure), base::Passed(&delegate)));
+                std::move(quit_closure), base::Passed(&delegate)));
 
             raw_delegate->CreateFetcher(response_path, URLFetcher::GET,
                                         context_getter);
@@ -1336,7 +1336,7 @@ TEST_F(URLFetcherTest, CancelSameThread) {
       CreateSameThreadContextGetter());
   bool getter_was_destroyed = false;
   context_getter->set_on_destruction_callback(
-      base::Bind(&SetBoolToTrue, &getter_was_destroyed));
+      base::BindOnce(&SetBoolToTrue, &getter_was_destroyed));
   delegate.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
 
   // The getter won't be destroyed if the test holds on to a reference to it.

@@ -4331,11 +4331,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantHotwordEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(
-      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled, true);
+  EXPECT_TRUE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
 
   // Verifies that the Assistant hotword can be forced to always disabled.
   PolicyMap policies;
@@ -4343,22 +4345,27 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantHotwordEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(
-      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantHotwordEnabled));
+  EXPECT_FALSE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled, true);
+  EXPECT_FALSE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
 
   // Verifies that the Assistant hotword can be forced to always enabled.
   policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(
-      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled,
+                    false);
+  EXPECT_TRUE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantHotwordEnabled));
 }
 
 #endif  // defined(OS_CHROMEOS)

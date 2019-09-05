@@ -15,8 +15,12 @@
 namespace chromeos {
 
 namespace test {
-void WaitForSessionStart();
-}
+
+// Waits for the primary user's session to start, or returns immediately if a
+// session has already started.
+void WaitForPrimaryUserSessionStart();
+
+}  // namespace test
 
 // Used to wait for session manager to get into a specific session state.
 class SessionStateWaiter : public session_manager::SessionManagerObserver {

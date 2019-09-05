@@ -68,6 +68,9 @@ java_strings_grd("java_strings_grd") {
 
 android_resources("java_resources") {
   resource_dirs = [ "java/res" ]
+  if (enable_feed_in_chrome) {
+    resource_dirs += [ "java/explore_res" ]
+  }
   deps = [
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",

@@ -10,10 +10,7 @@
 #include <limits>
 #include <vector>
 
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/win/com_init_util.h"
 
 namespace performance_monitor {
@@ -50,8 +47,6 @@ DWORD CalculateObservationDelta(DWORD ref_value, DWORD new_value) {
 
 }  // namespace
 
-// There is an enum of the same name in tools/metrics/histograms/enums.xml.
-// Be sure to add new values there also.
 enum class WMIRefresher::InitStatus {
   kInitStatusOk,
   kLocalWMIConnectionError,
@@ -61,8 +56,6 @@ enum class WMIRefresher::InitStatus {
   kMaxValue = kRefresherAddEnumError
 };
 
-// There is an enum of the same name in tools/metrics/histograms/enums.xml.
-// Be sure to add new values there also.
 enum class WMIRefresher::RefreshStatus {
   kRefreshOk,
   kRefreshFailed,
@@ -86,9 +79,6 @@ bool WMIRefresher::InitializeDiskIdleTimeConfig() {
   WMIRefresher::InitStatus result = WMIRefresher::InitStatus::kInitStatusOk;
   InitializeDiskIdleTimeConfigImpl(&result);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.WMIRefresher.InitDiskIdleTimeConfigStatus", result);
-
   initialized_called_ = true;
 
   return result == InitStatus::kInitStatusOk;
@@ -101,24 +91,17 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  base::ElapsedTimer elapsed_timer;
-
   // This assumes that CoInitialize(Ex) has already been called on this thread.
   AssertComApartmentType(base::win::ComApartmentType::MTA);
 
-  base::ElapsedTimer elapsed_timer_create_connection;
   if (!base::win::CreateLocalWmiConnection(true /* set_blanket */,
                                            &wmi_services_)) {
     LOG(ERROR) << "Unable to create the local WMI connection";
     *res = InitStatus::kLocalWMIConnectionError;
     return;
   }
-  base::UmaHistogramTimes(
-      "Memory.Experimental.WMIRefresher.Init.CreateLocalWmiConnectionDuration",
-      elapsed_timer_create_connection.Elapsed());
 
   HRESULT hr = S_OK;
-  base::ElapsedTimer elapsed_timer_cocreate_instance;
   // Creates the WMI refresher interface.
   if (FAILED(hr = ::CoCreateInstance(CLSID_WbemRefresher, nullptr,
                                      CLSCTX_INPROC_SERVER,
@@ -127,9 +110,6 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
     *res = InitStatus::kRefresherCreationError;
     return;
   }
-  base::UmaHistogramTimes(
-      "Memory.Experimental.WMIRefresher.Init.CoCreateInstanceDuration",
-      elapsed_timer_cocreate_instance.Elapsed());
 
   // Get the interface to configure the refresher.
   ComPtr<IWbemConfigureRefresher> wmi_refresher_config;
@@ -141,7 +121,6 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
   }
 
   long wmi_refresher_enum_id = 0;
-  base::ElapsedTimer elapsed_timer_add_enum;
   // Add the enumerator for the disk performance data.
   hr = wmi_refresher_config->AddEnum(
       wmi_services_.Get(), L"Win32_PerfRawData_PerfDisk_PhysicalDisk", 0,
@@ -152,16 +131,8 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
     *res = InitStatus::kRefresherAddEnumError;
     return;
   }
-  // This call can takes several seconds to complete.
-  base::UmaHistogramLongTimes(
-      "Memory.Experimental.WMIRefresher.Init.AddEnumDuration2",
-      elapsed_timer_add_enum.Elapsed());
 
   *res = InitStatus::kInitStatusOk;
-
-  base::UmaHistogramLongTimes(
-      "Memory.Experimental.WMIRefresher.InitializeDiskIdleTimeConfigDuration2",
-      elapsed_timer.Elapsed());
 
   refresh_ready_ = true;
 }
@@ -171,9 +142,6 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercent() {
   DCHECK(initialized_called_);
   RefreshStatus result = WMIRefresher::RefreshStatus::kRefreshOk;
   auto idle_time = RefreshAndGetDiskIdleTimeInPercentImpl(&result);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.WMIRefresher.RefreshDiskIdleTimeStatus", result);
   return idle_time;
 }
 
@@ -183,10 +151,6 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
   DCHECK(res);
   DCHECK(refresh_ready_);
   AssertComApartmentType(base::win::ComApartmentType::MTA);
-
-  // Don't use the SCOPED_UMA_HISTOGRAM_TIMER to ensure that we only report this
-  // on success.
-  base::ElapsedTimer elapsed_timer;
 
   HRESULT hr = wmi_refresher_->Refresh(WBEM_FLAG_REFRESH_AUTO_RECONNECT);
   if (FAILED(hr)) {
@@ -292,9 +256,6 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
   latest_percent_idle_time_val_ = new_idle_time;
   latest_percent_idle_time_base_val_ = new_percent_idle_time_base;
 
-  UMA_HISTOGRAM_TIMES(
-      "Memory.Experimental.WMIRefresher.RefreshDiskIdleTimeDuration",
-      elapsed_timer.Elapsed());
   *res = RefreshStatus::kRefreshOk;
   return idle_time;
 }

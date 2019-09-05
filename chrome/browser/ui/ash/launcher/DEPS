@@ -1,3 +1,7 @@
+include_rules = [
+  "+chrome/services/app_service/public",
+]
+
 specific_include_rules = {
   # https://crbug.com/826386
   "app_window_launcher_controller\.cc": [

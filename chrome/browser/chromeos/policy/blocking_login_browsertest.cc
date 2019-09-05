@@ -151,7 +151,7 @@ class BlockingLoginTest
 
     // Wait for the session to start after submitting the credentials. This
     // will wait until all the background requests are done.
-    test::WaitForSessionStart();
+    test::WaitForPrimaryUserSessionStart();
   }
 
   // Handles an HTTP request sent to the test server. This handler either

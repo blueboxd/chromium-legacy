@@ -921,6 +921,18 @@
     "label": "//third_party/dawn:dawn_end2end_tests",
     "type": "raw",
   },
+  "dawn_perf_tests": {
+    "args": [
+      "dawn_perf_tests",
+      "--non-telemetry=true",
+      "--test-launcher-print-test-stdio=always",
+      "--test-launcher-jobs=1",
+      "--test-launcher-retry-limit=0",
+    ],
+    "label": "//chrome/test:dawn_perf_tests",
+    "script": "//testing/scripts/run_performance_tests.py",
+    "type": "script",
+  },
   "dawn_spirv_cross_glsl_fast_fuzzer": {
     "label": "//third_party/dawn/src/fuzzers:dawn_spirv_cross_glsl_fast_fuzzer",
     "type": "fuzzer",

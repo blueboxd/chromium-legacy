@@ -187,6 +187,7 @@ source_set("chromeos") {
     "//components/policy/core/common",
     "//components/policy/core/common:common_constants",
     "//components/pref_registry",
+    "//components/printing/common:mojo_interfaces",
     "//components/proxy_config",
     "//components/quirks",
     "//components/rappor",

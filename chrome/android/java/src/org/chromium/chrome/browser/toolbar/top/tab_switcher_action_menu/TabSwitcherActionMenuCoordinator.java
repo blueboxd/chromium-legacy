@@ -112,12 +112,12 @@ public class TabSwitcherActionMenuCoordinator {
         // clang-format off
         adapter.registerType(ListItemType.DIVIDER,
                 () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.context_menu_divider, null),
+                        .inflate(R.layout.context_menu_divider, mListView, false),
                 (m, v, p) -> {});
 
         adapter.registerType(ListItemType.MENU_ITEM,
                 () -> LayoutInflater.from(mListView.getContext())
-                                   .inflate(R.layout.tab_switcher_action_menu_item, null),
+                        .inflate(R.layout.tab_switcher_action_menu_item, mListView, false),
                 TabSwitcherActionMenuItemBinder::binder);
         // clang-format on
 

@@ -287,7 +287,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
 {
   // Propagate the marginwidth/height and scrolling modes to the view.
   if (frame_->Owner() &&
-      frame_->Owner()->ScrollingMode() == kScrollbarAlwaysOff)
+      frame_->Owner()->ScrollingMode() == ScrollbarMode::kAlwaysOff)
     SetCanHaveScrollbars(false);
 }
 
@@ -812,7 +812,7 @@ void LocalFrameView::UpdateLayout() {
         ScrollbarMode h_mode;
         ScrollbarMode v_mode;
         GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-        if (v_mode == kScrollbarAuto) {
+        if (v_mode == ScrollbarMode::kAuto) {
           GetLayoutView()
               ->GetScrollableArea()
               ->ForceVerticalScrollbarForFirstLayout();
@@ -2929,7 +2929,8 @@ void LocalFrameView::DisableAutoSizeMode() {
   ScheduleRelayout();
 
   // Since autosize mode forces the scrollbar mode, change them to being auto.
-  GetLayoutView()->SetAutosizeScrollbarModes(kScrollbarAuto, kScrollbarAuto);
+  GetLayoutView()->SetAutosizeScrollbarModes(ScrollbarMode::kAuto,
+                                             ScrollbarMode::kAuto);
   auto_size_info_.Clear();
 }
 

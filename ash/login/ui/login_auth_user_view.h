@@ -184,6 +184,9 @@ class ASH_EXPORT LoginAuthUserView
   // Called when the online sign-in message is tapped. It opens the Gaia screen.
   void OnOnlineSignInMessageTap();
 
+  // Called when the user presses the back button of the PIN keyboard.
+  void OnPinBack();
+
   // Helper method to check if an auth method is enable. Use it like this:
   // bool has_tap = HasAuthMethod(AUTH_TAP).
   bool HasAuthMethod(AuthMethods auth_method) const;

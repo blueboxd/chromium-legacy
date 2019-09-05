@@ -337,7 +337,7 @@ class MockApplicationCacheHost final : public ApplicationCacheHostForFrame {
  public:
   explicit MockApplicationCacheHost(DocumentLoader* loader)
       : ApplicationCacheHostForFrame(loader,
-                                     /*interface_broker=*/nullptr,
+                                     GetEmptyBrowserInterfaceBroker(),
                                      /*task_runner=*/nullptr) {}
   ~MockApplicationCacheHost() override = default;
 

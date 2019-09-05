@@ -12,7 +12,7 @@
 namespace variations {
 
 TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   const base::Closure task = base::DoNothing();
   VariationsRequestScheduler scheduler(task);

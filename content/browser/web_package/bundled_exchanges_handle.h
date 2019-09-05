@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -48,20 +49,19 @@ class BundledExchangesHandle final {
  private:
   class PrimaryURLRedirectLoader;
 
-  void CreatePrimaryURLLoader(const network::ResourceRequest& resource_request,
-                              network::mojom::URLLoaderRequest request,
-                              network::mojom::URLLoaderClientPtr client);
-  void MayRedirectPrimaryURLLoader();
+  void CreateURLLoader(const network::ResourceRequest& resource_request,
+                       network::mojom::URLLoaderRequest request,
+                       network::mojom::URLLoaderClientPtr client);
   void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error);
 
   const BundledExchangesSource source_;
 
-  base::WeakPtr<PrimaryURLRedirectLoader> redirect_loader_;
+  base::OnceClosure pending_create_url_loader_task_;
+
   std::unique_ptr<BundledExchangesReader> reader_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
   GURL primary_url_;
   data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
-  bool is_redirected_ = false;
 
   base::WeakPtrFactory<BundledExchangesHandle> weak_factory_{this};
 

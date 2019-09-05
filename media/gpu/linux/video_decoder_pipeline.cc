@@ -8,73 +8,45 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "media/gpu/buildflags.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 
-#if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_video_decoder.h"
-#endif
-
-#if BUILDFLAG(USE_V4L2_CODEC)
-#include "media/gpu/v4l2/v4l2_slice_video_decoder.h"
-#endif
-
 namespace media {
-
-// static
-base::queue<VideoDecoderPipeline::CreateVDFunc>
-VideoDecoderPipeline::GetCreateVDFunctions(
-    VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
-  static constexpr VideoDecoderPipeline::CreateVDFunc kCreateVDFuncs[] = {
-#if BUILDFLAG(USE_V4L2_CODEC)
-    &V4L2SliceVideoDecoder::Create,
-#endif  // BUILDFLAG(USE_V4L2_CODEC)
-
-#if BUILDFLAG(USE_VAAPI)
-    &VaapiVideoDecoder::Create,
-#endif  // BUILDFLAG(USE_VAAPI)
-  };
-
-  base::queue<VideoDecoderPipeline::CreateVDFunc> ret;
-  for (const auto& func : kCreateVDFuncs) {
-    if (func != cur_create_vd_func)
-      ret.push(func);
-  }
-  return ret;
-}
 
 // static
 std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter) {
+    std::unique_ptr<VideoFrameConverter> frame_converter,
+    GetCreateVDFunctionsCB get_create_vd_functions_cb) {
   if (!client_task_runner || !frame_pool || !frame_converter) {
     VLOGF(1) << "One of arguments is nullptr.";
     return nullptr;
   }
 
-  if (GetCreateVDFunctions(nullptr).empty()) {
+  if (get_create_vd_functions_cb.Run(nullptr).empty()) {
     VLOGF(1) << "No available function to create video decoder.";
     return nullptr;
   }
 
   return base::WrapUnique<VideoDecoder>(new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter)));
+      std::move(frame_converter), std::move(get_create_vd_functions_cb)));
 }
 
 VideoDecoderPipeline::VideoDecoderPipeline(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter)
+    std::unique_ptr<VideoFrameConverter> frame_converter,
+    GetCreateVDFunctionsCB get_create_vd_functions_cb)
     : client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::USER_VISIBLE},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       frame_pool_(std::move(frame_pool)),
-      frame_converter_(std::move(frame_converter)) {
+      frame_converter_(std::move(frame_converter)),
+      get_create_vd_functions_cb_(std::move(get_create_vd_functions_cb)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
   DCHECK(frame_pool_);
@@ -170,7 +142,7 @@ void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
   client_output_cb_ = std::move(output_cb);
   init_cb_ = std::move(init_cb);
   base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs =
-      GetCreateVDFunctions(used_create_vd_func_);
+      get_create_vd_functions_cb_.Run(used_create_vd_func_);
 
   if (!decoder_) {
     CreateAndInitializeVD(std::move(create_vd_funcs), config, low_delay,

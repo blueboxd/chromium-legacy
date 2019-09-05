@@ -91,8 +91,8 @@ class DataPipeElementReaderTest : public testing::Test {
       : element_reader_(nullptr, data_pipe_getter_.GetDataPipeGetterPtr()) {}
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   PassThroughDataPipeGetter data_pipe_getter_;
   DataPipeElementReader element_reader_;
 };

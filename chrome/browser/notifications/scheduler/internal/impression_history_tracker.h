@@ -177,7 +177,7 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   ClientStates client_states_;
 
   // Notification guid to Impression map.
-  // TODO(xingliu): Consider to remove this.
+  // TODO(xingliu): Remove this.
   std::map<std::string, Impression*> impression_map_;
 
   // The storage that persists data.

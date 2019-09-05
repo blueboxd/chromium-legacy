@@ -5,18 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_CONSTANTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_CONSTANTS_H_
 
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_unrestricted_double_or_array_buffer_or_dictionary.h"
 
 namespace blink {
-
-using NDEFMessageSource = blink::StringOrArrayBufferOrNDEFMessageInit;
-using NDEFRecordData =
-    blink::StringOrUnrestrictedDoubleOrArrayBufferOrDictionary;
 
 extern const char kNfcJsonMimePostfix[];
 extern const char kNfcJsonMimePrefix[];
 extern const char kNfcJsonMimeType[];
+extern const char kNfcJsonTextMimeType[];
 extern const char kNfcOpaqueMimeType[];
 extern const char kNfcPlainTextMimeType[];
 extern const char kNfcPlainTextMimePrefix[];
@@ -32,7 +27,8 @@ extern const char kNfcSetIdError[];
 extern const char kNfcTextRecordMediaTypeError[];
 extern const char kNfcUrlRecordTypeError[];
 extern const char kNfcUrlRecordParseError[];
-extern const char kNfcJsonRecordTypeError[];
+extern const char kNfcJsonRecordNoDataError[];
+extern const char kNfcJsonRecordStringifyError[];
 extern const char kNfcJsonRecordMediaTypeError[];
 extern const char kNfcOpaqueRecordTypeError[];
 extern const char kNfcRecordTypeError[];

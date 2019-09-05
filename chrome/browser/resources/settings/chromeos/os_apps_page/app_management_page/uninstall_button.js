@@ -6,6 +6,7 @@ Polymer({
   is: 'app-management-uninstall-button',
 
   behaviors: [
+    I18nBehavior,
     app_management.StoreClient,
   ],
 
@@ -22,14 +23,17 @@ Polymer({
   },
 
   /**
-   * Returns True if the uninstall button should be disabled due to app install
-   * type.
+   * Returns true if the button should be disabled due to app install type.
    *
    * @param {App} app
    * @return {?boolean}
    * @private
    */
-  getUninstallButtonDisableState_: function(app) {
+  getDisableState_: function(app) {
+    if (!app) {
+      return true;
+    }
+
     switch (app.installSource) {
       case InstallSource.kSystem:
       case InstallSource.kPolicy:
@@ -46,26 +50,22 @@ Polymer({
   },
 
   /**
-   * Returns string to be shown as a tool tip over the uninstall button.
+   * Returns string to be shown as a tool tip over the policy indicator.
    *
    * @param {App} app
    * @return {?string}
    * @private
    */
-  getUninstallButtonHoverText_: function(app) {
-    // TODO(crbug.com/957795): Replace strings and add them into i18n.
+  getTooltip_: function(app) {
+    if (!app) {
+      return '';
+    }
+
     switch (app.installSource) {
       case InstallSource.kSystem:
-        return app.title + ' cannot be uninstalled as it is part of Chrome OS.';
+        return this.i18n('systemAppUninstallPolicy');
       case InstallSource.kPolicy:
-        return app.title + ' cannot be uninstalled as it has been' +
-            ' installed by your administrator.';
-      case InstallSource.kOem:
-      case InstallSource.kDefault:
-      case InstallSource.kSync:
-      case InstallSource.kUser:
-      case InstallSource.kUnknown:
-        return `Click to uninstall ${app.title}.`;
+        return this.i18n('policyAppUninstallPolicy');
       default:
         assertNotReached();
     }
@@ -75,17 +75,21 @@ Polymer({
    * Returns true if the app was installed by a policy
    *
    * @param {App} app
-   * @returns {?boolean}
+   * @returns {boolean}
    * @private
    */
-  isPolicyApp_: function(app) {
-    return app.installSource === InstallSource.kPolicy;
+  showPolicyIndicator_: function(app) {
+    if (!app) {
+      return false;
+    }
+    return app.installSource === InstallSource.kPolicy ||
+        app.installSource === InstallSource.kSystem;
   },
 
   /**
    * @private
    */
-  onClickUninstallButton_: function() {
+  onClick_: function() {
     app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
   },
 });

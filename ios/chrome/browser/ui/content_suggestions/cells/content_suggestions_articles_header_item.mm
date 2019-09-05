@@ -95,7 +95,6 @@ const CGFloat kTextMargin = 13;
     _label.adjustsFontSizeToFitWidth = YES;
 
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
-    _button.tintColor = [UIColor colorNamed:kBlueColor];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
     _button.titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];

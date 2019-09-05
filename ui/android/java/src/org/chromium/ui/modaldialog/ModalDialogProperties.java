@@ -116,9 +116,13 @@ public class ModalDialogProperties {
     public static final WritableBooleanPropertyKey TITLE_SCROLLABLE =
             new WritableBooleanPropertyKey();
 
+    /** Whether the primary (positive) button should be a filled button */
+    public static final ReadableBooleanPropertyKey PRIMARY_BUTTON_FILLED =
+            new ReadableBooleanPropertyKey();
+
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {CONTROLLER, CONTENT_DESCRIPTION,
             TITLE, TITLE_ICON, MESSAGE, CUSTOM_VIEW, POSITIVE_BUTTON_TEXT,
             POSITIVE_BUTTON_CONTENT_DESCRIPTION, POSITIVE_BUTTON_DISABLED, NEGATIVE_BUTTON_TEXT,
             NEGATIVE_BUTTON_CONTENT_DESCRIPTION, NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE,
-            FILTER_TOUCH_FOR_SECURITY, TITLE_SCROLLABLE};
+            FILTER_TOUCH_FOR_SECURITY, TITLE_SCROLLABLE, PRIMARY_BUTTON_FILLED};
 }

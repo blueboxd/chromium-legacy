@@ -598,10 +598,6 @@ jumbo_component("views") {
     ]
   }
 
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-
   if (use_x11) {
     configs += [
       "//build/config/linux:x11",
@@ -752,7 +748,6 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
           "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
           "widget/desktop_aura/desktop_screen_ozone.cc",
-          "widget/desktop_aura/desktop_screen_ozone.h",
         ]
       }
       if (is_linux) {

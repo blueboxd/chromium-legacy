@@ -299,7 +299,7 @@ cca.models.Gallery.prototype.savePhoto = function(blob, name) {
                 cca.util.orientPhoto(blob, resolve, () => resolve(blob));
               })
                   .then((blob) => {
-                    return cca.models.FileSystem.savePhoto(blob, name);
+                    return cca.models.FileSystem.saveBlob(blob, name);
                   })
                   .then((pictureEntry) => {
                     return this.wrapPicture_(pictureEntry);

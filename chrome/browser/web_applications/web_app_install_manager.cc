@@ -137,6 +137,14 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     MaybeStartQueuedTask();
 }
 
+void WebAppInstallManager::UpdateWebAppFromManifest(
+    const AppId& app_id,
+    blink::Manifest manifest,
+    OnceInstallCallback callback) {
+  // TODO(crbug.com/926083): Implement this.
+  std::move(callback).Run(app_id, InstallResultCode::kFailedUnknownReason);
+}
+
 void WebAppInstallManager::Shutdown() {
   tasks_.clear();
   {

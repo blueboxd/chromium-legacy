@@ -389,6 +389,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   static void OnAllSyncEventsCompleted(
       blink::mojom::BackgroundSyncType sync_type,
       const base::TimeTicks& start_time,
+      bool from_wakeup_task,
       int number_of_batched_sync_events);
 
   // OnRegistrationDeleted callbacks

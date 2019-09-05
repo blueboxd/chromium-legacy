@@ -2939,6 +2939,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrossOriginEmbedderPolicyDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kCrossOriginEmbedderPolicy)},
 
+    {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
+     flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
+
     {"enable-resource-load-scheduler",
      flag_descriptions::kResourceLoadSchedulerName,
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
@@ -3698,17 +3702,18 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kClickToCallReceiver)},
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
     {"click-to-call-context-menu-selected-text",
      flag_descriptions::kClickToCallContextMenuForSelectedTextName,
      flag_descriptions::kClickToCallContextMenuForSelectedTextDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_VALUE_TYPE(kClickToCallContextMenuForSelectedText)},
+     kOsDesktop, FEATURE_VALUE_TYPE(kClickToCallContextMenuForSelectedText)},
 
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
-     flag_descriptions::kClickToCallUIDescription, kOsWin | kOsMac | kOsLinux,
+     flag_descriptions::kClickToCallUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
     {"shared-clipboard-receiver",
      flag_descriptions::kSharedClipboardReceiverName,

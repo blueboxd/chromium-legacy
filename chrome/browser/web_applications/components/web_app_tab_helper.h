@@ -92,8 +92,8 @@ class WebAppTabHelper : public content::WebContentsObserver,
   // We store the applied group id locally on the helper for testing.
   base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
 
-  WebAppProviderBase* provider_ = nullptr;
   ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};
+  WebAppProviderBase* provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppTabHelper);
 };

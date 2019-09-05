@@ -838,7 +838,6 @@ UIImage* InfoBarCloseImage() {
   UIImage* templateImage =
       [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   imageView_ = [[UIImageView alloc] initWithImage:templateImage];
-  imageView_.tintColor = [UIColor colorNamed:kBlueColor];
   [self addSubview:imageView_];
 }
 

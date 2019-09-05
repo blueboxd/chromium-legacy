@@ -9,6 +9,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 namespace chromeos {
@@ -133,8 +134,8 @@ void PowerManagerProviderImpl::AcquireWakeLockOnMainThread() {
   // this shouldn't wake the display up. Hence, the wake lock acquired is of
   // type kPreventAppSuspension.
   if (!wake_lock_) {
-    device::mojom::WakeLockProviderPtr provider;
-    client_->RequestWakeLockProvider(mojo::MakeRequest(&provider));
+    mojo::Remote<device::mojom::WakeLockProvider> provider;
+    client_->RequestWakeLockProvider(provider.BindNewPipeAndPassReceiver());
     provider->GetWakeLockWithoutContext(
         device::mojom::WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, kWakeLockReason,

@@ -1430,7 +1430,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       pending_views_(0),
       keep_alive_ref_count_(0),
       is_keep_alive_ref_count_disabled_(false),
-      route_provider_binding_(this),
       visible_clients_(0),
       priority_(!blink::kLaunchingProcessIsBackgrounded,
                 false /* has_media_stream */,
@@ -1800,6 +1799,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   //
   // See OnProcessLaunched() for some additional details of this somewhat
   // surprising behavior.
+  remote_route_provider_.reset();
   channel_->GetRemoteAssociatedInterface(&remote_route_provider_);
   channel_->GetRemoteAssociatedInterface(&renderer_interface_);
 
@@ -2184,10 +2184,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 }
 
 void RenderProcessHostImpl::BindRouteProvider(
-    mojom::RouteProviderAssociatedRequest request) {
-  if (route_provider_binding_.is_bound())
+    mojo::PendingAssociatedReceiver<mojom::RouteProvider> receiver) {
+  if (route_provider_receiver_.is_bound())
     return;
-  route_provider_binding_.Bind(std::move(request));
+  route_provider_receiver_.Bind(std::move(receiver));
 }
 
 void RenderProcessHostImpl::GetRoute(
@@ -4150,8 +4150,7 @@ void RenderProcessHostImpl::ProcessDied(
 void RenderProcessHostImpl::ResetIPC() {
   if (renderer_host_binding_.is_bound())
     renderer_host_binding_.Unbind();
-  if (route_provider_binding_.is_bound())
-    route_provider_binding_.Close();
+  route_provider_receiver_.reset();
   associated_interface_provider_bindings_.CloseAllBindings();
   associated_interfaces_.reset();
 

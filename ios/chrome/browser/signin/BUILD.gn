@@ -66,7 +66,6 @@ source_set("signin") {
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/ios",
     "//components/sync",
-    "//components/unified_consent",
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks:bookmarks_utils",
@@ -95,7 +94,6 @@ source_set("feature_flags") {
   ]
   deps = [
     "//base",
-    "//components/unified_consent",
   ]
 }
 
@@ -147,7 +145,6 @@ source_set("unit_tests") {
     "//components/sync:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
-    "//components/unified_consent",
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:browser_state_impl",

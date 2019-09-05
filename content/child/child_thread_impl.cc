@@ -515,8 +515,7 @@ ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure)
 
 ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure,
                                  const Options& options)
-    : route_provider_binding_(this),
-      router_(this),
+    : router_(this),
       quit_closure_(std::move(quit_closure)),
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
@@ -846,13 +845,14 @@ void ChildThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (interface_name == mojom::RouteProvider::Name_) {
-    DCHECK(!route_provider_binding_.is_bound());
-    route_provider_binding_.Bind(
-        mojom::RouteProviderAssociatedRequest(std::move(handle)),
+    DCHECK(!route_provider_receiver_.is_bound());
+    route_provider_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<mojom::RouteProvider>(
+            std::move(handle)),
         ipc_task_runner_ ? ipc_task_runner_
                          : base::ThreadTaskRunnerHandle::Get());
   } else {
-    LOG(ERROR) << "Request for unknown Channel-associated interface: "
+    LOG(ERROR) << "Receiver for unknown Channel-associated interface: "
                << interface_name;
   }
 }

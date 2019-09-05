@@ -419,6 +419,11 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
   }
 }
 
+base::FilePath ShellContentBrowserClient::GetFontLookupTableCacheDir() {
+  return browser_context()->GetPath().Append(
+      FILE_PATH_LITERAL("FontLookupTableCache"));
+}
+
 DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ShellDevToolsManagerDelegate(browser_context());

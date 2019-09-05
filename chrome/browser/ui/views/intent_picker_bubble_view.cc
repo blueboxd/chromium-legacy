@@ -11,9 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,6 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -115,7 +115,8 @@ IntentPickerBubbleView* IntentPickerBubbleView::intent_picker_bubble_ = nullptr;
 // static
 views::Widget* IntentPickerBubbleView::ShowBubble(
     views::View* anchor_view,
-    views::Button* highlighted_button,
+    PageActionIconView* icon_view,
+    PageActionIconType icon_type,
     content::WebContents* web_contents,
     std::vector<AppInfo> app_info,
     bool show_stay_in_chrome,
@@ -128,18 +129,12 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     widget->Show();
     return widget;
   }
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser || !BrowserView::GetBrowserViewForBrowser(browser)) {
-    std::move(intent_picker_cb)
-        .Run(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
-             apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER, false);
-    return nullptr;
-  }
   intent_picker_bubble_ = new IntentPickerBubbleView(
-      anchor_view, std::move(app_info), std::move(intent_picker_cb),
-      web_contents, show_stay_in_chrome, show_remember_selection);
-  if (highlighted_button)
-    intent_picker_bubble_->SetHighlightedButton(highlighted_button);
+      anchor_view, icon_view, icon_type, std::move(app_info),
+      std::move(intent_picker_cb), web_contents, show_stay_in_chrome,
+      show_remember_selection);
+  if (icon_view)
+    intent_picker_bubble_->SetHighlightedButton(icon_view);
   intent_picker_bubble_->set_margins(gfx::Insets());
   intent_picker_bubble_->Initialize();
   views::Widget* widget =
@@ -152,8 +147,17 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   // to ensure screen readers immediately announce the text of this view.
   intent_picker_bubble_->GetViewAccessibility().OverrideRole(
       ax::mojom::Role::kDialog);
-  intent_picker_bubble_->GetViewAccessibility().OverrideName(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON));
+  if (icon_type == PageActionIconType::kClickToCall) {
+    intent_picker_bubble_->GetViewAccessibility().OverrideName(
+        l10n_util::GetStringUTF16(
+            IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL));
+    ClickToCallUiController::GetOrCreateFromWebContents(web_contents)
+        ->ClearLastDialog();
+  } else {
+    DCHECK(icon_type == PageActionIconType::kIntentPicker);
+    intent_picker_bubble_->GetViewAccessibility().OverrideName(
+        l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON));
+  }
   intent_picker_bubble_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
   DCHECK(intent_picker_bubble_->HasCandidates());
@@ -167,14 +171,17 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
 std::unique_ptr<IntentPickerBubbleView>
 IntentPickerBubbleView::CreateBubbleViewForTesting(
     views::View* anchor_view,
+    PageActionIconView* icon_view,
+    PageActionIconType icon_type,
     std::vector<AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents) {
   auto bubble = std::make_unique<IntentPickerBubbleView>(
-      anchor_view, std::move(app_info), std::move(intent_picker_cb),
-      web_contents, show_stay_in_chrome, show_remember_selection);
+      anchor_view, icon_view, icon_type, std::move(app_info),
+      std::move(intent_picker_cb), web_contents, show_stay_in_chrome,
+      show_remember_selection);
   bubble->Initialize();
   return bubble;
 }
@@ -186,16 +193,17 @@ void IntentPickerBubbleView::CloseCurrentBubble() {
 }
 
 void IntentPickerBubbleView::CloseBubble() {
-  intent_picker_bubble_ = nullptr;
+  ClearBubbleView();
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
 bool IntentPickerBubbleView::Accept() {
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
-  RunCallback(app_info_[selected_app_tag_].launch_name,
-              app_info_[selected_app_tag_].type,
-              apps::IntentPickerCloseReason::OPEN_APP, should_persist);
+  RunCallbackAndCloseBubble(app_info_[selected_app_tag_].launch_name,
+                            app_info_[selected_app_tag_].type,
+                            apps::IntentPickerCloseReason::OPEN_APP,
+                            should_persist);
   return true;
 }
 
@@ -208,16 +216,18 @@ bool IntentPickerBubbleView::Cancel() {
 #endif
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
-  RunCallback(launch_name, apps::PickerEntryType::kUnknown,
-              apps::IntentPickerCloseReason::STAY_IN_CHROME, should_persist);
+  RunCallbackAndCloseBubble(launch_name, apps::PickerEntryType::kUnknown,
+                            apps::IntentPickerCloseReason::STAY_IN_CHROME,
+                            should_persist);
   return true;
 }
 
 bool IntentPickerBubbleView::Close() {
   // Whenever closing the bubble without pressing |Just once| or |Always| we
   // need to report back that the user didn't select anything.
-  RunCallback(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
-              apps::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
+  RunCallbackAndCloseBubble(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
+                            apps::IntentPickerCloseReason::DIALOG_DEACTIVATED,
+                            false);
   return true;
 }
 
@@ -233,19 +243,35 @@ int IntentPickerBubbleView::GetDialogButtons() const {
 }
 
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {
+  if (icon_type_ == PageActionIconType::kClickToCall) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
+  }
+
+  DCHECK(icon_type_ == PageActionIconType::kIntentPicker);
   return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH);
 }
 
 base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK
-          ? IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN
-          : IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME);
+  if (button != ui::DIALOG_BUTTON_OK) {
+    return l10n_util::GetStringUTF16(
+        IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME);
+  }
+
+  if (icon_type_ == PageActionIconType::kClickToCall) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL);
+  }
+
+  DCHECK(icon_type_ == PageActionIconType::kIntentPicker);
+  return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN);
 }
 
 IntentPickerBubbleView::IntentPickerBubbleView(
     views::View* anchor_view,
+    PageActionIconView* icon_view,
+    PageActionIconType icon_type,
     std::vector<AppInfo> app_info,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
@@ -256,7 +282,9 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       selected_app_tag_(0),
       app_info_(std::move(app_info)),
       show_stay_in_chrome_(show_stay_in_chrome),
-      show_remember_selection_(show_remember_selection) {
+      show_remember_selection_(show_remember_selection),
+      icon_view_(icon_view),
+      icon_type_(icon_type) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 
@@ -267,8 +295,9 @@ IntentPickerBubbleView::~IntentPickerBubbleView() {
 // If the widget gets closed without an app being selected we still need to use
 // the callback so the caller can Resume the navigation.
 void IntentPickerBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  RunCallback(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
-              apps::IntentPickerCloseReason::DIALOG_DEACTIVATED, false);
+  RunCallbackAndCloseBubble(kInvalidLaunchName, apps::PickerEntryType::kUnknown,
+                            apps::IntentPickerCloseReason::DIALOG_DEACTIVATED,
+                            false);
 }
 
 void IntentPickerBubbleView::ButtonPressed(views::Button* sender,
@@ -401,7 +430,7 @@ bool IntentPickerBubbleView::HasCandidates() const {
   return !app_info_.empty();
 }
 
-void IntentPickerBubbleView::RunCallback(
+void IntentPickerBubbleView::RunCallbackAndCloseBubble(
     const std::string& launch_name,
     apps::PickerEntryType entry_type,
     apps::IntentPickerCloseReason close_reason,
@@ -412,7 +441,7 @@ void IntentPickerBubbleView::RunCallback(
         .Run(launch_name, entry_type, close_reason, should_persist);
   }
 
-  intent_picker_bubble_ = nullptr;
+  ClearBubbleView();
 }
 
 size_t IntentPickerBubbleView::GetScrollViewSize() const {
@@ -450,13 +479,22 @@ void IntentPickerBubbleView::UpdateCheckboxState() {
     return;
   // TODO(crbug.com/826982): allow PWAs to have their decision persisted when
   // there is a central Chrome OS apps registry to store persistence.
+  // TODO(crbug.com/1000037): allow to persist remote devices too.
+  auto selected_app_type = app_info_[selected_app_tag_].type;
   const bool should_enable =
-      app_info_[selected_app_tag_].type != apps::PickerEntryType::kWeb;
+      selected_app_type != apps::PickerEntryType::kWeb &&
+      selected_app_type != apps::PickerEntryType::kDevice;
 
   // Reset the checkbox state to the default unchecked if becomes disabled.
   if (!should_enable)
     remember_selection_checkbox_->SetChecked(false);
   remember_selection_checkbox_->SetEnabled(should_enable);
+}
+
+void IntentPickerBubbleView::ClearBubbleView() {
+  intent_picker_bubble_ = nullptr;
+  if (icon_view_)
+    icon_view_->Update();
 }
 
 gfx::ImageSkia IntentPickerBubbleView::GetAppImageForTesting(size_t index) {

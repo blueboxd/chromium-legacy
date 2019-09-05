@@ -145,8 +145,6 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
 
 void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  TRACE_EVENT_BEGIN0("ServiceWorker",
-                     "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
   Client().WillInitializeWorkerContext();
 }
 
@@ -160,12 +158,6 @@ void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
       worker_global_scope->GetThread()->GetTaskRunner(
           TaskType::kInternalDefault);
   Client().WorkerContextStarted(this, std::move(worker_task_runner));
-}
-
-void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  TRACE_EVENT_END0("ServiceWorker",
-                   "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
 }
 
 void ServiceWorkerGlobalScopeProxy::DidLoadClassicScript() {

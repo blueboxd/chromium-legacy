@@ -293,18 +293,15 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
       user_value = "?1";
 
     std::string destination;
-    std::string mode = "navigate";
     switch (frame_tree_node->frame_owner_element_type()) {
       case blink::FrameOwnerElementType::kNone:
         destination = "document";
         break;
       case blink::FrameOwnerElementType::kObject:
         destination = "object";
-        mode = "no-cors";
         break;
       case blink::FrameOwnerElementType::kEmbed:
         destination = "embed";
-        mode = "no-cors";
         break;
       case blink::FrameOwnerElementType::kIframe:
       case blink::FrameOwnerElementType::kFrame:
@@ -313,16 +310,16 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
         // moment. Let's assume it'll be similar to a frame until we decide
         // otherwise.
         destination = "nested-document";
-        mode = "nested-navigate";
     }
 
     if (IsFetchMetadataDestinationEnabled()) {
       headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     }
-    headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
     if (!user_value.empty())
       headers->SetHeaderIfMissing("Sec-Fetch-User", user_value.c_str());
-    // Sec-Fetch-Site is covered by network::SetSecFetchSiteHeader function.
+
+    // `Sec-Fetch-Site` and `Sec-Fetch-Mode` are covered by the
+    // `network::SetFetchMetadataHeaders` function.
   }
 
   // Next, set the HTTP Origin if needed.

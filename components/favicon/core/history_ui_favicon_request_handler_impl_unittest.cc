@@ -39,6 +39,7 @@ const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
 base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
 const char kAvailabilityHistogramName[] =
     "Sync.SyncedHistoryFaviconAvailability";
+const char kLatencyHistogramName[] = "Sync.SyncedHistoryFaviconLatency";
 const char kGroupingHistogramName[] =
     "Sync.RequestGroupSizeForSyncedHistoryFavicons";
 const int kDefaultDesiredSizeInPixel = 16;
@@ -257,6 +258,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyBitmap) {
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kNotAvailable, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncBitmap) {
@@ -277,6 +280,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncBitmap) {
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kSync, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalBitmap) {
@@ -299,6 +304,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalBitmap) {
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -325,6 +332,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
   histogram_tester_.ExpectUniqueSample(
       std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
@@ -354,6 +363,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
   histogram_tester_.ExpectUniqueSample(
       std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
@@ -373,6 +384,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetEmptyImage) {
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kNotAvailable, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncImage) {
@@ -390,6 +403,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetSyncImage) {
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kSync, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalImage) {
@@ -409,6 +424,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest, ShouldGetLocalImage) {
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
 }
 
 TEST_F(HistoryUiFaviconRequestHandlerImplTest,
@@ -433,6 +450,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
   histogram_tester_.ExpectUniqueSample(
       std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }
@@ -459,6 +478,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
   histogram_tester_.ExpectUniqueSample(
       std::string(kAvailabilityHistogramName) + kDummyOriginHistogramSuffix,
       FaviconAvailability::kLocal, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string(kLatencyHistogramName) + kDummyOriginHistogramSuffix, 1);
   histogram_tester_.ExpectUniqueSample(
       std::string(kGroupingHistogramName) + kDummyOriginHistogramSuffix, 1, 1);
 }

@@ -52,9 +52,14 @@ constexpr int kDisplayedZeroStateResults = 5;
 // considered 'fresh' and can therefore override another result.
 constexpr int kMaxCacheCountForOverride = 3;
 
-// For zero state, the minimum result score to be considered a candidate to
-// override another result.
-constexpr float kMinScoreForOverride = 0.5f;
+// All ranking item types that appear in the zero-state results list. The
+// ordering of this list is important and should be changed with care: it has
+// some effect on scores of results. In particular, if the ranker is entirely
+// empty, it is warmed up by adding elements in this list with scores for later
+// elements slightly higher than earlier elements.
+constexpr RankingItemType kZeroStateTypes[] = {
+    RankingItemType::kOmniboxGeneric, RankingItemType::kZeroStateFile,
+    RankingItemType::kDriveQuickAccess};
 
 // Represents each model used within the SearchResultRanker.
 enum class Model { NONE, APPS, MIXED_TYPES };
@@ -232,18 +237,17 @@ void SearchResultRanker::InitializeRankers() {
     zero_state_paired_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableZeroStateMixedTypesRanker, "paired_coeff",
         zero_state_paired_coeff_);
-    zero_state_default_group_score_ = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableZeroStateMixedTypesRanker,
-        "default_group_score", zero_state_default_group_score_);
 
-    // TODO(959679): Swap to a stochastic model by default and tweak params.
     RecurrenceRankerConfigProto default_config;
     default_config.set_min_seconds_between_saves(240u);
     default_config.set_condition_limit(1u);
-    default_config.set_condition_decay(0.5f);
+    default_config.set_condition_decay(0.9f);
     default_config.set_target_limit(5u);
-    default_config.set_target_decay(0.8f);
+    default_config.set_target_decay(0.9f);
     default_config.mutable_predictor()->mutable_default_predictor();
+    auto* predictor =
+        default_config.mutable_predictor()->mutable_frecency_predictor();
+    predictor->set_decay_coeff(0.9f);
 
     const std::string config_json = GetFieldTrialParamValueByFeature(
         app_list_features::kEnableZeroStateMixedTypesRanker, "config");
@@ -304,6 +308,18 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   if (query.empty() && zero_state_group_ranker_) {
     zero_state_group_ranks_.clear();
     zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
+
+    // If the zero state model is empty, warm it up by training once on each
+    // group. The order if |kZeroStateTypes| means that DriveQuickAccess will
+    // have a slightly higher score than ZeroStateFile, which will have a
+    // slightly higher score than Omnibox.
+    if (zero_state_group_ranks_.empty()) {
+      for (const auto type : kZeroStateTypes) {
+        zero_state_group_ranker_->Record(
+            base::NumberToString(static_cast<int>(type)));
+      }
+    }
+    zero_state_group_ranks_ = zero_state_group_ranker_->Rank();
   }
 
   if (results_list_group_ranker_) {
@@ -323,31 +339,27 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
   if (!results)
     return;
 
+  std::sort(results->begin(), results->end(),
+            [](const Mixer::SortData& a, const Mixer::SortData& b) {
+              return a.score > b.score;
+            });
+
   std::map<std::string, float> ranking_map;
   if (using_aggregated_app_inference_)
     ranking_map = app_launch_event_logger_->RetrieveRankings();
   int aggregated_app_rank_success_count = 0;
   int aggregated_app_rank_fail_count = 0;
 
+  // Counts how many times a given type has been seen so far in the results
+  // list.
+  base::flat_map<RankingItemType, int> zero_state_type_counts;
   for (auto& result : *results) {
     const auto& type = RankingItemTypeFromSearchResult(*result.result);
     const auto& model = ModelForType(type);
 
     if (model == Model::MIXED_TYPES) {
       if (last_query_.empty() && zero_state_group_ranker_) {
-        // Apply model score updates.
-        const auto& rank_it = zero_state_group_ranks_.find(
-            base::NumberToString(static_cast<int>(type)));
-        const float group_score = (rank_it != zero_state_group_ranks_.end())
-                                      ? rank_it->second
-                                      : zero_state_default_group_score_;
-        const float score =
-            zero_state_item_coeff_ * result.score +
-            zero_state_group_coeff_ * group_score +
-            zero_state_paired_coeff_ * result.score * group_score;
-        result.score =
-            score / (zero_state_item_coeff_ + zero_state_group_coeff_ +
-                     zero_state_paired_coeff_);
+        ScoreZeroStateItem(&result, type, &zero_state_type_counts);
       } else if (results_list_group_ranker_) {
         const auto& rank_it =
             group_ranks_.find(base::NumberToString(static_cast<int>(type)));
@@ -401,6 +413,32 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
     UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankFail",
                               aggregated_app_rank_fail_count);
   }
+}
+
+void SearchResultRanker::ScoreZeroStateItem(
+    Mixer::SortData* result,
+    RankingItemType type,
+    base::flat_map<RankingItemType, int>* type_counts) const {
+  DCHECK(type == RankingItemType::kOmniboxGeneric ||
+         type == RankingItemType::kZeroStateFile ||
+         type == RankingItemType::kDriveQuickAccess);
+
+  const float item_score =
+      1.0f -
+      ((*type_counts)[type] / static_cast<float>(kDisplayedZeroStateResults));
+
+  const auto& rank_it = zero_state_group_ranks_.find(
+      base::NumberToString(static_cast<int>(type)));
+
+  const float group_score =
+      (rank_it != zero_state_group_ranks_.end()) ? rank_it->second : 0.0f;
+  const float score = zero_state_item_coeff_ * item_score +
+                      zero_state_group_coeff_ * group_score +
+                      zero_state_paired_coeff_ * item_score * group_score;
+  result->score = score / (zero_state_item_coeff_ + zero_state_group_coeff_ +
+                           zero_state_paired_coeff_);
+
+  ++(*type_counts)[type];
 }
 
 void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
@@ -474,9 +512,7 @@ void SearchResultRanker::OverrideZeroStateResults(
   // are multiple overrides necessary, a QuickAccess result is above a
   // ZeroStateFile result is above an Omnibox result.
   int next_modifiable_index = kDisplayedZeroStateResults - 1;
-  for (auto group :
-       {RankingItemType::kOmniboxGeneric, RankingItemType::kZeroStateFile,
-        RankingItemType::kDriveQuickAccess}) {
+  for (auto group : kZeroStateTypes) {
     // Find the best result for the group.
     int candidate_override_index = -1;
     for (int i = 0; i < static_cast<int>(result_ptrs.size()); ++i) {
@@ -494,7 +530,6 @@ void SearchResultRanker::OverrideZeroStateResults(
       const auto& cache_count = zero_state_results_cache_[group].second;
 
       if (i >= kDisplayedZeroStateResults &&
-          result.score >= kMinScoreForOverride &&
           cache_count < kMaxCacheCountForOverride) {
         candidate_override_index = i;
       }

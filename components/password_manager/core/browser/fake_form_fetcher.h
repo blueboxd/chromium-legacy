@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
@@ -48,6 +49,8 @@ class FakeFormFetcher : public FormFetcher {
     stats_ = stats;
   }
 
+  void set_scheme(autofill::PasswordForm::Scheme scheme) { scheme_ = scheme; }
+
   std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
       const override;
 
@@ -56,6 +59,14 @@ class FakeFormFetcher : public FormFetcher {
 
   std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const override;
+
+  const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
+      const override;
+
+  const std::map<base::string16, const autofill::PasswordForm*>&
+  GetBestMatches() const override;
+
+  const autofill::PasswordForm* GetPreferredMatch() const override;
 
   void set_federated(
       const std::vector<const autofill::PasswordForm*>& federated) {
@@ -80,10 +91,15 @@ class FakeFormFetcher : public FormFetcher {
  private:
   std::set<Consumer*> consumers_;
   State state_ = State::NOT_WAITING;
+  autofill::PasswordForm::Scheme scheme_ =
+      autofill::PasswordForm::Scheme::kHtml;
   std::vector<InteractionsStats> stats_;
   std::vector<const autofill::PasswordForm*> non_federated_;
   std::vector<const autofill::PasswordForm*> federated_;
   std::vector<const autofill::PasswordForm*> blacklisted_;
+  std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
+  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
+  const autofill::PasswordForm* preferred_match_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFormFetcher);
 };

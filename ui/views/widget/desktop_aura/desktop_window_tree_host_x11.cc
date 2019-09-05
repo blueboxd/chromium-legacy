@@ -25,7 +25,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -42,8 +41,6 @@
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/keyboard_hook.h"
-#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_window_event_manager.h"
@@ -53,7 +50,6 @@
 #include "ui/gfx/path_x11.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
-#include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
@@ -292,14 +288,6 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   native_widget_delegate()->OnNativeWidgetCreated();
 }
 
-void DesktopWindowTreeHostX11::OnWidgetInitDone() {}
-
-void DesktopWindowTreeHostX11::OnActiveWindowChanged(bool active) {}
-
-std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostX11::CreateTooltip() {
-  return base::WrapUnique(new corewm::TooltipAura);
-}
-
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
@@ -357,10 +345,6 @@ void DesktopWindowTreeHostX11::CloseNow() {
   open_windows().remove(GetAcceleratedWidget());
 
   platform_window()->Close();
-}
-
-aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
-  return this;
 }
 
 void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
@@ -451,34 +435,6 @@ void DesktopWindowTreeHostX11::StackAtTop() {
   GetXWindow()->StackAtTop();
 }
 
-void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
-  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(size)).size();
-  gfx::Rect parent_bounds_in_pixels = ToPixelRect(GetWorkAreaBoundsInScreen());
-
-  // If |window_|'s transient parent bounds are big enough to contain |size|,
-  // use them instead.
-  if (wm::GetTransientParent(content_window())) {
-    gfx::Rect transient_parent_rect =
-        wm::GetTransientParent(content_window())->GetBoundsInScreen();
-    if (transient_parent_rect.height() >= size.height() &&
-        transient_parent_rect.width() >= size.width()) {
-      parent_bounds_in_pixels = ToPixelRect(transient_parent_rect);
-    }
-  }
-
-  gfx::Rect window_bounds_in_pixels(
-      parent_bounds_in_pixels.x() +
-          (parent_bounds_in_pixels.width() - size_in_pixels.width()) / 2,
-      parent_bounds_in_pixels.y() +
-          (parent_bounds_in_pixels.height() - size_in_pixels.height()) / 2,
-      size_in_pixels.width(), size_in_pixels.height());
-  // Don't size the window bigger than the parent, otherwise the user may not be
-  // able to close or move it.
-  window_bounds_in_pixels.AdjustToFit(parent_bounds_in_pixels);
-
-  SetBoundsInPixels(window_bounds_in_pixels);
-}
-
 void DesktopWindowTreeHostX11::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
@@ -497,22 +453,6 @@ void DesktopWindowTreeHostX11::GetWindowPlacement(
   }
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetWindowBoundsInScreen() const {
-  return ToDIPRect(GetBoundsInPixels());
-}
-
-gfx::Rect DesktopWindowTreeHostX11::GetClientAreaBoundsInScreen() const {
-  // TODO(erg): The NativeWidgetAura version returns |bounds_in_pixels_|,
-  // claiming it's needed for View::ConvertPointToScreen() to work correctly.
-  // DesktopWindowTreeHostWin::GetClientAreaBoundsInScreen() just asks windows
-  // what it thinks the client rect is.
-  //
-  // Attempts to calculate the rect by asking the NonClientFrameView what it
-  // thought its GetBoundsForClientView() were broke combobox drop down
-  // placement.
-  return GetWindowBoundsInScreen();
-}
-
 gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
   // We can't reliably track the restored bounds of a window, but we can get
   // the 90% case down. When *chrome* is the process that requests maximizing
@@ -527,12 +467,6 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
 std::string DesktopWindowTreeHostX11::GetWorkspace() const {
   base::Optional<int> workspace = GetXWindow()->workspace();
   return workspace ? base::NumberToString(workspace.value()) : std::string();
-}
-
-gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(const_cast<aura::Window*>(window()))
-      .work_area();
 }
 
 void DesktopWindowTreeHostX11::SetShape(
@@ -558,15 +492,6 @@ void DesktopWindowTreeHostX11::SetShape(
   }
   GetXWindow()->SetShape(xregion);
   ResetWindowRegion();
-}
-
-void DesktopWindowTreeHostX11::Activate() {
-  GetXWindow()->Activate();
-}
-
-void DesktopWindowTreeHostX11::Deactivate() {
-  ReleaseCapture();
-  GetXWindow()->Deactivate();
 }
 
 bool DesktopWindowTreeHostX11::IsActive() const {
@@ -665,22 +590,6 @@ bool DesktopWindowTreeHostX11::IsVisibleOnAllWorkspaces() const {
   return GetXWindow()->IsVisibleOnAllWorkspaces();
 }
 
-bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {
-  return GetXWindow()->SetTitle(title);
-}
-
-void DesktopWindowTreeHostX11::ClearNativeFocus() {
-  // This method is weird and misnamed. Instead of clearing the native focus,
-  // it sets the focus to our content_window(), which will trigger a cascade
-  // of focus changes into views.
-  if (content_window() && aura::client::GetFocusClient(content_window()) &&
-      content_window()->Contains(
-          aura::client::GetFocusClient(content_window())->GetFocusedWindow())) {
-    aura::client::GetFocusClient(content_window())
-        ->FocusWindow(content_window());
-  }
-}
-
 Widget::MoveLoopResult DesktopWindowTreeHostX11::RunMoveLoop(
     const gfx::Vector2d& drag_offset,
     Widget::MoveLoopSource source,
@@ -703,12 +612,6 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
 void DesktopWindowTreeHostX11::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   // Much like the previous NativeWidgetGtk, we don't have anything to do here.
-}
-
-NonClientFrameView* DesktopWindowTreeHostX11::CreateNonClientFrameView() {
-  return ShouldUseNativeFrame()
-             ? new NativeFrameView(native_widget_delegate()->AsWidget())
-             : nullptr;
 }
 
 bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
@@ -851,10 +754,6 @@ bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementatio
 
-ui::EventSource* DesktopWindowTreeHostX11::GetEventSource() {
-  return this;
-}
-
 void DesktopWindowTreeHostX11::ShowImpl() {
   Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
 }
@@ -862,10 +761,6 @@ void DesktopWindowTreeHostX11::ShowImpl() {
 void DesktopWindowTreeHostX11::HideImpl() {
   if (GetXWindow()->Hide())
     SetVisible(false);
-}
-
-gfx::Rect DesktopWindowTreeHostX11::GetBoundsInPixels() const {
-  return GetXWindow()->bounds();
 }
 
 void DesktopWindowTreeHostX11::SetBoundsInPixels(
@@ -884,10 +779,6 @@ void DesktopWindowTreeHostX11::SetBoundsInPixels(
   }
 
   platform_window()->SetBounds(bounds_in_pixels);
-}
-
-gfx::Point DesktopWindowTreeHostX11::GetLocationOnScreenInPixels() const {
-  return GetXWindow()->bounds().origin();
 }
 
 void DesktopWindowTreeHostX11::SetCapture() {
@@ -922,42 +813,6 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
 
     OnHostLostWindowCapture();
   }
-}
-
-bool DesktopWindowTreeHostX11::CaptureSystemKeyEventsImpl(
-    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
-  // Only one KeyboardHook should be active at a time, otherwise there will be
-  // problems with event routing (i.e. which Hook takes precedence) and
-  // destruction ordering.
-  DCHECK(!keyboard_hook_);
-  keyboard_hook_ = ui::KeyboardHook::CreateModifierKeyboardHook(
-      std::move(dom_codes), GetAcceleratedWidget(),
-      base::BindRepeating(&DesktopWindowTreeHostX11::DispatchKeyEvent,
-                          base::Unretained(this)));
-
-  return keyboard_hook_ != nullptr;
-}
-
-void DesktopWindowTreeHostX11::ReleaseSystemKeyEventCapture() {
-  keyboard_hook_.reset();
-}
-
-bool DesktopWindowTreeHostX11::IsKeyLocked(ui::DomCode dom_code) {
-  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(dom_code);
-}
-
-void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
-  GetXWindow()->SetCursor(cursor.platform());
-}
-
-void DesktopWindowTreeHostX11::MoveCursorToScreenLocationInPixels(
-    const gfx::Point& location_in_pixels) {
-  GetXWindow()->MoveCursorTo(location_in_pixels);
-}
-
-void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
-  // TODO(erg): Conditional on us enabling touch on desktop linux builds, do
-  // the same tap-to-click disabling here that chromeos does.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

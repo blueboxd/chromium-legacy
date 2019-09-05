@@ -13,13 +13,6 @@
 #endif
 
 void CustomizeUIAppearance() {
-  Class containerClass = [TableViewNavigationController class];
-  UIBarButtonItem* barButtonItemAppearance = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ containerClass ]];
-  barButtonItemAppearance.tintColor = [UIColor colorNamed:kBlueColor];
-
-  Class navigationBarClass = [SettingsNavigationController class];
-  UINavigationBar* navigationBarAppearance = [UINavigationBar
-      appearanceWhenContainedInInstancesOfClasses:@[ navigationBarClass ]];
-  navigationBarAppearance.tintColor = [UIColor colorNamed:kBlueColor];
+  UIView.appearance.tintColor = [UIColor colorNamed:kBlueColor];
+  UISwitch.appearance.onTintColor = [UIColor colorNamed:kBlueColor];
 }

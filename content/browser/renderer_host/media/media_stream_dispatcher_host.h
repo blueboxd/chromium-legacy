@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
@@ -30,10 +30,11 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                             int render_frame_id,
                             MediaStreamManager* media_stream_manager);
   ~MediaStreamDispatcherHost() override;
-  static void Create(int render_process_id,
-                     int render_frame_id,
-                     MediaStreamManager* media_stream_manager,
-                     blink::mojom::MediaStreamDispatcherHostRequest request);
+  static void Create(
+      int render_process_id,
+      int render_frame_id,
+      MediaStreamManager* media_stream_manager,
+      mojo::PendingReceiver<blink::mojom::MediaStreamDispatcherHost> receiver);
 
   void set_salt_and_origin_callback_for_testing(
       MediaDeviceSaltAndOriginCallback callback) {

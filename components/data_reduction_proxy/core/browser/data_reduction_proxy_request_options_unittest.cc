@@ -173,8 +173,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     EXPECT_EQ(expected_header, header_value);
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   net::HttpRequestHeaders callback_headers_;

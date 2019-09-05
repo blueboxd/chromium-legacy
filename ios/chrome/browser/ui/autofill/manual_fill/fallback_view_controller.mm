@@ -82,8 +82,6 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
 
   [super viewDidLoad];
 
-  self.view.tintColor = [UIColor colorNamed:kBlueColor];
-
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 20.0;

@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
@@ -36,14 +37,17 @@ namespace {
 // These values are persisted to logs, and should therefore never be renumbered
 // nor reused.
 enum VAJEAEncoderResult {
-  VAAPI_SUCCESS = 0,
-  VAAPI_ERROR,
-  VAJEA_ENCODER_RESULT_MAX = VAAPI_ERROR,
+  kSuccess = 0,
+  kError,
+  kMaxValue = kError,
 };
 
-static void ReportToUMA(VAJEAEncoderResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Media.VAJEA.EncoderResult", result,
-                            VAJEAEncoderResult::VAJEA_ENCODER_RESULT_MAX + 1);
+static void ReportToVAJEAEncodeResultUMA(VAJEAEncoderResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Media.VAJEA.EncoderResult", result);
+}
+
+static void ReportToVAJEAVppFailureUMA(VAJEAEncoderResult result) {
+  base::UmaHistogramEnumeration("Media.VAJEA.VppFailure", result);
 }
 }  // namespace
 
@@ -64,6 +68,7 @@ VaapiJpegEncodeAccelerator::EncodeRequest::~EncodeRequest() {}
 class VaapiJpegEncodeAccelerator::Encoder {
  public:
   Encoder(scoped_refptr<VaapiWrapper> vaapi_wrapper,
+          scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper,
           base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb,
           base::RepeatingCallback<void(int32_t, Status)> notify_error_cb);
   ~Encoder();
@@ -89,6 +94,7 @@ class VaapiJpegEncodeAccelerator::Encoder {
 
   std::unique_ptr<VaapiJpegEncoder> jpeg_encoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper_;
   std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
   base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb_;
@@ -109,11 +115,13 @@ class VaapiJpegEncodeAccelerator::Encoder {
 
 VaapiJpegEncodeAccelerator::Encoder::Encoder(
     scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper,
     base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb,
     base::RepeatingCallback<void(int32_t, Status)> notify_error_cb)
     : cached_output_buffer_size_(0),
       jpeg_encoder_(new VaapiJpegEncoder(vaapi_wrapper)),
       vaapi_wrapper_(std::move(vaapi_wrapper)),
+      vpp_vaapi_wrapper_(std::move(vpp_vaapi_wrapper)),
       gpu_memory_buffer_support_(new gpu::GpuMemoryBufferSupport()),
       video_frame_ready_cb_(std::move(video_frame_ready_cb)),
       notify_error_cb_(std::move(notify_error_cb)),
@@ -138,42 +146,57 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   gfx::Size input_size = input_frame->coded_size();
-
-  // Construct GBM Handle from VideoFrame.
-  gfx::GpuMemoryBufferHandle input_gmb_handle =
-      CreateGpuMemoryBufferHandle(input_frame.get());
-  DCHECK(!input_gmb_handle.is_null());
-
-  // Create pixmap for input handle and create VA surface.
-  auto num_planes_input = VideoFrame::NumPlanes(input_frame->format());
-
-  // We only support NV12 format currently. Modify the check and |buffer_format|
-  // once we support other formats.
-  DCHECK(num_planes_input == 2);
   gfx::BufferFormat buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
   uint32_t va_format = VaapiWrapper::BufferFormatToVARTFormat(buffer_format);
   bool context_changed = input_size != input_size_ || va_format != va_format_;
   if (context_changed) {
-    vaapi_wrapper_->DestroyContext();
+    vaapi_wrapper_->DestroyContextAndSurfaces(
+        std::vector<VASurfaceID>({va_surface_id_}));
+    va_surface_id_ = VA_INVALID_SURFACE;
     va_format_ = 0;
     input_size_ = gfx::Size();
-    const bool success = vaapi_wrapper_->CreateContext(input_size);
-    if (!success) {
-      VLOGF(1) << "Failed to create context";
-      vaapi_wrapper_->DestroyContext();
+
+    std::vector<VASurfaceID> va_surfaces;
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_format, input_size, 1,
+                                                  &va_surfaces)) {
+      VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
     }
+    va_surface_id_ = va_surfaces[0];
     va_format_ = va_format;
     input_size_ = input_size;
   }
 
-  auto va_surface = vaapi_wrapper_->CreateVASurfaceForPixmap(
-      base::WrapRefCounted(new gfx::NativePixmapDmaBuf(
-          input_size, buffer_format,
-          std::move(input_gmb_handle.native_pixmap_handle))));
-  if (!va_surface) {
+  // We need to explicitly blit the bound input surface here to make sure the
+  // input we sent to VAAPI encoder is in tiled NV12 format since implicit
+  // tiling logic is not contained in every driver.
+  auto input_pixmap = CreateNativePixmapDmaBuf(input_frame.get());
+  if (!input_pixmap) {
+    VLOGF(1) << "Cannot create native pixmap for input frame";
+    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
+    return;
+  }
+  auto input_surface =
+      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(input_pixmap);
+  if (!input_surface) {
     VLOGF(1) << "Failed to create input va surface";
+    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
+    return;
+  }
+  auto blit_surface =
+      base::MakeRefCounted<VASurface>(va_surface_id_, input_size, va_format,
+                                      base::DoNothing() /* release_cb */);
+  if (!vpp_vaapi_wrapper_->BlitSurface(input_surface, blit_surface)) {
+    VLOGF(1) << "Failed to blit surfaces";
+    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
+    return;
+  }
+  // We should call vaSyncSurface() when passing surface between contexts. See:
+  // https://lists.01.org/pipermail/intel-vaapi-media/2019-June/000131.html
+  // Sync |blit_surface| since it it passing to the JPEG encoding context.
+  if (!vpp_vaapi_wrapper_->SyncSurface(blit_surface->id())) {
+    VLOGF(1) << "Cannot sync VPP output surface";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
     return;
   }
@@ -214,7 +237,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   size_t exif_offset = 0;
 
   if (!jpeg_encoder_->Encode(input_size, exif_buffer_dummy.data(),
-                             exif_buffer_size, quality, va_surface->id(),
+                             exif_buffer_size, quality, blit_surface->id(),
                              cached_output_buffer_id_, &exif_offset)) {
     VLOGF(1) << "Encode JPEG failed";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
@@ -254,7 +277,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // use its area as the maximum bytes we need to download to avoid buffer
   // overflow.
   if (!vaapi_wrapper_->DownloadFromVABuffer(
-          cached_output_buffer_id_, va_surface->id(),
+          cached_output_buffer_id_, blit_surface->id(),
           static_cast<uint8_t*>(output_memory),
           output_gmb_buffer->GetSize().GetArea(), &encoded_size)) {
     VLOGF(1) << "Failed to retrieve output image from VA coded buffer";
@@ -397,7 +420,7 @@ void VaapiJpegEncodeAccelerator::VideoFrameReady(int32_t task_id,
                                                  size_t encoded_picture_size) {
   DVLOGF(4) << "task_id=" << task_id << ", size=" << encoded_picture_size;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  ReportToUMA(VAJEAEncoderResult::VAAPI_SUCCESS);
+  ReportToVAJEAEncodeResultUMA(VAJEAEncoderResult::kSuccess);
 
   client_->VideoFrameReady(task_id, encoded_picture_size);
 }
@@ -414,12 +437,22 @@ VaapiJpegEncodeAccelerator::Initialize(
   }
 
   client_ = client;
-  scoped_refptr<VaapiWrapper> vaapi_wrapper = VaapiWrapper::Create(
-      VaapiWrapper::kEncode, VAProfileJPEGBaseline,
-      base::Bind(&ReportToUMA, VAJEAEncoderResult::VAAPI_ERROR));
+  scoped_refptr<VaapiWrapper> vaapi_wrapper =
+      VaapiWrapper::Create(VaapiWrapper::kEncode, VAProfileJPEGBaseline,
+                           base::BindRepeating(&ReportToVAJEAEncodeResultUMA,
+                                               VAJEAEncoderResult::kError));
 
   if (!vaapi_wrapper) {
     VLOGF(1) << "Failed initializing VAAPI";
+    return PLATFORM_FAILURE;
+  }
+
+  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper =
+      VaapiWrapper::Create(VaapiWrapper::kVideoProcess, VAProfileNone,
+                           base::BindRepeating(&ReportToVAJEAVppFailureUMA,
+                                               VAJEAEncoderResult::kError));
+  if (!vpp_vaapi_wrapper) {
+    VLOGF(1) << "Failed initializing VAAPI wrapper for VPP";
     return PLATFORM_FAILURE;
   }
 
@@ -432,7 +465,7 @@ VaapiJpegEncodeAccelerator::Initialize(
   }
 
   encoder_ = std::make_unique<Encoder>(
-      std::move(vaapi_wrapper),
+      std::move(vaapi_wrapper), std::move(vpp_vaapi_wrapper),
       BindToCurrentLoop(base::BindRepeating(
           &VaapiJpegEncodeAccelerator::VideoFrameReady, weak_this_)),
       BindToCurrentLoop(base::BindRepeating(

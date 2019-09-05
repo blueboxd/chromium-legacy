@@ -18,10 +18,6 @@ Polymer({
      */
     managed: {type: Boolean, value: false, reflectToAttribute: true},
     /**
-     * @type {string}
-     */
-    policyLabel: String,
-    /**
      * @type {boolean}
      */
     value: {type: Boolean, value: false, reflectToAttribute: true},

@@ -98,7 +98,7 @@ class AudioDeviceListenerMacTest : public testing::Test {
   MOCK_METHOD0(OnDeviceChange, void());
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<AudioDeviceListenerMac> device_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerMacTest);

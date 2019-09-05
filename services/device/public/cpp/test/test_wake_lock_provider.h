@@ -72,7 +72,7 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
 
   service_manager::ServiceBinding service_binding_{this};
 
-  mojo::BindingSet<mojom::WakeLockProvider> bindings_;
+  mojo::ReceiverSet<mojom::WakeLockProvider> receivers_;
 
   // Stores wake lock count and observers associated with each wake lock type.
   std::map<mojom::WakeLockType, std::unique_ptr<WakeLockDataPerType>>

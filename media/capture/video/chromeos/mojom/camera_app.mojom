@@ -6,6 +6,7 @@ module cros.mojom;
 
 import "media/capture/mojom/image_capture.mojom";
 import "media/capture/video/chromeos/mojom/camera_common.mojom";
+import "media/capture/video/chromeos/mojom/camera_metadata.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/range/mojom/range.mojom";
 
@@ -13,6 +14,16 @@ import "ui/gfx/range/mojom/range.mojom";
 enum Effect {
   NO_EFFECT = 0,
   PORTRAIT_MODE = 1,
+};
+
+// Stream types that can be observed by camera app device.
+// This is a mirror of the StreamType in camera_device_delegate.h
+enum StreamType {
+  PREVIEW_OUTPUT = 0,
+  JPEG_OUTPUT = 1,
+  YUV_INPUT = 2,
+  YUV_OUTPUT = 3,
+  UNKNOWN = 4,
 };
 
 // Status code for getting camera app device.
@@ -97,4 +108,22 @@ interface CameraAppDevice {
   // response after the intent is set, which could be used to sequence the
   // other calls such as getUserMedia().
   SetCaptureIntent(CaptureIntent intent) => ();
+
+  // Adds the remote of a ResultMetadataObserver to CameraAppDevice.
+  // The |observer| will have a remote call from camera device.
+  AddResultMetadataObserver(pending_remote<ResultMetadataObserver> observer,
+                            StreamType stream_type)
+      => (uint32 id);
+
+  // Remove a ResultMetadataObserver by supplying its id returned by
+  // AddResultMetadataObserver.
+  // If the ResultMetadataObserver is found, |is_success| returns true.
+  RemoveResultMetadataObserver(uint32 id) => (bool is_success);
+};
+
+// Interface for camera device to send camera metadata to Chrome Camera App.
+interface ResultMetadataObserver {
+  // Remotely invoked by camera device whenever a |camera_metadata| of a frame
+  // is produced.
+  OnMetadataAvailable(CameraMetadata camera_metadata);
 };

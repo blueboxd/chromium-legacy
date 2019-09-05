@@ -30,8 +30,8 @@ class AwSafeBrowsingWhitelistManagerTest : public testing::Test {
 
   void SetWhitelist(std::vector<std::string>&& whitelist, bool expected);
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<AwSafeBrowsingWhitelistManager> wm_;
 };
 

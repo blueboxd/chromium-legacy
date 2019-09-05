@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/process/process.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -707,11 +706,6 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
 
 void GaiaAuthFetcher::StartListAccounts() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-  list_accounts_system_uptime_ = base::SysInfo::Uptime();
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  list_accounts_process_uptime_ =
-      base::Time::Now() - base::Process::Current().CreationTime();
-#endif
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gaia_auth_list_accounts", R"(
@@ -955,28 +949,8 @@ void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(const std::string& data,
 void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
                                             net::Error net_error,
                                             int response_code) {
-  // Log error rates and details for ListAccounts, for investigation of
-  // https://crbug.com/876306.
   base::UmaHistogramSparse("Gaia.AuthFetcher.ListAccounts.NetErrorCodes",
                            -net_error);
-  if (net_error == net::OK) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Gaia.AuthFetcher.ListAccounts.SystemUptime.Success",
-        list_accounts_system_uptime_);
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Success",
-        list_accounts_process_uptime_);
-#endif
-  } else {
-    UMA_HISTOGRAM_LONG_TIMES("Gaia.AuthFetcher.ListAccounts.SystemUptime.Error",
-                             list_accounts_system_uptime_);
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Gaia.AuthFetcher.ListAccounts.ProcessUptime.Error",
-        list_accounts_process_uptime_);
-#endif
-  }
 
   if (net_error == net::OK && response_code == net::HTTP_OK)
     consumer_->OnListAccountsSuccess(data);

@@ -157,6 +157,12 @@ std::string EncodedDataHelper::GetBytesForNextFrame() {
 
   uint32_t frame_size = *reinterpret_cast<uint32_t*>(&data_[pos]);
   pos += 12;  // Skip frame header.
+  // Make sure we are not reading out of bounds.
+  if (pos + frame_size > data_.size()) {
+    LOG(ERROR) << "Unexpected data encountered while parsing frame";
+    next_pos_to_decode_ = data_.size();
+    return bytes;
+  }
   bytes.append(data_.substr(pos, frame_size));
 
   // Update next_pos_to_decode_.

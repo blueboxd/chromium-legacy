@@ -3872,12 +3872,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SHARING_SENDING_NOTIFICATION_TITLE" desc="Title text displayed in a sharing sending notification.">
         Sharing to <ph name="DEVICE_NAME">%1$s<ex>Pixel 3</ex></ph>
       </message>
-      <message name="IDS_SHARING_INTERNAL_ERROR_NOTIFICATION_TITLE" desc="Title text displayed in a sharing sending error notification for internal error.">
-        Can't share <ph name="CONTENT_NAME">%1$s<ex>text</ex></ph>
-      </message>
-      <message name="IDS_SHARING_INTERNAL_ERROR_NOTIFICATION_TEXT" desc="Content text displayed in a sharing sending error notification for internal error.">
-        Something went wrong. Try again later
-      </message>
       <message name="IDS_SHARING_DISMISS_ACTION" desc="Text for action that dismiss a sharing sending notification.">
         Dismiss
       </message>
@@ -3896,6 +3890,40 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Make sure a phone app is enabled on this device
       </message>
 
+      <!-- Sharing content types -->
+      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="The label used to describe that the content type being shared is a text.">
+        text
+      </message>
+
+      <!-- Sharing notification error messages -->
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_GENERIC_ERROR" desc="The label to be shown as the title of the dialog when we encounter an error that can be fixed by the user. Eg, device not connected to internet or sync turned off.">
+        Can't share <ph name="CONTENT_TYPE">%1$s<ex>video</ex></ph>
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TITLE_INTERNAL_ERROR" desc="The label to be shown as the title of the dialog when an internal error occurred while sending the message.">
+        Couldn't share <ph name="CONTENT_TYPE">%1$s<ex>video</ex></ph>
+      </message>
+
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_NOT_FOUND" desc="The text to be shown on the dialog when an error occurred because the device is not synced.">
+        Make sure <ph name="TARGET_DEVICE_NAME">%1$s<ex>Pixel XL</ex></ph> has sync turned on in Chrome
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_NETWORK_ERROR" desc="The text to be shown on the dialog when the sender device has network issues.">
+        Make sure this device is connected to the internet
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_DEVICE_ACK_TIMEOUT" desc="The text to be shown on the dialog when the recipient device has network issues.">
+        Make sure <ph name="TARGET_DEVICE_NAME">%1$s<ex>Pixel XL</ex></ph> is connected to the internet
+      </message>
+      <message name="IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR" desc="The text to be shown on the dialog when an internal error occurred while sending the message.">
+        Something went wrong. Try again later.
+      </message>
+
+      <!-- Shared clipboard error message for notification. Could potentially be made generic -->
+      <message name="IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE" desc="The label to be shown as the title of the dialog when the text shared is too large.">
+        Text is too large
+      </message>
+      <message name="IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TEXT_PAYLOAD_TOO_LARGE" desc="The text to be shown on the dialog when the text shared is too large.">
+        Try sharing the text in smaller chunks
+      </message>
+
       <!-- Shared Clipboard -->
       <message name="IDS_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE" desc="Title text displayed in a shared clipboard notification when the source device name is unknown.">
         Text shared from other device
@@ -3908,9 +3936,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
       <message name="IDS_SHARED_CLIPBOARD_SHARE_ACTIVITY_TITLE" desc="Title of the Shared Clipboard Share activity that will appear in the Android share dialog.">
         Send text to Your Devices
-      </message>
-      <message name="IDS_SHARED_CLIPBOARD_CONTENT_NAME" desc="Name of shared clipboard content in a shared clipboard notification.">
-        text
       </message>
 
       <!-- Chrome Duet -->

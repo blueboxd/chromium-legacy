@@ -220,7 +220,7 @@ GPURenderPipeline* GPURenderPipeline::Create(
 
   OwnedPipelineStageDescriptor vertex_stage_info =
       AsDawnType(webgpu_desc->vertexStage());
-  dawn_desc.vertexStage = &std::get<0>(vertex_stage_info);
+  dawn_desc.vertexStage = std::get<0>(vertex_stage_info);
   OwnedPipelineStageDescriptor fragment_stage_info;
   if (webgpu_desc->hasFragmentStage()) {
     fragment_stage_info = AsDawnType(webgpu_desc->fragmentStage());

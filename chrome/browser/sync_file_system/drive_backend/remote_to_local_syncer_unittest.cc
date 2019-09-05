@@ -30,6 +30,7 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/drive_api_error_codes.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
@@ -63,7 +64,7 @@ class RemoteToLocalSyncerTest : public testing::Test {
     std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
         new drive::DriveUploader(fake_drive_service.get(),
                                  base::ThreadTaskRunnerHandle::Get().get(),
-                                 nullptr));
+                                 mojo::NullRemote()));
     fake_drive_helper_.reset(
         new FakeDriveServiceHelper(fake_drive_service.get(),
                                    drive_uploader.get(),

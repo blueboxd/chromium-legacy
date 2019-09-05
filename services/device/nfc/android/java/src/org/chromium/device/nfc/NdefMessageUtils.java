@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordType;
@@ -29,8 +28,6 @@ public final class NdefMessageUtils {
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
     private static final String OCTET_STREAM_MIME = "application/octet-stream";
-    private static final String CHARSET_UTF8 = ";charset=UTF-8";
-    private static final String CHARSET_UTF16 = ";charset=UTF-16";
 
     /**
      * Converts mojo NdefMessage to android.nfc.NdefMessage
@@ -86,36 +83,20 @@ public final class NdefMessageUtils {
     }
 
     /**
-     * Returns charset of mojo NdefRecord. Only applicable for URL and TEXT records.
-     * If charset cannot be determined, UTF-8 charset is used by default.
-     */
-    private static String getCharset(NdefRecord record) {
-        if (record.mediaType.endsWith(CHARSET_UTF8)) return "UTF-8";
-
-        // When 16bit WTF::String data is converted to bytearray, it is in LE byte order, without
-        // BOM. By default, Android interprets UTF-16 charset without BOM as UTF-16BE, thus, use
-        // UTF-16LE as encoding for text data.
-
-        if (record.mediaType.endsWith(CHARSET_UTF16)) return "UTF-16LE";
-
-        Log.w(TAG, "Unknown charset, defaulting to UTF-8.");
-        return "UTF-8";
-    }
-
-    /**
      * Converts mojo NdefRecord to android.nfc.NdefRecord
+     * |record.data| should always be treated as "UTF-8" encoding bytes, this is guaranteed by the
+     * sender (Blink).
      */
     private static android.nfc.NdefRecord toNdefRecord(NdefRecord record)
             throws InvalidNdefMessageException, IllegalArgumentException,
                    UnsupportedEncodingException {
         switch (record.recordType) {
             case NdefRecordType.URL:
-                return android.nfc.NdefRecord.createUri(
-                        new String(record.data, getCharset(record)));
+                return android.nfc.NdefRecord.createUri(new String(record.data, "UTF-8"));
             case NdefRecordType.TEXT:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     return android.nfc.NdefRecord.createTextRecord(
-                            "en-US", new String(record.data, getCharset(record)));
+                            "en-US", new String(record.data, "UTF-8"));
                 } else {
                     return android.nfc.NdefRecord.createMime(TEXT_MIME, record.data);
                 }

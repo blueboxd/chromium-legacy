@@ -564,7 +564,7 @@
       "min_manifest_version": 2
     },
     {
-      "channel": "dev",
+      "channel": "stable",
       "extension_types": ["login_screen_extension"],
       "min_manifest_version": 2,
       "whitelist": [
@@ -671,7 +671,7 @@
     // TODO(995294, hendrich) Remove this whitelisting once a WebUSB solution is
     // ready to go (target M79/M80).
     {
-      "channel": "dev",
+      "channel": "stable",
       "extension_types": ["login_screen_extension", "extension"],
       "location": "policy",
       "platforms": ["chromeos"],
@@ -705,7 +705,7 @@
     // TODO(995294, hendrich) Remove this whitelisting once a WebUSB solution is
     // ready to go (target M79/M80).
     {
-      "channel": "dev",
+      "channel": "stable",
       "extension_types": ["login_screen_extension", "extension"],
       "location": "policy",
       "platforms": ["chromeos"],

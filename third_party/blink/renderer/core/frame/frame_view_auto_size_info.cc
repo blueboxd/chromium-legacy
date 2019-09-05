@@ -106,15 +106,15 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
 
     // Bound the dimensions by the max bounds and determine what scrollbars to
     // show.
-    ScrollbarMode horizontal_scrollbar_mode = kScrollbarAlwaysOff;
+    ScrollbarMode horizontal_scrollbar_mode = ScrollbarMode::kAlwaysOff;
     if (new_size.Width() > max_auto_size_.Width()) {
       new_size.SetWidth(max_auto_size_.Width());
-      horizontal_scrollbar_mode = kScrollbarAlwaysOn;
+      horizontal_scrollbar_mode = ScrollbarMode::kAlwaysOn;
     }
-    ScrollbarMode vertical_scrollbar_mode = kScrollbarAlwaysOff;
+    ScrollbarMode vertical_scrollbar_mode = ScrollbarMode::kAlwaysOff;
     if (new_size.Height() > max_auto_size_.Height()) {
       new_size.SetHeight(max_auto_size_.Height());
-      vertical_scrollbar_mode = kScrollbarAlwaysOn;
+      vertical_scrollbar_mode = ScrollbarMode::kAlwaysOn;
     }
 
     if (new_size == size)

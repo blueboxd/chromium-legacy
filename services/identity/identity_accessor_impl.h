@@ -7,20 +7,22 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
-#include "base/callback_list.h"
-#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "google_apis/gaia/core_account_id.h"
-#include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
+
+struct CoreAccountId;
+struct CoreAccountInfo;
 
 namespace signin {
 struct AccessTokenInfo;
 }
 
 namespace identity {
+struct AccountState;
 
 class IdentityAccessorImpl : public mojom::IdentityAccessor,
                              public signin::IdentityManager::Observer {

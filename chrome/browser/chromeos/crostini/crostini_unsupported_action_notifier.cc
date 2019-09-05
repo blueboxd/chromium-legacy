@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
@@ -110,11 +111,12 @@ void CrostiniUnsupportedActionNotifier::
   }
   EmitMetricReasonTriggered(reason);
   if (!virtual_keyboard_unsupported_message_shown_) {
+    int duration_s = delegate_->IsMagnificationEnabled() ? 10 : 5;
     ash::ToastData data = {
         /*id=*/"VKUnsupportedInCrostini",
         /*text=*/
         l10n_util::GetStringUTF16(IDS_CROSTINI_UNSUPPORTED_VIRTUAL_KEYBOARD),
-        /*timeout_ms=*/5000,
+        /*timeout_ms=*/duration_s * 1000,
         /*dismiss_text=*/base::nullopt};
     delegate_->ShowToast(data);
     virtual_keyboard_unsupported_message_shown_ = true;
@@ -133,11 +135,12 @@ void CrostiniUnsupportedActionNotifier::
   if (!ime_unsupported_message_shown_) {
     auto ime_name =
         base::UTF8ToUTF16(delegate_->GetLocalizedDisplayName(method));
+    int duration_s = delegate_->IsMagnificationEnabled() ? 10 : 5;
     ash::ToastData data = {
         /*id=*/"IMEUnsupportedInCrostini",
         /*text=*/
         l10n_util::GetStringFUTF16(IDS_CROSTINI_UNSUPPORTED_IME, ime_name),
-        /*timeout_ms=*/5000,
+        /*timeout_ms=*/duration_s * 1000,
         /*dismiss_text=*/base::nullopt};
     delegate_->ShowToast(data);
     ime_unsupported_message_shown_ = true;
@@ -185,6 +188,12 @@ CrostiniUnsupportedActionNotifier::Delegate::GetLocalizedDisplayName(
   return chromeos::input_method::InputMethodManager::Get()
       ->GetInputMethodUtil()
       ->GetLocalizedDisplayName(descriptor);
+}
+
+bool CrostiniUnsupportedActionNotifier::Delegate::IsMagnificationEnabled() {
+  auto* manager = chromeos::MagnificationManager::Get();
+  return manager &&
+         (manager->IsMagnifierEnabled() || manager->IsDockedMagnifierEnabled());
 }
 
 void CrostiniUnsupportedActionNotifier::Delegate::AddFocusObserver(

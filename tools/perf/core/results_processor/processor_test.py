@@ -15,8 +15,6 @@ import shutil
 import tempfile
 import unittest
 
-import mock
-
 from core.results_processor import json3_output
 from core.results_processor import processor
 from core.results_processor import testing
@@ -37,10 +35,6 @@ class ResultProcessorIntegrationTests(unittest.TestCase):
     testing.SerializeIntermediateResults(in_results, os.path.join(
         self.intermediate_dir, processor.TELEMETRY_RESULTS))
 
-  # TODO(crbug.com/981349): Remove mock when results_processor is allowed to
-  # handle json-test-results format.
-  @mock.patch.dict('core.results_processor.processor.SUPPORTED_FORMATS',
-                   {'json-test-results': json3_output})
   def testJson3Output(self):
     self.SerializeIntermediateResults([
         testing.TestResult(

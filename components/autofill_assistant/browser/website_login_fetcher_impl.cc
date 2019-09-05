@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -47,9 +46,9 @@ class WebsiteLoginFetcherImpl::PendingRequest
     // This needs to be done asynchronously, because it will lead to the
     // destruction of |this|, which needs to happen *after* this call has
     // returned.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&PendingRequest::NotifyFinished,
-                                            weak_ptr_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&PendingRequest::NotifyFinished,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
   std::unique_ptr<password_manager::FormFetcher> form_fetcher_;
 
@@ -78,15 +77,8 @@ class WebsiteLoginFetcherImpl::PendingFetchLoginsRequest
  protected:
   // From PendingRequest:
   void OnFetchCompleted() override {
-    std::vector<const autofill::PasswordForm*> matches =
-        form_fetcher_->GetNonFederatedMatches();
-    std::map<base::string16, const autofill::PasswordForm*> best_matches;
-    const autofill::PasswordForm* preferred_match = nullptr;
-    password_manager_util::FindBestMatches(matches, &best_matches,
-                                           &preferred_match);
-
     std::vector<Login> logins;
-    for (const auto& match : best_matches) {
+    for (const auto& match : form_fetcher_->GetBestMatches()) {
       logins.emplace_back(match.second->origin,
                           base::UTF16ToUTF8(match.second->username_value));
     }

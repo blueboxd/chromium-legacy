@@ -31,6 +31,7 @@ js_library("resolution_event_broker") {
 
 js_library("nav") {
   deps = [
+    "mojo:mojo_connector",
     "views:view",
   ]
 }

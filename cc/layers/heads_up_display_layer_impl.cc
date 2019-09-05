@@ -223,9 +223,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   bool use_oopr = false;
   if (raster_context_provider) {
     lock.emplace(raster_context_provider);
-    use_oopr = raster_context_provider->GetGpuFeatureInfo()
-                   .status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-               gpu::kGpuFeatureStatusEnabled;
+    use_oopr =
+        raster_context_provider->ContextCapabilities().supports_oop_raster;
     if (!use_oopr) {
       raster_context_provider = nullptr;
       lock.reset();

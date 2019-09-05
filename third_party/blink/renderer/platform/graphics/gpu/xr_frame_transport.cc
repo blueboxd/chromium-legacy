@@ -15,7 +15,7 @@
 
 namespace blink {
 
-XRFrameTransport::XRFrameTransport() : submit_frame_client_binding_(this) {}
+XRFrameTransport::XRFrameTransport() : submit_frame_client_receiver_(this) {}
 
 XRFrameTransport::~XRFrameTransport() {
   CallPreviousFrameCallback();
@@ -35,9 +35,10 @@ void XRFrameTransport::SetTransportOptions(
 }
 
 void XRFrameTransport::BindSubmitFrameClient(
-    device::mojom::blink::XRPresentationClientRequest request) {
-  submit_frame_client_binding_.Close();
-  submit_frame_client_binding_.Bind(std::move(request));
+    mojo::PendingReceiver<device::mojom::blink::XRPresentationClient>
+        receiver) {
+  submit_frame_client_receiver_.reset();
+  submit_frame_client_receiver_.Bind(std::move(receiver));
 }
 
 bool XRFrameTransport::DrawingIntoSharedBuffer() {
@@ -226,7 +227,7 @@ void XRFrameTransport::OnSubmitFrameTransferred(bool success) {
 void XRFrameTransport::WaitForPreviousTransfer() {
   TRACE_EVENT0("gpu", "waitForPreviousTransferToFinish");
   while (waiting_for_previous_frame_transfer_) {
-    if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
+    if (!submit_frame_client_receiver_.WaitForIncomingCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";
       break;
     }
@@ -242,7 +243,7 @@ base::TimeDelta XRFrameTransport::WaitForPreviousRenderToFinish() {
   TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
   base::TimeTicks start = base::TimeTicks::Now();
   while (waiting_for_previous_frame_render_) {
-    if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
+    if (!submit_frame_client_receiver_.WaitForIncomingCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";
       break;
     }
@@ -261,7 +262,7 @@ base::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
   TRACE_EVENT0("gpu", "WaitForGpuFenceReceived");
   base::TimeTicks start = base::TimeTicks::Now();
   while (waiting_for_previous_frame_fence_) {
-    if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
+    if (!submit_frame_client_receiver_.WaitForIncomingCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";
       break;
     }

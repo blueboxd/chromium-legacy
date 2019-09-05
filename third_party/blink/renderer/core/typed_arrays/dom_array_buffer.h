@@ -41,11 +41,8 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   explicit DOMArrayBuffer(scoped_refptr<WTF::ArrayBuffer> buffer)
       : DOMArrayBufferBase(std::move(buffer)) {}
 
-  DOMArrayBuffer* Slice(int begin, int end) const {
+  DOMArrayBuffer* Slice(unsigned begin, unsigned end) const {
     return Create(Buffer()->Slice(begin, end));
-  }
-  DOMArrayBuffer* Slice(int begin) const {
-    return Create(Buffer()->Slice(begin));
   }
 
   bool IsDetachable(v8::Isolate*);

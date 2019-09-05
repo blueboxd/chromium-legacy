@@ -56,7 +56,8 @@ class CrOSSystemTracingSession {
     }
     debug_daemon_->SetStopAgentTracingTaskRunner(
         base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock()}));
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
     debug_daemon_->StartAgentTracing(
         trace_config,
         base::BindOnce(&CrOSSystemTracingSession::StartTracingCallbackProxy,

@@ -89,6 +89,19 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   gfx::Insets content_margins() const { return content_margins_; }
 
+  // Sets a custom header view for the dialog. If there is an existing header
+  // view it will be deleted. The header view will be inserted above the title,
+  // so outside the content bounds. If there is a close button, it will be shown
+  // in front of the header view and will overlap with it. The title will be
+  // shown below the header and / or the close button, depending on which is
+  // lower. An example usage for a header view would be a banner image.
+  void SetHeaderView(std::unique_ptr<View> view);
+
+  // Sets a custom footnote view for the dialog. If there is an existing
+  // footnote view it will be deleted. The footnote will be rendered at the
+  // bottom of the bubble, after the content view. It is separated by a 1 dip
+  // line and has a solid background by being embedded in a
+  // FootnoteContainerView. An example footnote would be some help text.
   void SetFootnoteView(std::unique_ptr<View> view);
   void set_footnote_margins(const gfx::Insets& footnote_margins) {
     footnote_margins_ = footnote_margins;
@@ -190,8 +203,12 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // The client_view insets (from the frame view) for the given |frame_width|.
   gfx::Insets GetClientInsetsForFrameWidth(int frame_width) const;
 
+  // Gets the size of the |header_view_| or an empty size if there is no header
+  // view or if it is not visible.
+  gfx::Size GetHeaderSize() const;
+
   // The bubble border.
-  BubbleBorder* bubble_border_;
+  BubbleBorder* bubble_border_ = nullptr;
 
   // Margins around the title label.
   gfx::Insets title_margins_;
@@ -203,19 +220,22 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   gfx::Insets footnote_margins_;
 
   // The optional title icon.
-  views::ImageView* title_icon_;
+  ImageView* title_icon_ = nullptr;
 
   // One of these fields is used as the dialog title. If SetTitleView is called
   // the custom title view is stored in |custom_title_| and this class assumes
   // ownership. Otherwise |default_title_| is used.
-  Label* default_title_;
-  View* custom_title_;
+  Label* default_title_ = nullptr;
+  View* custom_title_ = nullptr;
 
   // The optional close button (the X).
-  Button* close_;
+  Button* close_ = nullptr;
+
+  // The optional header view.
+  View* header_view_ = nullptr;
 
   // A view to contain the footnote view, if it exists.
-  FootnoteContainerView* footnote_container_;
+  FootnoteContainerView* footnote_container_ = nullptr;
 
   // Set preference for how the arrow will be adjusted if the window is outside
   // the available bounds.

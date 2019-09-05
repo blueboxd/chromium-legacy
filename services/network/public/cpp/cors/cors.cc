@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -227,7 +228,7 @@ base::Optional<CorsErrorStatus> CheckAccess(
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
                      mojom::RequestMode request_mode) {
-  if (request_mode == network::mojom::RequestMode::kNavigate ||
+  if (IsNavigationRequestMode(request_mode) ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }

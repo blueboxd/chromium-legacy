@@ -242,7 +242,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   MOCK_METHOD0(OnJobRetry, void());
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;

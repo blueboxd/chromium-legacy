@@ -1373,6 +1373,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     active_tree()->set_needs_update_draw_properties();
   }
 
+  frame->has_missing_content =
+      num_missing_tiles > 0 || num_incomplete_tiles > 0;
+
   if (ukm_manager_) {
     ukm_manager_->AddCheckerboardStatsForFrame(
         checkerboarded_no_recording_content_area +
@@ -2237,9 +2240,9 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
       std::move(compositor_frame),
       /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);
 
-  frame_trackers_.NotifySubmitFrame(compositor_frame.metadata.frame_token,
-                                    frame->begin_frame_ack,
-                                    frame->origin_begin_main_frame_args);
+  frame_trackers_.NotifySubmitFrame(
+      compositor_frame.metadata.frame_token, frame->has_missing_content,
+      frame->begin_frame_ack, frame->origin_begin_main_frame_args);
   if (!mutator_host_->NextFrameHasPendingRAF())
     frame_trackers_.StopSequence(FrameSequenceTrackerType::kRAF);
 

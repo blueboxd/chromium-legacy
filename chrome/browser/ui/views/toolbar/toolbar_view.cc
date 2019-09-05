@@ -413,19 +413,21 @@ void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
+    PageActionIconType icon_type,
     IntentPickerResponse callback) {
   PageActionIconView* intent_picker_view =
       location_bar()
           ->omnibox_page_action_icon_container_view()
-          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
-  if (intent_picker_view) {
-    if (!intent_picker_view->GetVisible())
-      IntentPickerTabHelper::SetShouldShowIcon(GetWebContents(), true);
-    IntentPickerBubbleView::ShowBubble(
-        location_bar(), intent_picker_view, GetWebContents(),
-        std::move(app_info), show_stay_in_chrome, show_remember_selection,
-        std::move(callback));
-  }
+          ->GetPageActionIconView(icon_type);
+  if (!intent_picker_view)
+    return;
+
+  IntentPickerBubbleView::ShowBubble(
+      location_bar(), intent_picker_view, icon_type, GetWebContents(),
+      std::move(app_info), show_stay_in_chrome, show_remember_selection,
+      std::move(callback));
+  // TODO(knollr): find a way that the icon updates implicitly.
+  intent_picker_view->Update();
 }
 
 void ToolbarView::ShowBookmarkBubble(

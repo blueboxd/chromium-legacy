@@ -15,5 +15,5 @@ typedef (DOMString or ArrayBuffer or NDEFMessageInit) NDEFMessageSource;
     ConstructorCallWith=ExecutionContext,
     Exposed=Window
 ] interface NFCWriter {
-    [CallWith=ScriptState] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<void> push (NDEFMessageSource message, optional NFCPushOptions options);
 };

@@ -145,7 +145,6 @@ NSString* const kFormInputAccessoryViewAccessibilityID =
     return;
   }
 
-  self.tintColor = [UIColor colorNamed:kBlueColor];
   self.translatesAutoresizingMaskIntoConstraints = NO;
   UIView* leadingViewContainer = [[UIView alloc] init];
   leadingViewContainer.translatesAutoresizingMaskIntoConstraints = NO;

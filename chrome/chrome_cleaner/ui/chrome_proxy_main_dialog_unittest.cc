@@ -48,8 +48,8 @@ TEST_F(ChromeProxyMainDialogTest, Create) {
 }
 
 TEST_F(ChromeProxyMainDialogTest, NoPUPsFound) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
 
   base::RunLoop run_loop;
   EXPECT_CALL(delegate_, OnClose())
@@ -94,8 +94,8 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
       prompt_acceptance == PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
   bool logs_allowed = prompt_acceptance == PromptAcceptance::ACCEPTED_WITH_LOGS;
 
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
 
   EXPECT_CALL(mock_settings_,
               set_logs_allowed_in_cleanup_mode(Eq(logs_allowed)))

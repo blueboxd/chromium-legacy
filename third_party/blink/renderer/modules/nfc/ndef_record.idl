@@ -8,6 +8,7 @@
     RuntimeEnabled=WebNFC,
     SecureContext,
     Constructor(NDEFRecordInit recordInit),
+    RaisesException=Constructor,
     Exposed=Window
 ] interface NDEFRecord {
     readonly attribute NDEFRecordType recordType;

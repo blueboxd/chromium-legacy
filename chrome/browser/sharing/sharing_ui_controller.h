@@ -72,6 +72,9 @@ class SharingUiController {
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
 
+  // Closes the current dialog and resets all state.
+  void ClearLastDialog();
+
   void UpdateAndShowDialog();
 
   void UpdateDevices();
@@ -86,6 +89,9 @@ class SharingUiController {
   // Returns the message to be shown in the body of error dialog based on
   // |send_result_|.
   virtual base::string16 GetErrorDialogText() const;
+
+  // Returns the image id shown as a header in the dialog.
+  virtual int GetHeaderImageId() const;
 
   // Returns the currently open SharingDialog or nullptr if there is no
   // dialog open.

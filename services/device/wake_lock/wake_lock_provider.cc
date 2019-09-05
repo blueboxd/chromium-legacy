@@ -50,8 +50,9 @@ WakeLockProvider::WakeLockProvider(
 
 WakeLockProvider::~WakeLockProvider() = default;
 
-void WakeLockProvider::AddBinding(mojom::WakeLockProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void WakeLockProvider::AddBinding(
+    mojo::PendingReceiver<mojom::WakeLockProvider> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void WakeLockProvider::GetWakeLockContextForID(

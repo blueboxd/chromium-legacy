@@ -87,8 +87,8 @@ class DrmOverlayValidatorTest : public testing::Test {
 
   void InitializeDrmState(const std::vector<CrtcState>& crtc_states);
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   scoped_refptr<ui::MockDrmDevice> drm_;
   ui::MockGbmDevice* gbm_ = nullptr;
   std::unique_ptr<ui::ScreenManager> screen_manager_;

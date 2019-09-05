@@ -92,6 +92,7 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       // Fall through to super class method to increment counter.
       break;
     case apps::PickerEntryType::kWeb:
+    case apps::PickerEntryType::kDevice:
       break;
   }
   apps::AppsNavigationThrottle::OnIntentPickerClosed(

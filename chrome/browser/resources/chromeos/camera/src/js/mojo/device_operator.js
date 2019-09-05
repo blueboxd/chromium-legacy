@@ -266,6 +266,43 @@ cca.mojo.DeviceOperator = class {
                    cameraInfo.staticCameraCharacteristics, portraitModeTag)
                .length > 0;
   }
+
+  /**
+   * Adds a metadata observer to Camera App Device through Mojo IPC.
+   * @param {string} deviceId The id for target camera device.
+   * @param {!function(cros.mojom.CameraMetadata)} callback Callback that
+   *     handles the metadata.
+   * @param {cros.mojom.StreamType} streamType Stream type which the observer
+   *     gets the metadata from.
+   * @return {!Promise<number>} id for the added observer. Can be used later
+   *     to identify and remove the inserted observer.
+   * @throws {Error} if fails to construct device connection.
+   */
+  async addMetadataObserver(deviceId, callback, streamType) {
+    const observerCallbackRouter =
+        new cros.mojom.ResultMetadataObserverCallbackRouter();
+    observerCallbackRouter.onMetadataAvailable.addListener(callback);
+
+    const device = this.getDevice(deviceId);
+    const {id} = await device.addResultMetadataObserver(
+        observerCallbackRouter.$.bindNewPipeAndPassRemote(), streamType);
+    return id;
+  }
+
+  /**
+   * Remove a metadata observer from Camera App Device. A metadata observer
+   * is recognized by its id returned by addMetadataObserver upon insertion.
+   * @param {string} deviceId The id for target camera device.
+   * @param {!number} observerId The id for the metadata observer to be removed.
+   * @return {!Promise<boolean>} Promise for the result. It will be resolved
+   *     with a boolean indicating whether the removal is successful or not.
+   * @throws {Error} if fails to construct device connection.
+   */
+  async removeMetadataObserver(deviceId, observerId) {
+    const device = this.getDevice(deviceId);
+    const {isSuccess} = await device.removeResultMetadataObserver(observerId);
+    return isSuccess;
+  }
 };
 
 /**
@@ -281,31 +318,49 @@ cca.mojo.DeviceOperator = class {
 cca.mojo.getMetadataData_ = function(metadata, tag) {
   for (let i = 0; i < metadata.entryCount; i++) {
     const entry = metadata.entries[i];
-    if (entry.tag !== tag) {
-      continue;
-    }
-    const {buffer} = Uint8Array.from(entry.data);
-    switch (entry.type) {
-      case cros.mojom.EntryType.TYPE_BYTE:
-        return Array.from(new Uint8Array(buffer));
-      case cros.mojom.EntryType.TYPE_INT32:
-        return Array.from(new Int32Array(buffer));
-      case cros.mojom.EntryType.TYPE_FLOAT:
-        return Array.from(new Float32Array(buffer));
-      case cros.mojom.EntryType.TYPE_DOUBLE:
-        return Array.from(new Float64Array(buffer));
-      case cros.mojom.EntryType.TYPE_INT64:
-        return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
-          const numVal = Number(bigIntVal);
-          if (!Number.isSafeInteger(numVal)) {
-            console.warn('The int64 value is not a safe integer');
-          }
-          return numVal;
-        });
-      default:
-        // TODO(wtlee): Supports rational type.
-        throw new Error('Unsupported type: ' + entry.type);
+    if (entry.tag === tag) {
+      return cca.mojo.parseMetadataData(entry);
     }
   }
   return [];
+};
+
+/**
+ * Parse the entry data according to its type.
+ * @param {!cros.mojom.CameraMetadataEntry} entry Camera metadata entry
+ *     from which to parse the data according to its type.
+ * @return {!Array<number>} An array containing elements whose types correspond
+ *     to the format of input |tag|.
+ * @throws {Error} if entry type is not supported.
+ */
+cca.mojo.parseMetadataData = function(entry) {
+  const {buffer} = Uint8Array.from(entry.data);
+  switch (entry.type) {
+    case cros.mojom.EntryType.TYPE_BYTE:
+      return Array.from(new Uint8Array(buffer));
+    case cros.mojom.EntryType.TYPE_INT32:
+      return Array.from(new Int32Array(buffer));
+    case cros.mojom.EntryType.TYPE_FLOAT:
+      return Array.from(new Float32Array(buffer));
+    case cros.mojom.EntryType.TYPE_DOUBLE:
+      return Array.from(new Float64Array(buffer));
+    case cros.mojom.EntryType.TYPE_INT64:
+      return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
+        const numVal = Number(bigIntVal);
+        if (!Number.isSafeInteger(numVal)) {
+          console.warn('The int64 value is not a safe integer');
+        }
+        return numVal;
+      });
+    case cros.mojom.EntryType.TYPE_RATIONAL: {
+      const arr = new Int32Array(buffer);
+      const values = [];
+      for (let i = 0; i < arr.length; i += 2) {
+        values.push(arr[i] / arr[i + 1]);
+      }
+      return values;
+    }
+    default:
+      throw new Error('Unsupported type: ' + entry.type);
+  }
 };

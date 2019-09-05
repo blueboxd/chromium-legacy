@@ -46,6 +46,7 @@
 
 #include <limits>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"

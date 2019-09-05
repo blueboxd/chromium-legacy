@@ -29,8 +29,8 @@ DarkResumeController::DarkResumeController(
     : connector_(connector),
       dark_resume_hard_timeout_(kDefaultDarkResumeHardTimeout) {
   DCHECK(!dark_resume_hard_timeout_.is_zero());
-  connector_->BindInterface(device::mojom::kServiceName,
-                            mojo::MakeRequest(&wake_lock_provider_));
+  connector_->Connect(device::mojom::kServiceName,
+                      wake_lock_provider_.BindNewPipeAndPassReceiver());
   PowerManagerClient::Get()->AddObserver(this);
 }
 

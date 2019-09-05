@@ -55,7 +55,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_url_generator.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -276,10 +276,11 @@ void SyncEngine::Initialize() {
       drive_service_factory_->CreateDriveService(
           identity_manager_, url_loader_factory_, drive_task_runner_.get());
 
-  device::mojom::WakeLockProviderPtr wake_lock_provider(nullptr);
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
   DCHECK(content::GetSystemConnector());
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      wake_lock_provider.InitWithNewPipeAndPassReceiver());
 
   std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_.get(),

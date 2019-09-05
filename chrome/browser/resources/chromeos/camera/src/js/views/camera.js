@@ -51,7 +51,8 @@ cca.views.Camera = function(
    * @type {cca.views.camera.Preview}
    * @private
    */
-  this.preview_ = new cca.views.camera.Preview(this.restart.bind(this));
+  this.preview_ =
+      new cca.views.camera.Preview(mojoConnector, this.restart.bind(this));
 
   /**
    * Options for the camera.

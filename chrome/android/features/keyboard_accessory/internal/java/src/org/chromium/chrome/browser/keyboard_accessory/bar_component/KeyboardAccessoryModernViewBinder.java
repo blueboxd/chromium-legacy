@@ -43,13 +43,18 @@ class KeyboardAccessoryModernViewBinder {
     }
 
     static class BarItemChipViewHolder extends BarItemViewHolder<AutofillBarItem, ChipView> {
+        private final View mRootViewForIPH;
+
         BarItemChipViewHolder(ViewGroup parent) {
             super(parent, R.layout.keyboard_accessory_suggestion);
+            mRootViewForIPH = parent.getRootView();
         }
 
         @Override
         protected void bind(AutofillBarItem item, ChipView chipView) {
-            if (item.getFeatureForIPH() != null) showHelpBubble(item.getFeatureForIPH(), chipView);
+            if (item.getFeatureForIPH() != null) {
+                showHelpBubble(item.getFeatureForIPH(), chipView, mRootViewForIPH);
+            }
             chipView.getPrimaryTextView().setText(item.getSuggestion().getLabel());
             chipView.getSecondaryTextView().setText(item.getSuggestion().getSublabel());
             chipView.getSecondaryTextView().setVisibility(

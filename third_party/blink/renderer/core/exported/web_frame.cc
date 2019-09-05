@@ -384,10 +384,10 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
 }
 
 STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
-                   kScrollbarAuto);
+                   ScrollbarMode::kAuto);
 STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOff,
-                   kScrollbarAlwaysOff);
+                   ScrollbarMode::kAlwaysOff);
 STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOn,
-                   kScrollbarAlwaysOn);
+                   ScrollbarMode::kAlwaysOn);
 
 }  // namespace blink

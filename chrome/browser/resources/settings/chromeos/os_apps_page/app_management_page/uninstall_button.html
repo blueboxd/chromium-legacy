@@ -2,31 +2,38 @@
 
 <link rel="import" href="shared_style.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 
 <dom-module id="app-management-uninstall-button">
   <template>
     <style include="app-management-shared-css">
-      #uninstall-button {
-        background: white;
+      :host {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
       }
 
-      #policy-indicator {
-        fill: var(--google-grey-refresh-700);
-        margin-inline-end: 12px;
+      #policyIndicator {
+        margin-inline-end: var(--settings-controlled-by-spacing);
+      }
+
+      #uninstallButton {
+        background: white;
       }
     </style>
-    <!-- TODO(crbug.com/999632): rename polymer element IDs to camel case. -->
-    <div id="uninstall-wrapper" title$="[[getUninstallButtonHoverText_(app_)]]">
-      <template is="dom-if" if="[[isPolicyApp_(app_)]]">
-        <iron-icon id="policy-indicator" icon="cr:domain"></iron-icon>
-      </template>
-      <cr-button id="uninstall-button" on-click="onClickUninstallButton_"
-          disabled$="[[getUninstallButtonDisableState_(app_)]]">
-        <!-- TODO(crbug.com/999636) rename uninstall to uninstallApp.-->
-        $i18n{uninstall}
-      </cr-button>
-    </div>
+    <template is="dom-if" if="[[showPolicyIndicator_(app_)]]">
+      <cr-tooltip-icon
+          id="policyIndicator"
+          icon-class="cr20:domain"
+          tooltip-text="[[getTooltip_(app_)]]"
+          icon-aria-label="[[getTooltip_(app_)]]"
+          tooltip-position="bottom">
+      </cr-tooltip-icon>
+    </template>
+    <cr-button id="uninstallButton" on-click="onClick_"
+        disabled$="[[getDisableState_(app_)]]">
+      $i18n{uninstallApp}
+    </cr-button>
   </template>
   <script src="uninstall_button.js"></script>
 </dom-module>

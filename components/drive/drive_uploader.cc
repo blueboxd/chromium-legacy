@@ -173,7 +173,7 @@ struct DriveUploader::UploadFileInfo {
 DriveUploader::DriveUploader(
     DriveServiceInterface* drive_service,
     const scoped_refptr<base::TaskRunner>& blocking_task_runner,
-    device::mojom::WakeLockProviderPtr wake_lock_provider)
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider)
     : drive_service_(drive_service),
       blocking_task_runner_(blocking_task_runner),
       wake_lock_provider_(std::move(wake_lock_provider)) {}
@@ -198,7 +198,7 @@ CancelCallback DriveUploader::UploadNewFile(
   return StartUploadFile(
       std::make_unique<UploadFileInfo>(local_file_path, content_type, callback,
                                        progress_callback,
-                                       wake_lock_provider_.get()),
+                                       GetWakeLockProvider()),
       base::Bind(&DriveUploader::CallUploadServiceAPINewFile,
                  weak_ptr_factory_.GetWeakPtr(), parent_resource_id, title,
                  options, current_batch_request_));
@@ -230,7 +230,7 @@ CancelCallback DriveUploader::UploadExistingFile(
   return StartUploadFile(
       std::make_unique<UploadFileInfo>(local_file_path, content_type, callback,
                                        progress_callback,
-                                       wake_lock_provider_.get()),
+                                       GetWakeLockProvider()),
       base::Bind(&DriveUploader::CallUploadServiceAPIExistingFile,
                  weak_ptr_factory_.GetWeakPtr(), resource_id, options,
                  current_batch_request_));
@@ -249,7 +249,7 @@ CancelCallback DriveUploader::ResumeUploadFile(
 
   std::unique_ptr<UploadFileInfo> upload_file_info(
       new UploadFileInfo(local_file_path, content_type, callback,
-                         progress_callback, wake_lock_provider_.get()));
+                         progress_callback, GetWakeLockProvider()));
   upload_file_info->upload_location = upload_location;
 
   return StartUploadFile(std::move(upload_file_info),
@@ -537,6 +537,10 @@ void DriveUploader::OnMultipartUploadComplete(
                                               upload_file_info->upload_location,
                                               std::unique_ptr<FileResource>());
   }
+}
+
+device::mojom::WakeLockProvider* DriveUploader::GetWakeLockProvider() {
+  return wake_lock_provider_ ? wake_lock_provider_.get() : nullptr;
 }
 
 }  // namespace drive

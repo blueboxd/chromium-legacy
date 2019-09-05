@@ -416,10 +416,8 @@ MojoResult Core::AppendMessageData(MojoMessageHandle message_handle,
   if (rv != MOJO_RESULT_OK)
     return rv;
 
-  if (options && (options->flags & MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE)) {
-    RequestContext request_context;
+  if (options && (options->flags & MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE))
     message->CommitSize();
-  }
 
   if (buffer)
     *buffer = message->user_payload();

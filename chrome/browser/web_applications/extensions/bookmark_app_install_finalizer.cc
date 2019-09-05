@@ -105,7 +105,7 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
 
 void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
-    UninstallExternalWebAppCallback callback) {
+    UninstallWebAppCallback callback) {
   base::Optional<web_app::AppId> app_id =
       externally_installed_app_prefs_.LookupAppId(app_url);
   if (!app_id.has_value()) {
@@ -116,9 +116,14 @@ void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     return;
   }
 
-  if (!ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
-          app_id.value())) {
-    LOG(WARNING) << "Couldn't uninstall app with url " << app_url
+  UninstallWebApp(*app_id, std::move(callback));
+}
+
+void BookmarkAppInstallFinalizer::UninstallWebApp(
+    const web_app::AppId& app_id,
+    UninstallWebAppCallback callback) {
+  if (!ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(app_id)) {
+    LOG(WARNING) << "Couldn't uninstall app " << app_id
                  << "; Extension not installed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
@@ -128,11 +133,10 @@ void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
   base::string16 error;
   bool uninstalled =
       ExtensionSystem::Get(profile_)->extension_service()->UninstallExtension(
-          app_id.value(), UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, &error);
+          app_id, UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, &error);
 
   if (!uninstalled) {
-    LOG(WARNING) << "Couldn't uninstall app with url " << app_url << ". "
-                 << error;
+    LOG(WARNING) << "Couldn't uninstall app " << app_id << ". " << error;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), uninstalled));

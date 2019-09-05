@@ -103,8 +103,8 @@ LayoutView::LayoutView(Document* document)
       hit_test_count_(0),
       hit_test_cache_hits_(0),
       hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
-      autosize_h_scrollbar_mode_(kScrollbarAuto),
-      autosize_v_scrollbar_mode_(kScrollbarAuto) {
+      autosize_h_scrollbar_mode_(ScrollbarMode::kAuto),
+      autosize_v_scrollbar_mode_(ScrollbarMode::kAuto) {
   // init LayoutObject attributes
   SetInline(false);
 
@@ -609,7 +609,7 @@ PhysicalRect LayoutView::OverflowClipRect(
 
 void LayoutView::SetAutosizeScrollbarModes(ScrollbarMode h_mode,
                                            ScrollbarMode v_mode) {
-  DCHECK_EQ(v_mode == kScrollbarAuto, h_mode == kScrollbarAuto);
+  DCHECK_EQ(v_mode == ScrollbarMode::kAuto, h_mode == ScrollbarMode::kAuto);
   autosize_v_scrollbar_mode_ = v_mode;
   autosize_h_scrollbar_mode_ = h_mode;
 }
@@ -624,8 +624,8 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
 
   // FrameViewAutoSizeInfo manually controls the appearance of the main frame's
   // scrollbars so defer to those if we're in AutoSize mode.
-  if (AutosizeVerticalScrollbarMode() != kScrollbarAuto ||
-      AutosizeHorizontalScrollbarMode() != kScrollbarAuto) {
+  if (AutosizeVerticalScrollbarMode() != ScrollbarMode::kAuto ||
+      AutosizeHorizontalScrollbarMode() != ScrollbarMode::kAuto) {
     h_mode = AutosizeHorizontalScrollbarMode();
     v_mode = AutosizeVerticalScrollbarMode();
     return;
@@ -633,59 +633,59 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
 
   LocalFrame* frame = GetFrame();
   if (!frame)
-    RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
+    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
 
   if (FrameOwner* owner = frame->Owner()) {
     // Setting scrolling="no" on an iframe element disables scrolling.
-    if (owner->ScrollingMode() == kScrollbarAlwaysOff)
-      RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
+    if (owner->ScrollingMode() == ScrollbarMode::kAlwaysOff)
+      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
   Document& document = GetDocument();
   if (Node* body = document.body()) {
     // Framesets can't scroll.
     if (body->GetLayoutObject() && body->GetLayoutObject()->IsFrameSet())
-      RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
+      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
   if (document.Printing()) {
     // When printing, frame-level scrollbars are never displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
-    RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
+    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
   if (LocalFrameView* frameView = GetFrameView()) {
     // Scrollbars can be disabled by LocalFrameView::setCanHaveScrollbars.
     if (!frameView->CanHaveScrollbars())
-      RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
+      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
   Element* viewportDefiningElement = document.ViewportDefiningElement();
   if (!viewportDefiningElement)
-    RETURN_SCROLLBAR_MODE(kScrollbarAuto);
+    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
 
   LayoutObject* viewport = viewportDefiningElement->GetLayoutObject();
   if (!viewport)
-    RETURN_SCROLLBAR_MODE(kScrollbarAuto);
+    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
 
   const ComputedStyle* style = viewport->Style();
   if (!style)
-    RETURN_SCROLLBAR_MODE(kScrollbarAuto);
+    RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
 
   if (viewport->IsSVGRoot()) {
     // Don't allow overflow to affect <img> and css backgrounds
     if (ToLayoutSVGRoot(viewport)->IsEmbeddedThroughSVGImage())
-      RETURN_SCROLLBAR_MODE(kScrollbarAuto);
+      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAuto);
 
     // FIXME: evaluate if we can allow overflow for these cases too.
     // Overflow is always hidden when stand-alone SVG documents are embedded.
     if (ToLayoutSVGRoot(viewport)
             ->IsEmbeddedThroughFrameContainingSVGDocument())
-      RETURN_SCROLLBAR_MODE(kScrollbarAlwaysOff);
+      RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
-  h_mode = v_mode = kScrollbarAuto;
+  h_mode = v_mode = ScrollbarMode::kAuto;
 
   EOverflow overflow_x = style->OverflowX();
   EOverflow overflow_y = style->OverflowY();
@@ -698,15 +698,15 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
   }
   if (!shouldIgnoreOverflowHidden) {
     if (overflow_x == EOverflow::kHidden)
-      h_mode = kScrollbarAlwaysOff;
+      h_mode = ScrollbarMode::kAlwaysOff;
     if (overflow_y == EOverflow::kHidden)
-      v_mode = kScrollbarAlwaysOff;
+      v_mode = ScrollbarMode::kAlwaysOff;
   }
 
   if (overflow_x == EOverflow::kScroll)
-    h_mode = kScrollbarAlwaysOn;
+    h_mode = ScrollbarMode::kAlwaysOn;
   if (overflow_y == EOverflow::kScroll)
-    v_mode = kScrollbarAlwaysOn;
+    v_mode = ScrollbarMode::kAlwaysOn;
 
 #undef RETURN_SCROLLBAR_MODE
 }

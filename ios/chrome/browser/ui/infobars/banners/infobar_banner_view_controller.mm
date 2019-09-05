@@ -139,7 +139,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   UIImageView* iconImageView =
       [[UIImageView alloc] initWithImage:self.iconImage];
   iconImageView.contentMode = UIViewContentModeScaleAspectFit;
-  iconImageView.tintColor = [UIColor colorNamed:kBlueColor];
 
   // Labels setup.
   self.titleLabel = [[UILabel alloc] init];

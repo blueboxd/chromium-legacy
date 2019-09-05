@@ -757,9 +757,6 @@
                   'chromeos/services/cellular_setup/|'\
                   'ui/webui/resources/cr_components/chromeos/cellular_setup/',
     },
-    'chromeos_device_policy': {
-      'filepath': 'components/policy/proto/chrome_device_policy.proto'
-    },
     'chromeos_geolocation': {
       'filepath': 'chromeos/geolocation/',
     },
@@ -1448,9 +1445,6 @@
     'picture_in_picture': {
       'filepath': 'third_party/blink/renderer/modules/picture_in_picture/'
     },
-    'policy_templates': {
-      'filepath': 'components/policy/resources/policy_templates.json'
-    },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
                   'third_party/web-animations-js/|'\
@@ -1742,6 +1736,9 @@
                   '|content/browser/tracing/'\
                   '|components/tracing/'\
                   '|services/tracing/'
+    },
+    'traffic_annotation': {
+      'filepath': 'tools/traffic_annotation/'
     },
     'ui_compositor': {
       'filepath': 'ui/compositor/layer\.|'\
@@ -2227,7 +2224,6 @@
                           'ejcaruso+watch-cellular@chromium.org',
                           'jhawkins+watch-cellular@chromium.org',
                           'khorimoto+watch-cellular@chromium.org'],
-    'chromeos_device_policy': ['ljusten+watch@chromium.org'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org',
                       'bpastene+watch@chromium.org',
@@ -2509,7 +2505,6 @@
                     'mlamouri+watch-permissions@chromium.org',
                     'permissions-reviews@chromium.org'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
-    'policy_templates': ['ljusten+watch@chromium.org'],
     'polymer': ['dbeam+watch-polymer@chromium.org',
                 'michaelpg+watch-polymer@chromium.org'],
     'popup_blocker': ['csharrison+watch-popups@chromium.org'],
@@ -2635,6 +2630,7 @@
     'tracing': ['tracing+reviews@chromium.org',
                 'wfh+watch@chromium.org',
                 'spang+watch@chromium.org'],
+    'traffic_annotation': ['nicolaso+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],

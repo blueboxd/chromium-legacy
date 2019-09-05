@@ -38,7 +38,12 @@
 -keepclasseswithmembers class ** {
   @org.chromium.base.annotations.UsedByReflection <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class ** {
+# Even unused methods kept due to explicit jni registration:
+# https://crbug.com/688465.
+-keepclasseswithmembers,includedescriptorclasses class !org.chromium.base.library_loader.**,** {
+  native <methods>;
+}
+-keepclasseswithmembernames,includedescriptorclasses class org.chromium.base.library_loader.** {
   native <methods>;
 }
 

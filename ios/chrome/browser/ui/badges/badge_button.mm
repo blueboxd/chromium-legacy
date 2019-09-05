@@ -45,8 +45,7 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 - (void)setAccepted:(BOOL)accepted animated:(BOOL)animated {
   self.accepted = accepted;
   void (^changeTintColor)() = ^{
-    self.tintColor = accepted ? [UIColor colorNamed:kBlueColor]
-                              : [UIColor colorNamed:kToolbarButtonColor];
+    self.tintColor = accepted ? nil : [UIColor colorNamed:kToolbarButtonColor];
   };
   if (animated) {
     [UIView animateWithDuration:kButtonAnimationDuration

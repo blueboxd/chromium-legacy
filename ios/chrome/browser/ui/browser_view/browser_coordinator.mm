@@ -187,6 +187,9 @@
 
   [self.printController dismissAnimated:YES];
 
+  [self.readingListCoordinator stop];
+  self.readingListCoordinator = nil;
+
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
 }

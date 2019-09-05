@@ -85,8 +85,7 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,
                          bool is_running);
 
-  const mojo::Remote<mojom::blink::MediaStreamDispatcherHost>&
-  GetMediaStreamDispatcherHost();
+  mojom::blink::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
 
   WeakPersistent<LocalFrame> frame_;
   mojo::Remote<mojom::blink::MediaStreamDispatcherHost> host_;

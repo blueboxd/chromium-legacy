@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/c/pp_instance.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
@@ -101,8 +102,7 @@ class PepperMediaDeviceManager
       std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
           audio_input_capabilities);
 
-  const blink::mojom::MediaStreamDispatcherHostPtr&
-  GetMediaStreamDispatcherHost();
+  blink::mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
   blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver() const;
   const blink::mojom::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
@@ -115,7 +115,7 @@ class PepperMediaDeviceManager
   using SubscriptionList = std::vector<Subscription>;
   SubscriptionList device_change_subscriptions_[blink::NUM_MEDIA_DEVICE_TYPES];
 
-  blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
+  mojo::Remote<blink::mojom::MediaStreamDispatcherHost> dispatcher_host_;
   blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 
   mojo::ReceiverSet<blink::mojom::MediaDevicesListener> receivers_;

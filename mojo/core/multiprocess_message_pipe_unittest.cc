@@ -422,10 +422,11 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
   CHECK_GT(num_handles, 0);
 
   for (int i = 0; i < num_handles; ++i) {
-    PlatformHandle h = UnwrapPlatformHandle(ScopedHandle(Handle(handles[i])));
-    CHECK(h.is_valid());
+    PlatformHandle handle =
+        UnwrapPlatformHandle(ScopedHandle(Handle(handles[i])));
+    CHECK(handle.is_valid());
 
-    base::ScopedFILE fp = test::FILEFromPlatformHandle(std::move(h), "r");
+    base::ScopedFILE fp = test::FILEFromPlatformHandle(std::move(handle), "r");
     CHECK(fp);
     std::string fread_buffer(100, '\0');
     size_t bytes_read =

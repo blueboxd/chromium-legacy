@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -404,7 +405,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
 
   // Subresource requests from renderer processes should not be allowed to use
   // network::mojom::FetchRequestMode::kNavigate.
-  if (request.mode == network::mojom::RequestMode::kNavigate) {
+  if (network::IsNavigationRequestMode(request.mode)) {
     mojo::ReportBadMessage("APPCACHE_SUBRESOURCE_URL_FACTORY_NAVIGATE");
     return;
   }

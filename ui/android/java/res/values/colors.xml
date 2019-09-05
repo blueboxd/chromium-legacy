@@ -78,7 +78,7 @@
 
     <!-- Chip colors -->
     <color name="chip_text_color_default">@color/default_text_color</color>
-    <color name="chip_text_color_selected">@color/default_text_color_link</color>
+    <color name="chip_text_color_selected">@color/modern_blue_700</color>
     <color name="chip_text_color_secondary_default">@color/default_text_color_secondary</color>
     <color name="chip_background_color_disabled">@color/modern_grey_100_alpha_38</color>
     <color name="chip_ripple_color_default">@color/modern_grey_800</color>

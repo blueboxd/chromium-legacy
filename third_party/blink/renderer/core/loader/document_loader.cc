@@ -486,12 +486,8 @@ void DocumentLoader::SetHistoryItemStateForCommit(
     history_item_ = MakeGarbageCollected<HistoryItem>();
 
   history_item_->SetURL(UrlForHistory());
-  scoped_refptr<const SecurityOrigin> origin =
-      requestor_origin_ ? requestor_origin_
-                        : SecurityOrigin::CreateUniqueOpaque();
   history_item_->SetReferrer(SecurityPolicy::GenerateReferrer(
-      referrer_.referrer_policy, origin, history_item_->Url(),
-      referrer_.referrer));
+      referrer_.referrer_policy, history_item_->Url(), referrer_.referrer));
   if (DeprecatedEqualIgnoringCase(http_method_, "POST")) {
     // FIXME: Eventually we have to make this smart enough to handle the case
     // where we have a stream for the body to handle the "data interspersed with
@@ -1129,7 +1125,7 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK(params_);
   state_ = kProvisional;
   application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
-      this, GetFrame()->Client()->GetBrowserInterfaceBrokerProxy(),
+      this, GetFrame()->Client()->GetBrowserInterfaceBroker(),
       GetFrame()->GetTaskRunner(TaskType::kNetworking));
 
   if (url_.IsEmpty() &&

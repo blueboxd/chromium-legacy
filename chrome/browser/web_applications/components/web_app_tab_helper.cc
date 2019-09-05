@@ -6,6 +6,7 @@
 
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/manifest_update_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -49,8 +50,11 @@ void WebAppTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
 
-  const AppId app_id = FindAppIdWithUrlInScope(navigation_handle->GetURL());
+  const GURL& url = navigation_handle->GetURL();
+  const AppId app_id = FindAppIdWithUrlInScope(url);
   SetAppId(app_id);
+
+  provider_->manifest_update_manager().MaybeUpdate(url, app_id, web_contents());
 
   ReinstallPlaceholderAppIfNecessary(navigation_handle->GetURL());
 }

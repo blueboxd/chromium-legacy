@@ -76,6 +76,8 @@
         <structure type="chrome_scaled_image" name="IDR_BUTTON_USER_IMAGE_TAKE_PHOTO" file="cros/take_photo.png" />
       </if>
       <if expr="not is_android">
+        <structure type="chrome_scaled_image" name="IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT" file="common/click_to_call_illustration_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_CLICK_TO_CALL_ILLUSTRATION_DARK" file="common/click_to_call_illustration_dark.png" />
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme and tile IDR_CLOSE_1 over it.
            See chrome/browser/ui/views/tabs/tab.cc -->
@@ -255,7 +257,6 @@
       </if>
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
-        <structure type="chrome_scaled_image" name="IDR_SHARING_EMPTY_LIST" file="common/sharing_empty_list.png" />
         <structure type="chrome_scaled_image" name="IDR_SHOW_PASSWORD_HOVER" file="common/show_password_hover.png" />
       </if>
       <if expr="chromeos">

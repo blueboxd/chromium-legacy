@@ -51,23 +51,6 @@ class LoginExitCurrentSessionFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(LoginExitCurrentSessionFunction);
 };
 
-class LoginIsRunningInLoginProfileFunction : public ExtensionFunction {
- public:
-  LoginIsRunningInLoginProfileFunction();
-
-  DECLARE_EXTENSION_FUNCTION("login.isRunningInLoginProfile",
-                             LOGIN_ISRUNNINGINLOGINPROFILE)
-
- protected:
-  ~LoginIsRunningInLoginProfileFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginIsRunningInLoginProfileFunction);
-};
-
 class LoginFetchDataForNextLoginAttemptFunction : public ExtensionFunction {
  public:
   LoginFetchDataForNextLoginAttemptFunction();

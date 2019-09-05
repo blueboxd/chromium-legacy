@@ -226,31 +226,41 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
 }
 
 void FindBestMatches(
-    std::vector<const PasswordForm*> matches,
+    const std::vector<const PasswordForm*>& non_federated_matches,
+    PasswordForm::Scheme scheme,
+    std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
     std::map<base::string16, const PasswordForm*>* best_matches,
     const PasswordForm** preferred_match) {
   DCHECK(std::all_of(
-      matches.begin(), matches.end(),
+      non_federated_matches.begin(), non_federated_matches.end(),
       [](const PasswordForm* match) { return !match->blacklisted_by_user; }));
+  DCHECK(non_federated_same_scheme);
   DCHECK(best_matches);
   DCHECK(preferred_match);
 
   *preferred_match = nullptr;
   best_matches->clear();
+  non_federated_same_scheme->clear();
 
-  if (matches.empty())
+  for (auto* match : non_federated_matches) {
+    if (match->scheme == scheme)
+      non_federated_same_scheme->push_back(match);
+  }
+
+  if (non_federated_same_scheme->empty())
     return;
 
   // Sort matches using IsBetterMatch predicate.
-  std::sort(matches.begin(), matches.end(), IsBetterMatch);
-  for (const auto* match : matches) {
+  std::sort(non_federated_same_scheme->begin(),
+            non_federated_same_scheme->end(), IsBetterMatch);
+  for (const auto* match : *non_federated_same_scheme) {
     const base::string16& username = match->username_value;
     // The first match for |username| in the sorted array is best match.
     if (best_matches->find(username) == best_matches->end())
       best_matches->insert(std::make_pair(username, match));
   }
 
-  *preferred_match = *matches.begin();
+  *preferred_match = *non_federated_same_scheme->begin();
 }
 
 const PasswordForm* GetMatchForUpdating(

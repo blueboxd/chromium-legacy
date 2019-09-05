@@ -55,6 +55,9 @@ class CrostiniUnsupportedActionNotifier
     virtual std::string GetLocalizedDisplayName(
         const chromeos::input_method::InputMethodDescriptor& descriptor);
 
+    // True if either the fullscreen or docked magnifier is enabled.
+    virtual bool IsMagnificationEnabled();
+
     virtual void AddFocusObserver(aura::client::FocusChangeObserver* observer);
     virtual void RemoveFocusObserver(
         aura::client::FocusChangeObserver* observer);

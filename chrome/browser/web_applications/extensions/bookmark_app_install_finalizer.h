@@ -36,9 +36,10 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
-  void UninstallExternalWebApp(
-      const GURL& app_url,
-      UninstallExternalWebAppCallback callback) override;
+  void UninstallExternalWebApp(const GURL& app_url,
+                               UninstallWebAppCallback callback) override;
+  void UninstallWebApp(const web_app::AppId& app_id,
+                       UninstallWebAppCallback) override;
   bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const web_app::AppId& app_id,
                          bool add_to_desktop,

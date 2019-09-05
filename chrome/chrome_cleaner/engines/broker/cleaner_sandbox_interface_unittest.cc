@@ -182,7 +182,7 @@ class CleanerSandboxInterfaceDeleteFileTest : public ::testing::Test {
 
   std::unique_ptr<chrome_cleaner::FileRemoverAPI> file_remover_;
   bool reboot_required_ = false;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteFile_BasicFile) {

@@ -26,16 +26,23 @@ message ScheduledTask {
 
   message ExtraItem {
     enum Type {
-      BOOLEAN = 0;
+      SINGLE = 0;
       BOOLEAN_ARRAY = 1;
-      DOUBLE = 2;
-      DOUBLE_ARRAY = 3;
-      INT = 4;
-      INT_ARRAY = 5;
-      LONG = 6;
-      LONG_ARRAY = 7;
-      STRING = 8;
-      STRING_ARRAY = 9;
+      DOUBLE_ARRAY = 2;
+      INT_ARRAY = 3;
+      LONG_ARRAY = 4;
+      STRING_ARRAY = 5;
+      NULL = 6;
+    }
+
+    message ExtraValue {
+      oneof oneof_value {
+        bool boolean_value = 1;
+        double double_value = 2;
+        int32 int_value = 3;
+        int64 long_value = 4;
+        string string_value = 5;
+      }
     }
 
     // The key set for this item in the extras.
@@ -44,10 +51,11 @@ message ScheduledTask {
     // The type of the value associated with this item.
     Type type = 2;
 
-    // Serialized form of the value set for this item in the extras.
-    // Non-array types will store only one element in this repeated field.
-    // All the types supported in the extras field are serializable.
-    repeated string values = 3;
+    // Value set for this item in the extras. Non-array types will store only
+    // one element in this repeated field. Null types will not store any element
+    // in this field. All the types supported in the extras field can be stored
+    // in the ExtraValue message.
+    repeated ExtraValue values = 3;
   }
 
   // Extras for the BackgroundTask, stored for an ExactTask. OneOffTask and

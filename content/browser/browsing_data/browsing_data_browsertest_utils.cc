@@ -15,6 +15,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_test_utils.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/browser/system_connector.h"
@@ -99,16 +100,16 @@ void AddServiceWorker(const std::string& origin,
   blink::mojom::ServiceWorkerRegistrationOptions options(
       scope_url, blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&ServiceWorkerContextWrapper::RegisterServiceWorker,
                      base::Unretained(service_worker_context), js_url, options,
                      base::Bind(&AddServiceWorkerCallback)));
 
   // Wait for its activation.
   base::RunLoop run_loop;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(&ServiceWorkerActivationObserver::SignalActivation,
                      base::Unretained(service_worker_context),
                      run_loop.QuitClosure()));
@@ -125,8 +126,8 @@ std::vector<StorageUsageInfo> GetServiceWorkers(
   std::vector<StorageUsageInfo> service_workers;
   base::RunLoop run_loop;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
           &ServiceWorkerContextWrapper::GetAllOriginsInfo,
           base::Unretained(service_worker_context),

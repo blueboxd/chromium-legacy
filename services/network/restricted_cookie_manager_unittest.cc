@@ -256,8 +256,8 @@ class RestrictedCookieManagerTest
     return recording_client_.recorded_activity();
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::CookieMonster cookie_monster_;
   CookieSettings cookie_settings_;
   RecordingNetworkContextClient recording_client_;

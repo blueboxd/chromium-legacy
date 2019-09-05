@@ -140,7 +140,7 @@ void ImpressionHistoryTrackerImpl::OnStoreInitialized(
     InitCallback callback,
     bool success,
     CollectionStore<ClientState>::Entries entries) {
-  stats::LogDbInit(stats::DatabaseType::kImpressionDb, success, entries.size());
+  stats::LogImpressionDbInit(success, entries.size());
 
   if (!success) {
     std::move(callback).Run(false);
@@ -184,8 +184,7 @@ void ImpressionHistoryTrackerImpl::SyncRegisteredClients() {
                   client_type) == registered_clients_.end();
     if (deprecated) {
       store_->Delete(ToDatabaseKey(client_type),
-                     base::BindOnce(&stats::LogDbOperation,
-                                    stats::DatabaseType::kImpressionDb));
+                     base::BindOnce(&stats::LogImpressionDbOperation));
       client_states_.erase(it++);
       continue;
     } else {
@@ -200,8 +199,7 @@ void ImpressionHistoryTrackerImpl::SyncRegisteredClients() {
 
       DCHECK(new_client_data);
       store_->Add(ToDatabaseKey(type), *new_client_data.get(),
-                  base::BindOnce(&stats::LogDbOperation,
-                                 stats::DatabaseType::kImpressionDb));
+                  base::BindOnce(&stats::LogImpressionDbOperation));
       client_states_.emplace(type, std::move(new_client_data));
     }
   }
@@ -351,7 +349,7 @@ void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
     client_state->current_max_daily_show =
         client_state->suppression_info->recover_goal;
     client_state->suppression_info.reset();
-    stats::LogImpressionEvent(stats::ImpressionEvent::kSuppressionRelease);
+    stats::LogImpressionrEvent(stats::ImpressionEvent::kSuppressionRelease);
     return;
   }
 
@@ -376,7 +374,7 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
   SuppressionInfo supression_info(clock_->Now(), config_.suppression_duration);
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
-  stats::LogImpressionEvent(stats::ImpressionEvent::kNewSuppression);
+  stats::LogImpressionrEvent(stats::ImpressionEvent::kNewSuppression);
 }
 
 void ImpressionHistoryTrackerImpl::CheckSuppressionExpiration(
@@ -399,7 +397,7 @@ void ImpressionHistoryTrackerImpl::CheckSuppressionExpiration(
   // Clear suppression if fully recovered.
   client_state->suppression_info.reset();
   SetNeedsUpdate(client_state->type, true);
-  stats::LogImpressionEvent(stats::ImpressionEvent::kSuppressionExpired);
+  stats::LogImpressionrEvent(stats::ImpressionEvent::kSuppressionExpired);
 }
 
 bool ImpressionHistoryTrackerImpl::MaybeUpdateDb(SchedulerClientType type) {
@@ -410,8 +408,7 @@ bool ImpressionHistoryTrackerImpl::MaybeUpdateDb(SchedulerClientType type) {
   bool db_updated = false;
   if (NeedsUpdate(type)) {
     store_->Update(ToDatabaseKey(type), *(it->second.get()),
-                   base::BindOnce(&stats::LogDbOperation,
-                                  stats::DatabaseType::kImpressionDb));
+                   base::BindOnce(&stats::LogImpressionDbOperation));
     db_updated = true;
   }
   SetNeedsUpdate(type, false);

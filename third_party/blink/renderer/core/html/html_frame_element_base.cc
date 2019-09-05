@@ -48,7 +48,7 @@ using namespace html_names;
 HTMLFrameElementBase::HTMLFrameElementBase(const QualifiedName& tag_name,
                                            Document& document)
     : HTMLFrameOwnerElement(tag_name, document),
-      scrolling_mode_(kScrollbarAuto),
+      scrolling_mode_(ScrollbarMode::kAuto),
       margin_width_(-1),
       margin_height_(-1) {}
 
@@ -120,9 +120,9 @@ void HTMLFrameElementBase::ParseAttribute(
     // scrolling."
     if (DeprecatedEqualIgnoringCase(value, "auto") ||
         DeprecatedEqualIgnoringCase(value, "yes"))
-      SetScrollingMode(kScrollbarAuto);
+      SetScrollingMode(ScrollbarMode::kAuto);
     else if (DeprecatedEqualIgnoringCase(value, "no"))
-      SetScrollingMode(kScrollbarAlwaysOff);
+      SetScrollingMode(ScrollbarMode::kAlwaysOff);
   } else if (name == kOnbeforeunloadAttr) {
     // FIXME: should <frame> elements have beforeunload handlers?
     SetAttributeEventListener(

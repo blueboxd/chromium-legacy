@@ -71,7 +71,6 @@ class PLATFORM_EXPORT SecurityPolicy {
   // navigation to a given URL. If the referrer returned is empty, the
   // referrer header should be omitted.
   static Referrer GenerateReferrer(network::mojom::ReferrerPolicy,
-                                   scoped_refptr<const SecurityOrigin> origin,
                                    const KURL&,
                                    const String& referrer);
 

@@ -10,7 +10,8 @@
     Exposed=(Window,Worker),
     RaisesException=Constructor,
     RuntimeEnabled=WebSocketStream,
-    ActiveScriptWrappable
+    ActiveScriptWrappable,
+    MeasureAs=WebSocketStreamConstructor
 ] interface WebSocketStream {
   readonly attribute USVString url;
   [CallWith=ScriptState] readonly attribute Promise<WebSocketConnection> connection;

@@ -109,7 +109,7 @@ class AudioRendererMixerInputTest : public testing::Test,
  protected:
   ~AudioRendererMixerInputTest() override = default;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   AudioParameters audio_parameters_;
   std::unique_ptr<AudioRendererMixer> mixers_[2];
   scoped_refptr<AudioRendererMixerInput> mixer_input_;

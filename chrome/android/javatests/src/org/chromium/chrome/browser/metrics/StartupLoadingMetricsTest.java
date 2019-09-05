@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.compat.ApiHelperForM;
-import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryLoaderConfig;
 import org.chromium.base.library_loader.LoadStatusRecorder.LoadLibraryStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -159,7 +159,7 @@ public class StartupLoadingMetricsTest {
         assertHistogramsRecorded(1, TABBED_SUFFIX);
 
         // LibraryLoader checks.
-        if (!LibraryLoader.useChromiumLinker()) {
+        if (!LibraryLoaderConfig.useChromiumLinker()) {
             Log.w(TAG, "Skipping test because not using ChromiumLinker.");
             return;
         }

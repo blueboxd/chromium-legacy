@@ -23,6 +23,7 @@
 namespace autofill {
 namespace suggestion_selection {
 
+using base::ASCIIToUTF16;
 using testing::Each;
 using testing::ElementsAre;
 using testing::Field;
@@ -85,7 +86,7 @@ class SuggestionSelectionTest : public testing::Test {
   }
 
   base::string16 GetCanonicalUtf16Content(const char* content) {
-    return comparator_.NormalizeForComparison(base::ASCIIToUTF16(content));
+    return comparator_.NormalizeForComparison(ASCIIToUTF16(content));
   }
 
   std::vector<Suggestion> CreateSuggestions(
@@ -114,13 +115,14 @@ TEST_F(SuggestionSelectionTest,
 
   std::vector<AutofillProfile*> matched_profiles;
   auto suggestions = GetPrefixMatchedSuggestions(
-      AutofillType(NAME_FIRST), GetCanonicalUtf16Content("Mar"), comparator_,
+      AutofillType(NAME_FIRST), ASCIIToUTF16("Mar"),
+      GetCanonicalUtf16Content("Mar"), comparator_, false,
       {profile1.get(), profile2.get()}, &matched_profiles);
 
   ASSERT_EQ(1U, suggestions.size());
   ASSERT_EQ(1U, matched_profiles.size());
-  EXPECT_THAT(suggestions, ElementsAre(Field(&Suggestion::value,
-                                             base::ASCIIToUTF16("Marion"))));
+  EXPECT_THAT(suggestions,
+              ElementsAre(Field(&Suggestion::value, ASCIIToUTF16("Marion"))));
 }
 
 TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_NoMatchingProfile) {
@@ -128,9 +130,10 @@ TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_NoMatchingProfile) {
       CreateProfileUniquePtr("Bob");
 
   std::vector<AutofillProfile*> matched_profiles;
-  auto suggestions = GetPrefixMatchedSuggestions(
-      AutofillType(NAME_FIRST), GetCanonicalUtf16Content("Mar"), comparator_,
-      {profile1.get()}, &matched_profiles);
+  auto suggestions =
+      GetPrefixMatchedSuggestions(AutofillType(NAME_FIRST), ASCIIToUTF16("Mar"),
+                                  GetCanonicalUtf16Content("Mar"), comparator_,
+                                  false, {profile1.get()}, &matched_profiles);
 
   ASSERT_TRUE(matched_profiles.empty());
   ASSERT_TRUE(suggestions.empty());
@@ -139,9 +142,10 @@ TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_NoMatchingProfile) {
 TEST_F(SuggestionSelectionTest,
        GetPrefixMatchedSuggestions_EmptyProfilesInput) {
   std::vector<AutofillProfile*> matched_profiles;
-  auto suggestions = GetPrefixMatchedSuggestions(
-      AutofillType(NAME_FIRST), GetCanonicalUtf16Content("Mar"), comparator_,
-      {}, &matched_profiles);
+  auto suggestions =
+      GetPrefixMatchedSuggestions(AutofillType(NAME_FIRST), ASCIIToUTF16("Mar"),
+                                  GetCanonicalUtf16Content("Mar"), comparator_,
+                                  false, {}, &matched_profiles);
 
   ASSERT_TRUE(matched_profiles.empty());
   ASSERT_TRUE(suggestions.empty());
@@ -165,23 +169,24 @@ TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_LimitProfiles) {
                  });
 
   std::vector<AutofillProfile*> matched_profiles;
-  auto suggestions = GetPrefixMatchedSuggestions(
-      AutofillType(NAME_FIRST), GetCanonicalUtf16Content("Mar"), comparator_,
-      profiles_pointers, &matched_profiles);
+  auto suggestions =
+      GetPrefixMatchedSuggestions(AutofillType(NAME_FIRST), ASCIIToUTF16("Mar"),
+                                  GetCanonicalUtf16Content("Mar"), comparator_,
+                                  false, profiles_pointers, &matched_profiles);
 
   // Marie should not be found.
   ASSERT_EQ(kMaxSuggestedProfilesCount, suggestions.size());
   ASSERT_EQ(kMaxSuggestedProfilesCount, matched_profiles.size());
 
-  EXPECT_THAT(suggestions, Each(Field(&Suggestion::value,
-                                      Not(base::ASCIIToUTF16("Marie")))));
+  EXPECT_THAT(suggestions,
+              Each(Field(&Suggestion::value, Not(ASCIIToUTF16("Marie")))));
 
   EXPECT_THAT(matched_profiles,
               Each(ResultOf(
                   [](const AutofillProfile* profile_ptr) {
                     return profile_ptr->GetRawInfo(NAME_FIRST);
                   },
-                  Not(base::ASCIIToUTF16("Marie")))));
+                  Not(ASCIIToUTF16("Marie")))));
 }
 
 TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_SkipInvalid) {
@@ -206,7 +211,7 @@ TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_SkipInvalid) {
   profile_client_invalid_country_empty->SetValidityState(
       ADDRESS_HOME_STATE, AutofillProfile::INVALID, AutofillProfile::CLIENT);
   profile_client_invalid_country_empty->SetRawInfo(ADDRESS_HOME_COUNTRY,
-                                                   base::ASCIIToUTF16(""));
+                                                   ASCIIToUTF16(""));
 
   const std::vector<AutofillProfile*> profiles_data = {
       profile_server_invalid.get(), profile_client_invalid.get(),
@@ -214,14 +219,15 @@ TEST_F(SuggestionSelectionTest, GetPrefixMatchedSuggestions_SkipInvalid) {
 
   std::vector<AutofillProfile*> matched_profiles;
   auto suggestions = GetPrefixMatchedSuggestions(
-      AutofillType(ADDRESS_HOME_STATE), GetCanonicalUtf16Content("C"),
-      comparator_, profiles_data, &matched_profiles);
+      AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16("C"),
+      GetCanonicalUtf16Content("C"), comparator_, false, profiles_data,
+      &matched_profiles);
 
   ASSERT_EQ(2U, suggestions.size());
   ASSERT_EQ(2U, matched_profiles.size());
   EXPECT_THAT(suggestions,
-              ElementsAre(Field(&Suggestion::value, base::ASCIIToUTF16("CA")),
-                          Field(&Suggestion::value, base::ASCIIToUTF16("CA"))));
+              ElementsAre(Field(&Suggestion::value, ASCIIToUTF16("CA")),
+                          Field(&Suggestion::value, ASCIIToUTF16("CA"))));
 
   std::vector<AutofillProfile*> expected_result;
   expected_result.push_back(profile_valid.get());
@@ -247,9 +253,8 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_SingleDedupe) {
 
   ASSERT_EQ(1U, unique_suggestions.size());
   ASSERT_EQ(1U, unique_matched_profiles.size());
-  EXPECT_THAT(
-      unique_suggestions,
-      ElementsAre(Field(&Suggestion::value, base::ASCIIToUTF16("Bob"))));
+  EXPECT_THAT(unique_suggestions,
+              ElementsAre(Field(&Suggestion::value, ASCIIToUTF16("Bob"))));
 }
 
 TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_MultipleDedupe) {
@@ -274,11 +279,10 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_MultipleDedupe) {
   ASSERT_EQ(3U, unique_suggestions.size());
   ASSERT_EQ(3U, unique_matched_profiles.size());
 
-  EXPECT_THAT(
-      unique_suggestions,
-      ElementsAre(Field(&Suggestion::value, base::ASCIIToUTF16("Bob")),
-                  Field(&Suggestion::value, base::ASCIIToUTF16("Bob")),
-                  Field(&Suggestion::value, base::ASCIIToUTF16("Mary"))));
+  EXPECT_THAT(unique_suggestions,
+              ElementsAre(Field(&Suggestion::value, ASCIIToUTF16("Bob")),
+                          Field(&Suggestion::value, ASCIIToUTF16("Bob")),
+                          Field(&Suggestion::value, ASCIIToUTF16("Mary"))));
 }
 
 TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_DedupeLimit) {
@@ -308,7 +312,7 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_DedupeLimit) {
 
   // All profiles are different.
   for (size_t i = 0; i < unique_suggestions.size(); i++) {
-    ASSERT_EQ(base::ASCIIToUTF16(base::StringPrintf("Bob %zu", i)),
+    ASSERT_EQ(ASCIIToUTF16(base::StringPrintf("Bob %zu", i)),
               unique_suggestions[i].value);
   }
 }
@@ -343,7 +347,7 @@ TEST_F(SuggestionSelectionTest, GetUniqueSuggestions_PruneSuggestions) {
 
   // All profiles are different.
   for (size_t i = 0; i < unique_suggestions.size(); i++) {
-    ASSERT_EQ(base::ASCIIToUTF16(base::StringPrintf("Bob %zu", i)),
+    ASSERT_EQ(ASCIIToUTF16(base::StringPrintf("Bob %zu", i)),
               unique_suggestions[i].value);
   }
 }
@@ -521,17 +525,15 @@ TEST_F(SuggestionSelectionTest, RemoveProfilesNotUsedSinceTimestamp) {
 
 TEST_F(SuggestionSelectionTest,
        PrepareSuggestions_DiscardDuplicateSuggestions) {
-  std::vector<Suggestion> suggestions{
-      Suggestion(base::ASCIIToUTF16("Jon Snow")),
-      Suggestion(base::ASCIIToUTF16("Jon Snow")),
-      Suggestion(base::ASCIIToUTF16("Jon Snow")),
-      Suggestion(base::ASCIIToUTF16("Jon Snow"))};
+  std::vector<Suggestion> suggestions{Suggestion(ASCIIToUTF16("Jon Snow")),
+                                      Suggestion(ASCIIToUTF16("Jon Snow")),
+                                      Suggestion(ASCIIToUTF16("Jon Snow")),
+                                      Suggestion(ASCIIToUTF16("Jon Snow"))};
 
   const std::vector<base::string16> labels{
-      base::ASCIIToUTF16("2 Beyond-the-Wall Rd"),
-      base::ASCIIToUTF16("1 Winterfell Ln"),
-      base::ASCIIToUTF16("2 Beyond-the-Wall Rd"),
-      base::ASCIIToUTF16("2 Beyond-the-Wall Rd.")};
+      ASCIIToUTF16("2 Beyond-the-Wall Rd"), ASCIIToUTF16("1 Winterfell Ln"),
+      ASCIIToUTF16("2 Beyond-the-Wall Rd"),
+      ASCIIToUTF16("2 Beyond-the-Wall Rd.")};
 
   PrepareSuggestions(labels, &suggestions, comparator_);
 
@@ -540,45 +542,41 @@ TEST_F(SuggestionSelectionTest,
   EXPECT_THAT(
       suggestions,
       ElementsAre(
-          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Jon Snow")),
-                Field(&Suggestion::label,
-                      base::ASCIIToUTF16("2 Beyond-the-Wall Rd"))),
-          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Jon Snow")),
-                Field(&Suggestion::label,
-                      base::ASCIIToUTF16("1 Winterfell Ln")))));
+          AllOf(
+              Field(&Suggestion::value, ASCIIToUTF16("Jon Snow")),
+              Field(&Suggestion::label, ASCIIToUTF16("2 Beyond-the-Wall Rd"))),
+          AllOf(Field(&Suggestion::value, ASCIIToUTF16("Jon Snow")),
+                Field(&Suggestion::label, ASCIIToUTF16("1 Winterfell Ln")))));
 }
 
 TEST_F(SuggestionSelectionTest,
        PrepareSuggestions_KeepNonDuplicateSuggestions) {
-  std::vector<Suggestion> suggestions{
-      Suggestion(base::ASCIIToUTF16("Sansa")),
-      Suggestion(base::ASCIIToUTF16("Sansa")),
-      Suggestion(base::ASCIIToUTF16("Brienne"))};
+  std::vector<Suggestion> suggestions{Suggestion(ASCIIToUTF16("Sansa")),
+                                      Suggestion(ASCIIToUTF16("Sansa")),
+                                      Suggestion(ASCIIToUTF16("Brienne"))};
 
-  const std::vector<base::string16> labels{
-      base::ASCIIToUTF16("1 Winterfell Ln"), base::ASCIIToUTF16(""),
-      base::ASCIIToUTF16("1 Winterfell Ln")};
+  const std::vector<base::string16> labels{ASCIIToUTF16("1 Winterfell Ln"),
+                                           ASCIIToUTF16(""),
+                                           ASCIIToUTF16("1 Winterfell Ln")};
 
   PrepareSuggestions(labels, &suggestions, comparator_);
 
   EXPECT_THAT(
       suggestions,
       ElementsAre(
-          AllOf(
-              Field(&Suggestion::value, base::ASCIIToUTF16("Sansa")),
-              Field(&Suggestion::label, base::ASCIIToUTF16("1 Winterfell Ln"))),
-          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Sansa")),
-                Field(&Suggestion::label, base::ASCIIToUTF16(""))),
-          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Brienne")),
-                Field(&Suggestion::label,
-                      base::ASCIIToUTF16("1 Winterfell Ln")))));
+          AllOf(Field(&Suggestion::value, ASCIIToUTF16("Sansa")),
+                Field(&Suggestion::label, ASCIIToUTF16("1 Winterfell Ln"))),
+          AllOf(Field(&Suggestion::value, ASCIIToUTF16("Sansa")),
+                Field(&Suggestion::label, ASCIIToUTF16(""))),
+          AllOf(Field(&Suggestion::value, ASCIIToUTF16("Brienne")),
+                Field(&Suggestion::label, ASCIIToUTF16("1 Winterfell Ln")))));
 }
 
 TEST_F(SuggestionSelectionTest, PrepareSuggestions_SameStringInValueAndLabel) {
   std::vector<Suggestion> suggestions{
       Suggestion(base::UTF8ToUTF16("4 Mañana Road"))};
 
-  const std::vector<base::string16> labels{base::ASCIIToUTF16("4 manana road")};
+  const std::vector<base::string16> labels{ASCIIToUTF16("4 manana road")};
 
   PrepareSuggestions(labels, &suggestions, comparator_);
   EXPECT_THAT(suggestions,

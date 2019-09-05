@@ -33,15 +33,7 @@ WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
 void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   DCHECK(!screen_);
 
-  auto platform_screen = ui::OzonePlatform::GetInstance()->CreateScreen();
-  if (platform_screen) {
-    screen_ = std::make_unique<aura::ScreenOzone>(std::move(platform_screen));
-  } else {
-    // Use dummy display::Screen for Ozone platforms that don't provide
-    // PlatformScreen.
-    screen_ = std::make_unique<WebEngineScreen>();
-  }
-
+  screen_ = std::make_unique<aura::ScreenOzone>();
   display::Screen::SetScreenInstance(screen_.get());
 
   // If Vulkan is not enabled then disable hardware acceleration. Otherwise gpu

@@ -613,6 +613,23 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
+  bool handled = false;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
+    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
+                        OnSynchronizeVisualProperties)
+    IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
+                        OnEnableDeviceEmulation)
+    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
+                        OnDisableDeviceEmulation)
+  IPC_END_MESSAGE_MAP()
+  if (handled)
+    return true;
+
+  // TODO(https://crbug.com/1000502): Don't process IPC messages on frozen
+  // RenderWidgets. We would like to eventually remove them altogether, so they
+  // won't be able to process IPC messages.
+  if (is_frozen())
+    return false;
 #if defined(OS_MACOSX)
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
     return text_input_client_observer_->OnMessageReceived(message);
@@ -621,16 +638,9 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
       mouse_lock_dispatcher_->OnMessageReceived(message))
     return true;
 
-  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
-                        OnSynchronizeVisualProperties)
-    IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
-                        OnEnableDeviceEmulation)
-    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
-                        OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)

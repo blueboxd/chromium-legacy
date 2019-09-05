@@ -262,7 +262,6 @@ const CGFloat kButtonFontSize = 17;
   [navigationBar setShadowImage:emptyImage];
   [navigationBar setTranslucent:YES];
   [navigationBar setTranslatesAutoresizingMaskIntoConstraints:NO];
-  navigationBar.tintColor = [UIColor colorNamed:kBlueColor];
   navigationBar.titleTextAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kTextPrimaryColor]
   };

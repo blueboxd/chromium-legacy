@@ -117,53 +117,50 @@ std::map<int32_t, float> TabScorePredictor::ScoreTabs(
 
 TabRankerResult TabScorePredictor::ScoreTabWithMLScorer(const TabFeatures& tab,
                                                         float* score) {
-  // No error is expected, but something could conceivably be misconfigured.
-  TabRankerResult result = TabRankerResult::kSuccess;
-
   // Lazy-load the preprocessor config.
   LazyInitialize();
-  if (preprocessor_config_) {
-    // Build the RankerExample using the tab's features.
-    assist_ranker::RankerExample example;
-    PopulateTabFeaturesToRankerExample(tab, &example);
+  if (!preprocessor_config_ || !model_alloc_) {
+    return TabRankerResult::kPreprocessorInitializationFailed;
+  }
+  // Build the RankerExample using the tab's features.
+  assist_ranker::RankerExample example;
+  PopulateTabFeaturesToRankerExample(tab, &example);
+  return PredictWithPreprocess(&example, score);
+}
 
-    // Process the RankerExample with the tab ranker config to vectorize the
-    // feature list for inference.
-    int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
-        *preprocessor_config_, &example, true);
-    if (preprocessor_error) {
-      // kNoFeatureIndexFound can occur normally (e.g., when the domain name
-      // isn't known to the model or a rarely seen enum value is used).
-      DCHECK_EQ(assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound,
-                preprocessor_error);
-    }
-
-    // This vector will be provided to the inference function.
-    const auto& vectorized_features =
-        example.features()
-            .at(assist_ranker::ExamplePreprocessor::
-                    kVectorizedFeatureDefaultName)
-            .float_list()
-            .float_value();
-    CHECK_EQ(vectorized_features.size(), tfnative_model::FEATURES_SIZE);
-
-    // Fixed amount of memory the inference function will use.
-    if (!model_alloc_)
-      model_alloc_ = std::make_unique<tfnative_model::FixedAllocations>();
-    tfnative_model::Inference(vectorized_features.data(), score,
-                              model_alloc_.get());
-
-    if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
-        preprocessor_error !=
-            assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
-      // May indicate something is wrong with how we create the RankerExample.
-      result = TabRankerResult::kPreprocessorOtherError;
-    }
-  } else {
-    result = TabRankerResult::kPreprocessorInitializationFailed;
+TabRankerResult TabScorePredictor::PredictWithPreprocess(
+    assist_ranker::RankerExample* example,
+    float* score) {
+  // Process the RankerExample with the tab ranker config to vectorize the
+  // feature list for inference.
+  int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
+      *preprocessor_config_, example, true);
+  if (preprocessor_error) {
+    // kNoFeatureIndexFound can occur normally (e.g., when the domain name
+    // isn't known to the model or a rarely seen enum value is used).
+    DCHECK_EQ(assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound,
+              preprocessor_error);
   }
 
-  return result;
+  // This vector will be provided to the inference function.
+  const auto& vectorized_features =
+      example->features()
+          .at(assist_ranker::ExamplePreprocessor::kVectorizedFeatureDefaultName)
+          .float_list()
+          .float_value();
+
+  // Fixed amount of memory the inference function will use.
+  tfnative_model::Inference(vectorized_features.data(), score,
+                            model_alloc_.get());
+
+  if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
+      preprocessor_error !=
+          assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
+    // May indicate something is wrong with how we create the RankerExample.
+    return TabRankerResult::kPreprocessorOtherError;
+  } else {
+    return TabRankerResult::kSuccess;
+  }
 }
 
 TabRankerResult TabScorePredictor::ScoreTabWithMRUScorer(const TabFeatures& tab,
@@ -173,9 +170,13 @@ TabRankerResult TabScorePredictor::ScoreTabWithMRUScorer(const TabFeatures& tab,
 }
 
 void TabScorePredictor::LazyInitialize() {
-  if (preprocessor_config_)
-    return;
-  preprocessor_config_ = LoadExamplePreprocessorConfig();
+  if (!preprocessor_config_)
+    preprocessor_config_ = LoadExamplePreprocessorConfig();
+  if (!model_alloc_)
+    model_alloc_ = std::make_unique<tfnative_model::FixedAllocations>();
+  DCHECK(preprocessor_config_);
+  DCHECK_EQ(preprocessor_config_->feature_indices().size(),
+            static_cast<std::size_t>(tfnative_model::FEATURES_SIZE));
 }
 
 }  // namespace tab_ranker

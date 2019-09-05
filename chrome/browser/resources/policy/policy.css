@@ -86,8 +86,9 @@ body > main {
   flex-grow: 1;
   max-height: 200px;
   overflow: auto;
+  overflow-wrap: break-word;
   text-overflow: unset;
-  white-space: pre;
+  white-space: pre-wrap;
 }
 
 <if expr="not is_android">

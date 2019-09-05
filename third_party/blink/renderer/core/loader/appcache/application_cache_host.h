@@ -55,7 +55,7 @@ class CORE_EXPORT ApplicationCacheHost
       public mojom::blink::AppCacheFrontend {
  public:
   ApplicationCacheHost(
-      const BrowserInterfaceBrokerProxy* interface_broker_proxy,
+      const BrowserInterfaceBrokerProxy& interface_broker_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHost() override;
   virtual void Detach();
@@ -134,7 +134,7 @@ class CORE_EXPORT ApplicationCacheHost
   mojom::blink::AppCacheInfo cache_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  const BrowserInterfaceBrokerProxy* interface_broker_proxy_;
+  const BrowserInterfaceBrokerProxy& interface_broker_proxy_;
 
   // Invoked when CacheSelected() is called.
   base::OnceClosure select_cache_for_worker_completion_callback_;

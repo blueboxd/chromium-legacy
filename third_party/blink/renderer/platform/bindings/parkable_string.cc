@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

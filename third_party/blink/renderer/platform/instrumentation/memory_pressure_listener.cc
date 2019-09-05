@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/feature_list.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"

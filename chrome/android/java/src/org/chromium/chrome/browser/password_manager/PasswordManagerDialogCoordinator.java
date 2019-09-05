@@ -40,9 +40,10 @@ public class PasswordManagerDialogCoordinator {
     }
 
     public void showDialog(String title, String details, @DrawableRes int drawableId,
-            String positiveButtonText, String negativeButtonText, Callback<Integer> onClick) {
+            String positiveButtonText, String negativeButtonText, Callback<Integer> onClick,
+            boolean primaryButtonFilled) {
         mMediator.setContents(title, details, drawableId);
-        mMediator.setButtons(positiveButtonText, negativeButtonText, onClick);
+        mMediator.setButtons(positiveButtonText, negativeButtonText, onClick, primaryButtonFilled);
         mMediator.showDialog();
     }
 

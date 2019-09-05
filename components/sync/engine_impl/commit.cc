@@ -112,7 +112,11 @@ SyncerError Commit::PostAndProcessResponse(
   ModelTypeSet request_types;
   for (ContributionMap::const_iterator it = contributions_.begin();
        it != contributions_.end(); ++it) {
-    request_types.Put(it->first);
+    ModelType request_type = it->first;
+    request_types.Put(request_type);
+    UMA_HISTOGRAM_ENUMERATION("Sync.PostedDataTypeCommitRequest",
+                              ModelTypeToHistogramInt(request_type),
+                              static_cast<int>(ModelType::NUM_ENTRIES));
   }
   cycle->mutable_status_controller()->set_commit_request_types(request_types);
 

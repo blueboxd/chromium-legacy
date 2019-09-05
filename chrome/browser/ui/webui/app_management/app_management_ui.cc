@@ -55,7 +55,7 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
       {"storage", IDS_APP_MANAGEMENT_STORAGE},
       {"thisAppCan", IDS_APP_MANAGEMENT_THIS_APP_CAN},
       {"title", IDS_APP_MANAGEMENT_TITLE},
-      {"uninstall", IDS_APP_MANAGEMENT_UNINSTALL},
+      {"uninstall", IDS_APP_MANAGEMENT_UNINSTALL_APP},
       {"version", IDS_APP_MANAGEMENT_VERSION},
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));

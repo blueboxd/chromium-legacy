@@ -266,8 +266,8 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
 TEST(TextEliderTest, TestElisionSpecialCases) {
 #if defined(OS_WIN)
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
 #endif
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<Testcase> testcases = {

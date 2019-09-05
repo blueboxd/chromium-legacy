@@ -153,8 +153,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       bool smooth_scroll_enabled,
       bool sync_compositing);
   void BindAssociatedChannel(
-      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> request);
-  void BindChannel(mojo::PendingReceiver<mojom::WidgetInputHandler> request);
+      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver);
+  void BindChannel(mojo::PendingReceiver<mojom::WidgetInputHandler> receiver);
   void HandleInputEvent(
       const ui::WebScopedInputEvent& event,
       const ui::LatencyInfo& latency,

@@ -668,7 +668,7 @@ void AudioContext::EnsureAudioContextManagerService() {
   if (audio_context_manager_ || !GetDocument())
     return;
 
-  GetDocument()->GetFrame()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  GetDocument()->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       mojo::GenericPendingReceiver(
           audio_context_manager_.BindNewPipeAndPassReceiver()));
 

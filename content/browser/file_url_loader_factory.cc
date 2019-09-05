@@ -48,6 +48,7 @@
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
@@ -762,7 +763,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool cors_flag = request.mode != network::mojom::RequestMode::kNavigate &&
+  bool cors_flag = !network::IsNavigationRequestMode(request.mode) &&
                    request.mode != network::mojom::RequestMode::kNoCors;
 
   // CORS mode requires a valid |request_inisiator|. Check this condition first

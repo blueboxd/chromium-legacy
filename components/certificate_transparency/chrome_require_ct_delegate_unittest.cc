@@ -39,8 +39,8 @@ class ChromeRequireCTDelegateTest : public ::testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   scoped_refptr<net::X509Certificate> cert_;
   net::HashValueVector hashes_;
 };

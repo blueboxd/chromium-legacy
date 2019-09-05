@@ -33,8 +33,10 @@ public class CredentialLeakDialogBridge {
     @CalledByNative
     public void showDialog(String credentialLeakTitle, String credentialLeakDetails,
             String positiveButton, String negativeButton) {
+        boolean primaryButtonFilled = negativeButton != null;
         mCredentialLeakDialog.showDialog(credentialLeakTitle, credentialLeakDetails,
-                R.drawable.password_check_warning, positiveButton, negativeButton, this::onClick);
+                R.drawable.password_check_warning, positiveButton, negativeButton, this::onClick,
+                primaryButtonFilled);
     }
 
     @CalledByNative

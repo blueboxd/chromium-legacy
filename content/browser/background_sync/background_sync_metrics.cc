@@ -84,6 +84,7 @@ void BackgroundSyncMetrics::RecordEventResult(
 void BackgroundSyncMetrics::RecordBatchSyncEventComplete(
     blink::mojom::BackgroundSyncType sync_type,
     const base::TimeDelta& time,
+    bool from_wakeup_task,
     int number_of_batched_sync_events) {
   // The total batch handling time should be under 5 minutes; we'll record up to
   // 6 minutes, to be safe.
@@ -95,6 +96,10 @@ void BackgroundSyncMetrics::RecordBatchSyncEventComplete(
   base::UmaHistogramCounts100(
       GetBackgroundSyncPrefix(sync_type) + "BackgroundSync.Event.BatchSize",
       number_of_batched_sync_events);
+
+  base::UmaHistogramBoolean(GetBackgroundSyncPrefix(sync_type) +
+                                "BackgroundSync.Event.FromWakeupTask",
+                            from_wakeup_task);
 }
 
 // static

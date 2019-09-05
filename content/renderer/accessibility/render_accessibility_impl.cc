@@ -1022,7 +1022,7 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   if (!render_frame_)
     return;
   mojo::PendingRemote<image_annotation::mojom::Annotator> annotator;
-  render_frame()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
       annotator.InitWithNewPipeAndPassReceiver());
 
   const std::string preferred_language =

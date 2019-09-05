@@ -41,8 +41,9 @@ class BundledExchangesReaderTest : public testing::Test {
     items.insert({primary_url_, std::move(item)});
 
     data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New(primary_url_, std::move(items),
-                                                 GURL() /* manifest_url */);
+        data_decoder::mojom::BundleMetadata::New();
+    metadata->primary_url = primary_url_;
+    metadata->requests = std::move(items);
     reader_factory_->ReadAndFullfillMetadata(
         reader_.get(), std::move(metadata),
         base::BindOnce(

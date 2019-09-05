@@ -82,26 +82,13 @@ ShellPlatformDataAura* Shell::platform_ = nullptr;
 ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   CHECK(aura::Env::GetInstance());
 
+#if defined(USE_OZONE)
   // Setup global display::Screen singleton.
   if (!display::Screen::GetScreen()) {
-#if defined(USE_OZONE)
-    auto platform_screen = ui::OzonePlatform::GetInstance()->CreateScreen();
-    if (platform_screen)
-      screen_ = std::make_unique<aura::ScreenOzone>(std::move(platform_screen));
-#endif  // defined(USE_OZONE)
-
-    // Use aura::TestScreen for Ozone platforms that don't provide
-    // PlatformScreen.
-    // TODO(https://crbug.com/872339): Implement PlatformScreen for all
-    // platforms and remove this code.
-    if (!screen_) {
-      // Some web tests expect to be able to resize the window, so the screen
-      // must be larger than the window.
-      screen_.reset(
-          aura::TestScreen::Create(gfx::ScaleToCeiledSize(initial_size, 2.0)));
-    }
+    screen_ = std::make_unique<aura::ScreenOzone>();
     display::Screen::SetScreenInstance(screen_.get());
   }
+#endif  // defined(USE_OZONE)
 
   ui::PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(initial_size);

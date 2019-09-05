@@ -94,9 +94,10 @@ class DiceResponseHandlerTest : public testing::Test,
 
  protected:
   DiceResponseHandlerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
-                          base::test::TaskEnvironment::TimeSource::
-                              MOCK_TIME),  // URLRequestContext requires IO.
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::IO,
+            base::test::SingleThreadTaskEnvironment::TimeSource::
+                MOCK_TIME),  // URLRequestContext requires IO.
         signin_client_(&pref_service_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &pref_service_,
@@ -178,7 +179,7 @@ class DiceResponseHandlerTest : public testing::Test,
     return identity_test_env_.identity_manager();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient signin_client_;

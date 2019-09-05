@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
@@ -162,24 +161,6 @@ TEST_F(LoginApiUnittest, FetchDataForNextLoginAttemptClearsPref) {
 
   ASSERT_EQ("", local_state->GetString(
                     prefs::kLoginExtensionApiDataForNextLoginAttempt));
-}
-
-// Test that calling |login.isRunningInLoginProfile()| returns 'false' when the
-// extension is not running in the login screen profile.
-TEST_F(LoginApiUnittest, IsRunningInLoginProfileNotInProfile) {
-  ASSERT_FALSE(RunFunctionAndReturnValue(
-                   new LoginIsRunningInLoginProfileFunction(), "[]")
-                   ->GetBool());
-}
-
-// Test that calling |login.isRunningInLoginProfile()| returns 'true' when the
-// extension is running in the login screen profile.
-TEST_F(LoginApiUnittest, IsRunningInLoginProfileInProfile) {
-  LoginIsRunningInLoginProfileFunction* function =
-      new LoginIsRunningInLoginProfileFunction();
-  function->set_profile_id(chromeos::ProfileHelper::Get()->GetSigninProfile());
-
-  ASSERT_TRUE(RunFunctionAndReturnValue(function, "[]")->GetBool());
 }
 
 }  // namespace extensions

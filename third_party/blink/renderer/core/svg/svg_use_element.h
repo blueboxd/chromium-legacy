@@ -114,14 +114,11 @@ class SVGUseElement final : public SVGGraphicsElement,
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
                               const SVGElement& new_target) const;
   void ExpandUseElementsInShadowTree();
-  void PostProcessInstanceTree();
   void AddReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
   void InvalidateDependentShadowTrees();
 
-  bool ResourceIsStillLoading() const;
   bool ResourceIsValid() const;
-  bool InstanceTreeIsLoading() const;
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "SVGUseElement"; }
   void UpdateTargetReference();

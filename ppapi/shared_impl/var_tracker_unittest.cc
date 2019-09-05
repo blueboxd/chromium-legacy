@@ -49,7 +49,7 @@ class VarTrackerTest : public testing::Test {
   VarTracker& var_tracker() { return *globals_.GetVarTracker(); }
 
  private:
-  base::test::TaskEnvironment
+  base::test::SingleThreadTaskEnvironment
       task_environment_;  // Required to receive callbacks.
   TestGlobals globals_;
 };

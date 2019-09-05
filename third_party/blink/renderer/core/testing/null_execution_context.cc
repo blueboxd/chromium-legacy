@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -52,6 +53,10 @@ FrameOrWorkerScheduler* NullExecutionContext::GetScheduler() {
 scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(
     TaskType) {
   return Thread::Current()->GetTaskRunner();
+}
+
+BrowserInterfaceBrokerProxy& NullExecutionContext::GetBrowserInterfaceBroker() {
+  return GetEmptyBrowserInterfaceBroker();
 }
 
 }  // namespace blink

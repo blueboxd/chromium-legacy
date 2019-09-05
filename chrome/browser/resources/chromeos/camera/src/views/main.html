@@ -59,6 +59,25 @@
     <div id="camera">
       <div id="preview-wrapper" aria-hidden="true">
         <video id="preview-video"></video>
+        <div id="preview-metadata">
+          <div id="preview-af" class="metadata-row">
+            <span class="metadata-category">AF</span>
+            <div id="preview-focus-distance" class="metadata-value"></div>
+            <div id="preview-focal-length" class="metadata-value"></div>
+            <div id="preview-aperture" class="metadata-value"></div>
+          </div>
+          <div id="preview-ae" class="metadata-row">
+            <span class="metadata-category">AE</span>
+            <div id="preview-sensitivity" class="metadata-value"></div>
+            <div id="preview-exposure-time" class="metadata-value"></div>
+            <div id="preview-frame-duration" class="metadata-value"></div>
+          </div>
+          <div id="preview-awb" class="metadata-row">
+            <span class="metadata-category">AWB</span>
+            <div id="preview-wb-gain-red" class="metadata-value"></div>
+            <div id="preview-wb-gain-blue" class="metadata-value"></div>
+          </div>
+        </div>
         <div id="preview-grid">
           <div id="preview-grid-horizontal"></div>
           <div id="preview-grid-vertical"></div>
@@ -197,6 +216,12 @@
           </div>
           <div class="icon end"></div>
         </button>
+        <button class="menu-item circle" id="settings-expert" tabindex="0">
+          <div class="icon"></div>
+          <div i18n-content="expert_mode_button">
+          </div>
+          <div class="icon end"></div>
+        </button>
         <button class="menu-item circle" id="settings-feedback" tabindex="0">
           <div class="icon"></div>
           <div i18n-content="feedback_button"></div>
@@ -320,6 +345,26 @@
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-content="video_resolution_button"></div>
         </div>
+      </div>
+    </div>
+    <div id="expertsettings">
+      <div class="menu">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div i18n-content="expert_mode_button"></div>
+        </div>
+        <label class="menu-item circle" for="expert-show-metadata">
+          <input class="icon" id="expert-show-metadata" type="checkbox"
+                 tabindex="0" data-state="show-metadata"
+                 data-key="showMetadata">
+          <span i18n-content="expert_preview_metadata"></span>
+        </label>
+        <label class="menu-item circle" for="expert-save-metadata">
+          <input class="icon" id="expert-save-metadata" type="checkbox"
+                 tabindex="0" data-state="save-metadata"
+                 data-key="saveMetadata">
+          <span i18n-content="expert_save_metadata"></span>
+        </label>
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>

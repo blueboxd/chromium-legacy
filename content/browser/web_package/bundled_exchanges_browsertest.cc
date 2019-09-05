@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -29,13 +32,37 @@ class TestBrowserClient : public ContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserClient);
 };
 
+class FinishNavigationObserver : public WebContentsObserver {
+ public:
+  explicit FinishNavigationObserver(WebContents* contents,
+                                    base::OnceClosure done_closure)
+      : WebContentsObserver(contents), done_closure_(std::move(done_closure)) {}
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    error_code_ = navigation_handle->GetNetErrorCode();
+    std::move(done_closure_).Run();
+  }
+
+  const base::Optional<net::Error>& error_code() const { return error_code_; }
+
+ private:
+  base::OnceClosure done_closure_;
+  base::Optional<net::Error> error_code_;
+
+  DISALLOW_COPY_AND_ASSIGN(FinishNavigationObserver);
+};
+
 }  // namespace
 
 class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
  protected:
-  BundledExchangesTrustableFileBrowserTest()
-      : test_data_path_(GetTestDataPath()) {}
+  BundledExchangesTrustableFileBrowserTest() {}
   ~BundledExchangesTrustableFileBrowserTest() override = default;
+
+  void SetUp() override {
+    test_data_path_ = GetTestDataPath();
+    ContentBrowserTest::SetUp();
+  }
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -63,12 +90,7 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
       SetBrowserClientForTesting(original_client_);
   }
 
-  const base::FilePath& test_data_path() const { return test_data_path_; }
-
-  ContentBrowserClient* original_client_ = nullptr;
-
- private:
-  base::FilePath GetTestDataPath() {
+  virtual base::FilePath GetTestDataPath() const {
     base::FilePath test_data_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
     return test_data_dir.AppendASCII("services")
@@ -78,8 +100,13 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
         .AppendASCII("hello.wbn");
   }
 
+  const base::FilePath& test_data_path() const { return test_data_path_; }
+
+  ContentBrowserClient* original_client_ = nullptr;
+
+ private:
   TestBrowserClient browser_client_;
-  const base::FilePath test_data_path_;
+  base::FilePath test_data_path_;
 
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesTrustableFileBrowserTest);
 };
@@ -97,6 +124,38 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest,
                             net::FilePathToFileURL(test_data_path()),
                             GURL("https://test.example.org/")));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+class BundledExchangesTrustableFileNotFoundBrowserTest
+    : public BundledExchangesTrustableFileBrowserTest {
+ protected:
+  BundledExchangesTrustableFileNotFoundBrowserTest() = default;
+  ~BundledExchangesTrustableFileNotFoundBrowserTest() override = default;
+
+  base::FilePath GetTestDataPath() const override {
+    base::FilePath test_data_dir;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+    return test_data_dir.AppendASCII("not_found");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
+                       NotFound) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(),
+                             net::FilePathToFileURL(test_data_path()),
+                             GURL("https://test.example.org/")));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code());
+  EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+            *finish_navigation_observer.error_code());
 }
 
 }  // namespace content

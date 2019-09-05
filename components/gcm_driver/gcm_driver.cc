@@ -281,6 +281,8 @@ void GCMDriver::DispatchMessageInternal(const std::string& app_id,
     case GCMDecryptionResult::DECRYPTED_DRAFT_03:
     case GCMDecryptionResult::DECRYPTED_DRAFT_08: {
       GCMAppHandler* handler = GetAppHandler(app_id);
+      UMA_HISTOGRAM_BOOLEAN("GCM.DeliveredToAppHandler", !!handler);
+
       if (handler)
         handler->OnMessage(app_id, message);
 

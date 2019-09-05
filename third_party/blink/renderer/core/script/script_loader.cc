@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/script/script_loader.h"
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -565,7 +566,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       //
       // Fetch a classic script given url, settings object, options, classic
       // script CORS setting, and encoding.</spec>
-      FetchClassicScript(url, element_document, options, cross_origin,
+      Document* document_for_origin = &element_document;
+      if (base::FeatureList::IsEnabled(
+              features::kHtmlImportsRequestInitiatorLock)) {
+        document_for_origin = context_document;
+      }
+      FetchClassicScript(url, *document_for_origin, options, cross_origin,
                          encoding);
     } else {
       // - "module":
@@ -886,7 +892,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
 // https://html.spec.whatwg.org/C/#fetch-a-classic-script
 void ScriptLoader::FetchClassicScript(const KURL& url,
-                                      Document& element_document,
+                                      Document& document,
                                       const ScriptFetchOptions& options,
                                       CrossOriginAttributeValue cross_origin,
                                       const WTF::TextEncoding& encoding) {
@@ -896,7 +902,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
     defer = FetchParameters::kLazyLoad;
 
   ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
-      url, element_document, options, cross_origin, encoding, element_, defer);
+      url, document, options, cross_origin, encoding, element_, defer);
   prepared_pending_script_ = pending_script;
   resource_keep_alive_ = pending_script->GetResource();
 }

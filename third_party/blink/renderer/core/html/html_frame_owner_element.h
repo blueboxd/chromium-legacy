@@ -108,7 +108,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   AtomicString BrowsingContextContainerName() const override {
     return getAttribute(html_names::kNameAttr);
   }
-  ScrollbarMode ScrollingMode() const override { return kScrollbarAuto; }
+  ScrollbarMode ScrollingMode() const override { return ScrollbarMode::kAuto; }
   int MarginWidth() const override { return -1; }
   int MarginHeight() const override { return -1; }
   bool AllowFullscreen() const override { return false; }

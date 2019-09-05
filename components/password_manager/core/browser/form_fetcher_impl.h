@@ -19,8 +19,9 @@ namespace password_manager {
 
 class PasswordManagerClient;
 
-// Production implementation of FormFetcher. Fetches credentials associated
-// with a particular origin.
+// Production implementation of FormFetcher. Fetches credentials associated with
+// a particular origin. When adding new member fields to this class, please,
+// update the Clone() method accordingly.
 class FormFetcherImpl : public FormFetcher,
                         public PasswordStoreConsumer,
                         public HttpPasswordStoreMigrator::Consumer {
@@ -45,6 +46,14 @@ class FormFetcherImpl : public FormFetcher,
       const override;
   std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
       const override;
+
+  const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
+      const override;
+
+  const std::map<base::string16, const autofill::PasswordForm*>&
+  GetBestMatches() const override;
+
+  const autofill::PasswordForm* GetPreferredMatch() const override;
 
   void Fetch() override;
   std::unique_ptr<FormFetcher> Clone() override;
@@ -76,6 +85,19 @@ class FormFetcherImpl : public FormFetcher,
 
   // List of blacklisted credentials obtained form the password store.
   std::vector<std::unique_ptr<autofill::PasswordForm>> blacklisted_;
+
+  // Non-federated credentials of the same scheme as the observed form.
+  std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
+
+  // Set of nonblacklisted PasswordForms from the password store that best match
+  // the form being managed by |this|, indexed by username.
+  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
+
+  // Convenience pointer to entry in |best_matches_| that is marked as
+  // preferred. This is only allowed to be null if there are no best matches at
+  // all, since there will always be one preferred login when there are multiple
+  // matches (when first saved, a login is marked preferred).
+  const autofill::PasswordForm* preferred_match_ = nullptr;
 
   // Statistics for the current domain.
   std::vector<InteractionsStats> interactions_stats_;

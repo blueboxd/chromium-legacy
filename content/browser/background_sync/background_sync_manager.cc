@@ -1430,7 +1430,7 @@ void BackgroundSyncManager::ResetAndScheduleDelayedSyncTask(
 
   auto fire_events_callback = base::BindOnce(
       &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
-      sync_type, /* reschedule= */ false, base::DoNothing::Once(),
+      sync_type, /* reschedule= */ true, base::DoNothing::Once(),
       /* keepalive= */ nullptr);
 
   get_delayed_task(sync_type).Reset(std::move(fire_events_callback));
@@ -1959,9 +1959,10 @@ void BackgroundSyncManager::FireReadyEventsImpl(
 
   // Record the total time taken after all events have run to completion.
   base::RepeatingClosure events_completed_barrier_closure =
-      base::BarrierClosure(to_fire.size(),
-                           base::BindOnce(&OnAllSyncEventsCompleted, sync_type,
-                                          start_time, to_fire.size()));
+      base::BarrierClosure(
+          to_fire.size(),
+          base::BindOnce(&OnAllSyncEventsCompleted, sync_type, start_time,
+                         !reschedule, to_fire.size()));
 
   for (auto& registration_info : to_fire) {
     const BackgroundSyncRegistration* registration =
@@ -2300,10 +2301,11 @@ void BackgroundSyncManager::EventCompleteDidStore(
 void BackgroundSyncManager::OnAllSyncEventsCompleted(
     BackgroundSyncType sync_type,
     const base::TimeTicks& start_time,
+    bool from_wakeup_task,
     int number_of_batched_sync_events) {
   // Record the combined time taken by all sync events.
   BackgroundSyncMetrics::RecordBatchSyncEventComplete(
-      sync_type, base::TimeTicks::Now() - start_time,
+      sync_type, base::TimeTicks::Now() - start_time, from_wakeup_task,
       number_of_batched_sync_events);
 }
 

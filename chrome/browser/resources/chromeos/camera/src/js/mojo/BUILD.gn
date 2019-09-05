@@ -30,6 +30,7 @@ js_library("image_capture") {
 
 js_library("mojo_connector") {
   deps = [
+    ":device_operator",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
   ]
 }

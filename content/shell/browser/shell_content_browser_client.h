@@ -71,6 +71,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
+  base::FilePath GetFontLookupTableCacheDir() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,

@@ -175,9 +175,17 @@ void BrowserList::CloseAllBrowsersWithIncognitoProfile(
     const CloseCallback& on_close_aborted,
     bool skip_beforeunload) {
   DCHECK(profile->IsOffTheRecord());
-  TryToCloseBrowserList(GetIncognitoBrowsersToClose(profile), on_close_success,
-                        on_close_aborted, profile->GetPath(),
-                        skip_beforeunload);
+  BrowserList::BrowserVector browsers_to_close =
+      GetIncognitoBrowsersToClose(profile);
+  auto it =
+      std::find_if(browsers_to_close.begin(), browsers_to_close.end(),
+                   [](auto* browser) { return browser->is_type_devtools(); });
+
+  // When closing devtools browser related to incognito browser, do not skip
+  // calling before unload handlers.
+  skip_beforeunload = skip_beforeunload && (it == browsers_to_close.end());
+  TryToCloseBrowserList(browsers_to_close, on_close_success, on_close_aborted,
+                        profile->GetPath(), skip_beforeunload);
 }
 
 // static

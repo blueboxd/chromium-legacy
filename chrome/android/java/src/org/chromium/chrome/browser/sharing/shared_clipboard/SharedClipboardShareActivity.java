@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -117,11 +118,14 @@ public class SharedClipboardShareActivity
                         NotificationConstants.GROUP_SHARED_CLIPBOARD,
                         NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING);
             } else {
+                String contentTitle = getErrorNotificationTitle(result);
+                String contentText = getErrorNotificationText(result, device.clientName);
+
                 SharingNotificationUtil.showSendErrorNotification(
                         NotificationUmaTracker.SystemNotificationType.SHARED_CLIPBOARD,
                         NotificationConstants.GROUP_SHARED_CLIPBOARD,
                         NotificationConstants.NOTIFICATION_ID_SHARED_CLIPBOARD_OUTGOING,
-                        R.string.shared_clipboard_content_name, token, result);
+                        contentTitle, contentText, token);
             }
         });
         finish();
@@ -132,5 +136,81 @@ public class SharedClipboardShareActivity
         super.finish();
         // TODO(alexchau): Handle animations.
         overridePendingTransition(R.anim.no_anim, R.anim.no_anim);
+    }
+
+    /**
+     * Return the title of error notification shown based on result of send message to other device.
+     * TODO(himanshujaju) - All text except PAYLOAD_TOO_LARGE are common across features. Extract
+     * them out when next feature is added.
+     *
+     * @param result    The result of sending message to other device.
+     * @return the title for error notification.
+     */
+    private String getErrorNotificationTitle(@SharingSendMessageResult int result) {
+        Resources resources = ContextUtils.getApplicationContext().getResources();
+        String contentType = resources.getString(R.string.browser_sharing_content_type_text);
+
+        switch (result) {
+            case SharingSendMessageResult.DEVICE_NOT_FOUND:
+            case SharingSendMessageResult.NETWORK_ERROR:
+            case SharingSendMessageResult.ACK_TIMEOUT:
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_title_generic_error, contentType);
+
+            case SharingSendMessageResult.PAYLOAD_TOO_LARGE:
+                return resources.getString(
+                        R.string.browser_sharing_shared_clipboard_error_dialog_title_payload_too_large);
+
+            case SharingSendMessageResult.INTERNAL_ERROR:
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_title_internal_error, contentType);
+
+            default:
+                assert false;
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_title_internal_error, contentType);
+        }
+    }
+
+    /**
+     * Return the text of error notification shown based on result of send message to other device.
+     * TODO(himanshujaju) - All text except PAYLOAD_TOO_LARGE are common across features. Extract
+     * them out when next feature is added.
+     *
+     * @param result    The result of sending message to other device.
+     * @return the text for error notification.
+     */
+    private String getErrorNotificationText(
+            @SharingSendMessageResult int result, String targetDeviceName) {
+        Resources resources = ContextUtils.getApplicationContext().getResources();
+
+        switch (result) {
+            case SharingSendMessageResult.DEVICE_NOT_FOUND:
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_text_device_not_found,
+                        targetDeviceName);
+
+            case SharingSendMessageResult.NETWORK_ERROR:
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_text_network_error);
+
+            case SharingSendMessageResult.PAYLOAD_TOO_LARGE:
+                return resources.getString(
+                        R.string.browser_sharing_shared_clipboard_error_dialog_text_payload_too_large);
+
+            case SharingSendMessageResult.ACK_TIMEOUT:
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_text_device_ack_timeout,
+                        targetDeviceName);
+
+            case SharingSendMessageResult.INTERNAL_ERROR:
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_text_internal_error);
+
+            default:
+                assert false;
+                return resources.getString(
+                        R.string.browser_sharing_error_dialog_text_internal_error);
+        }
     }
 }

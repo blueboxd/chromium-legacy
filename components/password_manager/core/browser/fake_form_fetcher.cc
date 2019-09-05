@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::PasswordForm;
@@ -48,9 +49,26 @@ std::vector<const PasswordForm*> FakeFormFetcher::GetBlacklistedMatches()
   return blacklisted_;
 }
 
+const std::vector<const PasswordForm*>& FakeFormFetcher::GetAllRelevantMatches()
+    const {
+  return non_federated_same_scheme_;
+}
+
+const std::map<base::string16, const PasswordForm*>&
+FakeFormFetcher::GetBestMatches() const {
+  return best_matches_;
+}
+
+const PasswordForm* FakeFormFetcher::GetPreferredMatch() const {
+  return preferred_match_;
+}
+
 void FakeFormFetcher::SetNonFederated(
     const std::vector<const PasswordForm*>& non_federated) {
   non_federated_ = non_federated;
+  password_manager_util::FindBestMatches(non_federated_, scheme_,
+                                         &non_federated_same_scheme_,
+                                         &best_matches_, &preferred_match_);
 }
 
 void FakeFormFetcher::SetBlacklisted(

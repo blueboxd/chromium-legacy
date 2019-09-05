@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -15,24 +16,27 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#endif
 
 namespace {
 
 // Icon sizes in DIP.
 constexpr int kPrimaryIconSize = 20;
 constexpr int kPrimaryIconBorderWidth = 8;
-constexpr int kEmptyImageHeight = 88;
-constexpr int kEmptyImageTopPadding = 16;
+constexpr int kHeaderImageHeight = 100;
 
 SkColor GetColorFromTheme() {
   const ui::NativeTheme* native_theme =
@@ -49,23 +53,21 @@ std::unique_ptr<views::ImageView> CreateIconView(const gfx::ImageSkia& icon) {
   return icon_view;
 }
 
-std::unique_ptr<views::ImageView> CreateVectorIconView(
-    const gfx::VectorIcon& vector_icon) {
-  return CreateIconView(gfx::CreateVectorIcon(vector_icon, kPrimaryIconSize,
-                                              GetColorFromTheme()));
+gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& vector_icon) {
+  return gfx::CreateVectorIcon(vector_icon, kPrimaryIconSize,
+                               GetColorFromTheme());
 }
 
-std::unique_ptr<views::ImageView> CreateDeviceIcon(
+gfx::ImageSkia CreateDeviceIcon(
     const sync_pb::SyncEnums::DeviceType device_type) {
-  return CreateVectorIconView(device_type == sync_pb::SyncEnums::TYPE_TABLET
-                                  ? kTabletIcon
-                                  : kHardwareSmartphoneIcon);
+  return CreateVectorIcon(device_type == sync_pb::SyncEnums::TYPE_TABLET
+                              ? kTabletIcon
+                              : kHardwareSmartphoneIcon);
 }
 
-std::unique_ptr<views::ImageView> CreateAppIcon(
-    const SharingUiController::App& app) {
-  return app.vector_icon ? CreateVectorIconView(*app.vector_icon)
-                         : CreateIconView(app.image.AsImageSkia());
+gfx::ImageSkia CreateAppIcon(const SharingUiController::App& app) {
+  return app.vector_icon ? CreateVectorIcon(*app.vector_icon)
+                         : app.image.AsImageSkia();
 }
 
 std::unique_ptr<views::StyledLabel> CreateHelpText(
@@ -143,35 +145,36 @@ SharingDialogType SharingDialogView::GetDialogType() const {
 void SharingDialogView::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  dialog_buttons_.clear();
+  button_icons_.clear();
 
   auto* provider = ChromeLayoutProvider::Get();
+  gfx::Insets insets =
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+
   SharingDialogType type = GetDialogType();
   LogSharingDialogShown(controller_->GetFeatureMetricsPrefix(), type);
 
   switch (type) {
     case SharingDialogType::kErrorDialog:
-      set_margins(
-          provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
       InitErrorView();
       break;
     case SharingDialogType::kEducationalDialog:
-      set_margins(
-          provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
       InitEmptyView();
       break;
     case SharingDialogType::kDialogWithoutDevicesWithApp:
     case SharingDialogType::kDialogWithDevicesMaybeApps:
-      set_margins(
-          gfx::Insets(provider->GetDistanceMetric(
-                          views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
-                      0,
-                      provider->GetDistanceMetric(
-                          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                      0));
+      // Spread buttons across the whole dialog width.
+      int top_margin = provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL);
+      int bottom_margin = provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL);
+      insets = gfx::Insets(top_margin, 0, bottom_margin, 0);
       InitListView();
       break;
   }
+
+  set_margins(gfx::Insets(insets.top(), 0, insets.bottom(), 0));
+  SetBorder(views::CreateEmptyBorder(0, insets.left(), 0, insets.right()));
 
   // TODO(yasmo): See if GetWidget can be not null:
   if (GetWidget())
@@ -206,6 +209,56 @@ void SharingDialogView::ButtonPressed(views::Button* sender,
   }
 }
 
+void SharingDialogView::MaybeShowHeaderImage() {
+  views::BubbleFrameView* frame_view = GetBubbleFrameView();
+  if (!frame_view)
+    return;
+
+  int image_id = controller_->GetHeaderImageId();
+  if (!image_id) {
+    // Clear any previously set header image.
+    frame_view->SetHeaderView(nullptr);
+    return;
+  }
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* image = rb.GetNativeImageNamed(image_id).ToImageSkia();
+  gfx::Size image_size(image->width(), image->height());
+  const int image_width = image->width() * kHeaderImageHeight / image->height();
+  image_size.SetToMin(gfx::Size(image_width, kHeaderImageHeight));
+
+  auto image_view = std::make_unique<NonAccessibleImageView>();
+  image_view->SetImageSize(image_size);
+  image_view->SetImage(*image);
+
+  frame_view->SetHeaderView(std::move(image_view));
+}
+
+void SharingDialogView::AddedToWidget() {
+  MaybeShowHeaderImage();
+}
+
+void SharingDialogView::OnThemeChanged() {
+  LocationBarBubbleDelegateView::OnThemeChanged();
+  MaybeShowHeaderImage();
+
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
+      controller_->devices();
+  const std::vector<SharingUiController::App>& apps = controller_->apps();
+  DCHECK_EQ(devices.size() + apps.size(), button_icons_.size());
+
+  size_t button_index = 0;
+  for (const auto& device : devices) {
+    button_icons_[button_index]->SetImage(
+        CreateDeviceIcon(device->device_type()));
+    button_index++;
+  }
+  for (const auto& app : apps) {
+    button_icons_[button_index]->SetImage(CreateAppIcon(app));
+    button_index++;
+  }
+}
+
 void SharingDialogView::InitListView() {
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
@@ -216,9 +269,10 @@ void SharingDialogView::InitListView() {
   LogSharingDevicesToShow(controller_->GetFeatureMetricsPrefix(),
                           kSharingUiDialog, devices.size());
   for (const auto& device : devices) {
+    auto icon = CreateIconView(CreateDeviceIcon(device->device_type()));
+    button_icons_.push_back(icon.get());
     auto dialog_button = std::make_unique<HoverButton>(
-        this, CreateDeviceIcon(device->device_type()),
-        base::UTF8ToUTF16(device->client_name()),
+        this, std::move(icon), base::UTF8ToUTF16(device->client_name()),
         GetLastUpdatedTimeInDays(device->last_updated_timestamp()));
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
@@ -229,8 +283,10 @@ void SharingDialogView::InitListView() {
   LogSharingAppsToShow(controller_->GetFeatureMetricsPrefix(), kSharingUiDialog,
                        apps.size());
   for (const auto& app : apps) {
+    auto icon = CreateIconView(CreateAppIcon(app));
+    button_icons_.push_back(icon.get());
     auto dialog_button =
-        std::make_unique<HoverButton>(this, CreateAppIcon(app), app.name,
+        std::make_unique<HoverButton>(this, std::move(icon), app.name,
                                       /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
@@ -240,21 +296,6 @@ void SharingDialogView::InitListView() {
 
 void SharingDialogView::InitEmptyView() {
   AddChildView(CreateHelpText(this));
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  auto image_view = std::make_unique<NonAccessibleImageView>();
-  const gfx::ImageSkia* image =
-      rb.GetNativeImageNamed(IDR_SHARING_EMPTY_LIST).ToImageSkia();
-
-  gfx::Size image_size(image->width(), image->height());
-  const int image_width = image->width() * kEmptyImageHeight / image->height();
-  image_size.SetToMin(gfx::Size(image_width, kEmptyImageHeight));
-  image_view->SetImageSize(image_size);
-  image_view->SetImage(*image);
-  image_view->SetBorder(
-      views::CreateEmptyBorder(kEmptyImageTopPadding, 0, 0, 0));
-
-  AddChildView(std::move(image_view));
 }
 
 void SharingDialogView::InitErrorView() {
@@ -262,6 +303,7 @@ void SharingDialogView::InitErrorView() {
                                               views::style::CONTEXT_LABEL,
                                               views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMultiLine(true);
   AddChildView(std::move(label));
 }
 
@@ -294,5 +336,9 @@ void SharingDialogView::WindowClosing() {
 // static
 views::BubbleDialogDelegateView* SharingDialogView::GetAsBubble(
     SharingDialog* dialog) {
+#if defined(OS_CHROMEOS)
+  if (!dialog)
+    return IntentPickerBubbleView::intent_picker_bubble();
+#endif
   return static_cast<SharingDialogView*>(dialog);
 }

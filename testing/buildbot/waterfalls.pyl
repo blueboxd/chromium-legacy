@@ -1861,6 +1861,14 @@
           'gtest_tests': 'fieldtrial_browser_tests',
         },
       },
+      'linux-oor-cors-rel': {
+        'mixins': [
+          'linux-xenial'
+        ],
+        'test_suites': {
+          'gtest_tests': 'oor_cors_gtests'
+        }
+      },
       'linux-wpt-fyi-rel': {
         'mixins': [
           'linux-xenial',

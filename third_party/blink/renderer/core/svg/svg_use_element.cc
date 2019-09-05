@@ -436,13 +436,6 @@ void SVGUseElement::AttachShadowTree(SVGElement& target) {
 
   AddReferencesToFirstDegreeNestedUseElements(target);
 
-  // TODO(fs): Eliminate this branch. ExpandUseElementsInShadowTree() should be
-  // able to handle loading external resources correctly.
-  if (InstanceTreeIsLoading()) {
-    PostProcessInstanceTree();
-    return;
-  }
-
   // Assure shadow tree building was successful.
   DCHECK(InstanceRoot());
   DCHECK_EQ(InstanceRoot()->CorrespondingUseElement(), this);
@@ -452,7 +445,18 @@ void SVGUseElement::AttachShadowTree(SVGElement& target) {
   // Expand means: replace the actual <use> element by what it references.
   ExpandUseElementsInShadowTree();
 
-  PostProcessInstanceTree();
+  for (SVGElement& instance :
+       Traversal<SVGElement>::DescendantsOf(UseShadowRoot())) {
+    SVGElement* corresponding_element = instance.CorrespondingElement();
+    // Transfer non-markup event listeners.
+    if (EventTargetData* data = corresponding_element->GetEventTargetData()) {
+      data->event_listener_map.CopyEventListenersNotCreatedFromMarkupToTarget(
+          &instance);
+    }
+    // Setup the mapping from the corresponding (original) element back to the
+    // instance.
+    corresponding_element->MapInstanceToElement(&instance);
+  }
 
   // Update relative length information.
   UpdateRelativeLengthsInformation();
@@ -533,21 +537,6 @@ void SVGUseElement::AddReferencesToFirstDegreeNestedUseElements(
     AddReferenceTo(use_element);
 }
 
-void SVGUseElement::PostProcessInstanceTree() {
-  for (SVGElement& instance :
-       Traversal<SVGElement>::DescendantsOf(UseShadowRoot())) {
-    SVGElement* corresponding_element = instance.CorrespondingElement();
-    // Transfer non-markup event listeners.
-    if (EventTargetData* data = corresponding_element->GetEventTargetData()) {
-      data->event_listener_map.CopyEventListenersNotCreatedFromMarkupToTarget(
-          &instance);
-    }
-    // Setup the mapping from the corresponding (original) element back to the
-    // instance.
-    corresponding_element->MapInstanceToElement(&instance);
-  }
-}
-
 bool SVGUseElement::HasCycleUseReferencing(const ContainerNode& target_instance,
                                            const SVGElement& target) const {
   // Shortcut for self-references
@@ -590,8 +579,6 @@ void SVGUseElement::ExpandUseElementsInShadowTree() {
   ShadowRoot& shadow_root = UseShadowRoot();
   for (SVGUseElement* use = Traversal<SVGUseElement>::FirstWithin(shadow_root);
        use;) {
-    DCHECK(!use->ResourceIsStillLoading());
-
     SVGUseElement& original_use = ToSVGUseElement(*use->CorrespondingElement());
     auto* target = DynamicTo<SVGElement>(
         original_use.ResolveTargetElement(kDontAddObserver));
@@ -706,23 +693,10 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
   }
 }
 
-bool SVGUseElement::ResourceIsStillLoading() const {
-  return GetResource() && GetResource()->IsLoading();
-}
-
 bool SVGUseElement::ResourceIsValid() const {
   return GetResource() && GetResource()->IsLoaded() &&
          !GetResource()->ErrorOccurred() &&
          ToDocumentResource(GetResource())->GetDocument();
-}
-
-bool SVGUseElement::InstanceTreeIsLoading() const {
-  for (const SVGUseElement& use_element :
-       Traversal<SVGUseElement>::DescendantsOf(UseShadowRoot())) {
-    if (use_element.ResourceIsStillLoading())
-      return true;
-  }
-  return false;
 }
 
 }  // namespace blink

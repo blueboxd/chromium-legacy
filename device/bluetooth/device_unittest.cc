@@ -173,7 +173,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
 
   scoped_refptr<NiceMockBluetoothAdapter> adapter_;
   NiceMockBluetoothDevice device_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   mojom::DevicePtr proxy_;
   mojo::StrongBindingPtr<mojom::Device> binding_ptr_;
 

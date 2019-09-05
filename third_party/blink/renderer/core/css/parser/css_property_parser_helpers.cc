@@ -859,6 +859,23 @@ static bool ParseColorFunction(CSSParserTokenRange& range, RGBA32& result) {
   return true;
 }
 
+static CSSValuePair* ParseLightDarkColor(CSSParserTokenRange& range,
+                                         CSSParserMode mode) {
+  if (range.Peek().FunctionId() != CSSValueID::kInternalLightDarkColor)
+    return nullptr;
+  if (!isValueAllowedInMode(CSSValueID::kInternalLightDarkColor, mode))
+    return nullptr;
+  CSSParserTokenRange args = ConsumeFunction(range);
+  CSSValue* light_color = ConsumeColor(args, kUASheetMode);
+  if (!light_color || !ConsumeCommaIncludingWhitespace(args))
+    return nullptr;
+  CSSValue* dark_color = ConsumeColor(args, kUASheetMode);
+  if (!dark_color || !args.AtEnd())
+    return nullptr;
+  return MakeGarbageCollected<CSSValuePair>(light_color, dark_color,
+                                            CSSValuePair::kKeepIdenticalValues);
+}
+
 CSSValue* ConsumeColor(CSSParserTokenRange& range,
                        CSSParserMode css_parser_mode,
                        bool accept_quirky_colors) {
@@ -876,8 +893,9 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
   }
   RGBA32 color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&
-      !ParseColorFunction(range, color))
-    return nullptr;
+      !ParseColorFunction(range, color)) {
+    return ParseLightDarkColor(range, css_parser_mode);
+  }
   return CSSColorValue::Create(color);
 }
 

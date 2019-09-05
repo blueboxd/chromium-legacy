@@ -154,7 +154,7 @@ TestWakeLockProvider::~TestWakeLockProvider() = default;
 
 void TestWakeLockProvider::BindReceiver(
     mojo::PendingReceiver<mojom::WakeLockProvider> receiver) {
-  bindings_.AddBinding(this, std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void TestWakeLockProvider::GetWakeLockContextForID(
@@ -181,8 +181,8 @@ void TestWakeLockProvider::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_EQ(interface_name, mojom::WakeLockProvider::Name_);
-  bindings_.AddBinding(
-      this, mojom::WakeLockProviderRequest(std::move(interface_pipe)));
+  receivers_.Add(this, mojo::PendingReceiver<mojom::WakeLockProvider>(
+                           std::move(interface_pipe)));
 }
 
 void TestWakeLockProvider::OnConnectionError(mojom::WakeLockType type,

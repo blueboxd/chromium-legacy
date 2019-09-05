@@ -105,6 +105,7 @@ public class WebPlatformTestsActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WebView.setWebContentsDebuggingEnabled(true);
         setContentView(R.layout.activity_web_platform_tests);
         setUpWidgets();
         // This is equivalent to Chrome's WPT setup.

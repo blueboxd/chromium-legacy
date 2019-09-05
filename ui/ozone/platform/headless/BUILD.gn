@@ -8,8 +8,8 @@ source_set("headless") {
   sources = [
     "client_native_pixmap_factory_headless.cc",
     "client_native_pixmap_factory_headless.h",
-    "headless_native_display_delegate.cc",
-    "headless_native_display_delegate.h",
+    "headless_screen.cc",
+    "headless_screen.h",
     "headless_surface_factory.cc",
     "headless_surface_factory.h",
     "headless_window.cc",

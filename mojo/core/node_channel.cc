@@ -654,7 +654,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
     }
 
 #if defined(OS_WIN)
-    case MessageType::EVENT_MESSAGE_FROM_RELAY:
+    case MessageType::EVENT_MESSAGE_FROM_RELAY: {
       const EventMessageFromRelayData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
         size_t num_bytes = payload_size - sizeof(*data);
@@ -672,7 +672,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
         return;
       }
       break;
-
+    }
 #endif  // defined(OS_WIN)
 
     case MessageType::ACCEPT_PEER: {

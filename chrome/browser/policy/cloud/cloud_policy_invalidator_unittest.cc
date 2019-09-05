@@ -202,7 +202,7 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Returns the object id of the given policy object.
   const invalidation::ObjectId& GetPolicyObjectId(PolicyObject object) const;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // Fake feature list with custom values.
   base::test::ScopedFeatureList feature_list_;

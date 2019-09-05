@@ -9,6 +9,7 @@ namespace blink {
 const char kNfcJsonMimePostfix[] = "+json";
 const char kNfcJsonMimePrefix[] = "application/";
 const char kNfcJsonMimeType[] = "application/json";
+const char kNfcJsonTextMimeType[] = "text/json";
 const char kNfcOpaqueMimeType[] = "application/octet-stream";
 const char kNfcPlainTextMimeType[] = "text/plain";
 const char kNfcPlainTextMimePrefix[] = "text/";
@@ -21,15 +22,17 @@ const char kNfcNotSupported[] =
     "No NFC adapter or cannot establish connection.";
 const char kNfcNotReadable[] = "NFC is not enabled.";
 const char kNfcTextRecordTypeError[] =
-    "The data for 'text' NDEFRecords must be of String or UnrestrctedDouble.";
+    "The data for 'text' NDEFRecords must be of String.";
 const char kNfcSetIdError[] = "Cannot set WebNFC Id.";
 const char kNfcTextRecordMediaTypeError[] =
     "Invalid media type for 'text' record.";
 const char kNfcUrlRecordTypeError[] =
     "The data for 'url' NDEFRecord must be of String type.";
 const char kNfcUrlRecordParseError[] = "Cannot parse data for 'url' record.";
-const char kNfcJsonRecordTypeError[] =
-    "The data for 'json' NDEFRecord must be of Object type.";
+const char kNfcJsonRecordNoDataError[] =
+    "The data for 'json' NDEFRecord is missing.";
+const char kNfcJsonRecordStringifyError[] =
+    "Cannot stringify data for 'json' record.";
 const char kNfcJsonRecordMediaTypeError[] =
     "Invalid media type for 'json' record.";
 const char kNfcOpaqueRecordTypeError[] =

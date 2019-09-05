@@ -14,7 +14,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -69,9 +69,9 @@ class ArcWakeLockBridge::WakeLockRequester {
     // Initialize |wake_lock_| if this is the first time we're using it.
     DVLOG(1) << "Partial wake lock new acquire. Count: " << wake_lock_count_;
     if (!wake_lock_) {
-      device::mojom::WakeLockProviderPtr provider;
-      connector_->BindInterface(device::mojom::kServiceName,
-                                mojo::MakeRequest(&provider));
+      mojo::Remote<device::mojom::WakeLockProvider> provider;
+      connector_->Connect(device::mojom::kServiceName,
+                          provider.BindNewPipeAndPassReceiver());
       provider->GetWakeLockWithoutContext(
           type_, device::mojom::WakeLockReason::kOther, kWakeLockReason,
           mojo::MakeRequest(&wake_lock_));

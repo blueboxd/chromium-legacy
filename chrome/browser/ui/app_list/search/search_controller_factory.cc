@@ -66,7 +66,6 @@ constexpr size_t kMaxSettingsShortcutResults = 6;
 constexpr float kBoostOfSettingsShortcut = 10.0f;
 // Keep in sync with value in search_result_ranker.cc.
 constexpr float kBoostOfApps = 8.0f;
-constexpr float kBoostOfZeroStateFileResults = 1.0f;
 
 }  // namespace
 
@@ -162,9 +161,12 @@ std::unique_ptr<SearchController> CreateSearchController(
             kMaxAppShortcutResults, profile, list_controller));
   }
 
+  // This flag controls whether files are shown alongside Omnibox recent queries
+  // in the launcher. If enabled, Omnibox recent queries have their relevance
+  // scores changed to fit with these providers.
   if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
-    size_t zero_state_files_group_id = controller->AddGroup(
-        kMaxZeroStateFileResults, 1.0, kBoostOfZeroStateFileResults);
+    size_t zero_state_files_group_id =
+        controller->AddGroup(kMaxZeroStateFileResults, 1.0, 0.0);
     controller->AddProvider(zero_state_files_group_id,
                             std::make_unique<ZeroStateFileProvider>(profile));
     size_t drive_quick_access_group_id =

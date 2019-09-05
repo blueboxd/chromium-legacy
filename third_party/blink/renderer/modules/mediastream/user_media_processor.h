@@ -246,7 +246,7 @@ class MODULES_EXPORT UserMediaProcessor
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);
 
-  const mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost>&
+  blink::mojom::blink::MediaStreamDispatcherHost*
   GetMediaStreamDispatcherHost();
   const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();

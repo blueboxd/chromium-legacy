@@ -152,6 +152,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       }
       break;
     case PickerEntryType::kArc:
+    case PickerEntryType::kDevice:
       NOTREACHED();
   }
   RecordUma(launch_name, entry_type, close_reason, Source::kHttpOrHttps,
@@ -210,7 +211,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     return;
   browser->window()->ShowIntentPickerBubble(
       std::move(apps), show_stay_in_chrome, show_remember_selection,
-      std::move(callback));
+      PageActionIconType::kIntentPicker, std::move(callback));
 }
 
 AppsNavigationThrottle::AppsNavigationThrottle(
@@ -444,6 +445,8 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
                                 : PickerAction::ARC_APP_PRESSED;
         case PickerEntryType::kWeb:
           return PickerAction::PWA_APP_PRESSED;
+        case PickerEntryType::kDevice:
+          NOTREACHED();
       }
   }
 

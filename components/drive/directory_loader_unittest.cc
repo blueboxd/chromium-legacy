@@ -31,6 +31,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,7 +117,7 @@ class DirectoryLoaderTest : public testing::Test {
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
         network::TestNetworkConnectionTracker::GetInstance(),
-        task_runner_.get(), nullptr);
+        task_runner_.get(), mojo::NullRemote());
     metadata_storage_.reset(
         new ResourceMetadataStorage(temp_dir_.GetPath(), task_runner_.get()));
     ASSERT_TRUE(metadata_storage_->Initialize());

@@ -6,14 +6,27 @@
 
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reading_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
+// static
+NFCReadingEvent* NFCReadingEvent::Create(const AtomicString& event_type,
+                                         const NFCReadingEventInit* init,
+                                         ExceptionState& exception_state) {
+  NDEFMessage* message = NDEFMessage::Create(init->message(), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  DCHECK(message);
+  return MakeGarbageCollected<NFCReadingEvent>(event_type, init, message);
+}
+
 NFCReadingEvent::NFCReadingEvent(const AtomicString& event_type,
-                                 const NFCReadingEventInit* initializer)
-    : Event(event_type, initializer),
-      serial_number_(initializer->serialNumber()),
-      message_(NDEFMessage::Create(initializer->message())) {}
+                                 const NFCReadingEventInit* init,
+                                 NDEFMessage* message)
+    : Event(event_type, init),
+      serial_number_(init->serialNumber()),
+      message_(message) {}
 
 NFCReadingEvent::NFCReadingEvent(const AtomicString& event_type,
                                  const String& serial_number,

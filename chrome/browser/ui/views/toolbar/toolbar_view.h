@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
@@ -119,6 +120,7 @@ class ToolbarView : public views::AccessiblePaneView,
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
+      PageActionIconType icon_type,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.

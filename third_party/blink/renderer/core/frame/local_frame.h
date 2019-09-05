@@ -37,12 +37,13 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -107,12 +108,6 @@ class TextSuggestionController;
 class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
-
-namespace mojom {
-namespace blink {
-class DocumentInterfaceBroker;
-}  // namespace blink
-}  // namespace mojom
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
@@ -300,7 +295,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle);
 
-  BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy();
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
 
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
@@ -555,7 +550,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // for advertising purposes. It's per-frame (as opposed to per-document)
   // because when an iframe is created on behalf of ad script that same frame is
   // not typically reused for non-ad purposes.
-  blink::mojom::AdFrameType ad_frame_type_ = blink::mojom::AdFrameType::kNonAd;
+  mojom::AdFrameType ad_frame_type_;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
@@ -598,8 +593,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
-  mojom::FrameLifecycleState lifecycle_state_ =
-      mojom::FrameLifecycleState::kRunning;
+  mojom::FrameLifecycleState lifecycle_state_;
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 };
 

@@ -547,8 +547,6 @@ void VaapiVideoDecoder::ReleaseFrameTask(scoped_refptr<VASurface> va_surface,
   // pool for reuse.
   size_t num_erased = output_frames_.erase(surface_id);
   DCHECK_EQ(num_erased, 1u);
-
-  // Releasing the |picture| here will also destroy the associated VASurface.
 }
 
 void VaapiVideoDecoder::NotifyFrameAvailableTask() {

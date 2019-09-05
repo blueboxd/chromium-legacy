@@ -40,7 +40,8 @@ RequestManager::RequestManager(
     VideoCaptureBufferType buffer_type,
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
     BlobifyCallback blobify_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+    CameraAppDeviceImpl* camera_app_device)
     : callback_ops_(this, std::move(callback_ops_request)),
       capture_interface_(std::move(capture_interface)),
       device_context_(device_context),
@@ -54,7 +55,8 @@ RequestManager::RequestManager(
       ipc_task_runner_(std::move(ipc_task_runner)),
       capturing_(false),
       partial_result_count_(1),
-      first_frame_shutter_time_(base::TimeTicks()) {
+      first_frame_shutter_time_(base::TimeTicks()),
+      camera_app_device_(std::move(camera_app_device)) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(callback_ops_.is_bound());
   DCHECK(device_context_);
@@ -745,6 +747,12 @@ void RequestManager::SubmitCaptureResult(
            << " for stream " << static_cast<int>(stream_type);
   for (auto* observer : result_metadata_observers_) {
     observer->OnResultMetadataAvailable(pending_result.metadata);
+  }
+
+  if (camera_app_device_) {
+    camera_app_device_->OnResultMetadataAvailable(
+        pending_result.metadata,
+        static_cast<cros::mojom::StreamType>(stream_type));
   }
 
   // Wait on release fence before delivering the result buffer to client.

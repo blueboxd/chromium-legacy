@@ -66,7 +66,7 @@
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -713,9 +713,10 @@ DriveIntegrationService::DriveIntegrationService(
         GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET);
   }
 
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      wake_lock_provider.InitWithNewPipeAndPassReceiver());
 
   scheduler_ = std::make_unique<JobScheduler>(
       profile_->GetPrefs(), logger_.get(), drive_service_.get(),

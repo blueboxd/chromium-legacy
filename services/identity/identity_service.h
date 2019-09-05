@@ -5,19 +5,21 @@
 #ifndef SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 #define SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 
-#include "components/signin/public/identity_manager/identity_manager.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 
 namespace mojom {
 class IdentityAccessor;
 }
 
-namespace identity {
+namespace signin {
+class IdentityManager;
+}
 
+namespace identity {
 class IdentityService : public mojom::IdentityService {
  public:
   IdentityService(signin::IdentityManager* identity_manager,

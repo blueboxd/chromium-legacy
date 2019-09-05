@@ -41,7 +41,9 @@ class AccessibleNode;
 class HTMLCanvasElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
+class IntPoint;
 class LayoutMenuList;
+class LayoutRect;
 class LineLayoutItem;
 class LocalFrameView;
 

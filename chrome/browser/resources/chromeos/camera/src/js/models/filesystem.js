@@ -275,13 +275,13 @@ cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
 };
 
 /**
- * Saves photo blob into predefined default location.
+ * Saves photo blob or metadata blob into predefined default location.
  * @param {!Blob} blob Data of the photo to be saved.
  * @param {string} filename Filename of the photo to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  */
-cca.models.FileSystem.savePhoto = function(blob, filename) {
-  var dir =
+cca.models.FileSystem.saveBlob = function(blob, filename) {
+  const dir =
       cca.models.FileSystem.externalDir || cca.models.FileSystem.internalDir;
   return cca.models.FileSystem.saveToFile_(dir, filename, blob);
 };

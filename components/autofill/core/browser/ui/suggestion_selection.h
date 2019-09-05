@@ -30,8 +30,10 @@ extern const size_t kMaxPrunedUniqueSuggestionsCount;
 // |kMaxSuggestedProfilesCount| are returned.
 std::vector<Suggestion> GetPrefixMatchedSuggestions(
     const AutofillType& type,
+    const base::string16& raw_field_contents,
     const base::string16& field_contents_canon,
     const AutofillProfileComparator& comparator,
+    bool field_is_autofilled,
     const std::vector<AutofillProfile*>& profiles,
     std::vector<AutofillProfile*>* matched_profiles);
 

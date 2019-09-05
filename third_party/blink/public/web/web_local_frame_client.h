@@ -201,9 +201,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Returns a BrowserInterfaceBrokerProxy the frame can use to request
   // interfaces from the browser.
-  virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() {
-    return nullptr;
-  }
+  virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
 
   // Returns an AssociatedInterfaceProvider the frame can use to request
   // navigation-associated interfaces from the browser. See also

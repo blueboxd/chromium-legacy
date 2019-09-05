@@ -540,41 +540,62 @@ TEST_F(SearchResultRankerTest, ZeroStateGroupModelDisabledWithFlag) {
                                               HasId("B"), HasId("A"))));
 }
 
-TEST_F(SearchResultRankerTest, ZeroStateGroupModelImprovesScores) {
+TEST_F(SearchResultRankerTest, ZeroStateGroupTrainingImprovesScores) {
   EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
                    {
                        {"item_coeff", "1.0"},
                        {"group_coeff", "1.0"},
                        {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
-  // TODO(959679): Update the types used in this test once zero-state-related
-  // search providers have been implemented.
-
-  AppLaunchData app_launch_data_a;
-  app_launch_data_a.id = "A";
-  app_launch_data_a.ranking_item_type = RankingItemType::kFile;
-  app_launch_data_a.query = "";
-
-  for (int i = 0; i < 10; ++i) {
-    ranker->Train(app_launch_data_a);
-  }
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
   ranker->FetchRankings(base::string16());
 
   // A and B should be ranked first because their group score should be higher.
   auto results =
       MakeSearchResults({"A", "B", "C", "D"},
-                        {ResultType::kLauncher, ResultType::kLauncher,
+                        {ResultType::kZeroStateFile, ResultType::kZeroStateFile,
                          ResultType::kOmnibox, ResultType::kOmnibox},
-                        {0.1f, 0.2f, 0.5f, 0.6f});
+                        {0.1f, 0.2f, 0.1f, 0.2f});
   ranker->Rank(&results);
 
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("B"), HasId("A"),
                                               HasId("D"), HasId("C"))));
+}
+
+// Without training, the zero state group ranker should produce default scores
+// that slightly favour some providers, to break scoring ties. Scores are in
+// order Drive > ZeroStateFile > Omnibox. This order should only be changed with
+// care.
+TEST_F(SearchResultRankerTest, ZeroStateColdStart) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "1.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  ranker->FetchRankings(base::string16());
+  auto results =
+      MakeSearchResults({"Z", "O", "D"},
+                        {ResultType::kZeroStateFile, ResultType::kOmnibox,
+                         ResultType::kDriveQuickAccess},
+                        {-0.1f, 0.2f, 0.1f});
+  ranker->Rank(&results);
+
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("D"), HasId("Z"), HasId("O"))));
 }
 
 // If results from all groups are present, the model should not force any
@@ -585,7 +606,6 @@ TEST_F(SearchResultRankerTest, ZeroStateAllGroupsPresent) {
                        {"item_coeff", "1.0"},
                        {"group_coeff", "0.0"},
                        {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
   ranker->InitializeRankers();
@@ -602,7 +622,7 @@ TEST_F(SearchResultRankerTest, ZeroStateAllGroupsPresent) {
   ranker->OverrideZeroStateResults(&results);
   EXPECT_THAT(results,
               WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
-                                     HasId("O1"), HasId("Z2"), HasId("D1"))));
+                                     HasId("O1"), HasId("D1"), HasId("Z2"))));
 }
 
 // If one group won't have shown results, but has a high-scoring new result
@@ -611,43 +631,21 @@ TEST_F(SearchResultRankerTest, ZeroStateMissingGroupAdded) {
   EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
                    {
                        {"item_coeff", "1.0"},
-                       {"group_coeff", "0.0"},
+                       {"group_coeff", "10.0"},
                        {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
-  auto results = MakeSearchResults(
-      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1", "D2"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
-       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
-       ResultType::kDriveQuickAccess, ResultType::kDriveQuickAccess},
-      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.3f, 0.7f});
-
-  ranker->Rank(&results);
-  ranker->OverrideZeroStateResults(&results);
-  // Z3 and D1 should be swapped.
-  EXPECT_THAT(results,
-              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                     HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                     HasId("D2"), HasId("Z3"), HasId("D1"))));
-}
-
-// Check we handle one group not having any entries in the results list at all.
-TEST_F(SearchResultRankerTest, ZeroStateOnlyTwoGroupsExist) {
-  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
-                   {
-                       {"item_coeff", "1.0"},
-                       {"group_coeff", "0.0"},
-                       {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
-                   });
-  auto ranker = MakeRanker();
-  ranker->InitializeRankers();
-  Wait();
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
 
   auto results = MakeSearchResults(
       {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1", "D2"},
@@ -673,13 +671,21 @@ TEST_F(SearchResultRankerTest, ZeroStateTwoMissingGroupsAdded) {
   EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
                    {
                        {"item_coeff", "1.0"},
-                       {"group_coeff", "0.0"},
+                       {"group_coeff", "10.0"},
                        {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
+
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
 
   auto results =
       MakeSearchResults({"Z1", "Z2", "Z3", "Z4", "Z5", "D1", "O1"},
@@ -696,27 +702,34 @@ TEST_F(SearchResultRankerTest, ZeroStateTwoMissingGroupsAdded) {
                            HasId("O1"), HasId("Z4"), HasId("Z5"))));
 }
 
-// If one group won't have shown results and has a high-scoring new result in
-// the list, but that result has recently been shown twice, it shouldn't be
-// shown.
+// If one group won't have shown results and has a new result in the list, but
+// that result has recently been shown twice, it shouldn't be shown.
 TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
   EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
                    {
                        {"item_coeff", "1.0"},
-                       {"group_coeff", "0.0"},
+                       {"group_coeff", "10.0"},
                        {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
   const auto results = MakeSearchResults(
-      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1"},
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1"},
       {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
        ResultType::kZeroStateFile, ResultType::kZeroStateFile,
-       ResultType::kDriveQuickAccess},
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess},
       {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f});
 
   for (int i = 0; i < 3; ++i) {
@@ -725,9 +738,9 @@ TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
     ranker->OverrideZeroStateResults(&results_copy);
     // Z3 and D1 should be swapped.
     EXPECT_THAT(results_copy,
-                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                       HasId("D1"), HasId("Z3"))));
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("D1"), HasId("Z5"))));
     // D1 should increment its cache counter.
     ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
   }
@@ -737,9 +750,9 @@ TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
   ranker->OverrideZeroStateResults(&results_copy);
   // Z3 and D1 should NOT be swapped because D1's cache count is too high.
   EXPECT_THAT(results_copy,
-              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                     HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                     HasId("Z3"), HasId("D1"))));
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                     HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                     HasId("Z5"), HasId("D1"))));
 }
 
 // If a group's top result changes, its cache count should reset.
@@ -747,27 +760,37 @@ TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
   EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
                    {
                        {"item_coeff", "1.0"},
-                       {"group_coeff", "0.0"},
+                       {"group_coeff", "10.0"},
                        {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
                    });
   auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
   const auto results_1 = MakeSearchResults(
-      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1", "D2"},
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1", "D2"},
       {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
        ResultType::kZeroStateFile, ResultType::kZeroStateFile,
-       ResultType::kDriveQuickAccess, ResultType::kDriveQuickAccess},
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess,
+       ResultType::kDriveQuickAccess},
       {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f, 0.1f});
   const auto results_2 = MakeSearchResults(
-      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D2", "D1"},
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D2", "D1"},
       {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
        ResultType::kZeroStateFile, ResultType::kZeroStateFile,
-       ResultType::kDriveQuickAccess, ResultType::kDriveQuickAccess},
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess,
+       ResultType::kDriveQuickAccess},
       {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f, 0.1f});
 
   for (int i = 0; i < 3; ++i) {
@@ -776,9 +799,9 @@ TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
     ranker->OverrideZeroStateResults(&results_copy);
     // Z3 and D1 should be swapped.
     EXPECT_THAT(results_copy,
-                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                       HasId("D1"), HasId("Z3"), HasId("D2"))));
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("D1"), HasId("Z5"), HasId("D2"))));
     // D1 should increment its cache counter.
     ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
   }
@@ -789,51 +812,21 @@ TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
     ranker->OverrideZeroStateResults(&results_copy);
     // Z3 and D1 should NOT be swapped because D1's cache count is too high.
     EXPECT_THAT(results_copy,
-                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                       HasId("Z3"), HasId("D1"), HasId("D2"))));
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("Z5"), HasId("D1"), HasId("D2"))));
   }
 
   {
     auto results_copy = results_2;
     ranker->Rank(&results_copy);
     ranker->OverrideZeroStateResults(&results_copy);
-    // D2 should override Z3 because the Drive cache countis reset.
+    // D2 should override Z3 because the Drive cache count is reset.
     EXPECT_THAT(results_copy,
-                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                       HasId("D2"), HasId("Z3"), HasId("D1"))));
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("D2"), HasId("Z5"), HasId("D1"))));
   }
-}
-
-// If a group won't have shown results but the best result is too low-scoring,
-// no ordering changes should be made.
-TEST_F(SearchResultRankerTest, ZeroStateLowScoringResultIgnored) {
-  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
-                   {
-                       {"item_coeff", "1.0"},
-                       {"group_coeff", "0.0"},
-                       {"paired_coeff", "0.0"},
-                       {"default_group_score", "0.1"},
-                   });
-  auto ranker = MakeRanker();
-  ranker->InitializeRankers();
-  Wait();
-
-  auto results = MakeSearchResults(
-      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1"},
-      {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
-       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
-       ResultType::kDriveQuickAccess},
-      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.1f});
-
-  ranker->Rank(&results);
-  ranker->OverrideZeroStateResults(&results);
-  EXPECT_THAT(results,
-              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
-                                     HasId("O2"), HasId("Z1"), HasId("Z2"),
-                                     HasId("Z3"), HasId("D1"))));
 }
 
 TEST_F(SearchResultRankerTest, ZeroStateGroupRankerUsesFinchConfig) {

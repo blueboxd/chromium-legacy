@@ -26,6 +26,33 @@
 
 namespace media {
 
+namespace {
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+// Get a list of the available functions for creating VideoDeocoder.
+base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
+    VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
+  static constexpr VideoDecoderPipeline::CreateVDFunc kCreateVDFuncs[] = {
+#if BUILDFLAG(USE_V4L2_CODEC)
+    &V4L2SliceVideoDecoder::Create,
+#endif  // BUILDFLAG(USE_V4L2_CODEC)
+
+#if BUILDFLAG(USE_VAAPI)
+    &VaapiVideoDecoder::Create,
+#endif  // BUILDFLAG(USE_VAAPI)
+  };
+
+  base::queue<VideoDecoderPipeline::CreateVDFunc> ret;
+  for (const auto& func : kCreateVDFuncs) {
+    if (func != cur_create_vd_func)
+      ret.push(func);
+  }
+  return ret;
+}
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
+}  // namespace
+
 // static
 SupportedVideoDecoderConfigs
 ChromeosVideoDecoderFactory::GetSupportedConfigs() {
@@ -53,10 +80,9 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter) {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  // TODO(akahuang): Remove ChromeosVideoDecoderFactory.
-  return VideoDecoderPipeline::Create(std::move(client_task_runner),
-                                      std::move(frame_pool),
-                                      std::move(frame_converter));
+  return VideoDecoderPipeline::Create(
+      std::move(client_task_runner), std::move(frame_pool),
+      std::move(frame_converter), base::BindRepeating(&GetCreateVDFunctions));
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
   return nullptr;

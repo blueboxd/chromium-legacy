@@ -219,6 +219,8 @@ blink_core_sources("css") {
     "cssom/cross_thread_style_value.h",
     "cssom/cross_thread_unit_value.cc",
     "cssom/cross_thread_unit_value.h",
+    "cssom/cross_thread_unparsed_value.cc",
+    "cssom/cross_thread_unparsed_value.h",
     "cssom/cross_thread_unsupported_value.cc",
     "cssom/cross_thread_unsupported_value.h",
     "cssom/css_keyword_value.cc",

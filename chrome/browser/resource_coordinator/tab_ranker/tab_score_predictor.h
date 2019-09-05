@@ -14,6 +14,7 @@
 
 namespace assist_ranker {
 class ExamplePreprocessorConfig;
+class RankerExample;
 }  // namespace assist_ranker
 
 namespace tab_ranker {
@@ -63,6 +64,8 @@ class TabScorePredictor {
 
   TabRankerResult ScoreTabWithMRUScorer(const TabFeatures& tab, float* score);
   TabRankerResult ScoreTabWithMLScorer(const TabFeatures& tab, float* score);
+  TabRankerResult PredictWithPreprocess(assist_ranker::RankerExample* example,
+                                        float* score);
 
   std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
       preprocessor_config_;

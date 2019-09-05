@@ -26,6 +26,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/test/test_network_connection_tracker.h"
 
 namespace drive {
@@ -79,7 +80,7 @@ void OperationTestBase::SetUp() {
   scheduler_ = std::make_unique<JobScheduler>(
       pref_service_.get(), logger_.get(), fake_drive_service_.get(),
       network::TestNetworkConnectionTracker::GetInstance(),
-      blocking_task_runner_.get(), nullptr);
+      blocking_task_runner_.get(), mojo::NullRemote());
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       temp_dir_.GetPath(), blocking_task_runner_.get()));

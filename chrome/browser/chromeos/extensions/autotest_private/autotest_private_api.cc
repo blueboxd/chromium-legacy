@@ -40,6 +40,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
@@ -792,6 +793,27 @@ AutotestPrivateGetVisibleNotificationsFunction::Run() {
   for (auto* notification : notification_set)
     values->Append(MakeDictionaryFromNotification(*notification));
   return RespondNow(OneArgument(std::move(values)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcStartTimeFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcStartTimeFunction::
+    ~AutotestPrivateGetArcStartTimeFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetArcStartTimeFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetArcStartTimeFunction";
+
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (!arc_session_manager)
+    return RespondNow(Error("Could not find ARC session manager"));
+
+  double start_time =
+      (arc_session_manager->arc_start_time() - base::TimeTicks())
+          .InMillisecondsF();
+  return RespondNow(OneArgument(std::make_unique<base::Value>(start_time)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

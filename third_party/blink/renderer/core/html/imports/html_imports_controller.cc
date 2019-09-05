@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
@@ -116,11 +117,24 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
     return child;
   }
 
-  params.SetCrossOriginAccessControl(Master()->GetSecurityOrigin(),
+  scoped_refptr<const SecurityOrigin> security_origin =
+      Master()->GetSecurityOrigin();
+  ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
+
+  if (base::FeatureList::IsEnabled(
+          features::kHtmlImportsRequestInitiatorLock)) {
+    Document* context_document = parent->GetDocument()->ContextDocument();
+    if (!context_document)
+      return nullptr;
+
+    security_origin = context_document->GetSecurityOrigin();
+    fetcher = context_document->Fetcher();
+  }
+
+  params.SetCrossOriginAccessControl(security_origin.get(),
                                      kCrossOriginAttributeAnonymous);
 
   auto* loader = MakeGarbageCollected<HTMLImportLoader>(this);
-  ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
   RawResource::FetchImport(params, fetcher, loader);
   loaders_.push_back(loader);
   HTMLImportChild* child = CreateChild(url, loader, parent, client);

@@ -68,7 +68,6 @@ from pylib import constants
 from telemetry import android
 from telemetry import benchmark
 from telemetry import story
-from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
 # pylint: enable=wrong-import-position
 
@@ -140,8 +139,7 @@ class CronetPerfTestMeasurement(
     jsonResults = json.loads(self._device.ReadFile(
         perf_test_utils.GetConfig(self._device)['RESULTS_FILE']))
     for test in jsonResults:
-      results.AddValue(scalar.ScalarValue(results.current_page, test,
-          'ms', jsonResults[test]))
+      results.AddMeasurement(test, 'ms', jsonResults[test])
 
   def DidRunStory(self, platform, results):
     # Skip parent implementation which calls into tracing_controller which this

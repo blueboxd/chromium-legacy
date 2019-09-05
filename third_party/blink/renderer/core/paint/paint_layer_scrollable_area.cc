@@ -791,7 +791,7 @@ bool PaintLayerScrollableArea::UserInputScrollable(
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
     ScrollbarMode mode =
         (orientation == kHorizontalScrollbar) ? h_mode : v_mode;
-    return mode == kScrollbarAuto || mode == kScrollbarAlwaysOn;
+    return mode == ScrollbarMode::kAuto || mode == ScrollbarMode::kAlwaysOn;
   }
 
   EOverflow overflow_style = (orientation == kHorizontalScrollbar)
@@ -1483,13 +1483,13 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
     // StyleResolver::styleForDocument returns documentStyle with no overflow
     // values, due to which we are destroying the scrollbars that were already
     // present.
-    if (h_mode == kScrollbarAlwaysOn)
+    if (h_mode == ScrollbarMode::kAlwaysOn)
       needs_horizontal_scrollbar = true;
-    else if (h_mode == kScrollbarAlwaysOff)
+    else if (h_mode == ScrollbarMode::kAlwaysOff)
       needs_horizontal_scrollbar = false;
-    if (v_mode == kScrollbarAlwaysOn)
+    if (v_mode == ScrollbarMode::kAlwaysOn)
       needs_vertical_scrollbar = true;
-    else if (v_mode == kScrollbarAlwaysOff)
+    else if (v_mode == ScrollbarMode::kAlwaysOff)
       needs_vertical_scrollbar = false;
   }
 }
@@ -1509,7 +1509,7 @@ bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode != kScrollbarAuto || v_mode != kScrollbarAuto)
+    if (h_mode != ScrollbarMode::kAuto || v_mode != ScrollbarMode::kAuto)
       return false;
 
     IntSize visible_size_with_scrollbars =
@@ -2140,7 +2140,8 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode == kScrollbarAlwaysOff && v_mode == kScrollbarAlwaysOff)
+    if (h_mode == ScrollbarMode::kAlwaysOff &&
+        v_mode == ScrollbarMode::kAlwaysOff)
       has_overflow = false;
   }
   scrolls_overflow_ = has_overflow && is_visible_to_hit_test;

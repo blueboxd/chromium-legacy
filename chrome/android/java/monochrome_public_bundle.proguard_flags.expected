@@ -42,10 +42,6 @@
 -keep class com.android.webview.chromium.DrawGLFunctor
 -keep class com.android.webview.chromium.GraphicsUtils
 
-# Linker dynamically casts to $TestRunner when running tests. We don't run these
-# tests in WebView.
--dontnote org.chromium.base.library_loader.Linker$TestRunner
-
 # Don't note about the API 21 compatibility code which references various
 # hidden APIs via reflection.
 -dontnote com.android.webview.chromium.WebViewDelegateFactory$Api21CompatibilityDelegate
@@ -207,7 +203,12 @@
 -keepclasseswithmembers class ** {
   @org.chromium.base.annotations.UsedByReflection <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class ** {
+# Even unused methods kept due to explicit jni registration:
+# https://crbug.com/688465.
+-keepclasseswithmembers,includedescriptorclasses class !org.chromium.base.library_loader.**,** {
+  native <methods>;
+}
+-keepclasseswithmembernames,includedescriptorclasses class org.chromium.base.library_loader.** {
   native <methods>;
 }
 

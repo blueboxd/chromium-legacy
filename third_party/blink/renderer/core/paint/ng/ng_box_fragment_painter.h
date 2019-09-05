@@ -68,6 +68,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const PhysicalRect&) override;
 
  private:
+  enum MoveTo { kDontSkipChildren, kSkipChildren };
   bool IsPaintingScrollingBackground(const PaintInfo&);
   bool ShouldPaint(const ScopedPaintState&) const;
 
@@ -103,6 +104,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintTextItem(const NGFragmentItem& item,
                      const PaintInfo&,
                      const PhysicalOffset& paint_offset);
+  MoveTo PaintBoxItem(const NGFragmentItem& item,
+                      const PaintInfo& paint_info,
+                      const PhysicalOffset& paint_offset);
   void PaintInlineFloatingChildren(NGPaintFragment::ChildList,
                                    const PaintInfo&);
   void PaintBlockFloatingChildren(const NGPhysicalContainerFragment&,

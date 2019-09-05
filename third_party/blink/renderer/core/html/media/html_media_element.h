@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"

@@ -170,7 +170,7 @@ JobScheduler::JobScheduler(
     DriveServiceInterface* drive_service,
     network::NetworkConnectionTracker* network_connection_tracker,
     base::SequencedTaskRunner* blocking_task_runner,
-    device::mojom::WakeLockProviderPtr wake_lock_provider)
+    mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider)
     : throttle_count_(0),
       wait_until_(base::Time::Now()),
       disable_throttling_(false),

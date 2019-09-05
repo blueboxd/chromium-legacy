@@ -64,7 +64,7 @@ const char* const kEventNames[] = {"Checking",    "Error",    "NoUpdate",
 }  // namespace
 
 ApplicationCacheHost::ApplicationCacheHost(
-    const BrowserInterfaceBrokerProxy* interface_broker_proxy,
+    const BrowserInterfaceBrokerProxy& interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
       interface_broker_proxy_(interface_broker_proxy) {}
@@ -251,9 +251,6 @@ void ApplicationCacheHost::GetAssociatedCacheInfo(
 bool ApplicationCacheHost::BindBackend() {
   if (!task_runner_)
     return false;
-  // Some tests don't have the interface broker proxy.
-  if (!interface_broker_proxy_)
-    return false;
 
   DCHECK(!host_id_.is_empty());
 
@@ -263,7 +260,7 @@ bool ApplicationCacheHost::BindBackend() {
 
   mojo::PendingReceiver<mojom::blink::AppCacheBackend> receiver =
       backend_remote_.BindNewPipeAndPassReceiver(task_runner_);
-  interface_broker_proxy_->GetInterface(std::move(receiver));
+  interface_broker_proxy_.GetInterface(std::move(receiver));
 
   backend_remote_->RegisterHost(
       backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),

@@ -7,7 +7,6 @@
  implemented_in="chrome/browser/chromeos/extensions/login_screen/login/login_api.h"]
 namespace login {
   callback VoidCallback = void ();
-  callback BooleanCallback = void (boolean result);
   callback StringCallback = void (DOMString result);
 
   interface Functions {
@@ -22,12 +21,6 @@ namespace login {
     // unset, any currently stored data will be cleared.
     static void exitCurrentSession(optional DOMString dataForNextLoginAttempt,
                                    optional VoidCallback callback);
-
-    // Checks whether the caller extension is running in the login screen
-    // profile.
-    // |callback|: Called with true if the caller extension is running in the
-    // login screen profile, or false otherwise.
-    static void isRunningInLoginProfile(BooleanCallback callback);
 
     // Reads the <code>dataForNextLoginAttempt</code> set by
     // <code>exitCurrentSession()</code>. Clears the previously stored data

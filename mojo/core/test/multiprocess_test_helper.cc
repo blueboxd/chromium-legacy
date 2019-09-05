@@ -164,9 +164,9 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 #if !defined(OS_FUCHSIA)
     case LaunchType::NAMED_CHILD:
     case LaunchType::NAMED_PEER: {
-      NamedPlatformChannel::Options options;
-      options.server_name = server_name;
-      NamedPlatformChannel named_channel(options);
+      NamedPlatformChannel::Options channel_options;
+      channel_options.server_name = server_name;
+      NamedPlatformChannel named_channel(channel_options);
       server_endpoint = named_channel.TakeServerEndpoint();
       break;
     }

@@ -675,4 +675,43 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyFontSizeWebkitXxxLargeUseCount) {
   EXPECT_TRUE(IsCounted(feature));
 }
 
+TEST(CSSPropertyParserTest, InternalLightDarkColorAuthor) {
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  // -internal-light-dark-color() is only valid in UA sheets.
+  ASSERT_FALSE(CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(#000000, #ffffff)",
+      context));
+  ASSERT_FALSE(CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(red, green)",
+      context));
+}
+
+TEST(CSSPropertyParserTest, UAInternalLightDarkColor) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+
+  const struct {
+    const char* value;
+    bool valid;
+  } tests[] = {
+      {"-internal-light-dark-color()", false},
+      {"-internal-light-dark-color(#feedab)", false},
+      {"-internal-light-dark-color(red blue)", false},
+      {"-internal-light-dark-color(red,,blue)", false},
+      {"-internal-light-dark-color(red, blue)", true},
+      {"-internal-light-dark-color(#000000, #ffffff)", true},
+      {"-internal-light-dark-color(rgb(0, 0, 0), hsl(180, 75%, 50%))", true},
+      {"-internal-light-dark-color(rgba(0, 0, 0, 0.5), hsla(180, 75%, 50%, "
+       "0.7))",
+       true},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(!!CSSParser::ParseSingleValue(CSSPropertyID::kColor, test.value,
+                                            ua_context),
+              test.valid);
+  }
+}
+
 }  // namespace blink

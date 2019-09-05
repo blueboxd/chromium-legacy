@@ -333,9 +333,8 @@ void SpeechSynthesis::InitializeMojomSynthesis() {
   // just get dropped. That's okay and is simpler than having to null-check
   // mojom_synthesis_ before each use.
   ExecutionContext* context = GetExecutionContext();
-  if (context && context->GetBrowserInterfaceBrokerProxy()) {
-    context->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        std::move(receiver));
+  if (context) {
+    context->GetBrowserInterfaceBroker().GetInterface(std::move(receiver));
   }
 
   mojom_synthesis_->AddVoiceListObserver(receiver_.BindNewPipeAndPassRemote());

@@ -28,6 +28,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -370,6 +371,31 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
   DISALLOW_COPY_AND_ASSIGN(BackspacePinButton);
 };
 
+// A PIN button with the label "back".
+class LoginPinView::BackButton : public BasePinButton {
+ public:
+  BackButton(const gfx::Size& size, const base::RepeatingClosure& on_press)
+      : BasePinButton(size,
+                      l10n_util::GetStringUTF16(
+                          IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME),
+                      on_press) {
+    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+    views::Label* label = AddChildView(std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(IDS_ASH_PIN_KEYBOARD_BACK_BUTTON),
+        views::style::CONTEXT_BUTTON, views::style::STYLE_PRIMARY));
+    label->SetEnabledColor(login_constants::kButtonEnabledColor);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetSubpixelRenderingEnabled(false);
+    label->SetFontList(base_font_list.Derive(-3, gfx::Font::FontStyle::NORMAL,
+                                             gfx::Font::Weight::MEDIUM));
+  }
+
+  ~BackButton() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackButton);
+};
+
 // static
 gfx::Size LoginPinView::TestApi::GetButtonSize(Style style) {
   return gfx::Size(kButtonWidthDp, style == Style::kNumeric
@@ -389,6 +415,10 @@ views::View* LoginPinView::TestApi::GetBackspaceButton() const {
   return view_->backspace_;
 }
 
+views::View* LoginPinView::TestApi::GetBackButton() const {
+  return view_->back_button_;
+}
+
 void LoginPinView::TestApi::SetBackspaceTimers(
     std::unique_ptr<base::OneShotTimer> delay_timer,
     std::unique_ptr<base::RepeatingTimer> repeat_timer) {
@@ -398,10 +428,12 @@ void LoginPinView::TestApi::SetBackspaceTimers(
 
 LoginPinView::LoginPinView(Style keyboard_style,
                            const OnPinKey& on_key,
-                           const OnPinBackspace& on_backspace)
+                           const OnPinBackspace& on_backspace,
+                           const OnPinBack& on_back)
     : NonAccessibleView(kLoginPinViewClassName),
       on_key_(on_key),
-      on_backspace_(on_backspace) {
+      on_backspace_(on_backspace),
+      on_back_(on_back) {
   DCHECK(on_key_);
   DCHECK(on_backspace_);
 
@@ -430,6 +462,15 @@ LoginPinView::LoginPinView(Style keyboard_style,
         new DigitPinButton(value, show_letters, button_size, on_key_));
   };
 
+  // Wrap the back button view with a container having the fill layout, so that
+  // it consumes the same amount of space even when the button is hidden.
+  auto back_button_container = std::make_unique<NonAccessibleView>();
+  back_button_container->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  back_button_ = back_button_container->AddChildView(
+      std::make_unique<BackButton>(button_size, on_back_));
+  back_button_->SetVisible(false);
+
   // 1-2-3
   auto* row = build_and_add_row();
   add_digit_button(row, 1);
@@ -448,17 +489,19 @@ LoginPinView::LoginPinView(Style keyboard_style,
   add_digit_button(row, 8);
   add_digit_button(row, 9);
 
-  // 0-backspace
+  // back-0-backspace
   row = build_and_add_row();
-  auto* spacer = new NonAccessibleView();
-  spacer->SetPreferredSize(button_size);
-  row->AddChildView(spacer);
+  row->AddChildView(std::move(back_button_container));
   add_digit_button(row, 0);
   backspace_ = new BackspacePinButton(button_size, on_backspace_);
   row->AddChildView(backspace_);
 }
 
 LoginPinView::~LoginPinView() = default;
+
+void LoginPinView::SetBackButtonVisible(bool visible) {
+  back_button_->SetVisible(visible);
+}
 
 void LoginPinView::OnPasswordTextChanged(bool is_empty) {
   // Disabling the backspace button will make it lose focus. The previous

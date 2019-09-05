@@ -17,11 +17,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
@@ -160,6 +162,19 @@ base::string16 ClickToCallUiController::GetEducationWindowTitleText() const {
 void ClickToCallUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
   LogClickToCallHelpTextClicked(dialog_type);
   SharingUiController::OnHelpTextClicked(dialog_type);
+}
+
+int ClickToCallUiController::GetHeaderImageId() const {
+  // Do not add the header image for error dialogs.
+  if (HasSendFailed())
+    return 0;
+
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
+
+  return is_dark ? IDR_CLICK_TO_CALL_ILLUSTRATION_DARK
+                 : IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

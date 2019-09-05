@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/html/html_progress_element.h"
 
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/progress_shadow_element.h"
 #include "third_party/blink/renderer/core/html_names.h"

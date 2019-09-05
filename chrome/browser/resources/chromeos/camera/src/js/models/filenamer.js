@@ -113,3 +113,12 @@ cca.models.Filenamer.timestampToDatetimeName_ = function(timestamp) {
       '_' + pad(date.getHours()) + pad(date.getMinutes()) +
       pad(date.getSeconds());
 };
+
+/**
+ * Get the metadata name from image name.
+ * @param {string} imageName Name of image to derive the metadata name.
+ * @return {string} Metadata name of the image.
+ */
+cca.models.Filenamer.getMetadataName = function(imageName) {
+  return imageName.replace(/\.[^/.]+$/, '.json');
+};

@@ -111,7 +111,7 @@ void IdleDetector::StartMonitoring() {
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
   if (!service_) {
-    GetExecutionContext()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
         service_.BindNewPipeAndPassReceiver(task_runner));
   }
 

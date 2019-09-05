@@ -51,14 +51,15 @@ class KeyboardAccessoryIPHUtils {
      * session or other config restrictions apply.
      * @param feature A String identifying the IPH feature and its appropriate help text.
      * @param view The {@link View} providing context and the Rect to which the bubble will point.
+     * @param rootView The {@link View} used to determine the maximal dimensions for the bubble.
      */
-    static void showHelpBubble(String feature, ChipView view) {
+    static void showHelpBubble(String feature, ChipView view, View rootView) {
         final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         if (!tracker.isInitialized()) return;
         if (!tracker.shouldTriggerHelpUI(feature)) return; // This call records the IPH intent.
         @StringRes
         int helpText = getHelpTextForFeature(feature);
-        ImageTextBubble helpBubble = new ImageTextBubble(view.getContext(), view, helpText,
+        ImageTextBubble helpBubble = new ImageTextBubble(view.getContext(), rootView, helpText,
                 helpText, true, new ViewRectProvider(view), R.drawable.ic_chrome);
         helpBubble.setDismissOnTouchInteraction(true);
         helpBubble.show();

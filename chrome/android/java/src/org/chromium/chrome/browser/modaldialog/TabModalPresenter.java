@@ -128,9 +128,11 @@ public class TabModalPresenter
     protected void addDialogView(PropertyModel model) {
         if (mDialogContainer == null) initDialogContainer();
         updateContainerLayoutParams();
+        int style = model.get(ModalDialogProperties.PRIMARY_BUTTON_FILLED)
+                ? R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton
+                : R.style.Theme_Chromium_ModalDialog_TextPrimaryButton;
         mDialogView = (ModalDialogView) LayoutInflater
-                              .from(new ContextThemeWrapper(
-                                      mChromeActivity, R.style.Theme_Chromium_ModalDialog))
+                              .from(new ContextThemeWrapper(mChromeActivity, style))
                               .inflate(R.layout.modal_dialog_view, null);
         mModelChangeProcessor =
                 PropertyModelChangeProcessor.create(model, mDialogView, new ViewBinder());

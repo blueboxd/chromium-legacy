@@ -128,12 +128,15 @@ void SharingUiController::OnMessageSentToDevice(
   UpdateIcon();
 }
 
-void SharingUiController::UpdateAndShowDialog() {
+void SharingUiController::ClearLastDialog() {
   last_dialog_id_++;
   is_loading_ = false;
   send_result_ = SharingSendMessageResult::kSuccessful;
-
   CloseDialog();
+}
+
+void SharingUiController::UpdateAndShowDialog() {
+  ClearLastDialog();
   DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
                               weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }
@@ -193,6 +196,10 @@ base::string16 SharingUiController::GetErrorDialogText() const {
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_ERROR_DIALOG_TEXT_INTERNAL_ERROR);
   }
+}
+
+int SharingUiController::GetHeaderImageId() const {
+  return 0;
 }
 
 void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {

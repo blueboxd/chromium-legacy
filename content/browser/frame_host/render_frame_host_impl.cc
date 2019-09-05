@@ -4142,6 +4142,10 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
   if (GetProcess()->IsKeepAliveRefCountDisabled())
     return;
 
+  if (base::FeatureList::IsEnabled(network::features::kDisableKeepaliveFetch)) {
+    return;
+  }
+
   if (!keep_alive_handle_factory_) {
     keep_alive_handle_factory_ =
         std::make_unique<KeepAliveHandleFactory>(GetProcess());

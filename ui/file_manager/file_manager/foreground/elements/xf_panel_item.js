@@ -144,7 +144,6 @@ class PanelItem extends HTMLElement {
                 </xf-circular-progress>
                 <div class='xf-panel-text'>
                     <span class='xf-panel-label-text'>
-                            Placeholder text
                     </span>
                     <br class='xf-linebreaker'/>
                 </div>

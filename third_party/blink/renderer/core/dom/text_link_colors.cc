@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -63,6 +64,12 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         bool for_visited_link) const {
   if (auto* color_value = DynamicTo<CSSColorValue>(value))
     return color_value->Value();
+
+  if (auto* pair = DynamicTo<CSSValuePair>(value)) {
+    const CSSColorValue& color_value = To<CSSColorValue>(
+        WebColorScheme::kLight ? pair->First() : pair->Second());
+    return color_value.Value();
+  }
 
   CSSValueID value_id = To<CSSIdentifierValue>(value).GetValueID();
   switch (value_id) {

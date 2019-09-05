@@ -57,9 +57,9 @@ class FeedContentDatabaseTest : public testing::Test {
     auto storage_db =
         std::make_unique<FakeDB<ContentStorageProto>>(&content_db_storage_);
 
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_VISIBLE});
+    task_runner_ =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::USER_VISIBLE});
 
     content_db_ = storage_db.get();
     feed_db_ = std::make_unique<FeedContentDatabase>(std::move(storage_db),

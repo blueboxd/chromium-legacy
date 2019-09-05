@@ -39,7 +39,9 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
@@ -210,9 +212,10 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
       owner->SetEmbeddedContentView(frame_view);
   }
 
-  if (Owner())
+  if (Owner()) {
     View()->SetCanHaveScrollbars(Owner()->ScrollingMode() !=
-                                 kScrollbarAlwaysOff);
+                                 ScrollbarMode::kAlwaysOff);
+  }
 }
 
 LocalFrame::~LocalFrame() {
@@ -906,6 +909,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
+      ad_frame_type_(mojom::AdFrameType::kNonAd),
       inspector_task_runner_(InspectorTaskRunner::Create(
           GetTaskRunner(TaskType::kInternalInspector))),
       interface_registry_(interface_registry
@@ -913,7 +917,8 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
                               : InterfaceRegistry::GetEmptyInterfaceRegistry()),
       is_save_data_enabled_(
           !(GetSettings() && GetSettings()->GetDataSaverHoldbackWebApi()) &&
-          GetNetworkStateNotifier().SaveDataEnabled()) {
+          GetNetworkStateNotifier().SaveDataEnabled()),
+      lifecycle_state_(mojom::FrameLifecycleState::kRunning) {
   if (IsLocalRoot()) {
     probe_sink_ = MakeGarbageCollected<CoreProbeSink>();
     performance_monitor_ = MakeGarbageCollected<PerformanceMonitor>(this);
@@ -1202,9 +1207,9 @@ LocalFrame::GetDocumentInterfaceBroker() {
   return *Client()->GetDocumentInterfaceBroker();
 }
 
-BrowserInterfaceBrokerProxy* LocalFrame::GetBrowserInterfaceBrokerProxy() {
+BrowserInterfaceBrokerProxy& LocalFrame::GetBrowserInterfaceBroker() {
   DCHECK(Client());
-  return Client()->GetBrowserInterfaceBrokerProxy();
+  return Client()->GetBrowserInterfaceBroker();
 }
 
 mojo::ScopedMessagePipeHandle LocalFrame::SetDocumentInterfaceBrokerForTesting(

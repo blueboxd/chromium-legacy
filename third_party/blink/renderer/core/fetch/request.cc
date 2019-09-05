@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/request.h"
 
+#include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -281,7 +282,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If any of |init|'s members are present, then:"
   if (AreAnyMembersPresent(init)) {
     // "If |request|'s |mode| is "navigate", then set it to "same-origin".
-    if (request->Mode() == network::mojom::RequestMode::kNavigate)
+    if (network::IsNavigationRequestMode(request->Mode()))
       request->SetMode(network::mojom::RequestMode::kSameOrigin);
 
     // TODO(yhirano): Implement the following substep:
@@ -733,6 +734,8 @@ String Request::mode() const {
     case network::mojom::RequestMode::kCorsWithForcedPreflight:
       return "cors";
     case network::mojom::RequestMode::kNavigate:
+    case network::mojom::RequestMode::kNavigateNestedFrame:
+    case network::mojom::RequestMode::kNavigateNestedObject:
       return "navigate";
   }
   NOTREACHED();

@@ -279,8 +279,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle) override;
 
-  blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
-      const override;
+  blink::BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;

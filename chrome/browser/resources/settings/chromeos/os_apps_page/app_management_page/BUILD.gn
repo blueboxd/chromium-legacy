@@ -202,6 +202,7 @@ js_library("toggle_row") {
   deps = [
     ":types",
     "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator",
   ]
 }
 
@@ -215,7 +216,8 @@ js_library("uninstall_button") {
   deps = [
     ":store_client",
     ":util",
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button",
+    "//ui/webui/resources/cr_elements/policy:cr_tooltip_icon",
   ]
 }
 

@@ -45,6 +45,10 @@
     "message": "Nothing recorded",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
+  "ERROR_MSG_EXPERT_MODE_NOT_SUPPORTED": {
+    "message": "Expert mode is not supported on this device",
+    "description": "Error message when the device does not support expert mode but tries to enable it."
+  },
   "STATUS_MSG_RECORDING_STOPPED": {
     "message": "Recording stopped",
     "description": "Status message for spoken feedback when video recording has been stopped."
@@ -102,6 +106,18 @@
   "CAMERA_RESOLUTION_BUTTON": {
     "message": "Camera resolution",
     "description": "Label for the button of camera resolution options."
+  },
+  "EXPERT_MODE_BUTTON": {
+    "message": "Expert mode",
+    "description": "Label for the button of expert mode options."
+  },
+  "EXPERT_PREVIEW_METADATA": {
+    "message": "Preview metadata",
+    "description": "Label for expert mode option: preview metadata."
+  },
+  "EXPERT_SAVE_METADATA": {
+    "message": "Save metadata",
+    "description": "Label for expert mode option: save metadata."
   },
   "FEEDBACK_BUTTON": {
     "message": "Send feedback",

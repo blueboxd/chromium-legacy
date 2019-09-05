@@ -57,8 +57,8 @@ class XmppPushClientTest : public testing::Test {
   }
 
   // The sockets created by the XMPP code expect an IO loop.
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   jingle_glue::NetworkServiceConfigTestUtil net_config_helper_;
   NotifierOptions notifier_options_;

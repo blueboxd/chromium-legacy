@@ -312,10 +312,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
     self.tableView.backgroundView = nil;
   } else {
-    // TODO(crbug.com/988909): Remove this.  Workround for out-of-sync tableView
-    // and model data when ReadingListTableViewController is incorrectly kept
-    // alive.
-    [self.tableView reloadData];
     [self tableIsEmpty];
   }
 }

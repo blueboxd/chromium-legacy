@@ -171,11 +171,12 @@ public class BackgroundTaskSchedulerPrefs {
 
         @Override
         public void visit(TaskInfo.ExactInfo exactInfo) {
-            // TODO(crbug.com/970160): Set the extras field.
             ScheduledTaskProto.ScheduledTask scheduledTask =
                     ScheduledTaskProto.ScheduledTask.newBuilder()
                             .setType(ScheduledTaskProto.ScheduledTask.Type.EXACT)
                             .setTriggerMs(exactInfo.getTriggerAtMs())
+                            .addAllExtras(
+                                    ExtrasToProtoConverter.convertExtrasToProtoExtras(mExtras))
                             .build();
             mSerializedScheduledTask =
                     Base64.encodeToString(scheduledTask.toByteArray(), Base64.DEFAULT);

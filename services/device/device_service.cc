@@ -163,7 +163,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
       &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
-      &DeviceService::BindWakeLockProviderRequest, base::Unretained(this)));
+      &DeviceService::BindWakeLockProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
       &DeviceService::BindUsbDeviceManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManagerTest>(base::Bind(
@@ -343,9 +343,9 @@ void DeviceService::BindTimeZoneMonitorRequest(
   time_zone_monitor_->Bind(std::move(request));
 }
 
-void DeviceService::BindWakeLockProviderRequest(
-    mojom::WakeLockProviderRequest request) {
-  wake_lock_provider_.AddBinding(std::move(request));
+void DeviceService::BindWakeLockProviderReceiver(
+    mojo::PendingReceiver<mojom::WakeLockProvider> receiver) {
+  wake_lock_provider_.AddBinding(std::move(receiver));
 }
 
 void DeviceService::BindUsbDeviceManagerRequest(

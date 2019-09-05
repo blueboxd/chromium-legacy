@@ -77,6 +77,7 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   void NotifyMainFrameCausedNoDamage(const viz::BeginFrameArgs& args);
   void NotifyPauseFrameProduction();
   void NotifySubmitFrame(uint32_t frame_token,
+                         bool has_missing_content,
                          const viz::BeginFrameAck& ack,
                          const viz::BeginFrameArgs& origin_args);
 
@@ -134,6 +135,7 @@ class CC_EXPORT FrameSequenceTracker {
   // |origin_args| represents the BeginFrameArgs that triggered the update from
   // the main-thread.
   void ReportSubmitFrame(uint32_t frame_token,
+                         bool has_missing_content,
                          const viz::BeginFrameAck& ack,
                          const viz::BeginFrameArgs& origin_args);
 
@@ -199,6 +201,24 @@ class CC_EXPORT FrameSequenceTracker {
     uint32_t frames_produced = 0;
   };
 
+  struct CheckerboardingData {
+    CheckerboardingData();
+    ~CheckerboardingData();
+
+    // Tracks the number of produced frames that had some amount of
+    // checkerboarding, and how many frames showed such checkerboarded frames.
+    uint32_t frames_checkerboarded = 0;
+
+    // Tracks whether the last presented frame had checkerboarding. This is used
+    // to track how many vsyncs showed frames with checkerboarding.
+    bool last_frame_had_checkerboarding = false;
+
+    base::TimeTicks last_frame_timestamp;
+
+    // A list of frame-tokens that had checkerboarding.
+    base::circular_deque<uint32_t> frames;
+  };
+
   void UpdateTrackedFrameData(TrackedFrameData* frame_data,
                               uint64_t source_id,
                               uint64_t sequence_number);
@@ -214,6 +234,8 @@ class CC_EXPORT FrameSequenceTracker {
 
   ThroughputData impl_throughput_;
   ThroughputData main_throughput_;
+
+  CheckerboardingData checkerboarding_;
 
   // Tracks the list of frame-tokens for compositor-frames that included new
   // updates from the main-thread, whose presentation-feedback have not been

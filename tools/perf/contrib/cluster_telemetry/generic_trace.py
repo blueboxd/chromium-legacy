@@ -12,7 +12,6 @@ import page_sets
 from telemetry import benchmark
 from telemetry import timeline
 from telemetry.page import legacy_page_test
-from telemetry.value import scalar
 
 from tracing.trace_data import trace_data as trace_data_module
 
@@ -47,8 +46,7 @@ class _GenericTraceMeasurement(legacy_page_test.LegacyPageTest):
           if not isinstance(arg_value, int):
             continue
           value_name = '/'.join([event['cat'], event['name'], arg_name])
-          results.AddValue(scalar.ScalarValue(
-              results.current_page, value_name, 'count', arg_value))
+          results.AddMeasurement(value_name, 'count', arg_value)
 
 
 class _GenericTraceBenchmark(perf_benchmark.PerfBenchmark):
@@ -101,4 +99,3 @@ class GenericTraceClusterTelemetry(_GenericTraceBenchmark):
   def CreateStorySet(self, options):
     return ct_page_set.CTPageSet(
         options.urls_list, options.user_agent, options.archive_data_file)
-

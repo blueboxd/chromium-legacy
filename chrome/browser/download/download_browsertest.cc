@@ -120,6 +120,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1205,8 +1206,8 @@ class DownloadWakeLockTest : public DownloadTest {
 
   void Initialize() {
     connector_ = content::GetSystemConnector()->Clone();
-    connector_->BindInterface(device::mojom::kServiceName,
-                              &wake_lock_provider_);
+    connector_->Connect(device::mojom::kServiceName,
+                        wake_lock_provider_.BindNewPipeAndPassReceiver());
   }
 
   // Returns the number of active wake locks of type |type|.
@@ -1226,7 +1227,7 @@ class DownloadWakeLockTest : public DownloadTest {
   }
 
  protected:
-  device::mojom::WakeLockProviderPtr wake_lock_provider_;
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
   std::unique_ptr<service_manager::Connector> connector_;
   DISALLOW_COPY_AND_ASSIGN(DownloadWakeLockTest);
 };

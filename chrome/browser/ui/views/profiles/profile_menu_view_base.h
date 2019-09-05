@@ -94,7 +94,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   virtual void BuildMenu() = 0;
 
   // API to build the profile menu.
-  void SetIdentityImage(const gfx::Image& image);
+  void SetIdentityInfo(const gfx::Image& image,
+                       const base::string16& title,
+                       const base::string16& subtitle);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.
@@ -193,7 +195,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   std::map<views::View*, base::RepeatingClosure> click_actions_;
 
   // Component containers.
-  views::View* identity_image_container_ = nullptr;
+  views::View* identity_info_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

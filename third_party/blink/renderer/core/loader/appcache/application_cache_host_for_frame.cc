@@ -43,7 +43,7 @@ void RestartNavigation(LocalFrame* frame) {
 
 ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     DocumentLoader* document_loader,
-    const BrowserInterfaceBrokerProxy* interface_broker_proxy,
+    const BrowserInterfaceBrokerProxy& interface_broker_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : ApplicationCacheHost(interface_broker_proxy, std::move(task_runner)),
       local_frame_(document_loader->GetFrame()),

@@ -164,6 +164,8 @@ template("core_impl_source_set") {
     if (is_android || target_os == "chromeos") {
       defines += [ "MOJO_CORE_LEGACY_PROTOCOL" ]
     }
+
+    configs += [ "//build/config/compiler:noshadowing" ]
   }
 }
 

@@ -26,6 +26,7 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
@@ -203,6 +204,13 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
     auto request = mojo::MakeRequest(proxy);
     GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
+  }
+
+  // Template helper to receive associated interfaces from the remote endpoint.
+  template <typename Interface>
+  void GetRemoteAssociatedInterface(mojo::AssociatedRemote<Interface>* proxy) {
+    GetGenericRemoteAssociatedInterface(
+        Interface::Name_, proxy->BindNewEndpointAndPassReceiver().PassHandle());
   }
 
 #if defined(ENABLE_IPC_FUZZER)

@@ -126,7 +126,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
 
 // Test that query param for the warmup URL is randomly set.
 TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
   WarmupURLFetcherTest warmup_url_fetcher(&test_url_loader_factory);
 
@@ -157,7 +157,7 @@ TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -203,7 +203,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -255,7 +255,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
 
 TEST(WarmupURLFetcherTest,
      TestSuccessfulFetchWarmupURLWithViaHeaderExperimentNotEnabled) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -295,7 +295,7 @@ TEST(WarmupURLFetcherTest,
 }
 
 TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -337,7 +337,7 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
 }
 
 TEST(WarmupURLFetcherTest, TestFetchTimesout) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -372,8 +372,8 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME);
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;
@@ -430,7 +430,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 
   base::HistogramTester histogram_tester;
 
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   DataReductionProxyServer proxy_server(net::ProxyServer::Direct());
@@ -460,7 +460,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 TEST(WarmupURLFetcherTest, TestFetchWaitTime) {
   base::HistogramTester histogram_tester;
 
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   network::TestURLLoaderFactory test_url_loader_factory;
 
   DataReductionProxyServer proxy_server(net::ProxyServer::Direct());

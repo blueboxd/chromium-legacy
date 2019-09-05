@@ -164,7 +164,8 @@ void OnDefaultProtocolClientWorkerFinished(
   // handling flow).
   bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
 
-#if !defined(OS_ANDROID)
+  // On ChromeOS, Click to Call is integrated into the external protocol dialog.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (web_contents && ShouldOfferClickToCallForURL(
                           web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back

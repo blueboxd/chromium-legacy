@@ -537,27 +537,27 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
 }
 
 void WidgetInputHandlerManager::BindAssociatedChannel(
-    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> request) {
-  if (!request.is_valid())
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver) {
+  if (!receiver.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.
   WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
       this, main_thread_task_runner_,
       compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
-  handler->SetAssociatedBinding(std::move(request));
+  handler->SetAssociatedReceiver(std::move(receiver));
 }
 
 void WidgetInputHandlerManager::BindChannel(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> request) {
-  if (!request.is_valid())
+    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver) {
+  if (!receiver.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
   // |compositor_task_runner_| as events might get out of order.
   WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
       this, main_thread_task_runner_,
       compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
-  handler->SetBinding(std::move(request));
+  handler->SetReceiver(std::move(receiver));
 }
 
 void WidgetInputHandlerManager::HandleInputEvent(

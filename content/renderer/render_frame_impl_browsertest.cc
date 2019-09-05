@@ -912,7 +912,7 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
         event);
 
     remote.reset();
-    render_frame()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
         remote.BindNewPipeAndPassReceiver());
     remote->Ping(
         !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),

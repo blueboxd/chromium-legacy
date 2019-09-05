@@ -198,6 +198,16 @@ class AutotestPrivateGetPlayStoreStateFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetArcStartTimeFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcStartTime",
+                             AUTOTESTPRIVATE_GETARCSTARTTIME)
+
+ private:
+  ~AutotestPrivateGetArcStartTimeFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateGetArcStateFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcState",

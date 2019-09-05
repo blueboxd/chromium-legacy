@@ -19,6 +19,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -73,9 +74,9 @@ class ArcPowerBridge::WakeLockRequestor {
 
     // Initialize |wake_lock_| if this is the first time we're using it.
     if (!wake_lock_) {
-      device::mojom::WakeLockProviderPtr provider;
-      connector_->BindInterface(device::mojom::kServiceName,
-                                mojo::MakeRequest(&provider));
+      mojo::Remote<device::mojom::WakeLockProvider> provider;
+      connector_->Connect(device::mojom::kServiceName,
+                          provider.BindNewPipeAndPassReceiver());
       provider->GetWakeLockWithoutContext(
           type_, device::mojom::WakeLockReason::kOther, "ARC",
           mojo::MakeRequest(&wake_lock_));

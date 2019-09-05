@@ -23,12 +23,12 @@ namespace network {
 namespace mojom {
 class NetworkContext;
 }
-}
+}  // namespace network
 
 namespace password_manager {
 class PasswordManagerDriver;
 class PasswordManagerClient;
-}
+}  // namespace password_manager
 
 namespace syncer {
 class SyncService;
@@ -113,14 +113,16 @@ void RemoveUselessCredentials(
 base::StringPiece GetSignonRealmWithProtocolExcluded(
     const autofill::PasswordForm& form);
 
-// Given all non-blacklisted |matches|, finds and populates |best_matches| and
-// |preferred_match_| accordingly.
-// For comparing credentials the following rule is used: non-psl match is better
-// than psl match, preferred match is better than non-preferred match. In case
-// of tie, an arbitrary credential from the tied ones is chosen for
-// |best_matches| and preferred_match.
+// Given all non-blacklisted |non_federated_matches|, finds and populates
+// |best_matches| and |preferred_match_| accordingly. For comparing credentials
+// the following rule is used: non-psl match is better than psl match, preferred
+// match is better than non-preferred match. In case of tie, an arbitrary
+// credential from the tied ones is chosen for |best_matches| and
+// preferred_match.
 void FindBestMatches(
-    std::vector<const autofill::PasswordForm*> matches,
+    const std::vector<const autofill::PasswordForm*>& non_federated_matches,
+    autofill::PasswordForm::Scheme scheme,
+    std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
     std::map<base::string16, const autofill::PasswordForm*>* best_matches,
     const autofill::PasswordForm** preferred_match);
 

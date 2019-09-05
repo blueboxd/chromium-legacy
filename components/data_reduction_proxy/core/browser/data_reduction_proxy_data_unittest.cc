@@ -26,8 +26,8 @@ class DataReductionProxyDataTest : public testing::Test {
   DataReductionProxyDataTest() {}
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 };
 
 TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {

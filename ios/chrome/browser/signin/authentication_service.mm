@@ -18,7 +18,6 @@
 #import "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -110,16 +109,7 @@ void AuthenticationService::Initialize(
 
   HandleForgottenIdentity(nil, true /* should_prompt */);
 
-  bool is_signed_in = IsAuthenticated();
-  if (is_signed_in && !unified_consent::IsUnifiedConsentFeatureEnabled() &&
-      !sync_setup_service_->HasFinishedInitialSetup()) {
-    // Sign out the user if sync was not configured after signing
-    // in (see PM comments in http://crbug.com/339831 ).
-    SignOut(signin_metrics::ABORT_SIGNIN, nil);
-    SetPromptForSignIn();
-    is_signed_in = false;
-  }
-  breakpad_helper::SetCurrentlySignedIn(is_signed_in);
+  breakpad_helper::SetCurrentlySignedIn(IsAuthenticated());
 
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());

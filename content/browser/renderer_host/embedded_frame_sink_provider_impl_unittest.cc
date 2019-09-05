@@ -154,7 +154,7 @@ class EmbeddedFrameSinkProviderImplTest : public testing::Test {
  private:
   // A MessageLoop is required for mojo bindings which are used to
   // connect to graphics services.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   viz::ServerSharedBitmapManager shared_bitmap_manager_;
   viz::FakeHostFrameSinkClient host_frame_sink_client_;
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;

@@ -14,6 +14,13 @@ var cca = cca || {};
  */
 cca.nav = cca.nav || {};
 
+cca.App = cca.App || {};
+
+/**
+ * @type {!function(): !cca.mojo.MojoConnector}
+ */
+cca.App.getMojoConnector;
+
 /**
  * All views stacked in ascending z-order (DOM order) for navigation, and only
  * the topmost visible view is active (clickable/focusable).
@@ -206,6 +213,19 @@ cca.nav.onKeyPressed = function(event) {
       break;
     case 'Ctrl-Shift-C':
       openInspector('element');
+      break;
+    case 'Ctrl-Shift-E':
+      (async () => {
+        const deviceOperator =
+            await cca.App.getMojoConnector().getDeviceOperator();
+        if (!deviceOperator) {
+          cca.toast.show('error_msg_expert_mode_not_supported');
+          return;
+        }
+        const newState = !cca.state.get('expert');
+        cca.state.set('expert', newState);
+        cca.proxy.browserProxy.localStorageSet({expert: newState});
+      })();
       break;
     default:
       // Make the topmost visible view handle the pressed key.

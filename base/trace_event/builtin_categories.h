@@ -37,6 +37,7 @@
   X("blink.net")                                                         \
   X("blink_style")                                                       \
   X("blink.user_timing")                                                 \
+  X("blink.worker")                                                      \
   X("Blob")                                                              \
   X("browser")                                                           \
   X("browsing_data")                                                     \

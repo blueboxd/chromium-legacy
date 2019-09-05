@@ -67,8 +67,10 @@ constexpr size_t kMaxPrunedUniqueSuggestionsCount = 3;
 
 std::vector<Suggestion> GetPrefixMatchedSuggestions(
     const AutofillType& type,
+    const base::string16& raw_field_contents,
     const base::string16& field_contents_canon,
     const AutofillProfileComparator& comparator,
+    bool field_is_autofilled,
     const std::vector<AutofillProfile*>& profiles,
     std::vector<AutofillProfile*>* matched_profiles) {
   std::vector<Suggestion> suggestions;
@@ -80,6 +82,19 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 
     if (profile->ShouldSkipFillingOrSuggesting(type.GetStorableType()))
       continue;
+
+      // Don't offer to fill the exact same value again. If detailed suggestions
+      // with different secondary data is available, it would appear to offer
+      // refilling the whole form with something else. E.g. the same name with a
+      // work and a home address would appear twice but a click would be a noop.
+      // TODO(fhorschig): Consider refilling form instead (at on least Android).
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory) &&
+        field_is_autofilled &&
+        profile->GetRawInfo(type.GetStorableType()) == raw_field_contents) {
+      continue;
+    }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
     base::string16 value =
         GetInfoInOneLine(profile, type, comparator.app_locale());

@@ -198,8 +198,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     FrameData& operator=(const FrameData&) = delete;
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
-    uint32_t frame_token = 0;
     // frame_token is populated by the LayerTreeHostImpl when submitted.
+    uint32_t frame_token = 0;
+
+    bool has_missing_content = false;
 
     std::vector<viz::SurfaceId> activation_dependencies;
     base::Optional<uint32_t> deadline_in_frames;

@@ -37,6 +37,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -393,7 +394,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     if (options_.grant_universal_access) {
       const auto request_mode = new_request.GetMode();
       DCHECK(request_mode == network::mojom::RequestMode::kNoCors ||
-             request_mode == network::mojom::RequestMode::kNavigate);
+             network::IsNavigationRequestMode(request_mode));
       // Some callers, notablly flash, with |grant_universal_access| want to
       // have an origin matching with referrer.
       KURL referrer(request.ToResourceRequest().ReferrerString());

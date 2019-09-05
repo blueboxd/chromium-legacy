@@ -51,7 +51,7 @@ void TestInstallFinalizer::FinalizeInstall(
 
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
-    UninstallExternalWebAppCallback callback) {
+    UninstallWebAppCallback callback) {
   DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);
 
@@ -64,6 +64,9 @@ void TestInstallFinalizer::UninstallExternalWebApp(
                        std::move(callback).Run(result);
                      }));
 }
+
+void TestInstallFinalizer::UninstallWebApp(const AppId& app_url,
+                                           UninstallWebAppCallback callback) {}
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {
   return true;

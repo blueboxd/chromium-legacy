@@ -156,7 +156,7 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // the video's frame's scrollbar check below.
   ScrollbarMode h_mode, v_mode;
   page_view->GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-  if (h_mode != kScrollbarAlwaysOff)
+  if (h_mode != ScrollbarMode::kAlwaysOff)
     return media_rect.Width();
 
   // If the video's frame (can be different from main frame if video is in an
@@ -165,7 +165,7 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   LocalFrameView* media_page_view = media_frame ? media_frame->View() : nullptr;
   if (media_page_view && media_page_view->GetLayoutView()) {
     media_page_view->GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode != kScrollbarAlwaysOff)
+    if (h_mode != ScrollbarMode::kAlwaysOff)
       return media_rect.Width();
   }
 

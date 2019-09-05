@@ -16,32 +16,6 @@ namespace blink {
 
 class DOMException;
 
-ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
-                                        const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
-                                       const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
-                                        const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
-                                          const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidNDEFRecord(ScriptState* script_state,
-                                        const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidNDEFRecordArray(
-    ScriptState* script_state,
-    const HeapVector<Member<NDEFRecordInit>>& records);
-
-ScriptPromise RejectIfInvalidNDEFMessageSource(
-    ScriptState* script_state,
-    const NDEFMessageSource& push_message);
-
-device::mojom::blink::NDEFRecordType DeduceRecordTypeFromDataType(
-    const blink::NDEFRecordInit* record);
-
 size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessagePtr& message);
 
 bool SetNDEFMessageURL(const String& origin,

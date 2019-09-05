@@ -87,7 +87,7 @@ template <>
 DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum.IsNull()) {
-    return DAWN_TEXTURE_FORMAT_NONE;
+    return DAWN_TEXTURE_FORMAT_UNDEFINED;
   }
 
   // Normal 8 bit formats
@@ -236,7 +236,7 @@ template <>
 DawnTextureViewDimension AsDawnEnum<DawnTextureViewDimension>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum.IsNull()) {
-    return DAWN_TEXTURE_VIEW_DIMENSION_NONE;
+    return DAWN_TEXTURE_VIEW_DIMENSION_UNDEFINED;
   }
   if (webgpu_enum == "2d") {
     return DAWN_TEXTURE_VIEW_DIMENSION_2D;

@@ -83,12 +83,8 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
     if (!context)
       return;
 
-    BrowserInterfaceBrokerProxy* proxy =
-        context->GetBrowserInterfaceBrokerProxy();
-    DCHECK(proxy);
-
     started_ = true;
-    if (!proxy->SetBinderForTesting(
+    if (!context->GetBrowserInterfaceBroker().SetBinderForTesting(
             interface_name,
             WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
                                WrapWeakPersistent(this)))) {
@@ -133,12 +129,8 @@ void MojoInterfaceInterceptor::stop() {
   if (use_browser_interface_broker_) {
     ExecutionContext* context = GetExecutionContext();
     DCHECK(context);
-
-    BrowserInterfaceBrokerProxy* proxy =
-        context->GetBrowserInterfaceBrokerProxy();
-    DCHECK(proxy);
-
-    proxy->SetBinderForTesting(interface_name, {});
+    context->GetBrowserInterfaceBroker().SetBinderForTesting(interface_name,
+                                                             {});
     return;
   }
 

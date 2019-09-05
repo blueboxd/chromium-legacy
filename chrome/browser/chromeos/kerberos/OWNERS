@@ -2,6 +2,8 @@
 # structural changes, use usual OWNERS rules.
 per-file BUILD.gn=*
 
+fsandrade@chromium.org
 ljusten@chromium.org
+tomdobro@chromium.org
 
 # COMPONENT: Enterprise>ActiveDirectory

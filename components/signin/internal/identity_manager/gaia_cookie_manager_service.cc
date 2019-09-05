@@ -13,11 +13,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -95,30 +93,6 @@ void RecordListAccountsFailure(GoogleServiceAuthError::State error_state) {
 
 void RecordLogoutRequestState(LogoutRequestState logout_state) {
   UMA_HISTOGRAM_ENUMERATION("Signin.GaiaCookieManager.Logout", logout_state);
-}
-
-// Record ListAccounts errors for individual retries.
-void RecordListAccountsRetryResult(GoogleServiceAuthError error,
-                                   int retry_attempt_number) {
-  int net_error = net::OK;
-  switch (error.state()) {
-    case GoogleServiceAuthError::NONE:
-      net_error = net::OK;
-      break;
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-      net_error = error.network_error();
-      break;
-    case GoogleServiceAuthError::REQUEST_CANCELED:
-      net_error = net::ERR_ABORTED;
-      break;
-    default:
-      return;  // There is an error not related to network.
-  }
-
-  std::string histogram_name =
-      base::StringPrintf("Gaia.AuthFetcher.ListAccounts.NetErrorCodes.Retry_%i",
-                         retry_attempt_number);
-  base::UmaHistogramSparse(histogram_name, -net_error);
 }
 
 }  // namespace
@@ -850,8 +824,6 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
   signin_client_->GetPrefs()->SetString(prefs::kGaiaCookieLastListAccountsData,
                                         data);
   RecordListAccountsFailure(GoogleServiceAuthError::NONE);
-  RecordListAccountsRetryResult(GoogleServiceAuthError::AuthErrorNone(),
-                                fetcher_retries_);
 
   InitializeListedAccountsIds();
 
@@ -873,7 +845,6 @@ void GaiaCookieManagerService::OnListAccountsFailure(
   VLOG(1) << "ListAccounts failed";
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::LIST_ACCOUNTS);
-  RecordListAccountsRetryResult(error, fetcher_retries_);
 
   bool should_retry =
       (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) ||

@@ -94,7 +94,7 @@ class EngineCleanerTest : public testing::Test {
   TestPUPData test_pup_data_;
   std::unique_ptr<EngineCleaner> engine_cleaner_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   ResultCode done_status_ = RESULT_CODE_INVALID;
 };
 

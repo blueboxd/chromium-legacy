@@ -222,6 +222,18 @@
       <message desc="Label for the checkbox to toggle the microphone for recording video." name="IDS_TOGGLE_MIC_BUTTON">
         Microphone
       </message>
+      <message desc="Label for the button of expert mode options." name="IDS_EXPERT_MODE_BUTTON">
+        Expert mode
+      </message>
+      <message desc="Label for expert mode option: preview metadata." name="IDS_EXPERT_PREVIEW_METADATA">
+        Preview metadata
+      </message>
+      <message desc="Label for expert mode option: save metadata." name="IDS_EXPERT_SAVE_METADATA">
+        Save metadata
+      </message>
+      <message desc="Error message when the device does not support expert mode but tries to enable it." name="IDS_ERROR_MSG_EXPERT_MODE_NOT_SUPPORTED">
+        Expert mode is not supported on this device
+      </message>
       <message desc="Label for the feedback button." name="IDS_FEEDBACK_BUTTON">
         Send feedback
       </message>

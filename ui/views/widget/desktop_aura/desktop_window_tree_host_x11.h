@@ -34,7 +34,6 @@ class ImageSkia;
 
 namespace ui {
 enum class DomCode;
-class KeyboardHook;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -44,7 +43,6 @@ class X11Window;
 namespace views {
 class DesktopDragDropClientAuraX11;
 class DesktopWindowTreeHostObserverX11;
-class NonClientFrameView;
 class X11DesktopWindowMoveClient;
 class WindowEventFilter;
 
@@ -104,31 +102,21 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
-  void OnWidgetInitDone() override;
-  void OnActiveWindowChanged(bool active) override;
-  std::unique_ptr<corewm::Tooltip> CreateTooltip() override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
   void Close() override;
   void CloseNow() override;
-  aura::WindowTreeHost* AsWindowTreeHost() override;
   void Show(ui::WindowShowState show_state,
             const gfx::Rect& restore_bounds) override;
   bool IsVisible() const override;
   void SetSize(const gfx::Size& requested_size) override;
   void StackAbove(aura::Window* window) override;
   void StackAtTop() override;
-  void CenterWindow(const gfx::Size& size) override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const override;
-  gfx::Rect GetWindowBoundsInScreen() const override;
-  gfx::Rect GetClientAreaBoundsInScreen() const override;
   gfx::Rect GetRestoredBounds() const override;
   std::string GetWorkspace() const override;
-  gfx::Rect GetWorkAreaBoundsInScreen() const override;
   void SetShape(std::unique_ptr<Widget::ShapeRects> native_shape) override;
-  void Activate() override;
-  void Deactivate() override;
   bool IsActive() const override;
   void Maximize() override;
   void Minimize() override;
@@ -140,15 +128,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
-  bool SetWindowTitle(const base::string16& title) override;
-  void ClearNativeFocus() override;
   Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
-  NonClientFrameView* CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
@@ -168,22 +153,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   bool ShouldCreateVisibilityController() const override;
 
   // Overridden from aura::WindowTreeHost:
-  ui::EventSource* GetEventSource() override;
   void ShowImpl() override;
   void HideImpl() override;
-  gfx::Rect GetBoundsInPixels() const override;
   void SetBoundsInPixels(const gfx::Rect& requested_bounds_in_pixels) override;
-  gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
-  bool CaptureSystemKeyEventsImpl(
-      base::Optional<base::flat_set<ui::DomCode>> dom_codes) override;
-  void ReleaseSystemKeyEventCapture() override;
-  bool IsKeyLocked(ui::DomCode dom_code) override;
-  void SetCursorNative(gfx::NativeCursor cursor) override;
-  void MoveCursorToScreenLocationInPixels(
-      const gfx::Point& location_in_pixels) override;
-  void OnCursorVisibilityChangedNative(bool show) override;
 
   // Overridden from display::DisplayObserver via aura::WindowTreeHost:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -200,10 +174,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void DispatchHostWindowDragMovement(
       int hittest,
       const gfx::Point& pointer_location) override;
-
-  // Creates an aura::WindowEventDispatcher to contain the content_window()
-  // along with all aura client objects that direct behavior.
-  aura::WindowEventDispatcher* InitDispatcher(const Widget::InitParams& params);
 
   // Sets whether the window's borders are provided by the window manager.
   void SetUseNativeFrame(bool use_native_frame);
@@ -308,9 +278,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   // Cached value for SetVisible.  Not the same as the IsVisible public API.
   bool is_compositor_set_visible_ = false;
-
-  // Captures system key events when keyboard lock is requested.
-  std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 

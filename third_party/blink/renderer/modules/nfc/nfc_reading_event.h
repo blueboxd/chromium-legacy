@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class NDEFMessage;
 class NFCReadingEventInit;
 
@@ -18,12 +19,13 @@ class NFCReadingEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NFCReadingEvent* Create(const AtomicString& event_type,
-                                 const NFCReadingEventInit* initializer) {
-    return MakeGarbageCollected<NFCReadingEvent>(event_type, initializer);
-  }
+  static NFCReadingEvent* Create(const AtomicString&,
+                                 const NFCReadingEventInit*,
+                                 ExceptionState&);
 
-  NFCReadingEvent(const AtomicString&, const NFCReadingEventInit*);
+  NFCReadingEvent(const AtomicString&,
+                  const NFCReadingEventInit*,
+                  NDEFMessage*);
   NFCReadingEvent(const AtomicString&, const String&, NDEFMessage*);
   ~NFCReadingEvent() override;
 

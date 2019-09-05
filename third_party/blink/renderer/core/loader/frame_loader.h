@@ -35,6 +35,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"

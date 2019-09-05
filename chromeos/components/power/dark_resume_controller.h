@@ -94,7 +94,7 @@ class COMPONENT_EXPORT(CHROMEOS_POWER) DarkResumeController
   void ClearDarkResumeState();
 
   // Used for acquiring, releasing and observing wake locks.
-  device::mojom::WakeLockProviderPtr wake_lock_provider_;
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
 
   // Not owned by this instance.
   service_manager::Connector* const connector_;

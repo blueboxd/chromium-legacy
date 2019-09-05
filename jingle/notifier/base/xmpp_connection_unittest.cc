@@ -95,7 +95,7 @@ class XmppConnectionTest : public testing::Test {
   }
 
   // Needed by XmppConnection.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
   std::unique_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
   jingle_glue::NetworkServiceConfigTestUtil net_config_helper_;

@@ -18,6 +18,7 @@
 #include "media/capture/video/chromeos/camera_app_device_impl.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "media/capture/video/chromeos/request_builder.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 #include "media/capture/video_capture_types.h"
@@ -125,7 +126,8 @@ class CAPTURE_EXPORT RequestManager final
                  VideoCaptureBufferType buffer_type,
                  std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
                  BlobifyCallback blobify_callback,
-                 scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
+                 scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+                 CameraAppDeviceImpl* camera_app_device);
   ~RequestManager() override;
 
   // Sets up the stream context and allocate buffers according to the
@@ -368,6 +370,8 @@ class CAPTURE_EXPORT RequestManager final
   // Map for retrieving the last received frame number. It is used to check for
   // duplicate or out of order of frames.
   std::map<StreamType, uint32_t> last_received_frame_number_map_;
+
+  CameraAppDeviceImpl* camera_app_device_;  // Weak.
 
   base::WeakPtrFactory<RequestManager> weak_ptr_factory_{this};
 

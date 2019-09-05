@@ -754,7 +754,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       base::BindRepeating(&LoginPasswordView::InsertNumber,
                           base::Unretained(password_view.get())),
       base::BindRepeating(&LoginPasswordView::Backspace,
-                          base::Unretained(password_view.get())));
+                          base::Unretained(password_view.get())),
+      base::BindRepeating(&LoginAuthUserView::OnPinBack,
+                          base::Unretained(this)));
   pin_view_ = pin_view.get();
   DCHECK(pin_view_->layer());
 
@@ -952,6 +954,8 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // that when both are about to be hidden the focus doesn't jump to the "1"
   // keyboard button, causing unexpected accessibility effects.
   pin_view_->SetVisible(has_pin);
+
+  pin_view_->SetBackButtonVisible(security_token_pin_request_.has_value());
 
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
@@ -1336,6 +1340,14 @@ void LoginAuthUserView::OnUserViewTap() {
 void LoginAuthUserView::OnOnlineSignInMessageTap() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
       true /*can_close*/, current_user().basic_user_info.account_id);
+}
+
+void LoginAuthUserView::OnPinBack() {
+  // Exiting from the PIN keyboard during a security token PIN request should
+  // abort it. Note that the back button isn't shown when the PIN view is used
+  // in other contexts.
+  DCHECK(security_token_pin_request_);
+  ClearSecurityTokenPinRequest();
 }
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {

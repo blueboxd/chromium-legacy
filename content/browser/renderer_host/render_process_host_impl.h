@@ -51,9 +51,11 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -573,7 +575,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
                            BrowserHistogramCallback callback) override;
   void SuddenTerminationChanged(bool enabled) override;
 
-  void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
+  void BindRouteProvider(
+      mojo::PendingAssociatedReceiver<mojom::RouteProvider> receiver);
 
   void CreateEmbeddedFrameSinkProvider(
       mojo::PendingReceiver<blink::mojom::EmbeddedFrameSinkProvider> receiver);
@@ -761,7 +764,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // nature (e.g. metrics, memory usage).
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_interfaces_;
 
-  mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
+  mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
   mojo::AssociatedBindingSet<blink::mojom::AssociatedInterfaceProvider, int32_t>
       associated_interface_provider_bindings_;
 
@@ -911,7 +914,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<PluginRegistryImpl> plugin_registry_;
 
   mojo::Remote<mojom::ChildProcess> child_process_;
-  mojom::RouteProviderAssociatedPtr remote_route_provider_;
+  mojo::AssociatedRemote<mojom::RouteProvider> remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;
 

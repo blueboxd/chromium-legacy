@@ -129,6 +129,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
                               bool show_stay_in_chrome,
                               bool show_remember_selection,
+                              PageActionIconType icon_type,
                               IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(

@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
+#include "chrome/browser/web_applications/components/manifest_update_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
@@ -92,6 +93,11 @@ InstallFinalizer& WebAppProvider::install_finalizer() {
   return *install_finalizer_;
 }
 
+ManifestUpdateManager& WebAppProvider::manifest_update_manager() {
+  CheckIsConnected();
+  return *manifest_update_manager_;
+}
+
 PendingAppManager& WebAppProvider::pending_app_manager() {
   CheckIsConnected();
   return *pending_app_manager_;
@@ -130,6 +136,7 @@ SystemWebAppManager& WebAppProvider::system_web_app_manager() {
 void WebAppProvider::Shutdown() {
   pending_app_manager_->Shutdown();
   install_manager_->Shutdown();
+  manifest_update_manager_->Shutdown();
 }
 
 void WebAppProvider::StartImpl() {
@@ -140,6 +147,7 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
   ui_manager_ = WebAppUiManager::Create(profile);
   install_manager_ = std::make_unique<WebAppInstallManager>(profile);
+  manifest_update_manager_ = std::make_unique<ManifestUpdateManager>();
   pending_app_manager_ = std::make_unique<PendingAppManagerImpl>(profile);
   external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
@@ -174,6 +182,8 @@ void WebAppProvider::ConnectSubsystems() {
 
   install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
   install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
+  manifest_update_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                                          install_manager_.get());
   pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                       install_finalizer_.get());
   external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
@@ -198,6 +208,7 @@ void WebAppProvider::OnRegistryReady() {
     web_app_policy_manager_->Start();
     system_web_app_manager_->Start();
   }
+  manifest_update_manager_->Start();
 
   on_registry_ready_.Signal();
 }

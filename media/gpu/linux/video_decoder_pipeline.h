@@ -26,10 +26,19 @@ class DmabufVideoFramePool;
 
 class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
  public:
+  // Function signature for creating VideoDecoder.
+  using CreateVDFunc = std::unique_ptr<VideoDecoder> (*)(
+      scoped_refptr<base::SequencedTaskRunner>,
+      scoped_refptr<base::SequencedTaskRunner>,
+      base::RepeatingCallback<DmabufVideoFramePool*()>);
+  using GetCreateVDFunctionsCB =
+      base::RepeatingCallback<base::queue<CreateVDFunc>(CreateVDFunc)>;
+
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
-      std::unique_ptr<VideoFrameConverter> frame_converter);
+      std::unique_ptr<VideoFrameConverter> frame_converter,
+      GetCreateVDFunctionsCB get_create_vd_functions_cb);
 
   ~VideoDecoderPipeline() override;
 
@@ -50,12 +59,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
 
  private:
-  // Function signature for creating VideoDecoder.
-  using CreateVDFunc = std::unique_ptr<VideoDecoder> (*)(
-      scoped_refptr<base::SequencedTaskRunner>,
-      scoped_refptr<base::SequencedTaskRunner>,
-      base::RepeatingCallback<DmabufVideoFramePool*()>);
-
   // Get a list of the available functions for creating VideoDeocoder.
   static base::queue<CreateVDFunc> GetCreateVDFunctions(
       CreateVDFunc current_func);
@@ -63,7 +66,8 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   VideoDecoderPipeline(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
-      std::unique_ptr<VideoFrameConverter> frame_converter);
+      std::unique_ptr<VideoFrameConverter> frame_converter,
+      GetCreateVDFunctionsCB get_create_vd_functions_cb);
   void Destroy() override;
   void DestroyTask();
 
@@ -111,6 +115,9 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   // The frame converter passed from the client. Destroyed on
   // |client_task_runner_|.
   std::unique_ptr<VideoFrameConverter> frame_converter_;
+
+  // The callback to get a list of function for creating VideoDecoder.
+  GetCreateVDFunctionsCB get_create_vd_functions_cb_;
 
   // The current video decoder implementation. Valid after initialization is
   // successfully done.

@@ -182,7 +182,7 @@ class ScannerImplTest : public ::testing::Test {
   }
 
   TestPUPData test_pup_data_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   scoped_refptr<StrictMockEngineClient> mock_engine_client_{
       base::MakeRefCounted<StrictMockEngineClient>()};

@@ -4,6 +4,8 @@
 
 #include "cc/metrics/frame_sequence_tracker.h"
 
+#include <vector>
+
 #include "base/macros.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -49,7 +51,8 @@ class FrameSequenceTrackerTest : public testing::Test {
   }
 
   uint32_t DispatchCompleteFrame(const viz::BeginFrameArgs& args,
-                                 uint32_t damage_type) {
+                                 uint32_t damage_type,
+                                 bool has_missing_content = false) {
     StartImplAndMainFrames(args);
 
     if (damage_type & kImplDamage) {
@@ -57,8 +60,8 @@ class FrameSequenceTrackerTest : public testing::Test {
         collection_.NotifyMainFrameCausedNoDamage(args);
       }
       uint32_t frame_token = NextFrameToken();
-      collection_.NotifySubmitFrame(frame_token, viz::BeginFrameAck(args, true),
-                                    args);
+      collection_.NotifySubmitFrame(frame_token, has_missing_content,
+                                    viz::BeginFrameAck(args, true), args);
       return frame_token;
     } else {
       collection_.NotifyImplFrameCausedNoDamage(
@@ -98,6 +101,10 @@ class FrameSequenceTrackerTest : public testing::Test {
   }
 
  protected:
+  uint32_t number_of_frames_checkerboarded() const {
+    return tracker_->checkerboarding_.frames_checkerboarded;
+  }
+
   std::unique_ptr<CompositorFrameReportingController>
       compositor_frame_reporting_controller_;
   FrameSequenceTrackerCollection collection_;
@@ -131,12 +138,112 @@ TEST_F(FrameSequenceTrackerTest, SourceIdChangeDuringSequence) {
   // Since the main-frame did not have any new damage from the latest
   // BeginFrameArgs, the submit-frame will carry the previous BeginFrameArgs
   // (from source_1);
-  collection_.NotifySubmitFrame(NextFrameToken(),
+  collection_.NotifySubmitFrame(NextFrameToken(), /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args_2, true), args_1);
 }
 
 TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {
   TestNotifyFramePresented();
+}
+
+// Base case for checkerboarding: present a single frame with checkerboarding,
+// followed by a non-checkerboard frame.
+TEST_F(FrameSequenceTrackerTest, CheckerboardingSimple) {
+  CreateNewTracker();
+
+  const uint64_t source_1 = 1;
+  uint64_t sequence_1 = 0;
+
+  // Dispatch some frames, both causing damage to impl/main, and both impl and
+  // main providing damage to the frame.
+  auto args_1 = CreateBeginFrameArgs(source_1, ++sequence_1);
+  bool has_missing_content = true;
+  auto frame_token = DispatchCompleteFrame(args_1, kImplDamage | kMainDamage,
+                                           has_missing_content);
+
+  const auto interval = viz::BeginFrameArgs::DefaultInterval();
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), interval, 0);
+  collection_.NotifyFramePresented(frame_token, feedback);
+
+  // Submit another frame with no checkerboarding.
+  has_missing_content = false;
+  frame_token =
+      DispatchCompleteFrame(CreateBeginFrameArgs(source_1, ++sequence_1),
+                            kImplDamage | kMainDamage, has_missing_content);
+  feedback =
+      gfx::PresentationFeedback(base::TimeTicks::Now() + interval, interval, 0);
+  collection_.NotifyFramePresented(frame_token, feedback);
+
+  EXPECT_EQ(1u, number_of_frames_checkerboarded());
+}
+
+// Present a single frame with checkerboarding, followed by a non-checkerboard
+// frame after a few vsyncs.
+TEST_F(FrameSequenceTrackerTest, CheckerboardingMultipleFrames) {
+  CreateNewTracker();
+
+  const uint64_t source_1 = 1;
+  uint64_t sequence_1 = 0;
+
+  // Dispatch some frames, both causing damage to impl/main, and both impl and
+  // main providing damage to the frame.
+  auto args_1 = CreateBeginFrameArgs(source_1, ++sequence_1);
+  bool has_missing_content = true;
+  auto frame_token = DispatchCompleteFrame(args_1, kImplDamage | kMainDamage,
+                                           has_missing_content);
+
+  const auto interval = viz::BeginFrameArgs::DefaultInterval();
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), interval, 0);
+  collection_.NotifyFramePresented(frame_token, feedback);
+
+  // Submit another frame with no checkerboarding.
+  has_missing_content = false;
+  frame_token =
+      DispatchCompleteFrame(CreateBeginFrameArgs(source_1, ++sequence_1),
+                            kImplDamage | kMainDamage, has_missing_content);
+  feedback = gfx::PresentationFeedback(base::TimeTicks::Now() + interval * 3,
+                                       interval, 0);
+  collection_.NotifyFramePresented(frame_token, feedback);
+
+  EXPECT_EQ(3u, number_of_frames_checkerboarded());
+}
+
+// Present multiple checkerboarded frames, followed by a non-checkerboard
+// frame.
+TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
+  CreateNewTracker();
+
+  const uint32_t kFrames = 3;
+  const uint64_t source_1 = 1;
+  uint64_t sequence_1 = 0;
+
+  // Submit |kFrames| number of frames with checkerboarding.
+  std::vector<uint32_t> frames;
+  for (uint32_t i = 0; i < kFrames; ++i) {
+    auto args_1 = CreateBeginFrameArgs(source_1, ++sequence_1);
+    bool has_missing_content = true;
+    auto frame_token = DispatchCompleteFrame(args_1, kImplDamage | kMainDamage,
+                                             has_missing_content);
+    frames.push_back(frame_token);
+  }
+
+  base::TimeTicks present_now = base::TimeTicks::Now();
+  const auto interval = viz::BeginFrameArgs::DefaultInterval();
+  for (auto frame_token : frames) {
+    gfx::PresentationFeedback feedback(present_now, interval, 0);
+    collection_.NotifyFramePresented(frame_token, feedback);
+    present_now += interval;
+  }
+
+  // Submit another frame with no checkerboarding.
+  bool has_missing_content = false;
+  auto frame_token =
+      DispatchCompleteFrame(CreateBeginFrameArgs(source_1, ++sequence_1),
+                            kImplDamage | kMainDamage, has_missing_content);
+  gfx::PresentationFeedback feedback(present_now, interval, 0);
+  collection_.NotifyFramePresented(frame_token, feedback);
+
+  EXPECT_EQ(kFrames, number_of_frames_checkerboarded());
 }
 
 }  // namespace cc

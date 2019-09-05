@@ -173,7 +173,6 @@ class MockWorkerReportingProxy final : public WorkerReportingProxy {
   ~MockWorkerReportingProxy() override = default;
 
   MOCK_METHOD1(DidCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
-  MOCK_METHOD0(DidInitializeWorkerContext, void());
   MOCK_METHOD2(WillEvaluateClassicScriptMock,
                void(size_t scriptSize, size_t cachedMetadataSize));
   MOCK_METHOD1(DidEvaluateClassicScript, void(bool success));

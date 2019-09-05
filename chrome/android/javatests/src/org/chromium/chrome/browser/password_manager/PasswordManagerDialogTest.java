@@ -75,7 +75,7 @@ public class PasswordManagerDialogTest {
         mModel = mMediator.getModelForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration,
-                    OK_BUTTON, CANCEL_BUTTON, mOnClick);
+                    OK_BUTTON, CANCEL_BUTTON, mOnClick, false);
         });
     }
 

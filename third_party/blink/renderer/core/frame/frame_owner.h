@@ -103,7 +103,7 @@ class CORE_EXPORT DummyFrameOwner final
   AtomicString BrowsingContextContainerName() const override {
     return AtomicString();
   }
-  ScrollbarMode ScrollingMode() const override { return kScrollbarAuto; }
+  ScrollbarMode ScrollingMode() const override { return ScrollbarMode::kAuto; }
   int MarginWidth() const override { return -1; }
   int MarginHeight() const override { return -1; }
   bool AllowFullscreen() const override { return false; }

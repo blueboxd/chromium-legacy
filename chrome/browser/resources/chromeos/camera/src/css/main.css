@@ -493,6 +493,7 @@ body._60fps #toggle-fps {
 #resolutionsettings,
 #photoresolutionsettings,
 #videoresolutionsettings,
+#expertsettings,
 #browser,
 #message-dialog,
 #warning {
@@ -513,6 +514,7 @@ body.timersettings #timersettings,
 body.resolutionsettings #resolutionsettings,
 body.photoresolutionsettings #photoresolutionsettings,
 body.videoresolutionsettings #videoresolutionsettings,
+body.expertsettings #expertsettings,
 body.browser #browser,
 body.message-dialog #message-dialog,
 body.warning #warning {
@@ -526,6 +528,7 @@ body.timersettings #timersettings,
 body.resolutionsettings #resolutionsettings,
 body.photoresolutionsettings #photoresolutionsettings,
 body.videoresolutionsettings #videoresolutionsettings,
+body.expertsettings #expertsettings,
 body.settings #settings {
   /* Avoid flicking for transition between settings. */
   transition: opacity 0ms;
@@ -543,7 +546,9 @@ body.photoresolutionsettings #settings,
 body.photoresolutionsettings #resolutionsettings,
 body.videoresolutionsettings .left-stripe,
 body.videoresolutionsettings #settings,
-body.videoresolutionsettings #resolutionsettings {
+body.videoresolutionsettings #resolutionsettings,
+body.expertsettings .left-stripe,
+body.expertsettings #settings {
   opacity: 0;
 }
 
@@ -655,6 +660,47 @@ body.mirror:not(.streaming) #preview-video {
   transform: scale(-1.03, 1.03);
 }
 
+#preview-metadata {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  left: 60px;
+  position: absolute;
+  top: 10px;
+}
+
+.metadata-row {
+  margin-top: 5px;
+}
+
+.metadata-category {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+  color: grey;
+  display: inline;
+  font-weight: bold;
+  padding: 1px 3px 1px 3px;
+}
+
+.mode-on .metadata-category {
+  background-color: rgb(0, 128, 0);
+  color: white;
+}
+
+.metadata-value {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  display: inline;
+  padding: 1px 3px 1px 3px;
+}
+
+#preview-wb-gain-red {
+  color: red;
+}
+
+#preview-wb-gain-blue {
+  color: blue;
+}
+
 #preview-grid {
   bottom: 0;
   left: 0;
@@ -664,12 +710,24 @@ body.mirror:not(.streaming) #preview-video {
   top: 0;
 }
 
+body:not(.streaming) #preview-metadata,
 body:not(.streaming) #preview-grid,
 body:not(.streaming) #preview-focus,
 body:not(.streaming) #open-settings,
 body:not(.streaming) #toggle-mic,
 body:not(.streaming) #options-group {
   visibility: hidden;
+}
+
+body:not(.expert) #preview-metadata,
+body:not(.expert) #preview-metadata::before,
+body:not(.show-metadata) #preview-metadata,
+body:not(.show-metadata) #preview-metadata::before {
+  visibility: hidden;
+}
+
+body:not(.expert) #settings-expert {
+  display: none;
 }
 
 #preview-grid-horizontal {
@@ -1099,7 +1157,6 @@ body._10sec .description span[i18n-content=label_timer_10s],
 }
 
 .menu-item input::before {
-  border-radius: 50%;
   bottom: 13px;
   box-shadow: 0 0 0 2px rgb(241, 243, 244);
   content: '';
@@ -1107,6 +1164,10 @@ body._10sec .description span[i18n-content=label_timer_10s],
   position: absolute;
   right: 13px;
   top: 13px;
+}
+
+.menu-item input[type=radio]::before {
+  border-radius: 50%;
 }
 
 .menu-item input:checked::before {
@@ -1146,6 +1207,11 @@ body.no-resolution-settings #settings-resolution {
   background-image: url(../images/settings_resolution.svg);
 }
 
+#settings-expert .icon {
+  /* TODO(kaihsien): use correct icon */
+  background-image: url(../images/settings_resolution.svg);
+}
+
 #settings-feedback .icon {
   background-image: url(../images/settings_feedback.svg);
 }
@@ -1157,6 +1223,7 @@ body.no-resolution-settings #settings-resolution {
 #settings-gridtype .icon.end,
 #settings-timerdur .icon.end,
 #settings-resolution .icon.end,
+#settings-expert .icon.end,
 .resol-item.multi-option .icon.end {
   background-image: url(../images/settings_button_expand.svg);
 }

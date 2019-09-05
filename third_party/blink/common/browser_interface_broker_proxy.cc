@@ -48,4 +48,18 @@ bool BrowserInterfaceBrokerProxy::SetBinderForTesting(
   auto result = binder_map_for_testing_.emplace(name, std::move(binder));
   return result.second;
 }
+
+BrowserInterfaceBrokerProxy& GetEmptyBrowserInterfaceBroker() {
+  static BrowserInterfaceBrokerProxy* broker_proxy = []() {
+    BrowserInterfaceBrokerProxy* broker_proxy =
+        new BrowserInterfaceBrokerProxy();
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> remote;
+    ignore_result(remote.InitWithNewPipeAndPassReceiver());
+    broker_proxy->Bind(std::move(remote));
+    return broker_proxy;
+  }();
+
+  return *broker_proxy;
+}
+
 }  // namespace blink

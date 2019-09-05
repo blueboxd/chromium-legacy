@@ -9,6 +9,7 @@
     RuntimeEnabled=WebNFC,
     SecureContext,
     Constructor(DOMString type, NFCReadingEventInit eventInitDict),
+    RaisesException=Constructor,
     Exposed=Window
 ] interface NFCReadingEvent : Event {
     readonly attribute DOMString serialNumber;

@@ -66,6 +66,7 @@ TEST_F(BackgroundSyncMetricsTest, RecordEventResult) {
 TEST_F(BackgroundSyncMetricsTest, RecordBatchSyncEventComplete) {
   BackgroundSyncMetrics::RecordBatchSyncEventComplete(
       BackgroundSyncType::ONE_SHOT, base::TimeDelta::FromSeconds(1),
+      /* from_wakeup_task= */ false,
       /* number_of_batched_sync_events= */ 1);
   histogram_tester_.ExpectUniqueSample(
       "BackgroundSync.Event.Time",
@@ -73,6 +74,7 @@ TEST_F(BackgroundSyncMetricsTest, RecordBatchSyncEventComplete) {
 
   BackgroundSyncMetrics::RecordBatchSyncEventComplete(
       BackgroundSyncType::PERIODIC, base::TimeDelta::FromMinutes(1),
+      /* from_wakeup_task= */ false,
       /* number_of_batched_sync_events= */ 10);
   histogram_tester_.ExpectUniqueSample(
       "PeriodicBackgroundSync.Event.Time",

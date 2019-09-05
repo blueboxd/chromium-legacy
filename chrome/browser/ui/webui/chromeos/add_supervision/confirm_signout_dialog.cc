@@ -44,9 +44,7 @@ ConfirmSignoutDialog::ConfirmSignoutDialog() {
   AddChildView(body);
 }
 
-ConfirmSignoutDialog::~ConfirmSignoutDialog() {
-  ConfirmSignoutDialog::current_instance_ = nullptr;
-}
+ConfirmSignoutDialog::~ConfirmSignoutDialog() = default;
 
 ui::ModalType ConfirmSignoutDialog::GetModalType() const {
   return ui::ModalType::MODAL_TYPE_SYSTEM;
@@ -77,21 +75,12 @@ base::string16 ConfirmSignoutDialog::GetDialogButtonLabel(
 }
 
 // static
-views::Widget* ConfirmSignoutDialog::current_instance_ = nullptr;
-
-// static
 void ConfirmSignoutDialog::Show() {
   // Ownership of the ConfirmSignoutDialog is passed to the views system.
   // Dialog is system-modal, so no parent window is needed.
-  ConfirmSignoutDialog::current_instance_ =
-      constrained_window::CreateBrowserModalDialogViews(
-          new ConfirmSignoutDialog(), nullptr /* parent window */);
-  current_instance_->Show();
-}
-
-// static
-bool ConfirmSignoutDialog::IsShowing() {
-  return ConfirmSignoutDialog::current_instance_ != nullptr;
+  constrained_window::CreateBrowserModalDialogViews(new ConfirmSignoutDialog(),
+                                                    nullptr /* parent window */)
+      ->Show();
 }
 
 }  // namespace chromeos

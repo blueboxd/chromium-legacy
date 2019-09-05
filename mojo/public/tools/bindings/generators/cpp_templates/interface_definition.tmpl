@@ -410,7 +410,7 @@ bool {{class_name}}StubDispatch::Accept(
       static constexpr uint32_t kMessageHash = base::MD5Hash32Constexpr(
               "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}");
       base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
-      mojo::internal::MessageDispatchContext context(message);
+      mojo::internal::MessageDispatchContext dispatch_context(message);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
         auto context = message->TakeUnserializedContext<
@@ -468,7 +468,7 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
       static constexpr uint32_t kMessageHash = base::MD5Hash32Constexpr(
               "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}");
       base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
-      mojo::internal::MessageDispatchContext context(message);
+      mojo::internal::MessageDispatchContext dispatch_context(message);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
         auto context = message->TakeUnserializedContext<

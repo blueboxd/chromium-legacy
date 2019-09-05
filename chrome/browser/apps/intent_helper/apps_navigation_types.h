@@ -72,6 +72,7 @@ enum class PickerEntryType {
   kUnknown = 0,
   kArc,
   kWeb,
+  kDevice,
 };
 
 // Represents the data required to display an app in a picker to the user.

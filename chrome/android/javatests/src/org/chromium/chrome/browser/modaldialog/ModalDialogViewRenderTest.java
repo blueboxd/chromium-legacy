@@ -75,7 +75,6 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        setUpViews();
     }
 
     @Override
@@ -84,7 +83,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
         super.tearDownTest();
     }
 
-    private void setUpViews() {
+    private void setUpViews(int style) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Activity activity = getActivity();
             mResources = activity.getResources();
@@ -92,9 +91,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
 
             mContentView = new FrameLayout(activity);
             mModalDialogView =
-                    (ModalDialogView) LayoutInflater
-                            .from(new ContextThemeWrapper(activity,
-                                    org.chromium.chrome.R.style.Theme_Chromium_ModalDialog))
+                    (ModalDialogView) LayoutInflater.from(new ContextThemeWrapper(activity, style))
                             .inflate(org.chromium.chrome.R.layout.modal_dialog_view, null);
             mModalDialogView.setBackgroundColor(mFakeBgColor);
             activity.setContentView(mContentView);
@@ -112,6 +109,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_TitleAndTitleIcon() throws IOException {
+        setUpViews(org.chromium.chrome.R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
         final Drawable icon =
                 UiUtils.getTintedDrawable(getActivity(), org.chromium.chrome.R.drawable.ic_add,
                         org.chromium.chrome.R.color.default_icon_color);
@@ -126,6 +124,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_TitleAndMessage() throws IOException {
+        setUpViews(org.chromium.chrome.R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
         createModel(mModelBuilder
                             .with(ModalDialogProperties.TITLE, mResources,
                                     org.chromium.chrome.R.string.title)
@@ -142,7 +141,26 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
+    public void testRender_FilledPrimaryButton() throws IOException {
+        setUpViews(org.chromium.chrome.R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton);
+        createModel(mModelBuilder
+                            .with(ModalDialogProperties.TITLE, mResources,
+                                    org.chromium.chrome.R.string.title)
+                            .with(ModalDialogProperties.MESSAGE,
+                                    TextUtils.join("\n", Collections.nCopies(100, "Message")))
+                            .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mResources,
+                                    org.chromium.chrome.R.string.ok)
+                            .with(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true)
+                            .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, mResources,
+                                    org.chromium.chrome.R.string.cancel));
+        mRenderTestRule.render(mModalDialogView, "filled_primary_button");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ModalDialog", "RenderTest"})
     public void testRender_ScrollableTitle() throws IOException {
+        setUpViews(org.chromium.chrome.R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
         createModel(mModelBuilder
                             .with(ModalDialogProperties.TITLE, mResources,
                                     org.chromium.chrome.R.string.title)
@@ -158,6 +176,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_CustomView() throws IOException {
+        setUpViews(org.chromium.chrome.R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCustomTextView1.setText(
                     TextUtils.join("\n", Collections.nCopies(100, "Custom Message")));

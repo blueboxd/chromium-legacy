@@ -285,8 +285,8 @@ class ChannelPosix : public Channel,
       std::vector<base::ScopedFD> incoming_fds;
       ssize_t read_result =
           SocketRecvmsg(socket_.get(), buffer, buffer_capacity, &incoming_fds);
-      for (auto& fd : incoming_fds)
-        incoming_fds_.emplace_back(std::move(fd));
+      for (auto& incoming_fd : incoming_fds)
+        incoming_fds_.emplace_back(std::move(incoming_fd));
 
       if (read_result > 0) {
         bytes_read = static_cast<size_t>(read_result);

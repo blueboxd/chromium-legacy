@@ -20,7 +20,6 @@
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
@@ -209,72 +208,6 @@ TEST_F(AuthenticationServiceTest, TestSetPromptForSignIn) {
   EXPECT_TRUE(authentication_service()->ShouldPromptForSignIn());
   authentication_service()->ResetPromptForSignIn();
   EXPECT_FALSE(authentication_service()->ShouldPromptForSignIn());
-}
-
-TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Authentication Service does not force sign the user our during its
-    // initialization when Unified Consent feature is enabled. So this tests
-    // is meaningless when Unfied Consent is enabled.
-    return;
-  }
-
-  // Sign in.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-
-  EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
-      .WillOnce(Return(true));
-
-  EXPECT_EQ(base::SysNSStringToUTF8([identity(0) userEmail]),
-            identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_EQ(identity(0), authentication_service()->GetAuthenticatedIdentity());
-}
-
-TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Authentication Service does not force sign the user our during its
-    // initialization when Unified Consent feature is enabled. So this tests
-    // is meaningless when Unfied Consent is enabled.
-    return;
-  }
-
-  // Sign in.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-
-  EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
-      .WillOnce(Invoke(
-          sync_setup_service_mock(),
-          &SyncSetupServiceMock::SyncSetupServiceHasFinishedInitialSetup));
-  EXPECT_CALL(*mock_sync_service(), GetDisableReasons())
-      .WillOnce(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
-
-  EXPECT_EQ(base::SysNSStringToUTF8([identity(0) userEmail]),
-            identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_EQ(identity(0), authentication_service()->GetAuthenticatedIdentity());
-}
-
-TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Authentication Service does not force sign the user our when the app
-    // enters when Unified Consent feature is enabled. So this tests
-    // is meaningless when Unfied Consent is enabled.
-    return;
-  }
-
-  // Sign in.
-  SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
-
-  EXPECT_CALL(*sync_setup_service_mock(), HasFinishedInitialSetup())
-      .WillOnce(Return(false));
-  // Expect a call to disable sync as part of the sign out process.
-  EXPECT_CALL(*mock_sync_service(), StopAndClear());
-
-  // User is signed out if sync initial setup isn't completed.
-  EXPECT_TRUE(identity_manager()->GetPrimaryAccountInfo().email.empty());
-  EXPECT_FALSE(authentication_service()->GetAuthenticatedIdentity());
 }
 
 TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {

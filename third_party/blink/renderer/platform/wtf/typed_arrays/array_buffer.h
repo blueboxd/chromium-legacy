@@ -76,8 +76,7 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
 
   // Creates a new ArrayBuffer object with copy of bytes in this object
   // ranging from |begin| up to but not including |end|.
-  inline scoped_refptr<ArrayBuffer> Slice(int begin, int end) const;
-  inline scoped_refptr<ArrayBuffer> Slice(int begin) const;
+  inline scoped_refptr<ArrayBuffer> Slice(unsigned begin, unsigned end) const;
 
   void AddView(ArrayBufferView*);
   void RemoveView(ArrayBufferView*);
@@ -108,30 +107,12 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
       unsigned element_byte_size,
       ArrayBufferContents::InitializationPolicy);
 
-  inline scoped_refptr<ArrayBuffer> SliceImpl(unsigned begin,
-                                              unsigned end) const;
-  inline unsigned ClampIndex(int index) const;
-  static inline unsigned ClampValue(int x, unsigned left, unsigned right);
+  inline unsigned ClampIndex(unsigned index) const;
 
   ArrayBufferContents contents_;
   ArrayBufferView* first_view_;
   bool is_detached_;
 };
-
-unsigned ArrayBuffer::ClampValue(int x, unsigned left, unsigned right) {
-  DCHECK_LE(left, right);
-  unsigned result;
-  if (x < 0)
-    result = left;
-  else
-    result = static_cast<unsigned>(x);
-
-  if (result < left)
-    result = left;
-  if (right < result)
-    result = right;
-  return result;
-}
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Create(unsigned num_elements,
                                                unsigned element_byte_size) {
@@ -264,25 +245,16 @@ unsigned ArrayBuffer::ByteLength() const {
   return static_cast<unsigned>(contents_.DataLength());
 }
 
-scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(int begin, int end) const {
-  return SliceImpl(ClampIndex(begin), ClampIndex(end));
-}
-
-scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(int begin) const {
-  return SliceImpl(ClampIndex(begin), ByteLength());
-}
-
-scoped_refptr<ArrayBuffer> ArrayBuffer::SliceImpl(unsigned begin,
-                                                  unsigned end) const {
+scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(unsigned begin,
+                                              unsigned end) const {
+  begin = ClampIndex(begin);
+  end = ClampIndex(end);
   size_t size = static_cast<size_t>(begin <= end ? end - begin : 0);
   return ArrayBuffer::Create(static_cast<const char*>(Data()) + begin, size);
 }
 
-unsigned ArrayBuffer::ClampIndex(int index) const {
-  unsigned current_length = ByteLength();
-  if (index < 0)
-    index = static_cast<int>(current_length + index);
-  return ClampValue(index, 0, current_length);
+unsigned ArrayBuffer::ClampIndex(unsigned index) const {
+  return index < ByteLength() ? index : ByteLength();
 }
 
 }  // namespace WTF

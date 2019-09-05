@@ -34,7 +34,7 @@ bool IntentPickerView::Update() {
 
   SetVisible(ShouldShowIcon());
 
-  if (!GetVisible())
+  if (was_visible && !GetVisible())
     IntentPickerBubbleView::CloseCurrentBubble();
 
   return was_visible != GetVisible();

@@ -617,7 +617,7 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
 }
 
 SMILTime SVGSMILElement::Elapsed() const {
-  return time_container_ ? time_container_->CurrentDocumentTime() : 0;
+  return time_container_ ? time_container_->Elapsed() : 0;
 }
 
 bool SVGSMILElement::IsFrozen() const {
@@ -702,9 +702,9 @@ static void InsertSortedAndUnique(Vector<SMILTimeWithOrigin>& list,
 void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
                                      SMILTimeWithOrigin::Origin origin) {
-  SMILTime elapsed = Elapsed();
-  if (elapsed.IsUnresolved())
-    return;
+  SMILTime current_presentation_time =
+      time_container_ ? time_container_->CurrentDocumentTime() : 0;
+  DCHECK(!current_presentation_time.IsUnresolved());
   SMILTimeWithOrigin time_with_origin(time, origin);
   // Ignore new instance times for 'end' if the element is not active
   // and the origin is script.
@@ -715,9 +715,9 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
       begin_or_end == kBegin ? begin_times_ : end_times_;
   InsertSortedAndUnique(list, time_with_origin);
   if (begin_or_end == kBegin)
-    BeginListChanged(elapsed);
+    BeginListChanged(current_presentation_time);
   else
-    EndListChanged(elapsed);
+    EndListChanged(current_presentation_time);
 }
 
 SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
@@ -1225,7 +1225,9 @@ void SVGSMILElement::CreateInstanceTimesFromSyncBase(
           // If the STAPIT algorithm works, the current document
           // time will be accurate. So this event should be sent
           // correctly.
-          time = Elapsed() + condition->Offset();
+          SMILTime base_time =
+              time_container_ ? time_container_->CurrentDocumentTime() : 0;
+          time = base_time + condition->Offset();
         }
       }
       if (!time.IsFinite())

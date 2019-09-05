@@ -11,6 +11,6 @@ dictionary TrustedTypePolicyOptions {
    CreateURLCallback createURL;
 };
 
-callback CreateHTMLCallback = DOMString (DOMString input);
-callback CreateScriptCallback = DOMString (DOMString input);
-callback CreateURLCallback = USVString (DOMString input);
+callback CreateHTMLCallback = DOMString? (DOMString input);
+callback CreateScriptCallback = DOMString? (DOMString input);
+callback CreateURLCallback = USVString? (DOMString input);

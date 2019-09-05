@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/web_font_decoder.h"
 
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"

@@ -66,14 +66,6 @@ enum class NotificationLifeCycleEvent {
   kMaxValue = kClientCancel
 };
 
-// Enum to distinguish different databases used in notification scheduling
-// system.
-enum class DatabaseType {
-  kImpressionDb = 0,
-  kNotificationDb = 1,
-  kIconDb = 2,
-};
-
 // Logs the user action when the user interacts with notification sent from the
 // scheduling system.
 void LogUserAction(const UserActionData& user_action_data);
@@ -85,18 +77,23 @@ void LogBackgroundTaskEvent(BackgroundTaskEvent event);
 // Logs the number of notification shown in the current background task.
 void LogBackgroundTaskNotificationShown(int shown_count);
 
-// Logs database initialization result and the number of records in the
-// database.
-void LogDbInit(DatabaseType type, bool success, int entry_count);
+// Logs the initialization result for impression database.
+void LogImpressionDbInit(bool success, int entry_count);
 
-// Logs the database operation result.
-void LogDbOperation(DatabaseType type, bool success);
+// Logs impression db operations result except the initialization.
+void LogImpressionDbOperation(bool success);
 
 // Logs the number of impression data in the impression database.
 void LogImpressionCount(int impression_count, SchedulerClientType type);
 
 // Logs user impression events for notification scheduling system.
-void LogImpressionEvent(ImpressionEvent event);
+void LogImpressionrEvent(ImpressionEvent event);
+
+// Logs the initialization result for notification database.
+void LogNotificationDbInit(bool success, int entry_count);
+
+// Logs notification db operations result except the initialization.
+void LogNotificationDbOperation(bool success);
 
 // Logs metrics before showing the notification.
 void LogNotificationShow(const NotificationData& notification_data,

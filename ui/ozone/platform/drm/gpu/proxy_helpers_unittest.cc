@@ -90,7 +90,7 @@ class ProxyHelpersTest : public testing::Test {
 
  protected:
   // Main thread message loop.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
   // Thread to simulate the drm thread in ozone viz process.

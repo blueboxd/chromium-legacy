@@ -47,12 +47,8 @@ class NavigatorScreenManagerImpl final
 
   ScreenManager* GetScreen(ExecutionContext* execution_context) {
     if (!screen_manager_) {
-      auto* browser_interface_broker_proxy =
-          execution_context->GetBrowserInterfaceBrokerProxy();
-      if (!browser_interface_broker_proxy)
-        return nullptr;
       mojo::Remote<mojom::blink::ScreenEnumeration> backend;
-      browser_interface_broker_proxy->GetInterface(
+      execution_context->GetBrowserInterfaceBroker().GetInterface(
           backend.BindNewPipeAndPassReceiver());
       screen_manager_ = MakeGarbageCollected<ScreenManager>(std::move(backend));
     }

@@ -168,7 +168,7 @@ void ProfileMenuView::BuildMenu() {
     AddProfileMenuView(avatar_menu_.get());
     return;
   }
-  SetIdentity();
+  BuildIdentity();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -368,7 +368,7 @@ void ProfileMenuView::RecordClick(ActionableItem item) {
   base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
 }
 
-void ProfileMenuView::SetIdentity() {
+void ProfileMenuView::BuildIdentity() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
@@ -379,9 +379,15 @@ void ProfileMenuView::SetIdentity() {
           account);
 
   if (account_info.has_value()) {
-    SetIdentityImage(account_info.value().account_image);
+    SetIdentityInfo(account_info.value().account_image,
+                    base::UTF8ToUTF16(account_info.value().full_name),
+                    base::UTF8ToUTF16(account_info.value().email));
   } else {
-    SetIdentityImage(GetProfileAttributesEntry(profile)->GetAvatarIcon());
+    ProfileAttributesEntry* profile_attributes =
+        GetProfileAttributesEntry(profile);
+    SetIdentityInfo(
+        profile_attributes->GetAvatarIcon(), profile_attributes->GetName(),
+        l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
 }
 

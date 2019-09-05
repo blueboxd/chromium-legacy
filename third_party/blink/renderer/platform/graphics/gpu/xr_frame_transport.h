@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_XR_FRAME_TRANSPORT_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -35,7 +35,8 @@ class PLATFORM_EXPORT XRFrameTransport final
   ~XRFrameTransport() override;
 
   void BindSubmitFrameClient(
-      device::mojom::blink::XRPresentationClientRequest request);
+      mojo::PendingReceiver<device::mojom::blink::XRPresentationClient>
+          receiver);
 
   void PresentChange();
 
@@ -72,8 +73,8 @@ class PLATFORM_EXPORT XRFrameTransport final
   void OnSubmitFrameRendered() override;
   void OnSubmitFrameGpuFence(const gfx::GpuFenceHandle&) override;
 
-  mojo::Binding<device::mojom::blink::XRPresentationClient>
-      submit_frame_client_binding_;
+  mojo::Receiver<device::mojom::blink::XRPresentationClient>
+      submit_frame_client_receiver_{this};
 
   // Used to keep the image alive until the next frame if using
   // waitForPreviousTransferToFinish.

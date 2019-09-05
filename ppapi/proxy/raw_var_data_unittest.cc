@@ -52,7 +52,7 @@ class RawVarDataTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment
+  base::test::SingleThreadTaskEnvironment
       task_environment_;  // Required to receive callbacks.
   TestGlobals globals_;
 };

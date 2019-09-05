@@ -49,7 +49,7 @@ class ResourceTrackerTest : public testing::Test {
   ResourceTracker& resource_tracker() { return *globals_.GetResourceTracker(); }
 
  private:
-  base::test::TaskEnvironment
+  base::test::SingleThreadTaskEnvironment
       task_environment_;  // Required to receive callbacks.
   TestGlobals globals_;
 };

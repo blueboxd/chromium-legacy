@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/scoped_wake_lock.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -13,9 +14,9 @@ namespace policy {
 ScopedWakeLock::ScopedWakeLock(service_manager::Connector* connector,
                                device::mojom::WakeLockType type,
                                const std::string& reason) {
-  device::mojom::WakeLockProviderPtr provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&provider));
+  mojo::Remote<device::mojom::WakeLockProvider> provider;
+  connector->Connect(device::mojom::kServiceName,
+                     provider.BindNewPipeAndPassReceiver());
   provider->GetWakeLockWithoutContext(type,
                                       device::mojom::WakeLockReason::kOther,
                                       reason, mojo::MakeRequest(&wake_lock_));

@@ -87,7 +87,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
 void WebAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
-    UninstallExternalWebAppCallback callback) {
+    UninstallWebAppCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
+                                             UninstallWebAppCallback) {
   NOTIMPLEMENTED();
 }
 

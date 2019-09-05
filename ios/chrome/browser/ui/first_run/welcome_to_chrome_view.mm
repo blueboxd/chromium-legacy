@@ -296,7 +296,6 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
     UIImage* selectedImage = [[UIImage imageNamed:kCheckBoxCheckedImageName]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [_checkBoxButton setImage:selectedImage forState:UIControlStateSelected];
-    _checkBoxButton.tintColor = [UIColor colorNamed:kBlueColor];
   }
   return _checkBoxButton;
 }

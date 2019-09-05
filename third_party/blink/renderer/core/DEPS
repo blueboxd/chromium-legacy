@@ -59,6 +59,7 @@ include_rules = [
     "+services/metrics/public",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/features.h",
+    "+services/network/public/cpp/request_mode.h",
     "+services/network/public/cpp/shared_url_loader_factory.h",
     "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
     "+services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h",

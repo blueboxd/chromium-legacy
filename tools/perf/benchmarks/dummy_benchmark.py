@@ -13,7 +13,6 @@ import random
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.value import scalar
 from telemetry.page import legacy_page_test
 
 from page_sets import dummy_story_set
@@ -27,12 +26,8 @@ class _DummyTest(legacy_page_test.LegacyPageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     del tab  # unused
-    results.AddValue(scalar.ScalarValue(
-        page=page,
-        name='gaussian-value', units='ms',
-        value=random.gauss(self._avg, self._std),
-        description=('Random number that follows the Gaussian distribution '
-                     'with mean=%s and std=%s' % (self._avg, self._std))))
+    value = random.gauss(self._avg, self._std)
+    results.AddMeasurement('gaussian-value', 'ms', value)
 
 
 class _DummyBenchmark(perf_benchmark.PerfBenchmark):

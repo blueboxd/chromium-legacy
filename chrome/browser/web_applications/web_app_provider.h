@@ -33,6 +33,7 @@ class AppIconManager;
 class ExternalWebAppManager;
 class FileHandlerManager;
 class InstallFinalizer;
+class ManifestUpdateManager;
 class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
 class WebAppInstallManager;
@@ -69,6 +70,7 @@ class WebAppProvider : public WebAppProviderBase {
   AppRegistrar& registrar() override;
   InstallManager& install_manager() override;
   InstallFinalizer& install_finalizer() override;
+  ManifestUpdateManager& manifest_update_manager() override;
   PendingAppManager& pending_app_manager() override;
   WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
@@ -120,6 +122,7 @@ class WebAppProvider : public WebAppProviderBase {
   std::unique_ptr<FileHandlerManager> file_handler_manager_;
   std::unique_ptr<AppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
+  std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;

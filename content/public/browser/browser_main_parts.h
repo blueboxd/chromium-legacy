@@ -37,9 +37,11 @@ namespace content {
 //    running your code at a particular time? Document these things!
 //  - Split out any platform-specific bits. Please avoid #ifdefs it at all
 //    possible. You have two choices for platform-specific code: (1) Execute it
-//    from one of the platform-specific |Pre/Post...()| methods; do this if the
-//    code is unique to a platform type. Or (2) execute it from one of the
-//    "parts" (e.g., |EarlyInitialization()|) and provide platform-specific
+//    from one of the |Pre/Post...()| methods in a embedder's platform-specific
+//    override (e.g., ChromeBrowserMainPartsWin::PreMainMessageLoopStart()); do
+//    this if the code is unique to an embedder and platform type. Or (2)
+//    execute it from one of the "stages" (e.g.,
+//    |BrowserMainLoop::EarlyInitialization()|) and provide platform-specific
 //    implementations of your code (in a virtual method); do this if you need to
 //    provide different implementations across most/all platforms.
 //  - Unless your new code is just one or two lines, put it into a separate

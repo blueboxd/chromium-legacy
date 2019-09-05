@@ -145,8 +145,6 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   SetUILabelScaledFont(_detailTextLabel, [MDCTypography body1Font]);
   _detailTextLabel.numberOfLines = 0;
   _detailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
-
-  self.tintColor = [UIColor colorNamed:kBlueColor];
 }
 
 // Set constraints on subviews.

@@ -12,11 +12,12 @@
 #include "build/build_config.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/input_method_minimal.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
-#include "ui/ozone/platform/headless/headless_native_display_delegate.h"
+#include "ui/ozone/platform/headless/headless_screen.h"
 #include "ui/ozone/platform/headless/headless_surface_factory.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
@@ -82,7 +83,10 @@ class OzonePlatformHeadless : public OzonePlatform {
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return std::make_unique<HeadlessNativeDisplayDelegate>();
+    return nullptr;
+  }
+  std::unique_ptr<PlatformScreen> CreateScreen() override {
+    return std::make_unique<HeadlessScreen>();
   }
   std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate) override {

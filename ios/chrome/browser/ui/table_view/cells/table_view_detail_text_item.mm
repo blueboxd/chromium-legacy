@@ -59,7 +59,6 @@
   } else {
     cell.detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
   }
-  cell.tintColor = [UIColor colorNamed:kBlueColor];
   cell.textLabel.textAlignment =
       self.textAlignment ? self.textAlignment : NSTextAlignmentNatural;
   cell.detailTextLabel.textAlignment =

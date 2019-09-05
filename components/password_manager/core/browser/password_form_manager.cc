@@ -596,10 +596,8 @@ PasswordFormManager::PasswordFormManager(
 
 void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
-  std::vector<const PasswordForm*> matches = GetAllMatches();
-
-  password_manager_util::FindBestMatches(matches, &best_matches_,
-                                         &preferred_match_);
+  best_matches_ = form_fetcher_->GetBestMatches();
+  preferred_match_ = form_fetcher_->GetPreferredMatch();
 
   // Copy out blacklisted matches.
   new_blacklisted_.reset();
@@ -937,7 +935,8 @@ void PasswordFormManager::CreatePendingCredentials() {
     // Generate username correction votes.
     bool username_correction_found =
         votes_uploader_.FindCorrectedUsernameElement(
-            GetAllMatches(), parsed_submitted_form_->username_value,
+            form_fetcher_->GetAllRelevantMatches(),
+            parsed_submitted_form_->username_value,
             parsed_submitted_form_->password_value);
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.UsernameCorrectionFound",
                           username_correction_found);
@@ -1107,8 +1106,8 @@ void PasswordFormManager::PresaveGeneratedPasswordInternal(
   // generated password is saved.
   parsed_form->password_value = generated_password;
 
-  generation_state_->PresaveGeneratedPassword(std::move(*parsed_form),
-                                              GetAllMatches());
+  generation_state_->PresaveGeneratedPassword(
+      std::move(*parsed_form), form_fetcher_->GetAllRelevantMatches());
 }
 
 void PasswordFormManager::CalculateFillingAssistanceMetric(
@@ -1134,16 +1133,6 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
 #endif
 }
 
-std::vector<const PasswordForm*> PasswordFormManager::GetAllMatches() const {
-  std::vector<const autofill::PasswordForm*> result =
-      form_fetcher_->GetNonFederatedMatches();
-  PasswordForm::Scheme observed_form_scheme = GetScheme();
-  base::EraseIf(result, [observed_form_scheme](const auto* form) {
-    return form->scheme != observed_form_scheme;
-  });
-  return result;
-}
-
 void PasswordFormManager::SavePendingToStore(bool update) {
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
       *parsed_submitted_form_, best_matches_);
@@ -1154,12 +1143,15 @@ void PasswordFormManager::SavePendingToStore(bool update) {
   base::string16 old_password =
       saved_form ? saved_form->password_value : base::string16();
   if (HasGeneratedPassword()) {
-    generation_state_->CommitGeneratedPassword(pending_credentials_,
-                                               GetAllMatches(), old_password);
+    generation_state_->CommitGeneratedPassword(
+        pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
+        old_password);
   } else if (update) {
-    form_saver_->Update(pending_credentials_, GetAllMatches(), old_password);
+    form_saver_->Update(pending_credentials_,
+                        form_fetcher_->GetAllRelevantMatches(), old_password);
   } else {
-    form_saver_->Save(pending_credentials_, GetAllMatches(), old_password);
+    form_saver_->Save(pending_credentials_,
+                      form_fetcher_->GetAllRelevantMatches(), old_password);
   }
 }
 

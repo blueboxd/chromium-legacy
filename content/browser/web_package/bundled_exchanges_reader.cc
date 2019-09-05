@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
@@ -222,8 +223,8 @@ void BundledExchangesReader::ReadMetadataInternal(MetadataCallback callback,
                                                   base::File file) {
   base::File::Error error = parser_.OpenFile(std::move(file));
   if (base::File::FILE_OK != error) {
-    PostTask(
-        FROM_HERE,
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             std::move(callback),
             data_decoder::mojom::BundleMetadataParseError::New(

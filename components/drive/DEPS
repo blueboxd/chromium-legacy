@@ -4,7 +4,7 @@ include_rules = [
   "+components/prefs",
   "+google_apis",
   "+google/cacheinvalidation/types.pb.h",
-  "+mojo/public/cpp/bindings/interface_request.h",
+  "+mojo/public",
   "+net",
   "+services/device/public/mojom",
   "+services/network",

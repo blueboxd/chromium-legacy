@@ -28,7 +28,6 @@ public class PasswordCheckupLauncher {
         GooglePasswordManagerUIProvider googlePasswordManagerUIProvider =
                 AppHooks.get().createGooglePasswordManagerUIProvider();
         if (googlePasswordManagerUIProvider == null) return false;
-        // TODO(crbug.com/986317): Add check for minimum Google Play Services version.
         return googlePasswordManagerUIProvider.launchPasswordCheckup(activity);
     }
 }

@@ -322,15 +322,14 @@ void SetReferrer(
     // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
     // and store it elsewhere. See https://crbug.com/850813.
     request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_policy_to_use, request.RequestorOrigin(), request.Url(),
-        referrer_to_use));
+        referrer_policy_to_use, request.Url(), referrer_to_use));
   } else {
     // In the case of stale requests that are being revalidated, these requests
     // will already have their HttpReferrer set, and we will end up here. We
     // won't regenerate the referrer, but instead check that it's still correct.
-    CHECK_EQ(SecurityPolicy::GenerateReferrer(
-                 request.GetReferrerPolicy(), request.RequestorOrigin(),
-                 request.Url(), request.ReferrerString())
+    CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
+                                              request.Url(),
+                                              request.ReferrerString())
                  .referrer,
              request.HttpReferrer());
   }
@@ -359,13 +358,10 @@ void SetSecFetchHeaders(
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
       }
 
-      request.SetHttpHeaderField(
-          "Sec-Fetch-Mode", network::RequestModeToString(request.GetMode()));
-
       // Note that the `Sec-Fetch-User` header is always false (and therefore
       // omitted) for subresource requests. Likewise, note that we rely on
       // Blink's embedder to set `Sec-Fetch-Site`, as we don't want to trust the
-      // renderer to assert its own origin.
+      // renderer to assert its own origin. Ditto for `Sec-Fetch-Mode`.
     }
   }
 }

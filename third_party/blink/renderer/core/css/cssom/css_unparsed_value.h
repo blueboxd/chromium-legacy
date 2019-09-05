@@ -33,6 +33,11 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   static CSSUnparsedValue* FromCSSValue(const CSSVariableReferenceValue&);
   static CSSUnparsedValue* FromCSSValue(const CSSCustomPropertyDeclaration&);
   static CSSUnparsedValue* FromCSSVariableData(const CSSVariableData&);
+  static CSSUnparsedValue* FromString(const String& string) {
+    HeapVector<CSSUnparsedSegment> tokens;
+    tokens.push_back(CSSUnparsedSegment::FromString(string));
+    return Create(tokens);
+  }
 
   CSSUnparsedValue(const HeapVector<CSSUnparsedSegment>& tokens)
       : CSSStyleValue(), tokens_(tokens) {}
@@ -53,13 +58,9 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
     CSSStyleValue::Trace(visitor);
   }
 
- private:
-  static CSSUnparsedValue* FromString(const String& string) {
-    HeapVector<CSSUnparsedSegment> tokens;
-    tokens.push_back(CSSUnparsedSegment::FromString(string));
-    return Create(tokens);
-  }
+  String ToStringForTesting() const { return ToString(); }
 
+ private:
   String ToString() const;
 
   FRIEND_TEST_ALL_PREFIXES(CSSVariableReferenceValueTest, MixedList);

@@ -102,6 +102,13 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // URLs get deleted.
   void SaveQueryMixedRankerAfterDelete();
 
+  // Calculates the final score for the given zero state |result|, sets
+  // |result.score|, and increments the related entry in the  |type_counts| map.
+  void ScoreZeroStateItem(
+      Mixer::SortData* result,
+      RankingItemType type,
+      base::flat_map<RankingItemType, int>* type_counts) const;
+
   // Records the time of the last call to FetchRankings() and is used to
   // limit the number of queries to the models within a short timespan.
   base::Time time_of_last_fetch_;
@@ -143,9 +150,8 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Coefficients that control the weighting between different parts of the
   // score of a result in the zero-state results list.
   float zero_state_item_coeff_ = 1.0f;
-  float zero_state_group_coeff_ = 0.0f;
+  float zero_state_group_coeff_ = 0.75f;
   float zero_state_paired_coeff_ = 0.0f;
-  float zero_state_default_group_score_ = 1.0f;
 
   // Ranks apps.
   std::unique_ptr<RecurrenceRanker> app_ranker_;

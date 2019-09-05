@@ -20,6 +20,10 @@ source_set("components") {
     "install_finalizer.h",
     "install_manager.cc",
     "install_manager.h",
+    "manifest_update_manager.cc",
+    "manifest_update_manager.h",
+    "manifest_update_task.cc",
+    "manifest_update_task.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
     "policy/web_app_policy_constants.cc",
@@ -135,13 +139,16 @@ source_set("browser_tests") {
   testonly = true
 
   sources = [
+    "manifest_update_manager_browsertest.cc",
     "web_app_url_loader_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
-    "//chrome/browser/web_applications/components",
+    ":components",
+    "//chrome/app:command_ids",
+    "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
     "//net:test_support",

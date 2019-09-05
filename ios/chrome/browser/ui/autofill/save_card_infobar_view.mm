@@ -201,7 +201,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
     iconImageView.accessibilityIdentifier =
         kIconImageViewAccessibilityIdentifier;
-    iconImageView.tintColor = [UIColor colorNamed:kBlueColor];
     // Prevent the icon from shrinking horizontally. This is needed when the
     // title is long and needs to wrap.
     [iconImageView

@@ -22,7 +22,7 @@ source_set("chromeos") {
   ]
 
   if (use_vaapi || use_v4l2_codec) {
-    deps += [ "//media/gpu/linux" ]
+    deps += [ "//media/gpu/linux:common" ]
   }
 
   if (use_vaapi) {

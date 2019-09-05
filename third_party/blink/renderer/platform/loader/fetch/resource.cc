@@ -847,6 +847,8 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   switch (new_mode) {
     case network::mojom::RequestMode::kNoCors:
     case network::mojom::RequestMode::kNavigate:
+    case network::mojom::RequestMode::kNavigateNestedFrame:
+    case network::mojom::RequestMode::kNavigateNestedObject:
       break;
 
     case network::mojom::RequestMode::kCors:

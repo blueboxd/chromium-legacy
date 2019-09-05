@@ -28,7 +28,6 @@ const CGFloat kIconSize = 56;
   if (self) {
     _iconView = [[UIImageView alloc] initWithFrame:self.bounds];
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
-    _iconView.tintColor = [UIColor colorNamed:kBlueColor];
 
     [self.imageContainerView addSubview:_iconView];
     AddSameConstraints(self.imageContainerView, _iconView);

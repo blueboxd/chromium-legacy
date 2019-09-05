@@ -265,7 +265,7 @@
     "extension_types": ["extension", "platform_app"],
     "location": "policy"
   }, {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["login_screen_extension"],
     "location": "policy",
     "platforms": ["chromeos"],
@@ -445,7 +445,7 @@
     ]
   },
   "login": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["login_screen_extension", "extension"],
     "location": "policy",
     "platforms": ["chromeos"],
@@ -457,7 +457,7 @@
     ]
   },
   "loginScreenStorage": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["login_screen_extension", "extension"],
     "location": "policy",
     "platforms": ["chromeos"],
@@ -469,7 +469,7 @@
     ]
   },
   "loginScreenUi": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["login_screen_extension"],
     "location": "policy",
     "platforms": ["chromeos"],
@@ -480,7 +480,7 @@
     ]
   },
   "loginState": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["login_screen_extension", "extension"],
     "platforms": ["chromeos"]
   },

@@ -99,7 +99,6 @@ const CGFloat kVerticalMargin = 8;
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _checkmarkView = [[UIImageView alloc] initWithImage:checkmarkIcon];
     _checkmarkView.translatesAutoresizingMaskIntoConstraints = NO;
-    _checkmarkView.tintColor = [UIColor colorNamed:kBlueColor];
     _checkmarkView.hidden = YES;  // The checkmark is hidden by default.
 
     [self.contentView addSubview:_checkmarkView];

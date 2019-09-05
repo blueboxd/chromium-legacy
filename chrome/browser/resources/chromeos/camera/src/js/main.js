@@ -95,6 +95,7 @@ cca.App = function(mojoConnector) {
         this.resolBroker_),
     new cca.views.BaseSettings('#photoresolutionsettings'),
     new cca.views.BaseSettings('#videoresolutionsettings'),
+    new cca.views.BaseSettings('#expertsettings'),
     this.browserView_,
     new cca.views.Warning(),
     new cca.views.Dialog('#message-dialog'),
@@ -110,10 +111,21 @@ cca.App.useGalleryApp = function() {
 };
 
 /**
+ * Getter for App's mojo connector.
+ * @return {!cca.mojo.MojoConnector} mojoConnector The mojo connector
+ *     in App.
+ */
+cca.App.getMojoConnector = function() {
+  return cca.App.instance_.mojoConnector_;
+};
+
+/**
  * Sets up toggles (checkbox and radio) by data attributes.
  * @private
  */
 cca.App.prototype.setupToggles_ = function() {
+  cca.proxy.browserProxy.localStorageGet(
+      {expert: false}, ({expert}) => cca.state.set('expert', expert));
   document.querySelectorAll('input').forEach((element) => {
     element.addEventListener('keypress', (event) =>
         cca.util.getShortcutIdentifier(event) == 'Enter' && element.click());

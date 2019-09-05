@@ -287,9 +287,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form);
 
-  // Returns all the credentials for the origin.
-  std::vector<const autofill::PasswordForm*> GetAllMatches() const;
-
   // Save/update |pending_credentials_| to the password store.
   void SavePendingToStore(bool update);
 

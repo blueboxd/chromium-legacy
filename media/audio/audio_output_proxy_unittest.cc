@@ -488,7 +488,7 @@ class AudioOutputProxyTest : public testing::Test {
     proxy->Close();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockAudioManager manager_;
   std::unique_ptr<AudioOutputDispatcherImpl> dispatcher_impl_;
   MockAudioSourceCallback callback_;

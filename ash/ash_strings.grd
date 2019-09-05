@@ -1575,6 +1575,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_START_SMART_CARD_AUTH_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the button that starts the smart card based user authentication.">
         Sign in with smart card
       </message>
+      <message name="IDS_ASH_PIN_KEYBOARD_BACK_BUTTON" desc="Text shown on the action button of the PIN keyboard that cancels the request and goes back to the login screen UI with no PIN keyboard. NOTE: The text must be short, in order to fit into the button boundaries.">
+        BACK
+      </message>
       <message name="IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the delete button of the PIN keyboard.">
         Delete
       </message>

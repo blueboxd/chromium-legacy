@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/geolocation/geolocation_provider.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
@@ -171,7 +172,8 @@ class DeviceService : public service_manager::Service {
 
   void BindTimeZoneMonitorRequest(mojom::TimeZoneMonitorRequest request);
 
-  void BindWakeLockProviderRequest(mojom::WakeLockProviderRequest request);
+  void BindWakeLockProviderReceiver(
+      mojo::PendingReceiver<mojom::WakeLockProvider> receiver);
 
   void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
 

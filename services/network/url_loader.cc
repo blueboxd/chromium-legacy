@@ -441,7 +441,8 @@ URLLoader::URLLoader(
 
   url_request_->set_initiator(request.request_initiator);
 
-  SetSecFetchSiteHeader(url_request_.get(), nullptr, *factory_params_);
+  SetFetchMetadataHeaders(url_request_.get(), request_mode_, nullptr,
+                          *factory_params_);
 
   if (request.update_first_party_url_on_redirect) {
     url_request_->set_first_party_url_policy(
@@ -807,8 +808,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     return;
   }
 
-  SetSecFetchSiteHeader(url_request_.get(), &redirect_info.new_url,
-                        *factory_params_);
+  SetFetchMetadataHeaders(url_request_.get(), request_mode_,
+                          &redirect_info.new_url, *factory_params_);
 
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }

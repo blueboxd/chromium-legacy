@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -33,8 +34,7 @@ static void SetReferrerForRequest(Document* origin_document,
     referrer_policy_to_use = origin_document->GetReferrerPolicy();
 
   Referrer referrer = SecurityPolicy::GenerateReferrer(
-      referrer_policy_to_use, request.RequestorOrigin(), request.Url(),
-      referrer_to_use);
+      referrer_policy_to_use, request.Url(), referrer_to_use);
 
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.

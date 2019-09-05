@@ -209,44 +209,25 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
   }
 }
 
-// Tests that a whitelisted extension (as opposed to an app) gets installed when
-// on Dev, Canary or "unknown" (trunk) channels, but not on Beta or Stable
-// channels. Force-installed extensions on the sign-in screen should also
-// automatically have the |login_screen_extension| type.
+// Tests that a whitelisted extension is installed on any browser channel.
+// Force-installed extensions on the sign-in screen should also automatically
+// have the |login_screen_extension| type.
 IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
                        WhitelistedExtensionInstallation) {
   Profile* profile = GetInitialProfile();
 
   extensions::TestExtensionRegistryObserver registry_observer(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
-  ExtensionInstallErrorObserver install_error_observer(profile,
-                                                       kWhitelistedExtensionId);
 
   AddExtensionForForceInstallation(kWhitelistedExtensionId,
                                    kWhitelistedExtensionUpdateManifestPath);
 
-  switch (channel_) {
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV: {
-      registry_observer.WaitForExtensionLoaded();
-      const extensions::Extension* extension =
-          extensions::ExtensionRegistry::Get(profile)
-              ->enabled_extensions()
-              .GetByID(kWhitelistedExtensionId);
-      ASSERT_TRUE(extension);
-      EXPECT_TRUE(extension->is_login_screen_extension());
-      break;
-    }
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE: {
-      install_error_observer.Wait();
-      EXPECT_FALSE(
-          extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-              kWhitelistedExtensionId));
-      break;
-    }
-  }
+  registry_observer.WaitForExtensionLoaded();
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          kWhitelistedExtensionId);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(extension->is_login_screen_extension());
 }
 
 // Tests that a non-whitelisted extension (as opposed to an app) is forbidden

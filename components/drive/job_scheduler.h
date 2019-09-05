@@ -19,6 +19,7 @@
 #include "components/drive/job_list.h"
 #include "components/drive/job_queue.h"
 #include "components/drive/service/drive_service_interface.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -64,12 +65,13 @@ class JobScheduler
     : public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public JobListInterface {
  public:
-  JobScheduler(PrefService* pref_service,
-               EventLogger* logger,
-               DriveServiceInterface* drive_service,
-               network::NetworkConnectionTracker* network_connection_tracker,
-               base::SequencedTaskRunner* blocking_task_runner,
-               device::mojom::WakeLockProviderPtr wake_lock_provider);
+  JobScheduler(
+      PrefService* pref_service,
+      EventLogger* logger,
+      DriveServiceInterface* drive_service,
+      network::NetworkConnectionTracker* network_connection_tracker,
+      base::SequencedTaskRunner* blocking_task_runner,
+      mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider);
 
   ~JobScheduler() override;
 

@@ -649,9 +649,9 @@ void GuestOsSharePath::CheckIfVolumeMountRemoved(
                        path, path, true, ""));
     return;
   }
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&GuestOsSharePath::PathDeleted,
-                                          base::Unretained(this), path));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&GuestOsSharePath::PathDeleted,
+                                base::Unretained(this), path));
 }
 
 void GuestOsSharePath::PathDeleted(const base::FilePath& path) {

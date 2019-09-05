@@ -377,6 +377,8 @@ class PasswordFormManagerTest : public testing::Test {
   // |base_auth_observed_form|. Along the way a new |fetcher_| is created.
   void CreateFormManagerForNonWebForm(
       const PasswordForm& base_auth_observed_form) {
+    fetcher_->set_scheme(
+        PasswordStore::FormDigest(base_auth_observed_form).scheme);
     form_manager_.reset(new PasswordFormManager(
         &client_, PasswordStore::FormDigest(base_auth_observed_form),
         fetcher_.get(), std::make_unique<NiceMock<MockFormSaver>>()));

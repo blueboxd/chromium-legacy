@@ -15,6 +15,12 @@ enum RequestMode {
   kCors,
   kCorsWithForcedPreflight,
   kNavigate,
+
+  // https://github.com/whatwg/fetch/issues/755
+  kNavigateNestedFrame,
+  // https://github.com/w3c/webappsec-fetch-metadata/issues/37
+  kNavigateNestedObject,
+
   // Add a new type here, then update enums.xml.
 };
 

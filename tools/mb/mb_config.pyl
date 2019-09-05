@@ -200,6 +200,7 @@
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
       'linux-bfcache-rel': 'release_bot_minimal_symbols',
+      'linux-oor-cors-rel': 'release_bot_minimal_symbols',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
       'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',

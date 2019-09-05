@@ -7,8 +7,6 @@ import os
 from telemetry.page import legacy_page_test
 from telemetry.timeline.model import TimelineModel
 from telemetry.timeline import tracing_config
-from telemetry.value import list_of_scalar_values
-from telemetry.value import scalar
 
 
 _CR_RENDERER_MAIN = 'CrRendererMain'
@@ -41,14 +39,11 @@ def _AddTracingResults(thread, results):
       return 'idle'
     return None  # Unknown
 
-  def DumpMetric(page, name, values, unit, results):
+  def DumpMetric(name, values, unit):
     if values[name]:
-      results.AddValue(list_of_scalar_values.ListOfScalarValues(
-          page, name, unit, values[name]))
-      results.AddValue(scalar.ScalarValue(
-          page, name + '_max', unit, max(values[name])))
-      results.AddValue(scalar.ScalarValue(
-          page, name + '_total', unit, sum(values[name])))
+      results.AddMeasurement(name, unit, values[name])
+      results.AddMeasurement(name + '_max', unit, max(values[name]))
+      results.AddMeasurement(name + '_total', unit, sum(values[name]))
 
   events = thread.all_slices
   async_slices = [s for s in thread.async_slices
@@ -90,21 +85,19 @@ def _AddTracingResults(thread, results):
     values['oilpan_%s_lazy_sweep' % reason].append(lazy_sweep_time)
     values['oilpan_%s_complete_sweep' % reason].append(complete_sweep_time)
 
-  page = results.current_page
   unit = 'ms'
 
   # Dump each metric
   for reason in _GC_REASONS:
     for stage in _GC_STAGES:
-      DumpMetric(page, 'oilpan_%s_%s' % (reason, stage), values, unit, results)
+      DumpMetric('oilpan_%s_%s' % (reason, stage), values, unit)
 
   # Summarize each stage
   for stage in _GC_STAGES:
     total_time = 0
     for reason in _GC_REASONS:
       total_time += sum(values['oilpan_%s_%s' % (reason, stage)])
-    results.AddValue(
-        scalar.ScalarValue(page, 'oilpan_%s' % stage, unit, total_time))
+    results.AddMeasurement('oilpan_%s' % stage, unit, total_time)
 
   # Summarize sweeping time
   total_sweep_time = 0
@@ -113,15 +106,14 @@ def _AddTracingResults(thread, results):
     for reason in _GC_REASONS:
       sweep_time += sum(values['oilpan_%s_%s' % (reason, stage)])
     key = 'oilpan_%s' % stage
-    results.AddValue(scalar.ScalarValue(page, key, unit, sweep_time))
+    results.AddMeasurement(key, unit, sweep_time)
     total_sweep_time += sweep_time
-  results.AddValue(
-      scalar.ScalarValue(page, 'oilpan_sweep', unit, total_sweep_time))
+  results.AddMeasurement('oilpan_sweep', unit, total_sweep_time)
 
   gc_time = 0
   for key in values:
     gc_time += sum(values[key])
-  results.AddValue(scalar.ScalarValue(page, 'oilpan_gc', unit, gc_time))
+  results.AddMeasurement('oilpan_gc', unit, gc_time)
 
 
 class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):

@@ -95,6 +95,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/image_operations.h"
@@ -3031,9 +3032,10 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
     device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
     // In some testing contexts, the system Connector isn't3 initialized.
     if (GetSystemConnector()) {
-      device::mojom::WakeLockProviderPtr wake_lock_provider;
-      GetSystemConnector()->BindInterface(
-          device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
+      mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+      GetSystemConnector()->Connect(
+          device::mojom::kServiceName,
+          wake_lock_provider.BindNewPipeAndPassReceiver());
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventDisplaySleep,
           device::mojom::WakeLockReason::kOther, "GetSnapshot",

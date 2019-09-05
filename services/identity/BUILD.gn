@@ -18,9 +18,12 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/signin/public/base",
-    "//components/signin/public/identity_manager",
     "//google_apis",
+  ]
+
+  public_deps = [
+    "//components/signin/public/identity_manager",
+    "//mojo/public/cpp/bindings",
     "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/mojom",
   ]
@@ -37,8 +40,9 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//components/signin/public/base",
+    "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager:test_support",
+    "//google_apis",
     "//services/identity/public/cpp:cpp_types",
     "//services/identity/public/mojom",
     "//testing/gtest",

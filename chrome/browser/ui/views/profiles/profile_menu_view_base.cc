@@ -149,18 +149,33 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
   DCHECK(menu_item_groups_.empty());
 }
 
-void ProfileMenuViewBase::SetIdentityImage(const gfx::Image& image) {
-  identity_image_container_->RemoveAllChildViews(/*delete_children=*/true);
-  identity_image_container_->SetLayoutManager(
+void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
+                                          const base::string16& title,
+                                          const base::string16& subtitle) {
+  constexpr int kImageToLabelSpacing = 4;
+
+  identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
+  identity_info_container_->SetLayoutManager(
       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
                       views::BoxLayout::CrossAxisAlignment::kCenter));
 
-  views::ImageView* image_view = identity_image_container_->AddChildView(
+  views::ImageView* image_view = identity_info_container_->AddChildView(
       std::make_unique<views::ImageView>());
   image_view->SetImage(profiles::GetSizedAvatarIcon(
                            image, /*is_rectangle=*/true, kIdentityImageSize,
                            kIdentityImageSize, profiles::SHAPE_CIRCLE)
                            .AsImageSkia());
+
+  views::View* title_label =
+      identity_info_container_->AddChildView(std::make_unique<views::Label>(
+          title, views::style::CONTEXT_DIALOG_TITLE));
+  title_label->SetBorder(
+      views::CreateEmptyBorder(kImageToLabelSpacing, 0, 0, 0));
+
+  if (!subtitle.empty()) {
+    identity_info_container_->AddChildView(std::make_unique<views::Label>(
+        subtitle, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+  }
 }
 
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
@@ -249,7 +264,7 @@ void ProfileMenuViewBase::Reset() {
       views::BoxLayout::Orientation::kVertical));
 
   // Create and add new component containers in the correct order.
-  identity_image_container_ =
+  identity_info_container_ =
       components->AddChildView(std::make_unique<views::View>());
 
   // Create a scroll view to hold the components.

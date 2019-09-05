@@ -212,7 +212,7 @@ TEST_F(ResourceMessageFilterTest, TestHandleMessage) {
   // ResourceMessageFilter instances need to be created on a thread with message
   // loop. Therefore, we create a message loop and run the testing logic as a
   // task on it.
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // It should be safe to use base::Unretained() because the object won't be
   // destroyed before the task is run.

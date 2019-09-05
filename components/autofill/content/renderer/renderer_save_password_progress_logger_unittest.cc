@@ -102,7 +102,7 @@ class TestLogger : public RendererSavePasswordProgressLogger {
 }  // namespace
 
 TEST(RendererSavePasswordProgressLoggerTest, SendLog) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   FakeContentPasswordManagerDriver fake_driver;
   mojom::PasswordManagerDriverPtr driver_ptr =
       fake_driver.CreateInterfacePtrAndBind();

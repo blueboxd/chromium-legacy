@@ -141,7 +141,6 @@
   self.tableView.estimatedRowHeight = 56;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.estimatedSectionHeaderHeight = 0;
-  self.tableView.tintColor = [UIColor colorNamed:kBlueColor];
   // Add a tableFooterView in order to disable separators at the bottom of the
   // tableView.
   self.tableView.tableFooterView = [[UIView alloc] init];

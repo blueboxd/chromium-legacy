@@ -268,7 +268,7 @@ class WinAudioInputTest : public ::testing::Test {
   ~WinAudioInputTest() override { audio_manager_->Shutdown(); }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<AudioManager> audio_manager_;
 };
 

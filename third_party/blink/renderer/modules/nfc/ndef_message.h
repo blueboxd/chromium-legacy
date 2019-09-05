@@ -13,17 +13,22 @@
 
 namespace blink {
 
+class ExceptionState;
 class NDEFMessageInit;
 class NDEFRecord;
+class StringOrArrayBufferOrNDEFMessageInit;
+
+using NDEFMessageSource = StringOrArrayBufferOrNDEFMessageInit;
 
 class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NDEFMessage* Create(const NDEFMessageInit*);
+  static NDEFMessage* Create(const NDEFMessageInit*, ExceptionState&);
+  static NDEFMessage* Create(const NDEFMessageSource&, ExceptionState&);
 
-  NDEFMessage(const NDEFMessageInit*);
-  NDEFMessage(const device::mojom::blink::NDEFMessage&);
+  NDEFMessage();
+  explicit NDEFMessage(const device::mojom::blink::NDEFMessage&);
 
   const String& url() const;
   const HeapVector<Member<NDEFRecord>>& records() const;

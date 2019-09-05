@@ -15,6 +15,9 @@ namespace network {
 COMPONENT_EXPORT(NETWORK_CPP)
 const char* RequestModeToString(network::mojom::RequestMode mode);
 
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsNavigationRequestMode(network::mojom::RequestMode mode);
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_REQUEST_MODE_H_

@@ -4,10 +4,9 @@
 
 #include "services/identity/identity_service.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/identity/identity_accessor_impl.h"
 
 namespace identity {

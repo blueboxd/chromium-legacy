@@ -25,7 +25,7 @@ GPUComputePipeline* GPUComputePipeline::Create(
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
 
   auto compute_stage = AsDawnType(webgpu_desc->computeStage());
-  dawn_desc.computeStage = &std::get<0>(compute_stage);
+  dawn_desc.computeStage = std::get<0>(compute_stage);
 
   return MakeGarbageCollected<GPUComputePipeline>(
       device, device->GetProcs().deviceCreateComputePipeline(

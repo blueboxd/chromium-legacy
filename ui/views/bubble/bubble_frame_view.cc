@@ -72,14 +72,11 @@ const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
 BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
                                  const gfx::Insets& content_margins)
-    : bubble_border_(nullptr),
-      title_margins_(title_margins),
+    : title_margins_(title_margins),
       content_margins_(content_margins),
       footnote_margins_(content_margins_),
       title_icon_(new views::ImageView()),
-      default_title_(CreateDefaultTitleLabel(base::string16()).release()),
-      custom_title_(nullptr),
-      footnote_container_(nullptr) {
+      default_title_(CreateDefaultTitleLabel(base::string16()).release()) {
   AddChildView(title_icon_);
 
   default_title_->SetVisible(false);
@@ -267,7 +264,7 @@ void BubbleFrameView::SetTitleView(std::unique_ptr<View> title_view) {
   delete custom_title_;
   custom_title_ = title_view.get();
   // Keep the title after the icon for focus order.
-  AddChildViewAt(title_view.release(), 1);
+  AddChildViewAt(title_view.release(), GetIndexOf(title_icon_) + 1);
 }
 
 const char* BubbleFrameView::GetClassName() const {
@@ -320,6 +317,19 @@ void BubbleFrameView::Layout() {
   const gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Rect bounds = contents_bounds;
   bounds.Inset(title_margins_);
+
+  int header_bottom = 0;
+  gfx::Size header_pref_size = GetHeaderSize();
+  if (!header_pref_size.IsEmpty()) {
+    int header_width = header_pref_size.width();
+    int header_offset = (contents_bounds.width() - header_width) / 2;
+    header_view_->SetBounds(contents_bounds.x() + header_offset,
+                            contents_bounds.y(), header_pref_size.width(),
+                            header_pref_size.height());
+    bounds.Inset(0, header_pref_size.height(), 0, 0);
+    header_bottom = header_view_->bounds().bottom();
+  }
+
   if (bounds.IsEmpty())
     return;
 
@@ -331,7 +341,11 @@ void BubbleFrameView::Layout() {
     close_->SetPosition(
         gfx::Point(contents_bounds.right() - close_margin - close_->width(),
                    contents_bounds.y() + close_margin));
-    title_label_right = std::min(title_label_right, close_->x() - close_margin);
+    // Only reserve space if the close button extends over the header.
+    if (close_->bounds().bottom() > header_bottom) {
+      title_label_right =
+          std::min(title_label_right, close_->x() - close_margin);
+    }
   }
 
   gfx::Size title_icon_pref_size(title_icon_->GetPreferredSize());
@@ -441,6 +455,16 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
 
   // Update the background, which relies on the border.
   SetBackground(std::make_unique<views::BubbleBackground>(bubble_border_));
+}
+
+void BubbleFrameView::SetHeaderView(std::unique_ptr<View> view) {
+  if (header_view_) {
+    delete header_view_;
+    header_view_ = nullptr;
+  }
+
+  if (view)
+    header_view_ = AddChildViewAt(std::move(view), 0);
 }
 
 void BubbleFrameView::SetFootnoteView(std::unique_ptr<View> view) {
@@ -665,14 +689,20 @@ bool BubbleFrameView::HasTitle() const {
 }
 
 gfx::Insets BubbleFrameView::GetTitleLabelInsetsFromFrame() const {
+  int header_height = GetHeaderSize().height();
   int insets_right = 0;
   if (GetWidget()->widget_delegate()->ShouldShowCloseButton()) {
     const int close_margin =
         LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
-    insets_right = 2 * close_margin + close_->width();
+    // Note: |close_margin| is not applied on the bottom of the icon.
+    int close_height = close_margin + close_->height();
+    // Only reserve space if the close button extends over the header.
+    if (close_height > header_height)
+      insets_right = 2 * close_margin + close_->width();
   }
+
   if (!HasTitle())
-    return gfx::Insets(0, 0, 0, insets_right);
+    return gfx::Insets(header_height, 0, 0, insets_right);
 
   insets_right = std::max(insets_right, title_margins_.right());
   const gfx::Size title_icon_pref_size = title_icon_->GetPreferredSize();
@@ -680,12 +710,13 @@ gfx::Insets BubbleFrameView::GetTitleLabelInsetsFromFrame() const {
       title_icon_pref_size.width() > 0 ? title_margins_.left() : 0;
   const int insets_left =
       title_margins_.left() + title_icon_pref_size.width() + title_icon_padding;
-  return gfx::Insets(title_margins_.top(), insets_left, title_margins_.bottom(),
-                     insets_right);
+  return gfx::Insets(header_height + title_margins_.top(), insets_left,
+                     title_margins_.bottom(), insets_right);
 }
 
 gfx::Insets BubbleFrameView::GetClientInsetsForFrameWidth(
     int frame_width) const {
+  int header_height = GetHeaderSize().height();
   int close_height = 0;
   if (!ExtendClientIntoTitle() &&
       GetWidget()->widget_delegate()->ShouldShowCloseButton()) {
@@ -694,8 +725,11 @@ gfx::Insets BubbleFrameView::GetClientInsetsForFrameWidth(
     // Note: |close_margin| is not applied on the bottom of the icon.
     close_height = close_margin + close_->height();
   }
-  if (!HasTitle())
-    return content_margins_ + gfx::Insets(close_height, 0, 0, 0);
+
+  if (!HasTitle()) {
+    return content_margins_ +
+           gfx::Insets(std::max(header_height, close_height), 0, 0, 0);
+  }
 
   const int icon_height = title_icon_->GetPreferredSize().height();
   const int label_height = title()->GetHeightForWidth(
@@ -703,7 +737,14 @@ gfx::Insets BubbleFrameView::GetClientInsetsForFrameWidth(
   const int title_height =
       std::max(icon_height, label_height) + title_margins_.height();
   return content_margins_ +
-         gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
+         gfx::Insets(std::max(title_height + header_height, close_height), 0, 0,
+                     0);
+}
+
+gfx::Size BubbleFrameView::GetHeaderSize() const {
+  return header_view_ && header_view_->GetVisible()
+             ? header_view_->GetPreferredSize()
+             : gfx::Size();
 }
 
 }  // namespace views

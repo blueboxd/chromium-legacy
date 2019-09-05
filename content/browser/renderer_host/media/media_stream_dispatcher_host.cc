@@ -16,7 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/origin.h"
@@ -63,12 +63,12 @@ void MediaStreamDispatcherHost::Create(
     int render_process_id,
     int render_frame_id,
     MediaStreamManager* media_stream_manager,
-    blink::mojom::MediaStreamDispatcherHostRequest request) {
+    mojo::PendingReceiver<blink::mojom::MediaStreamDispatcherHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<MediaStreamDispatcherHost>(
           render_process_id, render_frame_id, media_stream_manager),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MediaStreamDispatcherHost::OnDeviceStopped(

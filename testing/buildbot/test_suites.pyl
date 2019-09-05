@@ -4442,6 +4442,51 @@
       },
     },
 
+    'oor_cors_gtests': {
+      'oor_cors_blink_platform_unittests': {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'blink_platform_unittests'
+      },
+      'oor_cors_browser_tests': {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'browser_tests'
+      },
+      'oor_cors_content_browsertests': {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'content_browsertests'
+      },
+      'oor_cors_content_unittests' : {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'content_unittests'
+      },
+      'oor_cors_extensions_browsertests': {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'extensions_browsertests'
+      },
+      'oor_cors_extensions_unittests': {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'extensions_unittests'
+      },
+      'oor_cors_services_unittests': {
+        'args': [
+          '--enable-features=OutOfBlinkCors'
+        ],
+        'test': 'services_unittests'
+      }
+    },
+
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},

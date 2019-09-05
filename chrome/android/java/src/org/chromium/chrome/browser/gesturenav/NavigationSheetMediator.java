@@ -16,6 +16,8 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -37,6 +39,7 @@ class NavigationSheetMediator {
     private final FaviconHelper mFaviconHelper;
     private final int mFaviconSize;
     private final ModelList mModelList;
+    private final Drawable mHistoryIcon;
 
     private NavigationHistory mHistory;
     private FaviconHelper.DefaultFaviconHelper mDefaultFaviconHelper;
@@ -74,6 +77,8 @@ class NavigationSheetMediator {
         mClickListener = listener;
         mFaviconHelper = new FaviconHelper();
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
+        mHistoryIcon = TintedDrawable.constructTintedDrawable(
+                context, R.drawable.ic_history_googblue_24dp, R.color.default_icon_color);
     }
 
     /**
@@ -96,9 +101,13 @@ class NavigationSheetMediator {
             if (!requestedUrls.contains(pageUrl)) {
                 FaviconHelper.FaviconImageCallback imageCallback =
                         (bitmap, iconUrl) -> onFaviconAvailable(pageUrl, bitmap);
-                mFaviconHelper.getLocalFaviconImageForURL(
-                        Profile.getLastUsedProfile(), pageUrl, mFaviconSize, imageCallback);
-                requestedUrls.add(pageUrl);
+                if (!pageUrl.equals(UrlConstants.HISTORY_URL)) {
+                    mFaviconHelper.getLocalFaviconImageForURL(
+                            Profile.getLastUsedProfile(), pageUrl, mFaviconSize, imageCallback);
+                    requestedUrls.add(pageUrl);
+                } else {
+                    mModelList.get(i).model.set(ItemProperties.ICON, mHistoryIcon);
+                }
             }
         }
     }

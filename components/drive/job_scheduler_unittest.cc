@@ -154,7 +154,7 @@ class JobSchedulerTest : public testing::Test {
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
         network::TestNetworkConnectionTracker::GetInstance(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
+        base::ThreadTaskRunnerHandle::Get().get(), mojo::NullRemote());
     scheduler_->SetDisableThrottling(true);
   }
 

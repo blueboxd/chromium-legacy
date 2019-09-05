@@ -173,9 +173,8 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
             }));
   }
 
-  void UninstallExternalWebApp(
-      const GURL& app_url,
-      UninstallExternalWebAppCallback callback) override {
+  void UninstallExternalWebApp(const GURL& app_url,
+                               UninstallWebAppCallback callback) override {
     DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
     uninstall_external_web_app_urls_.push_back(app_url);
 
@@ -194,6 +193,9 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
               std::move(callback).Run(uninstalled);
             }));
   }
+
+  void UninstallWebApp(const AppId& app_dd,
+                       UninstallWebAppCallback callback) override {}
 
   bool CanCreateOsShortcuts() const override {
     return can_create_os_shortcuts_;

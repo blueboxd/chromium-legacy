@@ -51,6 +51,7 @@ class ClickToCallUiController
   SharingFeatureName GetFeatureMetricsPrefix() const override;
   base::string16 GetEducationWindowTitleText() const override;
   void OnHelpTextClicked(SharingDialogType dialog_type) override;
+  int GetHeaderImageId() const override;
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);

@@ -8,6 +8,7 @@
 
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message_init.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
@@ -35,7 +36,8 @@ void NFCWriter::Trace(blink::Visitor* visitor) {
 // https://w3c.github.io/web-nfc/#the-push-method
 ScriptPromise NFCWriter::push(ScriptState* script_state,
                               const NDEFMessageSource& push_message,
-                              const NFCPushOptions* options) {
+                              const NFCPushOptions* options,
+                              ExceptionState& exception_state) {
   ExecutionContext* execution_context = GetExecutionContext();
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
@@ -54,11 +56,6 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
                           DOMExceptionCode::kAbortError, kNfcCancelled));
   }
 
-  ScriptPromise is_valid_message =
-      RejectIfInvalidNDEFMessageSource(script_state, push_message);
-  if (!is_valid_message.IsEmpty())
-    return is_valid_message;
-
   // 9. If timeout value is NaN or negative, reject promise with "TypeError"
   // and abort these steps.
   if (options->hasTimeout() &&
@@ -68,12 +65,23 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
                           script_state->GetIsolate(), kNfcInvalidPushTimeout));
   }
 
-  auto message = device::mojom::blink::NDEFMessage::From(push_message);
-  if (!message) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kSyntaxError, kNfcMsgConvertError));
+  // Step 10.8: Run "create Web NFC message", if this throws an exception,
+  // reject p with that exception and abort these steps.
+  NDEFMessage* ndef_message =
+      NDEFMessage::Create(push_message, exception_state);
+  if (exception_state.HadException()) {
+    return ScriptPromise();
   }
+
+  // If NDEFMessage.records is empty, reject promise with TypeError
+  if (ndef_message->records().size() == 0) {
+    return ScriptPromise::Reject(script_state,
+                                 V8ThrowException::CreateTypeError(
+                                     script_state->GetIsolate(), kNfcEmptyMsg));
+  }
+
+  auto message = device::mojom::blink::NDEFMessage::From(ndef_message);
+  DCHECK(message);
 
   if (!SetNDEFMessageURL(execution_context->GetSecurityOrigin()->ToString(),
                          message)) {

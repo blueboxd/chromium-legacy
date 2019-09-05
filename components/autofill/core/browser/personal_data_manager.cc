@@ -1145,8 +1145,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::vector<AutofillProfile*> matched_profiles;
   std::vector<Suggestion> suggestions =
       suggestion_selection::GetPrefixMatchedSuggestions(
-          type, field_contents_canon, comparator, sorted_profiles,
-          &matched_profiles);
+          type, field_contents, field_contents_canon, comparator,
+          field_is_autofilled, sorted_profiles, &matched_profiles);
 
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;

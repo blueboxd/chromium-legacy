@@ -66,6 +66,8 @@ CameraAppDeviceImpl::CameraAppDeviceImpl(const std::string& device_id,
     : device_id_(device_id),
       camera_info_(std::move(camera_info)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      capture_intent_(cros::mojom::CaptureIntent::DEFAULT),
+      next_observer_id_(0),
       weak_ptr_factory_(
           std::make_unique<base::WeakPtrFactory<CameraAppDeviceImpl>>(this)) {}
 
@@ -113,6 +115,18 @@ void CameraAppDeviceImpl::GetFpsRange(const gfx::Size& resolution,
 cros::mojom::CaptureIntent CameraAppDeviceImpl::GetCaptureIntent() {
   base::AutoLock lock(capture_intent_lock_);
   return capture_intent_;
+}
+
+void CameraAppDeviceImpl::OnResultMetadataAvailable(
+    const cros::mojom::CameraMetadataPtr& metadata,
+    cros::mojom::StreamType streamType) {
+  base::AutoLock lock(observers_lock_);
+
+  const auto& observer_ids = stream_observer_ids_[streamType];
+
+  for (auto& id : observer_ids) {
+    observers_[id]->OnMetadataAvailable(metadata.Clone());
+  }
 }
 
 void CameraAppDeviceImpl::SetReprocessResult(
@@ -206,6 +220,37 @@ void CameraAppDeviceImpl::SetCaptureIntent(
   base::AutoLock lock(capture_intent_lock_);
   capture_intent_ = capture_intent;
   std::move(callback).Run();
+}
+
+void CameraAppDeviceImpl::AddResultMetadataObserver(
+    mojo::PendingRemote<cros::mojom::ResultMetadataObserver> observer,
+    cros::mojom::StreamType stream_type,
+    AddResultMetadataObserverCallback callback) {
+  base::AutoLock lock(observers_lock_);
+
+  uint32_t id = next_observer_id_++;
+  observers_[id] =
+      mojo::Remote<cros::mojom::ResultMetadataObserver>(std::move(observer));
+  stream_observer_ids_[stream_type].insert(id);
+
+  std::move(callback).Run(id);
+}
+
+void CameraAppDeviceImpl::RemoveResultMetadataObserver(
+    uint32_t id,
+    RemoveResultMetadataObserverCallback callback) {
+  base::AutoLock lock(observers_lock_);
+
+  if (observers_.erase(id) == 0) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  for (auto& kv : stream_observer_ids_) {
+    auto& observer_ids = kv.second;
+    observer_ids.erase(id);
+  }
+  std::move(callback).Run(true);
 }
 
 }  // namespace media

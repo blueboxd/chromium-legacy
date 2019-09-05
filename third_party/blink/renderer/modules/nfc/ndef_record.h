@@ -24,22 +24,32 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NDEFRecord* Create(const NDEFRecordInit*);
+  static NDEFRecord* Create(const NDEFRecordInit*, ExceptionState&);
 
-  NDEFRecord(const NDEFRecordInit*);
-  NDEFRecord(const device::mojom::blink::NDEFRecordPtr&);
+  // Construct a "text" record from a string.
+  explicit NDEFRecord(const String&);
+
+  // Construct a "opaque" record from an array buffer.
+  explicit NDEFRecord(DOMArrayBuffer*);
+
+  NDEFRecord(const String&, const String&, WTF::Vector<uint8_t>);
+  explicit NDEFRecord(const device::mojom::blink::NDEFRecordPtr&);
 
   const String& recordType() const;
   const String& mediaType() const;
   String toText() const;
   DOMArrayBuffer* toArrayBuffer() const;
-  ScriptValue toJSON(ScriptState*, ExceptionState& exception_state) const;
+  ScriptValue toJSON(ScriptState*, ExceptionState&) const;
+
+  const WTF::Vector<uint8_t>& data() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   String record_type_;
   String media_type_;
+  // Holds the NDEFRecord.[[PayloadData]] bytes defined at
+  // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
   WTF::Vector<uint8_t> data_;
 };
 

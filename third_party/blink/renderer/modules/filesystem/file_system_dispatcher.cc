@@ -100,12 +100,9 @@ mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
         file_system_manager_.BindNewPipeAndPassReceiver(
             GetSupplementable()->GetTaskRunner(
                 blink::TaskType::kMiscPlatformAPI));
-    // Document::GetBrowserInterfaceBrokerProxy() can return null if the frame
-    // is detached.
-    if (GetSupplementable()->GetBrowserInterfaceBrokerProxy()) {
-      GetSupplementable()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-          std::move(receiver));
-    }
+
+    GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
+        std::move(receiver));
   }
   DCHECK(file_system_manager_);
   return *file_system_manager_.get();

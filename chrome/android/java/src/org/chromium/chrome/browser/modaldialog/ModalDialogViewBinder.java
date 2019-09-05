@@ -40,6 +40,7 @@ public class ModalDialogViewBinder
                     !model.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_TEXT == propertyKey) {
             assert checkFilterTouchConsistency(model);
+            assert checkFilledButtonConsistency(model);
             view.setButtonText(ModalDialogProperties.ButtonType.NEGATIVE,
                     model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
         } else if (ModalDialogProperties.NEGATIVE_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
@@ -62,6 +63,9 @@ public class ModalDialogViewBinder
                     model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY));
         } else if (ModalDialogProperties.CONTENT_DESCRIPTION == propertyKey) {
             // Intentionally left empty since this is a property used for the dialog container.
+        } else if (ModalDialogProperties.PRIMARY_BUTTON_FILLED == propertyKey) {
+            assert checkFilledButtonConsistency(model);
+            // Intentionally left empty since this is only read once before the dialog is inflated.
         } else {
             assert false : "Unhandled property detected in ModalDialogViewBinder!";
         }
@@ -73,9 +77,21 @@ public class ModalDialogViewBinder
      * are hidden, filtering touch events doesn't have effect.
      * @return false if security sensitive dialog doesn't have standard buttons.
      */
-    static boolean checkFilterTouchConsistency(PropertyModel model) {
+    private static boolean checkFilterTouchConsistency(PropertyModel model) {
         return !model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY)
                 || !TextUtils.isEmpty(model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT))
                 || !TextUtils.isEmpty(model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
+    }
+
+    /**
+     * Checks if the PRIMARY_BUTTON_FILLED property is consistent with the set of enabled buttons.
+     * The primary button cannot be the only button in the dialog.
+     * @return false if the property is set to true, but there is only one button.
+     */
+    private static boolean checkFilledButtonConsistency(PropertyModel model) {
+        return !(model.get(ModalDialogProperties.PRIMARY_BUTTON_FILLED)
+                && (TextUtils.isEmpty(model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT))
+                        || TextUtils.isEmpty(
+                                model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT))));
     }
 }

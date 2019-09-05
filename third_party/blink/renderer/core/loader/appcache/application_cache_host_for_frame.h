@@ -18,7 +18,7 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
  public:
   ApplicationCacheHostForFrame(
       DocumentLoader* document_loader,
-      const BrowserInterfaceBrokerProxy* interface_broker_proxy,
+      const BrowserInterfaceBrokerProxy& interface_broker_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // ApplicationCacheHost:

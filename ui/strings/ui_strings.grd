@@ -982,6 +982,9 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
         turn on sync
       </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL" desc="The button label to make a call, shown in the Click to Call dialog.">
+        Make call
+      </message>
       <message name="IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL" desc="The label to be shown next to the omnibox icon when the message is being sent to the other device.">
         Sending...
       </message>

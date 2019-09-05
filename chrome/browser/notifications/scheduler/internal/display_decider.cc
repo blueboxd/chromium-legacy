@@ -73,6 +73,8 @@ class DecisionHelper {
   bool ShouldFilterOut(const NotificationEntry* entry) {
     base::Time now = clock_->Now();
     // Filter with time window. Must have |deliver_time_start|.
+    // TODO(xingliu): Delete notifications when scheduling params is invalid.
+    // See https://crbug.com/996016.
     if (!entry->schedule_params.deliver_time_start.has_value())
       return true;
     bool meet_deliver_time_start =

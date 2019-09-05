@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/extensions/api/login.h"
 #include "chrome/common/pref_names.h"
@@ -80,16 +79,6 @@ ExtensionFunction::ResponseAction LoginExitCurrentSessionFunction::Run() {
 
   chrome::AttemptUserExit();
   return RespondNow(NoArguments());
-}
-
-LoginIsRunningInLoginProfileFunction::LoginIsRunningInLoginProfileFunction() =
-    default;
-LoginIsRunningInLoginProfileFunction::~LoginIsRunningInLoginProfileFunction() =
-    default;
-
-ExtensionFunction::ResponseAction LoginIsRunningInLoginProfileFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      profile_id() == chromeos::ProfileHelper::Get()->GetSigninProfile())));
 }
 
 LoginFetchDataForNextLoginAttemptFunction::

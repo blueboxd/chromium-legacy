@@ -68,7 +68,7 @@ void TestCallback_3(int p1, const std::string& p2, Param p3) {
 }  // namespace
 
 class PpapiProxyLockTest : public testing::Test {
-  base::test::TaskEnvironment
+  base::test::SingleThreadTaskEnvironment
       task_environment_;  // Required to receive callbacks.
 };
 

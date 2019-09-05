@@ -132,7 +132,7 @@ cca.views.camera.Modes = function(
     },
     'photo-mode': {
       captureFactory: () => new cca.views.camera.Photo(
-          this.stream_, doSavePhoto, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_, mojoConnector),
       isSupported: async () => true,
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -141,7 +141,7 @@ cca.views.camera.Modes = function(
     },
     'square-mode': {
       captureFactory: () => new cca.views.camera.Square(
-          this.stream_, doSavePhoto, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_, mojoConnector),
       isSupported: async () => true,
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -182,6 +182,10 @@ cca.views.camera.Modes = function(
         this.doSwitchMode_().then(() => cca.state.set('mode-switching', false));
       }
     });
+  });
+
+  ['expert', 'save-metadata'].forEach((state) => {
+    cca.state.addObserver(state, this.updateSaveMetadata_.bind(this));
   });
 
   // Set default mode when app started.
@@ -354,6 +358,42 @@ cca.views.camera.Modes.prototype.updateMode =
     this.allModes_[mode].resolutionConfig.updateValues(
         deviceId, stream, ...this.captureResolution_);
   }
+  await this.updateSaveMetadata_();
+};
+
+/**
+ * Checks whether to save image metadata or not.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Modes.prototype.updateSaveMetadata_ = async function() {
+  if (cca.state.get('expert') && cca.state.get('save-metadata')) {
+    await this.enableSaveMetadata_();
+  } else {
+    await this.disableSaveMetadata_();
+  }
+};
+
+/**
+ * Enables save metadata of subsequent photos in the current mode.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Modes.prototype.enableSaveMetadata_ = async function() {
+  if (this.current !== null) {
+    await this.current.addMetadataObserver();
+  }
+};
+
+/**
+ * Disables save metadata of subsequent photos in the current mode.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Modes.prototype.disableSaveMetadata_ = async function() {
+  if (this.current !== null) {
+    await this.current.removeMetadataObserver();
+  }
 };
 
 /**
@@ -407,6 +447,18 @@ cca.views.camera.Mode.prototype.stopCapture = async function() {
   this.stop_();
   return await this.capture_;
 };
+
+/**
+ * Adds an observer to save image metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Mode.prototype.addMetadataObserver = async function() {};
+
+/**
+ * Remove the observer that saves metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Mode.prototype.removeMetadataObserver = async function() {};
 
 /**
  * Initiates video/photo capture operation under this mode.
@@ -574,9 +626,11 @@ cca.views.camera.Video.prototype.captureVideo_ = async function() {
  * @param {MediaStream} stream
  * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
+ * @param {cca.mojo.MojoConnector} mojoConnector
  * @constructor
  */
-cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
+cca.views.camera.Photo = function(
+    stream, doSavePhoto, captureResolution, mojoConnector) {
   cca.views.camera.Mode.call(this, stream, captureResolution);
 
   /**
@@ -587,11 +641,33 @@ cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
   this.doSavePhoto_ = doSavePhoto;
 
   /**
+   * Mojo connector to add metadata observers and construct
+   * CrOS ImageCapture in Portrait mode.
+   * @type {cca.mojo.MojoConnector}
+   * @private
+   */
+  this.mojoConnector_ = mojoConnector;
+
+  /**
    * ImageCapture object to capture still photos.
    * @type {?ImageCapture}
    * @private
    */
   this.imageCapture_ = null;
+
+  /**
+   * The observer id for saving metadata.
+   * @type {?number}
+   * @private
+   */
+  this.metadataObserverId_ = null;
+
+  /**
+   * Metadata names ready to be saved.
+   * @type {!Array<string>}
+   * @private
+   */
+  this.metadataNames_ = [];
 };
 
 cca.views.camera.Photo.prototype = {
@@ -602,6 +678,7 @@ cca.views.camera.Photo.prototype = {
  * @override
  */
 cca.views.camera.Photo.prototype.start_ = async function() {
+  cca.sound.play('#sound-shutter');
   if (this.imageCapture_ == null) {
     try {
       this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
@@ -611,14 +688,19 @@ cca.views.camera.Photo.prototype.start_ = async function() {
     }
   }
 
+  const imageName = (new cca.models.Filenamer()).newImageName();
+  if (this.metadataObserverId_ !== null) {
+    this.metadataNames_.push(cca.models.Filenamer.getMetadataName(imageName));
+  }
+
   try {
     var result = await this.createPhotoResult_();
   } catch (e) {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
-  cca.sound.play('#sound-shutter');
-  await this.doSavePhoto_(result, (new cca.models.Filenamer()).newImageName());
+
+  await this.doSavePhoto_(result, imageName);
 };
 
 /**
@@ -646,14 +728,88 @@ cca.views.camera.Photo.prototype.createPhotoResult_ = async function() {
 };
 
 /**
+ * Adds an observer to save metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Photo.prototype.addMetadataObserver = async function() {
+  if (!this.stream_) {
+    return;
+  }
+
+  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
+  if (!deviceOperator) {
+    return;
+  }
+
+  const cameraMetadataTagInverseLookup = {};
+  Object.keys(cros.mojom.CameraMetadataTag).entries((key, value) => {
+    if (key === 'MIN_VALUE' || key === 'MAX_VALUE') {
+      return;
+    }
+    cameraMetadataTagInverseLookup[value] = key;
+  });
+
+  const callback = (metadata) => {
+    const parsedMetadata = {};
+    for (const entry of metadata.entries) {
+      const key = cameraMetadataTagInverseLookup[entry.tag];
+      if (key === undefined) {
+        // TODO(kaihsien): Add support for vendor tags.
+        continue;
+      }
+
+      const val = cca.mojo.parseMetadataData(entry);
+      parsedMetadata[key] = val;
+    }
+
+    cca.models.FileSystem.saveBlob(
+        new Blob(
+            [JSON.stringify(parsedMetadata, null, 2)],
+            {type: 'application/json'}),
+        this.metadataNames_.shift());
+  };
+
+  const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+  this.metadataObserverId_ = await deviceOperator.addMetadataObserver(
+      deviceId, callback, cros.mojom.StreamType.JPEG_OUTPUT);
+};
+
+/**
+ * Removes the observer that saves metadata.
+ * @return {!Promise} Promise for the operation.
+ */
+cca.views.camera.Photo.prototype.removeMetadataObserver = async function() {
+  if (!this.stream_ || this.metadataObserverId_ === null) {
+    return;
+  }
+
+  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
+  if (!deviceOperator) {
+    return;
+  }
+
+  const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+  const isSuccess = await deviceOperator.removeMetadataObserver(
+      deviceId, this.metadataObserverId_);
+  if (!isSuccess) {
+    console.error(`Failed to remove metadata observer with id: ${
+        this.metadataObserverId_}`);
+  }
+  this.metadataObserverId_ = null;
+};
+
+/**
  * Square mode capture controller.
  * @param {MediaStream} stream
  * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
+ * @param {cca.mojo.MojoConnector} mojoConnector
  * @constructor
  */
-cca.views.camera.Square = function(stream, doSavePhoto, captureResolution) {
-  cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
+cca.views.camera.Square = function(
+    stream, doSavePhoto, captureResolution, mojoConnector) {
+  cca.views.camera.Photo.call(
+      this, stream, doSavePhoto, captureResolution, mojoConnector);
 
   /**
    * Photo saving callback from parent.
@@ -708,7 +864,8 @@ cca.views.camera.Square.prototype.cropSquare = async function(blob) {
  */
 cca.views.camera.Portrait = function(
     stream, doSavePhoto, captureResolution, mojoConnector) {
-  cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
+  cca.views.camera.Photo.call(
+      this, stream, doSavePhoto, captureResolution, mojoConnector);
 
   /**
    * ImageCapture object to capture still photos.
@@ -716,13 +873,6 @@ cca.views.camera.Portrait = function(
    * @private
    */
   this.crosImageCapture_ = null;
-
-  /**
-   * Mojo connector that used to construct CrOS ImageCapture.
-   * @type {cca.mojo.MojoConnector}
-   * @private
-   */
-  this.mojoConnector_ = mojoConnector;
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -736,6 +886,7 @@ cca.views.camera.Portrait.prototype = {
  * @override
  */
 cca.views.camera.Portrait.prototype.start_ = async function() {
+  cca.sound.play('#sound-shutter');
   if (this.crosImageCapture_ == null) {
     try {
       this.crosImageCapture_ = new cca.mojo.ImageCapture(
@@ -757,6 +908,17 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
       imageHeight: caps.imageHeight.max,
     };
   }
+
+  const filenamer = new cca.models.Filenamer();
+  const refImageName = filenamer.newBurstName(false);
+  const portraitImageName = filenamer.newBurstName(true);
+
+  if (this.metadataObserverId_ !== null) {
+    [refImageName, portraitImageName].forEach((imageName) => {
+      this.metadataNames_.push(cca.models.Filenamer.getMetadataName(imageName));
+    });
+  }
+
   try {
     var [reference, portrait] = this.crosImageCapture_.takePhoto(
         photoSettings, [cros.mojom.Effect.PORTRAIT_MODE]);
@@ -764,9 +926,11 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
-  let filenamer = new cca.models.Filenamer();
-  let playSound = false;
-  const [refSave, portraitSave] = [reference, portrait].map(async (p) => {
+
+  const [refSave, portraitSave] = [
+    [reference, refImageName],
+    [portrait, portraitImageName],
+  ].map(async ([p, imageName]) => {
     const isPortrait = Object.is(p, portrait);
     try {
       var blob = await p;
@@ -776,14 +940,8 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
                        'error_msg_take_photo_failed');
       throw e;
     }
-    if (!playSound) {
-      playSound = true;
-      cca.sound.play('#sound-shutter');
-    }
     const {width, height} = await cca.util.blobToImage(blob);
-    await this.doSavePhoto_(
-        {resolution: {width, height}, blob},
-        filenamer.newBurstName(!isPortrait));
+    await this.doSavePhoto_({resolution: {width, height}, blob}, imageName);
   });
   try {
     await portraitSave;

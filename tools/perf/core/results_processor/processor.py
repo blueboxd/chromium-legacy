@@ -16,11 +16,13 @@ import re
 import sys
 
 from py_utils import cloud_storage
+from core.results_processor import json3_output
 
 
 TELEMETRY_RESULTS = '_telemetry_results.jsonl'
 SUPPORTED_FORMATS = {
     'none': NotImplemented,
+    'json-test-results': json3_output,
 }
 
 

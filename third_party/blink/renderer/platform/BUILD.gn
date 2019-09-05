@@ -1693,7 +1693,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "fonts/generic_font_family_settings_test.cc",
     "fonts/mac/font_matcher_mac_test.mm",
     "fonts/opentype/font_settings_test.cc",
-    "fonts/opentype/open_type_caps_support_test.cc",
     "fonts/opentype/open_type_vertical_data_test.cc",
     "fonts/orientation_iterator_test.cc",
     "fonts/script_run_iterator_test.cc",
@@ -1835,7 +1834,10 @@ jumbo_source_set("blink_platform_unittests_sources") {
   if (is_win) {
     sources += [ "text/locale_win_test.cc" ]
   } else if (is_mac) {
-    sources += [ "text/locale_mac_test.mm" ]
+    sources += [
+      "fonts/opentype/open_type_caps_support_test.mm",
+      "text/locale_mac_test.mm",
+    ]
   } else if (is_posix || is_fuchsia) {
     sources += [ "text/locale_icu_test.cc" ]
   }

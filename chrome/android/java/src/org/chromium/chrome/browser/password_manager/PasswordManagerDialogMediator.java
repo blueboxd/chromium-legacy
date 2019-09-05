@@ -83,11 +83,12 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
         mModel.set(DETAILS, details);
     }
 
-    void setButtons(
-            String positiveButtonText, String negativeButtonText, Callback<Integer> onClick) {
+    void setButtons(String positiveButtonText, String negativeButtonText, Callback<Integer> onClick,
+            boolean primaryButtonFilled) {
         mModalDialogBuilder.with(ModalDialogProperties.CONTROLLER, new DialogClickHandler(onClick))
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
-                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText);
+                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText)
+                .with(ModalDialogProperties.PRIMARY_BUTTON_FILLED, primaryButtonFilled);
     }
 
     private boolean hasSufficientSpaceForIllustration(int heightPx) {

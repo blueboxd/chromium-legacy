@@ -72,8 +72,13 @@ void IncognitoMenuView::BuildMenu() {
                             base::Unretained(this)));
     return;
   }
-  SetIdentityImage(
-      gfx::Image(gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color)));
+  SetIdentityInfo(
+      gfx::Image(gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color)),
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
+      incognito_window_count > 1
+          ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
+                                             incognito_window_count)
+          : base::string16());
 }
 
 base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {

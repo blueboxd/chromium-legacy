@@ -113,7 +113,8 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
 class MacAudioInputTest : public testing::Test {
  protected:
   MacAudioInputTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
@@ -158,7 +159,7 @@ class MacAudioInputTest : public testing::Test {
 
   void OnLogMessage(const std::string& message) { log_message_ = message; }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<AudioManager> audio_manager_;
   std::string log_message_;
 };

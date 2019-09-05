@@ -104,7 +104,6 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
                             SourceLocation*) override;
   void WillInitializeWorkerContext() override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
-  void DidInitializeWorkerContext() override;
   void DidLoadClassicScript() override;
   void DidFailToLoadClassicScript() override;
   void DidFetchScript() override;

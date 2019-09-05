@@ -782,6 +782,11 @@ const char kCrossOriginEmbedderPolicyName[] = "Cross Origin Embedder Policy";
 const char kCrossOriginEmbedderPolicyDescription[] =
     "Enable Cross Origin Embedder Policy (https://mikewest.github.io/corpp/).";
 
+const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
+const char kDisableKeepaliveFetchDescription[] =
+    "Disable fetch with keepalive set "
+    "(https://fetch.spec.whatwg.org/#request-keepalive-flag).";
+
 const char kExperimentalAccessibilityFeaturesName[] =
     "Experimental accessibility features";
 const char kExperimentalAccessibilityFeaturesDescription[] =
@@ -3647,16 +3652,8 @@ const char kWebGL2ComputeContextDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-
-const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
-const char kDirectManipulationStylusDescription[] =
-    "If enabled, Chrome will scroll web pages on stylus drag.";
-
-const char kAnimatedAvatarButtonName[] = "Animated avatar button";
-const char kAnimatedAvatarButtonDescription[] =
-    "If enabled, Chrome will animate a pill with identity information around "
-    "the avatar button on start-up and on sign-in.";
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 
 const char kClickToCallContextMenuForSelectedTextName[] =
     "Enable click to call feature on desktop when a phone number is selected";
@@ -3669,6 +3666,20 @@ const char kClickToCallUIName[] =
 const char kClickToCallUIDescription[] =
     "Enables click to call feature signals to be handled on desktop by showing "
     "a list of user's available devices with telephony functionality.";
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
+const char kDirectManipulationStylusDescription[] =
+    "If enabled, Chrome will scroll web pages on stylus drag.";
+
+const char kAnimatedAvatarButtonName[] = "Animated avatar button";
+const char kAnimatedAvatarButtonDescription[] =
+    "If enabled, Chrome will animate a pill with identity information around "
+    "the avatar button on start-up and on sign-in.";
 
 const char kProfileMenuRevampName[] = "Profile menu revamp";
 const char kProfileMenuRevampDescription[] =

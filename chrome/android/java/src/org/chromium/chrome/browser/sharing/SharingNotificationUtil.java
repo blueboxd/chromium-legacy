@@ -172,23 +172,20 @@ public final class SharingNotificationUtil {
      * @param type          The type of notification.
      * @param group         The notification group.
      * @param id            The notification id.
-     * @param contentNameId ResId of content name.
+     * @param contentTitle  The title of the notification.
+     * @param contentText   The text shown in the notification.
      * @param token         Token returned from {@link #showSendingNotification}
-     * @param result        Result of sending Sharing message.
      */
     public static void showSendErrorNotification(@SystemNotificationType int type, String group,
-            int id, int contentNameId, int token, @SharingSendMessageResult int result) {
+            int id, String contentTitle, String contentText, int token) {
         if (sDismissedSendingNotifications.remove(token)) {
             return;
         }
 
+        // TODO(himanshujaju) - Dismiss ongoing notification here?
+
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
-        // TODO(crbug/996322): Show error message base on |result|.
-        String contentName = resources.getString(contentNameId);
-        String contentTitle = resources.getString(
-                R.string.sharing_internal_error_notification_title, contentName);
-        String contentText = resources.getString(R.string.sharing_internal_error_notification_text);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(/*preferCompat=*/true,
@@ -204,7 +201,7 @@ public final class SharingNotificationUtil {
                         .setSmallIcon(R.drawable.ic_error_outline_red_24dp)
                         .setContentText(contentText)
                         .setDefaults(Notification.DEFAULT_ALL);
-        ChromeNotification notification = builder.buildChromeNotification();
+        ChromeNotification notification = builder.buildWithBigTextStyle(contentText);
 
         new NotificationManagerProxyImpl(context).notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(

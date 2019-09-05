@@ -27,10 +27,9 @@ CachedNavigationURLLoader::CachedNavigationURLLoader(
   // Normal navigations never call OnResponseStarted on the same message loop
   // iteration that the NavigationURLLoader is created, because they have to
   // make a network request.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
-                     weak_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void CachedNavigationURLLoader::OnResponseStarted() {

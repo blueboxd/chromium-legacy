@@ -252,7 +252,6 @@ const CGFloat kIconTrailingMargin = 12;
   UIImageView* iconView = [[UIImageView alloc] initWithImage:icon];
   self.iconView = iconView;
   self.iconView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.iconView.tintColor = [UIColor colorNamed:kBlueColor];
   [contentView addSubview:self.iconView];
 
   TranslateInfobarLanguageTabStripView* languagesView =

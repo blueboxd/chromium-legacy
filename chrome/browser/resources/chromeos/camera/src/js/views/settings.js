@@ -72,6 +72,7 @@ cca.views.MasterSettings = function() {
     'settings-gridtype': () => this.openSubSettings('gridsettings'),
     'settings-timerdur': () => this.openSubSettings('timersettings'),
     'settings-resolution': () => this.openSubSettings('resolutionsettings'),
+    'settings-expert': () => this.openSubSettings('expertsettings'),
     'settings-feedback': () => this.openFeedback(),
     'settings-help': () => cca.util.openHelp(),
   });

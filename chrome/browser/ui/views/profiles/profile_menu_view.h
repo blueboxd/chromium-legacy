@@ -98,7 +98,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   static bool close_on_deactivate_for_testing_;
 
   // Helper methods for building the menu.
-  void SetIdentity();
+  void BuildIdentity();
 
   // Adds the profile chooser view.
   void AddProfileMenuView(AvatarMenu* avatar_menu);

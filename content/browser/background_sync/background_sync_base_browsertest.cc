@@ -128,10 +128,10 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread(
                           std::move(callback)));
 }
 
-void BackgroundSyncBaseBrowserTest::SetTestClockOnIOThread(
+void BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread(
     BackgroundSyncContextImpl* sync_context,
     base::SimpleTestClock* clock) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(clock);
 
   BackgroundSyncManager* background_sync_manager =
@@ -205,19 +205,24 @@ bool BackgroundSyncBaseBrowserTest::RunScript(const std::string& script,
 }
 
 void BackgroundSyncBaseBrowserTest::SetTestClock(base::SimpleTestClock* clock) {
-  base::RunLoop run_loop;
-
   StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BackgroundSyncBaseBrowserTest::SetTestClockOnIOThread,
-                     base::Unretained(this), base::Unretained(sync_context),
-                     clock),
-      run_loop.QuitClosure());
-
-  run_loop.Run();
+  // TODO(crbug.com/824858): Remove the else branch after the feature is
+  // enabled. Also, try to make a RunOrPostTaskOnThreadAndReply() function so
+  // the if/else isn't needed.
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    SetTestClockOnCoreThread(sync_context, clock);
+  } else {
+    base::RunLoop run_loop;
+    base::PostTaskAndReply(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+        base::BindOnce(&BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread,
+                       base::Unretained(this), base::Unretained(sync_context),
+                       clock),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
 }
 
 void BackgroundSyncBaseBrowserTest::ClearStoragePartitionData() {

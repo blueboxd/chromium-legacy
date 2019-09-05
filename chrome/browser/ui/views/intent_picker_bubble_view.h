@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -32,6 +33,7 @@ class Event;
 }  // namespace ui
 
 class IntentPickerLabelButton;
+class PageActionIconView;
 
 // A bubble that displays a list of applications (icons and names), after the
 // list the UI displays a checkbox to allow the user remember the selection and
@@ -61,6 +63,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   using AppInfo = apps::IntentPickerAppInfo;
 
   IntentPickerBubbleView(views::View* anchor_view,
+                         PageActionIconView* icon_view,
+                         PageActionIconType icon_type,
                          std::vector<AppInfo> app_info,
                          IntentPickerResponse intent_picker_cb,
                          content::WebContents* web_contents,
@@ -69,7 +73,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   ~IntentPickerBubbleView() override;
 
   static views::Widget* ShowBubble(views::View* anchor_view,
-                                   views::Button* highlighted_button,
+                                   PageActionIconView* icon_view,
+                                   PageActionIconType icon_type,
                                    content::WebContents* web_contents,
                                    std::vector<AppInfo> app_info,
                                    bool show_stay_in_chrome,
@@ -104,9 +109,13 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, ChromeNotInCandidates);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, StayInChromeTest);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WebContentsTiedToBubble);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WindowTitle);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, ButtonLabels);
 
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleViewForTesting(
       views::View* anchor_view,
+      PageActionIconView* icon_view,
+      PageActionIconType icon_type,
       std::vector<AppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
@@ -133,10 +142,12 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // Retrieves the IntentPickerLabelButton* contained at position |index| from
   // the internal ScrollView.
   IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
-  void RunCallback(const std::string& launch_name,
-                   apps::PickerEntryType entry_type,
-                   apps::IntentPickerCloseReason close_reason,
-                   bool should_persist);
+
+  // Runs |intent_picker_cb_| and closes the current bubble view.
+  void RunCallbackAndCloseBubble(const std::string& launch_name,
+                                 apps::PickerEntryType entry_type,
+                                 apps::IntentPickerCloseReason close_reason,
+                                 bool should_persist);
 
   // Returns true if this picker has candidates for the user to choose from, and
   // false otherwise. For instance, if Chrome was the only app candidate
@@ -159,6 +170,9 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
   // Updates whether the persistence checkbox is enabled or not.
   void UpdateCheckboxState();
+
+  // Clears the current bubble and updates the icon.
+  void ClearBubbleView();
 
   gfx::ImageSkia GetAppImageForTesting(size_t index);
   views::InkDropState GetInkDropStateForTesting(size_t);
@@ -183,6 +197,12 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
   // Whether 'Remember my choice' checkbox should be shown or hidden.
   const bool show_remember_selection_;
+
+  // The corresponding icon view shown in the omnibox.
+  PageActionIconView* icon_view_;
+
+  // The type of the icon shown in the omnibox.
+  const PageActionIconType icon_type_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleView);
 };

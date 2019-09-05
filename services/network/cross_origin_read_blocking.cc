@@ -713,6 +713,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // valid CORS headers.
   switch (request_mode) {
     case mojom::RequestMode::kNavigate:
+    case mojom::RequestMode::kNavigateNestedFrame:
+    case mojom::RequestMode::kNavigateNestedObject:
     case mojom::RequestMode::kNoCors:
     case mojom::RequestMode::kSameOrigin:
       break;

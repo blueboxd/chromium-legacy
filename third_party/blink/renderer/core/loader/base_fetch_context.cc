@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 
+#include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -136,8 +137,8 @@ BaseFetchContext::CanRequestInternal(
   // On navigation cases, Context().GetSecurityOrigin() may return nullptr, so
   // the request's origin may be nullptr.
   // TODO(yhirano): Figure out if it's actually fine.
-  DCHECK(request_mode == network::mojom::RequestMode::kNavigate || origin);
-  if (request_mode != network::mojom::RequestMode::kNavigate &&
+  DCHECK(network::IsNavigationRequestMode(request_mode) || origin);
+  if (!network::IsNavigationRequestMode(request_mode) &&
       !origin->CanDisplay(url)) {
     if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
       AddConsoleMessage(ConsoleMessage::Create(

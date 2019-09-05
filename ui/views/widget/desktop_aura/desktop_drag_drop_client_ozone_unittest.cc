@@ -54,6 +54,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   void ConfineCursorToBounds(const gfx::Rect& bounds) override {}
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override {}
   gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
+  void SetUseNativeFrame(bool use_native_frame) override {}
 
   // ui::WmDragHandler
   void StartDrag(const OSExchangeData& data,
@@ -146,10 +147,10 @@ class FakeDragDropDelegate : public aura::client::DragDropDelegate {
 
   void OnDragExited() override { ++num_exits_; }
 
-  int OnPerformDrop(const ui::DropTargetEvent& event) override {
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override {
     ++num_drops_;
-    received_data_ =
-        std::make_unique<OSExchangeData>(event.data().provider().Clone());
+    received_data_ = std::move(data);
     return destination_operation_;
   }
 
@@ -171,16 +172,16 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
   ~DesktopDragDropClientOzoneTest() override = default;
 
   int StartDragAndDrop(int operation) {
-    ui::OSExchangeData data;
-    data.SetString(base::ASCIIToUTF16("Test"));
+    auto data = std::make_unique<ui::OSExchangeData>();
+    data->SetString(base::ASCIIToUTF16("Test"));
     SkBitmap drag_bitmap;
     drag_bitmap.allocN32Pixels(10, 10);
     drag_bitmap.eraseARGB(0xFF, 0, 0, 0);
     gfx::ImageSkia drag_image(gfx::ImageSkia::CreateFrom1xBitmap(drag_bitmap));
-    data.provider().SetDragImage(drag_image, gfx::Vector2d());
+    data->provider().SetDragImage(drag_image, gfx::Vector2d());
 
     return client_->StartDragAndDrop(
-        data, widget_->GetNativeWindow()->GetRootWindow(),
+        std::move(data), widget_->GetNativeWindow()->GetRootWindow(),
         widget_->GetNativeWindow(), gfx::Point(), operation,
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }

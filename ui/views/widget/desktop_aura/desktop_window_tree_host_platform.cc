@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display.h"
@@ -284,22 +285,31 @@ void DesktopWindowTreeHostPlatform::StackAtTop() {
 }
 
 void DesktopWindowTreeHostPlatform::CenterWindow(const gfx::Size& size) {
-  gfx::Rect bounds_to_center_in = GetWorkAreaBoundsInScreen();
+  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(size)).size();
+  gfx::Rect parent_bounds_in_pixels = ToPixelRect(GetWorkAreaBoundsInScreen());
 
-  // If there is a transient parent and it fits |size|, then center over it.
-  aura::Window* content_window = desktop_native_widget_aura_->content_window();
-  if (wm::GetTransientParent(content_window)) {
-    gfx::Rect transient_parent_bounds =
-        wm::GetTransientParent(content_window)->GetBoundsInScreen();
-    if (transient_parent_bounds.height() >= size.height() &&
-        transient_parent_bounds.width() >= size.width()) {
-      bounds_to_center_in = transient_parent_bounds;
+  // If |window_|'s transient parent bounds are big enough to contain |size|,
+  // use them instead.
+  if (wm::GetTransientParent(content_window())) {
+    gfx::Rect transient_parent_rect =
+        wm::GetTransientParent(content_window())->GetBoundsInScreen();
+    if (transient_parent_rect.height() >= size.height() &&
+        transient_parent_rect.width() >= size.width()) {
+      parent_bounds_in_pixels = ToPixelRect(transient_parent_rect);
     }
   }
 
-  gfx::Rect resulting_bounds(bounds_to_center_in);
-  resulting_bounds.ClampToCenteredSize(size);
-  SetBoundsInDIP(resulting_bounds);
+  gfx::Rect window_bounds_in_pixels(
+      parent_bounds_in_pixels.x() +
+          (parent_bounds_in_pixels.width() - size_in_pixels.width()) / 2,
+      parent_bounds_in_pixels.y() +
+          (parent_bounds_in_pixels.height() - size_in_pixels.height()) / 2,
+      size_in_pixels.width(), size_in_pixels.height());
+  // Don't size the window bigger than the parent, otherwise the user may not be
+  // able to close or move it.
+  window_bounds_in_pixels.AdjustToFit(parent_bounds_in_pixels);
+
+  SetBoundsInPixels(window_bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostPlatform::GetWindowPlacement(
@@ -311,12 +321,13 @@ void DesktopWindowTreeHostPlatform::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetWindowBoundsInScreen() const {
-  return gfx::ConvertRectToDIP(device_scale_factor(), GetBoundsInPixels());
+  return ToDIPRect(GetBoundsInPixels());
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetClientAreaBoundsInScreen() const {
-  // View-to-screen coordinate system transformations depend on this returning
-  // the full window bounds, for example View::ConvertPointToScreen().
+  // Attempts to calculate the rect by asking the NonClientFrameView what it
+  // thought its GetBoundsForClientView() were broke combobox drop down
+  // placement.
   return GetWindowBoundsInScreen();
 }
 
@@ -350,6 +361,7 @@ void DesktopWindowTreeHostPlatform::Activate() {
 }
 
 void DesktopWindowTreeHostPlatform::Deactivate() {
+  ReleaseCapture();
   platform_window()->Deactivate();
 }
 
@@ -415,8 +427,15 @@ bool DesktopWindowTreeHostPlatform::SetWindowTitle(
 }
 
 void DesktopWindowTreeHostPlatform::ClearNativeFocus() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  // This method is weird and misnamed. Instead of clearing the native focus,
+  // it sets the focus to our content_window(), which will trigger a cascade
+  // of focus changes into views.
+  if (content_window() && aura::client::GetFocusClient(content_window()) &&
+      content_window()->Contains(
+          aura::client::GetFocusClient(content_window())->GetFocusedWindow())) {
+    aura::client::GetFocusClient(content_window())
+        ->FocusWindow(content_window());
+  }
 }
 
 Widget::MoveLoopResult DesktopWindowTreeHostPlatform::RunMoveLoop(

@@ -874,7 +874,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
-  blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() override;
+  blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() override;
   void EvictFromBackForwardCache() override;
 
   // WebFrameSerializerClient implementation:

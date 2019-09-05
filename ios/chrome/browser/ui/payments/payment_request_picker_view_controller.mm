@@ -114,8 +114,6 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
       kPaymentRequestPickerSearchBarAccessibilityID;
   self.tableView.tableHeaderView = self.searchController.searchBar;
 
-  self.tableView.tintColor = [UIColor colorNamed:kBlueColor];
-
   // Presentation of searchController will walk up the view controller hierarchy
   // until it finds the root view controller or one that defines a presentation
   // context. Make this class the presentation context so that the search

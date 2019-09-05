@@ -24,6 +24,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
@@ -52,7 +53,8 @@ class ListChangesTaskTest : public testing::Test {
 
     std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
         new drive::DriveUploader(fake_drive_service.get(),
-                                 base::ThreadTaskRunnerHandle::Get(), nullptr));
+                                 base::ThreadTaskRunnerHandle::Get(),
+                                 mojo::NullRemote()));
 
     fake_drive_service_helper_.reset(
         new FakeDriveServiceHelper(fake_drive_service.get(),

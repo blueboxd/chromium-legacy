@@ -15,6 +15,7 @@
 #include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
+class ImageView;
 class StyledLabel;
 class View;
 }  // namespace views
@@ -57,6 +58,8 @@ class SharingDialogView : public SharingDialog,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
+  void OnThemeChanged() override;
 
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
 
@@ -71,6 +74,9 @@ class SharingDialogView : public SharingDialog,
   // views::BubbleDialogDelegateView:
   void Init() override;
 
+  // Shows a header image in the dialog view.
+  void MaybeShowHeaderImage();
+
   // Populates the dialog view containing valid devices and apps.
   void InitListView();
   // Populates the dialog view containing no devices or apps.
@@ -79,9 +85,10 @@ class SharingDialogView : public SharingDialog,
   void InitErrorView();
 
   SharingUiController* controller_ = nullptr;
-  // Contains references to device and app buttons in
-  // the order they appear.
+  // References to device and app buttons views.
   std::vector<HoverButton*> dialog_buttons_;
+  // References to device and app button icons.
+  std::vector<views::ImageView*> button_icons_;
   Browser* browser_ = nullptr;
   bool send_failed_ = false;
 

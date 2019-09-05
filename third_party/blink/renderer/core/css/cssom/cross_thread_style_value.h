@@ -20,6 +20,7 @@ class CORE_EXPORT CrossThreadStyleValue {
  public:
   enum class StyleValueType {
     kUnknownType,
+    kUnparsedType,
     kKeywordType,
     kUnitType,
     kColorType,

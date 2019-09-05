@@ -90,7 +90,7 @@ class ThreadWrapperTest : public testing::Test {
   }
 
   // ThreadWrapper destroyes itself when |message_loop_| is destroyed.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   rtc::Thread* thread_;
   MockMessageHandler handler1_;
   MockMessageHandler handler2_;

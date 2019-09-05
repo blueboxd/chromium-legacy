@@ -81,6 +81,7 @@ class HistoryUiFaviconRequestHandlerImpl
       FaviconRequestPlatform platform,
       HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& icon_url_for_uma,
+      base::Time request_start_time_for_uma,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
@@ -94,18 +95,19 @@ class HistoryUiFaviconRequestHandlerImpl
       favicon_base::FaviconImageCallback response_callback,
       HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& icon_url_for_uma,
+      base::Time request_start_time_for_uma,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconImageResult& image_result);
 
   // Requests an icon from Google favicon server. Since requests work by
   // populating local storage, a |local_lookup_callback| will be needed in case
   // of success and an |empty_response_callback| in case of failure.
-  void RequestFromGoogleServer(
-      const GURL& page_url,
-      base::OnceClosure empty_response_callback,
-      base::OnceClosure local_lookup_callback,
-      HistoryUiFaviconRequestOrigin origin_for_uma,
-      const GURL& icon_url_for_uma);
+  void RequestFromGoogleServer(const GURL& page_url,
+                               base::OnceClosure empty_response_callback,
+                               base::OnceClosure local_lookup_callback,
+                               HistoryUiFaviconRequestOrigin origin_for_uma,
+                               const GURL& icon_url_for_uma,
+                               base::Time request_start_time_for_uma);
 
   // Called once the request to the favicon server has finished. If the request
   // succeeded, |local_lookup_callback| is called to effectively retrieve the
@@ -117,6 +119,7 @@ class HistoryUiFaviconRequestHandlerImpl
       base::OnceClosure local_lookup_callback,
       HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& group_to_clear,
+      base::Time request_start_time_for_uma,
       favicon_base::GoogleFaviconServerRequestStatus status);
 
   bool CanQueryGoogleServer() const;

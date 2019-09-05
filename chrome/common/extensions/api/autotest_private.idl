@@ -154,6 +154,8 @@ namespace autotestPrivate {
   };
   callback PrinterArrayCallback = void (Printer[] printers);
 
+  callback ArcStartTimeCallback = void (double startTime);
+
   dictionary ArcState {
     // Whether the ARC is provisioned.
     boolean provisioned;
@@ -349,6 +351,9 @@ namespace autotestPrivate {
 
     // Get visible notifications on the system.
     static void getVisibleNotifications(NotificationArrayCallback callback);
+
+    // Get ARC start time.
+    static void getArcStartTime(ArcStartTimeCallback callback);
 
     // Get state of the ARC session.
     static void getArcState(ArcStateCallback callback);

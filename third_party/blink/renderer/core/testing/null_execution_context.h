@@ -75,6 +75,8 @@ class NullExecutionContext
     ExecutionContext::Trace(visitor);
   }
 
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
+
  private:
   bool tasks_need_pause_;
   bool is_secure_context_;

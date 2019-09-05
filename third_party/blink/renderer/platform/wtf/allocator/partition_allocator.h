@@ -10,7 +10,7 @@
 // but uses the partition allocator for the backing store of the collections.
 
 #include <string.h>
-#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
@@ -35,7 +35,7 @@ class WTF_EXPORT PartitionAllocator {
   template <typename T>
   static size_t QuantizedSize(size_t count) {
     CHECK_LE(count, MaxElementCountInBackingStore<T>());
-    return WTF::Partitions::BufferPartition()->ActualSize(count * sizeof(T));
+    return WTF::Partitions::BufferActualSize(count * sizeof(T));
   }
   template <typename T>
   static T* AllocateVectorBacking(size_t size) {

@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -63,7 +64,6 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -196,6 +196,7 @@ class WebMouseEvent;
 class WorkletAnimationController;
 enum ContentSecurityPolicyDisposition : uint8_t;
 enum class CSSPropertyID;
+enum class ScrollbarMode;
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -1411,7 +1412,7 @@ class CORE_EXPORT Document : public ContainerNode,
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
   mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() final;
 
-  BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() final;
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();

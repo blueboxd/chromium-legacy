@@ -45,8 +45,9 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     items.insert({primary_url_, std::move(item)});
 
     data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New(primary_url_, std::move(items),
-                                                 /*manifest_url=*/GURL());
+        data_decoder::mojom::BundleMetadata::New();
+    metadata->primary_url = primary_url_;
+    metadata->requests = std::move(items);
 
     base::RunLoop run_loop;
     mock_factory_->ReadAndFullfillMetadata(

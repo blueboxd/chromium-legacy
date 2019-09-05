@@ -13,6 +13,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "url/url_util.h"
 
 namespace network {
@@ -415,8 +416,7 @@ void CorsURLLoader::StartRequest() {
   //
   // We exclude navigation requests to keep the existing behavior.
   // TODO(yhirano): Reconsider this.
-  if (request_.mode != mojom::RequestMode::kNavigate &&
-      request_.request_initiator &&
+  if (!IsNavigationRequestMode(request_.mode) && request_.request_initiator &&
       (fetch_cors_flag_ ||
        (request_.method != "GET" && request_.method != "HEAD"))) {
     if (!fetch_cors_flag_ &&

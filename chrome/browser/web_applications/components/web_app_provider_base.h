@@ -20,6 +20,7 @@ class AppRegistrar;
 class FileHandlerManager;
 class AppIconManager;
 class WebAppPolicyManager;
+class ManifestUpdateManager;
 class WebAppAudioFocusIdMap;
 class WebAppUiManager;
 
@@ -36,6 +37,8 @@ class WebAppProviderBase : public KeyedService {
   virtual InstallManager& install_manager() = 0;
   // Implements persistence for Web Apps install.
   virtual InstallFinalizer& install_finalizer() = 0;
+  // Keeps app metadata up to date with site manifests.
+  virtual ManifestUpdateManager& manifest_update_manager() = 0;
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
   virtual PendingAppManager& pending_app_manager() = 0;

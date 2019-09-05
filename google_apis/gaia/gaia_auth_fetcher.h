@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -363,13 +362,6 @@ class GaiaAuthFetcher {
   std::string requested_service_;  // Currently tracked for IssueAuthToken only.
   bool fetch_pending_ = false;
   bool fetch_token_from_auth_code_ = false;
-
-  // For investigation of https://crbug.com/876306.
-  base::TimeDelta list_accounts_system_uptime_;
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // Process creation time is not available on iOS and Android.
-  base::TimeDelta list_accounts_process_uptime_;
-#endif
 
   friend class GaiaAuthFetcherTest;
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CaptchaParse);

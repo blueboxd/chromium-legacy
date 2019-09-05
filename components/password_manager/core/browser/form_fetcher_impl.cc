@@ -131,6 +131,20 @@ std::vector<const PasswordForm*> FormFetcherImpl::GetBlacklistedMatches()
   return MakeWeakCopies(blacklisted_);
 }
 
+const std::vector<const PasswordForm*>& FormFetcherImpl::GetAllRelevantMatches()
+    const {
+  return non_federated_same_scheme_;
+}
+
+const std::map<base::string16, const PasswordForm*>&
+FormFetcherImpl::GetBestMatches() const {
+  return best_matches_;
+}
+
+const PasswordForm* FormFetcherImpl::GetPreferredMatch() const {
+  return preferred_match_;
+}
+
 void FormFetcherImpl::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
@@ -222,6 +236,11 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   result->non_federated_ = MakeCopies(non_federated_);
   result->federated_ = MakeCopies(federated_);
   result->blacklisted_ = MakeCopies(blacklisted_);
+  password_manager_util::FindBestMatches(
+      MakeWeakCopies(result->non_federated_), form_digest_.scheme,
+      &result->non_federated_same_scheme_, &result->best_matches_,
+      &result->preferred_match_);
+
   result->interactions_stats_ = this->interactions_stats_;
   result->state_ = this->state_;
   result->need_to_refetch_ = this->need_to_refetch_;
@@ -237,6 +256,10 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
   federated_ = std::move(matches.federated);
   non_federated_ = std::move(matches.non_federated);
   blacklisted_ = std::move(matches.blacklisted);
+
+  password_manager_util::FindBestMatches(
+      MakeWeakCopies(non_federated_), form_digest_.scheme,
+      &non_federated_same_scheme_, &best_matches_, &preferred_match_);
 
   for (auto* consumer : consumers_)
     consumer->OnFetchCompleted();

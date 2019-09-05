@@ -18,8 +18,8 @@ constexpr uint32_t kXdgVersion5 = 5;
 }
 
 TEST(WaylandConnectionTest, UseUnstableVersion) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   wl::TestWaylandServerThread server;
   EXPECT_CALL(*server.xdg_shell(),
               UseUnstableVersion(XDG_SHELL_VERSION_CURRENT));
@@ -33,8 +33,8 @@ TEST(WaylandConnectionTest, UseUnstableVersion) {
 }
 
 TEST(WaylandConnectionTest, Ping) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   wl::TestWaylandServerThread server;
   ASSERT_TRUE(server.Start(kXdgVersion5));
   WaylandConnection connection;

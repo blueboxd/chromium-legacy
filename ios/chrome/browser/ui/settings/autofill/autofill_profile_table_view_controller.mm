@@ -104,7 +104,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.accessibilityIdentifier = kAutofillProfileTableViewID;
   self.tableView.estimatedSectionFooterHeight =
       kTableViewHeaderFooterViewHeight;
-  self.tableView.tintColor = [UIColor colorNamed:kBlueColor];
   [self updateUIForEditState];
   [self loadModel];
 }

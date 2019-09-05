@@ -2398,6 +2398,7 @@ enum WebFeature {
   kV8Window_ChooseFileSystemEntries_Method = 3015,
   kV8FileSystemDirectoryHandle_GetSystemDirectory_Method = 3016,
   kNotificationShowTrigger = 3017,
+  kWebSocketStreamConstructor = 3018,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

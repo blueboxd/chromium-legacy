@@ -127,6 +127,12 @@ const base::FeatureParam<std::string>
     kDnsOverHttpsUpgradeDisabledProvidersParam{&kDnsOverHttpsUpgrade,
                                                "DisabledProviders", ""};
 
+// Disable special treatment on requests with keepalive set (see
+// https://fetch.spec.whatwg.org/#request-keepalive-flag). This is introduced
+// for investigation on the memory usage, and should not be enabled widely.
+const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

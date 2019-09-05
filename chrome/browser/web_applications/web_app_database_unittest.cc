@@ -174,7 +174,7 @@ class WebAppDatabaseTest : public testing::Test {
 
  private:
   // Must be created before TestWebAppDatabaseFactory.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;

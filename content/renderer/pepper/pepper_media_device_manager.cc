@@ -269,15 +269,15 @@ void PepperMediaDeviceManager::DevicesEnumerated(
       .Run(FromMediaDeviceInfoArray(type, enumeration[type]));
 }
 
-const blink::mojom::MediaStreamDispatcherHostPtr&
+blink::mojom::MediaStreamDispatcherHost*
 PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
     CHECK(render_frame());
     CHECK(render_frame()->GetRemoteInterfaces());
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&dispatcher_host_));
+        dispatcher_host_.BindNewPipeAndPassReceiver());
   }
-  return dispatcher_host_;
+  return dispatcher_host_.get();
 }
 
 blink::WebMediaStreamDeviceObserver*

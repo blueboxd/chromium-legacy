@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -21,6 +22,10 @@ const char* const FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
     "TouchScroll",         "WheelScroll",         ""};
 
 namespace {
+
+// Avoid reporting any throughput metric for sequences that had a small amount
+// of frames.
+constexpr int kMinFramesForThroughputMetric = 4;
 
 enum class ThreadType {
   kMain,
@@ -119,10 +124,12 @@ void FrameSequenceTrackerCollection::NotifyPauseFrameProduction() {
 
 void FrameSequenceTrackerCollection::NotifySubmitFrame(
     uint32_t frame_token,
+    bool has_missing_content,
     const viz::BeginFrameAck& ack,
     const viz::BeginFrameArgs& origin_args) {
   for (auto& tracker : frame_trackers_) {
-    tracker.second->ReportSubmitFrame(frame_token, ack, origin_args);
+    tracker.second->ReportSubmitFrame(frame_token, has_missing_content, ack,
+                                      origin_args);
   }
 }
 
@@ -167,15 +174,34 @@ FrameSequenceTracker::~FrameSequenceTracker() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, impl_throughput_.frames_produced);
-  TRACE_EVENT_ASYNC_END1(
+  TRACE_EVENT_ASYNC_END2(
       "cc,benchmark", "FrameSequenceTracker", this, "args",
-      ThroughputData::ToTracedValue(impl_throughput_, main_throughput_));
+      ThroughputData::ToTracedValue(impl_throughput_, main_throughput_),
+      "checkerboard", checkerboarding_.frames_checkerboarded);
+
+  // Report the throughput metrics.
   ThroughputData::ReportHistogram(
       type_, "CompositorThread",
       GetIndexForMetric(ThreadType::kCompositor, type_), impl_throughput_);
   ThroughputData::ReportHistogram(type_, "MainThread",
                                   GetIndexForMetric(ThreadType::kMain, type_),
                                   main_throughput_);
+
+  // Report the checkerboarding metrics.
+  if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric) {
+    const std::string checkerboarding_name =
+        base::StrCat({"Graphics.Smoothness.Checkerboarding.",
+                      kFrameSequenceTrackerTypeNames[type_]});
+    const int checkerboarding_percent =
+        static_cast<int>(100 * checkerboarding_.frames_checkerboarded /
+                         impl_throughput_.frames_expected);
+    STATIC_HISTOGRAM_POINTER_GROUP(
+        checkerboarding_name, type_, FrameSequenceTrackerType::kMaxType,
+        Add(checkerboarding_percent),
+        base::LinearHistogram::FactoryGet(
+            checkerboarding_name, 1, 100, 101,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
 }
 
 void FrameSequenceTracker::ReportBeginImplFrame(
@@ -210,6 +236,7 @@ void FrameSequenceTracker::ReportBeginMainFrame(
 
 void FrameSequenceTracker::ReportSubmitFrame(
     uint32_t frame_token,
+    bool has_missing_content,
     const viz::BeginFrameAck& ack,
     const viz::BeginFrameArgs& origin_args) {
   if (termination_status_ != TerminationStatus::kActive)
@@ -237,6 +264,10 @@ void FrameSequenceTracker::ReportSubmitFrame(
       DCHECK_GE(main_throughput_.frames_expected, main_frames_.size());
     }
   }
+
+  if (has_missing_content) {
+    checkerboarding_.frames.push_back(frame_token);
+  }
 }
 
 void FrameSequenceTracker::ReportFramePresented(
@@ -261,6 +292,9 @@ void FrameSequenceTracker::ReportFramePresented(
     return;
   }
 
+  TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+      "cc,benchmark", "FrameSequenceTracker", this, "FramePresented",
+      feedback.timestamp);
   const bool was_presented = !feedback.timestamp.is_null();
   if (was_presented && last_submitted_frame_) {
     DCHECK_LT(impl_throughput_.frames_produced,
@@ -279,6 +313,39 @@ void FrameSequenceTracker::ReportFramePresented(
       ++main_throughput_.frames_produced;
     }
     main_frames_.pop_front();
+  }
+
+  if (was_presented) {
+    if (checkerboarding_.last_frame_had_checkerboarding) {
+      DCHECK(!checkerboarding_.last_frame_timestamp.is_null());
+      DCHECK(!feedback.timestamp.is_null());
+
+      // |feedback.timestamp| is the timestamp when the latest frame was
+      // presented. |checkerboarding_.last_frame_timestamp| is the timestamp
+      // when the previous frame (which had checkerboarding) was presented. Use
+      // |feedback.interval| to compute the number of vsyncs that have passed
+      // between the two frames (since that is how many times the user saw that
+      // checkerboarded frame).
+      base::TimeDelta difference =
+          feedback.timestamp - checkerboarding_.last_frame_timestamp;
+      const auto& interval = feedback.interval.is_zero()
+                                 ? viz::BeginFrameArgs::DefaultInterval()
+                                 : feedback.interval;
+      DCHECK(!interval.is_zero());
+      constexpr base::TimeDelta kEpsilon = base::TimeDelta::FromMilliseconds(1);
+      int64_t frames = (difference + kEpsilon) / interval;
+      checkerboarding_.frames_checkerboarded += frames;
+    }
+
+    const bool frame_had_checkerboarding =
+        base::Contains(checkerboarding_.frames, frame_token);
+    checkerboarding_.last_frame_had_checkerboarding = frame_had_checkerboarding;
+    checkerboarding_.last_frame_timestamp = feedback.timestamp;
+  }
+
+  while (!checkerboarding_.frames.empty() &&
+         !viz::FrameTokenGT(checkerboarding_.frames.front(), frame_token)) {
+    checkerboarding_.frames.pop_front();
   }
 }
 
@@ -385,9 +452,6 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
           sequence_length_name, 1, 1000, 50,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 
-  // Avoid reporting any throughput metric for sequences that had a small amount
-  // of frames.
-  constexpr int kMinFramesForThroughputMetric = 4;
   if (data.frames_expected < kMinFramesForThroughputMetric)
     return;
 
@@ -401,5 +465,8 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
       base::LinearHistogram::FactoryGet(
           name, 1, 100, 101, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
+
+FrameSequenceTracker::CheckerboardingData::CheckerboardingData() = default;
+FrameSequenceTracker::CheckerboardingData::~CheckerboardingData() = default;
 
 }  // namespace cc

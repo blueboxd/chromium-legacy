@@ -66,10 +66,11 @@ public class ModalDialogViewTest extends DummyUiActivityTestCase {
             mModelBuilder = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS);
 
             mContentView = new FrameLayout(activity);
-            mModalDialogView = (ModalDialogView) LayoutInflater
-                                       .from(new ContextThemeWrapper(
-                                               activity, R.style.Theme_Chromium_ModalDialog))
-                                       .inflate(R.layout.modal_dialog_view, null);
+            mModalDialogView =
+                    (ModalDialogView) LayoutInflater
+                            .from(new ContextThemeWrapper(
+                                    activity, R.style.Theme_Chromium_ModalDialog_TextPrimaryButton))
+                            .inflate(R.layout.modal_dialog_view, null);
             activity.setContentView(mContentView);
             mContentView.addView(mModalDialogView, MATCH_PARENT, WRAP_CONTENT);
 

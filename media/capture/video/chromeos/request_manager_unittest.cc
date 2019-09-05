@@ -98,7 +98,7 @@ class RequestManagerTest : public ::testing::Test {
             [](const uint8_t* buffer, const uint32_t bytesused,
                const VideoCaptureFormat& capture_format,
                const int rotation) { return mojom::Blob::New(); }),
-        base::ThreadTaskRunnerHandle::Get());
+        base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   void TearDown() override { request_manager_.reset(); }

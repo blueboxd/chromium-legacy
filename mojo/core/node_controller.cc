@@ -757,14 +757,14 @@ void NodeController::OnAcceptInvitation(const ports::NodeName& from_node,
 
   {
     base::AutoLock lock(reserved_ports_lock_);
-    auto it = reserved_ports_.find(from_node);
-    if (it != reserved_ports_.end()) {
+    auto reserved_ports_it = reserved_ports_.find(from_node);
+    if (reserved_ports_it != reserved_ports_.end()) {
       // Swap the temporary node name's reserved ports into an entry keyed by
       // the real node name.
-      auto result =
-          reserved_ports_.emplace(invitee_name, std::move(it->second));
+      auto result = reserved_ports_.emplace(
+          invitee_name, std::move(reserved_ports_it->second));
       DCHECK(result.second);
-      reserved_ports_.erase(it);
+      reserved_ports_.erase(reserved_ports_it);
     }
   }
 

@@ -593,16 +593,6 @@ public abstract class Linker {
     }
 
     /* ---------------------- Testing support methods. ---------------------- */
-    /**
-     * Check that native library linker tests are enabled.
-     * If not enabled, calls to testing functions will fail with an assertion
-     * error.
-     *
-     * @return true if native library linker tests are enabled.
-     */
-    public static boolean areTestsEnabled() {
-        return NativeLibraries.sEnableLinkerTests;
-    }
 
     /**
      * Get Linker implementation type.

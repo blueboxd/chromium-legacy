@@ -666,6 +666,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "disable-keepalive-fetch",
+    "owners": [ "yhirano" ],
+    "expiry_milestone": 83
+  },
+  {
     // See https://crbug.com/882238.
     "name": "disable-pushstate-throttle",
     "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],

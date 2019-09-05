@@ -42,6 +42,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -112,7 +113,7 @@ class DriveBackendSyncTest : public testing::Test,
 
     std::unique_ptr<drive::DriveUploaderInterface> uploader(
         new drive::DriveUploader(drive_service.get(), file_task_runner_.get(),
-                                 nullptr));
+                                 mojo::NullRemote()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         drive_service.get(), uploader.get(),

@@ -1003,6 +1003,16 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
     parts_->PreMainMessageLoopRun();
   }
 
+#if defined(OS_WIN)
+  // ShellBrowserMainParts initializes a ShellBrowserContext with a profile
+  // directory only in PreMainMessageLoopRun(). DWriteFontLookupTableBuilder
+  // needs to access this directory, hence triggering after this stage has run.
+  if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
+    content::DWriteFontLookupTableBuilder::GetInstance()
+        ->SchedulePrepareFontUniqueNameTableIfNeeded();
+  }
+#endif
+
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow unresponsive tasks from the UI thread.
   base::DisallowUnresponsiveTasks();
@@ -1413,10 +1423,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         delayed);
   }
 
-  if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
-    content::DWriteFontLookupTableBuilder::GetInstance()
-        ->SchedulePrepareFontUniqueNameTableIfNeeded();
-  }
 #endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {

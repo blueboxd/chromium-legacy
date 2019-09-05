@@ -52,6 +52,11 @@ class BLINK_COMMON_EXPORT BrowserInterfaceBrokerProxy {
   DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerProxy);
 };
 
+// Returns an instance of BrowserInterfaceBrokerProxy that is safe to use but is
+// not connected to anything.
+BLINK_COMMON_EXPORT BrowserInterfaceBrokerProxy&
+GetEmptyBrowserInterfaceBroker();
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_BROWSER_INTERFACE_BROKER_PROXY_H_

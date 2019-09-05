@@ -163,7 +163,7 @@
     <dimen name="password_manager_dialog_min_vertical_space_to_show_illustration">350dp</dimen>
     <dimen name="password_manager_dialog_text_horizontal_padding">16dp</dimen>
     <dimen name="password_manager_dialog_title_padding_top">16dp</dimen>
-    <dimen name="password_manager_dialog_details_padding_bottom">22dp</dimen>
+    <dimen name="password_manager_dialog_details_padding_bottom">8dp</dimen>
     <dimen name="password_manager_dialog_details_padding_top">12dp</dimen>
 
     <!-- Promo dialogs -->
@@ -226,6 +226,8 @@
     <!-- ModalDialogView dimensions -->
     <dimen name="modal_dialog_control_vertical_padding">2dp</dimen>
     <dimen name="modal_dialog_control_horizontal_padding">8dp</dimen>
+    <dimen name="modal_dialog_control_vertical_padding_filled">10dp</dimen>
+    <dimen name="modal_dialog_control_horizontal_padding_filled">16dp</dimen>
     <dimen name="tab_modal_scrim_vertical_margin">16dp</dimen>
 
     <!-- Tab Strip Dimensions -->

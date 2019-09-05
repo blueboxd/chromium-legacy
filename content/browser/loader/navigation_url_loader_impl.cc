@@ -230,7 +230,20 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_user_gesture = request_info->common_params->has_user_gesture;
   new_request->enable_load_timing = true;
 
-  new_request->mode = network::mojom::RequestMode::kNavigate;
+  if (request_info->is_main_frame) {
+    new_request->mode = network::mojom::RequestMode::kNavigate;
+  } else {
+    new_request->mode = network::mojom::RequestMode::kNavigateNestedFrame;
+    FrameTreeNode* frame_tree_node =
+        FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+    if (frame_tree_node && (frame_tree_node->frame_owner_element_type() ==
+                                blink::FrameOwnerElementType::kObject ||
+                            frame_tree_node->frame_owner_element_type() ==
+                                blink::FrameOwnerElementType::kEmbed)) {
+      new_request->mode = network::mojom::RequestMode::kNavigateNestedObject;
+    }
+  }
+
   new_request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   new_request->redirect_mode = network::mojom::RedirectMode::kManual;
   new_request->fetch_request_context_type =

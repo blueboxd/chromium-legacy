@@ -711,6 +711,7 @@
 "rgba"
 "hsl"
 "hsla"
+"-internal-light-dark-color"
 "matrix"
 "matrix3d"
 "perspective"

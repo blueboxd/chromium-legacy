@@ -26,7 +26,7 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
   std::unique_ptr<DawnTextureFormat[]> color_formats =
       AsDawnEnum<DawnTextureFormat>(webgpu_desc->colorFormats());
 
-  DawnTextureFormat depth_stencil_format = DAWN_TEXTURE_FORMAT_NONE;
+  DawnTextureFormat depth_stencil_format = DAWN_TEXTURE_FORMAT_UNDEFINED;
   if (webgpu_desc->hasDepthStencilFormat()) {
     depth_stencil_format =
         AsDawnEnum<DawnTextureFormat>(webgpu_desc->depthStencilFormat());

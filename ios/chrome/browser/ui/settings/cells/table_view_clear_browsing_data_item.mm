@@ -57,7 +57,7 @@ const CGFloat kImageHeight = 30;
 
 - (void)setSelectedStyle:(TableViewClearBrowsingDataCell*)cell {
   cell.backgroundView.backgroundColor = self.checkedBackgroundColor;
-  cell.imageView.tintColor = [UIColor colorNamed:kBlueColor];
+  cell.imageView.tintColor = nil;
   cell.accessoryType = UITableViewCellAccessoryCheckmark;
 }
 
@@ -232,7 +232,7 @@ const CGFloat kImageHeight = 30;
 }
 
 - (void)setHighlightedStyle {
-  self.imageView.tintColor = [UIColor colorNamed:kBlueColor];
+  self.imageView.tintColor = nil;
   self.backgroundView.backgroundColor = self.highlightedBackgroundColor;
 }
 

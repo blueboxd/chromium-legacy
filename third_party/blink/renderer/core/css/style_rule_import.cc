@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
@@ -107,7 +108,20 @@ void StyleRuleImport::RequestStyleSheet() {
   if (!document)
     return;
 
-  ResourceFetcher* fetcher = document->Fetcher();
+  Document* document_for_origin = document;
+  if (base::FeatureList::IsEnabled(
+          features::kHtmlImportsRequestInitiatorLock)) {
+    // For @imports from HTML imported Documents, we use the
+    // context document for getting origin and ResourceFetcher to use the main
+    // Document's origin, while using the element document for CompleteURL() to
+    // use imported Documents' base URLs.
+    document_for_origin = document->ContextDocument();
+  }
+
+  if (!document_for_origin)
+    return;
+
+  ResourceFetcher* fetcher = document_for_origin->Fetcher();
   if (!fetcher)
     return;
 

@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -67,7 +66,8 @@ class MockCaptureCallback : public AudioCapturerSource::CaptureCallback {
 
 // Regular construction.
 TEST(AudioInputDeviceTest, Noop) {
-  base::MessageLoopForIO io_loop;
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
       base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));

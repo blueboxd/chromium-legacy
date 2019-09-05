@@ -81,7 +81,7 @@
     // will receive type "login_screen_extension" and have limited API
     // capabilities. Nonetheless, we only allow specifically whitelisted
     // extensions here.
-    "channel": "dev",
+    "channel": "stable",
     "component_extensions_auto_granted": false,
     "extension_types": ["login_screen_extension"],
     "location": "policy",

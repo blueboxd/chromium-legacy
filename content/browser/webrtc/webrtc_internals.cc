@@ -29,6 +29,7 @@
 #include "media/audio/audio_debug_recording_session.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/cpp/debug_recording_session_factory.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -639,9 +640,9 @@ device::mojom::WakeLock* WebRTCInternals::GetWakeLock() {
     // In some testing environments, the system Connector isn't initialized.
     service_manager::Connector* connector = GetSystemConnector();
     if (connector) {
-      device::mojom::WakeLockProviderPtr wake_lock_provider;
-      connector->BindInterface(device::mojom::kServiceName,
-                               mojo::MakeRequest(&wake_lock_provider));
+      mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+      connector->Connect(device::mojom::kServiceName,
+                         wake_lock_provider.BindNewPipeAndPassReceiver());
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventAppSuspension,
           device::mojom::WakeLockReason::kOther,

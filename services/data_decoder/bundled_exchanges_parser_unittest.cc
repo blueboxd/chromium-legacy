@@ -20,6 +20,10 @@ namespace {
 
 constexpr char kFallbackUrl[] = "https://test.example.com/";
 constexpr char kManifestUrl[] = "https://test.example.com/manifest";
+constexpr char kValidityUrl[] =
+    "https://test.example.org/resource.validity.msg";
+const uint64_t kSignatureDate = 1564272000;  // 2019-07-28T00:00:00Z
+const uint64_t kSignatureDuration = 7 * 24 * 60 * 60;
 
 std::string GetTestFileContents(const base::FilePath& path) {
   base::FilePath test_data_dir;
@@ -139,6 +143,14 @@ mojom::BundleResponsePtr ParseResponse(
   return result;
 }
 
+cbor::Value CreateByteString(base::StringPiece s) {
+  return cbor::Value(base::as_bytes(base::make_span(s)));
+}
+
+std::string AsString(const std::vector<uint8_t>& data) {
+  return std::string(reinterpret_cast<const char*>(data.data()), data.size());
+}
+
 class BundleBuilder {
  public:
   using Headers = std::vector<std::pair<std::string, std::string>>;
@@ -201,17 +213,53 @@ class BundleBuilder {
     sections_.emplace_back(std::move(section));
   }
 
+  void AddAuthority(cbor::Value::MapValue authority) {
+    authorities_.emplace_back(std::move(authority));
+  }
+
+  void AddVouchedSubset(cbor::Value::MapValue vouched_subset) {
+    vouched_subsets_.emplace_back(std::move(vouched_subset));
+  }
+
   std::vector<uint8_t> CreateBundle() {
     AddSection("index", cbor::Value(index_));
+    if (!authorities_.empty() || !vouched_subsets_.empty()) {
+      cbor::Value::ArrayValue signatures_section;
+      signatures_section.emplace_back(std::move(authorities_));
+      signatures_section.emplace_back(std::move(vouched_subsets_));
+      AddSection("signatures", cbor::Value(std::move(signatures_section)));
+    }
     AddSection("responses", cbor::Value(responses_));
     return Encode(CreateTopLevel());
   }
 
- private:
-  static cbor::Value CreateByteString(base::StringPiece s) {
-    return cbor::Value(base::as_bytes(base::make_span(s)));
+  // Creates a signed-subset structure with single subset-hashes entry,
+  // and returns it as a CBOR bytestring.
+  cbor::Value CreateEncodedSigned(base::StringPiece validity_url,
+                                  base::StringPiece auth_sha256,
+                                  int64_t date,
+                                  int64_t expires,
+                                  base::StringPiece url,
+                                  base::StringPiece header_sha256,
+                                  base::StringPiece payload_integrity_header) {
+    cbor::Value::ArrayValue subset_hash_value;
+    subset_hash_value.emplace_back(CreateByteString(""));  // variants-value
+    subset_hash_value.emplace_back(CreateByteString(header_sha256));
+    subset_hash_value.emplace_back(payload_integrity_header);
+
+    cbor::Value::MapValue subset_hashes;
+    subset_hashes.emplace(url, std::move(subset_hash_value));
+
+    cbor::Value::MapValue signed_subset;
+    signed_subset.emplace("validity-url", validity_url);
+    signed_subset.emplace("auth-sha256", CreateByteString(auth_sha256));
+    signed_subset.emplace("date", date);
+    signed_subset.emplace("expires", expires);
+    signed_subset.emplace("subset-hashes", std::move(subset_hashes));
+    return cbor::Value(Encode(cbor::Value(signed_subset)));
   }
 
+ private:
   static cbor::Value CreateHeaderMap(const Headers& headers) {
     cbor::Value::MapValue map;
     for (const auto& pair : headers)
@@ -247,6 +295,8 @@ class BundleBuilder {
   cbor::Value::ArrayValue sections_;
   cbor::Value::MapValue index_;
   cbor::Value::ArrayValue responses_;
+  cbor::Value::ArrayValue authorities_;
+  cbor::Value::ArrayValue vouched_subsets_;
 
   // 1 for the CBOR header byte. See the comment at the top of AddResponse().
   int64_t current_responses_offset_ = 1;
@@ -598,6 +648,144 @@ TEST_F(BundledExchangeParserTest, InvalidManifestURL) {
   ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
+TEST_F(BundledExchangeParserTest, EmptySignaturesSection) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  // BundleBuilder omits signatures section if empty, so create it ourselves.
+  cbor::Value::ArrayValue signatures_section;
+  signatures_section.emplace_back(cbor::Value::ArrayValue());  // authorities
+  signatures_section.emplace_back(
+      cbor::Value::ArrayValue());  // vouched-subsets
+  builder.AddSection("signatures", cbor::Value(signatures_section));
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+  EXPECT_TRUE(metadata->authorities.empty());
+  EXPECT_TRUE(metadata->vouched_subsets.empty());
+}
+
+TEST_F(BundledExchangeParserTest, SignaturesSection) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+
+  // Create a signatures section with some dummy data.
+  cbor::Value::MapValue authority;
+  authority.emplace("cert", CreateByteString("[cert]"));
+  authority.emplace("ocsp", CreateByteString("[ocsp]"));
+  authority.emplace("sct", CreateByteString("[sct]"));
+  builder.AddAuthority(std::move(authority));
+
+  cbor::Value signed_bytes = builder.CreateEncodedSigned(
+      kValidityUrl, "[auth-sha256]", kSignatureDate,
+      kSignatureDate + kSignatureDuration, "https://test.example.com/",
+      "[header-sha256]", "[payload-integrity]");
+  cbor::Value::MapValue vouched_subset;
+  vouched_subset.emplace("authority", 0);
+  vouched_subset.emplace("sig", CreateByteString("[sig]"));
+  vouched_subset.emplace("signed", signed_bytes.Clone());
+  builder.AddVouchedSubset(std::move(vouched_subset));
+
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+
+  ASSERT_EQ(metadata->authorities.size(), 1u);
+  EXPECT_EQ(AsString(metadata->authorities[0]->cert), "[cert]");
+  ASSERT_TRUE(metadata->authorities[0]->ocsp.has_value());
+  EXPECT_EQ(AsString(*metadata->authorities[0]->ocsp), "[ocsp]");
+  ASSERT_TRUE(metadata->authorities[0]->sct.has_value());
+  EXPECT_EQ(AsString(*metadata->authorities[0]->sct), "[sct]");
+
+  ASSERT_EQ(metadata->vouched_subsets.size(), 1u);
+  EXPECT_EQ(metadata->vouched_subsets[0]->authority, 0u);
+  EXPECT_EQ(AsString(metadata->vouched_subsets[0]->sig), "[sig]");
+  EXPECT_EQ(AsString(metadata->vouched_subsets[0]->raw_signed),
+            signed_bytes.GetBytestringAsString());
+
+  const auto& parsed_signed = metadata->vouched_subsets[0]->parsed_signed;
+  EXPECT_EQ(parsed_signed->validity_url, kValidityUrl);
+  EXPECT_EQ(AsString(parsed_signed->auth_sha256), "[auth-sha256]");
+  EXPECT_EQ(parsed_signed->date, kSignatureDate);
+  EXPECT_EQ(parsed_signed->expires, kSignatureDate + kSignatureDuration);
+
+  EXPECT_EQ(parsed_signed->subset_hashes.size(), 1u);
+  const auto& hashes =
+      parsed_signed->subset_hashes[GURL("https://test.example.com/")];
+  ASSERT_TRUE(hashes);
+  EXPECT_EQ(hashes->variants_value, "");
+  ASSERT_EQ(hashes->resource_integrities.size(), 1u);
+  EXPECT_EQ(AsString(hashes->resource_integrities[0]->header_sha256),
+            "[header-sha256]");
+  EXPECT_EQ(hashes->resource_integrities[0]->payload_integrity_header,
+            "[payload-integrity]");
+}
+
+TEST_F(BundledExchangeParserTest, MultipleSignatures) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+
+  // Create a signatures section with some dummy data.
+  cbor::Value::MapValue authority1;
+  authority1.emplace("cert", CreateByteString("[cert1]"));
+  authority1.emplace("ocsp", CreateByteString("[ocsp]"));
+  authority1.emplace("sct", CreateByteString("[sct]"));
+  builder.AddAuthority(std::move(authority1));
+  cbor::Value::MapValue authority2;
+  authority2.emplace("cert", CreateByteString("[cert2]"));
+  builder.AddAuthority(std::move(authority2));
+
+  cbor::Value signed_bytes1 = builder.CreateEncodedSigned(
+      kValidityUrl, "[auth-sha256]", kSignatureDate,
+      kSignatureDate + kSignatureDuration, "https://test.example.com/",
+      "[header-sha256]", "[payload-integrity]");
+  cbor::Value::MapValue vouched_subset1;
+  vouched_subset1.emplace("authority", 0);
+  vouched_subset1.emplace("sig", CreateByteString("[sig1]"));
+  vouched_subset1.emplace("signed", signed_bytes1.Clone());
+  builder.AddVouchedSubset(std::move(vouched_subset1));
+
+  cbor::Value signed_bytes2 = builder.CreateEncodedSigned(
+      kValidityUrl, "[auth-sha256-2]", kSignatureDate,
+      kSignatureDate + kSignatureDuration, "https://test.example.org/",
+      "[header-sha256-2]", "[payload-integrity-2]");
+  cbor::Value::MapValue vouched_subset2;
+  vouched_subset2.emplace("authority", 1);
+  vouched_subset2.emplace("sig", CreateByteString("[sig2]"));
+  vouched_subset2.emplace("signed", signed_bytes2.Clone());
+  builder.AddVouchedSubset(std::move(vouched_subset2));
+
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+
+  ASSERT_EQ(metadata->authorities.size(), 2u);
+  EXPECT_EQ(AsString(metadata->authorities[0]->cert), "[cert1]");
+  EXPECT_TRUE(metadata->authorities[0]->ocsp.has_value());
+  EXPECT_TRUE(metadata->authorities[0]->sct.has_value());
+  EXPECT_EQ(AsString(metadata->authorities[1]->cert), "[cert2]");
+  EXPECT_FALSE(metadata->authorities[1]->ocsp.has_value());
+  EXPECT_FALSE(metadata->authorities[1]->sct.has_value());
+
+  ASSERT_EQ(metadata->vouched_subsets.size(), 2u);
+  EXPECT_EQ(metadata->vouched_subsets[0]->authority, 0u);
+  EXPECT_EQ(AsString(metadata->vouched_subsets[0]->sig), "[sig1]");
+  EXPECT_EQ(AsString(metadata->vouched_subsets[0]->raw_signed),
+            signed_bytes1.GetBytestringAsString());
+  EXPECT_EQ(metadata->vouched_subsets[1]->authority, 1u);
+  EXPECT_EQ(AsString(metadata->vouched_subsets[1]->sig), "[sig2]");
+  EXPECT_EQ(AsString(metadata->vouched_subsets[1]->raw_signed),
+            signed_bytes2.GetBytestringAsString());
+}
+
 TEST_F(BundledExchangeParserTest, ParseGoldenFile) {
   TestDataSource data_source(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
 
@@ -628,6 +816,31 @@ TEST_F(BundledExchangeParserTest, ParseGoldenFile) {
   EXPECT_TRUE(responses["https://test.example.org/index.html"]);
   EXPECT_TRUE(responses["https://test.example.org/manifest.webmanifest"]);
   EXPECT_TRUE(responses["https://test.example.org/script.js"]);
+}
+
+TEST_F(BundledExchangeParserTest, ParseSignedFile) {
+  TestDataSource data_source(
+      base::FilePath(FILE_PATH_LITERAL("hello_signed.wbn")));
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ(metadata->authorities.size(), 1u);
+  ASSERT_EQ(metadata->vouched_subsets.size(), 1u);
+  EXPECT_EQ(metadata->vouched_subsets[0]->authority, 0u);
+
+  const auto& parsed_signed = metadata->vouched_subsets[0]->parsed_signed;
+  EXPECT_EQ(parsed_signed->validity_url, kValidityUrl);
+  EXPECT_EQ(parsed_signed->date, kSignatureDate);
+  EXPECT_EQ(parsed_signed->expires, kSignatureDate + kSignatureDuration);
+
+  EXPECT_EQ(parsed_signed->subset_hashes.size(), metadata->requests.size());
+  const auto& hashes =
+      parsed_signed->subset_hashes[GURL("https://test.example.org/")];
+  ASSERT_TRUE(hashes);
+  EXPECT_EQ(hashes->variants_value, "");
+  ASSERT_EQ(hashes->resource_integrities.size(), 1u);
+  EXPECT_EQ(hashes->resource_integrities[0]->payload_integrity_header,
+            "digest/mi-sha256-03");
 }
 
 // TODO(crbug.com/969596): Add a test case that loads a wbn file with variants,

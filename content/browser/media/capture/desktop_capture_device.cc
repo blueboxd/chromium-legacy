@@ -34,6 +34,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/capture_resolution_chooser.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -483,9 +484,9 @@ void DesktopCaptureDevice::Core::DoCapture() {
 
 void DesktopCaptureDevice::Core::RequestWakeLock(
     std::unique_ptr<service_manager::Connector> connector) {
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+  connector->Connect(device::mojom::kServiceName,
+                     wake_lock_provider.BindNewPipeAndPassReceiver());
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
       device::mojom::WakeLockReason::kOther, "Native desktop capture",

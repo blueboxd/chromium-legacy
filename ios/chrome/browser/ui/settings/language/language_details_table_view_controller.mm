@@ -79,7 +79,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.shouldHideDoneButton = YES;
   self.tableView.accessibilityIdentifier =
       kLanguageDetailsTableViewAccessibilityIdentifier;
-  self.tableView.tintColor = [UIColor colorNamed:kBlueColor];
 
   [self loadModel];
 }

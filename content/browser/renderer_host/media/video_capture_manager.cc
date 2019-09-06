@@ -648,8 +648,7 @@ void VideoCaptureManager::GetPhotoState(
     media::VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const VideoCaptureController* controller =
-      LookupControllerBySessionId(session_id);
+  VideoCaptureController* controller = LookupControllerBySessionId(session_id);
   if (!controller)
     return;
   if (controller->IsDeviceAlive()) {
@@ -660,7 +659,7 @@ void VideoCaptureManager::GetPhotoState(
   photo_request_queue_.emplace_back(
       session_id,
       base::Bind(&VideoCaptureController::GetPhotoState,
-                 base::Unretained(controller), base::Passed(&callback)));
+                 controller->GetWeakPtrForIOThread(), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::SetPhotoOptions(
@@ -679,7 +678,7 @@ void VideoCaptureManager::SetPhotoOptions(
   // Queue up a request for later.
   photo_request_queue_.emplace_back(
       session_id, base::Bind(&VideoCaptureController::SetPhotoOptions,
-                             base::Unretained(controller),
+                             controller->GetWeakPtrForIOThread(),
                              base::Passed(&settings), base::Passed(&callback)));
 }
 
@@ -705,7 +704,7 @@ void VideoCaptureManager::TakePhoto(
   photo_request_queue_.emplace_back(
       session_id,
       base::Bind(&VideoCaptureController::TakePhoto,
-                 base::Unretained(controller), base::Passed(&callback)));
+                 controller->GetWeakPtrForIOThread(), base::Passed(&callback)));
 }
 
 void VideoCaptureManager::OnOpened(

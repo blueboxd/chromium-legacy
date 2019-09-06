@@ -15,6 +15,11 @@
 
 namespace arc {
 
+void DeletePrintDocument(const base::FilePath& file_path) {
+  if (!base::DeleteFile(file_path, false))
+    LOG(ERROR) << "Failed to delete print document.";
+}
+
 base::FilePath SavePrintDocument(mojo::ScopedHandle scoped_handle) {
   base::PlatformFile platform_file = base::kInvalidPlatformFile;
   if (mojo::UnwrapPlatformFile(std::move(scoped_handle), &platform_file) !=

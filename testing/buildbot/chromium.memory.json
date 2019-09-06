@@ -14124,6 +14124,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "updater_tests"
+      },
+      {
+        "args": [
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "url_unittests"
       },
       {
@@ -18286,6 +18299,21 @@
           ]
         },
         "test": "unit_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "updater_tests"
       },
       {
         "merge": {

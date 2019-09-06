@@ -1721,32 +1721,6 @@ TEST_F(TrackEventJsonExporterTest, TestLegacySystemFtrace) {
   EXPECT_EQ(sys_trace->GetString(), ftrace);
 }
 
-TEST_F(TrackEventJsonExporterTest, TestLegacySystemTraceEvents) {
-  std::vector<perfetto::protos::TracePacket> trace_packet_protos;
-
-  trace_packet_protos.emplace_back();
-  auto* json_trace = trace_packet_protos.back()
-                         .mutable_chrome_events()
-                         ->add_legacy_json_trace();
-  json_trace->set_type(perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE);
-  json_trace->set_data(
-      "\"name\":\"MySysTrace\",\"content\":["
-      "{\"pid\":10,\"tid\":11,\"ts\":23,\"ph\":\"I\""
-      ",\"cat\":\"cat_name2\",\"name\":\"bar_name\""
-      ",\"id2\":{\"global\":\"0x5\"},\"args\":{}}]");
-
-  FinalizePackets(trace_packet_protos);
-
-  auto* sys_trace = parsed_trace_data()->FindKey("systemTraceEvents");
-  EXPECT_TRUE(sys_trace);
-  EXPECT_EQ(sys_trace->FindKey("name")->GetString(), "MySysTrace");
-  auto* content = sys_trace->FindKey("content");
-  EXPECT_EQ(content->GetList().size(), 1u);
-  EXPECT_EQ(content->GetList()[0].FindKey("pid")->GetInt(), 10);
-  EXPECT_EQ(content->GetList()[0].FindKey("tid")->GetInt(), 11);
-  EXPECT_EQ(content->GetList()[0].FindKey("name")->GetString(), "bar_name");
-}
-
 TEST_F(TrackEventJsonExporterTest, TestLegacyUserTrace) {
   std::vector<perfetto::protos::TracePacket> trace_packet_protos;
 

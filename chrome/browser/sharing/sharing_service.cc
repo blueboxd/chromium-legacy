@@ -31,7 +31,6 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 
@@ -55,7 +54,8 @@ SharingService::SharingService(
       local_device_info_provider_(local_device_info_provider),
       sync_service_(sync_service),
       backoff_entry_(&kRetryBackoffPolicy),
-      state_(State::DISABLED) {
+      state_(State::DISABLED),
+      is_observing_device_info_tracker_(false) {
   // Remove old encryption info with empty authrozed_entity to avoid DCHECK.
   // See http://crbug/987591
   if (gcm_driver) {
@@ -131,11 +131,14 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
 SharingService::GetDeviceCandidates(int required_capabilities) const {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
-  if (IsSyncDisabled())
-    return device_candidates;
-
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
+  const syncer::DeviceInfo* local_device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+
+  if (IsSyncDisabled() || all_devices.empty() || !local_device_info)
+    return device_candidates;
+
   std::map<std::string, SharingSyncPreference::Device> synced_devices =
       sync_prefs_->GetSyncedDevices();
 
@@ -149,8 +152,6 @@ SharingService::GetDeviceCandidates(int required_capabilities) const {
             });
 
   std::unordered_set<std::string> device_names;
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
   for (auto& device : all_devices) {
     // If the current device is considered expired for our purposes, stop here
     // since the next devices in the vector are at least as expired than this
@@ -158,10 +159,8 @@ SharingService::GetDeviceCandidates(int required_capabilities) const {
     if (device->last_updated_timestamp() < min_updated_time)
       break;
 
-    if (local_device_info &&
-        (local_device_info->client_name() == device->client_name())) {
+    if (local_device_info->client_name() == device->client_name())
       continue;
-    }
 
     auto synced_device = synced_devices.find(device->guid());
     if (synced_device == synced_devices.end())
@@ -183,6 +182,36 @@ SharingService::GetDeviceCandidates(int required_capabilities) const {
   return device_candidates;
 }
 
+void SharingService::AddDeviceCandidatesInitializedObserver(
+    base::OnceClosure callback) {
+  if (IsSyncDisabled()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  bool is_device_info_tracker_ready = device_info_tracker_->IsSyncing();
+  bool is_local_device_info_ready =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  if (is_device_info_tracker_ready && is_local_device_info_ready) {
+    std::move(callback).Run();
+    return;
+  }
+
+  device_candidates_initialized_callbacks_.emplace_back(std::move(callback));
+
+  if (!is_device_info_tracker_ready && !is_observing_device_info_tracker_) {
+    device_info_tracker_->AddObserver(this);
+    is_observing_device_info_tracker_ = true;
+  }
+
+  if (!is_local_device_info_ready && !local_device_info_ready_subscription_) {
+    local_device_info_ready_subscription_ =
+        local_device_info_provider_->RegisterOnInitializedCallback(
+            base::BindRepeating(&SharingService::OnDeviceInfoChange,
+                                weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void SharingService::SendMessageToDevice(
     const std::string& device_guid,
     base::TimeDelta time_to_live,
@@ -192,7 +221,7 @@ void SharingService::SendMessageToDevice(
   send_message_callbacks_.emplace(message_guid, std::move(callback));
 
   base::PostDelayedTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
       base::BindOnce(&SharingService::InvokeSendMessageCallback,
                      weak_ptr_factory_.GetWeakPtr(), message_guid,
                      SharingSendMessageResult::kAckTimeout),
@@ -259,6 +288,22 @@ void SharingService::InvokeSendMessageCallback(
   send_message_callbacks_.erase(iter);
   std::move(callback).Run(result);
   LogSendSharingMessageResult(result);
+}
+
+void SharingService::OnDeviceInfoChange() {
+  if (!device_info_tracker_->IsSyncing() ||
+      !local_device_info_provider_->GetLocalDeviceInfo()) {
+    return;
+  }
+
+  device_info_tracker_->RemoveObserver(this);
+  is_observing_device_info_tracker_ = false;
+  local_device_info_ready_subscription_.reset();
+
+  for (base::OnceClosure& callback : device_candidates_initialized_callbacks_) {
+    std::move(callback).Run();
+  }
+  device_candidates_initialized_callbacks_.clear();
 }
 
 void SharingService::RegisterHandler(

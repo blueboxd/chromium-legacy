@@ -287,6 +287,7 @@
     "transitionrun",
     "transitionstart",
     "typechange",
+    "uncapturederror",
     "unhandledrejection",
     "unload",
     "unmute",

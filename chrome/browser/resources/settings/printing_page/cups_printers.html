@@ -72,6 +72,10 @@
         text-align: center;
       }
 
+      #savedPrintersContainer {
+        border-bottom: var(--cr-separator-line);
+      }
+
       :host(:not([can-add-printer])) #addPrinterSection,
       :host(:not([can-add-printer])) #nearbyPrinters {
         opacity: var(--cr-disabled-opacity);
@@ -128,19 +132,20 @@
       </template>
 
       <template is="dom-if"
-          if="[[doesAccountHaveSavedPrinters_(savedPrinters_)]]"
-          id="savedPrintersSection" restamp>
-        <div class="settings-box first">
-          <div class="start">
-            <span>$i18n{savedPrintersTitle}</span>
+          if="[[doesAccountHaveSavedPrinters_(savedPrinters_)]]" restamp>
+        <div id="savedPrintersContainer">
+          <div class="settings-box first">
+            <div class="start">
+              <span>$i18n{savedPrintersTitle}</span>
+            </div>
           </div>
-        </div>
 
-        <settings-cups-saved-printers id="savedPrinters"
-            active-printer="{{activePrinter}}"
-            saved-printers="[[savedPrinters_]]"
-            search-term="[[searchTerm]]">
-        </settings-cups-saved-printers>
+          <settings-cups-saved-printers id="savedPrinters"
+              active-printer="{{activePrinter}}"
+              saved-printers="[[savedPrinters_]]"
+              search-term="[[searchTerm]]">
+          </settings-cups-saved-printers>
+        </div>
       </template>
 
       <div class="padded first" id="nearbyPrinters">

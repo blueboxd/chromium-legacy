@@ -33,6 +33,9 @@ namespace {
 // Maximum number of parallel decode requests.
 constexpr int kMaxDecodeRequests = 4;
 
+// Size of the timestamp cache, needs to be large enough for frame-reordering.
+constexpr size_t kTimestampCacheSize = 128;
+
 // Returns the preferred VA_RT_FORMAT for the given |profile|.
 unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
   switch (profile) {
@@ -86,6 +89,7 @@ VaapiVideoDecoder::VaapiVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     GetFramePoolCB get_pool_cb)
     : get_pool_cb_(std::move(get_pool_cb)),
+      buffer_id_to_timestamp_(kTimestampCacheSize),
       client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(std::move(decoder_task_runner)),
       weak_this_factory_(this) {
@@ -223,7 +227,6 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   // Get and initialize the frame pool.
   frame_pool_ = get_pool_cb_.Run();
 
-  visible_rect_ = config.visible_rect();
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   profile_ = profile;
 
@@ -283,7 +286,7 @@ void VaapiVideoDecoder::QueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
   }
 
   if (!buffer->end_of_stream())
-    buffer_id_to_timestamp_.emplace(next_buffer_id_, buffer->timestamp());
+    buffer_id_to_timestamp_.Put(next_buffer_id_, buffer->timestamp());
 
   decode_task_queue_.emplace(std::move(buffer), next_buffer_id_,
                              std::move(decode_cb));
@@ -455,27 +458,27 @@ void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
   DCHECK_EQ(state_, State::kDecoding);
   DVLOGF(3);
 
-  // In some rare cases it's possible the frame's visible rectangle is different
-  // from what the decoder asked us to create in the last resolution change.
-  if (visible_rect_ != visible_rect) {
-    visible_rect_ = visible_rect;
-    gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
-    frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect_,
-                                      natural_size);
-  }
-
-  auto it = buffer_id_to_timestamp_.find(buffer_id);
+  // Find the timestamp associated with |buffer_id|. It's possible that a
+  // surface is output multiple times for different |buffer_id|s (e.g. VP9 use
+  // existing frame feature). This means we need to output the same frame again
+  // with a different timestamp than the one recorded in CreateSurface(). We
+  // can't overwrite the timestamp directly as the original frame might still be
+  // in use. Instead we wrap the frame in another frame with a different
+  // timestamp in OutputFrameTask(). On some rare occasions it's also possible
+  // that a single DecoderBuffer produces multiple surfaces with the same
+  // |bitstream_id|, so we shouldn't remove the timestamp from the cache.
+  const auto it = buffer_id_to_timestamp_.Peek(buffer_id);
   DCHECK(it != buffer_id_to_timestamp_.end());
   base::TimeDelta timestamp = it->second;
-  buffer_id_to_timestamp_.erase(it);
 
   // Find the frame associated with the surface. We won't erase it from
   // |output_frames_| yet, as the decoder might still be using it for reference.
   DCHECK_EQ(output_frames_.count(va_surface->id()), 1u);
-  OutputFrameTask(output_frames_[va_surface->id()], timestamp);
+  OutputFrameTask(output_frames_[va_surface->id()], visible_rect, timestamp);
 }
 
 void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
+                                        const gfx::Rect& visible_rect,
                                         base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
@@ -486,11 +489,11 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
   // modify the attributes of the frame directly, we wrap the frame into a new
   // frame with updated attributes. The old frame is bound to a destruction
   // observer so it's not destroyed before the wrapped frame.
-  if (video_frame->visible_rect() != visible_rect_ ||
+  if (video_frame->visible_rect() != visible_rect ||
       video_frame->timestamp() != timestamp) {
-    gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
+    gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-        *video_frame, video_frame->format(), visible_rect_, natural_size);
+        *video_frame, video_frame->format(), visible_rect, natural_size);
     wrapped_frame->set_timestamp(timestamp);
     wrapped_frame->AddDestructionObserver(
         base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
@@ -513,14 +516,14 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   VLOGF(2);
 
   // TODO(hiroh): Handle profile changes.
-  visible_rect_ = decoder_->GetVisibleRect();
-  gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
+  const gfx::Rect visible_rect = decoder_->GetVisibleRect();
+  gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
   gfx::Size pic_size = decoder_->GetPicSize();
   const VideoPixelFormat format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   frame_layout_ = VideoFrameLayout::Create(format, pic_size);
   DCHECK(frame_layout_);
-  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect_,
+  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect,
                                     natural_size);
   frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
 

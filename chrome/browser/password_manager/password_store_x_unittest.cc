@@ -76,6 +76,7 @@ PasswordForm MakePasswordForm() {
   form.password_element = base::UTF8ToUTF16("password_element");
   form.password_value = base::UTF8ToUTF16(kPassword);
   form.signon_realm = form.origin.GetOrigin().spec();
+  form.from_store = autofill::PasswordForm::Store::kProfileStore;
   return form;
 }
 

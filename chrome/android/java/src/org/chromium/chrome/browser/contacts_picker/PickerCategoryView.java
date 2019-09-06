@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -30,6 +29,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.content.browser.contacts.ContactsPickerPropertiesRequested;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.widget.OptimizedFrameLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +41,7 @@ import java.util.Set;
  * A class for keeping track of common data associated with showing contact details in
  * the contacts picker, for example the RecyclerView.
  */
-public class PickerCategoryView extends RelativeLayout
+public class PickerCategoryView extends OptimizedFrameLayout
         implements View.OnClickListener, RecyclerView.RecyclerListener,
                    SelectionDelegate.SelectionObserver<ContactDetails>,
                    SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback {
@@ -121,7 +121,7 @@ public class PickerCategoryView extends RelativeLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed,
             boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
             String formattedOrigin, ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
-        super(context);
+        super(context, null);
 
         mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
@@ -157,6 +157,7 @@ public class PickerCategoryView extends RelativeLayout
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
         mToolbar.setDelegate(delegate);
         mToolbar.showBackArrow();
+        mSelectableListLayout.configureWideDisplayStyle();
 
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);

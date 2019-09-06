@@ -30,7 +30,8 @@
     </template>
     <cr-toggle checked="[[getPermissionValueBool_(app, permissionType)]]"
       on-change="togglePermission_"
-      disabled$="[[isPermissionManaged_(app, permissionType)]]">
+      disabled$="[[isPermissionManaged_(app, permissionType)]]"
+      aria-label$="[[permissionLabel]]">
     </cr-toggle>
   </template>
   <script src="permission_toggle.js"></script>

@@ -1797,6 +1797,9 @@ FormRetrievalResult LoginDatabase::StatementToForms(
   key_to_form_map->clear();
   while (statement->Step()) {
     auto new_form = std::make_unique<PasswordForm>();
+    new_form->from_store = is_account_store()
+                               ? PasswordForm::Store::kAccountStore
+                               : PasswordForm::Store::kProfileStore;
     int primary_key = -1;
     EncryptionResult result = InitPasswordFormFromStatement(
         *statement, /*decrypt_and_fill_password_value=*/true, &primary_key,

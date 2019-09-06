@@ -279,9 +279,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_params.idle_connection_timeout.InSeconds());
   dict->SetInteger("reduced_ping_timeout_seconds",
                    params_.quic_params.reduced_ping_timeout.InSeconds());
-  dict->SetBoolean(
-      "mark_quic_broken_when_network_blackholes",
-      params_.quic_params.mark_quic_broken_when_network_blackholes);
   dict->SetBoolean("retry_without_alt_svc_on_quic_errors",
                    params_.quic_params.retry_without_alt_svc_on_quic_errors);
   dict->SetBoolean("race_cert_verification",

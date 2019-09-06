@@ -58,7 +58,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
@@ -510,16 +509,12 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   url_request_context_factory_->InitializeOnUIThread(nullptr);
 
-  cast_browser_process_->SetBrowserContext(
-      std::make_unique<CastBrowserContext>());
-
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
       base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-      content::BrowserContext::GetDefaultStoragePartition(
-          cast_browser_process_->browser_context())
-          ->GetURLLoaderFactoryForBrowserProcessIOThread(),
-      content::GetNetworkConnectionTracker()));
+      url_request_context_factory_->GetSystemGetter()));
 
+  cast_browser_process_->SetBrowserContext(
+      std::make_unique<CastBrowserContext>());
   cast_browser_process_->SetMetricsServiceClient(
       std::make_unique<metrics::CastMetricsServiceClient>(
           cast_browser_process_->browser_client(),

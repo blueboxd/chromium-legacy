@@ -5,13 +5,13 @@
 #include "chrome/browser/web_applications/web_app_database.h"
 
 #include <memory>
-#include <tuple>
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
@@ -22,29 +22,6 @@
 #include "url/gurl.h"
 
 namespace web_app {
-
-bool operator==(const WebApp::IconInfo& icon_info1,
-                const WebApp::IconInfo& icon_info2) {
-  return std::make_tuple(icon_info1.url, icon_info1.size_in_px) ==
-         std::make_tuple(icon_info2.url, icon_info2.size_in_px);
-}
-
-bool operator==(const WebApp& web_app1, const WebApp& web_app2) {
-  return std::make_tuple(web_app1.app_id(), web_app1.name(),
-                         web_app1.launch_url(), web_app1.description(),
-                         web_app1.scope(), web_app1.theme_color(),
-                         web_app1.icons(), web_app1.launch_container(),
-                         web_app1.is_locally_installed()) ==
-         std::make_tuple(web_app2.app_id(), web_app2.name(),
-                         web_app2.launch_url(), web_app2.description(),
-                         web_app2.scope(), web_app2.theme_color(),
-                         web_app2.icons(), web_app2.launch_container(),
-                         web_app2.is_locally_installed());
-}
-
-bool operator!=(const WebApp& web_app, const WebApp& web_app2) {
-  return !operator==(web_app, web_app2);
-}
 
 namespace {
 
@@ -93,12 +70,25 @@ class WebAppDatabaseTest : public testing::Test {
 
     auto app = std::make_unique<WebApp>(app_id);
 
+    // Generate all possible permutations of field values in a random way:
+    if (suffix & 1)
+      app->AddSource(Source::kSystem);
+    if (suffix & 2)
+      app->AddSource(Source::kPolicy);
+    if (suffix & 4)
+      app->AddSource(Source::kWebAppStore);
+    if (suffix & 8)
+      app->AddSource(Source::kSync);
+    if (suffix & 16)
+      app->AddSource(Source::kDefault);
+    if ((suffix & 31) == 0)
+      app->AddSource(Source::kSync);
+
     app->SetName(name);
     app->SetDescription(description);
     app->SetLaunchUrl(GURL(launch_url));
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
-    // Generate all possible permutations of field values in a random way:
     app->SetIsLocallyInstalled(!(suffix & 2));
     app->SetLaunchContainer((suffix & 1) ? LaunchContainer::kTab
                                          : LaunchContainer::kWindow);
@@ -267,11 +257,18 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const auto launch_container = LaunchContainer::kTab;
 
   auto app = std::make_unique<WebApp>(app_id);
+
   // Required fields:
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
   app->SetLaunchContainer(launch_container);
   app->SetIsLocallyInstalled(false);
+
+  EXPECT_FALSE(app->HasAnySources());
+  for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
+    app->AddSource(static_cast<Source::Type>(i));
+    EXPECT_TRUE(app->HasAnySources());
+  }
 
   // Let optional fields be empty:
   EXPECT_TRUE(app->description().empty());
@@ -291,6 +288,13 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(name, app_copy->name());
   EXPECT_EQ(launch_container, app_copy->launch_container());
   EXPECT_FALSE(app_copy->is_locally_installed());
+
+  for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
+    EXPECT_TRUE(app_copy->HasAnySources());
+    app_copy->RemoveSource(static_cast<Source::Type>(i));
+  }
+  EXPECT_FALSE(app_copy->HasAnySources());
+
   // No optional fields.
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());

@@ -49,7 +49,6 @@
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -903,17 +902,6 @@ void RendererBlinkPlatformImpl::RecordRappor(const char* metric,
 void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
                                                 const blink::WebURL& url) {
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
-}
-
-//------------------------------------------------------------------------------
-
-blink::WebTransmissionEncodingInfoHandler*
-RendererBlinkPlatformImpl::TransmissionEncodingInfoHandler() {
-  if (!web_transmission_encoding_info_handler_) {
-    web_transmission_encoding_info_handler_.reset(
-        new content::TransmissionEncodingInfoHandler());
-  }
-  return web_transmission_encoding_info_handler_.get();
 }
 
 //------------------------------------------------------------------------------

@@ -3515,6 +3515,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/search_result_ranker/recurrence_ranker_util.h",
       "app_list/search/search_result_ranker/search_result_ranker.cc",
       "app_list/search/search_result_ranker/search_result_ranker.h",
+      "app_list/search/search_utils/fuzzy_tokenized_string_match.cc",
+      "app_list/search/search_utils/fuzzy_tokenized_string_match.h",
       "app_list/search/search_utils/sequence_matcher.cc",
       "app_list/search/search_utils/sequence_matcher.h",
       "app_list/search/settings_shortcut/settings_shortcut_metadata.cc",

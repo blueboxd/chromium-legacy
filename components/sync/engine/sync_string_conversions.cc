@@ -36,13 +36,11 @@ const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason) {
 
 const char* PassphraseTypeToString(PassphraseType type) {
   switch (type) {
-    ENUM_CASE(PassphraseType::IMPLICIT_PASSPHRASE);
-    ENUM_CASE(PassphraseType::KEYSTORE_PASSPHRASE);
-    ENUM_CASE(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
-    ENUM_CASE(PassphraseType::CUSTOM_PASSPHRASE);
-    ENUM_CASE(PassphraseType::TRUSTED_VAULT_PASSPHRASE);
-    case PassphraseType::PASSPHRASE_TYPE_SIZE:
-      break;
+    ENUM_CASE(PassphraseType::kImplicitPassphrase);
+    ENUM_CASE(PassphraseType::kKeystorePassphrase);
+    ENUM_CASE(PassphraseType::kFrozenImplicitPassphrase);
+    ENUM_CASE(PassphraseType::kCustomPassphrase);
+    ENUM_CASE(PassphraseType::kTrustedVaultPassphrase);
   }
 
   NOTREACHED();

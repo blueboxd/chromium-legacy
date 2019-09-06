@@ -153,7 +153,7 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
   switch (event.GetType()) {
     case blink::WebInputEvent::kGestureScrollBegin:
       refresh_effect_->OnScrollBegin(
-          gfx::ScalePoint(event.PositionInScreen(), dpi_scale_));
+          gfx::ScalePoint(event.PositionInWidget(), dpi_scale_));
       break;
 
     case blink::WebInputEvent::kGestureScrollUpdate: {

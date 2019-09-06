@@ -7,8 +7,8 @@
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
@@ -23,6 +23,8 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event_init.h"
 
 namespace blink {
 
@@ -41,7 +43,8 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      const GPUDeviceDescriptor* descriptor)
-    : DawnObject(dawn_control_client,
+    : ContextClient(execution_context),
+      DawnObject(dawn_control_client,
                  dawn_control_client->GetInterface()->GetDefaultDevice()),
       adapter_(adapter),
       queue_(GPUQueue::Create(this, GetProcs().deviceCreateQueue(GetHandle()))),
@@ -72,6 +75,22 @@ void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
                                mojom::ConsoleMessageLevel::kWarning, message);
     execution_context->AddConsoleMessage(console_message);
   }
+
+  GPUUncapturedErrorEventInit* init = GPUUncapturedErrorEventInit::Create();
+  if (errorType == DAWN_ERROR_TYPE_VALIDATION) {
+    GPUValidationError* error = GPUValidationError::Create(message);
+    init->setError(
+        GPUOutOfMemoryErrorOrGPUValidationError::FromGPUValidationError(error));
+  } else if (errorType == DAWN_ERROR_TYPE_OUT_OF_MEMORY) {
+    GPUOutOfMemoryError* error = GPUOutOfMemoryError::Create();
+    init->setError(
+        GPUOutOfMemoryErrorOrGPUValidationError::FromGPUOutOfMemoryError(
+            error));
+  } else {
+    return;
+  }
+  this->DispatchEvent(*GPUUncapturedErrorEvent::Create(
+      event_type_names::kUncapturederror, init));
 }
 
 GPUAdapter* GPUDevice::adapter() const {
@@ -190,10 +209,19 @@ GPUQueue* GPUDevice::getQueue() {
   return queue_;
 }
 
+ExecutionContext* GPUDevice::GetExecutionContext() const {
+  return ContextClient::GetExecutionContext();
+}
+
+const AtomicString& GPUDevice::InterfaceName() const {
+  return event_target_names::kGPUDevice;
+}
+
 void GPUDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(adapter_);
   visitor->Trace(queue_);
-  DawnObject<DawnDevice>::Trace(visitor);
+  ContextClient::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 }  // namespace blink

@@ -264,9 +264,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
 }
 
 // TODO(crbug.com/707127): Decide when it's supported on Android.
+// FLAKY: crbug.com/1001399
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       Playback_VideoOnly_WebM_VP9Profile2) {
+                       DISABLED_Playback_VideoOnly_WebM_VP9Profile2) {
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm");
 }
 

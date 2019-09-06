@@ -11,17 +11,57 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {
 
 namespace {
+
+// TODO(loyso): Call sites should specify Source explicitly as a part of
+// AppTraits parameter object.
+Source::Type InferSourceFromMetricsInstallSource(
+    WebappInstallSource install_source) {
+  switch (install_source) {
+    case WebappInstallSource::MENU_BROWSER_TAB:
+    case WebappInstallSource::MENU_CUSTOM_TAB:
+    case WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
+    case WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case WebappInstallSource::API_BROWSER_TAB:
+    case WebappInstallSource::API_CUSTOM_TAB:
+    case WebappInstallSource::DEVTOOLS:
+    case WebappInstallSource::MANAGEMENT_API:
+    case WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
+    case WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
+    case WebappInstallSource::OMNIBOX_INSTALL_ICON:
+    case WebappInstallSource::SYNC:
+      return Source::kSync;
+
+    case WebappInstallSource::INTERNAL_DEFAULT:
+    case WebappInstallSource::EXTERNAL_DEFAULT:
+      return Source::kDefault;
+
+    case WebappInstallSource::EXTERNAL_POLICY:
+      return Source::kPolicy;
+
+    case WebappInstallSource::SYSTEM_DEFAULT:
+      return Source::kSystem;
+
+    case WebappInstallSource::ARC:
+      return Source::kWebAppStore;
+
+    case WebappInstallSource::COUNT:
+      NOTREACHED();
+      return Source::kMaxValue;
+  }
+}
 
 void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
   WebApp::Icons web_app_icons;
@@ -56,8 +96,16 @@ void WebAppInstallFinalizer::FinalizeInstall(
     InstallFinalizedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // TODO(loyso): Expose Source argument as a field of AppTraits struct.
+  const auto source =
+      InferSourceFromMetricsInstallSource(options.install_source);
+
   AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
   if (registrar_->GetAppById(app_id)) {
+    ScopedRegistryUpdate update(registrar_);
+    WebApp* existing_web_app = update->UpdateApp(app_id);
+    existing_web_app->AddSource(source);
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), app_id,
                                   InstallResultCode::kSuccessAlreadyInstalled));
@@ -65,6 +113,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   }
 
   auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->AddSource(source);
 
   web_app->SetName(base::UTF16ToUTF8(web_app_info.title));
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
@@ -93,6 +142,9 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
 
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
                                              UninstallWebAppCallback) {
+  // TODO(loyso): Implement The Unified Uninstall API. Expose Source as an
+  // argument for UninstallWebApp method. Do app->RemoveSource from the app and
+  // uninstall the app if no more sources interested.
   NOTIMPLEMENTED();
 }
 

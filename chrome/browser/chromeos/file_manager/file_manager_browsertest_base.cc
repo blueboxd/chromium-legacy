@@ -66,7 +66,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
-#include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
@@ -1758,7 +1757,6 @@ void FileManagerBrowserTestBase::StartTest() {
   static const base::FilePath test_extension_dir =
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
   LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
-  CreateArcServices();
   RunTestMessageLoop();
 }
 
@@ -2414,14 +2412,6 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
 void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
   CHECK(IsTabletModeTest());
   ash::ShellTestApi().EnableVirtualKeyboard();
-}
-
-void FileManagerBrowserTestBase::CreateArcServices() {
-  // Instantiate testing version of the services.
-
-  // chrome.fileManagerPrivate relies on ArcVolumeMounterBridge, and our tests
-  // call the chrome.fileManagerPrivate interface.
-  arc::ArcVolumeMounterBridge::GetForBrowserContextForTesting(profile());
 }
 
 }  // namespace file_manager

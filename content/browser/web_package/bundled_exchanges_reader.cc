@@ -142,7 +142,7 @@ BundledExchangesReader::BundledExchangesReader(
     : parser_(ServiceManagerConnection::GetForProcess()
                   ? ServiceManagerConnection::GetForProcess()->GetConnector()
                   : nullptr),
-      file_(base::MakeRefCounted<SharedFile>(source.file_path)) {}
+      file_(base::MakeRefCounted<SharedFile>(source.file_path())) {}
 
 BundledExchangesReader::~BundledExchangesReader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

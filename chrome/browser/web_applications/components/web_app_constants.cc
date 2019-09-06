@@ -6,6 +6,8 @@
 
 namespace web_app {
 
+static_assert(Source::kMinValue == 0, "Source enum should be zero based");
+
 const char* LaunchContainerEnumToStr(LaunchContainer launch_container) {
   switch (launch_container) {
     case LaunchContainer::kDefault:

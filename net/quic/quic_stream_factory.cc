@@ -1558,12 +1558,6 @@ void QuicStreamFactory::OnBlackholeAfterHandshakeConfirmed(
   // Reduce PING timeout when connection blackholes after the handshake.
   if (ping_timeout_ > reduced_ping_timeout_)
     ping_timeout_ = reduced_ping_timeout_;
-
-  if (params_.mark_quic_broken_when_network_blackholes) {
-    http_server_properties_->MarkAlternativeServiceBroken(AlternativeService(
-        kProtoQUIC, HostPortPair(session->server_id().host(),
-                                 session->server_id().port())));
-  }
 }
 
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {

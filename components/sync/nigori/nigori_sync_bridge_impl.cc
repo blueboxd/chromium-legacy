@@ -599,8 +599,7 @@ bool NigoriSyncBridgeImpl::Init() {
       observer.OnPassphraseTypeChanged(enum_passphrase_type,
                                        GetExplicitPassphraseTime());
     }
-    UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", enum_passphrase_type,
-                              PassphraseType::PASSPHRASE_TYPE_SIZE);
+    UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", enum_passphrase_type);
   }
   UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady", cryptographer_.is_ready());
   UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys",
@@ -653,7 +652,7 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     observer.OnPassphraseAccepted();
   }
   for (auto& observer : observers_) {
-    observer.OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+    observer.OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
                                      custom_passphrase_time_);
   }
   for (auto& observer : observers_) {

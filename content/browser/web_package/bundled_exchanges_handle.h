@@ -30,7 +30,8 @@ class NavigationLoaderInterceptor;
 class BundledExchangesHandle final {
  public:
   BundledExchangesHandle();
-  explicit BundledExchangesHandle(const BundledExchangesSource& source);
+  explicit BundledExchangesHandle(
+      std::unique_ptr<BundledExchangesSource> bundled_exchanges_source);
   ~BundledExchangesHandle();
 
   // Creates a NavigationLoaderInterceptor instance to handle the request for
@@ -54,10 +55,9 @@ class BundledExchangesHandle final {
                        network::mojom::URLLoaderClientPtr client);
   void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error);
 
-  const BundledExchangesSource source_;
-
   base::OnceClosure pending_create_url_loader_task_;
 
+  std::unique_ptr<BundledExchangesSource> source_;
   std::unique_ptr<BundledExchangesReader> reader_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
   GURL primary_url_;

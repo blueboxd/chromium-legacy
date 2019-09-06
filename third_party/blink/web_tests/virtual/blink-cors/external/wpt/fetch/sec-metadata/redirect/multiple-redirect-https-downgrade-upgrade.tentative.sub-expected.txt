@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+PASS Https downgrade-upgrade iframe
+PASS Https downgrade-upgrade top level navigation
+PASS Https downgrade-upgrade embed
+FAIL Https downgrade-upgrade fetch() api assert_equals: dest expected "" but got "empty"
+PASS Https downgrade-upgrade object
+PASS Https downgrade-upgrade prefetch => No headers
+PASS Https downgrade-upgrade preload
+PASS Https downgrade-upgrade stylesheet
+PASS Https downgrade-upgrade track
+PASS Https downgrade-upgrade image => No headers
+PASS Https downgrade-upgrade script => No headers
+PASS Https downgrade-upgrade font => No headers
+Harness: the test ran to completion.
+

@@ -18,7 +18,11 @@ namespace network {
 WebSocketFactory::WebSocketFactory(NetworkContext* context)
     : context_(context) {}
 
-WebSocketFactory::~WebSocketFactory() {}
+WebSocketFactory::~WebSocketFactory() {
+  // Subtle: This is important to avoid WebSocketFactory::Remove calls during
+  // |connections_| destruction.
+  connections_.clear();
+}
 
 void WebSocketFactory::CreateWebSocket(
     const GURL& url,
@@ -72,7 +76,11 @@ void WebSocketFactory::OnSSLCertificateError(
 
 void WebSocketFactory::Remove(WebSocket* impl) {
   auto it = connections_.find(impl);
-  DCHECK(it != connections_.end());
+  if (it == connections_.end()) {
+    // This is possible when this function is called inside the WebSocket
+    // destructor.
+    return;
+  }
   connections_.erase(it);
 }
 

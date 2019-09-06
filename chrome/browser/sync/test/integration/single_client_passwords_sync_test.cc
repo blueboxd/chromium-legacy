@@ -2,17 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/sync/password_sync_bridge.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/nigori/cryptographer.h"
 
 namespace {
 
@@ -28,6 +34,30 @@ using autofill::PasswordForm;
 
 using testing::ElementsAre;
 using testing::IsEmpty;
+
+syncer::KeyParams KeystoreKeyParams(const std::string& key) {
+  // Due to mis-encode of keystore keys to base64 we have to always encode such
+  // keys to provide backward compatibility.
+  std::string encoded_key;
+  base::Base64Encode(key, &encoded_key);
+  return {syncer::KeyDerivationParams::CreateForPbkdf2(),
+          std::move(encoded_key)};
+}
+
+sync_pb::PasswordSpecifics EncryptPasswordSpecifics(
+    const syncer::KeyParams& key_params,
+    const sync_pb::PasswordSpecificsData& password_data) {
+  syncer::Cryptographer cryptographer;
+  cryptographer.AddKey(key_params);
+
+  sync_pb::PasswordSpecifics encrypted_specifics;
+  encrypted_specifics.mutable_unencrypted_metadata()->set_url(
+      password_data.signon_realm());
+  bool result = cryptographer.Encrypt(password_data,
+                                      encrypted_specifics.mutable_encrypted());
+  DCHECK(result);
+  return encrypted_specifics;
+}
 
 class SingleClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
  public:
@@ -109,7 +139,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
-                                  syncer::PassphraseType::KEYSTORE_PASSPHRASE)
+                                  syncer::PassphraseType::kKeystorePassphrase)
                   .Wait());
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -137,7 +167,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
 
   GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("hunter2");
   ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), fake_server_.get(),
-                                  syncer::PassphraseType::CUSTOM_PASSPHRASE)
+                                  syncer::PassphraseType::kCustomPassphrase)
                   .Wait());
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
@@ -264,5 +294,250 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
       0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
+
+class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
+ public:
+  SingleClientPasswordsWithAccountStorageSyncTest() : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{switches::kSyncUSSPasswords,
+                              password_manager::features::
+                                  kEnablePasswordsAccountStorage},
+        /*disabled_features=*/{});
+  }
+  ~SingleClientPasswordsWithAccountStorageSyncTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
+  }
+
+  void SetUpOnMainThread() override {
+#if defined(OS_CHROMEOS)
+    secondary_account_helper::InitNetwork();
+#endif  // defined(OS_CHROMEOS)
+    SyncTest::SetUpOnMainThread();
+
+    AddKeystoreNigoriToFakeServer();
+  }
+
+  void AddKeystoreNigoriToFakeServer() {
+    const std::vector<std::string>& keystore_keys =
+        GetFakeServer()->GetKeystoreKeys();
+    ASSERT_TRUE(keystore_keys.size() == 1);
+    const syncer::KeyParams key_params =
+        KeystoreKeyParams(keystore_keys.back());
+
+    sync_pb::NigoriSpecifics nigori;
+    nigori.set_keybag_is_frozen(true);
+    nigori.set_keystore_migration_time(1U);
+    nigori.set_encrypt_everything(false);
+    nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+
+    syncer::Cryptographer cryptographer;
+    ASSERT_TRUE(cryptographer.AddKey(key_params));
+    ASSERT_TRUE(cryptographer.AddNonDefaultKey(key_params));
+    ASSERT_TRUE(cryptographer.GetKeys(nigori.mutable_encryption_keybag()));
+
+    syncer::Cryptographer keystore_cryptographer;
+    ASSERT_TRUE(keystore_cryptographer.AddKey(key_params));
+    ASSERT_TRUE(keystore_cryptographer.EncryptString(
+        cryptographer.GetDefaultNigoriKeyData(),
+        nigori.mutable_keystore_decryptor_token()));
+
+    encryption_helper::SetNigoriInFakeServer(GetFakeServer(), nigori);
+  }
+
+  void AddTestPasswordToFakeServer() {
+    sync_pb::PasswordSpecificsData password_data;
+    // Used for computing the client tag.
+    password_data.set_origin("https://origin.com");
+    password_data.set_username_element("username_element");
+    password_data.set_username_value("username_value");
+    password_data.set_password_element("password_element");
+    password_data.set_signon_realm("abc");
+    // Other data.
+    password_data.set_password_value("password_value");
+
+    fake_server_->InjectEntity(
+        syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+            /*non_unique_name=*/"encrypted", /*client_tag=*/
+            password_manager::PasswordSyncBridge::ComputeClientTagForTesting(
+                password_data),
+            CreateSpecifics(password_data),
+            /*creation_time=*/syncer::TimeToProtoTime(base::Time::Now()),
+            /*last_modified_time=*/syncer::TimeToProtoTime(base::Time::Now())));
+  }
+
+ private:
+  sync_pb::EntitySpecifics CreateSpecifics(
+      const sync_pb::PasswordSpecificsData& password_data) const {
+    const syncer::KeyParams key_params =
+        KeystoreKeyParams(GetFakeServer()->GetKeystoreKeys().back());
+
+    sync_pb::EntitySpecifics specifics;
+    *specifics.mutable_password() =
+        EncryptPasswordSpecifics(key_params, password_data);
+
+    return specifics;
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsWithAccountStorageSyncTest);
+};
+
+// Sanity check: For Sync-the-feature, password data still ends up in the
+// profile database.
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       StoresDataForSyncingPrimaryAccountInProfileDB) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Sign in and enable Sync.
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Make sure the password showed up in the account store and not in the
+  // profile store.
+  password_manager::PasswordStore* profile_store =
+      passwords_helper::GetPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+
+  password_manager::PasswordStore* account_store =
+      passwords_helper::GetAccountPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       StoresDataForNonSyncingPrimaryAccountInAccountDB) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, Sync-the-feature gets started automatically once a primary
+  // account is signed in. To prevent that, explicitly set SyncRequested to
+  // false.
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
+#endif  // defined(OS_CHROMEOS)
+
+  // Setup a primary account, but don't actually enable Sync-the-feature (so
+  // that Sync will start in transport mode).
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Make sure the password showed up in the account store and not in the
+  // profile store.
+  password_manager::PasswordStore* profile_store =
+      passwords_helper::GetPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 0u);
+
+  password_manager::PasswordStore* account_store =
+      passwords_helper::GetAccountPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+}
+
+// The unconsented primary account isn't supported on ChromeOS (see
+// IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
+// up for a secondary account.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       StoresDataForSecondaryAccountInAccountDB) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Setup Sync for a secondary account (i.e. in transport mode).
+  secondary_account_helper::SignInSecondaryAccount(
+      GetProfile(0), &test_url_loader_factory_, "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Make sure the password showed up in the account store and not in the
+  // profile store.
+  password_manager::PasswordStore* profile_store =
+      passwords_helper::GetPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 0u);
+
+  password_manager::PasswordStore* account_store =
+      passwords_helper::GetAccountPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+}
+#endif  // !defined(OS_CHROMEOS)
+
+// ChromeOS does not support signing out of a primary account.
+#if !defined(OS_CHROMEOS)
+// Sanity check: The profile database should *not* get cleared on signout.
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       DoesNotClearProfileDBOnSignout) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Sign in and enable Sync.
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password showed up in the profile store.
+  password_manager::PasswordStore* profile_store =
+      passwords_helper::GetPasswordStore(0);
+  ASSERT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+
+  // Sign out again.
+  GetClient(0)->SignOutPrimaryAccount();
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password is still in the store.
+  ASSERT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+}
+#endif  // !defined(OS_CHROMEOS)
+
+// The unconsented primary account isn't supported on ChromeOS (see
+// IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
+// up for a secondary account.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       ClearsAccountDBOnSignout) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Setup Sync for a secondary account (i.e. in transport mode).
+  AccountInfo account_info = secondary_account_helper::SignInSecondaryAccount(
+      GetProfile(0), &test_url_loader_factory_, "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password showed up in the account store.
+  password_manager::PasswordStore* account_store =
+      passwords_helper::GetAccountPasswordStore(0);
+  ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+
+  // Sign out again.
+  secondary_account_helper::SignOutSecondaryAccount(
+      GetProfile(0), &test_url_loader_factory_, account_info.account_id);
+
+  // Make sure the password is gone from the store.
+  ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
+}
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

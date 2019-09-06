@@ -596,23 +596,6 @@ crbug.com/965491 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/
 crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-flex-001.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
 
-# We're sending `Sec-Fetch-*` headers over non-secure transport until we fix https://crbug.com/995745
-crbug.com/995745 external/wpt/fetch/sec-metadata/fetch.tentative.sub.html [ Failure ]
-crbug.com/995745 external/wpt/fetch/sec-metadata/iframe.tentative.sub.html [ Failure ]
-crbug.com/995745 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Failure ]
-crbug.com/995745 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Failure ]
-crbug.com/995745 external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/fetch.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/iframe.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/blink-cors/external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/fetch.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/iframe.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Failure ]
-crbug.com/995745 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/script.tentative.sub.html [ Failure ]
-
 # [css-align]
 
 crbug.com/599828 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3/flex-abspos-staticpos-align-content-001.html [ Failure ]

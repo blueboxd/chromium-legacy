@@ -71,16 +71,18 @@ if (is_win || is_mac) {
     output = "$target_gen_dir/updater_version.h"
   }
 
-  source_set("updater_tests") {
+  test("updater_tests") {
     testonly = true
 
     sources = [
+      "run_all_unittests.cc",
       "updater_unittest.cc",
     ]
 
     deps = [
       ":common",
       ":updater",
+      "//base",
       "//base/test:test_support",
       "//testing/gtest",
     ]

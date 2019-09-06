@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -35,12 +36,25 @@ std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
 
   hash_reader->has_content_hashes_ = true;
 
-  const VerifiedContents& verified_contents = content_hash->verified_contents();
+  const ComputedHashes::Reader& reader = content_hash->computed_hashes();
+  base::Optional<std::string> root;
+
+  if (reader.GetHashes(relative_path, &hash_reader->block_size_,
+                       &hash_reader->hashes_) &&
+      hash_reader->block_size_ % crypto::kSHA256Length == 0) {
+    root = ComputeTreeHashRoot(
+        hash_reader->hashes_, hash_reader->block_size_ / crypto::kSHA256Length);
+  }
+
+  ContentHash::TreeHashVerificationResult verification =
+      content_hash->VerifyTreeHashRoot(relative_path,
+                                       base::OptionalOrNullptr(root));
 
   // Extensions sometimes request resources that do not have an entry in
-  // verified_contents.json. This can happen when an extension sends an XHR to a
-  // resource.
-  if (!verified_contents.HasTreeHashRoot(relative_path)) {
+  // computed_hashes.json or verified_content.json. This can happen, for
+  // example, when an extension sends an XHR to a resource. This should not be
+  // considered as a failure.
+  if (verification != ContentHash::TreeHashVerificationResult::SUCCESS) {
     base::FilePath full_path =
         content_hash->extension_root().Append(relative_path);
     // Making a request to a non-existent file or to a directory should not
@@ -49,23 +63,12 @@ std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
     // kept track of whether the file being verified was successfully read.
     // A content verification failure should be triggered if there is a mismatch
     // between the file read state and the existence of verification hashes.
-    if (!base::PathExists(full_path) || base::DirectoryExists(full_path))
+    if (verification == ContentHash::TreeHashVerificationResult::NO_ENTRY &&
+        (!base::PathExists(full_path) || base::DirectoryExists(full_path)))
       hash_reader->file_missing_from_verified_contents_ = true;
 
     return hash_reader;  // FAILURE.
   }
-
-  const ComputedHashes::Reader& reader = content_hash->computed_hashes();
-  if (!reader.GetHashes(relative_path, &hash_reader->block_size_,
-                        &hash_reader->hashes_) ||
-      hash_reader->block_size_ % crypto::kSHA256Length != 0) {
-    return hash_reader;
-  }
-
-  std::string root = ComputeTreeHashRoot(
-      hash_reader->hashes_, hash_reader->block_size_ / crypto::kSHA256Length);
-  if (!verified_contents.TreeHashRootEquals(relative_path, root))
-    return hash_reader;
 
   hash_reader->status_ = SUCCESS;
   UMA_HISTOGRAM_TIMES("ExtensionContentHashReader.InitLatency",

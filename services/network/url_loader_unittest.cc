@@ -2179,14 +2179,11 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
 
   // We should have removed our special Sec-CH- and Sec-Fetch- prefixed headers
   // and left the others. We are now operating on an un-trustworthy context.
-  //
-  // TODO(mkwst): Reverting these expectations temporarily while resolving
-  // https://crbug.com/995745.
   const auto& request_headers2 = sent_request().headers;
-  EXPECT_NE(request_headers2.end(), request_headers2.find("Sec-CH-UA"));
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-CH-UA"));
   EXPECT_EQ("Value2", request_headers2.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers2.find("Other-Header")->second);
-  EXPECT_NE(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
 }
 
 // Validate Sec- prefixed headers are properly handled when redirecting from
@@ -2241,26 +2238,20 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
   // Special Sec-CH- and Sec-Fetch- prefixed headers should have been removed
   // and the others left alone. We are now operating on an un-trustworthy
   // context.
-  //
-  // TODO(mkwst): Reverting these expectations temporarily while resolving
-  // https://crbug.com/995745.
   const auto& request_headers2 = sent_request().headers;
-  EXPECT_NE(request_headers2.end(), request_headers2.find("Sec-CH-UA"));
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-CH-UA"));
   EXPECT_EQ("Value2", request_headers2.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers2.find("Other-Header")->second);
-  EXPECT_NE(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Sec-Fetch-Site"));
 
   // Now follow the final redirect back to a trustworthy destination and
   // re-validate.
-  //
-  // TODO(mkwst): Reverting these expectations temporarily while resolving
-  // https://crbug.com/995745.
   loader->FollowRedirect({}, {}, base::nullopt);
   client()->RunUntilComplete();
   delete_run_loop.Run();
 
   const auto& request_headers3 = sent_request().headers;
-  EXPECT_NE(request_headers3.end(), request_headers3.find("Sec-CH-UA"));
+  EXPECT_EQ(request_headers3.end(), request_headers3.find("Sec-CH-UA"));
   EXPECT_EQ("Value2", request_headers3.find("Sec-Other-Type")->second);
   EXPECT_EQ("Value3", request_headers3.find("Other-Header")->second);
   EXPECT_EQ("cross-site", request_headers3.find("Sec-Fetch-Site")->second);

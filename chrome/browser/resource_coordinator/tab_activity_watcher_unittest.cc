@@ -78,21 +78,14 @@ blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
 // TabMetricsLogger via TabActivityWatcher.
 class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabActivityWatcherTest() {
-    // Use MRUScorer for TabRanker to bypass ML model.
-    feature_list_.InitAndEnableFeatureWithParameters(
-        features::kTabRanker,
-        {{"scorer_type", "0"},
-         {"disable_background_log_with_TabRanker", "false"}});
+  TabActivityWatcherTest() = default;
+  // Reset TabActivityWatcher with given |params|.
+  void SetParams(const base::FieldTrialParams& params) {
+    feature_list_.InitAndEnableFeatureWithParameters(features::kTabRanker,
+                                                     params);
     TabActivityWatcher::GetInstance()->ResetForTesting();
   }
-
   ~TabActivityWatcherTest() override = default;
-
-  void TearDown() override {
-    TabActivityWatcher::GetInstance()->ResetForTesting();
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
 
   LifecycleUnit* AddNewTab(TabStripModel* tab_strip_model, int i) {
     LifecycleUnit* result = TabLifecycleUnitSource::GetTabLifecycleUnit(
@@ -106,6 +99,13 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
     return result;
   }
 
+  // Calculate reactivation score of the |lifecycle_unit| using tab_ranker.
+  base::Optional<float> GetReactivationScore(
+      LifecycleUnit* const lifecycle_unit) {
+    return TabActivityWatcher::GetInstance()->CalculateReactivationScore(
+        lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents());
+  }
+
  protected:
   UkmEntryChecker ukm_entry_checker_;
   TabActivitySimulator tab_activity_simulator_;
@@ -117,6 +117,7 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
 
 // Test that lifecycleunits are sorted with high activation score first order.
 TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
+  SetParams({{"scorer_type", "0"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(&params);
@@ -137,19 +138,86 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
   EXPECT_EQ(lifecycleunits[2], tab1);
   EXPECT_EQ(lifecycleunits[3], tab0);
 
-  // Closing the tabs destroys the WebContentses but should not trigger logging.
-  // The TestWebContentsObserver simulates hiding these tabs as they are closed;
-  // we verify in TearDown() that no logging occurred.
+  tab_strip_model->CloseAllTabs();
+}
+
+// Test that lifecycleunits are sorted with high frecency score first order.
+TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithFrecencyScorer) {
+  SetParams({{"scorer_type", "3"}});
+  Browser::CreateParams params(profile(), true);
+  std::unique_ptr<Browser> browser =
+      CreateBrowserWithTestWindowForParams(&params);
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+  // Create lifecycleunits.
+  LifecycleUnit* tab0 = AddNewTab(tab_strip_model, 0);
+  LifecycleUnit* tab1 = AddNewTab(tab_strip_model, 1);
+  LifecycleUnit* tab2 = AddNewTab(tab_strip_model, 2);
+  LifecycleUnit* tab3 = AddNewTab(tab_strip_model, 3);
+
+  for (int i = 0; i < 10; ++i) {
+    tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
+    tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
+  }
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 3);
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
+  std::vector<LifecycleUnit*> lifecycleunits = {tab0, tab1, tab2, tab3};
+  // Sort and check the new order.
+  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+      &lifecycleunits);
+  // tab2 is the first one because it is foregrounded.
+  EXPECT_EQ(lifecycleunits[0], tab2);
+  // tab1 and tab0 are in front of tab3 because they are reactived many times.
+  EXPECT_EQ(lifecycleunits[1], tab1);
+  EXPECT_EQ(lifecycleunits[2], tab0);
+  // tab3 comes last.
+  EXPECT_EQ(lifecycleunits[3], tab3);
+
+  tab_strip_model->CloseAllTabs();
+}
+
+// Test that frecency scores are calculated correctly.
+TEST_F(TabActivityWatcherTest, GetFrecencyScore) {
+  SetParams({{"scorer_type", "3"}});
+  Browser::CreateParams params(profile(), true);
+  std::unique_ptr<Browser> browser =
+      CreateBrowserWithTestWindowForParams(&params);
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+  LifecycleUnit* tab0 = AddNewTab(tab_strip_model, 0);
+  // Foregrounded tab doesn't have a reactivation score.
+  EXPECT_FALSE(GetReactivationScore(tab0).has_value());
+
+  LifecycleUnit* tab1 = AddNewTab(tab_strip_model, 1);
+  // Foregrounded tab doesn't have a reactivation score.
+  EXPECT_FALSE(GetReactivationScore(tab1).has_value());
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab0).value(), 0.16f);
+
+  LifecycleUnit* tab2 = AddNewTab(tab_strip_model, 2);
+  // Foregrounded tab doesn't have a reactivation score.
+  EXPECT_FALSE(GetReactivationScore(tab2).has_value());
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab1).value(), 0.16f);
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab0).value(), 0.128f);
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
+  // Foregrounded tab doesn't have a reactivation score.
+  EXPECT_FALSE(GetReactivationScore(tab1).has_value());
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab2).value(), 0.16f);
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab0).value(), 0.1024f);
+
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
+  // Foregrounded tab doesn't have a reactivation score.
+  EXPECT_FALSE(GetReactivationScore(tab0).has_value());
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab1).value(), 0.2624f);
+  EXPECT_FLOAT_EQ(GetReactivationScore(tab2).value(), 0.128f);
+
   tab_strip_model->CloseAllTabs();
 }
 
 // Test that lifecycleunits are correctly logged inside
 // SortLifecycleUnitWithTabRanker.
 TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
-  base::test::ScopedFeatureList feature_list_overrides;
-  feature_list_overrides.InitAndEnableFeatureWithParameters(
-      features::kTabRanker,
-      {{"disable_background_log_with_TabRanker", "true"}});
+  SetParams({{"disable_background_log_with_TabRanker", "true"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(&params);
@@ -225,16 +293,16 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
         });
   }
 
-  // Closing the tabs destroys the WebContentses but should not trigger logging.
-  // The TestWebContentsObserver simulates hiding these tabs as they are closed;
-  // we verify in TearDown() that no logging occurred.
   tab_strip_model->CloseAllTabs();
 }
 
 // Tests TabManager.TabMetrics UKM entries generated when tabs are backgrounded.
 class TabMetricsTest : public TabActivityWatcherTest {
  public:
-  TabMetricsTest() = default;
+  TabMetricsTest() {
+    SetParams({{"scorer_type", "0"},
+               {"disable_background_log_with_TabRanker", "false"}});
+  }
   ~TabMetricsTest() override = default;
 
  protected:
@@ -715,6 +783,8 @@ class ForegroundedOrClosedTest : public TabActivityWatcherTest {
       : scoped_set_tick_clock_for_testing_(&test_clock_) {
     // Start at a nonzero time.
     AdvanceClock();
+    SetParams({{"scorer_type", "0"},
+               {"disable_background_log_with_TabRanker", "false"}});
   }
   ~ForegroundedOrClosedTest() override = default;
 

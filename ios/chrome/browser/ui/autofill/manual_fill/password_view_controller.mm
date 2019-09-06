@@ -33,9 +33,11 @@ typedef NS_ENUM(NSInteger, ManualFallbackItemType) {
 
 namespace manual_fill {
 
-NSString* const PasswordSearchBarAccessibilityIdentifier =
+NSString* const kPasswordDoneButtonAccessibilityIdentifier =
+    @"kManualFillPasswordDoneButtonAccessibilityIdentifier";
+NSString* const kPasswordSearchBarAccessibilityIdentifier =
     @"kManualFillPasswordSearchBarAccessibilityIdentifier";
-NSString* const PasswordTableViewAccessibilityIdentifier =
+NSString* const kPasswordTableViewAccessibilityIdentifier =
     @"kManualFillPasswordTableViewAccessibilityIdentifier";
 
 }  // namespace manual_fill
@@ -61,7 +63,7 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
   [super viewDidLoad];
 
   self.tableView.accessibilityIdentifier =
-      manual_fill::PasswordTableViewAccessibilityIdentifier;
+      manual_fill::kPasswordTableViewAccessibilityIdentifier;
 
   self.definesPresentationContext = YES;
   self.searchController.searchBar.backgroundColor = [UIColor clearColor];
@@ -69,7 +71,7 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
   self.navigationItem.searchController = self.searchController;
   self.navigationItem.hidesSearchBarWhenScrolling = NO;
   self.searchController.searchBar.accessibilityIdentifier =
-      manual_fill::PasswordSearchBarAccessibilityIdentifier;
+      manual_fill::kPasswordSearchBarAccessibilityIdentifier;
   NSString* titleString =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD);
   self.title = titleString;
@@ -81,6 +83,14 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
       UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
   self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
       offset;
+
+  UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                           target:self
+                           action:@selector(handleDoneButton)];
+  doneButton.accessibilityIdentifier =
+      manual_fill::kPasswordDoneButtonAccessibilityIdentifier;
+  self.navigationItem.rightBarButtonItem = doneButton;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -188,6 +198,10 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
              [passwordCell configureWithFaviconAttributes:attributes];
            }
          }];
+}
+
+- (void)handleDoneButton {
+  [self.delegate passwordViewControllerDidTapDoneButton:self];
 }
 
 @end

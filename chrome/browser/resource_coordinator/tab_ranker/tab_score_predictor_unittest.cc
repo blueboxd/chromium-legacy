@@ -96,4 +96,17 @@ TEST_F(TabScorePredictorTest, ScoreWithDiscardPenalty) {
   EXPECT_FLOAT_EQ(ScoreTab(tab), 0.28599524);
 }
 
+TEST_F(TabScorePredictorTest, ScoreTabWithFrecencyScorer) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"scorer_type", "3"}, {"discard_count_penalty", "0.2468"}});
+
+  auto tab = GetFullTabFeaturesForTesting();
+  // Pre-calculated score using the generated model outside of Chrome.
+  EXPECT_FLOAT_EQ(ScoreTab(tab), 0.1234f);
+
+  tab.discard_count = 3;
+  EXPECT_FLOAT_EQ(ScoreTab(tab), 0.25874191);
+}
+
 }  // namespace tab_ranker

@@ -641,7 +641,6 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString localized_strings[] = {
       {"appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE},
       {"appNoPermission", IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
-      {"back", IDS_APP_MANAGEMENT_BACK},
       {"camera", IDS_APP_MANAGEMENT_CAMERA},
       {"contacts", IDS_APP_MANAGEMENT_CONTACTS},
       {"controlledByPolicy", IDS_CONTROLLED_SETTING_POLICY},
@@ -650,7 +649,6 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"microphone", IDS_APP_MANAGEMENT_MICROPHONE},
       {"moreApps", IDS_APP_MANAGEMENT_MORE_APPS},
       {"moreSettings", IDS_APP_MANAGEMENT_MORE_SETTINGS},
-      {"noSearchResults", IDS_APP_MANAGEMENT_NO_RESULTS},
       {"notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS},
       {"notificationSublabel", IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL},
       {"openAndroidSettings", IDS_APP_MANAGEMENT_ANDROID_SETTINGS},
@@ -660,7 +658,6 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"pinControlledByPolicy", IDS_APP_MANAGEMENT_PIN_ENFORCED_BY_POLICY},
       {"pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF},
       {"policyAppUninstallPolicy", IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
-      {"searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
       {"size", IDS_APP_MANAGEMENT_SIZE},
       {"storage", IDS_APP_MANAGEMENT_STORAGE},
       {"systemAppUninstallPolicy", IDS_APP_MANAGEMENT_SYSTEM_APP_POLICY_STRING},

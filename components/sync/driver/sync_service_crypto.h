@@ -126,7 +126,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     // keys in the nigori node. Updated whenever a new nigori node arrives or
     // the user manually changes their passphrase state. Cached so we can
     // synchronously check it from the UI thread.
-    PassphraseType cached_passphrase_type = PassphraseType::IMPLICIT_PASSPHRASE;
+    PassphraseType cached_passphrase_type = PassphraseType::kImplicitPassphrase;
 
     // The key derivation params for the passphrase. We save them when we
     // receive a passphrase required event, as they are a necessary piece of

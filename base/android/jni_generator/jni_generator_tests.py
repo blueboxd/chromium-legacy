@@ -25,6 +25,7 @@ from jni_generator import CalledByNative
 from jni_generator import IsMainDexJavaClass
 from jni_generator import NativeMethod
 from jni_generator import Param
+from jni_generator import ProxyHelpers
 
 _SCRIPT_NAME = 'base/android/jni_generator/jni_generator.py'
 _INCLUDES = ('base/android/jni_generator/jni_generator_helper.h')
@@ -1555,6 +1556,70 @@ class ProxyTestGenerator(BaseTest):
     content = jni_registration_generator.CreateProxyJavaFromDict(
         reg_dict, proxy_options)
     self.AssertGoldenTextEquals(content, 'MocksRequired')
+
+  def testProxyTypeInfoPreserved(self):
+    test_data = """
+    package org.chromium.foo;
+
+    class Foo {
+
+    @NativeMethods
+    interface Natives {
+      char[][] fooProxy(byte[][] b);
+      SomeJavaType[][] barProxy(String[][] s, short z);
+      String[] foobarProxy(String[] a, int[][] b);
+      byte[][] bazProxy(long nativePtr, BazClass caller,
+          SomeJavaType[][] someObjects);
+    }
+    """
+    natives = ProxyHelpers.ExtractStaticProxyNatives('org/chromium/foo/FooJni',
+                                                     test_data, 'long')
+    golden_natives = [
+        NativeMethod(
+            static=True,
+            java_class_name=None,
+            return_type='char[][]',
+            name='fooProxy',
+            params=[Param(datatype='byte[][]', name='b')],
+            is_proxy=True,
+            proxy_name='org_chromium_foo_FooJni_fooProxy'),
+        NativeMethod(
+            static=True,
+            java_class_name=None,
+            return_type='Object[][]',
+            name='barProxy',
+            params=[
+                Param(datatype='String[][]', name='s'),
+                Param(datatype='short', name='z')
+            ],
+            is_proxy=True,
+            proxy_name='org_chromium_foo_FooJni_barProxy'),
+        NativeMethod(
+            static=True,
+            java_class_name=None,
+            return_type='String[]',
+            name='foobarProxy',
+            params=[
+                Param(datatype='String[]', name='a'),
+                Param(datatype='int[][]', name='b')
+            ],
+            is_proxy=True,
+            proxy_name='org_chromium_foo_FooJni_foobarProxy'),
+        NativeMethod(
+            static=True,
+            java_class_name=None,
+            return_type='byte[][]',
+            name='bazProxy',
+            params=[
+                Param(datatype='long', name='nativePtr'),
+                Param(datatype='Object', name='caller'),
+                Param(datatype='Object[][]', name='someObjects')
+            ],
+            is_proxy=True,
+            proxy_name='org_chromium_foo_FooJni_bazProxy',
+            ptr_type='long')
+    ]
+    self.AssertListEquals(golden_natives, natives)
 
 
 def TouchStamp(stamp_path):

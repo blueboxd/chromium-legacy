@@ -2019,6 +2019,16 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "updater_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "url_unittests"
       },
       {
@@ -3656,6 +3666,22 @@
           ]
         },
         "test": "unit_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-17134"
+            }
+          ]
+        },
+        "test": "updater_tests"
       },
       {
         "merge": {
@@ -21336,7 +21362,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 10
         },
         "test": "browser_tests"
       },
@@ -22860,6 +22887,23 @@
           "expiration": 21600
         },
         "test": "unit_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.15"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "updater_tests"
       },
       {
         "merge": {

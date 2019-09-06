@@ -53,6 +53,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
       const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
   void HandleAction(const PP_PdfAccessibilityActionData& action_data);
+  bool GetPdfLinkInfoFromAXNode(int32_t ax_node_id,
+                                uint32_t* page_index,
+                                uint32_t* link_index_in_page) const;
 
   // PluginAXTreeSource implementation.
   bool GetTreeData(ui::AXTreeData* tree_data) const override;
@@ -100,6 +103,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   void AddRemainingAnnotations(
       ui::AXNodeData* page_node,
       const gfx::RectF& page_bounds,
+      uint32_t page_index,
       base::span<const ppapi::PdfAccessibilityLinkInfo> links,
       base::span<const ppapi::PdfAccessibilityImageInfo> images,
       ui::AXNodeData* para_node);
@@ -128,7 +132,8 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       uint32_t char_index,
       const gfx::RectF& page_bounds);
   ui::AXNodeData* CreateLinkNode(const ppapi::PdfAccessibilityLinkInfo& link,
-                                 const gfx::RectF& page_bounds);
+                                 const gfx::RectF& page_bounds,
+                                 uint32_t page_index);
   ui::AXNodeData* CreateImageNode(const ppapi::PdfAccessibilityImageInfo& image,
                                   const gfx::RectF& page_bounds);
   void AddTextToLinkNode(
@@ -144,6 +149,16 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   content::RenderAccessibility* GetRenderAccessibility();
   gfx::Transform* MakeTransformFromViewInfo();
   void AddWordStartsAndEnds(ui::AXNodeData* inline_text_box);
+
+  // Stores the page index and link index in the page.
+  struct LinkInfo {
+    LinkInfo(uint32_t page_index, uint32_t link_index);
+    LinkInfo(const LinkInfo& other);
+    ~LinkInfo();
+
+    uint32_t page_index;
+    uint32_t link_index;
+  };
 
   ui::AXTreeData tree_data_;
   ui::AXTree tree_;
@@ -163,6 +178,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   // character within its page. Used to find the node associated with
   // the start or end of a selection.
   std::map<int32_t, uint32_t> node_id_to_char_index_in_page_;
+  // Map between AXNode id to link object. Used to find the link
+  // object to which an action can be passed.
+  std::map<int32_t, LinkInfo> node_id_to_link_info_;
   bool invalid_plugin_message_received_ = false;
 };
 

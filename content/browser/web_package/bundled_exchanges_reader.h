@@ -25,7 +25,7 @@
 
 namespace content {
 
-struct BundledExchangesSource;
+class BundledExchangesSource;
 
 // A class to handle a BundledExchanges that is specified by |source|.
 // It asks the utility process to parse metadata and response structures, and

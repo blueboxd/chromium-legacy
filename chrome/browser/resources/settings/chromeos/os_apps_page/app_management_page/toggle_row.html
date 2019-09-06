@@ -33,12 +33,15 @@
       <div id="label">[[label]]</div>
     </div>
     <div id="right-content" class="horizontal-align">
-      <cr-policy-indicator id="policyIndicator"
-        indicator-type="devicePolicy">
-      </cr-policy-indicator>
+      <template is="dom-if" if="[[managed]]">
+        <cr-policy-indicator id="policyIndicator"
+          indicator-type="devicePolicy">
+        </cr-policy-indicator>
+      </template>
       <cr-toggle id="toggle"
         checked="[[value]]"
-        disabled$="[[managed]]">
+        disabled$="[[managed]]"
+        aria-label$="[[label]]">
       </cr-toggle>
     </div>
   </template>

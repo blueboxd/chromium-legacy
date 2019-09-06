@@ -34,6 +34,8 @@ using safety_tips::ReputationService;
 
 const base::FeatureParam<bool> kEnableLookalikeEditDistance{
     &features::kSafetyTipUI, "editdistance", false};
+const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
+    &features::kSafetyTipUI, "editdistance_siteengagement", false};
 
 bool ShouldTriggerSafetyTipFromLookalike(
     const GURL& url,
@@ -54,9 +56,11 @@ bool ShouldTriggerSafetyTipFromLookalike(
   }
 
   // Edit distance has higher false positives, so it gets its own feature param
-  if (match_type == LookalikeMatchType::kEditDistance ||
-      match_type == LookalikeMatchType::kEditDistanceSiteEngagement) {
+  if (match_type == LookalikeMatchType::kEditDistance) {
     return kEnableLookalikeEditDistance.Get();
+  }
+  if (match_type == LookalikeMatchType::kEditDistanceSiteEngagement) {
+    return kEnableLookalikeEditDistanceSiteEngagement.Get();
   }
 
   return true;

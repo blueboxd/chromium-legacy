@@ -77,3 +77,11 @@ void SharingServiceProxyAndroid::GetDeviceCandidates(
         device_info->last_updated_timestamp().ToJavaTime());
   }
 }
+
+void SharingServiceProxyAndroid::AddDeviceCandidatesInitializedObserver(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_runnable) {
+  sharing_service_->AddDeviceCandidatesInitializedObserver(
+      base::BindOnce(base::android::RunRunnableAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_runnable)));
+}

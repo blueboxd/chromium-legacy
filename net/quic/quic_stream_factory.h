@@ -137,9 +137,6 @@ struct NET_EXPORT QuicParams {
 
   // Active QUIC experiments
 
-  // Marks a QUIC server broken when a connection blackholes after the
-  // handshake is confirmed.
-  bool mark_quic_broken_when_network_blackholes = false;
   // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
   // broken if the retry succeeds.
   bool retry_without_alt_svc_on_quic_errors = true;
@@ -478,10 +475,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   void set_server_push_delegate(ServerPushDelegate* push_delegate) {
     push_delegate_ = push_delegate;
-  }
-
-  bool mark_quic_broken_when_network_blackholes() const {
-    return params_.mark_quic_broken_when_network_blackholes;
   }
 
   NetworkChangeNotifier::NetworkHandle default_network() const {

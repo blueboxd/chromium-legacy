@@ -87,13 +87,11 @@ public class DropDownListTest {
      */
     // TODO(aluo): Re-enable once crbug.com/947352 is fixed.
     @DisableIf.
-    Build(message = "crbug.com/947352", sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP,
-            sdk_is_less_than = Build.VERSION_CODES.P)
+    Build(message = "crbug.com/947352", sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     @UseLayout("edittext_webview")
-    public void
-    testDropDownScaledViewPortUseWideViewPort() {
+    public void testDropDownScaledViewPortUseWideViewPort() {
         onView(withId(R.id.webview)).perform(Actions.setUseWideViewPort());
         mWebViewActivityRule.loadFileSync(HTML_SCALED, false);
         WebView webView = (WebView) mWebViewActivityRule.getActivity()

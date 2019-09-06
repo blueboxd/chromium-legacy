@@ -65,8 +65,10 @@ typedef enum {
   PP_PDF_ACTION_NONE = 0,
   // Action specifying a command to scroll the rect into viewport.
   PP_PDF_SCROLL_TO_MAKE_VISIBLE = 1,
+  // Invokes default action on a node.
+  PP_PDF_DO_DEFAULT_ACTION = 2,
   // Last enum value marker.
-  PP_PDF_ACCESSIBILITYACTION_LAST = PP_PDF_SCROLL_TO_MAKE_VISIBLE
+  PP_PDF_ACCESSIBILITYACTION_LAST = PP_PDF_DO_DEFAULT_ACTION
 } PP_PdfAccessibilityAction;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PdfAccessibilityAction, 4);
 
@@ -96,12 +98,16 @@ struct PP_PdfAccessibilityActionData {
   PP_PdfAccessibilityAction action;
   // Target rect on which the action is to be performed.
   struct PP_Rect target_rect;
+  // Index of link in page.
+  uint32_t link_index;
+  // Page index on which the link is present.
+  uint32_t page_index;
   // Horizontal scroll alignment with respect to the viewport
   PP_PdfAccessibilityScrollAlignment horizontal_scroll_alignment;
   // Vertical scroll alignment with respect to the viewport
   PP_PdfAccessibilityScrollAlignment vertical_scroll_alignment;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfAccessibilityActionData, 28);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PdfAccessibilityActionData, 36);
 
 struct PPP_Pdf_1_1 {
   // Returns an absolute URL if the position is over a link.

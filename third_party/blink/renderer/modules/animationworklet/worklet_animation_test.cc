@@ -89,7 +89,8 @@ class WorkletAnimationTest : public RenderingTest {
   void SetUp() override {
     RenderingTest::SetUp();
     element_ = GetDocument().CreateElementForBinding("test");
-    // Animator has to be registored before constructing WorkletAnimation. For
+    GetDocument().body()->appendChild(element_);
+    // Animator has to be registered before constructing WorkletAnimation. For
     // unit test this is faked by adding the animator name to
     // WorkletAnimationController.
     animator_name_ = "WorkletAnimationTest";

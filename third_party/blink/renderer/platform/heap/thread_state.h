@@ -36,7 +36,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
-#include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
@@ -62,6 +61,7 @@ class IncrementalMarkingScope;
 class IncrementalMarkingTestDriver;
 }  // namespace incremental_marking_test
 
+class CancelableTaskScheduler;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -624,7 +624,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   };
   GCData current_gc_data_;
 
-  CancelableTaskScheduler sweeper_scheduler_;
+  std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;

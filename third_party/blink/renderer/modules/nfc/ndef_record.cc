@@ -199,10 +199,10 @@ NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
                array_buffer->ByteLength());
 }
 
-NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecordPtr& record)
-    : record_type_(NDEFRecordTypeToString(record->record_type)),
-      media_type_(record->media_type),
-      data_(record->data) {}
+NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
+    : record_type_(NDEFRecordTypeToString(record.record_type)),
+      media_type_(record.media_type),
+      data_(record.data) {}
 
 const String& NDEFRecord::recordType() const {
   return record_type_;

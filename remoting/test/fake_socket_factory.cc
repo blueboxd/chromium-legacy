@@ -261,7 +261,7 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateClientTcpSocket(
     const rtc::SocketAddress& remote_address,
     const rtc::ProxyInfo& proxy_info,
     const std::string& user_agent,
-    int opts) {
+    const rtc::PacketSocketTcpOptions& opts) {
   return nullptr;
 }
 

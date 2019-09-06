@@ -92,9 +92,10 @@ void AppServiceAppModelBuilder::BuildModel() {
 
 void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
   ChromeAppListItem* item = GetAppItem(update.AppId());
-  bool show = (update.Readiness() == apps::mojom::Readiness::kReady) &&
-              (update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue);
-
+  apps::mojom::Readiness readiness = update.Readiness();
+  bool show = (((readiness == apps::mojom::Readiness::kReady) ||
+                (readiness == apps::mojom::Readiness::kDisabledByUser)) &&
+               (update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue));
   if (item) {
     if (show) {
       DCHECK(item->GetItemType() == AppServiceAppItem::kItemType);

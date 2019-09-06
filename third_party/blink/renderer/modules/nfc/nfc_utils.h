@@ -16,10 +16,10 @@ namespace blink {
 
 class DOMException;
 
-size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessagePtr& message);
+size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message);
 
 bool SetNDEFMessageURL(const String& origin,
-                       device::mojom::blink::NDEFMessagePtr& message);
+                       device::mojom::blink::NDEFMessage& message);
 
 WTF::String NDEFRecordTypeToString(
     const device::mojom::blink::NDEFRecordType& type);

@@ -246,7 +246,7 @@ TEST(AnimationAnimationEffectTest, ZeroIteration) {
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
-  EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
+  EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
@@ -263,7 +263,7 @@ TEST(AnimationAnimationEffectTest, InfiniteIteration) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
+  EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
@@ -475,7 +475,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration) {
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
-  EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
+  EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
@@ -492,7 +492,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIteration) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
+  EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
@@ -532,7 +532,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternate) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
+  EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
@@ -552,7 +552,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternateReverse) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
+  EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);

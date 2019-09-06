@@ -19,12 +19,15 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/resource_coordinator/utils.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/pref_names.h"
@@ -606,6 +609,111 @@ TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_Proactive) {
 
 TEST_F(TabLifecycleUnitSourceTest, DiscardAndExplicitlyReload_External) {
   DiscardAndExplicitlyReloadTest(LifecycleUnitDiscardReason::EXTERNAL);
+}
+
+TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialOptOut) {
+  LifecycleUnit* background_lifecycle_unit = nullptr;
+  LifecycleUnit* foreground_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
+                &foreground_lifecycle_unit);
+  content::WebContents* background_contents =
+      tab_strip_model_->GetWebContentsAt(0);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      background_contents, TabLoadTracker::LoadingState::LOADED);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(background_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE,
+            decision_details.SuccessReason());
+  decision_details.Clear();
+
+  // Tab cannot be frozen if it opted-out via origin trial.
+  TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
+      background_contents, mojom::InterventionPolicy::kOptOut);
+  EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT,
+            decision_details.FailureReason());
+}
+
+TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialUnknown) {
+  LifecycleUnit* background_lifecycle_unit = nullptr;
+  LifecycleUnit* foreground_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
+                &foreground_lifecycle_unit);
+  content::WebContents* background_contents =
+      tab_strip_model_->GetWebContentsAt(0);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      background_contents, TabLoadTracker::LoadingState::LOADED);
+
+  DecisionDetails decision_details;
+  EXPECT_TRUE(background_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE,
+            decision_details.SuccessReason());
+  decision_details.Clear();
+
+  // Tab cannot be frozen if its origin trial policy is still unknown.
+  TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
+      background_contents, mojom::InterventionPolicy::kUnknown);
+  EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN,
+            decision_details.FailureReason());
+}
+
+namespace {
+
+void NotifyUsesNotificationsInBackground(content::WebContents* web_contents) {
+  auto* observer = ResourceCoordinatorTabHelper::FromWebContents(web_contents)
+                       ->local_site_characteristics_wc_observer();
+  observer->GetWriterForTesting()->NotifyUsesNotificationsInBackground();
+}
+
+}  // namespace
+
+TEST_F(TabLifecycleUnitSourceTest, CanFreezeOriginTrialOptIn) {
+  LifecycleUnit* background_lifecycle_unit = nullptr;
+  LifecycleUnit* foreground_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &background_lifecycle_unit,
+                &foreground_lifecycle_unit);
+  content::WebContents* background_contents =
+      tab_strip_model_->GetWebContentsAt(0);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      background_contents, TabLoadTracker::LoadingState::LOADED);
+  content::WebContents* foreground_contents =
+      tab_strip_model_->GetWebContentsAt(1);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      foreground_contents, TabLoadTracker::LoadingState::LOADED);
+
+  // Prevent freezing of the background tab by pretending that it uses
+  // notifications in background.
+  NotifyUsesNotificationsInBackground(background_contents);
+  DecisionDetails decision_details;
+  EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::HEURISTIC_NOTIFICATIONS,
+            decision_details.FailureReason());
+  decision_details.Clear();
+
+  // The background tab can be frozen if it opted-in via origin trial, even if
+  // it uses notifications in background.
+  TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
+      background_contents, mojom::InterventionPolicy::kOptIn);
+  EXPECT_TRUE(background_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_TRUE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionSuccessReason::ORIGIN_TRIAL_OPT_IN,
+            decision_details.SuccessReason());
+  decision_details.Clear();
+
+  // The foreground tab cannot be frozen, even if it opted-in via origin trial.
+  TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
+      foreground_contents, mojom::InterventionPolicy::kOptIn);
+  EXPECT_FALSE(foreground_lifecycle_unit->CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_VISIBLE,
+            decision_details.FailureReason());
 }
 
 TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {

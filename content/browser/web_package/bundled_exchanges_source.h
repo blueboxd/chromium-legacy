@@ -8,37 +8,43 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace content {
 
-// A struct to abstract required information to access a BundledExchanges.
-struct CONTENT_EXPORT BundledExchangesSource {
-  // Constructs an invalid instance that does not match any.
-  BundledExchangesSource();
+// A class to abstract required information to access a BundledExchanges.
+class CONTENT_EXPORT BundledExchangesSource {
+ public:
+  static std::unique_ptr<BundledExchangesSource> CreateFromTrustedFileUrl(
+      const GURL& url);
 
-  // Constructs a valid instance that match file URL for the given |file_path|.
-  explicit BundledExchangesSource(const base::FilePath& file_path);
+  std::unique_ptr<BundledExchangesSource> Clone() const;
 
-  // Copy constructor.
-  explicit BundledExchangesSource(const BundledExchangesSource& src);
-
-  // Checks if this instance is valid and can match a URL.
-  bool IsValid() const;
-
-  // Checks if the given |url| is for the BundledExchanges itself that this
-  // instance represents. Note that this does not mean the |url| is for an
-  // exchange provided by the BundledExchanges.
-  bool Match(const GURL& url) const;
+  ~BundledExchangesSource() = default;
 
   // A flag to represent if this source can be trusted, i.e. using the URL in
   // the BundledExchanges as the origin for the content. Otherwise, we will use
   // the origin that serves the BundledExchanges itself. For instance, if the
   // BundledExchanges is in a local file system, file:// should be the origin.
-  bool is_trusted = false;
+  //
+  // Currently this flag is always true because we only support
+  // trustable-bundled-exchanges-file loading. TODO(horo): Implement
+  // untrusted bundled exchanges file loading.
+  bool is_trusted() const { return is_trusted_; }
 
-  const base::FilePath file_path;
+  const base::FilePath& file_path() const { return file_path_; }
+  const GURL& url() const { return url_; }
+
+ private:
+  BundledExchangesSource(bool is_trusted,
+                         const base::FilePath& file_path,
+                         const GURL& url);
+
+  const bool is_trusted_;
+  const base::FilePath file_path_;
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(BundledExchangesSource);
 };
 
 }  // namespace content

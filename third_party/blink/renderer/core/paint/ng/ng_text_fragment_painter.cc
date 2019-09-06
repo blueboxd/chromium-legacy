@@ -89,8 +89,7 @@ unsigned GetTextContentOffset(const Text& text, unsigned offset) {
 // If "bar" is a TextFragment. That start(), end() {4, 7} correspond this
 // offset. If a marker has StartOffset / EndOffset as {2, 6},
 // ClampOffset returns{ 4,6 }, which represents "ba" on "foo_bar".
-unsigned ClampOffset(unsigned offset,
-                     const NGPhysicalTextFragment& text_fragment) {
+unsigned ClampOffset(unsigned offset, const NGFragmentItem& text_fragment) {
   return std::min(std::max(offset, text_fragment.StartOffset()),
                   text_fragment.EndOffset());
 }
@@ -109,13 +108,13 @@ void PaintRect(GraphicsContext& context,
     context.FillRect(pixel_snapped_rect, color);
 }
 
-PhysicalRect MarkerRectForForeground(
-    const NGPhysicalTextFragment& text_fragment,
-    unsigned start_offset,
-    unsigned end_offset) {
+PhysicalRect MarkerRectForForeground(const NGFragmentItem& text_fragment,
+                                     StringView text,
+                                     unsigned start_offset,
+                                     unsigned end_offset) {
   LayoutUnit start_position, end_position;
   std::tie(start_position, end_position) =
-      text_fragment.LineLeftAndRightForOffsets(start_offset, end_offset);
+      text_fragment.LineLeftAndRightForOffsets(text, start_offset, end_offset);
 
   const LayoutUnit height = text_fragment.Size()
                                 .ConvertToLogical(static_cast<WritingMode>(
@@ -126,7 +125,8 @@ PhysicalRect MarkerRectForForeground(
 
 // Copied from InlineTextBoxPainter
 void PaintDocumentMarkers(GraphicsContext& context,
-                          const NGPhysicalTextFragment& text_fragment,
+                          const NGFragmentItem& text_fragment,
+                          StringView text,
                           const DocumentMarkerVector& markers_to_paint,
                           const PhysicalOffset& box_origin,
                           const ComputedStyle& style,
@@ -136,12 +136,12 @@ void PaintDocumentMarkers(GraphicsContext& context,
     return;
 
   DCHECK(text_fragment.GetNode());
-  const auto& text = To<Text>(*text_fragment.GetNode());
+  const auto& text_node = To<Text>(*text_fragment.GetNode());
   for (const DocumentMarker* marker : markers_to_paint) {
     const unsigned marker_start_offset =
-        GetTextContentOffset(text, marker->StartOffset());
+        GetTextContentOffset(text_node, marker->StartOffset());
     const unsigned marker_end_offset =
-        GetTextContentOffset(text, marker->EndOffset());
+        GetTextContentOffset(text_node, marker->EndOffset());
     const unsigned paint_start_offset =
         ClampOffset(marker_start_offset, text_fragment);
     const unsigned paint_end_offset =
@@ -158,7 +158,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
           continue;
         DocumentMarkerPainter::PaintDocumentMarker(
             context, box_origin, style, marker->GetType(),
-            MarkerRectForForeground(text_fragment, paint_start_offset,
+            MarkerRectForForeground(text_fragment, text, paint_start_offset,
                                     paint_end_offset));
       } break;
 
@@ -176,10 +176,10 @@ void PaintDocumentMarkers(GraphicsContext& context,
                   text_match_marker.IsActiveMatch(),
                   text_fragment.GetNode()->GetDocument().InForcedColorsMode(),
                   style.UsedColorScheme());
-          PaintRect(
-              context, PhysicalOffset(box_origin),
-              text_fragment.LocalRect(paint_start_offset, paint_end_offset),
-              color);
+          PaintRect(context, PhysicalOffset(box_origin),
+                    text_fragment.LocalRect(text, paint_start_offset,
+                                            paint_end_offset),
+                    color);
           break;
         }
 
@@ -199,17 +199,17 @@ void PaintDocumentMarkers(GraphicsContext& context,
       case DocumentMarker::kSuggestion: {
         const auto& styleable_marker = To<StyleableMarker>(*marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
-          PaintRect(
-              context, PhysicalOffset(box_origin),
-              text_fragment.LocalRect(paint_start_offset, paint_end_offset),
-              styleable_marker.BackgroundColor());
+          PaintRect(context, PhysicalOffset(box_origin),
+                    text_fragment.LocalRect(text, paint_start_offset,
+                                            paint_end_offset),
+                    styleable_marker.BackgroundColor());
           break;
         }
         const SimpleFontData* font_data = style.GetFont().PrimaryFont();
         DocumentMarkerPainter::PaintStyleableMarkerUnderline(
             context, box_origin, styleable_marker, style,
-            FloatRect(MarkerRectForForeground(text_fragment, paint_start_offset,
-                                              paint_end_offset)),
+            FloatRect(MarkerRectForForeground(
+                text_fragment, text, paint_start_offset, paint_end_offset)),
             LayoutUnit(font_data->GetFontMetrics().Height()));
       } break;
 
@@ -351,8 +351,8 @@ void NGTextFragmentPainter::Paint(
       return;
 
     // Flow controls (line break, tab, <wbr>) need only selection painting.
-    // TODO(kojii): Implement without text_fragment_.
-    if (text_fragment_ && text_fragment_->IsFlowControl())
+    if ((text_fragment_ && text_fragment_->IsFlowControl()) ||
+        (item_ && item_->IsFlowControl()))
       return;
   }
 
@@ -401,6 +401,13 @@ void NGTextFragmentPainter::Paint(
   DCHECK(font_data);
 
   base::Optional<GraphicsContextStateSaver> state_saver;
+  base::Optional<NGFragmentItem> text_item_buffer;
+  if (text_fragment_)
+    text_item_buffer.emplace(*text_fragment_);
+  const NGFragmentItem& text_item =
+      text_fragment_ ? text_item_buffer.value() : *item_;
+  StringView text =
+      text_fragment_ ? text_fragment_->Text() : item_->Text(*items_);
 
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights.
@@ -414,14 +421,9 @@ void NGTextFragmentPainter::Paint(
       ComputeMarkersToPaint(node, is_ellipsis);
   if (paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
-    if (text_fragment_) {
-      PaintDocumentMarkers(context, *text_fragment_, markers_to_paint,
-                           box_rect.offset, style,
-                           DocumentMarkerPaintPhase::kBackground, nullptr);
-    } else {
-      // TODO(kojii): Implement without text_fragment_.
-    }
-
+    PaintDocumentMarkers(context, text_item, text, markers_to_paint,
+                         box_rect.offset, style,
+                         DocumentMarkerPaintPhase::kBackground, nullptr);
     if (have_selection) {
       if (paint_fragment_) {
         PaintSelection(context, *paint_fragment_, node, document, style,
@@ -482,16 +484,12 @@ void NGTextFragmentPainter::Paint(
           decoration_info, box_rect.offset, local_origin, width,
           style.GetFontBaseline(), style, decorating_box_style);
 
-      if (text_fragment_) {
-        NGTextDecorationOffset decoration_offset(
-            *decoration_info.style, *text_fragment_, decorating_box);
-        text_painter.PaintDecorationsExceptLineThrough(
-            decoration_offset, decoration_info, paint_info,
-            style.AppliedTextDecorations(), text_style,
-            &has_line_through_decoration);
-      } else {
-        // TODO(kojii): Implement without text_fragment_
-      }
+      NGTextDecorationOffset decoration_offset(*decoration_info.style,
+                                               text_item, decorating_box);
+      text_painter.PaintDecorationsExceptLineThrough(
+          decoration_offset, decoration_info, paint_info,
+          style.AppliedTextDecorations(), text_style,
+          &has_line_through_decoration);
     }
 
     unsigned start_offset = fragment_paint_info.from;
@@ -528,13 +526,9 @@ void NGTextFragmentPainter::Paint(
 
   if (paint_info.phase != PaintPhase::kForeground)
     return;
-  if (text_fragment_) {
-    PaintDocumentMarkers(context, *text_fragment_, markers_to_paint,
-                         box_rect.offset, style,
-                         DocumentMarkerPaintPhase::kForeground, &text_painter);
-  } else {
-    // TODO(kojii): Implement without text_fragment_.
-  }
+  PaintDocumentMarkers(context, text_item, text, markers_to_paint,
+                       box_rect.offset, style,
+                       DocumentMarkerPaintPhase::kForeground, &text_painter);
 }
 
 }  // namespace blink

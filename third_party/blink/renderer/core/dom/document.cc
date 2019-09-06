@@ -296,6 +296,7 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -324,6 +325,45 @@ static WeakDocumentSet& liveDocumentSet();
 #endif
 
 namespace blink {
+
+namespace {
+
+class ResourceLoadObserverForUnintentionalRequestsMadeByImportedDocument final
+    : public ResourceLoadObserver {
+  void DidStartRequest(const FetchParameters&, ResourceType type) override {
+    UMA_HISTOGRAM_ENUMERATION("HTMLImport.UnexpectedRequest", type);
+  }
+  void WillSendRequest(uint64_t identifier,
+                       const ResourceRequest&,
+                       const ResourceResponse& redirect_response,
+                       ResourceType,
+                       const FetchInitiatorInfo&) override {}
+  void DidChangePriority(uint64_t identifier,
+                         ResourceLoadPriority,
+                         int intra_priority_value) override {}
+  void DidReceiveResponse(uint64_t identifier,
+                          const ResourceRequest& request,
+                          const ResourceResponse& response,
+                          const Resource* resource,
+                          ResponseSource) override {}
+  void DidReceiveData(uint64_t identifier,
+                      base::span<const char> chunk) override {}
+  void DidReceiveTransferSizeUpdate(uint64_t identifier,
+                                    int transfer_size_diff) override {}
+  void DidDownloadToBlob(uint64_t identifier, BlobDataHandle*) override {}
+  void DidFinishLoading(uint64_t identifier,
+                        base::TimeTicks finish_time,
+                        int64_t encoded_data_length,
+                        int64_t decoded_body_length,
+                        bool should_report_corb_blocking) override {}
+  void DidFailLoading(const KURL&,
+                      uint64_t identifier,
+                      const ResourceError&,
+                      int64_t encoded_data_length,
+                      IsInternalRequest) override {}
+};
+
+}  // namespace
 
 using namespace html_names;
 
@@ -1137,13 +1177,21 @@ Document::Document(const DocumentInit& initializer,
     // We disable fetches for frame-less Documents, including HTML-imported
     // Documents (if kHtmlImportsRequestInitiatorLock is enabled). Subresources
     // of HTML-imported Documents are fetched via the context document's
-    // ResourceFetcher.
+    // ResourceFetcher. See https://crbug.com/961614 for details.
     auto& properties =
         *MakeGarbageCollected<DetachableResourceFetcherProperties>(
             *MakeGarbageCollected<NullResourceFetcherProperties>());
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         properties, &FetchContext::NullInstance(),
         GetTaskRunner(TaskType::kNetworking), nullptr /* loader_factory */));
+
+    if (imports_controller_) {
+      // We don't expect the fetcher to be used, so add a ResourceLoadObserver
+      // which counts such unexpected use.
+      fetcher_->SetResourceLoadObserver(
+          MakeGarbageCollected<
+              ResourceLoadObserverForUnintentionalRequestsMadeByImportedDocument>());
+    }
   }
   DCHECK(fetcher_);
 

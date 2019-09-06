@@ -1155,9 +1155,9 @@ class SyncManagerTest : public testing::Test,
 
   void SetCustomPassphraseAndCheck(const std::string& passphrase) {
     EXPECT_CALL(*encryption_observer_,
-                OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+                OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
     sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(passphrase);
-    EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE, GetPassphraseType());
+    EXPECT_EQ(PassphraseType::kCustomPassphrase, GetPassphraseType());
   }
 
   bool HasUnrecoverableError() {
@@ -1431,7 +1431,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("passphrase2");
-  EXPECT_EQ(PassphraseType::IMPLICIT_PASSPHRASE, GetPassphraseType());
+  EXPECT_EQ(PassphraseType::kImplicitPassphrase, GetPassphraseType());
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1473,7 +1473,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   }
   EXPECT_CALL(*encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(*encryption_observer_,
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   EXPECT_CALL(*encryption_observer_, OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
@@ -1481,7 +1481,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   ExpectPassphraseAcceptance();
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("explicit");
-  EXPECT_EQ(PassphraseType::CUSTOM_PASSPHRASE, GetPassphraseType());
+  EXPECT_EQ(PassphraseType::kCustomPassphrase, GetPassphraseType());
   EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());

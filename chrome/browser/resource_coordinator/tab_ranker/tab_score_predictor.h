@@ -47,7 +47,8 @@ class TabScorePredictor {
     kMRUScorer = 0,
     kMLScorer = 1,
     KPairwiseScorer = 2,
-    kMaxValue = KPairwiseScorer
+    kFrecencyScorer = 3,
+    kMaxValue = kFrecencyScorer
   };
   TabScorePredictor();
   ~TabScorePredictor();
@@ -78,6 +79,8 @@ class TabScorePredictor {
   TabRankerResult ScoreTabsWithPairwiseScorer(const TabFeatures& tab1,
                                               const TabFeatures& tab2,
                                               float* score);
+  TabRankerResult ScoreTabWithFrecencyScorer(const TabFeatures& tab,
+                                             float* score);
 
   std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
       preprocessor_config_;

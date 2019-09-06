@@ -273,8 +273,7 @@ CrSettingsAutofillPageTest.prototype = {
   ]),
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('CrSettingsAutofillPageTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsAutofillPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -362,8 +361,7 @@ CrSettingsPasswordsSectionTest.prototype = {
   ]),
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('CrSettingsPasswordsSectionTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
 
@@ -392,8 +390,7 @@ CrSettingsPasswordsSectionTest_Cros.prototype = {
   ]),
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('CrSettingsPasswordsSectionTest_Cros', 'DISABLED_All', function() {
+TEST_F('CrSettingsPasswordsSectionTest_Cros', 'All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');

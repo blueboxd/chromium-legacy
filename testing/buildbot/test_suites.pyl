@@ -4258,6 +4258,7 @@
 
     'mac_specific_chromium_gtests': {
       'sandbox_mac_unittests': {},
+      'updater_tests': {},
     },
 
     'mac_specific_isolated_scripts': {
@@ -4489,6 +4490,9 @@
         'args': [
           '--enable-features=OutOfBlinkCors'
         ],
+        'swarming': {
+          'shards': 10,
+        },
         'test': 'browser_tests'
       },
       'oor_cors_content_browsertests': {
@@ -5017,6 +5021,7 @@
           ],
         },
       },
+      'updater_tests': {},
       'zucchini_unittests': {},
     },
 

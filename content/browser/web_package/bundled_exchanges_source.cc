@@ -3,49 +3,31 @@
 // found in the LICENSE file.
 
 #include "content/browser/web_package/bundled_exchanges_source.h"
+
+#include "base/memory/ptr_util.h"
 #include "net/base/filename_util.h"
-#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace content {
 
-namespace {
-
-bool MatchByFilePath(const GURL& url, const base::FilePath file_path) {
-  if (!url.SchemeIsFile())
-    return false;
-  base::FilePath url_file_path;
-  return net::FileURLToFilePath(url, &url_file_path) &&
-         file_path == url_file_path;
+// static
+std::unique_ptr<BundledExchangesSource>
+BundledExchangesSource::CreateFromTrustedFileUrl(const GURL& url) {
+  DCHECK(url.SchemeIsFile());
+  base::FilePath file_path;
+  if (!net::FileURLToFilePath(url, &file_path))
+    return nullptr;
+  return base::WrapUnique(new BundledExchangesSource(true, file_path, url));
 }
 
-}  // namespace
-
-BundledExchangesSource::BundledExchangesSource() {}
-
-BundledExchangesSource::BundledExchangesSource(const base::FilePath& path)
-    : file_path(path) {
-  DCHECK(!file_path.empty());
+std::unique_ptr<BundledExchangesSource> BundledExchangesSource::Clone() const {
+  return base::WrapUnique(
+      new BundledExchangesSource(is_trusted_, file_path_, url_));
 }
 
-BundledExchangesSource::BundledExchangesSource(
-    const BundledExchangesSource& src) = default;
-
-bool BundledExchangesSource::Match(const GURL& url) const {
-  if (!IsValid())
-    return false;
-
-  GURL request_url = net::SimplifyUrlForRequest(url);
-
-  if (!file_path.empty())
-    return MatchByFilePath(request_url, file_path);
-
-  NOTREACHED();
-  return false;
-}
-
-bool BundledExchangesSource::IsValid() const {
-  return !file_path.empty();
-}
+BundledExchangesSource::BundledExchangesSource(bool is_trusted,
+                                               const base::FilePath& file_path,
+                                               const GURL& url)
+    : is_trusted_(is_trusted), file_path_(file_path), url_(url) {}
 
 }  // namespace content

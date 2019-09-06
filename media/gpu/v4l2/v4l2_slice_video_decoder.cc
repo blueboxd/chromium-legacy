@@ -34,6 +34,9 @@ constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 constexpr size_t kNumInputBuffers = 16;
 constexpr size_t kNumInputPlanes = 1;
 
+// Size of the timestamp cache, needs to be large enough for frame-reordering.
+constexpr size_t kTimestampCacheSize = 128;
+
 // Input format V4L2 fourccs this class supports.
 constexpr uint32_t kSupportedInputFourccs[] = {
     V4L2_PIX_FMT_H264_SLICE,
@@ -166,6 +169,7 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
       client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(std::move(decoder_task_runner)),
       device_poll_thread_("V4L2SliceVideoDecoderDevicePollThread"),
+      bitstream_id_to_timestamp_(kTimestampCacheSize),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
@@ -600,8 +604,8 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
 
   if (!request.buffer->end_of_stream()) {
-    bitstream_id_to_timestamp_.emplace(request.bitstream_id,
-                                       request.buffer->timestamp());
+    bitstream_id_to_timestamp_.Put(request.bitstream_id,
+                                   request.buffer->timestamp());
   }
   decode_request_queue_.push(std::move(request));
   // If we are already decoding, then we don't need to pump again.
@@ -905,10 +909,12 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  auto it = bitstream_id_to_timestamp_.find(bitstream_id);
+  // Find the timestamp associated with |bitstream_id|. On some rare occasions
+  // it's possible that a single DecoderBuffer produces multiple surfaces with
+  // the same |bitstream_id|, so we can't remove the timestamp from the cache.
+  const auto it = bitstream_id_to_timestamp_.Peek(bitstream_id);
   DCHECK(it != bitstream_id_to_timestamp_.end());
   base::TimeDelta timestamp = it->second;
-  bitstream_id_to_timestamp_.erase(it);
 
   dec_surface->SetVisibleRect(visible_rect);
   output_request_queue_.push(

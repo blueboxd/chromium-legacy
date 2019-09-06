@@ -197,19 +197,16 @@ def JavaDataTypeToC(java_type):
     return 'jobject'
 
 
-def JavaTypeToProxyCast(type):
+def JavaTypeToProxyCast(java_type):
   """Maps from a java type to the type used by the native proxy GEN_JNI class"""
-  if type in JAVA_POD_TYPE_MAP or type in JAVA_TYPE_MAP:
-    return type
-  # All the array types of JAVA_TYPE_MAP become jobjectArray across jni but
-  # they still need to be passed as the original type on the java side.
-  if type[:-2] in JAVA_POD_TYPE_MAP or type[:-2] in JAVA_TYPE_MAP:
-    return type
+  # All the types and array types of JAVA_TYPE_MAP become jobjectArray across
+  # jni but they still need to be passed as the original type on the java side.
+  raw_type = java_type.rstrip('[]')
+  if raw_type in JAVA_POD_TYPE_MAP or raw_type in JAVA_TYPE_MAP:
+    return java_type
 
-  # Otherwise we have a jobject type that should be an object.
-  if type[-2:] == '[]':
-    return 'Object[]'
-  return 'Object'
+  # All other types should just be passed as Objects or Object arrays.
+  return 'Object' + java_type[len(raw_type):]
 
 
 def WrapCTypeForDeclaration(c_type):

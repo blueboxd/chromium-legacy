@@ -821,10 +821,10 @@ const char kTouchEventFeatureDetectionDisabled[] = "disabled";
 // the platform default is used.
 const char kTouchTextSelectionStrategy[]    = "touch-selection-strategy";
 
-// Accepts specified file as a trustable BundledExchanges file. This flag should
-// be used only for testing purpose.
-const char kTrustableBundledExchangesFile[] =
-    "trustable-bundled-exchanges-file";
+// Accepts specified file URL of a trustable BundledExchanges file. This flag
+// should be used only for testing purpose.
+const char kTrustableBundledExchangesFileUrl[] =
+    "trustable-bundled-exchanges-file-url";
 
 // Replaces the existing codecs supported in peer connection with a single fake
 // codec entry that create a fake video encoder and decoder.

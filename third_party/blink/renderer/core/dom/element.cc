@@ -3097,7 +3097,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   }
 
   shadow_root->InsertedInto(*this);
-  if (InActiveDocument())
+  if (InActiveDocument() && GetComputedStyle())
     SetChildNeedsStyleRecalc();
   SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                                style_change_reason::kShadow));
@@ -3131,14 +3131,6 @@ void Element::SetAnimationStyleChange(bool animation_style_change) {
     element_animations->SetAnimationStyleChange(animation_style_change);
 }
 
-void Element::ClearAnimationStyleChange() {
-  if (!HasRareData())
-    return;
-  if (ElementAnimations* element_animations =
-          GetElementRareData()->GetElementAnimations())
-    element_animations->SetAnimationStyleChange(false);
-}
-
 void Element::SetNeedsAnimationStyleRecalc() {
   if (GetDocument().InStyleRecalc())
     return;
@@ -3147,7 +3139,8 @@ void Element::SetNeedsAnimationStyleRecalc() {
 
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                              style_change_reason::kAnimation));
-  SetAnimationStyleChange(true);
+  if (NeedsStyleRecalc())
+    SetAnimationStyleChange(true);
 }
 
 void Element::SetNeedsCompositingUpdate() {

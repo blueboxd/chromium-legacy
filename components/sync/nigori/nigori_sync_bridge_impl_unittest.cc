@@ -480,7 +480,7 @@ TEST_F(NigoriSyncBridgeImplTest,
                                /*encrypt_everything=*/true));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
                                       NotNullTime()));
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
@@ -512,7 +512,7 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldTransitToCustomPassphrase) {
                                /*encrypt_everything=*/true));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
                                       NotNullTime()));
   EXPECT_THAT(bridge()->ApplySyncChanges(std::move(new_entity_data)),
               Eq(base::nullopt));
@@ -617,7 +617,7 @@ TEST_F(NigoriSyncBridgeImplTest,
                                /*encrypt_everything=*/true));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
                                       /*passphrase_time=*/NotNullTime()));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
                                                    PASSPHRASE_BOOTSTRAP_TOKEN));

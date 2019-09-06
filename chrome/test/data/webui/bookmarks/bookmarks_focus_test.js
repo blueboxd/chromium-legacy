@@ -27,7 +27,9 @@ BookmarksFocusTest.prototype = {
   ],
 };
 
-TEST_F('BookmarksFocusTest', 'All', function() {
+// http://crbug.com/1000950 : Flaky.
+GEN('#define MAYBE_All DISABLED_All');
+TEST_F('BookmarksFocusTest', 'MAYBE_All', function() {
   suite('<bookmarks-folder-node>', function() {
     let rootNode;
     let store;

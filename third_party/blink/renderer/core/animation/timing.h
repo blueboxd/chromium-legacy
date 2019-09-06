@@ -135,7 +135,7 @@ struct CORE_EXPORT Timing {
   struct CalculatedTiming {
     DISALLOW_NEW();
     Phase phase = Phase::kPhaseNone;
-    double current_iteration = 0;
+    base::Optional<double> current_iteration = 0;
     base::Optional<double> progress = 0;
     bool is_current = false;
     bool is_in_effect = false;

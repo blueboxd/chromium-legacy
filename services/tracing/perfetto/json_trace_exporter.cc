@@ -220,6 +220,9 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
 
   if (!has_more) {
     if (label_filter_.empty()) {
+      if (!legacy_json_trace_events_.empty()) {
+        *AddJSONTraceEvent() += legacy_json_trace_events_;
+      }
       // We are done adding events so now we close the traceEvents array and
       // append the rest of the fields. The rest of the fields aren't very large
       // so we don't need to check if we need to run the callback.
@@ -227,19 +230,12 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
     }
 
     if ((label_filter_.empty() || label_filter_ == "systemTraceEvents") &&
-        (!legacy_system_ftrace_output_.empty() ||
-         !legacy_system_trace_events_.empty())) {
-      DCHECK(legacy_system_ftrace_output_.empty() ||
-             legacy_system_trace_events_.empty());
+        !legacy_system_ftrace_output_.empty()) {
       out_ += ",\"systemTraceEvents\":";
-      if (!legacy_system_ftrace_output_.empty()) {
-        std::string escaped;
-        base::EscapeJSONString(legacy_system_ftrace_output_,
-                               true /* put_in_quotes */, &escaped);
-        out_ += escaped;
-      } else {
-        out_ += legacy_system_trace_events_ + "}";
-      }
+      std::string escaped;
+      base::EscapeJSONString(legacy_system_ftrace_output_,
+                             true /* put_in_quotes */, &escaped);
+      out_ += escaped;
     }
 
     if (label_filter_.empty()) {
@@ -273,16 +269,10 @@ void JSONTraceExporter::AddChromeLegacyJSONTrace(
       if (!ShouldOutputTraceEvents()) {
         return;
       }
-      *AddJSONTraceEvent() += json_trace.data();
+      legacy_json_trace_events_ += json_trace.data();
       return;
+    // SYSTEM_TRACE is not supported anymore.
     case perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE:
-      if (legacy_system_trace_events_.empty()) {
-        legacy_system_trace_events_ = "{";
-      } else {
-        legacy_system_trace_events_ += ",";
-      }
-      legacy_system_trace_events_ += json_trace.data();
-      return;
     default:
       NOTREACHED();
   }

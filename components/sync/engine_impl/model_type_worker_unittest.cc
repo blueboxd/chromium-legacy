@@ -240,7 +240,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     worker_ = std::make_unique<ModelTypeWorker>(
         type, state, !state.initial_sync_done(), std::move(cryptographer_copy),
-        PassphraseType::IMPLICIT_PASSPHRASE, &mock_nudge_handler_,
+        PassphraseType::kImplicitPassphrase, &mock_nudge_handler_,
         std::move(processor), emitter_.get(), &cancelation_signal_);
   }
 

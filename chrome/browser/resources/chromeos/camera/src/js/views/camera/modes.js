@@ -750,7 +750,7 @@ cca.views.camera.Photo.prototype.addMetadataObserver = async function() {
   }
 
   const cameraMetadataTagInverseLookup = {};
-  Object.keys(cros.mojom.CameraMetadataTag).entries((key, value) => {
+  Object.entries(cros.mojom.CameraMetadataTag).forEach(([key, value]) => {
     if (key === 'MIN_VALUE' || key === 'MAX_VALUE') {
       return;
     }

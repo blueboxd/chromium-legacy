@@ -201,11 +201,11 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       EXPECT_TRUE(nigori.has_keystore_migration_time());
     }
     EXPECT_TRUE(nigori.keybag_is_frozen());
-    if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE ||
-        passphrase_type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE) {
+    if (passphrase_type == PassphraseType::kCustomPassphrase ||
+        passphrase_type == PassphraseType::kFrozenImplicitPassphrase) {
       EXPECT_TRUE(nigori.encrypt_everything());
       EXPECT_TRUE(nigori.keystore_decryptor_token().blob().empty());
-      if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
+      if (passphrase_type == PassphraseType::kCustomPassphrase) {
         EXPECT_EQ(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE,
                   nigori.passphrase_type());
         if (key_derivation_params.has_value()) {
@@ -248,7 +248,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
     Cryptographer temp_cryptographer;
     if (key_derivation_params.has_value() &&
-        passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
+        passphrase_type == PassphraseType::kCustomPassphrase) {
       temp_cryptographer.AddKey({key_derivation_params.value(), passphrase});
     } else {
       temp_cryptographer.AddKey(
@@ -266,7 +266,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const std::string& default_passphrase,
       const std::string& keystore_key,
       const base::Optional<std::string>& key_derivation_salt) {
-    DCHECK_NE(passphrase_type, PassphraseType::IMPLICIT_PASSPHRASE);
+    DCHECK_NE(passphrase_type, PassphraseType::kImplicitPassphrase);
     Cryptographer other_cryptographer;
 
     std::string default_key = default_passphrase;
@@ -322,7 +322,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     nigori.set_keybag_is_frozen(true);
     nigori.set_keystore_migration_time(migration_time);
 
-    if (passphrase_type == PassphraseType::KEYSTORE_PASSPHRASE) {
+    if (passphrase_type == PassphraseType::kKeystorePassphrase) {
       sync_pb::EncryptedData keystore_decryptor_token;
       EXPECT_TRUE(encryption_handler()->GetKeystoreDecryptor(
           other_cryptographer, keystore_key, &keystore_decryptor_token));
@@ -332,7 +332,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     } else {
       nigori.set_encrypt_everything(true);
       nigori.set_passphrase_type(
-          passphrase_type == PassphraseType::CUSTOM_PASSPHRASE
+          passphrase_type == PassphraseType::kCustomPassphrase
               ? sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE
               : sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE);
       nigori.set_custom_passphrase_key_derivation_method(
@@ -353,7 +353,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const std::string& default_passphrase,
       const std::string& keystore_key) {
     return BuildMigratedNigori(
-        PassphraseType::KEYSTORE_PASSPHRASE, migration_time,
+        PassphraseType::kKeystorePassphrase, migration_time,
         sync_pb::NigoriSpecifics::UNSPECIFIED, default_passphrase, keystore_key,
         /* key_derivation_salt = */ base::nullopt);
   }
@@ -363,7 +363,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       ::google::protobuf::int32 key_derivation_method,
       const std::string& default_passphrase,
       const base::Optional<std::string>& key_derivation_salt) {
-    return BuildMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE,
+    return BuildMigratedNigori(PassphraseType::kCustomPassphrase,
                                migration_time, key_derivation_method,
                                default_passphrase, kKeystoreKey,
                                key_derivation_salt);
@@ -401,7 +401,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     EXPECT_CALL(*observer(), OnPassphraseAccepted());
 
     EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
-                                 PassphraseType::KEYSTORE_PASSPHRASE, _));
+                                 PassphraseType::kKeystorePassphrase, _));
     EXPECT_CALL(*observer(),
                 OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AtLeast(1));
@@ -412,7 +412,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
                                keystore_key);
 
     EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-    VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+    VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
     EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
     Mock::VerifyAndClearExpectations(observer());
   }
@@ -439,7 +439,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const std::string& default_passphrase,
       const base::Optional<std::string>& key_derivation_salt) {
     EXPECT_CALL(*observer(),
-                OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+                OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AtLeast(1));
     EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true))
         .Times(AtLeast(1));
@@ -452,7 +452,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
                                  default_passphrase, key_derivation_salt);
 
     EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-    VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+    VerifyPassphraseType(PassphraseType::kCustomPassphrase);
     EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
     Mock::VerifyAndClearExpectations(observer());
   }
@@ -490,7 +490,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   // initialization was performed correctly.
   void InitAndVerifyUnmigratedNigori(const std::string& default_passphrase,
                                      PassphraseType passphrase_type) {
-    if (passphrase_type != PassphraseType::IMPLICIT_PASSPHRASE) {
+    if (passphrase_type != PassphraseType::kImplicitPassphrase) {
       EXPECT_CALL(*observer(), OnPassphraseTypeChanged(passphrase_type, _));
     }
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AtLeast(1));
@@ -508,7 +508,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   // initialize the encryption handler with it.
   void InitUnmigratedNigori(const std::string& default_passphrase,
                             PassphraseType passphrase_type) {
-    DCHECK_NE(passphrase_type, PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
+    DCHECK_NE(passphrase_type, PassphraseType::kFrozenImplicitPassphrase);
     Cryptographer other_cryptographer;
     KeyParams default_key = {KeyDerivationParams::CreateForPbkdf2(),
                              default_passphrase};
@@ -522,7 +522,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       sync_pb::NigoriSpecifics nigori;
       other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
       nigori.set_keybag_is_frozen(passphrase_type ==
-                                  PassphraseType::CUSTOM_PASSPHRASE);
+                                  PassphraseType::kCustomPassphrase);
       nigori_node.SetNigoriSpecifics(nigori);
     }
     encryption_handler()->Init();
@@ -855,7 +855,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_));
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN))
       .WillOnce(SaveArg<0>(&keystore_bootstrap));
   EXPECT_TRUE(encryption_handler()->SetKeystoreKeys(
@@ -864,7 +864,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   EXPECT_FALSE(GetCryptographer()->is_initialized());
   PumpLoop();
   EXPECT_TRUE(GetCryptographer()->is_initialized());
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kKeystoreKey,
                        /*key_derivation_params=*/base::nullopt);
 
   // Ensure the bootstrap is encoded properly (a base64 encoded encrypted blob
@@ -953,15 +953,15 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptImplicitPass) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
   encryption_handler()->SetDecryptionPassphrase(kOtherKey);
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kOtherKey,
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kOtherKey,
                        /*key_derivation_params=*/base::nullopt);
 }
 
@@ -992,7 +992,7 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
     EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     EXPECT_CALL(*observer(),
-                OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+                OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
     encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
     nigori_node.SetNigoriSpecifics(nigori);
   }
@@ -1017,19 +1017,19 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   const base::Time migration_time =
       encryption_handler()->GetKeystoreMigrationTime();
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kOtherKey,
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kOtherKey,
                        {KeyDerivationParams::CreateForPbkdf2()});
 
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kOtherKey, captured_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
 // Test that we trigger a migration when we set the keystore key, had an
 // implicit passphrase, and did not have encrypt everything. We should switch
-// to PassphraseType::KEYSTORE_PASSPHRASE.
+// to PassphraseType::kKeystorePassphrase.
 TEST_F(SyncEncryptionHandlerImplTest, MigrateOnKeystoreKeyAvailableImplicit) {
   const char kCurKey[] = "cur";
   KeyParams current_key = {KeyDerivationParams::CreateForPbkdf2(), kCurKey};
@@ -1046,19 +1046,19 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnKeystoreKeyAvailableImplicit) {
               OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
   encryption_handler()->SetKeystoreKeys({kRawKeystoreKey});
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   // The actual migration gets posted, so run all pending tasks.
   PumpLoop();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kCurKey,
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kCurKey,
                        /*key_derivation_params=*/base::nullopt);
 }
 
 // Test that we trigger a migration when we set the keystore key, had an
 // implicit passphrase, and encrypt everything enabled. We should switch to
-// PassphraseType::FROZEN_IMPLICIT_PASSPHRASE.
+// PassphraseType::kFrozenImplicitPassphrase.
 TEST_F(SyncEncryptionHandlerImplTest,
        MigrateOnKeystoreKeyAvailableFrozenImplicit) {
   const char kCurKey[] = "cur";
@@ -1082,7 +1082,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
               OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
   encryption_handler()->SetKeystoreKeys({kRawKeystoreKey});
   EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
-                               PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, _));
+                               PassphraseType::kFrozenImplicitPassphrase, _));
 
   // The actual migration gets posted, so run all pending tasks.
   PumpLoop();
@@ -1091,9 +1091,9 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   const base::Time migration_time =
       encryption_handler()->GetKeystoreMigrationTime();
-  VerifyPassphraseType(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kFrozenImplicitPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, kCurKey,
+  VerifyMigratedNigori(PassphraseType::kFrozenImplicitPassphrase, kCurKey,
                        /*key_derivation_params=*/base::nullopt);
 
   // We need the passphrase bootstrap token, but OnBootstrapTokenUpdated(_,
@@ -1104,7 +1104,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
                                         &passphrase_bootstrap_token);
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kCurKey, passphrase_bootstrap_token,
-      captured_nigori_state, PassphraseType::FROZEN_IMPLICIT_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kFrozenImplicitPassphrase,
       /*key_derivation_method=*/base::nullopt);
 }
 
@@ -1120,7 +1120,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   std::string captured_bootstrap_token;
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN))
@@ -1151,20 +1151,20 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   const base::Time migration_time =
       encryption_handler()->GetKeystoreMigrationTime();
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kCurKey,
                        {KeyDerivationParams::CreateForPbkdf2()});
 
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kCurKey, captured_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
 // Test that we trigger a migration when we set the keystore key, had a
 // custom passphrase, and did not have encrypt everything. The passphrase state
-// should remain as PassphraseType::CUSTOM_PASSPHRASE, and encrypt everything
+// should remain as PassphraseType::kCustomPassphrase, and encrypt everything
 // should be enabled.
 TEST_F(SyncEncryptionHandlerImplTest,
        MigrateOnKeystoreKeyAvailableCustomNoEncryption) {
@@ -1175,7 +1175,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   std::string captured_bootstrap_token;
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN))
@@ -1200,14 +1200,14 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   const base::Time migration_time =
       encryption_handler()->GetKeystoreMigrationTime();
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kCurKey,
                        {KeyDerivationParams::CreateForPbkdf2()});
 
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kCurKey, captured_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
@@ -1228,7 +1228,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
   {
     ReadTransaction trans(FROM_HERE, user_share());
     EXPECT_NE(encryption_handler()->GetPassphraseType(trans.GetWrappedTrans()),
-              PassphraseType::KEYSTORE_PASSPHRASE);
+              PassphraseType::kKeystorePassphrase);
   }
   // Now build a nigori node with the generated keystore decryptor token and
   // initialize the encryption handler with it. The cryptographer should be
@@ -1245,7 +1245,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   encryption_handler()->SetKeystoreKeys({kRawKeystoreKey});
   {
@@ -1261,9 +1261,9 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::KEYSTORE_PASSPHRASE,
+  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::kKeystorePassphrase,
                                     kCurKey,
                                     /*key_derivation_method=*/base::nullopt);
 
@@ -1283,7 +1283,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
 }
 
 // Test that we handle receiving migrated nigori's with
-// PassphraseType::FROZEN_IMPLICIT_PASSPHRASE state. We should be in a pending
+// PassphraseType::kFrozenImplicitPassphrase state. We should be in a pending
 // key state until
 // we supply the pending frozen implicit passphrase key.
 TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
@@ -1300,9 +1300,8 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
   {
-    EXPECT_CALL(
-        *observer(),
-        OnPassphraseTypeChanged(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, _));
+    EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
+                                 PassphraseType::kFrozenImplicitPassphrase, _));
     EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
     EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true));
@@ -1324,7 +1323,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kFrozenImplicitPassphrase);
   EXPECT_TRUE(GetCryptographer()->has_pending_keys());
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
 
@@ -1337,7 +1336,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
   VerifyMigratedNigoriWithTimestamp(
-      1, PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, kCurKey,
+      1, PassphraseType::kFrozenImplicitPassphrase, kCurKey,
       /*key_derivation_method=*/base::nullopt);
 
   // Check that the cryptographer still encrypts with the current key.
@@ -1356,7 +1355,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
 }
 
 // Test that we handle receiving migrated nigori's with
-// PassphraseType::CUSTOM_PASSPHRASE state. We should be in a pending key state
+// PassphraseType::kCustomPassphrase state. We should be in a pending key state
 // until we
 // provide the custom passphrase key.
 TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
@@ -1374,7 +1373,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
 
   {
     EXPECT_CALL(*observer(),
-                OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+                OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
     EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
     EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true));
@@ -1395,7 +1394,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(GetCryptographer()->has_pending_keys());
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
 
@@ -1407,7 +1406,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
   encryption_handler()->SetDecryptionPassphrase(kCurKey);
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::CUSTOM_PASSPHRASE,
+  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::kCustomPassphrase,
                                     kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
@@ -1454,17 +1453,17 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
   }
 
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true)).Times(2);
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   encryption_handler()->Init();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigoriWithTimestamp(migration_time,
-                                    PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
+                                    PassphraseType::kCustomPassphrase, kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
   EXPECT_CALL(*observer(),
@@ -1498,9 +1497,9 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
   // Verify we're still migrated and have proper encryption state.
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::CUSTOM_PASSPHRASE,
+  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::kCustomPassphrase,
                                     kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
@@ -1512,7 +1511,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
                                         &passphrase_bootstrap_token);
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kCurKey, passphrase_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
@@ -1543,16 +1542,16 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   }
 
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true)).Times(2);
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   encryption_handler()->Init();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::CUSTOM_PASSPHRASE,
+  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::kCustomPassphrase,
                                     kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
@@ -1593,10 +1592,10 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
   // Verify we're still migrated and have proper encryption state.
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigoriWithTimestamp(migration_time,
-                                    PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
+                                    PassphraseType::kCustomPassphrase, kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
   // We need the passphrase bootstrap token, but OnBootstrapTokenUpdated(_,
@@ -1607,7 +1606,7 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
                                         &passphrase_bootstrap_token);
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kCurKey, passphrase_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
@@ -1627,7 +1626,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
   {
     ReadTransaction trans(FROM_HERE, user_share());
     EXPECT_NE(encryption_handler()->GetPassphraseType(trans.GetWrappedTrans()),
-              PassphraseType::KEYSTORE_PASSPHRASE);
+              PassphraseType::kKeystorePassphrase);
   }
   // Now build a nigori node with the generated keystore decryptor token and
   // initialize the encryption handler with it. The cryptographer should be
@@ -1645,7 +1644,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
     nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
 
     EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
-                                 PassphraseType::KEYSTORE_PASSPHRASE, _));
+                                 PassphraseType::kKeystorePassphrase, _));
     EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
     EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
     encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
@@ -1655,7 +1654,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
   PumpLoop();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->has_pending_keys());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   Mock::VerifyAndClearExpectations(observer());
 
@@ -1670,9 +1669,9 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
   PumpLoop();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::KEYSTORE_PASSPHRASE,
+  VerifyMigratedNigoriWithTimestamp(1, PassphraseType::kKeystorePassphrase,
                                     kCurKey,
                                     /*key_derivation_method=*/base::nullopt);
 
@@ -1727,7 +1726,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
 
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   EXPECT_CALL(*observer(),
@@ -1736,14 +1735,14 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   encryption_handler()->Init();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   Mock::VerifyAndClearExpectations(observer());
 
   const char kNewKey[] = "new_key";
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   SyncEncryptionHandler::NigoriState captured_nigori_state;
   EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
       .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
@@ -1760,11 +1759,11 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   EXPECT_FALSE(captured_bootstrap_token.empty());
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   EXPECT_FALSE(encryption_handler()->custom_passphrase_time().is_null());
   VerifyMigratedNigoriWithTimestamp(
-      migration_time, PassphraseType::CUSTOM_PASSPHRASE, kNewKey,
+      migration_time, PassphraseType::kCustomPassphrase, kNewKey,
       {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
 
   // Check that the cryptographer can decrypt the old key.
@@ -1794,7 +1793,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
   // bootstrap token and nigori state.
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kNewKey, captured_bootstrap_token, captured_nigori_state,
-      PassphraseType::CUSTOM_PASSPHRASE,
+      PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
 }
 
@@ -1836,13 +1835,13 @@ TEST_F(SyncEncryptionHandlerImplTest,
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   encryption_handler()->Init();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->has_pending_keys());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   Mock::VerifyAndClearExpectations(observer());
 
@@ -1859,7 +1858,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   const char kNewKey[] = "new_key";
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase, _));
   SyncEncryptionHandler::NigoriState captured_nigori_state;
   EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
       .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
@@ -1873,11 +1872,11 @@ TEST_F(SyncEncryptionHandlerImplTest,
   encryption_handler()->SetEncryptionPassphrase(kNewKey);
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::CUSTOM_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kCustomPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   EXPECT_FALSE(encryption_handler()->custom_passphrase_time().is_null());
   VerifyMigratedNigoriWithTimestamp(
-      migration_time, PassphraseType::CUSTOM_PASSPHRASE, kNewKey,
+      migration_time, PassphraseType::kCustomPassphrase, kNewKey,
       {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
 
   // Check that the cryptographer can decrypt the old key.
@@ -1906,7 +1905,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   // bootstrap token and nigori state.
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kNewKey, captured_bootstrap_token, captured_nigori_state,
-      PassphraseType::CUSTOM_PASSPHRASE,
+      PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForScrypt(kScryptSalt)});
 }
 
@@ -1947,13 +1946,13 @@ TEST_F(SyncEncryptionHandlerImplTest,
   }
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, false));
   encryption_handler()->Init();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->has_pending_keys());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   Mock::VerifyAndClearExpectations(observer());
 
@@ -1968,7 +1967,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   Mock::VerifyAndClearExpectations(observer());
 
   EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
-                               PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, _));
+                               PassphraseType::kFrozenImplicitPassphrase, _));
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true));
   SyncEncryptionHandler::NigoriState captured_nigori_state;
@@ -1980,10 +1979,10 @@ TEST_F(SyncEncryptionHandlerImplTest,
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::FROZEN_IMPLICIT_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kFrozenImplicitPassphrase);
   EXPECT_TRUE(encryption_handler()->IsEncryptEverythingEnabled());
   VerifyMigratedNigoriWithTimestamp(
-      1, PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, kCurKey,
+      1, PassphraseType::kFrozenImplicitPassphrase, kCurKey,
       /*key_derivation_method=*/base::nullopt);
 
   // Check that the cryptographer is encrypting using the frozen current key.
@@ -2001,7 +2000,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
 
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kCurKey, captured_bootstrap_token, captured_nigori_state,
-      PassphraseType::FROZEN_IMPLICIT_PASSPHRASE,
+      PassphraseType::kFrozenImplicitPassphrase,
       /*key_derivation_method=*/base::nullopt);
 }
 
@@ -2033,12 +2032,12 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriWithOldPassphrase) {
   encryption_handler()->SetKeystoreKeys({kRawKeystoreKey});
 
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kCurKey,
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kCurKey,
                        /*key_derivation_params=*/base::nullopt);
 
   // Now build an old keystore passphrase nigori node.
@@ -2067,9 +2066,9 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriWithOldPassphrase) {
   // Verify we're still migrated and have proper encryption state.
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kCurKey,
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kCurKey,
                        /*key_derivation_params=*/base::nullopt);
 }
 
@@ -2101,9 +2100,9 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefault) {
   // key (instead of the old gaia key).
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kKeystoreKey,
                        /*key_derivation_method=*/base::nullopt);
 }
 
@@ -2136,9 +2135,9 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysKeystoreDefault) {
   // key (instead of the old gaia key).
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kKeystoreKey,
                        /*key_derivation_method=*/base::nullopt);
 }
 
@@ -2149,7 +2148,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysAfterPendingGaiaResolved) {
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitAndVerifyUnmigratedNigori(kOldGaiaKey,
-                                PassphraseType::IMPLICIT_PASSPHRASE);
+                                PassphraseType::kImplicitPassphrase);
 
   // Pass multiple keystore keys, signaling a rotation has happened.
   EXPECT_CALL(*observer(),
@@ -2163,15 +2162,15 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysAfterPendingGaiaResolved) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_CALL(*observer(), OnEncryptionComplete()).Times(AtLeast(1));
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
   encryption_handler()->SetDecryptionPassphrase(kOldGaiaKey);
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kKeystoreKey,
                        /*key_derivation_method=*/base::nullopt);
 }
 
@@ -2198,9 +2197,9 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysGaiaDefaultOnInit) {
   // key (instead of the old gaia key).
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kKeystoreKey,
                        /*key_derivation_method=*/base::nullopt);
 }
 
@@ -2214,7 +2213,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitAndVerifyUnmigratedNigori(kOldGaiaKey,
-                                PassphraseType::IMPLICIT_PASSPHRASE);
+                                PassphraseType::kImplicitPassphrase);
 
   // Pass multiple keystore keys, signaling a rotation has happened.
   EXPECT_CALL(*observer(),
@@ -2229,13 +2228,13 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_CALL(*observer(), OnEncryptionComplete()).Times(AtLeast(1));
   {
     sync_pb::NigoriSpecifics nigori = BuildMigratedNigori(
-        PassphraseType::KEYSTORE_PASSPHRASE, 1,
+        PassphraseType::kKeystorePassphrase, 1,
         sync_pb::NigoriSpecifics::UNSPECIFIED, kOldGaiaKey, old_keystore_key,
         /* key_derivation_salt = */ base::nullopt);
     // Update the encryption handler.
@@ -2246,8 +2245,8 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
   PumpLoop();
 
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
-  VerifyPassphraseType(PassphraseType::KEYSTORE_PASSPHRASE);
-  VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
+  VerifyPassphraseType(PassphraseType::kKeystorePassphrase);
+  VerifyMigratedNigori(PassphraseType::kKeystorePassphrase, kKeystoreKey,
                        /*key_derivation_method=*/base::nullopt);
 }
 
@@ -2258,7 +2257,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   const char kRawOldKeystoreKey[] = "old_keystore_key";
 
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
-  InitAndVerifyUnmigratedNigori(kCustomPass, PassphraseType::CUSTOM_PASSPHRASE);
+  InitAndVerifyUnmigratedNigori(kCustomPass, PassphraseType::kCustomPassphrase);
 
   // Pass multiple keystore keys, signaling a rotation has happened.
   EXPECT_CALL(*observer(),
@@ -2284,14 +2283,14 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   encryption_handler()->SetDecryptionPassphrase(kCustomPass);
   Mock::VerifyAndClearExpectations(observer());
 
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPass,
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kCustomPass,
                        {KeyDerivationParams::CreateForPbkdf2()});
 
   const base::Time migration_time =
       encryption_handler()->GetKeystoreMigrationTime();
   VerifyRestoreAfterExplicitPaspshrase(
       TimeToProtoTime(migration_time), kCustomPass, captured_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
@@ -2309,7 +2308,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
       migration_time, sync_pb::NigoriSpecifics::PBKDF2_HMAC_SHA1_1003,
       kCustomPass, /* key_derivation_salt = */ base::nullopt);
   VerifyMigratedNigoriWithTimestamp(
-      migration_time, PassphraseType::CUSTOM_PASSPHRASE, kCustomPass,
+      migration_time, PassphraseType::kCustomPassphrase, kCustomPass,
       {KeyDerivationParams::CreateForPbkdf2()});
 
   SyncEncryptionHandler::NigoriState captured_nigori_state;
@@ -2325,7 +2324,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
   Mock::VerifyAndClearExpectations(observer());
 
   VerifyMigratedNigoriWithTimestamp(
-      migration_time, PassphraseType::CUSTOM_PASSPHRASE, kCustomPass,
+      migration_time, PassphraseType::kCustomPassphrase, kCustomPass,
       {KeyDerivationParams::CreateForPbkdf2()});
 
   // We need the passphrase bootstrap token, but OnBootstrapTokenUpdated(_,
@@ -2336,7 +2335,7 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
                                         &passphrase_bootstrap_token);
   VerifyRestoreAfterExplicitPaspshrase(
       migration_time, kCustomPass, passphrase_bootstrap_token,
-      captured_nigori_state, PassphraseType::CUSTOM_PASSPHRASE,
+      captured_nigori_state, PassphraseType::kCustomPassphrase,
       {KeyDerivationParams::CreateForPbkdf2()});
 }
 
@@ -2355,10 +2354,10 @@ TEST_F(SyncEncryptionHandlerImplTest, MissingKeystoreMigrationTime) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   EXPECT_CALL(*observer(),
-              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+              OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase, _));
   {
     sync_pb::NigoriSpecifics nigori = BuildMigratedNigori(
-        PassphraseType::KEYSTORE_PASSPHRASE, 1,
+        PassphraseType::kKeystorePassphrase, 1,
         sync_pb::NigoriSpecifics::UNSPECIFIED, kKeystoreKey, kKeystoreKey,
         /* key_derivation_salt = */ base::nullopt);
     nigori.clear_keystore_migration_time();
@@ -2498,7 +2497,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   IgnoreAllObserverCalls();
   encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase);
 
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPassphrase,
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kCustomPassphrase,
                        {KeyDerivationParams::CreateForPbkdf2()});
   EXPECT_EQ(GetSerializedNigoriKeyForCustomPassphrase(
                 KeyDerivationParams::CreateForPbkdf2(), kCustomPassphrase),
@@ -2544,7 +2543,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
   encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase);
 
   // Nigori should contain PBKDF2 as the key derivation method.
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPassphrase,
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kCustomPassphrase,
                        {KeyDerivationParams::CreateForPbkdf2()});
   // The key added to the cryptographer should have been derived using PBKDF2.
   EXPECT_EQ(GetSerializedNigoriKeyForCustomPassphrase(
@@ -2568,7 +2567,7 @@ TEST_F(SyncEncryptionHandlerImplTest,
 
   std::string salt = fake_random_salt_generator_.Run();
   // Nigori should contain scrypt as the key derivation method.
-  VerifyMigratedNigori(PassphraseType::CUSTOM_PASSPHRASE, kCustomPassphrase,
+  VerifyMigratedNigori(PassphraseType::kCustomPassphrase, kCustomPassphrase,
                        {KeyDerivationParams::CreateForScrypt(salt)});
   // The key added to the cryptographer should have been derived using scrypt
   // with the proper salt.

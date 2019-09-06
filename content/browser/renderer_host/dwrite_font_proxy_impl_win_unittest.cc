@@ -95,15 +95,22 @@ class DWriteFontProxyLocalMatchingTest : public DWriteFontProxyImplUnitTest {
 class DWriteFontProxyTableMatchingTest
     : public DWriteFontProxyLocalMatchingTest {
  public:
-  DWriteFontProxyTableMatchingTest() {
+  void SetUp() override {
     DWriteFontLookupTableBuilder* table_builder_instance =
         DWriteFontLookupTableBuilder::GetInstance();
-    DCHECK(scoped_temp_dir_.CreateUniqueTempDir());
+    bool temp_dir_success = scoped_temp_dir_.CreateUniqueTempDir();
+    ASSERT_TRUE(temp_dir_success);
     table_builder_instance->OverrideDWriteVersionChecksForTesting();
     table_builder_instance->SetCacheDirectoryForTesting(
         scoped_temp_dir_.GetPath());
     table_builder_instance->ResetLookupTableForTesting();
     table_builder_instance->SchedulePrepareFontUniqueNameTableIfNeeded();
+  }
+
+  void TearDown() override {
+    DWriteFontLookupTableBuilder* table_builder_instance =
+        DWriteFontLookupTableBuilder::GetInstance();
+    table_builder_instance->ResetStateForTesting();
   }
 
  private:
@@ -303,9 +310,7 @@ void TestWhenLookupTableReady(
 }
 }  // namespace
 
-// TODO(https://crbug.com/996167): Re-enable the DWriteFontLookupTableBuilder
-// tests once the root cause for flakiness is addressed.
-TEST_F(DWriteFontProxyTableMatchingTest, DISABLED_TestFindUniqueFont) {
+TEST_F(DWriteFontProxyTableMatchingTest, TestFindUniqueFont) {
   bool lookup_table_results_were_tested = false;
   dwrite_font_proxy().GetUniqueNameLookupTable(base::BindOnce(
       &TestWhenLookupTableReady, &lookup_table_results_were_tested));

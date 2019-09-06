@@ -231,8 +231,8 @@ class ImeObserverChromeOS : public ui::ImeObserver {
           ConvertInputContextType(context));
       input_context.auto_correct = ConvertInputContextAutoCorrect(context);
       input_context.auto_complete = ConvertInputContextAutoComplete(context);
-      input_context.auto_capitalize = (input_method_private::AutoCapitalizeType)
-          ConvertInputContextAutoCapitalize(context);
+      input_context.auto_capitalize =
+          ConvertInputContextAutoCapitalize(context.flags);
       input_context.spell_check = ConvertInputContextSpellCheck(context);
       input_context.has_been_password = ConvertHasBeenPassword(context);
       input_context.should_do_learning = context.should_do_learning;
@@ -344,11 +344,21 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     return ImeObserver::ConvertInputContextAutoComplete(input_context);
   }
 
-  input_ime::AutoCapitalizeType ConvertInputContextAutoCapitalize(
-      ui::IMEEngineHandlerInterface::InputContext input_context) override {
+  input_method_private::AutoCapitalizeType ConvertInputContextAutoCapitalize(
+      int flags) {
     if (!GetKeyboardConfig().auto_capitalize)
-      return input_ime::AUTO_CAPITALIZE_TYPE_NONE;
-    return ImeObserver::ConvertInputContextAutoCapitalize(input_context);
+      return input_method_private::AUTO_CAPITALIZE_TYPE_OFF;
+    if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE)
+      return input_method_private::AUTO_CAPITALIZE_TYPE_OFF;
+    if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_CHARACTERS)
+      return input_method_private::AUTO_CAPITALIZE_TYPE_CHARACTERS;
+    if (flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS)
+      return input_method_private::AUTO_CAPITALIZE_TYPE_WORDS;
+
+    // At least one flag should be set. See |ComputeAutocapitalizeFlags| in
+    // third_party/blink/renderer/core/editing/ime/input_method_controller.cc
+    NOTREACHED();
+    return input_method_private::AUTO_CAPITALIZE_TYPE_NONE;
   }
 
   bool ConvertInputContextSpellCheck(

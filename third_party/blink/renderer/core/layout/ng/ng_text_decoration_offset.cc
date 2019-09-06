@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_metrics.h"
@@ -16,7 +16,7 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
     float text_decoration_thickness,
     FontVerticalPositionType position_type) const {
   LayoutUnit offset = LayoutUnit::Max();
-  const ComputedStyle& style = text_fragment_.Style();
+  const ComputedStyle& style = text_item_.Style();
   FontBaseline baseline_type = style.GetFontBaseline();
 
   if (decorating_box_) {

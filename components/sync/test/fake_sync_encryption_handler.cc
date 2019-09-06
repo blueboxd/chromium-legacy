@@ -13,7 +13,7 @@ namespace syncer {
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false),
-      passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE) {}
+      passphrase_type_(PassphraseType::kImplicitPassphrase) {}
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
 
 bool FakeSyncEncryptionHandler::Init() {
@@ -30,7 +30,7 @@ bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
   if (nigori.encrypt_everything())
     EnableEncryptEverything();
   if (nigori.keybag_is_frozen())
-    passphrase_type_ = PassphraseType::CUSTOM_PASSPHRASE;
+    passphrase_type_ = PassphraseType::kCustomPassphrase;
 
   // TODO(zea): consider adding fake support for migration.
   if (cryptographer_.CanDecrypt(nigori.encryption_keybag()))
@@ -105,7 +105,7 @@ void FakeSyncEncryptionHandler::RemoveObserver(Observer* observer) {
 
 void FakeSyncEncryptionHandler::SetEncryptionPassphrase(
     const std::string& passphrase) {
-  passphrase_type_ = PassphraseType::CUSTOM_PASSPHRASE;
+  passphrase_type_ = PassphraseType::kCustomPassphrase;
 }
 
 void FakeSyncEncryptionHandler::SetDecryptionPassphrase(

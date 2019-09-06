@@ -27,6 +27,15 @@ namespace password_manager {
 
 namespace {
 
+std::string ComputeClientTag(
+    const sync_pb::PasswordSpecificsData& password_data) {
+  return net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
+         net::EscapePath(password_data.username_element()) + "|" +
+         net::EscapePath(password_data.username_value()) + "|" +
+         net::EscapePath(password_data.password_element()) + "|" +
+         net::EscapePath(password_data.signon_realm());
+}
+
 sync_pb::PasswordSpecifics SpecificsFromPassword(
     const autofill::PasswordForm& password_form) {
   sync_pb::PasswordSpecifics specifics;
@@ -725,14 +734,8 @@ std::string PasswordSyncBridge::GetClientTag(
   DCHECK(entity_data.specifics.has_password())
       << "EntityData does not have password specifics.";
 
-  const sync_pb::PasswordSpecificsData& password_data =
-      entity_data.specifics.password().client_only_encrypted_data();
-
-  return (net::EscapePath(GURL(password_data.origin()).spec()) + "|" +
-          net::EscapePath(password_data.username_element()) + "|" +
-          net::EscapePath(password_data.username_value()) + "|" +
-          net::EscapePath(password_data.password_element()) + "|" +
-          net::EscapePath(password_data.signon_realm()));
+  return ComputeClientTag(
+      entity_data.specifics.password().client_only_encrypted_data());
 }
 
 std::string PasswordSyncBridge::GetStorageKey(
@@ -769,6 +772,12 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
       password_store_sync_->NotifyLoginsChanged(password_store_changes);
     }
   }
+}
+
+// static
+std::string PasswordSyncBridge::ComputeClientTagForTesting(
+    const sync_pb::PasswordSpecificsData& password_data) {
+  return ComputeClientTag(password_data);
 }
 
 base::Optional<syncer::ModelError> PasswordSyncBridge::CleanupPasswordStore() {

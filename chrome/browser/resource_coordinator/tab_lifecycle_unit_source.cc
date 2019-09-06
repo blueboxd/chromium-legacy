@@ -85,6 +85,18 @@ class TabLifecycleStateObserver
       TabLifecycleUnitSource::OnLifecycleStateChanged(contents, state);
   }
 
+  static void OnOriginTrialFreezePolicyChangedImpl(
+      const WebContentsProxy& contents_proxy,
+      mojom::InterventionPolicy policy) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // If the web contents is still alive then dispatch to the actual
+    // implementation in TabLifecycleUnitSource.
+    if (auto* contents = contents_proxy.Get()) {
+      TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(contents,
+                                                               policy);
+    }
+  }
+
   // performance_manager::PageNode::ObserverDefaultImpl::
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
@@ -93,6 +105,17 @@ class TabLifecycleStateObserver
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
                        page_node->GetContentsProxy(),
                        page_node->GetLifecycleState()));
+  }
+
+  void OnPageOriginTrialFreezePolicyChanged(
+      const PageNode* page_node) override {
+    // Forward the notification over to the UI thread.
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            &TabLifecycleStateObserver::OnOriginTrialFreezePolicyChangedImpl,
+            page_node->GetContentsProxy(),
+            page_node->GetOriginTrialFreezePolicy()));
   }
 
   void OnPassedToGraph(Graph* graph) override {
@@ -346,6 +369,19 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
   // TODO(fdoray): This may want to filter for the navigation_id.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
+}
+
+// static
+void TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
+    content::WebContents* web_contents,
+    mojom::InterventionPolicy policy) {
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
+
+  // Some WebContents aren't attached to a tab, so there is no corresponding
+  // TabLifecycleUnit.
+  // TODO(fdoray): This may want to filter for the navigation_id.
+  if (lifecycle_unit)
+    lifecycle_unit->UpdateOriginTrialFreezePolicy(policy);
 }
 
 void TabLifecycleUnitSource::SetTabLifecyclesEnterprisePolicy(bool enabled) {

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 class PrefChangeRegistrar;
@@ -87,6 +88,12 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   friend class TabActivityWatcherTest;
   FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
                            TabProactiveDiscardedByFrozenCallback);
+  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
+                           CannotFreezeOriginTrialOptOut);
+  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
+                           CannotFreezeOriginTrialUnknown);
+  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
+                           CanFreezeOriginTrialOptIn);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TabManagerWasDiscardedCrossSiteSubFrame);
@@ -98,6 +105,8 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                            ProactiveFastShutdownWithUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownWithBeforeunloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTestWithTwoTabs,
+                           TabFreezeDisallowedWhenProactivelyDiscarding);
 
   // Returns the TabLifecycleUnit instance associated with |web_contents|, or
   // nullptr if |web_contents| isn't a tab.
@@ -142,6 +151,9 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // performance_manager Graph.
   static void OnLifecycleStateChanged(content::WebContents* web_contents,
                                       mojom::LifecycleState state);
+  static void OnOriginTrialFreezePolicyChanged(
+      content::WebContents* web_contents,
+      mojom::InterventionPolicy policy);
 
   // Callback for TabLifecyclesEnterprisePreferenceMonitor.
   void SetTabLifecyclesEnterprisePolicy(bool enabled);

@@ -2501,6 +2501,58 @@ TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithTouch) {
       WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 }
 
+TEST_F(ScrollbarsTest, CheckScrollCornerIfThereIsNoScrollbar) {
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        width: 50px;
+        height: 100px;
+        overflow-x: auto;
+      }
+      #content {
+        width: 75px;
+        height: 50px;
+        background-color: green;
+      }
+      #container::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      #container::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+    </style>
+    <div id='container'>
+        <div id='content'></div>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  // This test is specifically checking the behavior when overlay scrollbars
+  // are enabled.
+  DCHECK(GetScrollbarTheme().UsesOverlayScrollbars());
+
+  auto* element = GetDocument().getElementById("container");
+  PaintLayerScrollableArea* scrollable_container =
+      ToLayoutBox(element->GetLayoutObject())->GetScrollableArea();
+
+  // There should initially be a scrollbar and a scroll corner.
+  EXPECT_TRUE(scrollable_container->HasScrollbar());
+  EXPECT_TRUE(scrollable_container->ScrollCorner());
+
+  // Make the container non-scrollable so the scrollbar and corner disappear.
+  element->setAttribute(html_names::kStyleAttr, "width: 100px;");
+  GetDocument().UpdateStyleAndLayout();
+
+  EXPECT_FALSE(scrollable_container->HasScrollbar());
+  EXPECT_FALSE(scrollable_container->ScrollCorner());
+}
+
 // For infinite scrolling page (load more content when scroll to bottom), user
 // press on scrollbar button should keep scrolling after content loaded.
 // Disable on Android since VirtualTime not work for Android.

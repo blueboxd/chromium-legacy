@@ -32,6 +32,12 @@ class ArcBridgeService;
 // Returns true if the file path has a media extension supported by Android.
 bool HasAndroidSupportedMediaExtension(const base::FilePath& path);
 
+// Appends |cros_path|'s relative path from "/media/removable" to |android_path|
+// with the altered device label which is used in Android removable media paths.
+// Exposed only for testing.
+bool AppendRelativePathForRemovableMedia(const base::FilePath& cros_path,
+                                         base::FilePath* android_path);
+
 // Exposed only for testing.
 extern const char* kAndroidSupportedMediaExtensions[];
 extern const int kAndroidSupportedMediaExtensionsSize;

@@ -112,11 +112,8 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return nullptr;
   }
 
-  unsigned TextLength() const {
-    DCHECK_EQ(Type(), kText);
-    return text_.end_offset - text_.start_offset;
-  }
-  StringView Text(const NGFragmentItems& items) const;
+  Node* GetNode() const { return layout_object_->GetNode(); }
+
   NGTextFragmentPaintInfo TextPaintInfo(const NGFragmentItems& items) const;
 
   // DisplayItemClient overrides
@@ -187,6 +184,52 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return MutableForPainting(*this);
   }
 
+  // Functions for |TextItem| and |GeneratedTextItem|
+
+  bool IsFlowControl() const {
+    DCHECK_EQ(Type(), kText);
+    return is_flow_control_;
+  }
+
+  bool IsHorizontal() const {
+    return IsHorizontalWritingMode(GetWritingMode());
+  }
+
+  WritingMode GetWritingMode() const {
+    DCHECK_EQ(Type(), kText);
+    return Style().GetWritingMode();
+  }
+
+  const ShapeResultView* TextShapeResult() const;
+
+  unsigned StartOffset() const;
+  unsigned EndOffset() const;
+  unsigned TextLength() const { return EndOffset() - StartOffset(); }
+  StringView Text(const NGFragmentItems& items) const;
+
+  // Compute the inline position from text offset, in logical coordinate
+  // relative to this fragment.
+  LayoutUnit InlinePositionForOffset(StringView text,
+                                     unsigned offset,
+                                     LayoutUnit (*round_function)(float),
+                                     AdjustMidCluster) const;
+
+  LayoutUnit InlinePositionForOffset(StringView text, unsigned offset) const;
+
+  // Compute line-relative coordinates for given offsets, this is not
+  // flow-relative:
+  // https://drafts.csswg.org/css-writing-modes-3/#line-directions
+  std::pair<LayoutUnit, LayoutUnit> LineLeftAndRightForOffsets(
+      StringView text,
+      unsigned start_offset,
+      unsigned end_offset) const;
+
+  // The layout box of text in (start, end) range in local coordinate.
+  // Start and end offsets must be between StartOffset() and EndOffset().
+  PhysicalRect LocalRect(StringView text,
+                         unsigned start_offset,
+                         unsigned end_offset) const;
+
  private:
   const LayoutObject* layout_object_;
 
@@ -223,6 +266,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   unsigned type_ : 2;           // ItemType
   unsigned style_variant_ : 2;  // NGStyleVariant
+  // TODO(yosin): We will change |is_flow_control_| to call |IsLineBreak()| and
+  // |TextType() == kFlowControl|.
+  unsigned is_flow_control_ : 1;
   unsigned is_hidden_for_paint_ : 1;
 };
 

@@ -164,7 +164,7 @@ class ConsentSyncBridgeImplTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   std::unique_ptr<ConsentSyncBridgeImpl> bridge_;
 };

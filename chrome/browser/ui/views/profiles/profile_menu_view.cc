@@ -169,6 +169,7 @@ void ProfileMenuView::BuildMenu() {
     return;
   }
   BuildIdentity();
+  BuildAutofillButtons();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -389,6 +390,25 @@ void ProfileMenuView::BuildIdentity() {
         profile_attributes->GetAvatarIcon(), profile_attributes->GetName(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
+}
+
+void ProfileMenuView::BuildAutofillButtons() {
+  AddShortcutFeatureButton(
+      kKeyIcon, l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK),
+      base::BindRepeating(&ProfileMenuView::OnPasswordsButtonClicked,
+                          base::Unretained(this)));
+
+  AddShortcutFeatureButton(
+      kCreditCardIcon,
+      l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK),
+      base::BindRepeating(&ProfileMenuView::OnCreditCardsButtonClicked,
+                          base::Unretained(this)));
+
+  AddShortcutFeatureButton(
+      vector_icons::kLocationOnIcon,
+      l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
+      base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
+                          base::Unretained(this)));
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {

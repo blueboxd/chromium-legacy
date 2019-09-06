@@ -67,12 +67,26 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
  public:
   EntryLoader(base::WeakPtr<BundledExchangesURLLoaderFactory> factory,
               mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-              const GURL& url)
+              const network::ResourceRequest& resource_request)
       : factory_(std::move(factory)), loader_client_(std::move(client)) {
     DCHECK(factory_);
+
+    // Parse the Range header if any.
+    // Whether range request should be supported or not is discussed here:
+    // https://github.com/WICG/webpackage/issues/478
+    std::string range_header;
+    if (resource_request.headers.GetHeader(net::HttpRequestHeaders::kRange,
+                                           &range_header)) {
+      std::vector<net::HttpByteRange> ranges;
+      if (net::HttpUtil::ParseRangeHeader(range_header, &ranges) &&
+          ranges.size() == 1) {  // We don't support multi-range requests.
+        byte_range_ = ranges[0];
+      }
+    }
+
     factory_->GetReader()->ReadResponse(
-        url, base::BindOnce(&EntryLoader::OnResponseReady,
-                            weak_factory_.GetWeakPtr()));
+        resource_request.url, base::BindOnce(&EntryLoader::OnResponseReady,
+                                             weak_factory_.GetWeakPtr()));
   }
   ~EntryLoader() override = default;
 
@@ -98,7 +112,26 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
       return;
     }
 
-    loader_client_->OnReceiveResponse(CreateResourceResponse(response));
+    network::ResourceResponseHead response_head =
+        CreateResourceResponse(response);
+    if (byte_range_) {
+      if (byte_range_->ComputeBounds(response->payload_length)) {
+        response_head.headers->UpdateWithNewRange(*byte_range_,
+                                                  response->payload_length,
+                                                  true /*replace_status_line*/);
+        // Adjust the offset and length to read.
+        // Note: This wouldn't work when the exchange is signed and its payload
+        // is mi-sha256 encoded. see crbug.com/1001366
+        response->payload_offset += byte_range_->first_byte_position();
+        response->payload_length = byte_range_->last_byte_position() -
+                                   byte_range_->first_byte_position() + 1;
+      } else {
+        loader_client_->OnComplete(network::URLLoaderCompletionStatus(
+            net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+        return;
+      }
+    }
+    loader_client_->OnReceiveResponse(std::move(response_head));
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
@@ -137,6 +170,7 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
 
   base::WeakPtr<BundledExchangesURLLoaderFactory> factory_;
   mojo::Remote<network::mojom::URLLoaderClient> loader_client_;
+  base::Optional<net::HttpByteRange> byte_range_;
 
   base::WeakPtrFactory<EntryLoader> weak_factory_{this};
 
@@ -167,7 +201,7 @@ void BundledExchangesURLLoaderFactory::CreateLoaderAndStart(
       reader_->HasEntry(resource_request.url)) {
     auto loader = std::make_unique<EntryLoader>(weak_factory_.GetWeakPtr(),
                                                 loader_client.PassInterface(),
-                                                resource_request.url);
+                                                resource_request);
     std::unique_ptr<network::mojom::URLLoader> url_loader = std::move(loader);
     mojo::MakeSelfOwnedReceiver(
         std::move(url_loader), mojo::PendingReceiver<network::mojom::URLLoader>(

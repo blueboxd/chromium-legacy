@@ -16,6 +16,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_importance_signals.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 class TabStripModel;
 
@@ -88,6 +89,9 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // Updates the tab's lifecycle state when changed outside the tab lifecycle
   // unit.
   void UpdateLifecycleState(mojom::LifecycleState state);
+
+  // Updates the tab's origin trial freeze policy.
+  void UpdateOriginTrialFreezePolicy(mojom::InterventionPolicy policy);
 
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
@@ -201,6 +205,11 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // When this is false, CanDiscard() always returns false.
   bool auto_discardable_ = true;
+
+  // The freeze policy set via origin trial. Initial value is kDefault to avoid
+  // affecting CanFreeze() before the policy is set for the first time.
+  mojom::InterventionPolicy origin_trial_freeze_policy_ =
+      mojom::InterventionPolicy::kDefault;
 
   // Maintains the most recent LifecycleUnitDiscardReason that was passed into
   // Discard().

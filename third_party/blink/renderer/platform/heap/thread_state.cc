@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
@@ -134,7 +135,8 @@ ThreadState::ThreadState()
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
-      sweeper_scheduler_(base::MakeRefCounted<WorkerPoolTaskRunner>()) {
+      sweeper_scheduler_(std::make_unique<CancelableTaskScheduler>(
+          base::MakeRefCounted<WorkerPoolTaskRunner>())) {
   DCHECK(CheckThread());
   DCHECK(!**thread_specific_);
   **thread_specific_ = this;
@@ -666,7 +668,7 @@ void ThreadState::ScheduleConcurrentAndLazySweep() {
   static constexpr size_t kNumberOfSweepingTasks = 1u;
 
   for (size_t i = 0; i < kNumberOfSweepingTasks; ++i) {
-    sweeper_scheduler_.ScheduleTask(
+    sweeper_scheduler_->ScheduleTask(
         WTF::CrossThreadBindOnce(&ThreadState::PerformConcurrentSweep,
                                  WTF::CrossThreadUnretained(this)));
   }
@@ -919,7 +921,7 @@ void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
   DCHECK(SweepForbidden());
 
   // Wait for concurrent sweepers.
-  sweeper_scheduler_.CancelAndWait();
+  sweeper_scheduler_->CancelAndWait();
 
   // Concurrent sweepers may perform some work at the last stage (e.g.
   // sweeping the last page and preparing finalizers).

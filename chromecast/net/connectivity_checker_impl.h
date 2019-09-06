@@ -5,28 +5,24 @@
 #ifndef CHROMECAST_NET_CONNECTIVITY_CHECKER_IMPL_H_
 #define CHROMECAST_NET_CONNECTIVITY_CHECKER_IMPL_H_
 
-#include <memory>
-
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
 #include "chromecast/net/connectivity_checker.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
+#include "net/base/network_change_notifier.h"
+#include "net/url_request/url_request.h"
 
 class GURL;
 
 namespace base {
 class SingleThreadTaskRunner;
-}  // namespace base
+}
 
 namespace net {
-class HttpResponseHeaders;
-}  // namespace net
-
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-}  // namespace network
+class SSLInfo;
+class URLRequest;
+class URLRequestContext;
+class URLRequestContextGetter;
+}
 
 namespace chromecast {
 
@@ -34,14 +30,13 @@ namespace chromecast {
 // to given url.
 class ConnectivityCheckerImpl
     : public ConnectivityChecker,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver {
+      public net::URLRequest::Delegate,
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Connectivity checking and initialization will run on task_runner.
   static scoped_refptr<ConnectivityCheckerImpl> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
-      network::NetworkConnectionTracker* network_connection_tracker);
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // ConnectivityChecker implementation:
   bool Connected() const override;
@@ -49,23 +44,26 @@ class ConnectivityCheckerImpl
 
  protected:
   explicit ConnectivityCheckerImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      network::NetworkConnectionTracker* network_connection_tracker);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ConnectivityCheckerImpl() override;
 
  private:
+  // UrlRequest::Delegate implementation:
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             int net_error,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
+
   // Initializes ConnectivityChecker
-  void Initialize(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                      url_loader_factory_info);
+  void Initialize(net::URLRequestContextGetter* url_request_context_getter);
 
-  // network::NetworkConnectionTracker::NetworkConnectionObserver
-  // implementation:
-  void OnConnectionChanged(network::mojom::ConnectionType type) override;
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
-  void OnConnectionChangedInternal();
-
-  void OnConnectivityCheckComplete(
-      scoped_refptr<net::HttpResponseHeaders> headers);
+  void OnNetworkChangedInternal();
 
   // Cancels current connectivity checking in progress.
   void Cancel();
@@ -88,17 +86,17 @@ class ConnectivityCheckerImpl
   void CheckInternal();
 
   std::unique_ptr<GURL> connectivity_check_url_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  net::URLRequestContext* url_request_context_;
+  std::unique_ptr<net::URLRequest> url_request_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  network::NetworkConnectionTracker* const network_connection_tracker_;
 
   // connected_lock_ protects access to connected_ which is shared across
   // threads.
   mutable base::Lock connected_lock_;
   bool connected_;
 
-  network::mojom::ConnectionType connection_type_;
+  net::NetworkChangeNotifier::ConnectionType connection_type_;
   // Number of connectivity check errors.
   unsigned int check_errors_;
   bool network_changed_pending_;

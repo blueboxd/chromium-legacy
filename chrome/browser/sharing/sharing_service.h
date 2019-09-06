@@ -22,6 +22,7 @@
 #include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync_device_info/device_info_tracker.h"
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
@@ -37,7 +38,6 @@ class GCMDriver;
 
 namespace syncer {
 class DeviceInfo;
-class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
@@ -53,7 +53,8 @@ enum class SharingDeviceRegistrationResult;
 // sharing messages to other devices.
 class SharingService : public KeyedService,
                        syncer::SyncServiceObserver,
-                       AckMessageHandler::AckMessageObserver {
+                       AckMessageHandler::AckMessageObserver,
+                       syncer::DeviceInfoTracker::Observer {
  public:
   using SendMessageCallback =
       base::OnceCallback<void(SharingSendMessageResult)>;
@@ -92,6 +93,10 @@ class SharingService : public KeyedService,
   virtual std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDeviceCandidates(
       int required_capabilities) const;
 
+  // Register |callback| so it will be invoked after all dependencies of
+  // GetDeviceCandidates are ready.
+  void AddDeviceCandidatesInitializedObserver(base::OnceClosure callback);
+
   // Sends a message to the device specified by GUID.
   // |callback| will be invoked with message_id if synchronous operation
   // succeeded, or base::nullopt if operation failed.
@@ -127,6 +132,9 @@ class SharingService : public KeyedService,
   // AckMessageHandler::AckMessageObserver override.
   void OnAckReceived(const std::string& message_id) override;
 
+  // syncer::DeviceInfoTracker::Observer.
+  void OnDeviceInfoChange() override;
+
   void RegisterDevice();
 
   void UnregisterDevice();
@@ -158,6 +166,10 @@ class SharingService : public KeyedService,
   PingMessageHandler ping_message_handler_;
   net::BackoffEntry backoff_entry_;
   State state_;
+  std::vector<base::OnceClosure> device_candidates_initialized_callbacks_;
+  bool is_observing_device_info_tracker_;
+  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
+      local_device_info_ready_subscription_;
 
   // Map of random GUID to SendMessageCallback.
   std::map<std::string, SendMessageCallback> send_message_callbacks_;

@@ -141,7 +141,7 @@ static const char* kBadFlags[] = {
 
     // A flag to support local file based BundledExchanges loading, only for
     // testing purpose.
-    switches::kTrustableBundledExchangesFile,
+    switches::kTrustableBundledExchangesFileUrl,
 };
 #endif  // OS_ANDROID
 

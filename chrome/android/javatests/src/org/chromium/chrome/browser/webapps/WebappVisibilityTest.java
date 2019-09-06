@@ -18,8 +18,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.test.util.browser.WebApkInfoBuilder;
-import org.chromium.chrome.test.util.browser.WebappTestHelper;
+import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 

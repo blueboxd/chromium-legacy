@@ -29,32 +29,6 @@ async function fileDisplay(path, defaultEntries) {
 }
 
 /**
- * Waits 250ms and fail if toast shows in this time.
- *
- * @param {string} appId The app's window id.
- */
-async function checkHiddenToast(appId) {
-  const start = new Date();
-  const caller = getCaller();
-  await repeatUntil(async () => {
-    if (new Date() - start > 250 /* ms */) {
-      // Waited long enough. End with success.
-      return;
-    }
-
-    const visibleQuery = ['#toast', '#container:not([hidden])'];
-    const visibleToast = await remoteCall.callRemoteTestUtil(
-        'deepQueryAllElements', appId, [visibleQuery]);
-
-    // Fails if finds a non-hidden toast.
-    chrome.test.assertTrue(
-        visibleToast.length == 0, 'Toast is visible when it shouldn\'t');
-
-    return pending(caller, 'Waiting to see if toast will show.');
-  });
-}
-
-/**
  * Tests files display in Downloads.
  */
 testcase.fileDisplayDownloads = () => {
@@ -256,97 +230,6 @@ testcase.fileDisplayUsbPartition = async () => {
   chrome.test.assertEq(1, itemEntries.length);
   const childVolumeType = itemEntries[0].attributes['volume-type-for-testing'];
   chrome.test.assertTrue('removable' !== childVolumeType);
-};
-
-/**
- * Tests USB toast display for ARC on clicking a USB volume.
- */
-testcase.fileDisplayUsbToast = async () => {
-  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
-
-  // Open Files app on local downloads.
-  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
-
-  // Mount USB volume in the Downloads window.
-  await sendTestMessage({name: 'mountFakeUsb'});
-
-  // Wait for the USB mount.
-  await remoteCall.waitForElement(appId, USB_VOLUME_QUERY);
-
-  // Enable ARC, but disallow ARC from accessing the USB volume so that the
-  // toast UI will be shown.
-  const preferences = {
-    arcEnabled: true,
-    arcRemovableMediaAccessEnabled: false,
-  };
-  await remoteCall.callRemoteTestUtil('setPreferences', null, [preferences]);
-
-  // Click to open the USB volume.
-  await remoteCall.waitAndClickElement(appId, USB_VOLUME_QUERY);
-
-  // Verify the toast UI.
-  await remoteCall.waitForElement(
-      appId, ['#toast', '#container:not([hidden])']);
-
-  // Wait for the toast to disappear.
-  await remoteCall.waitForElement(appId, ['#toast', '#container[hidden]']);
-
-  // Navigate to My files.
-  await remoteCall.waitAndClickElement(appId, '[root-type-icon=\'my_files\']');
-
-  // Verify the toast UI never shows up.
-  await checkHiddenToast(appId);
-
-  // Navigate to the USB volume again.
-  await remoteCall.waitAndClickElement(appId, USB_VOLUME_QUERY);
-
-  // Verify the toast UI never shows up again.
-  await checkHiddenToast(appId);
-};
-
-/**
- * Tests USB toast won't show up when ARC is disabled or the access has already
- * been granted.
- */
-testcase.fileDisplayUsbNoToast = async () => {
-  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
-
-  // Open Files app on local downloads.
-  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
-
-  // Mount USB volume in the Downloads window.
-  await sendTestMessage({name: 'mountFakeUsb'});
-
-  // Wait for the USB mount.
-  await remoteCall.waitForElement(appId, USB_VOLUME_QUERY);
-
-  // Disable ARC so that the toast UI won't be shown.
-  const preferences = {
-    arcEnabled: false,
-  };
-  await remoteCall.callRemoteTestUtil('setPreferences', null, [preferences]);
-
-  // Click to open the USB volume.
-  await remoteCall.waitAndClickElement(appId, USB_VOLUME_QUERY);
-
-  // Verify the toast UI never shows up.
-  await checkHiddenToast(appId);
-
-  // Navigate to My files.
-  await remoteCall.waitAndClickElement(appId, '[root-type-icon=\'my_files\']');
-
-  // Enable ARC and its storage access so that the toast UI won't be shown.
-  const preferences2 = {
-    arcEnabled: true,
-    arcRemovableMediaAccessEnabled: true,
-  };
-  await remoteCall.callRemoteTestUtil('setPreferences', null, [preferences2]);
-
-  // Navigate to the USB volume again.
-  await remoteCall.waitAndClickElement(appId, USB_VOLUME_QUERY);
-
-  // Verify the toast UI is still not shown.
-  await checkHiddenToast(appId);
 };
 
 /**

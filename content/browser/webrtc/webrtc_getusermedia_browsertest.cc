@@ -866,9 +866,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("setUpForAudioServiceCrash()");
 
   // Crash the audio service process.
-  audio::mojom::TestingApiPtr service_testing_api;
-  GetSystemConnector()->BindInterface(audio::mojom::kServiceName,
-                                      mojo::MakeRequest(&service_testing_api));
+  mojo::Remote<audio::mojom::TestingApi> service_testing_api;
+  GetSystemConnector()->Connect(
+      audio::mojom::kServiceName,
+      service_testing_api.BindNewPipeAndPassReceiver());
   service_testing_api->Crash();
 
   ExecuteJavascriptAndWaitForOk("verifyAfterAudioServiceCrash()");

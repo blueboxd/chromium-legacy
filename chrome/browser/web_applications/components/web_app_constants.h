@@ -7,6 +7,24 @@
 
 namespace web_app {
 
+// Install sources are listed in the order of priority (from top to bottom).
+//
+// This enum should be zero based: values are used as index in a bitset.
+// We don't use this enum values in prefs or metrics: enumerators can be
+// reordered. This enum is not strongly typed enum class: it supports implicit
+// conversion to int and <> comparison operators.
+namespace Source {
+enum Type {
+  kMinValue = 0,
+  kSystem = kMinValue,
+  kPolicy,
+  kWebAppStore,
+  kSync,
+  kDefault,
+  kMaxValue
+};
+}  // namespace Source
+
 // How the app will be launched after installation.
 enum class LaunchContainer {
   // When `kDefault` is used, the app will launch in a window if the site is

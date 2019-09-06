@@ -26,7 +26,7 @@ SyncStatus::SyncStatus()
       cryptographer_ready(false),
       crypto_has_pending_keys(false),
       has_keystore_key(false),
-      passphrase_type(PassphraseType::IMPLICIT_PASSPHRASE),
+      passphrase_type(PassphraseType::kImplicitPassphrase),
       num_entries_by_type(ModelType::NUM_ENTRIES, 0),
       num_to_delete_entries_by_type(ModelType::NUM_ENTRIES, 0) {}
 

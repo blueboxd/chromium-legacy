@@ -47,7 +47,7 @@ class SyncEncryptionHandler {
   class NigoriState;
 
   static constexpr PassphraseType kInitialPassphraseType =
-      PassphraseType::IMPLICIT_PASSPHRASE;
+      PassphraseType::kImplicitPassphrase;
 
   // All Observer methods are done synchronously from within a transaction and
   // on the sync thread.

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14854.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14845" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14806.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14799.2"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -26,14 +26,14 @@
                         </constraints>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="launchscreen_brand_name" translatesAutoresizingMaskIntoConstraints="NO" id="bAU-qs-X5w">
-                        <rect key="frame" x="153.5" y="807" width="107" height="35"/>
+                        <rect key="frame" x="153.5" y="807" width="107.00000000000003" height="35"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="107" id="0Mf-i7-mvo"/>
                             <constraint firstAttribute="height" constant="35" id="7Gs-G7-OR2"/>
                         </constraints>
                     </imageView>
                 </subviews>
-                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                 <constraints>
                     <constraint firstItem="K7H-Iv-QNk" firstAttribute="width" secondItem="tRS-Cx-RH3" secondAttribute="width" multiplier="0.381966" id="3hJ-Yo-1Tg"/>
                     <constraint firstItem="K7H-Iv-QNk" firstAttribute="height" secondItem="tRS-Cx-RH3" secondAttribute="height" multiplier="0.381966" id="962-tL-cOd"/>

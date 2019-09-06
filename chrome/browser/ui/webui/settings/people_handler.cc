@@ -204,24 +204,23 @@ base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
                                       base::Time passphrase_time) {
   DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
   switch (passphrase_type) {
-    case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+    case syncer::PassphraseType::kFrozenImplicitPassphrase:
       if (passphrase_time.is_null()) {
         return GetStringUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY);
       }
       return GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
                              base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::CUSTOM_PASSPHRASE:
+    case syncer::PassphraseType::kCustomPassphrase:
       if (passphrase_time.is_null()) {
         return GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY);
       }
       return GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
                              base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
-    case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
-    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
-    case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
+    case syncer::PassphraseType::kImplicitPassphrase:
+    case syncer::PassphraseType::kKeystorePassphrase:
+    case syncer::PassphraseType::kTrustedVaultPassphrase:
       break;
   }
   NOTREACHED();
@@ -235,16 +234,15 @@ base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
     return GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM);
   }
   switch (passphrase_type) {
-    case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+    case syncer::PassphraseType::kFrozenImplicitPassphrase:
       return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE,
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::CUSTOM_PASSPHRASE:
+    case syncer::PassphraseType::kCustomPassphrase:
       return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
-    case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
-    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
-    case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
+    case syncer::PassphraseType::kImplicitPassphrase:
+    case syncer::PassphraseType::kKeystorePassphrase:
+    case syncer::PassphraseType::kTrustedVaultPassphrase:
       break;
   }
   NOTREACHED();

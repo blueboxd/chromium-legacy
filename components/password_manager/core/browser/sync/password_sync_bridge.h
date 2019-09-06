@@ -58,6 +58,9 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
                                 delete_metadata_change_list) override;
 
+  static std::string ComputeClientTagForTesting(
+      const sync_pb::PasswordSpecificsData& password_data);
+
  private:
   // On MacOS it may happen that some passwords cannot be decrypted due to
   // modification of encryption key in Keychain (https://crbug.com/730625). This

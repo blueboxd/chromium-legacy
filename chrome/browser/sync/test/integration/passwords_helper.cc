@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -106,6 +107,13 @@ std::vector<std::unique_ptr<PasswordForm>> GetLogins(PasswordStore* store) {
   return consumer.WaitForResult();
 }
 
+std::vector<std::unique_ptr<PasswordForm>> GetAllLogins(PasswordStore* store) {
+  EXPECT_TRUE(store);
+  PasswordStoreConsumerHelper consumer;
+  store->GetAllLogins(&consumer);
+  return consumer.WaitForResult();
+}
+
 void RemoveLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(
@@ -130,8 +138,15 @@ PasswordStore* GetPasswordStore(int index) {
 }
 
 PasswordStore* GetVerifierPasswordStore() {
-  return PasswordStoreFactory::GetForProfile(
-             test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS).get();
+  return PasswordStoreFactory::GetForProfile(test()->verifier(),
+                                             ServiceAccessType::IMPLICIT_ACCESS)
+      .get();
+}
+
+PasswordStore* GetAccountPasswordStore(int index) {
+  return AccountPasswordStoreFactory::GetForProfile(
+             test()->GetProfile(index), ServiceAccessType::IMPLICIT_ACCESS)
+      .get();
 }
 
 bool ProfileContainsSamePasswordFormsAsVerifier(int index) {

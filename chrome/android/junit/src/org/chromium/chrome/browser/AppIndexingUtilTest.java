@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,7 +38,7 @@ public class AppIndexingUtilTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
     @Spy
-    private AppIndexingUtil mUtil = new AppIndexingUtil();
+    private AppIndexingUtil mUtil = new AppIndexingUtil(null);
     @Mock
     private AppIndexingReporter mReporter;
     @Mock
@@ -86,7 +85,6 @@ public class AppIndexingUtilTest {
 
         doReturn(1L).when(mUtil).getElapsedTime();
         mUtil.extractCopylessPasteMetadata(mTab);
-        verify(mReporter).reportWebPageView(eq("http://www.test.com"), eq("My neat website"));
         verifyNoMoreInteractions(mCopylessPaste);
         verifyNoMoreInteractions(mReporter);
     }

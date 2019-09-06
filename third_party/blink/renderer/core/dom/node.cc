@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -1310,8 +1311,24 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
 
   if (!InActiveDocument())
     return;
-  if (!IsContainerNode() && !IsTextNode())
-    return;
+  if (!GetComputedStyle()) {
+    // If we don't have a computed style, and our parent element does not have a
+    // computed style it's not necessary to mark this node for style recalc.
+    // TODO(crbug.com/972752): We should look at the flat tree parent here when
+    // doing flat tree recalc.
+    if (Element* parent = ParentOrShadowHostElement()) {
+      if (!parent->GetComputedStyle())
+        return;
+    } else if (GetDocument().documentElement() != this) {
+      // The root element does not have a parent computed style, but we still
+      // need to mark it for style recalc since it may change from display:none.
+      // Otherwise, the node is not in the flat tree, and we can return here.
+      // TODO(crbug.com/972752): We will not hit this code-path until we use the
+      // flat tree parent above since a non-slotted shadow host child will use
+      // its shadow host as the parent.
+      return;
+    }
+  }
 
   TRACE_EVENT_INSTANT1(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),

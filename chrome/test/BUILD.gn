@@ -5135,11 +5135,6 @@ test("unit_tests") {
     sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 
-  # Chrome desktop updater tests.
-  if (is_win || is_mac) {
-    deps += [ "//chrome/updater:updater_tests" ]
-  }
-
   if (enable_openscreen) {
     include_dirs = [ "//third_party/openscreen/src" ]
 

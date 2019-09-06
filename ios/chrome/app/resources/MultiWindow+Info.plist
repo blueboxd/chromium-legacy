@@ -14,7 +14,7 @@
 					<key>UISceneClassName</key>
 					<string>UIWindowScene</string>
 					<key>UISceneDelegateClassName</key>
-					<string>SceneController</string>
+					<string>SceneDelegate</string>
 					<key>UISceneConfigurationName</key>
 					<string>Default Configuration</string>
 					<key>UILaunchStoryboardName</key>

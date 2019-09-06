@@ -31,6 +31,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   gfx::Size AdjustSizeForDisplay(const gfx::Size& requested_size_in_pixels);
 
  private:
+  // Overridden from display::DisplayObserver via aura::WindowTreeHost:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
   // DesktopWindowTreeHostPlatform overrides:
   void AddAdditionalInitProperties(
       const Widget::InitParams& params,

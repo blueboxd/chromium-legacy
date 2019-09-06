@@ -21,8 +21,8 @@ namespace {
 
 using blink::scheduler::WebSchedulerTrackedFeature;
 
-// The number of document the BackForwardCache can hold per tab.
-static constexpr size_t kBackForwardCacheLimit = 3;
+// The number of pages the BackForwardCache can hold per tab.
+static constexpr size_t kBackForwardCacheLimit = 1;
 
 // Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
 constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {

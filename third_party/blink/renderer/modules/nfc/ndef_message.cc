@@ -59,7 +59,7 @@ NDEFMessage::NDEFMessage() = default;
 NDEFMessage::NDEFMessage(const device::mojom::blink::NDEFMessage& message)
     : url_(message.url) {
   for (wtf_size_t i = 0; i < message.data.size(); ++i) {
-    records_.push_back(MakeGarbageCollected<NDEFRecord>(message.data[i]));
+    records_.push_back(MakeGarbageCollected<NDEFRecord>(*message.data[i]));
   }
 }
 

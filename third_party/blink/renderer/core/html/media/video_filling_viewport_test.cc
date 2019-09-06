@@ -68,7 +68,7 @@ TEST_F(VideoFillingViewportTest, MostlyFillingViewport) {
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 
   ActivateViewportIntersectionMonitoring(element, false);
-  DoCompositeAndPropagate();
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 

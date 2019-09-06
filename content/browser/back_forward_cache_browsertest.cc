@@ -404,31 +404,31 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
   EXPECT_EQ(url_b, web_contents()->GetVisibleURL());
 }
 
-// Test documents are evicted from the BackForwardCache at some point.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheEviction) {
+// Test only 1 document is kept in the at a time BackForwardCache.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       CacheSizeLimitedToOneDocumentPerTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));  // BackForwardCache size is 0.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  // BackForwardCache is empty.
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));  // BackForwardCache size is 1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  // BackForwardCache contains only rfh_a.
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
 
-  // The number of document the BackForwardCache can hold per tab.
-  static constexpr size_t kBackForwardCacheLimit = 3;
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  // BackForwardCache contains only rfh_b.
+  delete_observer_rfh_a.WaitUntilDeleted();
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
 
-  for (size_t i = 2; i < kBackForwardCacheLimit; ++i) {
-    EXPECT_TRUE(NavigateToURL(shell(), i % 2 ? url_b : url_a));
-    // After |i+1| navigations, |i| documents went into the BackForwardCache.
-    // When |i| is greater than the BackForwardCache size limit, they are
-    // evicted:
-    EXPECT_EQ(i >= kBackForwardCacheLimit + 1, delete_observer_rfh_a.deleted());
-    EXPECT_EQ(i >= kBackForwardCacheLimit + 2, delete_observer_rfh_b.deleted());
-  }
+  // If/when the cache size is increased, this can be tested iteratively, see
+  // deleted code in: https://crrev.com/c/1782902.
 }
 
 // Similar to BackForwardCacheBrowserTest.SubframeSurviveCache*
@@ -563,63 +563,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache3) {
   // Even after a new IPC round trip with the renderer, a4 must still be alive.
   EXPECT_EQ("I am alive", EvalJs(a4, "window.alive"));
   EXPECT_FALSE(a4_observer.deleted());
-}
-
-// Similar to BackForwardCacheBrowserTest.SubframeSurviveCache*
-// Test case: a1(b2) -> b3 -> a4 -> b5 -> a1(b2).
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache4) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_ab(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-
-  std::vector<RenderFrameDeletedObserver*> rfh_observer;
-
-  // 1) Navigate to a1(b2).
-  EXPECT_TRUE(NavigateToURL(shell(), url_ab));
-  RenderFrameHostImpl* a1 = current_frame_host();
-  RenderFrameHostImpl* b2 = a1->child_at(0)->current_frame_host();
-  RenderFrameDeletedObserver a1_observer(a1), b2_observer(b2);
-  rfh_observer.insert(rfh_observer.end(), {&a1_observer, &b2_observer});
-  EXPECT_TRUE(ExecJs(b2, "window.alive = 'I am alive';"));
-
-  // 2) Navigate to b3.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  RenderFrameHostImpl* b3 = current_frame_host();
-  RenderFrameDeletedObserver b3_observer(b3);
-  rfh_observer.push_back(&b3_observer);
-  ASSERT_THAT(rfh_observer, Each(Not(Deleted())));
-  EXPECT_THAT(Elements({a1, b2}), Each(InBackForwardCache()));
-  EXPECT_THAT(b3, Not(InBackForwardCache()));
-
-  // 3) Navigate to a4.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  RenderFrameHostImpl* a4 = current_frame_host();
-  RenderFrameDeletedObserver a4_observer(a4);
-  rfh_observer.push_back(&a4_observer);
-  ASSERT_THAT(rfh_observer, Each(Not(Deleted())));
-
-  // 4) Navigate to b5
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  RenderFrameHostImpl* b5 = current_frame_host();
-  RenderFrameDeletedObserver b5_observer(b5);
-  rfh_observer.push_back(&b5_observer);
-  ASSERT_THAT(rfh_observer, Each(Not(Deleted())));
-  EXPECT_THAT(Elements({a1, b2, b3, a4}), Each(InBackForwardCache()));
-  EXPECT_THAT(b5, Not(InBackForwardCache()));
-
-  // 3) Go back to a1(b2).
-  web_contents()->GetController().GoToOffset(-3);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_EQ(a1, current_frame_host());
-  ASSERT_THAT(rfh_observer, Each(Not(Deleted())));
-  EXPECT_THAT(Elements({b3, a4, b5}), Each(InBackForwardCache()));
-  EXPECT_THAT(Elements({a1, b2}), Each(Not(InBackForwardCache())));
-
-  // Even after a new IPC round trip with the renderer, b2 must still be alive.
-  EXPECT_EQ("I am alive", EvalJs(b2, "window.alive"));
-  EXPECT_FALSE(b2_observer.deleted());
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,

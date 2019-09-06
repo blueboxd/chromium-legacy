@@ -172,7 +172,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      /*worker=*/nullptr, &cryptographer, PassphraseType::IMPLICIT_PASSPHRASE,
+      /*worker=*/nullptr, &cryptographer, PassphraseType::kImplicitPassphrase,
       &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
@@ -233,7 +233,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
-      /*worker=*/nullptr, &cryptographer, PassphraseType::CUSTOM_PASSPHRASE,
+      /*worker=*/nullptr, &cryptographer, PassphraseType::kCustomPassphrase,
       &debug_info_emitter,
       /*only_commit_specifics=*/false);
 

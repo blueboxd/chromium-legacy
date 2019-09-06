@@ -15,6 +15,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       rect_({PhysicalOffset(), text.Size()}),
       type_(kText),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
+      is_flow_control_(text.IsFlowControl()),
       is_hidden_for_paint_(false) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
 #if DCHECK_IS_ON()
@@ -64,6 +65,33 @@ NGFragmentItem::~NGFragmentItem() {
 PhysicalRect NGFragmentItem::SelfInkOverflow() const {
   // TODO(kojii): Implement.
   return LocalRect();
+}
+
+const ShapeResultView* NGFragmentItem::TextShapeResult() const {
+  if (Type() == kText)
+    return text_.shape_result.get();
+  if (Type() == kGeneratedText)
+    return generated_text_.shape_result.get();
+  NOTREACHED();
+  return nullptr;
+}
+
+unsigned NGFragmentItem::StartOffset() const {
+  if (Type() == kText)
+    return text_.start_offset;
+  if (Type() == kGeneratedText)
+    return 0;
+  NOTREACHED();
+  return 0;
+}
+
+unsigned NGFragmentItem::EndOffset() const {
+  if (Type() == kText)
+    return text_.end_offset;
+  if (Type() == kGeneratedText)
+    return generated_text_.text.length();
+  NOTREACHED();
+  return 0;
 }
 
 StringView NGFragmentItem::Text(const NGFragmentItems& items) const {

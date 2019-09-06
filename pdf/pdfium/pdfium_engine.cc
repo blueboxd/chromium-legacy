@@ -1984,7 +1984,11 @@ void PDFiumEngine::HandleAccessibilityAction(
       pp::Rect target_point_screen = GetScreenRect(target_rect);
       client_->ScrollBy(target_point_screen.point());
     } break;
+    // TODO(https://crbug.com/981448): Handle default action case.
+    case PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION:
+      break;
     default:
+      NOTREACHED();
       break;
   }
 }

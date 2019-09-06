@@ -64,7 +64,7 @@ class UssMigratorTest : public ::testing::Test {
     processor_ = processor.get();
     worker_ = std::make_unique<ModelTypeWorker>(
         kModelType, sync_pb::ModelTypeState(), false, /*cryptographer=*/nullptr,
-        PassphraseType::IMPLICIT_PASSPHRASE, &nudge_handler_,
+        PassphraseType::kImplicitPassphrase, &nudge_handler_,
         std::move(processor), &debug_emitter_, &cancelation_signal_);
   }
 

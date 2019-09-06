@@ -20,6 +20,8 @@
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -45,13 +47,16 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface BrowserCoordinator () <FormInputAccessoryCoordinatorDelegate,
+@interface BrowserCoordinator () <AutofillSecurityAlertPresenter,
+                                  FormInputAccessoryCoordinatorNavigator,
                                   RepostFormTabHelperDelegate,
                                   URLLoadingServiceDelegate,
                                   WebStateListObserving>
@@ -83,6 +88,14 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
+
+// The object in charge of interacting with the web view. Used to fill the data
+// in the forms.
+@property(nonatomic, strong) ManualFillInjectionHandler* injectionHandler;
+
+// Coordinator in charge of the presenting password autofill options as a modal.
+@property(nonatomic, strong)
+    ManualFillAllPasswordCoordinator* allPasswordCoordinator;
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
@@ -247,11 +260,15 @@
                     webStateList:self.tabModel.webStateList];
   [self.ARQuickLookCoordinator start];
 
+  self.injectionHandler = [[ManualFillInjectionHandler alloc]
+        initWithWebStateList:self.tabModel.webStateList
+      securityAlertPresenter:self];
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
-                    webStateList:self.tabModel.webStateList];
-  self.formInputAccessoryCoordinator.delegate = self;
+                    webStateList:self.tabModel.webStateList
+                injectionHandler:self.injectionHandler];
+  self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
   self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
@@ -297,6 +314,9 @@
 
 // Stops child coordinators.
 - (void)stopChildCoordinators {
+  [self.allPasswordCoordinator stop];
+  self.allPasswordCoordinator = nil;
+
   // TODO(crbug.com/906541) : AppLauncherCoordinator is not a subclass of
   // ChromeCoordinator, and does not have a |-stop| method.
   self.appLauncherCoordinator = nil;
@@ -335,6 +355,31 @@
 
   [self.translateInfobarCoordinator stop];
   self.translateInfobarCoordinator = nil;
+}
+
+#pragma mark - AutofillSecurityAlertPresenter
+
+- (void)presentSecurityWarningAlertWithText:(NSString*)body {
+  NSString* alertTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
+  NSString* defaultActionTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
+
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:alertTitle
+                                          message:body
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* defaultAction =
+      [UIAlertAction actionWithTitle:defaultActionTitle
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* action){
+                             }];
+  [alert addAction:defaultAction];
+  UIViewController* presenter = self.viewController;
+  while (presenter.presentedViewController) {
+    presenter = presenter.presentedViewController;
+  }
+  [presenter presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - BrowserCoordinatorCommands
@@ -377,7 +422,7 @@
   [self.recentTabsCoordinator start];
 }
 
-#pragma mark - FormInputAccessoryCoordinatorDelegate
+#pragma mark - FormInputAccessoryCoordinatorNavigator
 
 - (void)openPasswordSettings {
   [self.applicationCommandHandler
@@ -392,6 +437,14 @@
 - (void)openCreditCardSettings {
   [self.applicationCommandHandler
       showCreditCardSettingsFromViewController:self.viewController];
+}
+
+- (void)openAllPasswordsPicker {
+  self.allPasswordCoordinator = [[ManualFillAllPasswordCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState
+                injectionHandler:self.injectionHandler];
+  [self.allPasswordCoordinator start];
 }
 
 #pragma mark - RepostFormTabHelperDelegate

@@ -15,7 +15,6 @@
 #include "media/base/content_decryption_module.h"
 
 namespace media {
-class FuchsiaDecryptor;
 
 class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
  public:
@@ -86,8 +85,6 @@ class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
   SessionCallbacks session_callbacks_;
-
-  std::unique_ptr<FuchsiaDecryptor> decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);
 };

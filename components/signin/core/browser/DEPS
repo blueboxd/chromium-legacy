@@ -1,3 +1,5 @@
 include_rules = [
   "+components/metrics",
+  "+components/signin/public/base",
+  "+components/signin/public/identity_manager",
 ]

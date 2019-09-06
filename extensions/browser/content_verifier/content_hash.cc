@@ -118,9 +118,17 @@ void ContentHash::ForceBuildComputedHashes(
   std::move(created_callback).Run(this, is_cancelled && is_cancelled.Run());
 }
 
-const VerifiedContents& ContentHash::verified_contents() const {
+ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
+    const base::FilePath& relative_path,
+    const std::string* root) const {
   DCHECK(status_ >= Status::kHasVerifiedContents && verified_contents_);
-  return *verified_contents_;
+  if (!verified_contents_->HasTreeHashRoot(relative_path))
+    return TreeHashVerificationResult::NO_ENTRY;
+
+  if (!root || !verified_contents_->TreeHashRootEquals(relative_path, *root))
+    return TreeHashVerificationResult::HASH_MISMATCH;
+
+  return TreeHashVerificationResult::SUCCESS;
 }
 
 const ComputedHashes::Reader& ContentHash::computed_hashes() const {

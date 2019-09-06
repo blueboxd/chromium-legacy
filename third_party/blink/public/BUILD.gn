@@ -350,7 +350,6 @@ source_set("blink_headers") {
     "platform/web_touch_action.h",
     "platform/web_touch_event.h",
     "platform/web_touch_point.h",
-    "platform/web_transmission_encoding_info_handler.h",
     "platform/web_url.h",
     "platform/web_url_error.h",
     "platform/web_url_load_timing.h",

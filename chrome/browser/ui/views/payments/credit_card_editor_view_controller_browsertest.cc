@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -787,8 +788,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
             request->state()->selected_instrument()->GetSublabel());
 }
 
+// FLAKY on Windows: crbug.com/1001365
+#if defined(OS_WIN)
+#define MAYBE_CreateNewBillingAddress DISABLED_CreateNewBillingAddress
+#else
+#define MAYBE_CreateNewBillingAddress CreateNewBillingAddress
+#endif
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
-                       CreateNewBillingAddress) {
+                       MAYBE_CreateNewBillingAddress) {
   NavigateTo("/payment_request_no_shipping_test.html");
   autofill::CreditCard card = autofill::test::GetCreditCard();
   // Make sure to clear billing address and have none available.

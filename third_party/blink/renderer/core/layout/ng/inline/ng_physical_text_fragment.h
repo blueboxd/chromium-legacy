@@ -24,25 +24,6 @@ struct PhysicalRect;
 
 enum class AdjustMidCluster;
 
-// In CSS Writing Modes Levle 4, line orientation for layout and line
-// orientation for paint are not always the same.
-//
-// Specifically, 'sideways-lr' typesets as if lines are horizontal flow, but
-// rotates counterclockwise.
-enum class NGLineOrientation {
-  // Lines are horizontal.
-  kHorizontal,
-  // Lines are vertical, rotated clockwise. Inside of the line, it may be
-  // typeset using vertical characteristics, horizontal characteristics, or
-  // mixed. Lines flow left to right, or right to left.
-  kClockWiseVertical,
-  // Lines are vertical, rotated counterclockwise. Inside of the line is typeset
-  // as if horizontal flow. Lines flow left to right.
-  kCounterClockWiseVertical
-
-  // When adding new values, ensure NGPhysicalTextFragment has enough bits.
-};
-
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
   enum NGTextType {
@@ -91,11 +72,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
 
-  NGLineOrientation LineOrientation() const {
-    return static_cast<NGLineOrientation>(line_orientation_);
-  }
+  WritingMode GetWritingMode() const { return Style().GetWritingMode(); }
   bool IsHorizontal() const {
-    return LineOrientation() == NGLineOrientation::kHorizontal;
+    return IsHorizontalWritingMode(GetWritingMode());
   }
 
   // Compute the inline position from text offset, in logical coordinate

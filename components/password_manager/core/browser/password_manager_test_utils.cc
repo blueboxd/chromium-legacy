@@ -60,6 +60,7 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
     form->federation_origin =
         url::Origin::Create(GURL("https://accounts.google.com/login"));
   }
+  form->from_store = PasswordForm::Store::kProfileStore;
   return form;
 }
 

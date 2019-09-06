@@ -263,7 +263,7 @@ class JSONTraceExporter {
   StringBuffer out_;
   bool has_output_first_event_ = false;
   bool has_output_json_preamble_ = false;
-  std::string legacy_system_trace_events_;
+  std::string legacy_json_trace_events_;
   std::string label_filter_;
   std::string legacy_system_ftrace_output_;
   std::unique_ptr<base::DictionaryValue> metadata_;

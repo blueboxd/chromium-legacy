@@ -98,7 +98,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   params.max_server_configs_stored_in_properties =
       data_provider.ConsumeBool() ? 1 : 0;
   params.close_sessions_on_ip_change = data_provider.ConsumeBool();
-  params.mark_quic_broken_when_network_blackholes = data_provider.ConsumeBool();
   params.allow_server_migration = data_provider.ConsumeBool();
   params.race_cert_verification = data_provider.ConsumeBool();
   params.estimate_initial_rtt = data_provider.ConsumeBool();

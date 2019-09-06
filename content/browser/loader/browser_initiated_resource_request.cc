@@ -37,9 +37,7 @@ bool IsFetchMetadataDestinationEnabled() {
 
 void SetFetchMetadataHeadersForBrowserInitiatedRequest(
     network::ResourceRequest* resource_request) {
-  // TODO(964053, 989502): These headers ought to be restricted to secure
-  // transport.
-  if (IsFetchMetadataEnabled()) {
+  if (IsFetchMetadataEnabled() && IsOriginSecure(resource_request->url)) {
     // Sec-Fetch-Mode exposes request's mode.
     // https://w3c.github.io/webappsec-fetch-metadata/#sec-fetch-mode-header
     resource_request->headers.SetHeaderIfMissing(

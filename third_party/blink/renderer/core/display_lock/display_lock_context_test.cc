@@ -1071,7 +1071,8 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   // Try to lock an element that was moved from a template to a document.
   auto* document_child =
       To<Element>(GetDocument().adoptNode(child, ASSERT_NO_EXCEPTION));
-  GetDocument().getElementById("container")->appendChild(document_child);
+  auto* container = GetDocument().getElementById("container");
+  container->appendChild(document_child);
 
   {
     ScriptState::Scope scope(script_state);
@@ -1084,12 +1085,11 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
   EXPECT_TRUE(document_child->getDisplayLockForBindings()->IsLocked());
 
-  GetDocument()
-      .getElementById("container")
-      ->setAttribute("style", "display: block;");
+  container->setAttribute("style", "display: block;");
   document_child->setAttribute("style", "color: red;");
 
-  EXPECT_TRUE(document_child->NeedsStyleRecalc());
+  EXPECT_TRUE(container->NeedsStyleRecalc());
+  EXPECT_FALSE(document_child->NeedsStyleRecalc());
 
   UpdateAllLifecyclePhasesForTest();
 

@@ -302,7 +302,7 @@ class SyncFaviconCacheTest : public testing::Test {
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   testing::NiceMock<favicon::MockFaviconService> mock_favicon_service_;
   FaviconCache cache_;
 
@@ -313,7 +313,8 @@ class SyncFaviconCacheTest : public testing::Test {
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
-    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+    : task_environment_(
+          base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
       cache_(&mock_favicon_service_, nullptr, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
       sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(

@@ -114,10 +114,10 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
     if (IsFormatSupported(hardware_encoder_factory_.get(), format)) {
       hardware_encoder =
           base::EqualsCaseInsensitiveASCII(format.name.c_str(),
-                                           cricket::kVp8CodecName)
-              ? std::make_unique<webrtc::SimulcastEncoderAdapter>(
-                    hardware_encoder_factory_.get(), format)
-              : hardware_encoder_factory_->CreateVideoEncoder(format);
+                                           cricket::kVp9CodecName)
+              ? hardware_encoder_factory_->CreateVideoEncoder(format)
+              : std::make_unique<webrtc::SimulcastEncoderAdapter>(
+                    hardware_encoder_factory_.get(), format);
     }
 
     return Wrap(std::move(software_encoder), std::move(hardware_encoder));

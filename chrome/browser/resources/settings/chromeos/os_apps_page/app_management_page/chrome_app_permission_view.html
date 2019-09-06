@@ -82,10 +82,10 @@
         <div id="more-settings"
           class="permission-card-row separated-row header-text clickable"
           on-click="onClickExtensionsSettingsButton_">
-          <div class="header-text">$i18n{moreSettings}</div>
+          <div id="label" class="header-text">$i18n{moreSettings}</div>
           <div class="permission-row-controls">
-            <cr-icon-button class="native-settings-icon icon-external"
-              tabindex="0">
+            <cr-icon-button class="native-settings-icon icon-external" role="link"
+              tabindex="0" aria-labelledby="label">
             </cr-icon-button>
           </div>
         </div>

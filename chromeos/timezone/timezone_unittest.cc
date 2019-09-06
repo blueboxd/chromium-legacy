@@ -159,7 +159,7 @@ class TimeZoneReceiver {
 
 class TimeZoneTest : public testing::Test {
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(TimeZoneTest, ResponseOK) {

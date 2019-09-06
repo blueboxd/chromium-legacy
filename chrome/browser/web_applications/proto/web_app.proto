@@ -22,6 +22,16 @@ enum LaunchContainerProto {
   WINDOW = 2;
 }
 
+// A set to track simultaneous installs and uninstalls from multiple install
+// sources.
+message SourcesProto {
+  required bool system = 1;
+  required bool policy = 2;
+  required bool web_app_store = 3;
+  required bool sync = 4;
+  required bool default = 5;
+}
+
 // WebApp class data.
 // This should be a superset for WebAppSpecifics in
 // components/sync/protocol/web_app_specifics.proto
@@ -36,7 +46,10 @@ message WebAppProto {
   // Local data members, not to be synced:
   optional string description = 6;
   optional string scope = 7;
-  required bool is_locally_installed = 8;
-  // List of icon infos.
-  repeated WebAppIconInfoProto icons = 9;
+
+  required SourcesProto sources = 8;
+  required bool is_locally_installed = 9;
+
+  // A list of icon infos.
+  repeated WebAppIconInfoProto icons = 10;
 }

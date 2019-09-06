@@ -94,14 +94,16 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
       IMEEngineHandlerInterface::InputContext input_context);
   virtual bool ConvertInputContextAutoComplete(
       IMEEngineHandlerInterface::InputContext input_context);
-  virtual extensions::api::input_ime::AutoCapitalizeType
-  ConvertInputContextAutoCapitalize(
-      IMEEngineHandlerInterface::InputContext input_context);
   virtual bool ConvertInputContextSpellCheck(
       IMEEngineHandlerInterface::InputContext input_context);
 
   std::string extension_id_;
   Profile* profile_;
+
+ private:
+  extensions::api::input_ime::AutoCapitalizeType
+  ConvertInputContextAutoCapitalize(
+      IMEEngineHandlerInterface::InputContext input_context);
 
   DISALLOW_COPY_AND_ASSIGN(ImeObserver);
 };

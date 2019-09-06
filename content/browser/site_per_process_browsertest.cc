@@ -4097,6 +4097,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessEmbedderCSPEnforcementBrowserTest,
     NavigateFrameToURL(child, urls[i]);
     EXPECT_EQ(csp_values[i], child->frame_owner_properties().required_csp);
     // TODO(amalika): add checks that the CSP replication takes effect
+
+    const url::Origin child_origin =
+        child->current_frame_host()->GetLastCommittedOrigin();
+    // TODO(https://crbug.com/1000804): Enable check once bug is fixed.
+    // EXPECT_TRUE(child_origin.opaque());
+    EXPECT_EQ(url::Origin::Create(urls[i].GetOrigin())
+                  .GetTupleOrPrecursorTupleIfOpaque(),
+              child_origin.GetTupleOrPrecursorTupleIfOpaque());
   }
 }
 
@@ -7136,7 +7144,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     load_observer.Wait();
 
     // The blocked frame's origin should become unique.
-    EXPECT_EQ("null", root->child_at(0)->current_origin().Serialize());
+    const url::Origin child_origin =
+        root->child_at(0)->current_frame_host()->GetLastCommittedOrigin();
+    EXPECT_TRUE(child_origin.opaque());
+    EXPECT_EQ(url::Origin::Create(blocked_url.GetOrigin())
+                  .GetTupleOrPrecursorTupleIfOpaque(),
+              child_origin.GetTupleOrPrecursorTupleIfOpaque());
 
     // X-Frame-Options and CSP frame-ancestors behave differently. XFO commits
     // an error page, while CSP commits a "data:," URL.

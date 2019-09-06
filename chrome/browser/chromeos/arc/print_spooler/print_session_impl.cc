@@ -9,11 +9,13 @@
 #include "ash/public/cpp/arc_custom_tab.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_util.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -71,8 +73,8 @@ PrintSessionImpl::~PrintSessionImpl() {
     return;
   }
 
-  if (!base::DeleteFile(file_path, false))
-    LOG(ERROR) << "Failed to delete print document.";
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(&DeletePrintDocument, file_path));
 }
 
 void PrintSessionImpl::Close() {

@@ -7722,6 +7722,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="FailureLifecyclesFeaturePolicyOptOut">
+    <obsolete>
+      Deprecated 08/2019. Replaced with FailureOriginTrialOptOut.
+    </obsolete>
     <summary>
       Boolean indicating that the tab explicitly opted out of the intervention
       via feature policy.
@@ -7805,6 +7808,18 @@ be describing additional metrics about the same event.
       currently visible.
     </summary>
   </metric>
+  <metric name="FailureOriginTrialOptOut">
+    <summary>
+      Boolean indicating that the tab explicitly opted out of the intervention
+      via origin trial.
+    </summary>
+  </metric>
+  <metric name="FailureOriginTrialUnknown">
+    <summary>
+      Boolean indicating that the tab did not report its origin trial
+      opt-in/opt-out yet.
+    </summary>
+  </metric>
   <metric name="LifecycleStateChangeReason">
     <summary>
       The reason the lifecycle state change was attempted. This corresponds to
@@ -7847,9 +7862,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SuccessLifecyclesFeaturePolicyOptIn">
+    <obsolete>
+      Deprecated 08/2019. Replaced with SuccessOriginTrialOptIn.
+    </obsolete>
     <summary>
       Boolean indicating that the tab explicitly opted in to the intervention
       via feature policy.
+    </summary>
+  </metric>
+  <metric name="SuccessOriginTrialOptIn">
+    <summary>
+      Boolean indicating that the tab explicitly opted in to the intervention
+      via origin trial.
     </summary>
   </metric>
   <metric name="TimeSinceNavigationMs">

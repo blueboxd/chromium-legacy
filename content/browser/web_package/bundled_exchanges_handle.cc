@@ -152,19 +152,16 @@ class BundledExchangesHandle::PrimaryURLRedirectLoader final
   DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
 };
 
-BundledExchangesHandle::BundledExchangesHandle()
-    : BundledExchangesHandle(BundledExchangesSource()) {}
+BundledExchangesHandle::BundledExchangesHandle() {}
 
 BundledExchangesHandle::BundledExchangesHandle(
-    const BundledExchangesSource& bundled_exchanges_source)
-    : source_(bundled_exchanges_source) {
+    std::unique_ptr<BundledExchangesSource> bundled_exchanges_source)
+    : source_(std::move(bundled_exchanges_source)),
+      reader_(std::make_unique<BundledExchangesReader>(*source_)) {
+  DCHECK(source_->is_trusted());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (bundled_exchanges_source.IsValid()) {
-    reader_ =
-        std::make_unique<BundledExchangesReader>(bundled_exchanges_source);
-    reader_->ReadMetadata(base::BindOnce(
-        &BundledExchangesHandle::OnMetadataReady, weak_factory_.GetWeakPtr()));
-  }
+  reader_->ReadMetadata(base::BindOnce(&BundledExchangesHandle::OnMetadataReady,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 BundledExchangesHandle::~BundledExchangesHandle() {
@@ -175,10 +172,9 @@ std::unique_ptr<NavigationLoaderInterceptor>
 BundledExchangesHandle::CreateInterceptor() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return std::make_unique<Interceptor>(
-      source_.IsValid()
-          ? base::BindRepeating(&BundledExchangesHandle::CreateURLLoader,
-                                weak_factory_.GetWeakPtr())
-          : base::NullCallback());
+      reader_ ? base::BindRepeating(&BundledExchangesHandle::CreateURLLoader,
+                                    weak_factory_.GetWeakPtr())
+              : base::NullCallback());
 }
 
 void BundledExchangesHandle::CreateURLLoaderFactory(
@@ -199,9 +195,7 @@ void BundledExchangesHandle::CreateURLLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
-  DCHECK(source_.is_trusted);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (metadata_error_) {
     client->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_BUNDLED_EXCHANGES));
@@ -210,7 +204,7 @@ void BundledExchangesHandle::CreateURLLoader(
 
   if (!url_loader_factory_) {
     // This must be the first request to the bundled exchange file.
-    DCHECK(source_.Match(resource_request.url));
+    DCHECK_EQ(source_->url(), resource_request.url);
     pending_create_url_loader_task_ = base::Bind(
         &BundledExchangesHandle::CreateURLLoader, base::Unretained(this),
         resource_request, base::Passed(&request), base::Passed(&client));
@@ -220,7 +214,7 @@ void BundledExchangesHandle::CreateURLLoader(
   // Currently |source_| must be a local file. And the bundle's primary URL
   // can't be a local file URL. So while handling redirected request to the
   // primary URL, |resource_request.url| must not be same as the |source|'s URL.
-  if (!source_.Match(resource_request.url)) {
+  if (source_->url() != resource_request.url) {
     url_loader_factory_->CreateLoaderAndStart(
         std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
         resource_request, std::move(client),

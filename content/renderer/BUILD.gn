@@ -220,8 +220,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/stun_field_trial.h",
     "media/webrtc/transceiver_state_surfacer.cc",
     "media/webrtc/transceiver_state_surfacer.h",
-    "media/webrtc/transmission_encoding_info_handler.cc",
-    "media/webrtc/transmission_encoding_info_handler.h",
     "media/webrtc/webrtc_media_stream_track_adapter.cc",
     "media/webrtc/webrtc_media_stream_track_adapter.h",
     "media/webrtc/webrtc_media_stream_track_adapter_map.cc",

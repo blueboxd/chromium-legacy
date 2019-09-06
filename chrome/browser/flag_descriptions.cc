@@ -2821,8 +2821,8 @@ const char kNtpRealboxDescription[] =
 const char kEnableImprovedCookieControlsName[] =
     "Enable improved cookie controls UI";
 const char kEnableImprovedCookieControlsDescription[] =
-    "Enables third-party cookie blocking and an improved cookie controls UI in "
-    "incognito mode.";
+    "Improved UI in Incognito mode for the existing third-party cookie "
+    "blocking.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =

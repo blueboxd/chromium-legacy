@@ -2715,10 +2715,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(in_picture_in_picture);
 }
 
+// TODO(http://crbug/1001249): flaky.
 // Check that Auto Picture-in-Picture applies only to the video element whose
 // autoPictureInPicture attribute was set most recently
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
-                       AutoPictureInPictureAttributeApplies) {
+                       DISABLED_AutoPictureInPictureAttributeApplies) {
   InstallAndLaunchPWA();
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),

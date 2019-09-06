@@ -11,6 +11,7 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
@@ -34,7 +35,7 @@ initWithBaseViewController:(UIViewController*)viewController
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
-    _manualFillInjectionHandler = injectionHandler;
+    _injectionHandler = injectionHandler;
   }
   return self;
 }

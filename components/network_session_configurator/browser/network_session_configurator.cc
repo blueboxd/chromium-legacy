@@ -191,14 +191,6 @@ bool ShouldEnableQuicProxiesForHttpsUrls(
       "true");
 }
 
-bool ShouldMarkQuicBrokenWhenNetworkBlackholes(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "mark_quic_broken_when_network_blackholes"),
-      "true");
-}
-
 bool ShouldRetryWithoutAltSvcOnQuicErrors(
     const VariationParameters& quic_trial_params) {
   return !base::LowerCaseEqualsASCII(
@@ -483,8 +475,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
   params->enable_quic =
       ShouldEnableQuic(quic_trial_group, quic_trial_params,
                        is_quic_force_disabled, is_quic_force_enabled);
-  params->quic_params.mark_quic_broken_when_network_blackholes =
-      ShouldMarkQuicBrokenWhenNetworkBlackholes(quic_trial_params);
 
   params->enable_server_push_cancellation =
       ShouldEnableServerPushCancelation(quic_trial_params);

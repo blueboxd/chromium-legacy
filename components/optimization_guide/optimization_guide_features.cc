@@ -59,7 +59,10 @@ size_t MaxHintsFetcherTopHostBlacklistSize() {
   // hosts on the blacklist are meant to cover the case that the engagement
   // scores on some of the top N host engagement scores decay and they fall out
   // of the top N.
-  return 2 * MaxHostsForOptimizationGuideServiceHintsFetch();
+  return GetFieldTrialParamByFeatureAsInt(features::kOptimizationHintsFetching,
+                                          "top_host_blacklist_size_multiplier",
+                                          2) *
+         MaxHostsForOptimizationGuideServiceHintsFetch();
 }
 
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {

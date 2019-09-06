@@ -81,7 +81,7 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
       const rtc::SocketAddress& remote_address,
       const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      int opts) override;
+      const rtc::PacketSocketTcpOptions& opts) override;
   rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
   // FakeNetworkDispatcher::Node interface.

@@ -77,7 +77,7 @@ initWithBaseViewController:(UIViewController*)viewController
 
     _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
     _cardMediator.navigationDelegate = self;
-    _cardMediator.contentInjector = self.manualFillInjectionHandler;
+    _cardMediator.contentInjector = self.injectionHandler;
     _cardMediator.consumer = _cardViewController;
 
     _cardRequester = [[ManualFillFullCardRequester alloc]

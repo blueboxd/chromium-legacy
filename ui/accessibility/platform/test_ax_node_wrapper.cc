@@ -587,9 +587,6 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kColorWell:
       return base::ASCIIToUTF16("color picker");
 
-    case ax::mojom::Role::kContentInfo:
-      return base::ASCIIToUTF16("content information");
-
     case ax::mojom::Role::kDate:
       return base::ASCIIToUTF16("date picker");
 

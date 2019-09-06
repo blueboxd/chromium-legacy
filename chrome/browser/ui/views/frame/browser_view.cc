@@ -832,9 +832,16 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   bool change_tab_contents =
       contents_web_view_->web_contents() != new_contents;
 
+#if defined(OS_MACOSX)
+  // Widget::IsActive is inconsistent between Mac and Aura, so don't check for
+  // it on Mac. The check is also unnecessary for Mac, since restoring focus
+  // won't activate the widget on that platform.
+  bool will_restore_focus =
+      !browser_->tab_strip_model()->closing_all() && GetWidget()->IsVisible();
+#else
   bool will_restore_focus = !browser_->tab_strip_model()->closing_all() &&
                             GetWidget()->IsActive() && GetWidget()->IsVisible();
-
+#endif
   // Update various elements that are interested in knowing the current
   // WebContents.
 

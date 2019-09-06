@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/test/browser_test_utils.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 class IntentPickerBubbleViewBrowserTest
@@ -23,8 +24,10 @@ class IntentPickerBubbleViewBrowserTest
       public ::testing::WithParamInterface<std::string> {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kIntentPicker);
-
+    // TODO(schenney): Stop disabling Paint Holding. crbug.com/1001189
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIntentPicker},
+        {blink::features::kAvoidFlashBetweenNavigation});
     extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
   }
 

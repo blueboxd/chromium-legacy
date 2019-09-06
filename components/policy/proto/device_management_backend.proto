@@ -2114,14 +2114,13 @@ message SamlParametersProto {
   // Auth Session ID which the client is supposed to use in the subsequent
   // DMServer request (to be sent after SAML flow completes).
   optional string auth_session_id = 2;
-  // URL that ends the SAML flow.
-  optional string auth_acl_url = 3;
 }
 
-// Gets URLs to the SAML IdP authentication flow for using it with public
+// Gets a URL to the SAML IdP authentication flow for using it with public
 // SAML session. Sent when a user logs in to a SAML public session account.
 message PublicSamlUserRequest {
-  // An identifier for the server IdP.
+  // Identifier for the public saml account. Same as
+  // DeviceLocalAccountInfoProto.account_id.
   optional string account_id = 1;
 }
 

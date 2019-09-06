@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/filename_util.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -158,8 +159,9 @@ class MockBundledExchangesReaderFactoryImpl final
       return nullptr;
     }
 
-    BundledExchangesSource source(temp_file_path_);
-    auto reader = std::make_unique<BundledExchangesReader>(source);
+    auto source = BundledExchangesSource::CreateFromTrustedFileUrl(
+        net::FilePathToFileURL(temp_file_path_));
+    auto reader = std::make_unique<BundledExchangesReader>(*source);
 
     std::unique_ptr<MockParserFactory> factory =
         std::make_unique<MockParserFactory>();

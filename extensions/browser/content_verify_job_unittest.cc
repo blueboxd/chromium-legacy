@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/version.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -266,6 +267,116 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
     EXPECT_EQ(ContentVerifyJob::NONE,
               RunContentVerifyJob(*extension.get(), unexpected_folder_path,
                                   empty_contents));
+  }
+}
+
+namespace {
+
+void WriteIncorrectComputedHashes(const base::FilePath& extension_path,
+                                  const base::FilePath& resource_path) {
+  // It is important that correct computed_hashes.json already exists, because
+  // we don't want to modify it while it is being created. "source_all.zip"
+  // ensures we already have it.
+  ASSERT_TRUE(
+      base::PathExists(file_util::GetComputedHashesPath(extension_path)));
+
+  base::DeleteFile(file_util::GetComputedHashesPath(extension_path),
+                   false /* recursive */);
+
+  int block_size = extension_misc::kContentVerificationDefaultBlockSize;
+  ComputedHashes::Writer incorrect_computed_hashes_writer;
+
+  // Write a valid computed_hashes.json with incorrect hash for |resource_path|.
+  std::vector<std::string> hashes;
+  const std::string kFakeContents = "fake contents";
+  ComputedHashes::ComputeHashesForContent(kFakeContents, block_size, &hashes);
+  incorrect_computed_hashes_writer.AddHashes(resource_path, block_size, hashes);
+
+  ASSERT_TRUE(incorrect_computed_hashes_writer.WriteToFile(
+      file_util::GetComputedHashesPath(extension_path)));
+}
+
+void WriteEmptyComputedHashes(const base::FilePath& extension_path) {
+  // It is important that correct computed_hashes.json already exists, because
+  // we don't want to modify it while it is being created. "source_all.zip"
+  // ensures we already have it.
+  ASSERT_TRUE(
+      base::PathExists(file_util::GetComputedHashesPath(extension_path)));
+
+  base::DeleteFile(file_util::GetComputedHashesPath(extension_path),
+                   false /* recursive */);
+
+  ComputedHashes::Writer incorrect_computed_hashes_writer;
+
+  ASSERT_TRUE(incorrect_computed_hashes_writer.WriteToFile(
+      file_util::GetComputedHashesPath(extension_path)));
+}
+
+}  // namespace
+
+// Tests that deletion of an extension resource and invalid hash for it in
+// computed_hashes.json won't result in bypassing corruption check.
+TEST_F(ContentVerifyJobUnittest, DeletedResourceAndCorruptedComputedHashes) {
+  base::ScopedTempDir temp_dir;
+
+  const base::FilePath::CharType kResource[] =
+      FILE_PATH_LITERAL("background.js");
+  base::FilePath resource_path(kResource);
+
+  scoped_refptr<Extension> extension = LoadTestExtensionFromZipPathToTempDir(
+      &temp_dir, "with_verified_contents", "source_all.zip");
+  ASSERT_TRUE(extension.get());
+
+  // Tamper the extension: remove resource and place wrong hash for its entry in
+  // computed_hashes.json. Reload content verifier's cache after that because
+  // content verifier may read computed_hashes.json with old values upon
+  // extension loading.
+  base::FilePath unzipped_path = temp_dir.GetPath();
+  WriteIncorrectComputedHashes(unzipped_path, resource_path);
+  EXPECT_TRUE(
+      base::DeleteFile(unzipped_path.Append(base::FilePath(kResource)), false));
+  content_verifier()->ClearCacheForTesting();
+
+  {
+    // By now in tests we serve an empty resource instead of non-existsing one.
+    // See https://crbug.com/999727 for details.
+    std::string empty_contents;
+    EXPECT_EQ(
+        ContentVerifyJob::NO_HASHES_FOR_FILE,
+        RunContentVerifyJob(*extension.get(), resource_path, empty_contents));
+  }
+}
+
+// Tests that deletion of an extension resource and removing its entry from
+// computed_hashes.json won't result in bypassing corruption check.
+TEST_F(ContentVerifyJobUnittest, DeletedResourceAndCleanedComputedHashes) {
+  base::ScopedTempDir temp_dir;
+
+  const base::FilePath::CharType kResource[] =
+      FILE_PATH_LITERAL("background.js");
+  base::FilePath resource_path(kResource);
+
+  scoped_refptr<Extension> extension = LoadTestExtensionFromZipPathToTempDir(
+      &temp_dir, "with_verified_contents", "source_all.zip");
+  ASSERT_TRUE(extension.get());
+
+  // Tamper the extension: remove resource and remove its entry from
+  // computed_hashes.json. Reload content verifier's cache after that because
+  // content verifier may read computed_hashes.json with old values upon
+  // extension loading.
+  base::FilePath unzipped_path = temp_dir.GetPath();
+  WriteEmptyComputedHashes(unzipped_path);
+  EXPECT_TRUE(
+      base::DeleteFile(unzipped_path.Append(base::FilePath(kResource)), false));
+  content_verifier()->ClearCacheForTesting();
+
+  {
+    // By now in tests we serve an empty resource instead of non-existsing one.
+    // See https://crbug.com/999727 for details.
+    std::string empty_contents;
+    EXPECT_EQ(
+        ContentVerifyJob::NO_HASHES_FOR_FILE,
+        RunContentVerifyJob(*extension.get(), resource_path, empty_contents));
   }
 }
 

@@ -178,6 +178,46 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
   }
 }
 
+void ProfileMenuViewBase::AddShortcutFeatureButton(
+    const gfx::VectorIcon& icon,
+    const base::string16& text,
+    base::RepeatingClosure action) {
+  constexpr int kTopMargin = 8;
+  constexpr int kButtonSpacing = 6;
+  constexpr int kIconSize = 16;
+  constexpr int kIconPadding = 6;
+  const SkColor kIconColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor);
+  const SkColor kBorderColor = SkColorSetA(kIconColor, /*alpha=*/100);
+  constexpr int kBorderThickness = 1;
+  constexpr int kButtonRadius = kIconSize / 2 + kIconPadding;
+
+  // Initialize layout if this is the first time a button is added.
+  if (!shortcut_features_container_->GetLayoutManager()) {
+    views::BoxLayout* layout = shortcut_features_container_->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal,
+            gfx::Insets(kTopMargin, 0, 0, 0), kButtonSpacing));
+    layout->set_main_axis_alignment(
+        views::BoxLayout::MainAxisAlignment::kCenter);
+  }
+
+  // Add icon button with tooltip text(shown on hover).
+  views::Button* button =
+      shortcut_features_container_->AddChildView(std::make_unique<HoverButton>(
+          this, gfx::CreateVectorIcon(icon, kIconSize, kIconColor),
+          base::string16()));
+  button->SetTooltipText(text);
+  // Specify circular border with inside padding.
+  auto circular_border = views::CreateRoundedRectBorder(
+      kBorderThickness, kButtonRadius, kBorderColor);
+  button->SetBorder(views::CreatePaddedBorder(std::move(circular_border),
+                                              gfx::Insets(kIconPadding)));
+
+  RegisterClickAction(button, std::move(action));
+}
+
 ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() {
   // Return |ax::mojom::Role::kDialog| which will make screen readers announce
   // the following in the listed order:
@@ -265,6 +305,8 @@ void ProfileMenuViewBase::Reset() {
 
   // Create and add new component containers in the correct order.
   identity_info_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+  shortcut_features_container_ =
       components->AddChildView(std::make_unique<views::View>());
 
   // Create a scroll view to hold the components.

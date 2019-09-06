@@ -221,6 +221,15 @@ DocumentLoader::DocumentLoader(
       // original URL (https://crbug.com/622385).
       // TODO(mkwst):  Remove this once XFO moves to the browser.
       // https://crbug.com/555418.
+
+      // Update |origin_to_commit_| to contain an opaque origin with precursor
+      // information that is consistent with the final request URL.
+      // Note: We can't use |url_| for the origin calculation because
+      // we need to take into account any redirects that may have occurred.
+      const auto request_url_origin = blink::SecurityOrigin::Create(
+          params_->response.ToResourceResponse().CurrentRequestUrl());
+      origin_to_commit_ = request_url_origin->DeriveNewOpaqueOrigin();
+
       was_blocked_after_csp_ = true;
       KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
       original_url_ = blocked_url;

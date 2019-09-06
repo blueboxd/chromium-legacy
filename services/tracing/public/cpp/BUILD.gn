@@ -46,6 +46,7 @@ if (!is_nacl && !is_ios) {
       "perfetto/shared_memory.h",
       "perfetto/system_producer.cc",
       "perfetto/system_producer.h",
+      "perfetto/system_trace_writer.h",
       "perfetto/task_runner.cc",
       "perfetto/task_runner.h",
       "perfetto/thread_local_event_sink.cc",

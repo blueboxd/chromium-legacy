@@ -538,10 +538,6 @@ class FileManager extends cr.EventTarget {
         /** @param {!Event} event */
         event => {
           this.navigationUma_.onDirectoryChanged(event.newDirEntry);
-          if (event.volumeChanged) {
-            this.showArcStorageToast_(
-                this.volumeManager_.getVolumeInfo(event.newDirEntry));
-          }
         });
 
     this.initCommands_();
@@ -1577,40 +1573,5 @@ class FileManager extends cr.EventTarget {
           }
           this.directoryTree.redraw(false);
         });
-  }
-
-  /**
-   * Shows a toast for ARC storage when needed.
-   * @param {VolumeInfo} volumeInfo Volume information currently selected.
-   */
-  showArcStorageToast_(volumeInfo) {
-    if (!util.isArcUsbStorageUIEnabled()) {
-      return;
-    }
-    if (!volumeInfo ||
-        volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.REMOVABLE) {
-      // The toast is for removable volumes.
-      return;
-    }
-    chrome.fileManagerPrivate.getPreferences(pref => {
-      if (!pref.arcEnabled || pref.arcRemovableMediaAccessEnabled) {
-        // We don't show the toast when ARC is disabled or the setting has
-        // already been enabled.
-        return;
-      }
-      chrome.fileManagerPrivate.setArcStorageToastShownFlag(originalFlag => {
-        if (originalFlag) {
-          // We show the toast only once.
-          return;
-        }
-        this.ui.toast.show(str('FILE_BROWSER_PLAY_STORE_ACCESS_LABEL'), {
-          text: str('FILE_BROWSER_OPEN_PLAY_STORE_SETTINGS_LABEL'),
-          callback: () => {
-            chrome.fileManagerPrivate.openSettingsSubpage(
-                'storage/externalStoragePreferences');
-          }
-        });
-      });
-    });
   }
 }

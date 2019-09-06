@@ -82,9 +82,6 @@ public class SideSlideLayout extends ViewGroup {
     private int mCurrentTargetOffset;
     private float mTotalMotion;
 
-    // Whether or not the starting offset has been determined.
-    private boolean mOriginalOffsetCalculated;
-
     // True while side gesture is in progress.
     private boolean mIsBeingDragged;
 
@@ -246,14 +243,11 @@ public class SideSlideLayout extends ViewGroup {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mArrowView.measure(MeasureSpec.makeMeasureSpec(mArrowViewWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(mCircleWidth, MeasureSpec.EXACTLY));
-        if (!mOriginalOffsetCalculated) {
-            initializeOffset();
-            mOriginalOffsetCalculated = true;
-        }
     }
 
     private void initializeOffset() {
-        mCurrentTargetOffset = mOriginalOffset = mIsForward ? getMeasuredWidth() : -mArrowViewWidth;
+        int offset = mIsForward ? ((View) getParent()).getWidth() : -mArrowViewWidth;
+        mCurrentTargetOffset = mOriginalOffset = offset;
     }
 
     /**

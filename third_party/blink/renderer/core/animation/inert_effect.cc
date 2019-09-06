@@ -50,9 +50,10 @@ void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
     return;
   }
 
-  double iteration = CurrentIteration();
-  DCHECK_GE(iteration, 0);
-  model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
+  base::Optional<double> iteration = CurrentIteration();
+  DCHECK(iteration);
+  DCHECK_GE(iteration.value(), 0);
+  model_->Sample(clampTo<int>(iteration.value(), 0), Progress().value(),
                  SpecifiedTiming().IterationDuration(), result);
 }
 

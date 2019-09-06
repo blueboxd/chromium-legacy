@@ -13,15 +13,14 @@
 #include "media/filters/stream_parser_factory.h"
 #include "media/mojo/mojom/media_types.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_decoding_configuration.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_encrypted_media_request.h"
-#include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
+#include "third_party/blink/renderer/platform/peerconnection/transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -737,8 +737,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
   }
 
   if (configuration->type() == "transmission") {
-    if (auto* handler =
-            Platform::Current()->TransmissionEncodingInfoHandler()) {
+    if (auto* handler = TransmissionEncodingInfoHandler::Instance()) {
       handler->EncodingInfo(ToWebMediaConfiguration(configuration),
                             WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
                                       WrapPersistent(resolver)));

@@ -15,7 +15,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.test.util.browser.WebappTestHelper;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**

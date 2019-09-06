@@ -763,18 +763,19 @@ rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
     const rtc::SocketAddress& local_address,
     const rtc::SocketAddress& remote_address,
     const rtc::ProxyInfo& proxy_info,
-    const std::string& user_agent, int opts) {
+    const std::string& user_agent,
+    const rtc::PacketSocketTcpOptions& opts) {
   network::P2PSocketType type;
-  if (opts & rtc::PacketSocketFactory::OPT_SSLTCP) {
-    type = (opts & rtc::PacketSocketFactory::OPT_STUN)
+  if (opts.opts & rtc::PacketSocketFactory::OPT_SSLTCP) {
+    type = (opts.opts & rtc::PacketSocketFactory::OPT_STUN)
                ? network::P2P_SOCKET_STUN_SSLTCP_CLIENT
                : network::P2P_SOCKET_SSLTCP_CLIENT;
-  } else if (opts & rtc::PacketSocketFactory::OPT_TLS) {
-    type = (opts & rtc::PacketSocketFactory::OPT_STUN)
+  } else if (opts.opts & rtc::PacketSocketFactory::OPT_TLS) {
+    type = (opts.opts & rtc::PacketSocketFactory::OPT_STUN)
                ? network::P2P_SOCKET_STUN_TLS_CLIENT
                : network::P2P_SOCKET_TLS_CLIENT;
   } else {
-    type = (opts & rtc::PacketSocketFactory::OPT_STUN)
+    type = (opts.opts & rtc::PacketSocketFactory::OPT_STUN)
                ? network::P2P_SOCKET_STUN_TCP_CLIENT
                : network::P2P_SOCKET_TCP_CLIENT;
   }

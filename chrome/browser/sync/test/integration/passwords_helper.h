@@ -32,9 +32,14 @@ void AddLogin(password_manager::PasswordStore* store,
 void UpdateLogin(password_manager::PasswordStore* store,
                  const autofill::PasswordForm& form);
 
-// Returns all logins from |store| matching a fake signon realm used only by
-// PasswordsSyncPerfTest.
+// Returns all logins from |store| matching a fake signon realm (see
+// CreateTestPasswordForm()).
+// TODO(treib): Rename this to make clear how specific it is.
 std::vector<std::unique_ptr<autofill::PasswordForm>> GetLogins(
+    password_manager::PasswordStore* store);
+
+// Returns all logins from |store| (including blacklisted ones)
+std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllLogins(
     password_manager::PasswordStore* store);
 
 // Removes the login held in |form| from the password store |store|.  This
@@ -46,10 +51,15 @@ void RemoveLogin(password_manager::PasswordStore* store,
 void RemoveLogins(password_manager::PasswordStore* store);
 
 // Gets the password store of the profile with index |index|.
+// TODO(treib): Rename to GetProfilePasswordStore.
 password_manager::PasswordStore* GetPasswordStore(int index);
 
 // Gets the password store of the verifier profile.
+// TODO(treib): Rename to GetVerifierProfilePasswordStore.
 password_manager::PasswordStore* GetVerifierPasswordStore();
+
+// Gets the account-scoped password store of the profile with index |index|.
+password_manager::PasswordStore* GetAccountPasswordStore(int index);
 
 // Returns true iff the profile with index |index| contains the same password
 // forms as the verifier profile.
@@ -75,8 +85,8 @@ int GetPasswordCount(int index);
 // Returns the number of forms in the password store of the verifier profile.
 int GetVerifierPasswordCount();
 
-// Creates a test password form with a well known fake signon realm used only
-// by PasswordsSyncPerfTest based on |index|.
+// Creates a test password form with a well known fake signon realm based on
+// |index|.
 autofill::PasswordForm CreateTestPasswordForm(int index);
 
 }  // namespace passwords_helper

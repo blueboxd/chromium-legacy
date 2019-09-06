@@ -287,8 +287,10 @@
 
 - (BOOL)copiedContentBehaviorEnabled {
   NSDictionary* storedData = self.fieldTrialValues[@"CopiedContentBehavior"];
-  if (![kCopiedContentBehaviorVersion
-          isEqualToNumber:storedData[kFieldTrialVersionKey]]) {
+  NSNumber* storedVersion =
+      base::mac::ObjCCast<NSNumber>(storedData[kFieldTrialVersionKey]);
+  if (!storedVersion ||
+      ![kCopiedContentBehaviorVersion isEqualToNumber:storedVersion]) {
     return NO;
   }
 

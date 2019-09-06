@@ -121,7 +121,7 @@ class LostNavigationsRecorderTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   int _id;
   LostNavigationsRecorder recorder_;
   syncer::TestDirectorySetterUpper dir_maker_;

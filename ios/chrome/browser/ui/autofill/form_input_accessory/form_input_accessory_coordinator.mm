@@ -19,12 +19,12 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -33,7 +33,6 @@
 #endif
 
 @interface FormInputAccessoryCoordinator () <
-    AutofillSecurityAlertPresenter,
     AddressCoordinatorDelegate,
     CardCoordinatorDelegate,
     FormInputAccessoryMediatorDelegate,
@@ -50,8 +49,7 @@
 
 // The object in charge of interacting with the web view. Used to fill the data
 // in the forms.
-@property(nonatomic, strong)
-    ManualFillInjectionHandler* manualFillInjectionHandler;
+@property(nonatomic, strong) ManualFillInjectionHandler* injectionHandler;
 
 // The WebStateList for this instance. Used to instantiate the child
 // coordinators lazily.
@@ -61,10 +59,11 @@
 
 @implementation FormInputAccessoryCoordinator
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList {
+- (instancetype)
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                  webStateList:(WebStateList*)webStateList
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
   DCHECK(browserState);
   DCHECK(webStateList);
   self = [super initWithBaseViewController:viewController
@@ -72,9 +71,7 @@
   if (self) {
     _webStateList = webStateList;
 
-    _manualFillInjectionHandler =
-        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList
-                                          securityAlertPresenter:self];
+    _injectionHandler = injectionHandler;
 
     _formInputAccessoryViewController =
         [[FormInputAccessoryViewController alloc]
@@ -123,7 +120,7 @@
           initWithBaseViewController:self.baseViewController
                         browserState:self.browserState
                                  URL:URL
-                    injectionHandler:self.manualFillInjectionHandler];
+                    injectionHandler:self.injectionHandler];
   passwordCoordinator.delegate = self;
   if (IsIPadIdiom()) {
     [passwordCoordinator presentFromButton:button];
@@ -141,7 +138,7 @@
                     browserState:self.browserState
                                      ->GetOriginalChromeBrowserState()
                     webStateList:self.webStateList
-                injectionHandler:self.manualFillInjectionHandler];
+                injectionHandler:self.injectionHandler];
   cardCoordinator.delegate = self;
   if (IsIPadIdiom()) {
     [cardCoordinator presentFromButton:button];
@@ -158,7 +155,7 @@
       initWithBaseViewController:self.baseViewController
                     browserState:self.browserState
                                      ->GetOriginalChromeBrowserState()
-                injectionHandler:self.manualFillInjectionHandler];
+                injectionHandler:self.injectionHandler];
   addressCoordinator.delegate = self;
   if (IsIPadIdiom()) {
     [addressCoordinator presentFromButton:button];
@@ -222,42 +219,23 @@
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
-  [self.delegate openPasswordSettings];
+  [self.navigator openPasswordSettings];
+}
+
+- (void)openAllPasswordsPicker {
+  [self.navigator openAllPasswordsPicker];
 }
 
 #pragma mark - CardCoordinatorDelegate
 
 - (void)openCardSettings {
-  [self.delegate openCreditCardSettings];
+  [self.navigator openCreditCardSettings];
 }
 
 #pragma mark - AddressCoordinatorDelegate
 
 - (void)openAddressSettings {
-  [self.delegate openAddressSettings];
-}
-
-#pragma mark - AutofillSecurityAlertPresenter
-
-- (void)presentSecurityWarningAlertWithText:(NSString*)body {
-  NSString* alertTitle =
-      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
-  NSString* defaultActionTitle =
-      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
-
-  UIAlertController* alert =
-      [UIAlertController alertControllerWithTitle:alertTitle
-                                          message:body
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* defaultAction =
-      [UIAlertAction actionWithTitle:defaultActionTitle
-                               style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction* action){
-                             }];
-  [alert addAction:defaultAction];
-  [self.baseViewController presentViewController:alert
-                                        animated:YES
-                                      completion:nil];
+  [self.navigator openAddressSettings];
 }
 
 @end

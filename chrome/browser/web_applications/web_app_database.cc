@@ -85,6 +85,14 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
                                   ? LaunchContainerProto::WINDOW
                                   : LaunchContainerProto::TAB);
 
+  DCHECK(web_app.sources_.any());
+  proto->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
+  proto->mutable_sources()->set_policy(web_app.sources_[Source::kPolicy]);
+  proto->mutable_sources()->set_web_app_store(
+      web_app.sources_[Source::kWebAppStore]);
+  proto->mutable_sources()->set_sync(web_app.sources_[Source::kSync]);
+  proto->mutable_sources()->set_default_(web_app.sources_[Source::kDefault]);
+
   proto->set_is_locally_installed(web_app.is_locally_installed());
 
   // Optional fields:
@@ -115,6 +123,23 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     return nullptr;
   }
   web_app->SetLaunchUrl(launch_url);
+
+  if (!proto.has_sources()) {
+    DLOG(ERROR) << "WebApp proto parse error: no sources field";
+    return nullptr;
+  }
+
+  WebApp::Sources sources;
+  sources[Source::kSystem] = proto.sources().system();
+  sources[Source::kPolicy] = proto.sources().policy();
+  sources[Source::kWebAppStore] = proto.sources().web_app_store();
+  sources[Source::kSync] = proto.sources().sync();
+  sources[Source::kDefault] = proto.sources().default_();
+  if (!sources.any()) {
+    DLOG(ERROR) << "WebApp proto parse error: no any source in sources field";
+    return nullptr;
+  }
+  web_app->sources_ = sources;
 
   if (!proto.has_name()) {
     DLOG(ERROR) << "WebApp proto parse error: no name field";

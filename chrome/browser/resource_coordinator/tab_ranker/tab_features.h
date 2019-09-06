@@ -62,6 +62,7 @@ struct TabFeatures {
   // Used only for inference.
   int32_t discard_count = 0;
   std::string host;
+  float frecency_score = 0.0f;
 };
 
 // Populates |tab| features to ranker example for inference.

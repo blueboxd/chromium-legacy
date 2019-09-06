@@ -273,7 +273,7 @@ below:
         checkbox
       </message>
       <message name="IDS_AX_ROLE_CONTENT_INFO" desc="Accessibility role description for credits and information about the content of the page, like copyrights and privacy statements">
-        content information
+        content info
       </message>
       <message name="IDS_AX_ROLE_DATE" desc="Accessibility role description for a date input">
         date picker

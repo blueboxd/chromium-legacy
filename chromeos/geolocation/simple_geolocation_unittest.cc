@@ -182,7 +182,7 @@ class WirelessTestMonitor : public SimpleGeolocationRequestTestMonitor {
 
 class SimpleGeolocationTest : public testing::Test {
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(SimpleGeolocationTest, ResponseOK) {
@@ -368,8 +368,8 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<GeolocationHandler> geolocation_handler_;
   ShillManagerClient::TestInterface* manager_test_;
   WifiAccessPointVector wifi_access_points_;

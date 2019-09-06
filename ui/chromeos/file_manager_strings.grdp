@@ -5,12 +5,6 @@
   <message name="IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL" desc="A label for the 'Play files' root which shows Android files. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated. Use sentence case.">
     Play files
   </message>
-  <message name="IDS_FILE_BROWSER_PLAY_STORE_ACCESS_LABEL" desc="A label for the toast which shows when Play Store apps don't have access to external storage devices.">
-    Play Store applications can't access this device
-  </message>
-  <message name="IDS_FILE_BROWSER_OPEN_PLAY_STORE_SETTINGS_LABEL" desc="A button for the toast which shows when Play Store apps don't have access to external storage devices.">
-    Open settings
-  </message>
   <message name="IDS_FILE_BROWSER_SHOW_ALL_ANDROID_FOLDERS_OPTION" desc="A label for an option menu item to show all Android folders. By default, only several folders are visible to users, and users will click this option menu item to show all folders. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated.">
     Show all Play folders
   </message>

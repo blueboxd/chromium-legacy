@@ -56,6 +56,18 @@ ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   return entry;
 }
 
+bool IsGenericProfile(const ProfileAttributesEntry& entry) {
+  // If the profile is using the placeholder avatar, fall back on the generic
+  // profile's themeable vector icon instead.
+  if (entry.GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex())
+    return true;
+
+  return entry.GetAvatarIconIndex() == 0 &&
+         g_browser_process->profile_manager()
+                 ->GetProfileAttributesStorage()
+                 .GetNumberOfProfiles() == 1;
+}
+
 }  // namespace
 
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
@@ -68,13 +80,13 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
       browser_list_observer_(this),
       profile_observer_(this),
       identity_manager_observer_(this) {
-  if (IsIncognito())
-    browser_list_observer_.Add(BrowserList::GetInstance());
-
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
-  if (profile_->IsRegularProfile()) {
+  State state = GetState();
+  if (state == State::kIncognitoProfile) {
+    browser_list_observer_.Add(BrowserList::GetInstance());
+  } else if (state != State::kGuestSession) {
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_);
     identity_manager_observer_.Add(identity_manager);
@@ -99,8 +111,8 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // On CrOS this button should only show as badging for Incognito and Guest
   // sessions. It's only enabled for Incognito where a menu is available for
   // closing all Incognito windows.
-  DCHECK(!profile_->IsRegularProfile());
-  SetEnabled(IsIncognito());
+  DCHECK(state == State::kIncognitoProfile || state == State::kGuestSession);
+  SetEnabled(state == State::kIncognitoProfile);
 #endif  // !defined(OS_CHROMEOS)
 
   if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
@@ -141,43 +153,48 @@ void AvatarToolbarButton::UpdateText() {
   base::Optional<SkColor> color;
   base::string16 text;
 
-  const SyncState sync_state = GetSyncState();
-
-  if (IsIncognito() && GetThemeProvider()) {
-    // Note that this chip does not have a highlight color.
-    const SkColor text_color = GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-    SetEnabledTextColors(text_color);
-  }
-
-  if (IsIncognito()) {
-    int incognito_window_count =
-        BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
-    SetAccessibleName(l10n_util::GetPluralStringFUTF16(
-        IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
-    text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
-                                            incognito_window_count);
-  } else if (!suppress_avatar_button_state_ &&
-             sync_state == SyncState::kError) {
-    color = AdjustHighlightColorForContrast(
-        GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
-        gfx::kGoogleRed050, gfx::kGoogleRed900);
-    text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
-  } else if (!suppress_avatar_button_state_ &&
-             sync_state == SyncState::kPaused) {
-    color = AdjustHighlightColorForContrast(
-        GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
-        gfx::kGoogleBlue050, gfx::kGoogleBlue900);
-
-    text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
-  } else if (user_email_.has_value() &&
-             !waiting_for_image_to_show_user_email_) {
-    text = base::UTF8ToUTF16(*user_email_);
-    if (GetThemeProvider()) {
-      const SkColor text_color =
-          GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT);
-      SetEnabledTextColors(text_color);
+  switch (GetState()) {
+    case State::kIncognitoProfile: {
+      int incognito_window_count =
+          BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
+      SetAccessibleName(l10n_util::GetPluralStringFUTF16(
+          IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
+      text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
+                                              incognito_window_count);
+      if (GetThemeProvider()) {
+        // Note that this chip does not have a highlight color.
+        const SkColor text_color = GetThemeProvider()->GetColor(
+            ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+        SetEnabledTextColors(text_color);
+      }
+      break;
     }
+    case State::kAnimatedSignIn: {
+      text = base::UTF8ToUTF16(*user_email_);
+      if (GetThemeProvider()) {
+        const SkColor text_color =
+            GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+        SetEnabledTextColors(text_color);
+      }
+      break;
+    }
+    case State::kSyncError:
+      color = AdjustHighlightColorForContrast(
+          GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
+          gfx::kGoogleRed050, gfx::kGoogleRed900);
+      text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
+      break;
+    case State::kSyncPaused:
+      color = AdjustHighlightColorForContrast(
+          GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
+          gfx::kGoogleBlue050, gfx::kGoogleBlue900);
+      text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
+      break;
+    case State::kGuestSession:
+    case State::kGenericProfile:
+    case State::kNormal:
+      // Default treatment -- no text, no color.
+      break;
   }
 
   SetInsets();
@@ -188,7 +205,7 @@ void AvatarToolbarButton::UpdateText() {
 
 void AvatarToolbarButton::SetSuppressAvatarButtonState(
     bool suppress_avatar_button_state) {
-  DCHECK(!IsIncognito());
+  DCHECK_NE(GetState(), State::kIncognitoProfile);
   suppress_avatar_button_state_ = suppress_avatar_button_state;
   UpdateText();
 }
@@ -308,65 +325,32 @@ void AvatarToolbarButton::ResetUserEmail() {
   UpdateText();
 }
 
-bool AvatarToolbarButton::IsIncognito() const {
-  return profile_->IsIncognitoProfile();
-}
-
-bool AvatarToolbarButton::ShouldShowGenericIcon() const {
-  // This function should only be used for regular profiles. Guest and Incognito
-  // sessions should be handled separately and never call this function.
-  DCHECK(profile_->IsRegularProfile());
-
-  if (IdentityManagerFactory::GetForProfile(profile_)
-          ->HasUnconsentedPrimaryAccount()) {
-    return false;
-  }
-
-  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
-  if (!entry) {
-    // This can happen if the user deletes the current profile.
-    return true;
-  }
-
-  // If the profile is using the placeholder avatar, fall back on the themeable
-  // vector icon instead.
-  if (entry->GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex())
-    return true;
-
-  return entry->GetAvatarIconIndex() == 0 &&
-         g_browser_process->profile_manager()
-                 ->GetProfileAttributesStorage()
-                 .GetNumberOfProfiles() == 1;
-}
-
 base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
-  if (IsIncognito())
-    return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO_TOOLTIP);
-
-  if (profile_->IsGuestSession())
-    return l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
-
-  if (ShouldShowGenericIcon())
-    return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
-
-  if (user_email_.has_value() && !waiting_for_image_to_show_user_email_)
-    return base::UTF8ToUTF16(*user_email_);
-
-  const base::string16 profile_name =
-      profiles::GetAvatarNameForProfile(profile_->GetPath());
-  switch (GetSyncState()) {
-    case SyncState::kNormal:
-      return profile_name;
-    case SyncState::kPaused:
-      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
-                                        profile_name);
-    case SyncState::kError:
+  switch (GetState()) {
+    case State::kIncognitoProfile:
+      return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO_TOOLTIP);
+    case State::kGuestSession:
+      return l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
+    case State::kGenericProfile:
+      return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
+    case State::kAnimatedSignIn:
+      return base::UTF8ToUTF16(*user_email_);
+    case State::kSyncError:
       return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR_TOOLTIP,
-                                        profile_name);
+                                        GetProfileName());
+    case State::kSyncPaused:
+      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
+                                        GetProfileName());
+    case State::kNormal:
+      return GetProfileName();
   }
-
   NOTREACHED();
   return base::string16();
+}
+
+base::string16 AvatarToolbarButton::GetProfileName() const {
+  DCHECK(GetState() != State::kIncognitoProfile);
+  return profiles::GetAvatarNameForProfile(profile_->GetPath());
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
@@ -379,29 +363,32 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
   SkColor icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 
-  if (IsIncognito())
-    return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);
-
-  if (profile_->IsGuestSession())
-    return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
-
-  gfx::Image avatar_icon;
-  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
-  if (!ShouldShowGenericIcon() && entry) {
-    if (!gaia_image.IsEmpty()) {
-      avatar_icon = gaia_image;
-    } else {
-      avatar_icon = entry->GetAvatarIcon();
-    }
+  switch (GetState()) {
+    case State::kIncognitoProfile:
+      return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);
+    case State::kGuestSession:
+      return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
+    case State::kGenericProfile:
+      return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
+                                   icon_color);
+    case State::kAnimatedSignIn:
+    case State::kSyncError:
+    case State::kSyncPaused:
+    case State::kNormal:
+      if (!gaia_image.IsEmpty()) {
+        return profiles::GetSizedAvatarIcon(gaia_image, true, icon_size,
+                                            icon_size, profiles::SHAPE_CIRCLE)
+            .AsImageSkia();
+      }
+      // Profile attributes are non-null since the state is not kGenericProfile.
+      gfx::Image avatar_icon =
+          GetProfileAttributesEntry(profile_)->GetAvatarIcon();
+      return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size,
+                                          icon_size, profiles::SHAPE_CIRCLE)
+          .AsImageSkia();
   }
-
-  if (!avatar_icon.IsEmpty()) {
-    return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size, icon_size,
-                                        profiles::SHAPE_CIRCLE)
-        .AsImageSkia();
-  }
-
-  return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size, icon_color);
+  NOTREACHED();
+  return gfx::ImageSkia();
 }
 
 gfx::Image AvatarToolbarButton::GetGaiaImage() const {
@@ -443,12 +430,27 @@ gfx::Image AvatarToolbarButton::GetGaiaImage() const {
   return gfx::Image();
 }
 
-AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
-#if !defined(OS_CHROMEOS)
+AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
+  if (profile_->IsIncognitoProfile())
+    return State::kIncognitoProfile;
+  if (profile_->IsGuestSession())
+    return State::kGuestSession;
+
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
-  if (identity_manager && identity_manager->HasPrimaryAccount() &&
-      profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
+  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
+  if (!entry ||  // This can happen if the user deletes the current profile.
+      (!identity_manager->HasUnconsentedPrimaryAccount() &&
+       IsGenericProfile(*entry))) {
+    return State::kGenericProfile;
+  }
+
+  if (user_email_.has_value() && !waiting_for_image_to_show_user_email_)
+    return State::kAnimatedSignIn;
+
+#if !defined(OS_CHROMEOS)
+  if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
+      error_controller_.HasAvatarError() && !suppress_avatar_button_state_) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
@@ -456,10 +458,10 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
         AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
         sync_ui_util::GetMessagesForAvatarSyncError(
             profile_, &unused, &unused) == sync_ui_util::AUTH_ERROR;
-    return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
+    return should_show_sync_paused_ui ? State::kSyncPaused : State::kSyncError;
   }
 #endif  // !defined(OS_CHROMEOS)
-  return SyncState::kNormal;
+  return State::kNormal;
 }
 
 void AvatarToolbarButton::SetInsets() {

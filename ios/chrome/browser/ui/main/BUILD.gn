@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/build/chrome_build.gni")
+
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -10,6 +12,12 @@ source_set("main") {
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
+    "scene_controller.h",
+    "scene_controller.mm",
+    "scene_delegate.h",
+    "scene_delegate.mm",
+    "scene_state.h",
+    "scene_state.mm",
   ]
   deps = [
     "//base",
@@ -53,6 +61,11 @@ source_set("main") {
     "//ios/public/provider/chrome/browser",
     "//net",
   ]
+
+  if (ios_enable_multi_window) {
+    deps += [ "//ios/chrome/app/resources:base_scene_storyboard" ]
+  }
+
   libs = [ "UIKit.framework" ]
 }
 
@@ -61,6 +74,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "browser_view_wrangler_unittest.mm",
+    "scene_controller_unittest.mm",
   ]
   deps = [
     ":main",

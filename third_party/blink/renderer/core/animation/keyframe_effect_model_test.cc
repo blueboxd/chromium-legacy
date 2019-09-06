@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -56,7 +57,9 @@ class AnimationKeyframeEffectModel : public PageTestBase {
  protected:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
+    GetDocument().UpdateStyleAndLayoutTree();
     element = GetDocument().CreateElementForBinding("foo");
+    GetDocument().body()->appendChild(element);
   }
 
   void ExpectLengthValue(double expected_value,

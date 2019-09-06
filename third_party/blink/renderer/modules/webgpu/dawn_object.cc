@@ -12,8 +12,6 @@ DawnObjectBase::DawnObjectBase(
     scoped_refptr<DawnControlClientHolder> dawn_control_client)
     : dawn_control_client_(std::move(dawn_control_client)) {}
 
-DawnObjectBase::~DawnObjectBase() = default;
-
 const scoped_refptr<DawnControlClientHolder>&
 DawnObjectBase::GetDawnControlClient() const {
   return dawn_control_client_;
@@ -33,6 +31,8 @@ const DawnProcTable& DawnObjectBase::GetProcs() const {
 
 DawnObjectImpl::DawnObjectImpl(GPUDevice* device)
     : DawnObjectBase(device->GetDawnControlClient()), device_(device) {}
+
+DawnObjectImpl::~DawnObjectImpl() = default;
 
 void DawnObjectImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);

@@ -84,7 +84,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   bool IsCurrent() const { return EnsureCalculated().is_current; }
   bool IsInEffect() const { return EnsureCalculated().is_in_effect; }
   bool IsInPlay() const { return EnsureCalculated().is_in_play; }
-  double CurrentIteration() const {
+  base::Optional<double> CurrentIteration() const {
     return EnsureCalculated().current_iteration;
   }
   base::Optional<double> Progress() const {

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -256,8 +257,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
 
-  // The mapping between bitstream id and the timestamp.
-  std::map<int32_t, base::TimeDelta> bitstream_id_to_timestamp_;
+  // The time at which each buffer decode operation started. Not each decode
+  // operation leads to a frame being output and frames might be reordered, so
+  // we don't know when it's safe to drop a timestamp. This means we need to use
+  // a cache here, with a size large enough to account for frame reordering.
+  base::MRUCache<int32_t, base::TimeDelta> bitstream_id_to_timestamp_;
 
   // Queue of pending decode request.
   base::queue<DecodeRequest> decode_request_queue_;

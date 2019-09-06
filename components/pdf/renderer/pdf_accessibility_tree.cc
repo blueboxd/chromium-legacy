@@ -373,7 +373,7 @@ void PdfAccessibilityTree::AddPageContent(
     if (IsObjectInTextRun(links, current_link_index, text_run_index)) {
       FinishStaticNode(&static_text_node, &static_text);
       const ppapi::PdfAccessibilityLinkInfo& link = links[current_link_index++];
-      ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds);
+      ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds, page_index);
       para_node->child_ids.push_back(link_node->id);
 
       // If |link.text_run_count| == 0, then the link is not part of the page
@@ -386,7 +386,6 @@ void PdfAccessibilityTree::AddPageContent(
       // Make the text runs contained by the link children of the link node.
       uint32_t link_end_text_run_index =
           std::min(text_run_index + link.text_run_count, text_runs.size()) - 1;
-
       AddTextToLinkNode(text_run_index, link_end_text_run_index, text_runs,
                         chars, page_bounds, &char_index, link_node,
                         &previous_on_line_node);
@@ -477,13 +476,14 @@ void PdfAccessibilityTree::AddPageContent(
       base::make_span(links).subspan(current_link_index);
   base::span<const ppapi::PdfAccessibilityImageInfo> remaining_images =
       base::make_span(images).subspan(current_image_index);
-  AddRemainingAnnotations(page_node, page_bounds, remaining_links,
+  AddRemainingAnnotations(page_node, page_bounds, page_index, remaining_links,
                           remaining_images, para_node);
 }
 
 void PdfAccessibilityTree::AddRemainingAnnotations(
     ui::AXNodeData* page_node,
     const gfx::RectF& page_bounds,
+    uint32_t page_index,
     base::span<const ppapi::PdfAccessibilityLinkInfo> links,
     base::span<const ppapi::PdfAccessibilityImageInfo> images,
     ui::AXNodeData* para_node) {
@@ -495,7 +495,7 @@ void PdfAccessibilityTree::AddRemainingAnnotations(
   }
   // Push all the links not anchored to any text run to the last paragraph.
   for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
-    ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds);
+    ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds, page_index);
     para_node->child_ids.push_back(link_node->id);
   }
   // Push all the images not anchored to any text run to the last paragraph.
@@ -715,7 +715,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
 
 ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
     const ppapi::PdfAccessibilityLinkInfo& link,
-    const gfx::RectF& page_bounds) {
+    const gfx::RectF& page_bounds,
+    uint32_t page_index) {
   ui::AXNodeData* link_node = CreateNode(ax::mojom::Role::kLink);
 
   link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
@@ -723,6 +724,9 @@ ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
                                 std::string());
   link_node->relative_bounds.bounds =
       ToGfxRectF(link.bounds) + page_bounds.OffsetFromOrigin();
+  node_id_to_link_info_.emplace(link_node->id,
+                                LinkInfo(page_index, link.index_in_page));
+
   return link_node;
 }
 
@@ -854,6 +858,14 @@ void PdfAccessibilityTree::AddWordStartsAndEnds(
                                        word_ends);
 }
 
+PdfAccessibilityTree::LinkInfo::LinkInfo(uint32_t page_index,
+                                         uint32_t link_index)
+    : page_index(page_index), link_index(link_index) {}
+
+PdfAccessibilityTree::LinkInfo::LinkInfo(const LinkInfo& other) = default;
+
+PdfAccessibilityTree::LinkInfo::~LinkInfo() = default;
+
 //
 // AXTreeSource implementation.
 //
@@ -914,7 +926,7 @@ void PdfAccessibilityTree::SerializeNode(
 
 std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
     const ui::AXNode& target_node) {
-  return std::make_unique<pdf::PdfAXActionTarget>(target_node, this);
+  return std::make_unique<PdfAXActionTarget>(target_node, this);
 }
 
 void PdfAccessibilityTree::HandleAction(
@@ -924,6 +936,19 @@ void PdfAccessibilityTree::HandleAction(
   if (plugin_instance) {
     plugin_instance->HandleAccessibilityAction(action_data);
   }
+}
+
+bool PdfAccessibilityTree::GetPdfLinkInfoFromAXNode(
+    int32_t ax_node_id,
+    uint32_t* page_index,
+    uint32_t* link_index_in_page) const {
+  auto iter = node_id_to_link_info_.find(ax_node_id);
+  if (iter == node_id_to_link_info_.end())
+    return false;
+
+  *page_index = iter->second.page_index;
+  *link_index_in_page = iter->second.link_index;
+  return true;
 }
 
 }  // namespace pdf

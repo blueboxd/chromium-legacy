@@ -42,7 +42,28 @@
                              base::TimeDelta::FromDays(1), 50)
 
 namespace resource_coordinator {
+namespace {
 using tab_ranker::TabFeatures;
+
+// Used for decay Frecency scores.
+constexpr float kFrecencyScoreDecay = 0.8f;
+// Records how many tab reactivations till now.
+static int32_t reactivation_index = 0;
+// Used for generating label_ids and query_ids.
+int64_t internal_id_for_logging = 0;
+// Returns an int64_t number as label_id or query_id.
+int64_t NewInt64ForLabelIdOrQueryId() {
+  // The id is shifted 13 bits so that the lower bits are reserved for counting
+  // multiple queries.
+  // We choose 13 so that the lower bits for counting multiple queries and
+  // higher bits for labeling queries are both unlikely to overflow. (lower bits
+  // only overflows when we have more than 8192 queries without labeling events;
+  // higher bits only overflow when we have more than 100 billion discards.
+  constexpr int kIdShiftBits = 13;
+  return (++internal_id_for_logging) << kIdShiftBits;
+}
+
+}  // namespace
 
 // Per-WebContents helper class that observes its WebContents, notifying
 // TabActivityWatcher when interesting events occur. Also provides
@@ -68,8 +89,8 @@ class TabActivityWatcher::WebContentsData
 
     float score = 0.0f;
     const tab_ranker::TabRankerResult result =
-        TabActivityWatcher::GetInstance()->predictor_.ScoreTab(tab.value(),
-                                                               &score);
+        TabActivityWatcher::GetInstance()->predictor_->ScoreTab(tab.value(),
+                                                                &score);
     if (result == tab_ranker::TabRankerResult::kSuccess)
       return score;
     return base::nullopt;
@@ -98,6 +119,9 @@ class TabActivityWatcher::WebContentsData
 
     // Copy the replaced label_id_.
     label_id_ = replaced_tab.label_id_;
+
+    // Copy the frecency score.
+    frecency_score_ = replaced_tab.frecency_score_;
   }
 
   // Call when the WebContents is detached from its tab. If the tab is later
@@ -122,6 +146,7 @@ class TabActivityWatcher::WebContentsData
 
     if (foreground) {
       foregrounded_time_ = NowTicks();
+      UpdateFrecencyScoreOnReactivation();
     } else {
       // This is a new tab that was opened in the background.
       backgrounded_time_ = NowTicks();
@@ -165,6 +190,16 @@ class TabActivityWatcher::WebContentsData
   friend class content::WebContentsUserData<WebContentsData>;
   friend class TabActivityWatcher;
 
+  // A FrecencyScore is used as a measurement of both frequency and recency.
+  // (1) The score is decayed by kFrecencyScoreDecay every time any tab is
+  // reactivated.
+  // (2) The score is incremented by 1.0 - kFrecencyScoreDecay when this tab is
+  // reactivated.
+  struct FrecencyScore {
+    int32_t update_index = 0;
+    float score = 0.0f;
+  };
+
   explicit WebContentsData(content::WebContents* web_contents)
       : WebContentsObserver(web_contents) {
     DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
@@ -206,6 +241,8 @@ class TabActivityWatcher::WebContentsData
   }
 
   void WasShown() {
+    UpdateFrecencyScoreOnReactivation();
+
     if (backgrounded_time_.is_null())
       return;
 
@@ -399,6 +436,9 @@ class TabActivityWatcher::WebContentsData
     tab->mru_index = mru.index;
     tab->total_tab_count = mru.total;
 
+    // For frecency_score;
+    tab->frecency_score = GetFrecencyScore();
+
     return tab;
   }
 
@@ -432,9 +472,26 @@ class TabActivityWatcher::WebContentsData
     label_id_ = 0;
   }
 
-  // Helper function for label_id and query_id.
-  inline int64_t NewInt64ForLabelIdOrQueryId() {
-    return TabActivityWatcher::GetInstance()->NewInt64ForLabelIdOrQueryId();
+  // Returns frecency score of this tab.
+  // NOTE: we don't apply decay for all reactivations, instead we accumulate
+  // them as reactivations_since_last_update and applied all together when the
+  // score is queried.
+  float GetFrecencyScore() {
+    const int reactivations_since_last_update =
+        reactivation_index - frecency_score_.update_index;
+    if (reactivations_since_last_update > 0) {
+      frecency_score_.score *=
+          std::pow(kFrecencyScoreDecay, reactivations_since_last_update);
+      frecency_score_.update_index = reactivation_index;
+    }
+    return frecency_score_.score;
+  }
+
+  // Updates frecency score of current tab when it is reactivated.
+  void UpdateFrecencyScoreOnReactivation() {
+    ++reactivation_index;
+    // Updates the current score.
+    frecency_score_.score = GetFrecencyScore() + 1.0f - kFrecencyScoreDecay;
   }
 
   // Updated when a navigation is finished.
@@ -480,6 +537,9 @@ class TabActivityWatcher::WebContentsData
   // An int64 random label to pair TabFeatures with ForegroundedOrClosed event.
   int64_t label_id_ = 0;
 
+  // Fecency score of this tab.
+  FrecencyScore frecency_score_;
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
@@ -489,7 +549,8 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData)
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
-      browser_tab_strip_tracker_(this, this, this) {
+      browser_tab_strip_tracker_(this, this, this),
+      predictor_(std::make_unique<tab_ranker::TabScorePredictor>()) {
   browser_tab_strip_tracker_.Init();
 }
 
@@ -546,7 +607,7 @@ void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
     }
   }
   const std::map<int32_t, float> reactivation_scores =
-      predictor_.ScoreTabs(tab_features);
+      predictor_->ScoreTabs(tab_features);
   // Sort with larger reactivation_score first (desending importance).
   std::sort(tabs->begin(), tabs->end(),
             [&reactivation_scores](const LifecycleUnit* const a,
@@ -554,17 +615,6 @@ void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
               return reactivation_scores.at(a->GetID()) >
                      reactivation_scores.at(b->GetID());
             });
-}
-
-int64_t TabActivityWatcher::NewInt64ForLabelIdOrQueryId() {
-  // The id is shifted 13 bits so that the lower bits are reserved for counting
-  // multiple queries.
-  // We choose 13 so that the lower bits for counting multiple queries and
-  // higher bits for labeling queries are both unlikely to overflow. (lower bits
-  // only overflows when we have more than 8192 queries without labeling events;
-  // higher bits only overflow when we have more than 100 billion discards.
-  constexpr int kIdShiftBits = 13;
-  return (++internal_id_for_logging_) << kIdShiftBits;
 }
 
 void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
@@ -641,7 +691,8 @@ bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
 
 void TabActivityWatcher::ResetForTesting() {
   tab_metrics_logger_ = std::make_unique<TabMetricsLogger>();
-  internal_id_for_logging_ = 0;
+  predictor_ = std::make_unique<tab_ranker::TabScorePredictor>();
+  internal_id_for_logging = 0;
 }
 
 // static

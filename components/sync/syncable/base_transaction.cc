@@ -33,7 +33,7 @@ PassphraseType BaseTransaction::GetPassphraseType() const {
   syncable::NigoriHandler* nigori_handler = GetDirectory()->GetNigoriHandler();
   return nigori_handler
              ? nigori_handler->GetPassphraseType(this->GetWrappedTrans())
-             : PassphraseType::IMPLICIT_PASSPHRASE;
+             : PassphraseType::kImplicitPassphrase;
 }
 
 }  // namespace syncer

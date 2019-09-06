@@ -15,12 +15,18 @@ namespace syncer {
 // Do not re-order or delete these entries; they are used in a UMA histogram.
 // Please edit SyncPassphraseType in enums.xml if a value is added.
 enum class PassphraseType {
-  IMPLICIT_PASSPHRASE = 0,         // GAIA-based passphrase (deprecated).
-  KEYSTORE_PASSPHRASE = 1,         // Keystore passphrase.
-  FROZEN_IMPLICIT_PASSPHRASE = 2,  // Frozen GAIA passphrase.
-  CUSTOM_PASSPHRASE = 3,           // User-provided passphrase.
-  TRUSTED_VAULT_PASSPHRASE = 4,    // Trusted-vault passphrase.
-  PASSPHRASE_TYPE_SIZE,            // The size of this enum; keep last.
+  // GAIA-based passphrase (deprecated).
+  kImplicitPassphrase = 0,
+  // Keystore passphrase.
+  kKeystorePassphrase = 1,
+  // Frozen GAIA passphrase.
+  kFrozenImplicitPassphrase = 2,
+  // User-provided passphrase.
+  kCustomPassphrase = 3,
+  // Trusted-vault passphrase.
+  kTrustedVaultPassphrase = 4,
+  // Alias used by UMA macros to deduce the correct boundary value.
+  kMaxValue = kTrustedVaultPassphrase
 };
 
 bool IsExplicitPassphrase(PassphraseType type);

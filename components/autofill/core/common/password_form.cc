@@ -26,6 +26,17 @@ std::string ToString(const T& obj) {
   return ostream.str();
 }
 
+std::string StoreToString(PasswordForm::Store from_store) {
+  switch (from_store) {
+    case PasswordForm::Store::kNotSet:
+      return "Not Set";
+    case PasswordForm::Store::kProfileStore:
+      return "Profile Store";
+    case PasswordForm::Store::kAccountStore:
+      return "Account Store";
+  }
+}
+
 // Serializes a PasswordForm to a JSON object. Used only for logging in tests.
 void PasswordFormToJSON(const PasswordForm& form,
                         base::DictionaryValue* target) {
@@ -85,6 +96,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("is_gaia_with_skip_save_password_form",
                      form.form_data.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
+  target->SetString("from_store", StoreToString(form.from_store));
 }
 
 }  // namespace
@@ -180,7 +192,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          app_icon_url == form.app_icon_url &&
          submission_event == form.submission_event &&
          only_for_fallback == form.only_for_fallback &&
-         is_new_password_reliable == form.is_new_password_reliable;
+         is_new_password_reliable == form.is_new_password_reliable &&
+         from_store == form.from_store;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

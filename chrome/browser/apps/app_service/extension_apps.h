@@ -84,6 +84,11 @@ class ExtensionApps : public apps::mojom::Publisher,
       extensions::ExtensionPrefs* prefs) override;
 
   // extensions::ExtensionRegistryObserver overrides.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const extensions::Extension* extension,
                             bool is_update) override;

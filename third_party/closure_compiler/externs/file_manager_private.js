@@ -775,12 +775,6 @@ chrome.fileManagerPrivate.getPreferences = function(callback) {};
 chrome.fileManagerPrivate.setPreferences = function(changeInfo) {};
 
 /**
- * Sets the ARC flag and returns what was the value before setting.
- * @param {function(boolean)} callback
- */
-chrome.fileManagerPrivate.setArcStorageToastShownFlag = function(callback) {};
-
-/**
  * Performs drive content search. |searchParams| |callback|
  * @param {chrome.fileManagerPrivate.SearchParams} searchParams
  * @param {function((!Array<Entry>|undefined), (string|undefined))} callback

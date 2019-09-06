@@ -17,6 +17,11 @@ Polymer({
      * @type {string}
      */
     permissionType: String,
+
+    /**
+     * @type {string}
+     */
+    permissionLabel: String,
   },
 
   /**

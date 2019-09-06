@@ -210,7 +210,7 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
 
   // For types other than CUSTOM_PASSPHRASE, we should be using the old PBKDF2
   // key derivation method.
-  if (state_.cached_passphrase_type != PassphraseType::CUSTOM_PASSPHRASE) {
+  if (state_.cached_passphrase_type != PassphraseType::kCustomPassphrase) {
     DCHECK_EQ(state_.passphrase_key_derivation_params.method(),
               KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003);
   }

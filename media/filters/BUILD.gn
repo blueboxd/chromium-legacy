@@ -207,14 +207,6 @@ jumbo_source_set("filters") {
     sources += [
       "fuchsia/fuchsia_video_decoder.cc",
       "fuchsia/fuchsia_video_decoder.h",
-      "fuchsia/stream_processor_helper.cc",
-      "fuchsia/stream_processor_helper.h",
-      "fuchsia/sysmem_buffer_pool.cc",
-      "fuchsia/sysmem_buffer_pool.h",
-      "fuchsia/sysmem_buffer_reader.cc",
-      "fuchsia/sysmem_buffer_reader.h",
-      "fuchsia/sysmem_buffer_writer.cc",
-      "fuchsia/sysmem_buffer_writer.h",
     ]
     deps += [
       "//gpu/command_buffer/client",

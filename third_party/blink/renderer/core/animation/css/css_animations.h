@@ -202,8 +202,7 @@ class CORE_EXPORT CSSAnimations final {
     AnimationEventDelegate(Element* animation_target, const AtomicString& name)
         : animation_target_(animation_target),
           name_(name),
-          previous_phase_(Timing::kPhaseNone),
-          previous_iteration_(NullValue()) {}
+          previous_phase_(Timing::kPhaseNone) {}
     bool RequiresIterationEvents(const AnimationEffect&) override;
     void OnEventCondition(const AnimationEffect&) override;
     void Trace(blink::Visitor*) override;
@@ -219,7 +218,7 @@ class CORE_EXPORT CSSAnimations final {
     Member<Element> animation_target_;
     const AtomicString name_;
     Timing::Phase previous_phase_;
-    double previous_iteration_;
+    base::Optional<double> previous_iteration_;
   };
 
   class TransitionEventDelegate final : public AnimationEffect::EventDelegate {

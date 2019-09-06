@@ -340,9 +340,8 @@ void SetSecFetchHeaders(
     const FetchClientSettingsObject& fetch_client_settings_object) {
   scoped_refptr<SecurityOrigin> url_origin =
       SecurityOrigin::Create(request.Url());
-  // TODO(964053, 989502): These headers ought to be restricted to secure
-  // transport.
-  if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled()) {
+  if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
+      url_origin->IsPotentiallyTrustworthy()) {
     const char* destination_value =
         GetRequestDestinationFromContext(request.GetRequestContext());
 

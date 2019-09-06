@@ -547,7 +547,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void RebuildLayoutTree(WhitespaceAttacher&);
   void PseudoStateChanged(CSSSelector::PseudoType);
   void SetAnimationStyleChange(bool);
-  void ClearAnimationStyleChange();
   void SetNeedsAnimationStyleRecalc();
 
   void SetNeedsCompositingUpdate();

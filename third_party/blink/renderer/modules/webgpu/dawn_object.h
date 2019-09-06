@@ -28,10 +28,9 @@ class Visitor;
 // The DawnControlClientHolder is used to hold the WebGPUInterface and keep
 // track of whether or not the client has been destroyed. If the client is
 // destroyed, we should not call any Dawn functions.
-class DawnObjectBase : public ScriptWrappable {
+class DawnObjectBase {
  public:
   DawnObjectBase(scoped_refptr<DawnControlClientHolder> dawn_control_client);
-  ~DawnObjectBase() override;
 
   const scoped_refptr<DawnControlClientHolder>& GetDawnControlClient() const;
   bool IsDawnControlClientDestroyed() const;
@@ -42,9 +41,10 @@ class DawnObjectBase : public ScriptWrappable {
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
 };
 
-class DawnObjectImpl : public DawnObjectBase {
+class DawnObjectImpl : public ScriptWrappable, public DawnObjectBase {
  public:
   DawnObjectImpl(GPUDevice* device);
+  ~DawnObjectImpl() override;
 
   void Trace(blink::Visitor* visitor) override;
 

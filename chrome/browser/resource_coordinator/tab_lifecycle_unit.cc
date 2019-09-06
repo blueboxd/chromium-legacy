@@ -161,7 +161,9 @@ bool IsValidStateChange(LifecycleUnitState from,
           return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
         }
-        default: { return false; }
+        default: {
+          return false;
+        }
       }
     }
   }
@@ -416,6 +418,11 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
   }
 }
 
+void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
+    mojom::InterventionPolicy policy) {
+  origin_trial_freeze_policy_ = policy;
+}
+
 void TabLifecycleUnitSource::TabLifecycleUnit::RequestFreezeForDiscard(
     LifecycleUnitDiscardReason reason) {
   DCHECK_EQ(reason, LifecycleUnitDiscardReason::PROACTIVE);
@@ -513,16 +520,16 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     return false;
   }
 
-  bool check_heuristics = !GetStaticProactiveTabFreezeAndDiscardParams()
-                               .disable_heuristics_protections;
-
-  if (check_heuristics)
-    CanFreezeHeuristicsChecks(decision_details);
+  // IMPORTANT: Only the first reason added to |decision_details| determines
+  // whether the tab can be frozen. Additional reasons can be added for
+  // reporting purposes, but do not affect whether the tab can be frozen.
 
   if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
     decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
 
-  if (check_heuristics) {
+  if (!GetStaticProactiveTabFreezeAndDiscardParams()
+           .disable_heuristics_protections) {
+    CanFreezeHeuristicsChecks(decision_details);
     CheckIfTabIsUsedInBackground(decision_details,
                                  InterventionType::kProactive);
   }
@@ -586,6 +593,10 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     }
   }
 #endif
+
+  // IMPORTANT: Only the first reason added to |decision_details| determines
+  // whether the tab can be discarded. Additional reasons can be added for
+  // reporting purposes, but do not affect whether the tab can be discarded.
 
   bool check_heuristics = !GetStaticProactiveTabFreezeAndDiscardParams()
                                .disable_heuristics_protections;
@@ -979,11 +990,13 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
 
 void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
     DecisionDetails* decision_details) const {
+  // Apply enterprise policy opt-out (policy is for all pages).
   if (!GetTabSource()->tab_lifecycles_enterprise_policy()) {
     decision_details->AddReason(
         DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
   }
 
+  // Apply intervention database opt-in/opt-out (policy is per origin).
   auto intervention_policy =
       GetTabSource()->intervention_policy_database()->GetFreezingPolicy(
           url::Origin::Create(web_contents()->GetLastCommittedURL()));
@@ -996,6 +1009,22 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
       decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
       break;
     case OriginInterventions::DEFAULT:
+      break;
+  }
+
+  // Apply origin trial opt-in/opt-out (policy is per page).
+  switch (origin_trial_freeze_policy_) {
+    case mojom::InterventionPolicy::kUnknown:
+      decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN);
+      break;
+    case mojom::InterventionPolicy::kOptOut:
+      decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT);
+      break;
+    case mojom::InterventionPolicy::kOptIn:
+      decision_details->AddReason(DecisionSuccessReason::ORIGIN_TRIAL_OPT_IN);
+      break;
+    case mojom::InterventionPolicy::kDefault:
+      // Let other heuristics determine whether the tab can be frozen.
       break;
   }
 }

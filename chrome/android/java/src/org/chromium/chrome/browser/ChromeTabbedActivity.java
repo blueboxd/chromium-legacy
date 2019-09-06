@@ -515,7 +515,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     public ChromeTabbedActivity() {
         mActivityStopMetrics = new ActivityStopMetrics();
         mMainIntentMetrics = new MainIntentBehaviorMetrics(this);
-        mAppIndexingUtil = new AppIndexingUtil();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mMultiInstanceManager = new MultiInstanceManager(this, mTabModelSelectorSupplier,
                     getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(), this);
@@ -1689,11 +1688,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
             @Override
-            public void onPageLoadFinished(final Tab tab, String url) {
-                mAppIndexingUtil.extractCopylessPasteMetadata(tab);
-            }
-
-            @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                     DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(ChromeTabbedActivity.this,
@@ -1702,6 +1696,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 }
             }
         };
+        mAppIndexingUtil = new AppIndexingUtil(mTabModelSelectorImpl);
 
         if (startIncognito) mTabModelSelectorImpl.selectModel(true);
 
@@ -2145,6 +2140,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         if (mUndoBarPopupController != null) {
             mUndoBarPopupController.destroy();
             mUndoBarPopupController = null;
+        }
+
+        if (mAppIndexingUtil != null) {
+            mAppIndexingUtil.destroy();
+            mAppIndexingUtil = null;
         }
 
         IncognitoTabHostRegistry.getInstance().unregister(mIncognitoTabHost);

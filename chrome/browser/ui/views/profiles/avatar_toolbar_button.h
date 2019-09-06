@@ -37,7 +37,17 @@ class AvatarToolbarButton : public ToolbarButton,
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
                            HighlightMeetsMinimumContrast);
-  enum class SyncState { kNormal, kPaused, kError };
+
+  // States of the button ordered in priority of getting displayed.
+  enum class State {
+    kIncognitoProfile,
+    kGuestSession,
+    kGenericProfile,
+    kAnimatedSignIn,
+    kSyncPaused,
+    kSyncError,
+    kNormal
+  };
 
   // ToolbarButton:
   void NotifyClick(const ui::Event& event) override;
@@ -77,13 +87,11 @@ class AvatarToolbarButton : public ToolbarButton,
   void ExpandToShowEmail();
   void ResetUserEmail();
 
-  bool IsIncognito() const;
-  bool IsIncognitoCounterActive() const;
-  bool ShouldShowGenericIcon() const;
   base::string16 GetAvatarTooltipText() const;
+  base::string16 GetProfileName() const;
   gfx::ImageSkia GetAvatarIcon(const gfx::Image& gaia_image) const;
   gfx::Image GetGaiaImage() const;
-  SyncState GetSyncState() const;
+  State GetState() const;
 
   void SetInsets();
 

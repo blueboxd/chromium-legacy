@@ -120,8 +120,6 @@ jumbo_static_library("test_support") {
     "../public/test/dump_accessibility_test_helper.h",
     "../public/test/fake_download_item.cc",
     "../public/test/fake_download_item.h",
-    "../public/test/fake_pepper_plugin_instance.cc",
-    "../public/test/fake_pepper_plugin_instance.h",
     "../public/test/fake_service_worker_context.cc",
     "../public/test/fake_service_worker_context.h",
     "../public/test/fake_speech_recognition_manager.cc",
@@ -159,8 +157,6 @@ jumbo_static_library("test_support") {
     "../public/test/network_service_test_helper.h",
     "../public/test/no_renderer_crashes_assertion.cc",
     "../public/test/no_renderer_crashes_assertion.h",
-    "../public/test/ppapi_test_utils.cc",
-    "../public/test/ppapi_test_utils.h",
     "../public/test/render_view_test.cc",
     "../public/test/render_view_test.h",
     "../public/test/scoped_overscroll_modes.cc",
@@ -295,8 +291,6 @@ jumbo_static_library("test_support") {
     "navigation_simulator_impl.h",
     "not_implemented_network_url_loader_factory.cc",
     "not_implemented_network_url_loader_factory.h",
-    "ppapi_unittest.cc",
-    "ppapi_unittest.h",
     "storage_partition_test_utils.cc",
     "storage_partition_test_utils.h",
     "stub_layer_tree_view_delegate.cc",
@@ -484,6 +478,12 @@ jumbo_static_library("test_support") {
   }
 
   if (enable_plugins) {
+    sources += [
+      "../public/test/fake_pepper_plugin_instance.cc",
+      "../public/test/fake_pepper_plugin_instance.h",
+      "../public/test/ppapi_test_utils.cc",
+      "ppapi_unittest.cc",
+    ]
     deps += [
       "//content/ppapi_plugin",
       "//ppapi/host",
@@ -491,11 +491,6 @@ jumbo_static_library("test_support") {
       "//ppapi/proxy:test_support",
       "//ppapi/shared_impl",
       "//ppapi/shared_impl:test_support",
-    ]
-  } else {
-    sources -= [
-      "../public/test/ppapi_test_utils.cc",
-      "ppapi_unittest.cc",
     ]
   }
 
@@ -1232,7 +1227,6 @@ test("content_browsertests") {
       "$root_out_dir/content_shell.pak",
       "data/",
       "//media/test/data/",
-      "//services/test/data/",
     ]
   }
 
@@ -1951,7 +1945,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/stun_field_trial_unittest.cc",
     "../renderer/media/webrtc/task_queue_factory_unittest.cc",
     "../renderer/media/webrtc/transceiver_state_surfacer_unittest.cc",
-    "../renderer/media/webrtc/transmission_encoding_info_handler_unittest.cc",
     "../renderer/media/webrtc/webrtc_audio_renderer_unittest.cc",
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_map_unittest.cc",
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_unittest.cc",

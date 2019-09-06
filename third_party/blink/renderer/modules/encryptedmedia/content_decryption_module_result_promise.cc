@@ -27,8 +27,6 @@ ExceptionCode WebCdmExceptionToExceptionCode(
       return ToExceptionCode(DOMExceptionCode::kInvalidStateError);
     case kWebContentDecryptionModuleExceptionQuotaExceededError:
       return ToExceptionCode(DOMExceptionCode::kQuotaExceededError);
-    case kWebContentDecryptionModuleExceptionUnknownError:
-      return ToExceptionCode(DOMExceptionCode::kUnknownError);
   }
 
   NOTREACHED();

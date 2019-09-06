@@ -240,7 +240,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
         .WillByDefault(Return(true));
 
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetPassphraseType())
-        .WillByDefault(Return(syncer::PassphraseType::IMPLICIT_PASSPHRASE));
+        .WillByDefault(Return(syncer::PassphraseType::kImplicitPassphrase));
     ON_CALL(*mock_sync_service_->GetMockUserSettings(),
             GetExplicitPassphraseTime())
         .WillByDefault(Return(base::Time()));
@@ -1171,8 +1171,7 @@ TEST_F(PeopleHandlerTest, ShowSetupOldGaiaPassphraseRequired) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetPassphraseType())
-      .WillByDefault(
-          Return(syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE));
+      .WillByDefault(Return(syncer::PassphraseType::kFrozenImplicitPassphrase));
   SetupInitializedSyncService();
   SetDefaultExpectationsForConfigPage();
 
@@ -1188,7 +1187,7 @@ TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetPassphraseType())
-      .WillByDefault(Return(syncer::PassphraseType::CUSTOM_PASSPHRASE));
+      .WillByDefault(Return(syncer::PassphraseType::kCustomPassphrase));
   SetupInitializedSyncService();
   SetDefaultExpectationsForConfigPage();
 

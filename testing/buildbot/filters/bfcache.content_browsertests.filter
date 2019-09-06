@@ -83,15 +83,8 @@
 # FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
 # In content::RenderFrameProxy::OnSetFrameOwnerProperties()
 # https://crbug.com/999849
--WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/0
--WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/1
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCacheDedicatedWorkers
-
-# Check failed: popup_ || pepper_fullscreen_ in RenderWidget::OnClose()
-# https://crbug.com/992891
--WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/1
--WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/0
 
 # Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
 # in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.

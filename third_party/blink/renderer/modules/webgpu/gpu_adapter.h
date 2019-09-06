@@ -16,7 +16,7 @@ namespace blink {
 
 class GPUDeviceDescriptor;
 
-class GPUAdapter final : public DawnObjectBase {
+class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -67,7 +67,7 @@ void InitNetwork() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-void SignInSecondaryAccount(
+AccountInfo SignInSecondaryAccount(
     Profile* profile,
     network::TestURLLoaderFactory* test_url_loader_factory,
     const std::string& email) {
@@ -77,6 +77,17 @@ void SignInSecondaryAccount(
       signin::MakeAccountAvailable(identity_manager, email);
   signin::SetCookieAccounts(identity_manager, test_url_loader_factory,
                             {{account_info.email, account_info.gaia}});
+  return account_info;
+}
+
+void SignOutSecondaryAccount(
+    Profile* profile,
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    const CoreAccountId& account_id) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  signin::SetCookieAccounts(identity_manager, test_url_loader_factory, {});
+  signin::RemoveRefreshTokenForAccount(identity_manager, account_id);
 }
 
 #if !defined(OS_CHROMEOS)

@@ -27,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -353,6 +354,8 @@ public class PasswordEntryViewer
     }
 
     private void hidePassword() {
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+
         changeHowPasswordIsDisplayed(R.drawable.ic_visibility_black,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD
                         | InputType.TYPE_TEXT_FLAG_MULTI_LINE,

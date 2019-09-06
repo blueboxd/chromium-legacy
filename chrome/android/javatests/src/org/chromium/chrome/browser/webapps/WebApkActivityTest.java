@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

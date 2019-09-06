@@ -149,9 +149,6 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Called during tests to determine if SMB file shares is enabled.
   bool IsSmbEnabled() const;
 
-  // Creates ARC services for testing that are keyed to the current |profile()|.
-  void CreateArcServices();
-
   base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<DownloadsTestVolume> local_volume_;

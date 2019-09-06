@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -124,6 +125,7 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // Output a single |video_frame| on the decoder thread.
   void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
+                       const gfx::Rect& visible_rect,
                        base::TimeDelta timestamp);
   // Called when a different output frame resolution is requested on the decoder
   // thread. This happens when either decoding just started or a resolution
@@ -171,7 +173,6 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // Output frame properties.
   base::Optional<VideoFrameLayout> frame_layout_;
-  gfx::Rect visible_rect_;
   // Ratio of natural size to |visible_rect_| of the output frames.
   double pixel_aspect_ratio_ = 0.0;
 
@@ -179,8 +180,11 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
 
-  // The mapping between buffer id and the timestamp.
-  std::map<int32_t, base::TimeDelta> buffer_id_to_timestamp_;
+  // The time at which each buffer decode operation started. Not each decode
+  // operation leads to a frame being output and frames might be reordered, so
+  // we don't know when it's safe to drop a timestamp. This means we need to use
+  // a cache here, with a size large enough to account for frame reordering.
+  base::MRUCache<int32_t, base::TimeDelta> buffer_id_to_timestamp_;
 
   // Queue containing all requested decode tasks.
   base::queue<DecodeTask> decode_task_queue_;

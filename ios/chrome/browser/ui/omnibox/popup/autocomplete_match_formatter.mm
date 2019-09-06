@@ -98,25 +98,33 @@ bool ShouldUseNewFormatting() {
 }
 
 - (NSAttributedString*)detailText {
-  // The detail text should be the URL (|_match.contents|) for non-search
-  // suggestions and the entity type (|_match.description|) for search entity
-  // suggestions. For all other search suggestions, |_match.description| is the
-  // name of the currently selected search engine, which for mobile we suppress.
-  NSString* detailText = nil;
-  if (self.isURL)
-    detailText = base::SysUTF16ToNSString(_match.contents);
-  else if (_match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
-    detailText = base::SysUTF16ToNSString(_match.description);
-
-  NSAttributedString* detailAttributedText = nil;
   if (self.hasAnswer) {
-    const SuggestionAnswer::ImageLine& detailTextLine =
-        ShouldUseNewFormatting() && !_match.answer->IsExceptedFromLineReversal()
-            ? _match.answer->first_line()
-            : _match.answer->second_line();
-    detailAttributedText = [self attributedStringWithAnswerLine:detailTextLine
-                                         useDeemphasizedStyling:YES];
+    if (ShouldUseNewFormatting() &&
+        !_match.answer->IsExceptedFromLineReversal()) {
+      NSAttributedString* detailBaseText = [self
+          attributedStringWithString:base::SysUTF16ToNSString(_match.contents)
+                     classifications:&_match.contents_class
+                           smallFont:NO
+                               color:SuggestionDetailTextColor(self.incognito)
+                            dimColor:DimColor()];
+      return [self addExtraTextFromAnswerLine:_match.answer->first_line()
+                           toAttributedString:detailBaseText
+                       useDeemphasizedStyling:YES];
+    } else {
+      return [self attributedStringWithAnswerLine:_match.answer->second_line()
+                           useDeemphasizedStyling:YES];
+    }
   } else {
+    // The detail text should be the URL (|_match.contents|) for non-search
+    // suggestions and the entity type (|_match.description|) for search entity
+    // suggestions. For all other search suggestions, |_match.description| is
+    // the name of the currently selected search engine, which for mobile we
+    // suppress.
+    NSString* detailText = nil;
+    if (self.isURL)
+      detailText = base::SysUTF16ToNSString(_match.contents);
+    else if (_match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY)
+      detailText = base::SysUTF16ToNSString(_match.description);
     const ACMatchClassifications* classifications =
         self.isURL ? &_match.contents_class : nullptr;
     // The suggestion detail color should match the main text color for entity
@@ -129,14 +137,12 @@ bool ShouldUseNewFormatting() {
       suggestionDetailTextColor = SuggestionDetailTextColor(self.incognito);
     }
     DCHECK(suggestionDetailTextColor);
-    detailAttributedText =
-        [self attributedStringWithString:detailText
-                         classifications:classifications
-                               smallFont:YES
-                                   color:suggestionDetailTextColor
-                                dimColor:DimColor()];
+    return [self attributedStringWithString:detailText
+                            classifications:classifications
+                                  smallFont:YES
+                                      color:suggestionDetailTextColor
+                                   dimColor:DimColor()];
   }
-  return detailAttributedText;
 }
 
 - (id<OmniboxIcon>)icon {
@@ -159,40 +165,47 @@ bool ShouldUseNewFormatting() {
 }
 
 - (NSAttributedString*)text {
-  // The text should be search term (|_match.contents|) for searches, otherwise
-  // page title (|_match.description|).
-  base::string16 textString =
-      !self.isURL ? _match.contents : _match.description;
-  NSString* text = base::SysUTF16ToNSString(textString);
-
-  // If for some reason the title is empty, copy the detailText.
-  if ([text length] == 0 && [self.detailText length] != 0) {
-    text = [self.detailText string];
-  }
-
-  NSAttributedString* attributedText = nil;
-
   if (self.hasAnswer) {
-    const SuggestionAnswer::ImageLine& textLine =
-        ShouldUseNewFormatting() && !_match.answer->IsExceptedFromLineReversal()
-            ? _match.answer->second_line()
-            : _match.answer->first_line();
-    attributedText = [self attributedStringWithAnswerLine:textLine
-                                   useDeemphasizedStyling:NO];
+    if (ShouldUseNewFormatting() &&
+        !_match.answer->IsExceptedFromLineReversal()) {
+      return [self attributedStringWithAnswerLine:_match.answer->second_line()
+                           useDeemphasizedStyling:NO];
+    } else {
+      UIColor* suggestionTextColor = SuggestionTextColor(self.incognito);
+      UIColor* dimColor = self.incognito ? DimColorIncognito() : DimColor();
+      NSAttributedString* attributedBaseText = [self
+          attributedStringWithString:base::SysUTF16ToNSString(_match.contents)
+                     classifications:&_match.contents_class
+                           smallFont:NO
+                               color:suggestionTextColor
+                            dimColor:dimColor];
+      return [self addExtraTextFromAnswerLine:_match.answer->first_line()
+                           toAttributedString:attributedBaseText
+                       useDeemphasizedStyling:NO];
+    }
   } else {
+    // The text should be search term (|_match.contents|) for searches,
+    // otherwise page title (|_match.description|).
+    base::string16 textString =
+        !self.isURL ? _match.contents : _match.description;
+    NSString* text = base::SysUTF16ToNSString(textString);
+
+    // If for some reason the title is empty, copy the detailText.
+    if ([text length] == 0 && [self.detailText length] != 0) {
+      text = [self.detailText string];
+    }
+
     const ACMatchClassifications* textClassifications =
         !self.isURL ? &_match.contents_class : &_match.description_class;
     UIColor* suggestionTextColor = SuggestionTextColor(self.incognito);
     UIColor* dimColor = self.incognito ? DimColorIncognito() : DimColor();
 
-    attributedText = [self attributedStringWithString:text
-                                      classifications:textClassifications
-                                            smallFont:NO
-                                                color:suggestionTextColor
-                                             dimColor:dimColor];
+    return [self attributedStringWithString:text
+                            classifications:textClassifications
+                                  smallFont:NO
+                                      color:suggestionTextColor
+                                   dimColor:dimColor];
   }
-
-  return attributedText;
 }
 
 // The primary purpose of this list is to omit the "what you typed" types, since
@@ -244,8 +257,8 @@ bool ShouldUseNewFormatting() {
 
 #pragma mark helpers
 
-// Create a string to display for an answer line.
-- (NSMutableAttributedString*)
+// Create a string to display for an entire answer line.
+- (NSAttributedString*)
     attributedStringWithAnswerLine:(const SuggestionAnswer::ImageLine&)line
             useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
   NSMutableAttributedString* result =
@@ -256,6 +269,21 @@ bool ShouldUseNewFormatting() {
                 [self attributedStringForTextfield:&field
                             useDeemphasizedStyling:useDeemphasizedStyling]];
   }
+
+  return [self addExtraTextFromAnswerLine:line
+                       toAttributedString:result
+                   useDeemphasizedStyling:useDeemphasizedStyling];
+}
+
+// Adds the |additional_text| and |status_text| from |line| to the given
+// attributed string. This is necessary because answers get their main text
+// from the match contents instead of the ImageLine's text_fields. This is
+// because those fields contain server-provided formatting, which aren't used.
+- (NSAttributedString*)
+    addExtraTextFromAnswerLine:(const SuggestionAnswer::ImageLine&)line
+            toAttributedString:(NSAttributedString*)attributedString
+        useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
+  NSMutableAttributedString* result = [attributedString mutableCopy];
 
   NSAttributedString* spacer =
       [[NSAttributedString alloc] initWithString:@"  "];
@@ -286,13 +314,6 @@ bool ShouldUseNewFormatting() {
 
   NSString* unescapedString =
       base::SysUTF16ToNSString(net::UnescapeForHTML(string));
-  // TODO(crbug.com/763894): Remove this tag stripping once the JSON parsing
-  // class handles HTML tags.
-  unescapedString = [unescapedString stringByReplacingOccurrencesOfString:@"<b>"
-                                                               withString:@""];
-  unescapedString =
-      [unescapedString stringByReplacingOccurrencesOfString:@"</b>"
-                                                 withString:@""];
 
   NSDictionary* attributes =
       ShouldUseNewFormatting()

@@ -11,6 +11,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -24,6 +25,8 @@ namespace blink {
 // before they are invoked. User is responsible for synchronizing completion of
 // tasks and destruction of CancelableTaskScheduler.
 class PLATFORM_EXPORT CancelableTaskScheduler final {
+  USING_FAST_MALLOC(CancelableTaskScheduler);
+
  public:
   using Task = WTF::CrossThreadOnceFunction<void()>;
 

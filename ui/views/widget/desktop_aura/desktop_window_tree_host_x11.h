@@ -159,10 +159,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void SetCapture() override;
   void ReleaseCapture() override;
 
-  // Overridden from display::DisplayObserver via aura::WindowTreeHost:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 

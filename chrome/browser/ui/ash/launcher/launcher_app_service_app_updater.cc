@@ -30,17 +30,23 @@ void LauncherAppServiceAppUpdater::OnAppUpdate(const apps::AppUpdate& update) {
 
   const std::string& app_id = update.AppId();
   std::set<std::string>::const_iterator it = installed_apps_.find(app_id);
-  if (update.Readiness() == apps::mojom::Readiness::kReady) {
-    if (it == installed_apps_.end()) {
-      installed_apps_.insert(app_id);
+  switch (update.Readiness()) {
+    case apps::mojom::Readiness::kReady:
+      if (it == installed_apps_.end()) {
+        installed_apps_.insert(app_id);
+      }
       delegate()->OnAppInstalled(browser_context(), app_id);
-    }
-  } else {
-    if (it != installed_apps_.end()) {
-      installed_apps_.erase(it);
-      delegate()->OnAppUninstalledPrepared(browser_context(), app_id);
-      delegate()->OnAppUninstalled(browser_context(), app_id);
-    }
+      break;
+    case apps::mojom::Readiness::kUninstalledByUser:
+      if (it != installed_apps_.end()) {
+        installed_apps_.erase(it);
+        delegate()->OnAppUninstalledPrepared(browser_context(), app_id);
+        delegate()->OnAppUninstalled(browser_context(), app_id);
+      }
+      break;
+    default:
+      delegate()->OnAppUpdated(browser_context(), app_id);
+      break;
   }
 }
 

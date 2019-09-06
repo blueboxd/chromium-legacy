@@ -19,8 +19,7 @@ class PdfAccessibilityTree;
 // accessibility actions.
 class PdfAXActionTarget : public ui::AXActionTarget {
  public:
-  PdfAXActionTarget(const ui::AXNode& plugin_node,
-                    pdf::PdfAccessibilityTree* tree);
+  PdfAXActionTarget(const ui::AXNode& plugin_node, PdfAccessibilityTree* tree);
   ~PdfAXActionTarget() override;
 
  protected:
@@ -54,7 +53,7 @@ class PdfAXActionTarget : public ui::AXActionTarget {
 
  private:
   const ui::AXNode& target_plugin_node_;
-  pdf::PdfAccessibilityTree* pdf_accessibility_tree_source_;
+  PdfAccessibilityTree* pdf_accessibility_tree_source_;
 };
 
 }  // namespace pdf

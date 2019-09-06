@@ -523,21 +523,6 @@ TEST_F(JsonTraceExporterTest, TestFtraceLegacyOutput) {
       unparsed_trace_data_);
 }
 
-TEST_F(JsonTraceExporterTest, TestLegacySystemTrace) {
-  json_trace_exporter_->json_traces.emplace_back();
-  auto& trace = json_trace_exporter_->json_traces.back();
-  trace.set_type(perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE);
-  trace.set_data("\"bool\":true");
-  json_trace_exporter_->json_traces.push_back(trace);
-  json_trace_exporter_->json_traces.back().set_data("\"double\":8.0");
-  json_trace_exporter_->OnTraceData(std::vector<perfetto::TracePacket>(),
-                                    false);
-  EXPECT_EQ(
-      "{\"traceEvents\":[],"
-      "\"systemTraceEvents\":{\"bool\":true,\"double\":8.0}}",
-      unparsed_trace_data_);
-}
-
 TEST_F(JsonTraceExporterTest, TestLegacyJsonTrace) {
   json_trace_exporter_->json_traces.emplace_back();
   auto& trace = json_trace_exporter_->json_traces.back();
@@ -547,7 +532,7 @@ TEST_F(JsonTraceExporterTest, TestLegacyJsonTrace) {
       "\"cat\":\"cat\",\"name\":\"name_1\",\"args\":{}}");
   json_trace_exporter_->json_traces.push_back(trace);
   json_trace_exporter_->json_traces.back().set_data(
-      "{\"pid\":2,\"tid\":3,\"ts\":1,\"ph\":\"B\","
+      ",\n{\"pid\":2,\"tid\":3,\"ts\":1,\"ph\":\"B\","
       "\"cat\":\"cat\",\"name\":\"name_2\",\"args\":{}}");
   json_trace_exporter_->OnTraceData(std::vector<perfetto::TracePacket>(),
                                     false);

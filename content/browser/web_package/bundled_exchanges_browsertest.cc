@@ -80,8 +80,9 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchPath(switches::kTrustableBundledExchangesFile,
-                                   test_data_path());
+    command_line->AppendSwitchASCII(
+        switches::kTrustableBundledExchangesFileUrl,
+        net::FilePathToFileURL(test_data_path()).spec());
   }
 
   void TearDownOnMainThread() override {
@@ -90,14 +91,33 @@ class BundledExchangesTrustableFileBrowserTest : public ContentBrowserTest {
       SetBrowserClientForTesting(original_client_);
   }
 
+  void NavigateToBundleAndWaitForReady() {
+    base::string16 expected_title = base::ASCIIToUTF16("Ready");
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    EXPECT_TRUE(NavigateToURL(shell()->web_contents(),
+                              net::FilePathToFileURL(test_data_path()),
+                              GURL("https://test.example.org/")));
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  void RunTestScript(const std::string& script) {
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                              "loadScript('" + script + "');"));
+
+    base::string16 ok = base::ASCIIToUTF16("OK");
+    TitleWatcher title_watcher(shell()->web_contents(), ok);
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
+    EXPECT_EQ(ok, title_watcher.WaitAndGetTitle());
+  }
+
   virtual base::FilePath GetTestDataPath() const {
     base::FilePath test_data_dir;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-    return test_data_dir.AppendASCII("services")
+    return test_data_dir.AppendASCII("content")
         .AppendASCII("test")
         .AppendASCII("data")
         .AppendASCII("bundled_exchanges")
-        .AppendASCII("hello.wbn");
+        .AppendASCII("bundled_exchanges_browsertest.wbn");
   }
 
   const base::FilePath& test_data_path() const { return test_data_path_; }
@@ -117,13 +137,17 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest,
   // on Android Kitkat or older systems.
   if (!original_client_)
     return;
+  NavigateToBundleAndWaitForReady();
+}
 
-  base::string16 expected_title = base::ASCIIToUTF16("Done");
-  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  EXPECT_TRUE(NavigateToURL(shell()->web_contents(),
-                            net::FilePathToFileURL(test_data_path()),
-                            GURL("https://test.example.org/")));
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileBrowserTest, RangeRequest) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+
+  NavigateToBundleAndWaitForReady();
+  RunTestScript("test-range-request.js");
 }
 
 class BundledExchangesTrustableFileNotFoundBrowserTest

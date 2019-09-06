@@ -328,4 +328,17 @@ TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
 }
 
+TEST_F(NodeTest, MutationOutsideFlatTreeStyleDirty) {
+  SetBodyContent("<div id=host><span id=nonslotted></span></div>");
+  GetDocument().getElementById("host")->AttachShadowRootInternal(
+      ShadowRootType::kOpen);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+  GetDocument()
+      .getElementById("nonslotted")
+      ->setAttribute("style", "color:green");
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+}
+
 }  // namespace blink

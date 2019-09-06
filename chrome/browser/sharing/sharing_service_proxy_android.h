@@ -33,6 +33,10 @@ class SharingServiceProxyAndroid {
       const base::android::JavaParamRef<jobject>& j_device_info,
       jint j_capabilities);
 
+  void AddDeviceCandidatesInitializedObserver(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_runnable);
+
  private:
   SharingService* sharing_service_ = nullptr;
   ClickToCallMessageHandler click_to_call_message_handler_;

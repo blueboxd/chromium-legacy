@@ -134,8 +134,8 @@ base::Time TestSyncUserSettings::GetExplicitPassphraseTime() const {
 }
 
 PassphraseType TestSyncUserSettings::GetPassphraseType() const {
-  return IsUsingSecondaryPassphrase() ? PassphraseType::CUSTOM_PASSPHRASE
-                                      : PassphraseType::IMPLICIT_PASSPHRASE;
+  return IsUsingSecondaryPassphrase() ? PassphraseType::kCustomPassphrase
+                                      : PassphraseType::kImplicitPassphrase;
 }
 
 void TestSyncUserSettings::SetEncryptionPassphrase(

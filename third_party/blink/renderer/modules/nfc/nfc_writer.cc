@@ -84,13 +84,13 @@ ScriptPromise NFCWriter::push(ScriptState* script_state,
   DCHECK(message);
 
   if (!SetNDEFMessageURL(execution_context->GetSecurityOrigin()->ToString(),
-                         message)) {
+                         *message)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kSyntaxError, kNfcSetIdError));
   }
 
-  if (GetNDEFMessageSize(message) >
+  if (GetNDEFMessageSize(*message) >
       device::mojom::blink::NDEFMessage::kMaxSize) {
     return ScriptPromise::RejectWithDOMException(
         script_state,

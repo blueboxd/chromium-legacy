@@ -62,7 +62,7 @@ class AndroidManagementClientTest : public testing::Test {
   // Protobuf is used in successfil responsees.
   em::DeviceManagementResponse android_management_response_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockDeviceManagementService service_;
   StrictMock<base::MockCallback<AndroidManagementClient::StatusCallback>>
       callback_observer_;

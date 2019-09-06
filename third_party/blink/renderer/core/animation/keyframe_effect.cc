@@ -384,16 +384,18 @@ void KeyframeEffect::ApplyEffects() {
     GetAnimation()->CancelAnimationOnCompositor();
   }
 
-  double iteration = CurrentIteration();
-  DCHECK_GE(iteration, 0);
+  base::Optional<double> iteration = CurrentIteration();
+  DCHECK(iteration);
+  DCHECK_GE(iteration.value(), 0);
   bool changed = false;
   if (sampled_effect_) {
-    changed = model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
-                             SpecifiedTiming().IterationDuration(),
-                             sampled_effect_->MutableInterpolations());
+    changed =
+        model_->Sample(clampTo<int>(iteration.value(), 0), Progress().value(),
+                       SpecifiedTiming().IterationDuration(),
+                       sampled_effect_->MutableInterpolations());
   } else {
     HeapVector<Member<Interpolation>> interpolations;
-    model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
+    model_->Sample(clampTo<int>(iteration.value(), 0), Progress().value(),
                    SpecifiedTiming().IterationDuration(), interpolations);
     if (!interpolations.IsEmpty()) {
       auto* sampled_effect =

@@ -66,7 +66,7 @@ suite('<app-management-managed-apps>', () => {
   test('Pin to shelf toggle effected by policy', () => {
     const pinToShelfSetting = appDetailView.$$('#pin-to-shelf-setting')
                                   .$$('app-management-toggle-row');
-    expectTrue(!!pinToShelfSetting.$.policyIndicator);
+    expectTrue(!!pinToShelfSetting.root.querySelector('#policyIndicator'));
     expectTrue(pinToShelfSetting.$$('cr-toggle').disabled);
   });
 });

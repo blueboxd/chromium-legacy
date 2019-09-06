@@ -18,7 +18,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -61,13 +61,13 @@ id<GREYMatcher> KeyboardIconMatcher() {
 // Returns a matcher for the password table view in manual fallback.
 id<GREYMatcher> PasswordTableViewMatcher() {
   return grey_accessibilityID(
-      manual_fill::PasswordTableViewAccessibilityIdentifier);
+      manual_fill::kPasswordTableViewAccessibilityIdentifier);
 }
 
 // Returns a matcher for the password search bar in manual fallback.
 id<GREYMatcher> PasswordSearchBarMatcher() {
   return grey_accessibilityID(
-      manual_fill::PasswordSearchBarAccessibilityIdentifier);
+      manual_fill::kPasswordSearchBarAccessibilityIdentifier);
 }
 
 // Returns a matcher for the button to open password settings in manual
@@ -173,10 +173,13 @@ class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
 // done.
 void SaveToPasswordStore(const autofill::PasswordForm& form) {
   GetPasswordStore()->AddLogin(form);
+  // When we retrieve the form from the store, |from_store| should be set.
+  autofill::PasswordForm expected_form = form;
+  expected_form.from_store = autofill::PasswordForm::Store::kProfileStore;
   // Check the result and ensure PasswordStore processed this.
   TestStoreConsumer consumer;
   for (const auto& result : consumer.GetStoreResults()) {
-    if (result == form)
+    if (result == expected_form)
       return;
   }
   GREYFail(@"Stored form was not found in the PasswordStore results.");
@@ -366,12 +369,8 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is resumed after dismissing "Other
 // Passwords".
-- (void)testPasswordControllerResumesWhenOtherPasswordsDismiss {
-  if (base::ios::IsRunningOnIOS13OrLater() && [ChromeEarlGrey isIPadIdiom]) {
-    // TODO(crbug.com/984977): Support this behavior in iPads again.
-    return;
-  }
-
+// TODO(crbug.com/984977): Support this behavior again.
+- (void)DISABLED_testPasswordControllerResumesWhenOtherPasswordsDismiss {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];

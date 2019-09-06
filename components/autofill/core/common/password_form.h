@@ -303,6 +303,16 @@ struct PasswordForm {
   // as signal for password generation eligibility.
   bool is_new_password_reliable = false;
 
+  enum class Store {
+    // Default value.
+    kNotSet,
+    // Credential came from the profile (i.e. local) storage.
+    kProfileStore,
+    // Credential came from the Gaia-account-scoped storage.
+    kAccountStore
+  };
+  Store from_store = Store::kNotSet;
+
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
   bool IsPossibleChangePasswordForm() const;

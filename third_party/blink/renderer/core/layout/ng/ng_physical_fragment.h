@@ -322,7 +322,6 @@ class CORE_EXPORT NGPhysicalFragment
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).
-  unsigned line_orientation_ : 2;  // NGLineOrientation
   unsigned is_generated_text_ : 1;
   mutable unsigned ink_overflow_computed_ : 1;
 

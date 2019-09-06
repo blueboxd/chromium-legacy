@@ -10,7 +10,6 @@ include_rules = [
   # Subdirectories of //components/signin must explicitly allow deps on each
   # other based on the conceptual deps structure.
   "-components/signin",
-  "+components/signin/public",
   "+components/user_manager",
   "+components/webdata/common",
   "+crypto",

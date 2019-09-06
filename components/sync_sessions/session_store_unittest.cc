@@ -175,7 +175,7 @@ class SessionStoreOpenTest : public ::testing::Test {
 
   ~SessionStoreOpenTest() override {}
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   SessionSyncPrefs session_sync_prefs_;
   std::unique_ptr<MockSyncSessionsClient> mock_sync_sessions_client_;

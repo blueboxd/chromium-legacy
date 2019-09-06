@@ -97,6 +97,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetIdentityInfo(const gfx::Image& image,
                        const base::string16& title,
                        const base::string16& subtitle);
+  void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
+                                const base::string16& text,
+                                base::RepeatingClosure action);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.
@@ -196,6 +199,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   // Component containers.
   views::View* identity_info_container_ = nullptr;
+  views::View* shortcut_features_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

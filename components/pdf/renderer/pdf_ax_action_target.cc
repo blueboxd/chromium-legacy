@@ -35,7 +35,7 @@ PP_PdfAccessibilityScrollAlignment ConvertAXScrollToPdfScrollAlignment(
 }  // namespace
 
 PdfAXActionTarget::PdfAXActionTarget(const ui::AXNode& plugin_node,
-                                     pdf::PdfAccessibilityTree* pdf_tree_source)
+                                     PdfAccessibilityTree* pdf_tree_source)
     : target_plugin_node_(plugin_node),
       pdf_accessibility_tree_source_(pdf_tree_source) {
   DCHECK(pdf_accessibility_tree_source_);
@@ -52,7 +52,18 @@ bool PdfAXActionTarget::ClearAccessibilityFocus() const {
 }
 
 bool PdfAXActionTarget::Click() const {
-  return false;
+  PP_PdfAccessibilityActionData pdf_action_data = {};
+
+  if ((target_plugin_node_.data().role != ax::mojom::Role::kLink) ||
+      !pdf_accessibility_tree_source_->GetPdfLinkInfoFromAXNode(
+          target_plugin_node_.data().id, &pdf_action_data.link_index,
+          &pdf_action_data.page_index)) {
+    return false;
+  }
+
+  pdf_action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
+  pdf_accessibility_tree_source_->HandleAction(pdf_action_data);
+  return true;
 }
 
 bool PdfAXActionTarget::Decrement() const {
@@ -120,7 +131,7 @@ bool PdfAXActionTarget::ScrollToMakeVisibleWithSubFocus(
     const gfx::Rect& rect,
     ax::mojom::ScrollAlignment horizontal_scroll_alignment,
     ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
-  PP_PdfAccessibilityActionData pdf_action_data;
+  PP_PdfAccessibilityActionData pdf_action_data = {};
   pdf_action_data.action =
       PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE;
   pdf_action_data.horizontal_scroll_alignment =

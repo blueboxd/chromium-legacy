@@ -90,7 +90,7 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
   self.tableView.allowsSelection = NO;
   self.definesPresentationContext = YES;
   if (!self.tableViewModel) {
-    if (IsIPadIdiom()) {
+    if (self.popoverPresentationController) {
       self.preferredContentSize = CGSizeMake(
           PopoverPreferredWidth, AlignValueToPixel(PopoverLoadingHeight));
     }
@@ -234,7 +234,7 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
     }
   }
   [self.tableView reloadData];
-  if (IsIPadIdiom()) {
+  if (self.popoverPresentationController) {
     // Update the preffered content size on iPad so the popover shows the right
     // size.
     [self.tableView layoutIfNeeded];

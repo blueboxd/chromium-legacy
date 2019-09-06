@@ -90,6 +90,8 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
     result = ScoreTabWithMLScorer(tab, score);
   } else if (type_ == KPairwiseScorer) {
     result = ScoreTabsWithPairwiseScorer(tab, TabFeatures(), score);
+  } else if (type_ == kFrecencyScorer) {
+    result = ScoreTabWithFrecencyScorer(tab, score);
   } else {
     return TabRankerResult::kUnrecognizableScorer;
   }
@@ -226,6 +228,14 @@ void TabScorePredictor::LazyInitialize() {
     DCHECK_EQ(preprocessor_config_->feature_indices().size(),
               static_cast<std::size_t>(pairwise_model::FEATURES_SIZE));
   }
+}
+
+// Simply returns the frecency_score in the TabFeatures.
+TabRankerResult TabScorePredictor::ScoreTabWithFrecencyScorer(
+    const TabFeatures& tab,
+    float* score) {
+  *score = tab.frecency_score;
+  return TabRankerResult::kSuccess;
 }
 
 }  // namespace tab_ranker

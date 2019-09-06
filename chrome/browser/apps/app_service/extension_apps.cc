@@ -385,6 +385,57 @@ void ExtensionApps::OnExtensionPrefsWillBeDestroyed(
   prefs_observer_.Remove(prefs);
 }
 
+void ExtensionApps::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                      const extensions::Extension* extension) {
+  if (!Accepts(extension)) {
+    return;
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type_;
+  app->app_id = extension->id();
+  app->readiness = apps::mojom::Readiness::kReady;
+  Publish(std::move(app));
+}
+
+void ExtensionApps::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
+  if (!Accepts(extension)) {
+    return;
+  }
+
+  apps::mojom::Readiness readiness = apps::mojom::Readiness::kUnknown;
+
+  switch (reason) {
+    case extensions::UnloadedExtensionReason::DISABLE:
+      readiness = apps::mojom::Readiness::kDisabledByUser;
+      break;
+
+    // TODO: Check the process for other status, and set the correct value to
+    // app->readiness. AppServiceAppModelBuilder::OnAppUpdate should be updated
+    // to show the correct icon status in app list.
+    case extensions::UnloadedExtensionReason::BLACKLIST:
+      readiness = apps::mojom::Readiness::kDisabledByBlacklist;
+      return;
+    case extensions::UnloadedExtensionReason::TERMINATE:
+      readiness = apps::mojom::Readiness::kTerminated;
+      return;
+    case extensions::UnloadedExtensionReason::UNINSTALL:
+      readiness = apps::mojom::Readiness::kUninstalledByUser;
+      return;
+    default:
+      return;
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type_;
+  app->app_id = extension->id();
+  app->readiness = readiness;
+  Publish(std::move(app));
+}
+
 void ExtensionApps::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,

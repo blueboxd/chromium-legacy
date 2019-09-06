@@ -612,6 +612,9 @@ if (is_linux && is_clang) {
     # Do not use any sanitizers or coverage tools, which require a few symbols.
     configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
     configs -= [ "//build/config/coverage:default_coverage" ]
+    # Disable default_init_stack_vars because it inserts memset() calls, but
+    # memset() is not available in this libc-free context.
+    configs -= [ "//build/config/compiler:default_init_stack_vars" ]
     configs += [ ":nonsfi_libc_free_nexe_config" ]
   }
 

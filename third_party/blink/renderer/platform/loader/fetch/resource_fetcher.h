@@ -126,7 +126,7 @@ class PLATFORM_EXPORT ResourceFetcher
   }
   // This must be called right after construction.
   void SetResourceLoadObserver(ResourceLoadObserver* observer) {
-    DCHECK(!IsDetached());
+    DCHECK(!resource_load_observer_);
     resource_load_observer_ = observer;
   }
 

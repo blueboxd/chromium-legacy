@@ -7,6 +7,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 
@@ -41,7 +43,10 @@ class GPUTexture;
 class GPUTextureDescriptor;
 class ScriptState;
 
-class GPUDevice final : public DawnObject<DawnDevice> {
+class GPUDevice final : public EventTargetWithInlineData,
+                        public ContextClient,
+                        public DawnObject<DawnDevice> {
+  USING_GARBAGE_COLLECTED_MIXIN(GPUDevice);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -92,6 +97,12 @@ class GPUDevice final : public DawnObject<DawnDevice> {
       const GPURenderBundleEncoderDescriptor* descriptor);
 
   GPUQueue* getQueue();
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(uncapturederror, kUncapturederror)
+
+  // EventTarget overrides.
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
  private:
   void OnUncapturedError(ExecutionContext* execution_context,

@@ -16,7 +16,8 @@ namespace {
 // WebUI.
 const char* kDecisionFailureReasonStrings[] = {
     "Browser opted out via enterprise policy",
-    "Origin opted out via feature policy",
+    "Tab opted out via origin trial",
+    "Tab did not report its origin trial opt-in/opt-out",
     "Origin is in global blacklist",
     "Origin has been observed playing audio while backgrounded",
     "Origin has been observed updating favicon while backgrounded",
@@ -42,7 +43,8 @@ static_assert(base::size(kDecisionFailureReasonStrings) ==
               "kDecisionFailureReasonStrings not up to date with enum");
 
 const char* kDecisionSuccessReasonStrings[] = {
-    "Origin opted in via feature policy", "Origin is in global whitelist",
+    "Tab opted in via origin trial",
+    "Origin is in global whitelist",
     "Origin has locally been observed to be safe via heuristic logic",
 };
 static_assert(base::size(kDecisionSuccessReasonStrings) ==
@@ -55,8 +57,8 @@ void PopulateSuccessReason(
   switch (success_reason) {
     case DecisionSuccessReason::INVALID:
       break;
-    case DecisionSuccessReason::LIFECYCLES_FEATURE_POLICY_OPT_IN:
-      ukm->SetSuccessLifecyclesFeaturePolicyOptIn(1);
+    case DecisionSuccessReason::ORIGIN_TRIAL_OPT_IN:
+      ukm->SetSuccessOriginTrialOptIn(1);
       break;
     case DecisionSuccessReason::GLOBAL_WHITELIST:
       ukm->SetSuccessGlobalWhitelist(1);
@@ -65,6 +67,7 @@ void PopulateSuccessReason(
       ukm->SetSuccessHeuristic(1);
       break;
     case DecisionSuccessReason::MAX:
+      NOTREACHED();
       break;
   }
 }
@@ -78,8 +81,11 @@ void PopulateFailureReason(
     case DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT:
       ukm->SetFailureLifecyclesEnterprisePolicyOptOut(1);
       break;
-    case DecisionFailureReason::LIFECYCLES_FEATURE_POLICY_OPT_OUT:
-      ukm->SetFailureLifecyclesFeaturePolicyOptOut(1);
+    case DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT:
+      ukm->SetFailureOriginTrialOptOut(1);
+      break;
+    case DecisionFailureReason::ORIGIN_TRIAL_UNKNOWN:
+      ukm->SetFailureOriginTrialUnknown(1);
       break;
     case DecisionFailureReason::GLOBAL_BLACKLIST:
       ukm->SetFailureGlobalBlacklist(1);
@@ -139,6 +145,7 @@ void PopulateFailureReason(
       ukm->SetFailureLiveStateUsingBluetooth(1);
       break;
     case DecisionFailureReason::MAX:
+      NOTREACHED();
       break;
   }
 }

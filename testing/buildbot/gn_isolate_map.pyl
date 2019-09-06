@@ -2727,6 +2727,10 @@
     "label": "//chrome/test:unit_tests",
     "type": "windowed_test_launcher",
   },
+  "updater_tests": {
+    "label": "//chrome/updater:updater_tests",
+    "type": "console_test_launcher",
+  },
   "url_parse_proto_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:url_parse_proto_fuzzer",
     "type": "fuzzer",

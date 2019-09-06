@@ -1123,7 +1123,8 @@ bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
   const Timing::Phase current_phase = animation_node.GetPhase();
-  const double current_iteration = animation_node.CurrentIteration();
+  const base::Optional<double> current_iteration =
+      animation_node.CurrentIteration();
 
   if (previous_phase_ != current_phase &&
       (current_phase == Timing::kPhaseActive ||
@@ -1143,9 +1144,10 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     // between a single pair of samples. See http://crbug.com/275263. For
     // compatibility with the existing implementation, this event uses
     // the elapsedTime for the first iteration in question.
+    DCHECK(previous_iteration_);
     const AnimationTimeDelta elapsed_time =
         animation_node.SpecifiedTiming().iteration_duration.value() *
-        (previous_iteration_ + 1);
+        (previous_iteration_.value() + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
                   event_type_names::kAnimationiteration,
                   elapsed_time.InSecondsF());
@@ -1228,11 +1230,17 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // Per the css-transitions-2 spec, transitioncancel is fired with the
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
-      double cancel_active_time = CalculateActiveTime(
+      base::Optional<double> cancel_active_time = CalculateActiveTime(
           animation_node.SpecifiedTiming().ActiveDuration(),
           Timing::FillMode::BOTH, animation_node.LocalTime(), previous_phase_,
           animation_node.SpecifiedTiming());
-      EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);
+      // Being the FillMode::BOTH the only possibility to get a null
+      // cancel_active_time is that previous_phase_ is kPhaseNone. This cannot
+      // happen because we know that current_phase == kPhaseNone and
+      // current_phase != previous_phase_ (see early return at the beginning).
+      DCHECK(cancel_active_time);
+      EnqueueEvent(event_type_names::kTransitioncancel,
+                   cancel_active_time.value());
     }
   }
 

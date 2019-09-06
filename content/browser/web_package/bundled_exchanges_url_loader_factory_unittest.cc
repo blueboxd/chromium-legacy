@@ -59,27 +59,27 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
             },
             run_loop.QuitClosure()));
     run_loop.Run();
+
+    // Set some useful default values for |resource_request_|.
+    resource_request_.url = primary_url_;
+    resource_request_.method = net::HttpRequestHeaders::kGetMethod;
   }
 
-  // This function creates a URLLoader, and simulates a response for
-  // BundledExchangesReader::ReadResponse with |response| if it is given.
-  // |response| can contains nullptr to simulate the case ReadResponse fails.
+  // This function creates a URLLoader with |resource_request_|, and simulates
+  // a response for BundledExchangesReader::ReadResponse with |response| if it
+  // is given. |response| can contain nullptr to simulate the case ReadResponse
+  // fails.
   mojo::Remote<network::mojom::URLLoader> CreateLoaderAndStart(
-      const GURL& url,
-      const std::string& method,
       base::Optional<data_decoder::mojom::BundleResponsePtr> response,
       bool clone = false) {
     mojo::Remote<network::mojom::URLLoader> loader;
-    network::ResourceRequest resource_request;
-    resource_request.url = url;
-    resource_request.method = method;
 
     if (clone) {
       mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
       loader_factory_->Clone(loader_factory.BindNewPipeAndPassReceiver());
       loader_factory->CreateLoaderAndStart(
           loader.BindNewPipeAndPassReceiver(),
-          /*routing_id=*/0, /*request_id=*/0, /*options=*/0, resource_request,
+          /*routing_id=*/0, /*request_id=*/0, /*options=*/0, resource_request_,
           test_client_.CreateInterfacePtr(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -87,7 +87,7 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     } else {
       loader_factory_->CreateLoaderAndStart(
           loader.BindNewPipeAndPassReceiver(),
-          /*routing_id=*/0, /*request_id=*/0, /*options=*/0, resource_request,
+          /*routing_id=*/0, /*request_id=*/0, /*options=*/0, resource_request_,
           test_client_.CreateInterfacePtr(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -101,7 +101,8 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
   const GURL& GetPrimaryURL() const { return primary_url_; }
   const std::string& GetBody() const { return body_; }
 
-  void RunAndCheck(const std::string expected_body) {
+  void RunAndCheck(int expected_response_code,
+                   const std::string expected_body) {
     test_client_.RunUntilResponseBodyArrived();
 
     EXPECT_TRUE(test_client_.has_received_response());
@@ -112,7 +113,8 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     ASSERT_TRUE(test_client_.response_head().headers);
     ASSERT_TRUE(test_client_.response_body());
 
-    EXPECT_EQ(200, test_client_.response_head().headers->response_code());
+    EXPECT_EQ(expected_response_code,
+              test_client_.response_head().headers->response_code());
 
     if (!expected_body.empty()) {
       std::vector<char> buffer(expected_body.size() * 2);
@@ -146,6 +148,13 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     loader_factory_->SetFallbackFactory(std::move(fallback_factory));
   }
 
+  const network::TestURLLoaderClient& GetTestClient() const {
+    return test_client_;
+  }
+
+ protected:
+  network::ResourceRequest resource_request_;
+
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MockBundledExchangesReaderFactory> mock_factory_;
@@ -165,11 +174,29 @@ TEST_F(BundledExchangesURLLoaderFactoryTest, CreateEntryLoader) {
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
 
-  auto loader =
-      CreateLoaderAndStart(GetPrimaryURL(), net::HttpRequestHeaders::kGetMethod,
-                           std::move(response));
+  auto loader = CreateLoaderAndStart(std::move(response));
 
-  RunAndCheck(GetBody());
+  RunAndCheck(200, GetBody());
+}
+
+TEST_F(BundledExchangesURLLoaderFactoryTest, RangeRequest) {
+  data_decoder::mojom::BundleResponsePtr response =
+      data_decoder::mojom::BundleResponse::New();
+  response->response_code = 200;
+  response->payload_offset = 0;
+  response->payload_length = GetBody().size();
+
+  resource_request_.headers.SetHeader(net::HttpRequestHeaders::kRange,
+                                      "bytes=10-19");
+
+  auto loader = CreateLoaderAndStart(std::move(response));
+
+  RunAndCheck(206, GetBody().substr(10, 10));
+  EXPECT_EQ(10, GetTestClient().response_head().headers->GetContentLength());
+  std::string content_range;
+  EXPECT_TRUE(GetTestClient().response_head().headers->EnumerateHeader(
+      nullptr, net::HttpResponseHeaders::kContentRange, &content_range));
+  EXPECT_EQ("bytes 10-19/25", content_range);
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest,
@@ -180,11 +207,11 @@ TEST_F(BundledExchangesURLLoaderFactoryTest,
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
 
-  auto loader = CreateLoaderAndStart(
-      GURL("https://user:pass@test.example.org/"),
-      net::HttpRequestHeaders::kGetMethod, std::move(response));
+  resource_request_.url = GURL("https://user:pass@test.example.org/");
 
-  RunAndCheck(GetBody());
+  auto loader = CreateLoaderAndStart(std::move(response));
+
+  RunAndCheck(200, GetBody());
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest,
@@ -195,36 +222,31 @@ TEST_F(BundledExchangesURLLoaderFactoryTest,
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
 
-  auto loader = CreateLoaderAndStart(GURL("https://test.example.org/#test"),
-                                     net::HttpRequestHeaders::kGetMethod,
-                                     std::move(response));
+  resource_request_.url = GURL("https://test.example.org/#test");
 
-  RunAndCheck(GetBody());
+  auto loader = CreateLoaderAndStart(std::move(response));
+
+  RunAndCheck(200, GetBody());
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest,
        CreateEntryLoaderAndFailToReadResponse) {
-  auto loader =
-      CreateLoaderAndStart(GetPrimaryURL(), net::HttpRequestHeaders::kGetMethod,
-                           /*response=*/nullptr);
+  auto loader = CreateLoaderAndStart(/*response=*/nullptr);
 
   RunAndCheckFailure(net::ERR_INVALID_BUNDLED_EXCHANGES);
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest, CreateLoaderForPost) {
   // URL should match, but POST method should not be handled by the EntryLoader.
-  auto loader =
-      CreateLoaderAndStart(GetPrimaryURL(), "POST", /*response=*/base::nullopt);
+  resource_request_.method = "POST";
+  auto loader = CreateLoaderAndStart(/*response=*/base::nullopt);
 
   RunAndCheckFailure(net::ERR_FAILED);
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest, CreateLoaderForNotSupportedURL) {
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
-  auto loader = CreateLoaderAndStart(GURL("https://test.example.org/nowhere"),
-                                     net::HttpRequestHeaders::kGetMethod,
-                                     /*response=*/base::nullopt);
+  resource_request_.url = GURL("https://test.example.org/nowhere");
+  auto loader = CreateLoaderAndStart(/*response=*/base::nullopt);
 
   RunAndCheckFailure(net::ERR_FAILED);
 }
@@ -241,15 +263,15 @@ TEST_F(BundledExchangesURLLoaderFactoryTest, CreateFallbackLoader) {
   // Access to the 404 address for the BundledExchanges, so to be handled by
   // the fallback factory set above.
   const std::string url_string = "https://test.example.org/somewhere";
-  auto loader = CreateLoaderAndStart(
-      GURL(url_string), net::HttpRequestHeaders::kGetMethod, base::nullopt);
+  resource_request_.url = GURL(url_string);
+  auto loader = CreateLoaderAndStart(base::nullopt);
   ASSERT_EQ(1, test_factory->NumPending());
 
   // Reply with a mock response.
   test_factory->SimulateResponseForPendingRequest(url_string, GetBody(),
                                                   net::HTTP_OK);
 
-  RunAndCheck(GetBody());
+  RunAndCheck(200, GetBody());
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest, CreateByClonedFactory) {
@@ -259,11 +281,9 @@ TEST_F(BundledExchangesURLLoaderFactoryTest, CreateByClonedFactory) {
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
 
-  auto loader =
-      CreateLoaderAndStart(GetPrimaryURL(), net::HttpRequestHeaders::kGetMethod,
-                           std::move(response), /*clone=*/true);
+  auto loader = CreateLoaderAndStart(std::move(response), /*clone=*/true);
 
-  RunAndCheck(GetBody());
+  RunAndCheck(200, GetBody());
 }
 
 }  // namespace

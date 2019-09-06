@@ -46,9 +46,6 @@ class TabActivityWatcher : public BrowserListObserver,
   // the first candidate that will be discarded.
   void SortLifecycleUnitWithTabRanker(std::vector<LifecycleUnit*>* tabs);
 
-  // Returns an int64_t number as label_id or query_id.
-  int64_t NewInt64ForLabelIdOrQueryId();
-
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
 
@@ -94,13 +91,10 @@ class TabActivityWatcher : public BrowserListObserver,
   BrowserTabStripTracker browser_tab_strip_tracker_;
 
   // Loads the Tab Ranker model on first use and calculates tab scores.
-  tab_ranker::TabScorePredictor predictor_;
+  std::unique_ptr<tab_ranker::TabScorePredictor> predictor_;
 
   // All WebContentsData of the browser that is currently in closing_all mode.
   base::flat_set<WebContentsData*> all_closing_tabs_;
-
-  // Used for generating label_ids and query_ids.
-  int64_t internal_id_for_logging_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcher);
 };

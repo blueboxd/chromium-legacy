@@ -28,10 +28,10 @@ source_set("manual_fill") {
     "form_observer_helper.mm",
     "manual_fill_injection_handler.h",
     "manual_fill_injection_handler.mm",
+    "manual_fill_password_mediator.h",
+    "manual_fill_password_mediator.mm",
     "password_coordinator.h",
     "password_coordinator.mm",
-    "password_mediator.h",
-    "password_mediator.mm",
   ]
   deps = [
     ":requesters",

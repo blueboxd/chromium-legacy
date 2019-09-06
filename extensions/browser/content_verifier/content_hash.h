@@ -78,6 +78,19 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     DISALLOW_COPY_AND_ASSIGN(FetchKey);
   };
 
+  // Result of checking tree hash root (typically calculated from block hashes
+  // in computed_hashes.json) against signed hash from verified_contents.json.
+  enum class TreeHashVerificationResult {
+    // Hash is correct.
+    SUCCESS,
+
+    // There is no such file in verified_contents.json.
+    NO_ENTRY,
+
+    // Hash does not match the one from verified_contents.json.
+    HASH_MISMATCH
+  };
+
   using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
 
   // Factory:
@@ -99,12 +112,18 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   void ForceBuildComputedHashes(const IsCancelledCallback& is_cancelled,
                                 CreatedCallback created_callback);
 
-  const VerifiedContents& verified_contents() const;
+  // Returns the result of comparing tree hash |root| for the |relative_path| to
+  // verified_contens.json data.
+  TreeHashVerificationResult VerifyTreeHashRoot(
+      const base::FilePath& relative_path,
+      const std::string* root) const;
+
   const ComputedHashes::Reader& computed_hashes() const;
 
   bool has_verified_contents() const {
     return status_ >= Status::kHasVerifiedContents;
   }
+
   bool succeeded() const { return status_ >= Status::kSucceeded; }
 
   // If ContentHash creation writes computed_hashes.json, then this returns the

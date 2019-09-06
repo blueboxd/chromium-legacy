@@ -93,7 +93,7 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
                        const std::string& repsonse_data,
                        net::HttpStatusCode response_code);
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ResourceCache> resource_cache_;
   MockCloudPolicyStore cloud_policy_store_;

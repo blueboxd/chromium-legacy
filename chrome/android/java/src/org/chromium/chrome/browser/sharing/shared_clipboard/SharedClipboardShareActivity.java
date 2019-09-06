@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
 import org.chromium.chrome.browser.sharing.SharingDeviceCapability;
+import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
 
 /**
@@ -80,6 +81,12 @@ public class SharedClipboardShareActivity
         mListView.setEmptyView(findViewById(android.R.id.empty));
 
         onInitialLayoutInflationComplete();
+    }
+
+    @Override
+    public void startNativeInitialization() {
+        SharingServiceProxy.getInstance().addDeviceCandidatesInitializedObserver(
+                this::finishNativeInitialization);
     }
 
     @Override

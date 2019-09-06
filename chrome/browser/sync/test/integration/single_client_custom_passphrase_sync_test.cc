@@ -143,7 +143,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
     NigoriSpecifics nigori;
     EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
     EXPECT_EQ(ProtoPassphraseInt32ToEnum(nigori.passphrase_type()),
-              PassphraseType::CUSTOM_PASSPHRASE);
+              PassphraseType::kCustomPassphrase);
     auto cryptographer = std::make_unique<Cryptographer>();
     InitCustomPassphraseCryptographerFromNigori(nigori, cryptographer.get(),
                                                 passphrase);
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
       AddURL(/*profile=*/0, "Hello world", GURL("https://google.com/")));
   ASSERT_TRUE(
       AddURL(/*profile=*/0, "Bookmark #2", GURL("https://example.com/")));
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
 
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       {{"Hello world", GURL("https://google.com/")},
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   ASSERT_TRUE(AddURL(/*profile=*/0, "PBKDF2 encrypted",
                      GURL("https://google.com/pbkdf2-encrypted")));
 
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
   NigoriSpecifics nigori;
   EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
   EXPECT_EQ(nigori.custom_passphrase_key_derivation_method(),
@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseUseScryptSyncTest,
   ASSERT_TRUE(AddURL(/*profile=*/0, "scrypt encrypted",
                      GURL("https://google.com/scrypt-encrypted")));
 
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
   NigoriSpecifics nigori;
   EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
   EXPECT_EQ(nigori.custom_passphrase_key_derivation_method(),
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   ASSERT_TRUE(AddURL(/*profile=*/0, "Should be encrypted",
                      GURL("https://google.com/encrypted")));
 
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
   // If WaitForEncryptedServerBookmarks() succeeds, that means that a
   // cryptographer initialized with only the key params was able to decrypt the
   // data, so the data must be encrypted using a passphrase-derived key (and not
@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kKeystorePassphrase));
   ASSERT_TRUE(AddURL(/*profile=*/0, "Re-encryption is great",
                      GURL("https://google.com/re-encrypted")));
   std::vector<ServerBookmarksEqualityChecker::ExpectedBookmark> expected = {
@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   ASSERT_TRUE(WaitForUnencryptedServerBookmarks(expected));
 
   GetSyncService()->GetUserSettings()->SetEncryptionPassphrase("hunter2");
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
 
   // If WaitForEncryptedServerBookmarks() succeeds, that means that a
   // cryptographer initialized with only the key params was able to decrypt the
@@ -423,9 +423,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                             switches::kSyncUSSNigori},
       /*disabled_features=*/{switches::kSyncUseScryptForNewCustomPassphrases});
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kKeystorePassphrase));
   GetSyncService()->GetUserSettings()->SetEncryptionPassphrase("hunter2");
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
 }
 
 // TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
@@ -470,9 +470,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       /*enabled_features=*/{switches::kSyncUseScryptForNewCustomPassphrases},
       /*disabled_features=*/{switches::kSyncUSSNigori});
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kKeystorePassphrase));
   GetSyncService()->GetUserSettings()->SetEncryptionPassphrase("hunter2");
-  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+  ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
 }
 
 // TODO(https://crbug.com/952074): re-enable once flakiness is addressed.

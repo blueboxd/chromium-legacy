@@ -949,8 +949,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
       }
     }
 
-    if (HasScrollbar())
-      UpdateScrollCornerStyle();
+    UpdateScrollCornerStyle();
 
     Layer()->UpdateSelfPaintingLayer();
 
@@ -1650,9 +1649,7 @@ void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
 bool PaintLayerScrollableArea::HasOverflowControls() const {
   // We do not need to check for ScrollCorner because it only exists iff there
   // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
-  // TODO(pdr, majinfeng1): Re-enable this DCHECK when https://crbug.com/999062
-  // is resolved. This is temporarily disabled to prevent crashes.
-  // DCHECK(!ScrollCorner() || HasScrollbar());
+  DCHECK(!ScrollCorner() || HasScrollbar());
   return HasScrollbar() || GetLayoutBox()->CanResize();
 }
 
@@ -1684,11 +1681,14 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
 }
 
 void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
-  if (!scroll_corner_ && !HasScrollbar())
+  bool can_update = HasScrollbar() && !HasOverlayScrollbars();
+  if (!can_update) {
+    if (scroll_corner_) {
+      scroll_corner_->Destroy();
+      scroll_corner_ = nullptr;
+    }
     return;
-  if (!scroll_corner_ && HasOverlayScrollbars())
-    return;
-
+  }
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
   scoped_refptr<ComputedStyle> corner =
       GetLayoutBox()->HasOverflowClip()

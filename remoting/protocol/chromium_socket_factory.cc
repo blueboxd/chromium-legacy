@@ -426,13 +426,12 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateServerTcpSocket(
   return nullptr;
 }
 
-rtc::AsyncPacketSocket*
-ChromiumPacketSocketFactory::CreateClientTcpSocket(
-      const rtc::SocketAddress& local_address,
-      const rtc::SocketAddress& remote_address,
-      const rtc::ProxyInfo& proxy_info,
-      const std::string& user_agent,
-      int opts) {
+rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateClientTcpSocket(
+    const rtc::SocketAddress& local_address,
+    const rtc::SocketAddress& remote_address,
+    const rtc::ProxyInfo& proxy_info,
+    const std::string& user_agent,
+    const rtc::PacketSocketTcpOptions& opts) {
   // TCP sockets are not supported.
   // TODO(sergeyu): Implement TCP support crbug.com/600032 .
   NOTIMPLEMENTED();

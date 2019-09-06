@@ -43,7 +43,7 @@ class MonitoredVideoStubTest : public testing::Test {
 
   MOCK_METHOD1(OnVideoChannelStatus, void(bool connected));
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockVideoStub video_stub_;
 
   std::unique_ptr<MonitoredVideoStub> monitor_;

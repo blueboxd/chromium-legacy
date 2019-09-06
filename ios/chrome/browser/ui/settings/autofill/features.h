@@ -12,4 +12,7 @@
 // Add new credit card feature.
 extern const base::Feature kSettingsAddPaymentMethod;
 
+// Scan a credit card using the camera scanner feature.
+extern const base::Feature kCreditCardScanner;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_FEATURES_H_

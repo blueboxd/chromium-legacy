@@ -17,7 +17,6 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -400,8 +399,6 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-
   service_manager::mojom::ConnectorRequest connector_request;
   auto connector = service_manager::Connector::Create(&connector_request);
   base::PostTask(
@@ -414,14 +411,15 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther,
-      "Cast is streaming content to a remote receiver", std::move(request));
+      "Cast is streaming content to a remote receiver",
+      wake_lock_.BindNewPipeAndPassReceiver());
   return wake_lock_.get();
 }
 
 void CastTransportHostFilter::InitializeNoOpWakeLockForTesting() {
   // Initializes |wake_lock_| to make GetWakeLock() short-circuit out of its
   // own lazy initialization process.
-  mojo::MakeRequest(&wake_lock_);
+  ignore_result(wake_lock_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace cast

@@ -47,6 +47,7 @@ struct PointerData {
   PointerType pointer_type;
   int32 movement_x;
   int32 movement_y;
+  bool is_raw_movement_event;
   gfx.mojom.PointF widget_position;
   gfx.mojom.PointF screen_position;
   MouseData? mouse_data;

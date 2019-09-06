@@ -39,8 +39,6 @@
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -247,26 +245,11 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
       new net::URLRequestJobFactoryImpl());
   // Keep ProtocolHandlers added in sync with
   // CastContentBrowserClient::IsHandledURL().
-  bool set_protocol = false;
   for (content::ProtocolHandlerMap::iterator it = protocol_handlers->begin();
        it != protocol_handlers->end();
        ++it) {
-    set_protocol =
+    bool set_protocol =
         job_factory->SetProtocolHandler(it->first, std::move(it->second));
-    DCHECK(set_protocol);
-  }
-  set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLocalFileAccesses)) {
-    set_protocol = job_factory->SetProtocolHandler(
-        url::kFileScheme,
-        std::make_unique<net::FileProtocolHandler>(base::CreateTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     DCHECK(set_protocol);
   }
 

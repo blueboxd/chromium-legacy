@@ -46,9 +46,9 @@ class WebsiteLoginFetcherImpl::PendingRequest
     // This needs to be done asynchronously, because it will lead to the
     // destruction of |this|, which needs to happen *after* this call has
     // returned.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&PendingRequest::NotifyFinished,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(&PendingRequest::NotifyFinished,
+                                            weak_ptr_factory_.GetWeakPtr()));
   }
   std::unique_ptr<password_manager::FormFetcher> form_fetcher_;
 

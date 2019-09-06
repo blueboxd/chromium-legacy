@@ -72,6 +72,12 @@
     flex: 1;
   }
 
+  #thumbnailImg {
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+  }
+
   /* Pinned tab styles */
   :host([pinned]) {
     height: 50px;
@@ -98,4 +104,6 @@
   </button>
 </header>
 
-<div id="thumbnail"></div>
+<div id="thumbnail">
+  <img id="thumbnailImg">
+</div>

@@ -130,6 +130,7 @@ class VIZ_HOST_EXPORT HitTestQuery {
                                      const gfx::PointF& location,
                                      size_t region_index,
                                      bool is_location_relative_to_parent,
+                                     const FrameSinkId& root_view_frame_sink_id,
                                      Target* target) const;
 
   // Transform |location_in_target| to be in |region_index|'s coordinate space.

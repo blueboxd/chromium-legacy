@@ -348,4 +348,11 @@ void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
   EXPECT_EQ(inner_viewport_size, root_clip_ptr->bounds());
 }
 
+void LayerTestCommon::LayerImplTest::UpdateDrawProperties(
+    LayerTreeImpl* layer_tree_impl) {
+  LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
+      layer_tree_impl);
+  layer_tree_impl->UpdateDrawProperties();
+}
+
 }  // namespace cc

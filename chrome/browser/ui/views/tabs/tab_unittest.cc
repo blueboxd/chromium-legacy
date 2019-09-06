@@ -91,8 +91,7 @@ class FakeTabController : public TabController {
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabBackgroundColor(
       TabActive active,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override {
+      BrowserNonClientFrameView::ActiveState active_state) const override {
     return active == TabActive::kActive ? tab_bg_color_active_
                                         : tab_bg_color_inactive_;
   }
@@ -831,7 +830,8 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
       controller.set_active_tab(active == TabActive::kActive);
       tab.UpdateForegroundColors();
       const SkColor fg_color = tab.title_->GetEnabledColor();
-      const SkColor bg_color = controller.GetTabBackgroundColor(active);
+      const SkColor bg_color = controller.GetTabBackgroundColor(
+          active, BrowserNonClientFrameView::kUseCurrent);
       const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
     }

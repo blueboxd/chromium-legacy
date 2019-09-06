@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Instrumentation;
 
 import org.chromium.base.test.util.CallbackHelper;
@@ -20,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * through and working with browser forward and back history.
  */
 public class HistoryUtils {
-    protected static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(15);
+    protected static final long WAIT_TIMEOUT_SECONDS = 15L;
 
     /**
      * Calls {@link NavigationController#canGoBack()} on UI thread.

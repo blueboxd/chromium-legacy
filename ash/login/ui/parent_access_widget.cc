@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/login/ui/parent_access_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
@@ -119,6 +120,10 @@ void ParentAccessWidget::Show() {
 
   DCHECK(widget_);
   widget_->Show();
+
+  auto* keyboard_controller = Shell::Get()->keyboard_controller();
+  if (keyboard_controller && keyboard_controller->IsKeyboardEnabled())
+    keyboard_controller->HideKeyboard(HideReason::kSystem);
 }
 
 void ParentAccessWidget::OnExit(bool success) {

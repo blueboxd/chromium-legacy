@@ -80,7 +80,8 @@ bool KeyboardLayout::EnsureServiceConnected() {
     if (!frame) {
       return false;
     }
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+    frame->GetInterfaceProvider().GetInterface(
+        service_.BindNewPipeAndPassReceiver());
     DCHECK(service_);
   }
   return true;

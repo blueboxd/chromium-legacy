@@ -496,9 +496,14 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     const base::Optional<IntPoint>& paint_offset_translation) {
   DCHECK(properties_);
 
+  FloatSize old_translation;
+  if (auto* translation = properties_->PaintOffsetTranslation()) {
+    old_translation = translation->Translation2D();
+  }
+
   if (paint_offset_translation) {
-    TransformPaintPropertyNode::State state{
-        FloatSize(ToIntSize(*paint_offset_translation))};
+    FloatSize new_translation(ToIntSize(*paint_offset_translation));
+    TransformPaintPropertyNode::State state{new_translation};
     state.flags.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
     state.flags.affected_by_outer_viewport_bounds_delta =
@@ -515,8 +520,11 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
           properties_->PaintOffsetTranslation();
       context_.fixed_position.transform = properties_->PaintOffsetTranslation();
     }
+
+    context_.paint_offset_delta = old_translation - new_translation;
   } else {
     OnClear(properties_->ClearPaintOffsetTranslation());
+    context_.paint_offset_delta = FloatSize();
   }
 }
 
@@ -2453,6 +2461,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     // Update of PaintOffsetTranslation is checked by
     // FindPaintOffsetNeedingUpdateScope.
     UpdatePaintOffsetTranslation(paint_offset_translation);
+  } else {
+    context_.paint_offset_delta = FloatSize();
   }
 
 #if DCHECK_IS_ON()

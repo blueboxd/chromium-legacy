@@ -111,7 +111,7 @@ class It2MeConfirmationDialogProxyTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   base::Thread dialog_thread_;
 

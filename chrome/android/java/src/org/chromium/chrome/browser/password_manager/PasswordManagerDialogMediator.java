@@ -10,7 +10,11 @@ import static org.chromium.chrome.browser.password_manager.PasswordManagerDialog
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
 
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.support.annotation.DrawableRes;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 import android.view.View;
 
 import org.chromium.base.Callback;
@@ -77,10 +81,11 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
         mAndroidContentView.addOnLayoutChangeListener(this);
     }
 
-    void setContents(String title, String details, @DrawableRes int drawableId) {
+    void setContents(String title, String details, int boldRangeStart, int boldRangeEnd,
+            @DrawableRes int drawableId) {
         mModel.set(ILLUSTRATION, drawableId);
         mModel.set(TITLE, title);
-        mModel.set(DETAILS, details);
+        mModel.set(DETAILS, addBoldSpanToDetails(details, boldRangeStart, boldRangeEnd));
     }
 
     void setButtons(String positiveButtonText, String negativeButtonText, Callback<Integer> onClick,
@@ -96,6 +101,15 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
         heightPx -= TabModalPresenter.getContainerBottomMargin(mFullscreenManager);
         return heightPx >= mResources.getDimensionPixelSize(
                        R.dimen.password_manager_dialog_min_vertical_space_to_show_illustration);
+    }
+
+    private SpannableString addBoldSpanToDetails(
+            String details, int boldRangeStart, int boldRangeEnd) {
+        SpannableString spannableDetails = new SpannableString(details);
+        StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
+        spannableDetails.setSpan(
+                boldSpan, boldRangeStart, boldRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        return spannableDetails;
     }
 
     @Override

@@ -38,10 +38,11 @@ class WakeLockProvider : public mojom::WakeLockProvider,
   void GetWakeLockContextForID(
       int context_id,
       mojo::PendingReceiver<mojom::WakeLockContext> receiver) override;
-  void GetWakeLockWithoutContext(mojom::WakeLockType type,
-                                 mojom::WakeLockReason reason,
-                                 const std::string& description,
-                                 mojom::WakeLockRequest request) override;
+  void GetWakeLockWithoutContext(
+      mojom::WakeLockType type,
+      mojom::WakeLockReason reason,
+      const std::string& description,
+      mojo::PendingReceiver<device::mojom::WakeLock> receiver) override;
   void NotifyOnWakeLockDeactivation(
       mojom::WakeLockType type,
       mojo::PendingRemote<mojom::WakeLockObserver> pending_observer) override;

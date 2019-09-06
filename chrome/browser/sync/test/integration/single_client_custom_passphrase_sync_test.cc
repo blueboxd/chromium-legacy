@@ -223,7 +223,7 @@ class SingleClientCustomPassphraseDoNotUseScryptSyncTest
 };
 
 class SingleClientCustomPassphraseUseScryptSyncTest
-    : public SingleClientCustomPassphraseSyncTest {
+    : public SingleClientCustomPassphraseSyncTestWithUssTests {
  public:
   SingleClientCustomPassphraseUseScryptSyncTest()
       : features_(/*force_disabled=*/false, /*use_for_new_passphrases=*/true) {}
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseUseScryptSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseUseScryptSyncTest,
                        CommitsEncryptedDataUsingScryptWhenScryptEnabled) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
@@ -512,6 +512,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientCustomPassphraseDoNotUseScryptSyncTest,
+                         testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientCustomPassphraseUseScryptSyncTest,
                          testing::Values(false, true));
 
 }  // namespace

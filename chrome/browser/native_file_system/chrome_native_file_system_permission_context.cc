@@ -412,12 +412,10 @@ operator<(const Key& rhs) const {
 ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     WritePermissionGrantImpl(
         scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
-        ContentSettingsType content_settings_guard_type,
         const url::Origin& origin,
         const Key& key,
         bool is_directory)
     : context_(std::move(context)),
-      write_guard_content_setting_type_(content_settings_guard_type),
       origin_(origin),
       key_(key),
       is_directory_(is_directory) {}
@@ -463,13 +461,7 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
 
 bool ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     CanRequestPermission() {
-  HostContentSettingsMap* content_settings = context_->content_settings();
-  ContentSetting content_setting = content_settings->GetContentSetting(
-      origin_.GetURL(), origin_.GetURL(), write_guard_content_setting_type_,
-      /*provider_id=*/std::string());
-  DCHECK(content_setting == CONTENT_SETTING_ASK ||
-         content_setting == CONTENT_SETTING_BLOCK);
-  return content_setting == CONTENT_SETTING_ASK;
+  return context_->CanRequestWritePermission(origin_);
 }
 
 void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
@@ -570,8 +562,14 @@ ChromeNativeFileSystemPermissionContext::GetReadPermissionGrant(
 }
 
 bool ChromeNativeFileSystemPermissionContext::CanRequestWritePermission(
-    WritePermissionGrantImpl* grant) {
-  return grant->CanRequestPermission();
+    const url::Origin& origin) {
+  ContentSetting content_setting = content_settings()->GetContentSetting(
+      origin.GetURL(), origin.GetURL(),
+      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      /*provider_id=*/std::string());
+  DCHECK(content_setting == CONTENT_SETTING_ASK ||
+         content_setting == CONTENT_SETTING_BLOCK);
+  return content_setting == CONTENT_SETTING_ASK;
 }
 
 scoped_refptr<content::NativeFileSystemPermissionGrant>
@@ -605,8 +603,7 @@ ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // status, and store a reference to it in |origin_state| by assigning
   // |existing_grant|.
   auto result = base::MakeRefCounted<WritePermissionGrantImpl>(
-      this, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD, origin,
-      grant_key, is_directory);
+      this, origin, grant_key, is_directory);
   if (result->CanRequestPermission()) {
     if (user_action == UserAction::kSave) {
       result->SetStatus(WritePermissionGrantImpl::PermissionStatus::GRANTED);

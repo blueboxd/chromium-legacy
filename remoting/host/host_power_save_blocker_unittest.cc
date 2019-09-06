@@ -24,8 +24,8 @@ class HostPowerSaveBlockerTest : public testing::Test {
 
   void SetUp() override;
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   base::Thread blocking_thread_;
   scoped_refptr<HostStatusMonitor> monitor_;
   std::unique_ptr<HostPowerSaveBlocker> blocker_;

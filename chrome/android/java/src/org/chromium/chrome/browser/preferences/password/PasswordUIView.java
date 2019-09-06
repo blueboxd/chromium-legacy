@@ -30,6 +30,7 @@ public final class PasswordUIView implements PasswordManagerHandler {
 
     /**
      * Constructor creates the native object as well. Callers should call destroy() after usage.
+     *
      * @param PasswordListObserver The only observer.
      */
     public PasswordUIView(PasswordListObserver observer) {
@@ -95,10 +96,15 @@ public final class PasswordUIView implements PasswordManagerHandler {
     /**
      * Returns the URL for the website for managing one's passwords without the need to use Chrome
      * with the user's profile signed in.
+     *
      * @return The string with the URL.
      */
     public static String getAccountDashboardURL() {
         return nativeGetAccountDashboardURL();
+    }
+
+    public static boolean hasAccountForLeakCheckRequest() {
+        return nativeHasAccountForLeakCheckRequest();
     }
 
     /**
@@ -131,6 +137,8 @@ public final class PasswordUIView implements PasswordManagerHandler {
             long nativePasswordUIViewAndroid, int index);
 
     private static native String nativeGetAccountDashboardURL();
+
+    private static native boolean nativeHasAccountForLeakCheckRequest();
 
     private native void nativeDestroy(long nativePasswordUIViewAndroid);
 

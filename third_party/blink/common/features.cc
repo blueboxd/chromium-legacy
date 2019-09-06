@@ -58,11 +58,6 @@ const base::Feature kFreezePurgeMemoryAllPagesFrozen{
 const base::Feature kFreezeUserAgent{"FreezeUserAgent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the experimental sweep-line algorithm for tracking "jank" from
-// layout objects changing their visual location between animation frames.
-const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable a new CSS property called backdrop-filter.
 const base::Feature kCSSBackdropFilter {
   "CSSBackdropFilter",
@@ -118,7 +113,7 @@ const base::Feature kNavigationPredictor {
 // Start service workers on a background thread.
 // https://crbug.com/692909
 const base::Feature kOffMainThreadServiceWorkerStartup{
-    "OffMainThreadServiceWorkerStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OffMainThreadServiceWorkerStartup", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991

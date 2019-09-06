@@ -400,7 +400,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
 
   number_of_web_app_icons_to_download_and_decode_++;
   bool can_download_icon = content::ManifestIconDownloader::Download(
-      web_contents(), best_icon_url,
+      web_contents(), downloader_->FindTestServerURL(best_icon_url),
       IconSizeCalculator::IdealIconHeight(native_view),
       IconSizeCalculator::MinimumIconHeight(),
       base::BindOnce(

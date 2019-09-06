@@ -35,7 +35,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -93,7 +93,7 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
 // Send UMA histograms about the enabled features and GPU properties.
 void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
   // Update applied entry stats.
-  std::unique_ptr<gpu::GpuBlacklist> blacklist(gpu::GpuBlacklist::Create());
+  std::unique_ptr<gpu::GpuBlocklist> blacklist(gpu::GpuBlocklist::Create());
   DCHECK(blacklist.get() && blacklist->max_entry_id() > 0);
   uint32_t max_entry_id = blacklist->max_entry_id();
   // Use entry 0 to capture the total number of times that data
@@ -251,36 +251,6 @@ void RequestVideoMemoryUsageStats(
       base::BindOnce(&OnVideoMemoryUsageStats, std::move(callback)));
 }
 
-#if defined(OS_WIN)
-void UpdateDxDiagNodeOnIO(const gpu::DxDiagNode& dx_diagnostics) {
-  // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
-  // should be updated on the UI thread since it can call into functions that
-  // expect to run in the UI thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          [](const gpu::DxDiagNode& dx_diagnostics) {
-            GpuDataManagerImpl::GetInstance()->UpdateDxDiagNode(dx_diagnostics);
-          },
-          dx_diagnostics));
-}
-
-void UpdateDx12VulkanInfoOnIO(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
-  // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
-  // should be updated on the UI thread since it can call into functions that
-  // expect to run in the UI thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
-            GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(
-                dx12_vulkan_version_info);
-          },
-          dx12_vulkan_version_info));
-}
-#endif
-
 // Determines if SwiftShader is available as a fallback for WebGL.
 bool SwiftShaderAllowed() {
 #if !BUILDFLAG(ENABLE_SWIFTSHADER)
@@ -404,7 +374,11 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
                              if (!host)
                                return;
                              host->gpu_service()->RequestCompleteGpuInfo(
-                                 base::BindOnce(&UpdateDxDiagNodeOnIO));
+                                 base::BindOnce(
+                                     [](const gpu::DxDiagNode& dx_diagnostics) {
+                                       GpuDataManagerImpl::GetInstance()
+                                           ->UpdateDxDiagNode(dx_diagnostics);
+                                     }));
                            }));
 #else
   // NeedsCompleteGpuInfoCollection() always returns false on platforms other
@@ -430,12 +404,14 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     }
     GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanRequestStatus(true);
     host->gpu_service()->GetGpuSupportedRuntimeVersion(
-        base::BindOnce(&UpdateDx12VulkanInfoOnIO));
+        base::BindOnce([](const gpu::Dx12VulkanVersionInfo& info) {
+          GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(info);
+        }));
   });
 
   if (delayed) {
     base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
-                          base::TimeDelta::FromMilliseconds(15000));
+                          base::TimeDelta::FromSeconds(120));
   } else {
     gpu_info_dx12_vulkan_requested_ = true;
     gpu_info_dx12_vulkan_request_failed_ = false;

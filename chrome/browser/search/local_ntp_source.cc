@@ -297,6 +297,13 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NEW_TAB_VOICE_OTHER_ERROR);
     AddString(translated_strings.get(), "voiceCloseTooltip",
               IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP);
+
+    // Realbox
+    AddString(translated_strings.get(), "realboxSeparator",
+              base::FeatureList::IsEnabled(
+                  omnibox::kOmniboxAlternateMatchDescriptionSeparator)
+                  ? IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR_ALTERNATE
+                  : IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
   }
 
   return translated_strings;
@@ -610,7 +617,7 @@ class LocalNtpSource::SearchConfigurationProvider
           "enableShortcutsGrid",
           base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
       config_data.SetBoolean(
-          "showFakeboxPlaceholderOnFocus",
+          "showPlaceholderOnFocus",
           base::FeatureList::IsEnabled(
               omnibox::kUIExperimentShowPlaceholderWhenCaretShowing));
       config_data.SetBoolean(
@@ -621,6 +628,13 @@ class LocalNtpSource::SearchConfigurationProvider
       config_data.SetBoolean("chromeColorsCustomColorPicker",
                              base::FeatureList::IsEnabled(
                                  features::kChromeColorsCustomColorPicker));
+      config_data.SetBoolean("realboxEnabled", features::IsNtpRealboxEnabled());
+      config_data.SetBoolean(
+          "realboxUseClockIcon",
+          base::FeatureList::IsEnabled(
+              omnibox::kOmniboxSuggestionTransparencyOptions) ||
+              base::FeatureList::IsEnabled(
+                  omnibox::kOmniboxUICuesForSearchHistoryMatches));
     }
 
     // Serialize the dictionary.
@@ -1031,6 +1045,10 @@ void LocalNtpSource::StartDataRequest(
                                     custom_background_url.spec() +
                                     "\" as=\"image\">";
     }
+
+    bool realbox_enabled = features::IsNtpRealboxEnabled();
+    replacements["hiddenIfRealboxEnabled"] = realbox_enabled ? "hidden" : "";
+    replacements["hiddenIfRealboxDisabled"] = realbox_enabled ? "" : "hidden";
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);

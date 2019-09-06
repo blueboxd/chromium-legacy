@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -322,9 +323,9 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-                 content::Source<Profile>(profile_));
+  // The ProfileManager may be null in unit tests.
+  if (g_browser_process->profile_manager())
+    profile_manager_observer_.Add(g_browser_process->profile_manager());
 
   UpgradeDetector::GetInstance()->AddObserver(this);
 
@@ -1842,10 +1843,6 @@ void ExtensionService::Observe(int type,
                                     system_->info_map(), process->GetID()));
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED: {
-      OnProfileDestructionStarted();
-      break;
-    }
 
     default:
       NOTREACHED() << "Unexpected notification type.";
@@ -1997,6 +1994,15 @@ bool ExtensionService::ShouldBlockExtension(const Extension* extension) {
   // Extension object. If |extension| is not loaded, assume it should be
   // blocked.
   return !extension || CanBlockExtension(extension);
+}
+
+void ExtensionService::OnProfileMarkedForPermanentDeletion(Profile* profile) {
+  if (profile != profile_)
+    return;
+
+  ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
+  for (auto it = ids_to_unload.begin(); it != ids_to_unload.end(); ++it)
+    UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
 }
 
 void ExtensionService::ManageBlacklist(
@@ -2164,13 +2170,6 @@ void ExtensionService::UnloadAllExtensionsInternal() {
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has
   // been disabled or uninstalled.
-}
-
-void ExtensionService::OnProfileDestructionStarted() {
-  ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
-  for (auto it = ids_to_unload.begin(); it != ids_to_unload.end(); ++it) {
-    UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
-  }
 }
 
 void ExtensionService::OnInstalledExtensionsLoaded() {

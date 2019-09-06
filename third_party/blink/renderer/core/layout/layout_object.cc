@@ -404,13 +404,6 @@ void LayoutObject::RemoveChild(LayoutObject* old_child) {
   children->RemoveChildNode(this, old_child);
 }
 
-void LayoutObject::SetDangerousOneWayParent(LayoutObject* parent) {
-  DCHECK(!PreviousSibling());
-  DCHECK(!NextSibling());
-  DCHECK(!parent || !parent_);
-  SetParent(parent);
-}
-
 void LayoutObject::RegisterSubtreeChangeListenerOnDescendants(bool value) {
   // If we're set to the same value then we're done as that means it's
   // set down the tree that way already.
@@ -2510,16 +2503,6 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
       child->SetPseudoStyle(Style());
     child = child->NextInPreOrder(this);
   }
-}
-
-void LayoutObject::SetStyleWithWritingModeOfParent(
-    scoped_refptr<ComputedStyle> style) {
-  const LayoutObject* parent = Parent();
-  if (parent) {
-    style->SetWritingMode(parent->StyleRef().GetWritingMode());
-    style->UpdateFontOrientation();
-  }
-  SetStyle(std::move(style));
 }
 
 void LayoutObject::AddAsImageObserver(StyleImage* image) {

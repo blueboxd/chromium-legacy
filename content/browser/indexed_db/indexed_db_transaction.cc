@@ -207,6 +207,7 @@ bool IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
   locks_receiver_.locks.clear();
+  locks_receiver_.AbortLockRequest();
 
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);

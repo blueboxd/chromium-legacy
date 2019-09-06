@@ -246,6 +246,14 @@ bool WebRequestPermissions::HideRequest(
   bool is_request_from_browser = request.render_process_id == -1;
 
   if (is_request_from_browser) {
+    // Browser initiated service worker script requests (e.g., for update check)
+    // are not hidden.
+    if (request.is_service_worker_script) {
+      DCHECK(request.type == content::ResourceType::kServiceWorker ||
+             request.type == content::ResourceType::kScript);
+      return false;
+    }
+
     // Hide all non-navigation requests made by the browser. crbug.com/884932.
     if (!request.is_navigation_request)
       return true;

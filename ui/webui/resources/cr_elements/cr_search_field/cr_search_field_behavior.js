@@ -7,7 +7,7 @@
  * <settings-subpage-search> for a simple implementation.
  * @polymerBehavior
  */
-const CrSearchFieldBehavior = {
+/* #export */ const CrSearchFieldBehavior = {
   properties: {
     label: {
       type: String,

@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "components/viz/common/gpu/metal_api_proxy.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -53,11 +53,8 @@ constexpr base::TimeDelta kTestShaderCompileTimeout =
 class API_AVAILABLE(macos(10.11)) TestShaderState
     : public base::RefCountedThreadSafe<TestShaderState> {
  public:
-  TestShaderState() : condition_variable(&lock) {}
-
-  base::Lock lock;
-  base::ConditionVariable condition_variable;
-  bool compile_has_completed = false;
+  TestShaderState() {}
+  base::WaitableEvent event;
 
  protected:
   friend class base::RefCountedThreadSafe<TestShaderState>;
@@ -76,17 +73,14 @@ bool CompileTestShader(id<MTLDevice> device) API_AVAILABLE(macos(10.11)) {
       [[MTLCompileOptions alloc] init]);
   MTLNewLibraryCompletionHandler completion_handler =
       ^(id<MTLLibrary> library, NSError* error) {
-        base::AutoLock lock(state->lock);
-        state->compile_has_completed = true;
-        state->condition_variable.Signal();
+        DCHECK(library);
+        state->event.Signal();
       };
   [device newLibraryWithSource:source
                        options:options
              completionHandler:completion_handler];
 
-  base::AutoLock lock(state->lock);
-  state->condition_variable.TimedWait(kTestShaderCompileTimeout);
-  return state->compile_has_completed;
+  return state->event.TimedWait(kTestShaderCompileTimeout);
 }
 
 struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl

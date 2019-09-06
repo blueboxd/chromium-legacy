@@ -82,6 +82,8 @@ class TabModel : public content::NotificationObserver {
     FROM_BROWSER_ACTIONS,
     // Opened by an external application launching a new Chrome incognito tab.
     FROM_LAUNCH_NEW_INCOGNITO_TAB,
+    // Opened a non-restored tab during the startup process
+    FROM_STARTUP,
     // Must be last.
     SIZE
   };

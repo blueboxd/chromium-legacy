@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">স্পিচ থামান</translation>
 <translation id="4373197658375206385">এমন কোনও আগের আইটেম নেই যা লিঙ্ক নয়৷</translation>
 <translation id="4376316291247992553">ব্রেইল হিসাবে গ্রাফিক দেখুন</translation>
+<translation id="437809255587011096">টেক্সট স্টাইল ঘোষণা করুন</translation>
 <translation id="4378308539633073595">স্ক্রল করে এগিয়ে যান</translation>
 <translation id="4384583879834880242">প্রশ্ন এবং উত্তর</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8503360654911991865">নেভিগেশন কণিকাভাবটি কমান</translation>
 <translation id="8504695234784218301">ব্যাকরণের ত্রুটি শেষ</translation>
 <translation id="8520472399088452386">ঘূর্ণন বোতাম</translation>
+<translation id="8534394844575788431">ফর্ম্যাটিং</translation>
 <translation id="8538744478902126321">বর্তমান কক্ষের সারি শিরোলেখে একটি অনুমান করে</translation>
 <translation id="8540054775867439484">শীর্ষে সম্পৃক্ত রয়েছে</translation>
 <translation id="8542271685829952264">সব ChromeVox কমান্ড এবং শর্টকাটগুলি ঘুরে দেখার জন্য, সার্চ + ফুলস্টপ টিপুন, তারপর মেনুতে নেভিগেট করার জন্য তীরচিহ্ন কীগুলি ব্যবহার করুন, এবং কোনো কমান্ড চালু করতে Enter ব্যবহার করুন। এখানে ফেরার জন্য সার্চ+o এরপর t টিপুন।</translation>
@@ -1200,6 +1202,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">ট্যাব</translation>
 <translation id="9151211641321628915">বর্তমান অবস্থানটির একটি সংক্ষিপ্ত বিবরণ ঘোষণা করে</translation>
+<translation id="9151249085738989067">ভাষার ভিত্তিতে ChromeVox-এর ভয়েস অটোমেটিক বদল করুন</translation>
 <translation id="9153606228985488238">পিচ <ph name="PERCENT" /> শতাংশ</translation>
 <translation id="9160096769946561184">বর্তমান কলামের শেষে যান</translation>
 <translation id="9173115498289768110"><ph name="PERCENT" /> শতাংশ ভলিউম</translation>

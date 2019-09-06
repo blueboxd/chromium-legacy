@@ -369,7 +369,7 @@ class WritersTest : public TestWithTaskEnvironment {
 
     // Start reading a few more bytes and return.
     buf = base::MakeRefCounted<IOBuffer>(5);
-    rv = writers_->Read(buf.get(), 5, base::BindRepeating([](int rv) {}),
+    rv = writers_->Read(buf.get(), 5, base::BindOnce([](int rv) {}),
                         transaction);
     EXPECT_EQ(ERR_IO_PENDING, rv);
   }

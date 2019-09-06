@@ -188,7 +188,7 @@ class StructTraitsTest : public testing::Test,
     std::move(callback).Run(std::move(u));
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   ChromiumRectServiceImpl chromium_service_;
   ReceiverSet<RectService> chromium_receivers_;

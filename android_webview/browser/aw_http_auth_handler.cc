@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "android_webview/browser/aw_contents.h"
-#include "android_webview/native_jni/AwHttpAuthHandler_jni.h"
+#include "android_webview/browser_jni_headers/AwHttpAuthHandler_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"

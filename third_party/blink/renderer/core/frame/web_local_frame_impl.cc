@@ -414,7 +414,10 @@ class ChromePrintContext : public PrintContext {
                                &context);
 
     frame_view->PaintContentsOutsideOfLifecycle(
-        builder.Context(), kGlobalPaintNormalPhase, CullRect(page_rect));
+        builder.Context(),
+        kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers |
+            kGlobalPaintPrinting,
+        CullRect(page_rect));
     {
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
           builder.Context().GetPaintController(), property_tree_state, builder,

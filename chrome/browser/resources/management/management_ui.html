@@ -126,11 +126,12 @@
       }
 
       .content-indented {
-        margin-inline-start: 24px;
+        padding-inline-start: 24px;
       }
 
       table {
         border-spacing: 0 16px;
+        box-sizing: border-box;
         width: 100%;
       }
 
@@ -144,7 +145,8 @@
         display: flex;
       }
 
-      .extension-name {
+      .extension-name,
+      .protection-name {
         width: 40%;
       }
 
@@ -155,8 +157,14 @@
         white-space: nowrap;
       }
 
-      .extension-permissions {
+      .extension-permissions,
+      .protection-permissions {
         width: 60%;
+      }
+
+      .protection-name,
+      .protection-permissions {
+        vertical-align: top;
       }
 
       .extension-name img {
@@ -200,6 +208,33 @@
             </div>
 </if>
           </section>
+          <template is="dom-if"
+              if="[[showThreatProtectionInfo_(threatProtectionInfo_)]]">
+            <section>
+              <h2 class="cr-title-text">$i18n{threatProtectionTitle}</h2>
+              <div class="subtitle">
+                [[threatProtectionInfo_.description]]
+              </div>
+              <table class="content-indented">
+                <tr>
+                  <th class="protection-name">$i18n{extensionName}</th>
+                  <th class="protection-permissions">
+                    $i18n{extensionPermissions}
+                  </th>
+                </tr>
+                <template is="dom-repeat"
+                    items="[[threatProtectionInfo_.info]]">
+                  <tr>
+                    <td class="protection-name">[[i18n(item.title)]]</td>
+                    <td class="protection-permissions">
+                      [[i18n(item.permission)]]
+                    </td>
+                  </tr>
+                </template>
+              </table>
+            </section>
+          </template>
+
 <if expr="chromeos">
           <div hidden="[[!localTrustRoots_]]">
             <section>
@@ -260,10 +295,10 @@
               </div>
               <table class="content-indented">
                 <tr>
-                  <th class="extension-name">$i18n{extensionName}</td>
+                  <th class="extension-name">$i18n{extensionName}</th>
                   <th class="extension-permissions">
                     $i18n{extensionPermissions}
-                  </td>
+                  </th>
                 </tr>
                 <template is="dom-repeat" items="[[extensions_]]">
                   <tr>

@@ -139,6 +139,8 @@ class EmbeddedWorkerTestHelper {
           receiver);
   void OnServiceWorkerReceiver(
       mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
+  void OnInstanceClientRequest(mojo::ScopedMessagePipeHandle request_handle);
+  void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
 
   // Called by the fakes to destroy themselves.
   void RemoveInstanceClient(FakeEmbeddedWorkerInstanceClient* instance_client);
@@ -158,15 +160,11 @@ class EmbeddedWorkerTestHelper {
   virtual std::unique_ptr<FakeServiceWorker> CreateServiceWorker();
 
  private:
-  class MockRendererInterface;
-
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
-
-  std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
 
   base::queue<std::unique_ptr<FakeEmbeddedWorkerInstanceClient>>
       pending_embedded_worker_instance_clients_;

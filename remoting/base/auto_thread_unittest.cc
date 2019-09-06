@@ -84,7 +84,7 @@ class AutoThreadTest : public testing::Test {
  protected:
   void QuitMainMessageLoop() { std::move(quit_closure_).Run(); }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::OnceClosure quit_closure_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
 };

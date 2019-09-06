@@ -424,6 +424,13 @@ DevToolsWindow::~DevToolsWindow() {
     close_callback_.Run();
     close_callback_ = base::Closure();
   }
+  // Defer deletion of the main web contents, since we could get here
+  // via RenderFrameHostImpl method that expects WebContents to live
+  // for some time. See http://crbug.com/997299 for details.
+  if (owned_main_web_contents_) {
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, std::move(owned_main_web_contents_));
+  }
 }
 
 // static

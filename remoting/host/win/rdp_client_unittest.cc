@@ -100,8 +100,8 @@ class RdpClientTest : public testing::Test {
 
   // Used by RdpClient. The loop is stopped once there are no more references to
   // |task_runner_|.
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 

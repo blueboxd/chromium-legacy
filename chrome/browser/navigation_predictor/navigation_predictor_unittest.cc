@@ -584,6 +584,14 @@ class NavigationPredictorSendUkmMetricsEnabledTest
     return metrics;
   }
 
+  int GetUKMIndex(int ukm_entry_index,
+                  ukm::TestAutoSetUkmRecorder& ukm_recorder) {
+    using UkmEntry = ukm::builders::NavigationPredictorAnchorElementMetrics;
+    auto* entry =
+        ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[ukm_entry_index];
+    return *ukm_recorder.GetEntryMetric(entry, UkmEntry::kAnchorIndexName);
+  }
+
   std::vector<int> GetTestMetricsAsVector(struct TestMetrics test_metrics) {
     std::vector<int> metrics_vector = {
         test_metrics.ratio_area,     test_metrics.ratio_distance_root_top,
@@ -631,6 +639,15 @@ TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendLinkUkmMetrics) {
               ::testing::Contains(GetTestMetricsAsVector(anchor_2_metrics)));
   EXPECT_THAT(vector_actual,
               ::testing::Contains(GetTestMetricsAsVector(anchor_3_metrics)));
+
+  std::vector<int> vector_indeces;
+  vector_indeces.push_back(GetUKMIndex(0, test_ukm_recorder));
+  vector_indeces.push_back(GetUKMIndex(1, test_ukm_recorder));
+  vector_indeces.push_back(GetUKMIndex(2, test_ukm_recorder));
+
+  EXPECT_THAT(vector_indeces, ::testing::Contains(1));
+  EXPECT_THAT(vector_indeces, ::testing::Contains(2));
+  EXPECT_THAT(vector_indeces, ::testing::Contains(3));
 }
 
 // Checks that metrics about which link was clicked are sent to the ukm

@@ -4073,13 +4073,6 @@
           "shards": 12
         }
       }
-    ],
-    "scripts": [
-      {
-        "name": "webkit_lint",
-        "script": "blink_lint_expectations.py",
-        "swarming": {}
-      }
     ]
   },
   "Win7 Builder (dbg) Goma Canary": {

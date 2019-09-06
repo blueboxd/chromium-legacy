@@ -12,7 +12,8 @@ class BackButtonManager {
    */
   constructor(navigationManager) {
     /**
-     * Keeps track of when the back button is open.
+     * Keeps track of when the back button is open and appears alone
+     * (rather than as part of the menu).
      * @private {boolean}
      */
     this.backButtonOpen_ = false;
@@ -24,7 +25,7 @@ class BackButtonManager {
     this.menuPanel_;
 
     /** @private {chrome.automation.AutomationNode} */
-    this.buttonNode_;
+    this.backButtonNode_;
   }
 
   /**
@@ -53,33 +54,40 @@ class BackButtonManager {
 
   /**
    * Selects the back button, hiding the button and exiting the current scope.
+   * @return {boolean} Whether or not the back button was successfully selected.
    */
   select() {
-    if (!this.backButtonOpen_)
-      return false;
-
-    if (this.navigationManager_.leaveKeyboardIfNeeded())
+    if (this.navigationManager_.selectBackButtonInMenu()) {
       return true;
+    }
+
+    if (!this.backButtonOpen_) {
+      return false;
+    }
+
+    if (this.navigationManager_.leaveKeyboardIfNeeded()) {
+      return true;
+    }
 
     this.navigationManager_.exitCurrentScope();
     return true;
   }
 
   /**
-   * Returns the button node, if we have found it.
+   * Returns the back button node, if we have found it.
    * @return {chrome.automation.AutomationNode}
    */
-  buttonNode() {
-    return this.buttonNode_;
+  backButtonNode() {
+    return this.backButtonNode_;
   }
 
   /**
-   * Sets the reference to the menu panel and finds the back button node.
-   * @param {!PanelInterface} menuPanel
+   * Finds the back button node.
+   * @param {!chrome.automation.AutomationNode} desktop
+   * @private
    */
-  init(menuPanel, desktop) {
-    this.menuPanel_ = menuPanel;
-    this.buttonNode_ =
+  findBackButtonNode_(desktop) {
+    this.backButtonNode_ =
         new AutomationTreeWalker(
             desktop, constants.Dir.FORWARD,
             {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID})
@@ -87,7 +95,25 @@ class BackButtonManager {
             .node;
     // TODO(anastasi): Determine appropriate event and listen for it, rather
     // than setting a timeout.
-    if (!this.buttonNode_)
-      setTimeout(this.init.bind(this, menuPanel, desktop), 500);
+    if (!this.backButtonNode_) {
+      setTimeout(this.findBackButtonNode_.bind(this, desktop), 500);
+    }
+  }
+
+  /**
+   * Sets the reference to the menu panel, sets up a click handler for the
+   * back button, and finds the back button node.
+   * @param {!PanelInterface} menuPanel
+   * @param {!chrome.automation.AutomationNode} desktop
+   */
+  init(menuPanel, desktop) {
+    this.menuPanel_ = menuPanel;
+
+    // Ensures that the back button behaves the same way when clicked
+    // as when selected.
+    const backButtonElement = this.menuPanel_.backButtonElement();
+    backButtonElement.addEventListener('click', this.select.bind(this));
+
+    this.findBackButtonNode_(desktop);
   }
 }

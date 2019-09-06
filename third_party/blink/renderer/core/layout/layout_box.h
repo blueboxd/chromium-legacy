@@ -608,7 +608,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // CSS content-size getters. This property only applies if size containment is
   // specified, hence the names have ForSizeContainment suffix to distinguish
   // them from above.
-  bool HasSpecifiedContentSizeForSizeContainment() {
+  bool HasSpecifiedContentSizeForSizeContainment() const {
     return !StyleRef().GetContentSize().IsNone();
   }
   LayoutSize ContentLogicalSizeForSizeContainment() const {

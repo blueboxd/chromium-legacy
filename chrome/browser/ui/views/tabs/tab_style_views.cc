@@ -235,16 +235,21 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // of the bottom of the tab bar (when strokes are enabled).
     tab_bottom -= stroke_adjustment;
     bottom_radius -= stroke_adjustment;
-    extend_to_top = ShouldExtendHitTest();
+    if (ShouldExtendHitTest()) {
+      extend_to_top = true;
+      if (tab_->controller()->IsFirstVisibleTab(tab_)) {
+        // The path is not mirrored in RTL and thus we must manually choose the
+        // correct "leading" edge.
+        if (base::i18n::IsRTL())
+          tab_right = right;
+        else
+          tab_left = left;
+      }
+    }
   }
   const ShapeModifier shape_modifier = GetShapeModifier(path_type);
   const bool extend_left_to_bottom = shape_modifier & kNoLowerLeftArc;
   const bool extend_right_to_bottom = shape_modifier & kNoLowerRightArc;
-
-  // When the radius shrinks, it leaves a gap between the bottom corners and the
-  // edge of the tab. Make sure we account for this - and for any adjustment we
-  // may have made to the location of the tab!
-  const float corner_gap = (right - tab_right) - bottom_radius;
 
   SkPath path;
 
@@ -270,27 +275,31 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     // stroke width.
 
     // Start with the left side of the shape.
-
-    // Draw everything left of the bottom-left corner of the tab.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┏━╯         ╰─┐
     path.moveTo(left, extended_bottom);
-    path.lineTo(left, tab_bottom);
 
-    // Draw the bottom-left arc if not excluded.
-    //   ╭─────────╮
-    //   │ Content │
-    // ┌─╝         ╰─┐
-    if (extend_left_to_bottom) {
-      path.lineTo(left + corner_gap + bottom_radius, tab_bottom);
-    } else {
-      path.lineTo(left + corner_gap, tab_bottom);
-      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCCW_Direction, tab_left, tab_bottom - bottom_radius);
+    if (tab_left != left) {
+      // Draw the left edge of the extension.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┏─╯         ╰─┐
+      if (tab_bottom != extended_bottom)
+        path.lineTo(left, tab_bottom);
+
+      // Draw the bottom-left corner.
+      //   ╭─────────╮
+      //   │ Content │
+      // ┌━╝         ╰─┐
+      if (extend_left_to_bottom) {
+        path.lineTo(tab_left, tab_bottom);
+      } else {
+        path.lineTo(tab_left - bottom_radius, tab_bottom);
+        path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                   SkPath::kCCW_Direction, tab_left,
+                   tab_bottom - bottom_radius);
+      }
     }
 
-    // Draw the ascender and top arc, if present.
+    // Draw the ascender and top-left curve, if present.
     if (extend_to_top) {
       //   ┎─────────╮
       //   ┃ Content │
@@ -320,23 +329,29 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
                  SkPath::kCW_Direction, tab_right, tab_top + top_radius);
     }
 
-    // Draw the descender and bottom-right arc.
-    //   ╭─────────╮
-    //   │ Content ┃
-    // ┌─╯         ╚─┐
-    if (extend_right_to_bottom) {
-      path.lineTo(tab_right, tab_bottom);
-    } else {
-      path.lineTo(tab_right, tab_bottom - bottom_radius);
-      path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
-                 SkPath::kCCW_Direction, right - corner_gap, tab_bottom);
+    if (tab_right != right) {
+      // Draw the descender and bottom-right corner.
+      //   ╭─────────╮
+      //   │ Content ┃
+      // ┌─╯         ╚━┐
+      if (extend_right_to_bottom) {
+        path.lineTo(tab_right, tab_bottom);
+      } else {
+        path.lineTo(tab_right, tab_bottom - bottom_radius);
+        path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
+                   SkPath::kCCW_Direction, tab_right + bottom_radius,
+                   tab_bottom);
+      }
+      if (tab_bottom != extended_bottom)
+        path.lineTo(right, tab_bottom);
     }
 
-    // Draw everything right of the bottom-right corner of the tab.
+    // Draw anything remaining: the descender, the bottom right horizontal
+    // stroke, or the right edge of the extension, depending on which
+    // conditions fired above.
     //   ╭─────────╮
     //   │ Content │
-    // ┌─╯         ╰━┓
-    path.lineTo(right, tab_bottom);
+    // ┌─╯         ╰─┓
     path.lineTo(right, extended_bottom);
 
     if (path_type != PathType::kBorder)
@@ -635,7 +650,8 @@ bool GM2TabStyle::ShouldPaintTabBackgroundColor(
 }
 
 SkColor GM2TabStyle::GetTabBackgroundColor(TabActive active) const {
-  SkColor color = tab_->controller()->GetTabBackgroundColor(active);
+  SkColor color = tab_->controller()->GetTabBackgroundColor(
+      active, BrowserNonClientFrameView::kUseCurrent);
 
   base::Optional<SkColor> group_color = tab_->GetGroupColor();
   if (group_color.has_value()) {
@@ -674,7 +690,9 @@ ShapeModifier GM2TabStyle::GetShapeModifier(PathType path_type) const {
 
 void GM2TabStyle::PaintInactiveTabBackground(gfx::Canvas* canvas) const {
   PaintTabBackground(canvas, TabActive::kInactive,
-                     tab_->controller()->GetCustomBackgroundId(), 0);
+                     tab_->controller()->GetCustomBackgroundId(
+                         BrowserNonClientFrameView::kUseCurrent),
+                     0);
 }
 
 void GM2TabStyle::PaintTabBackground(gfx::Canvas* canvas,

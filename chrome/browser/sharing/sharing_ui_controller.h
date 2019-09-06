@@ -98,6 +98,9 @@ class SharingUiController {
   SharingDialog* dialog() const { return dialog_; }
   bool is_loading() const { return is_loading_; }
   SharingSendMessageResult send_result() const { return send_result_; }
+  void set_send_result_for_testing(SharingSendMessageResult result) {
+    send_result_ = result;
+  }
 
   bool HasSendFailed() const;
 

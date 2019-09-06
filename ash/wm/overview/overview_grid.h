@@ -32,7 +32,7 @@ namespace ash {
 
 class DesksBarView;
 class FpsCounter;
-class OverviewGridPreEventHandler;
+class OverviewGridEventHandler;
 class OverviewItem;
 class PresentationTimeRecorder;
 
@@ -132,6 +132,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // shown.
   void RearrangeDuringDrag(aura::Window* dragged_window,
                            IndicatorState indicator_state);
+
+  // Updates the desks bar widget bounds if necessary.
+  void MaybeUpdateDesksWidgetBounds();
 
   // Updates the appearance of the drop target to visually indicate when the
   // dragged window is being dragged over it. For dragging from the top, pass
@@ -313,8 +316,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
 
-  OverviewGridPreEventHandler* grid_pre_event_handler() {
-    return grid_pre_event_handler_.get();
+  OverviewGridEventHandler* grid_event_handler() {
+    return grid_event_handler_.get();
   }
 
  private:
@@ -436,8 +439,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Measures the animation smoothness of overview animation.
   std::unique_ptr<FpsCounter> fps_counter_;
 
-  // True to skip |PositionWindows()|. Used to avoid O(n^2) layout
-  // when reposition windows in tablet overview mode.
+  // True to skip |PositionWindows()|. Used to avoid O(n^2) layout when
+  // reposition windows in tablet overview mode.
   bool suspend_reposition_ = false;
 
   // Used by |GetWindowRectsForTabletModeLayout| to shift the x position of the
@@ -448,8 +451,12 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // are visible in tablet overview mode.
   float scroll_offset_min_ = 0;
 
+  // Cached values of the item bounds so that they do not have to be calculated
+  // on each scroll update.
+  std::vector<gfx::RectF> items_scrolling_bounds_;
+
   // Handles events that are not handled by the OverviewItems.
-  std::unique_ptr<OverviewGridPreEventHandler> grid_pre_event_handler_;
+  std::unique_ptr<OverviewGridEventHandler> grid_event_handler_;
 
   // Records the presentation time of scrolling the grid in overview mode.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

@@ -53,7 +53,7 @@ public class PasswordManagerDialogView extends ScrollView {
         mTitleView.setText(title);
     }
 
-    void setDetails(String details) {
+    void setDetails(CharSequence details) {
         mDetailsView.setText(details);
     }
 }

@@ -39,6 +39,9 @@ class PrintSessionImpl : public arc::mojom::PrintSessionHost,
 
   ~PrintSessionImpl() override;
 
+  // Called when print preview is closed.
+  void OnPrintPreviewClosed();
+
  private:
   PrintSessionImpl(std::unique_ptr<content::WebContents> web_contents,
                    std::unique_ptr<ash::ArcCustomTab> custom_tab,

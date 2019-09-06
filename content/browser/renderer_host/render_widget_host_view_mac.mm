@@ -1116,9 +1116,15 @@ gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   return window_frame_in_screen_dip_;
 }
 
-bool RenderWidgetHostViewMac::LockMouse() {
+bool RenderWidgetHostViewMac::LockMouse(bool request_unadjusted_movement) {
   if (mouse_locked_)
     return true;
+
+  if (request_unadjusted_movement) {
+    // TODO(crbug/998688): implement pointerlock unadjusted movement on mac.
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   mouse_locked_ = true;
 

@@ -193,6 +193,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVrBrowsingFeedback,
     &kOfferWipeDataOnSignout,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
+    &payments::features::kPaymentRequestSkipToGPay,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kStrictHasEnrolledAutofillInstrument,
     &payments::features::kWebPaymentsExperimentalFeatures,
@@ -428,9 +429,6 @@ const base::Feature kEphemeralTab{"EphemeralTab",
 
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kForegroundNotificationManager{
-    "ForegroundNotificationManager", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

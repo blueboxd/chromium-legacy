@@ -91,8 +91,8 @@ class ChromiumSocketFactoryTest : public testing::Test,
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   base::RunLoop run_loop_;
 
   std::unique_ptr<rtc::PacketSocketFactory> socket_factory_;

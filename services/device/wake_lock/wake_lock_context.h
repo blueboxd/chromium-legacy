@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/device/wake_lock/wake_lock.h"
 #include "ui/gfx/native_widget_types.h"
@@ -32,7 +33,7 @@ class WakeLockContext : public mojom::WakeLockContext,
   void GetWakeLock(mojom::WakeLockType type,
                    mojom::WakeLockReason reason,
                    const std::string& description,
-                   mojom::WakeLockRequest request) override;
+                   mojo::PendingReceiver<mojom::WakeLock> receiver) override;
 
   static const int WakeLockInvalidContextId;
 

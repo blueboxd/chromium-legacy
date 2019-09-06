@@ -527,14 +527,6 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       }
       break;
     } else {
-      // We need to propagate the initial break-before value up our container
-      // chain, until we reach a container that's not a first child. If we get
-      // all the way to the root of the fragmentation context without finding
-      // any such container, we have no valid class A break point, and if a
-      // forced break was requested, none will be inserted.
-      if (!child.IsInline() && ConstraintSpace().HasBlockFragmentation())
-        container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
-
       bool abort;
       if (child.CreatesNewFormattingContext()) {
         abort = !HandleNewFormattingContext(child, child_break_token,
@@ -558,11 +550,21 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
         return container_builder_.Abort(
             NGLayoutResult::kBfcBlockOffsetResolved);
       }
-      if (container_builder_.DidBreak() &&
-          IsFragmentainerOutOfSpace(
-              previous_inflow_position.logical_block_offset))
-        break;
-      has_processed_first_child_ = true;
+      if (ConstraintSpace().HasBlockFragmentation()) {
+        if (container_builder_.DidBreak() &&
+            IsFragmentainerOutOfSpace(
+                previous_inflow_position.logical_block_offset))
+          break;
+
+        // We need to propagate the initial break-before value up our container
+        // chain, until we reach a container that's not a first child. If we get
+        // all the way to the root of the fragmentation context without finding
+        // any such container, we have no valid class A break point, and if a
+        // forced break was requested, none will be inserted.
+        if (!has_processed_first_child_ && !child.IsInline())
+          container_builder_.SetInitialBreakBefore(child.Style().BreakBefore());
+        has_processed_first_child_ = true;
+      }
     }
   }
 

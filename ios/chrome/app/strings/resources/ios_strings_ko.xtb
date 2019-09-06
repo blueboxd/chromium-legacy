@@ -209,7 +209,6 @@
 <translation id="3928666092801078803">내 데이터 결합하기</translation>
 <translation id="3929457972718048006">주소</translation>
 <translation id="3943492037546055397">비밀번호</translation>
-<translation id="3950820424414687140">로그인</translation>
 <translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="3989635538409502728">로그아웃</translation>
 <translation id="3995521777587992544">페이지 로드 진행률 표시줄입니다. <ph name="EMAIL" /> 이메일이 로드되어 있습니다.</translation>
@@ -229,7 +228,6 @@
 <translation id="4172051516777682613">항상 표시</translation>
 <translation id="418156467088430727">새 탭에서 오프라인 버전 보기</translation>
 <translation id="4181841719683918333">언어</translation>
-<translation id="4237682350741091554"><ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 Chrome 동기화 및 맞춤설정을 관리하세요.</translation>
 <translation id="424315890655130736">암호 입력</translation>
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
@@ -263,6 +261,7 @@
 <translation id="4747097190499141774">Google Pay 결제 수단 및 주소는 암호로 암호화되지 않습니다. 암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 동기화를 재설정해야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">페이지에서 찾기...</translation>
 <translation id="4751645464639803239">새 시크릿 탭</translation>
+<translation id="4758977202923349869">신용카드가 이 프레임 안에 들어오도록 배치하세요</translation>
 <translation id="4802417911091824046">Google Pay 결제 수단 및 주소는 암호로 암호화되지 않습니다.
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
@@ -282,7 +281,6 @@
 <translation id="4979397965658815378">Google 계정으로 로그인하면 모든 기기에서 북마크, 비밀번호, 방문 기록 및 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="5005498671520578047">비밀번호 복사</translation>
 <translation id="5010803260590204777">시크릿 탭을 열어 웹을 비공개로 탐색하세요.</translation>
-<translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />님, 안녕하세요.</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5059136629401106827">확인</translation>
 <translation id="5062321486222145940">Google 드라이브 설치</translation>
@@ -328,6 +326,7 @@
 <translation id="5728700505257787410">죄송합니다. 계정에 로그인하는 중에 문제가 발생했습니다.</translation>
 <translation id="5737974891429562743">계정 로그인 세부정보가 오래되었습니다. 업데이트하여 동기화를 시작하세요.</translation>
 <translation id="5738887413654608789">이를 통해 사용자의 주변 환경을 토대로 관련 웹 페이지를 발견할 수 있습니다.</translation>
+<translation id="5803566855766646066">새 카드를 삭제하시겠습니까?</translation>
 <translation id="5816228676161003208">액세스를 허용하면 음성으로 더 빨리 검색할 수 있습니다.</translation>
 <translation id="5846482154967366008">검색엔진</translation>
 <translation id="5854790677617711513">30일 이상 전</translation>
@@ -443,7 +442,6 @@
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
-<translation id="722055596168483966">Google 서비스 맞춤설정</translation>
 <translation id="7265758999917665941">이 사이트 제외</translation>
 <translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
 <translation id="7285236536143823449">예</translation>
@@ -455,7 +453,6 @@
 <translation id="7383797227493018512">읽기 목록</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">북마크, 방문 기록, 비밀번호, 기타 설정이 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장됩니다.</translation>
-<translation id="744343212394640790"><ph name="EMAIL" /> 아님</translation>
 <translation id="7454057999980797137">도/군</translation>
 <translation id="7456847797759667638">위치 열기...</translation>
 <translation id="7460314822154045102">카메라 사용</translation>
@@ -542,13 +539,10 @@
 <translation id="8840513115188359703">Google 계정에서 로그아웃되지 않습니다.</translation>
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
-<translation id="8904976895050290827">Chrome 동기화</translation>
 <translation id="895541991026785598">문제 신고</translation>
-<translation id="8971089644512329999">동의</translation>
 <translation id="8976382372951310360">도움말</translation>
 <translation id="8981454092730389528">Google 활동 제어</translation>
 <translation id="8985320356172329008">다음 계정으로 Google에 로그인함:</translation>
-<translation id="902659348151742535">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용할 수 있습니다.</translation>
 <translation id="9034759925968272072">Google 계정에서 로그아웃되지 않습니다. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에서 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="9039373489628511875">대역폭</translation>
 <translation id="9055772144595778347">로그인할 수 없음</translation>
@@ -565,7 +559,6 @@
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">비정상 종료 보고서 전송 완료</translation>
-<translation id="935490618240037774">북마크, 방문 기록, 비밀번호, 기타 설정이 Google 계정에 동기화되므로 모든 기기에서 사용할 수 있습니다.</translation>
 <translation id="952704832371081537">취소</translation>
 <translation id="976982866697960176">동기화된 데이터 관리…</translation>
 <translation id="988141524645182168">기타 기기</translation>

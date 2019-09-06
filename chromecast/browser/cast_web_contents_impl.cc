@@ -572,7 +572,7 @@ void CastWebContentsImpl::DidFinishLoad(
     // An error HTML page was loaded instead of the content we requested.
     LOG(ERROR) << "Failed loading page for: " << validated_url
                << "; http status code: " << http_status_code;
-    Stop(net::ERR_FAILED);
+    Stop(net::ERR_HTTP_RESPONSE_CODE_FAILURE);
     DCHECK_EQ(page_state_, PageState::ERROR);
     return;
   }

@@ -77,7 +77,7 @@ gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
 
 // Performs hit test and prepares scroll deltas that will be used by GSB and
 // GSU.
-InputHandlerPointerResult ScrollbarController::HandleMouseDown(
+InputHandlerPointerResult ScrollbarController::HandlePointerDown(
     const gfx::PointF position_in_widget) {
   InputHandlerPointerResult scroll_result;
   LayerImpl* layer_impl = GetLayerHitByPoint(position_in_widget);
@@ -381,7 +381,7 @@ void ScrollbarController::StartAutoScrollAnimation(const float velocity,
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSE.
-InputHandlerPointerResult ScrollbarController::HandleMouseUp(
+InputHandlerPointerResult ScrollbarController::HandlePointerUp(
     const gfx::PointF position_in_widget) {
   InputHandlerPointerResult scroll_result;
   if (scrollbar_scroll_is_active_) {

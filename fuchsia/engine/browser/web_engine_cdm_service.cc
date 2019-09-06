@@ -16,12 +16,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "fuchsia/engine/switches.h"
 #include "media/base/provision_fetcher.h"
 #include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
 #include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace {
+
 class FuchsiaCdmProviderImpl
     : public content::FrameServiceBase<media::mojom::FuchsiaCdmProvider> {
  public:
@@ -110,10 +112,15 @@ class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
 // Supported key systems:
 std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
   media::FuchsiaCdmManager::KeySystemHandlerMap handlers;
-  handlers.emplace(kWidevineKeySystem, std::make_unique<WidevineHandler>());
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWidevine)) {
+    handlers.emplace(kWidevineKeySystem, std::make_unique<WidevineHandler>());
+  }
 
   return std::make_unique<media::FuchsiaCdmManager>(std::move(handlers));
 }
+
 }  // namespace
 
 WebEngineCdmService::WebEngineCdmService(

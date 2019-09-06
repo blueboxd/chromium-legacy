@@ -69,6 +69,17 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
       nil);
 }
 
+// Validates that the experimental flags container is visible.
+bool WebStateContainsChromeFlagsBody() {
+  NSError* error = nil;
+  id result = chrome_test_util::ExecuteJavaScript(
+      @"document.getElementById('body-container').style.visibility", &error);
+  if (error)
+    return false;
+  NSString* resultString = base::mac::ObjCCastStrict<NSString>(result);
+  return [@"visible" isEqualToString:resultString];
+}
+
 }  // namespace
 
 // Test case for chrome://* WebUI pages.
@@ -236,7 +247,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [ChromeEarlGrey waitForWebStateContainingText:kChromeVersionWebText];
 }
 
-- (void)testChromeFlags {
+- (void)testChromeFlagsOnNTP {
+  // Start with NTP and load chrome://flags.
   LoadWebUIUrl(kChromeUIFlagsHost);
 
   // Not using kChromeUIFlagsHost because it has a final "/" that is not
@@ -247,15 +259,34 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // Validates that some of the expected text on the page exists.
   [ChromeEarlGrey waitForWebStateContainingText:"Experiments"];
   [ChromeEarlGrey waitForWebStateContainingText:"Available"];
-
   // Validates that the experimental flags container is visible.
-  NSError* error = nil;
-  id result = chrome_test_util::ExecuteJavaScript(
-      @"document.getElementById('body-container').style.visibility", &error);
-  GREYAssert(!error, @"JavaScript execution error");
-  NSString* resultString = base::mac::ObjCCastStrict<NSString>(result);
-  GREYAssertEqualObjects(@"visible", resultString,
-                         @"body-container is not visible");
+  GREYAssert(WebStateContainsChromeFlagsBody(),
+             @"JavaScript error or body-container is not visible");
+}
+
+- (void)testChromeFlagsOnWebsite {
+  // Starts with loading a website.
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+
+  const char kWebPageText[] = "pony";
+  GURL webURL = self.testServer->GetURL("/pony.html");
+  [ChromeEarlGrey loadURL:webURL];
+  [ChromeEarlGrey waitForWebStateContainingText:kWebPageText];
+
+  // Then load chrome://flags in the same tab that has loaded a website.
+  LoadWebUIUrl(kChromeUIFlagsHost);
+
+  // Not using kChromeUIFlagsHost because it has a final "/" that is not
+  // displayed in Omnibox.
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
+      assertWithMatcher:grey_notNil()];
+
+  // Validates that some of the expected text on the page exists.
+  [ChromeEarlGrey waitForWebStateContainingText:"Experiments"];
+  [ChromeEarlGrey waitForWebStateContainingText:"Available"];
+  // Validates that the experimental flags container is visible.
+  GREYAssert(WebStateContainsChromeFlagsBody(),
+             @"JavaScript error or body-container is not visible");
 }
 
 @end

@@ -158,10 +158,11 @@ public class WebApkUpdateManagerTest {
         final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter, storage);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            WebApkInfo info = WebApkInfo.create("", creationData.scope, null, null, null,
-                    creationData.name, creationData.shortName, creationData.displayMode,
-                    creationData.orientation, 0, creationData.themeColor,
-                    creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable, "",
+            WebApkInfo info = WebApkInfo.create(
+                    "", creationData.scope, null, null, null, creationData.name,
+                    creationData.shortName, creationData.displayMode, creationData.orientation, 0,
+                    creationData.themeColor, creationData.backgroundColor, 0,
+                    creationData.isPrimaryIconMaskable, false /* isSplashIconMaskable */, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
                     creationData.startUrl, WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,

@@ -108,7 +108,9 @@ class PpdLineReaderImpl : public PpdLineReader {
 
   // Skip input until we hit a newline (which is discarded).  If
   // we encounter eof before a newline, false is returned.
-  bool SkipToNextLine() {
+  // TODO(thakis): Remove NOINLINE once the msan fix for
+  // https://crbug.com/998966 is rolled in.
+  bool SkipToNextLine() NOINLINE {
     while (true) {
       char c = NextChar();
       if (Eof()) {

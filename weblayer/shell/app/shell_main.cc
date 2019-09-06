@@ -96,7 +96,7 @@ weblayer::MainParams CreateMainParams() {
   base::PathService::Get(base::DIR_EXE, &params.log_filename);
   params.log_filename = params.log_filename.AppendASCII("weblayer_shell.log");
 
-  params.pak_name = "weblayer_shell.pak";
+  params.pak_name = "weblayer.pak";
 
   params.brand = "weblayer_shell";
   params.full_version = WEBLAYER_SHELL_VERSION;

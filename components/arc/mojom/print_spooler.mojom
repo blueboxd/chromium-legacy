@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 2
+// Next MinVersion: 3
 
 module arc.mojom;
 
@@ -18,10 +18,12 @@ interface PrintSessionHost {
 
 // Represents the ARC side of a print session. Used by Chrome to send
 // print-related messages to ARC and request rendered print documents.
-// Next method ID: 0
+// Next method ID: 1
 interface PrintSessionInstance {
-  // TODO(jschettler): Add methods to render a print document and signal the
-  // close of Chrome print preview.
+  // Called when Chrome print preview is closed.
+  [MinVersion=2] OnPrintPreviewClosed@0();
+
+  // TODO(jschettler): Add method to render a print document.
 };
 
 // Used by ARC to create a new print session. A print session is used to print a

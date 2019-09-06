@@ -42,6 +42,8 @@ class TabScorePredictorTest : public testing::Test {
 // Checks the score for an example that we have calculated a known score for
 // outside of Chrome.
 TEST_F(TabScorePredictorTest, KnownScore) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker, {{"scorer_type", "1"}});
   // Pre-calculated score using the generated model outside of Chrome.
   EXPECT_FLOAT_EQ(ScoreTab(GetFullTabFeaturesForTesting()), -10.076081);
 }
@@ -49,8 +51,28 @@ TEST_F(TabScorePredictorTest, KnownScore) {
 // Checks the score for a different example that we have calculated a known
 // score for outside of Chrome. This example omits the optional features.
 TEST_F(TabScorePredictorTest, KnownScoreMissingOptionalFeatures) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker, {{"scorer_type", "1"}});
   // Pre-calculated score using the generated model outside of Chrome.
   EXPECT_FLOAT_EQ(ScoreTab(GetPartialTabFeaturesForTesting()), 5.1401806);
+}
+
+// Checks the score for an example that we have calculated a known score for
+// outside of Chrome.
+TEST_F(TabScorePredictorTest, KnownScorePairwise) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker, {{"scorer_type", "2"}});
+  // Pre-calculated score using the generated model outside of Chrome.
+  EXPECT_FLOAT_EQ(ScoreTab(GetFullTabFeaturesForTesting()), -3.8852997);
+}
+
+// Checks the score for a different example that we have calculated a known
+// score for outside of Chrome. This example omits the optional features.
+TEST_F(TabScorePredictorTest, KnownScoreMissingOptionalFeaturesPairwise) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kTabRanker, {{"scorer_type", "2"}});
+  // Pre-calculated score using the generated model outside of Chrome.
+  EXPECT_FLOAT_EQ(ScoreTab(GetPartialTabFeaturesForTesting()), 1.9675488);
 }
 
 TEST_F(TabScorePredictorTest, ScoreWithMRUScorer) {

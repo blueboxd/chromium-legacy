@@ -50,7 +50,10 @@ const std::vector<DesktopMediaID::Type> kSourceTypes = {
 
 class DesktopMediaPickerViewsTest : public testing::Test {
  public:
-  DesktopMediaPickerViewsTest() {}
+  DesktopMediaPickerViewsTest() : source_types_(kSourceTypes) {}
+  explicit DesktopMediaPickerViewsTest(
+      const std::vector<DesktopMediaID::Type>& source_types)
+      : source_types_(source_types) {}
   ~DesktopMediaPickerViewsTest() override {}
 
   void SetUp() override {
@@ -65,7 +68,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 #endif
 
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
-    for (auto type : kSourceTypes) {
+    for (auto type : source_types_) {
       media_lists_[type] = new FakeDesktopMediaList(type);
       source_lists.push_back(
           std::unique_ptr<FakeDesktopMediaList>(media_lists_[type]));
@@ -109,6 +112,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
   DesktopMediaPickerViewsTestApi test_api_;
   MockDesktopMediaPickerDialogObserver observer_;
+  const std::vector<DesktopMediaID::Type> source_types_;
 };
 
 TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledWhenWindowClosed) {
@@ -295,17 +299,23 @@ TEST_F(DesktopMediaPickerViewsTest, DoneWithAudioShare) {
   base::RunLoop().RunUntilIdle();
 }
 
-// This test validates that a DesktopMediaPickerViews that only has a tab list
-// has a reasonable default size, and chooses reasonable bounds on its own size
-// when the source list grows. Specifically, DesktopMediaPickerViews should
-// never be "too small" (ie: it should always be sized as though it contains at
-// least m sources, for some small fixed m) and never be "too large" (ie: it
-// should only grow to show at most n sources, for some fixed n > m). This unit
-// test checks for three properties of a dialog containing k sources:
-//   1) Adding another source such that k < m does not change the dialog's size
-//   2) Adding another source when k > n does not change the dialog's size
-//   3) Adding a source when m <= k <= n does change the dialog's size
-TEST_F(DesktopMediaPickerViewsTest, TabListHasReasonableSize) {
+// Creates a single pane DesktopMediaPickerViews that only has a tab list.
+class DesktopMediaPickerViewsSingleTabPaneTest
+    : public DesktopMediaPickerViewsTest {
+ public:
+  DesktopMediaPickerViewsSingleTabPaneTest()
+      : DesktopMediaPickerViewsTest({DesktopMediaID::TYPE_WEB_CONTENTS}) {}
+  ~DesktopMediaPickerViewsSingleTabPaneTest() override {}
+};
+
+// Validates that the tab list's preferred size is not zero
+// (https://crbug.com/965408).
+TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListPreferredSizeNotZero) {
+  EXPECT_GT(test_api_.GetSelectedListView()->height(), 0);
+}
+
+// Validates that the tab list has a fixed height (https://crbug.com/998485).
+TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListHasFixedHeight) {
   auto AddTabSource = [&]() {
     media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
         DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 0));
@@ -318,28 +328,32 @@ TEST_F(DesktopMediaPickerViewsTest, TabListHasReasonableSize) {
         .height();
   };
 
-  // The dialog's height should not change when doing from zero sources to two
+  int initial_size = GetDialogHeight();
+
+  // The dialog's height should not change when going from zero sources to nine
   // sources.
-  int old_size = GetDialogHeight();
-  AddTabSource();
-  AddTabSource();
-  EXPECT_EQ(GetDialogHeight(), old_size);
-
-  // The dialog's height should change when going from two to twelve, though.
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < 9; i++)
     AddTabSource();
-  EXPECT_GT(GetDialogHeight(), old_size);
+  EXPECT_EQ(GetDialogHeight(), initial_size);
 
+  // The dialog's height should be fixed and equal to the equivalent of ten
+  // rows, thus it should not change when going from nine to eleven either.
+  AddTabSource();
+  EXPECT_EQ(GetDialogHeight(), initial_size);
+  AddTabSource();
+  EXPECT_EQ(GetDialogHeight(), initial_size);
+
+  // And then it shouldn't change when going to a larger number of sources.
   for (int i = 0; i < 50; i++)
     AddTabSource();
+  EXPECT_EQ(GetDialogHeight(), initial_size);
 
   // And then it shouldn't change when going from a large number of sources (in
-  // this case 62) to a larger number, because the ScrollView should scroll
+  // this case 61) to a larger number, because the ScrollView should scroll
   // large numbers of sources.
-  old_size = GetDialogHeight();
   for (int i = 0; i < 50; i++)
     AddTabSource();
-  EXPECT_EQ(GetDialogHeight(), old_size);
+  EXPECT_EQ(GetDialogHeight(), initial_size);
 }
 
 }  // namespace views

@@ -144,8 +144,20 @@ base::string16 SplitStringWithNewLineAtPosition(const base::string16& text,
 class TransparentButton : public views::Button {
  public:
   explicit TransparentButton(views::ButtonListener* listener)
-      : Button(listener) {}
+      : Button(listener) {
+    SetFocusForPlatform();
+    SetInkDropMode(InkDropMode::ON);
+  }
   ~TransparentButton() override {}
+
+  // Button subclasses need to provide this because the default color is
+  // kPlaceholderColor. In theory we could statically compute it in the
+  // constructor but then it won't be correct after dark mode changes, and to
+  // deal with that this class would have to observe NativeTheme and so on.
+  SkColor GetInkDropBaseColor() const override {
+    return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ButtonEnabledColor));
+  }
 
   const char* GetClassName() const override { return "TransparentButton"; }
 
@@ -210,6 +222,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   dropdown_button->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
   dropdown_button->set_has_ink_drop_action_on_click(false);
+  dropdown_button->SetFocusForPlatform();
   dropdown_button_ = AddChildView(std::move(dropdown_button));
 
   LoadIcon();

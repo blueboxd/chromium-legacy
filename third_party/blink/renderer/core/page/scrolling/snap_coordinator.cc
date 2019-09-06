@@ -363,13 +363,10 @@ bool SnapCoordinator::PerformSnapping(
 
   scrollable_area->CancelScrollAnimation();
   scrollable_area->CancelProgrammaticScrollAnimation();
-  if (snap_point.value() != scrollable_area->ScrollPosition()) {
-    scrollable_area->SetScrollOffset(
-        scrollable_area->ScrollPositionToOffset(snap_point.value()),
-        kProgrammaticScroll, kScrollBehaviorSmooth);
-    return true;
-  }
-  return false;
+  scrollable_area->SetScrollOffset(
+      scrollable_area->ScrollPositionToOffset(snap_point.value()),
+      kProgrammaticScroll, kScrollBehaviorSmooth);
+  return true;
 }
 
 base::Optional<cc::SnapContainerData> SnapCoordinator::GetSnapContainerData(

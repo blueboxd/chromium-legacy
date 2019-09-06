@@ -79,6 +79,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
 
   auto close_button = views::CreateVectorImageButton(this);
   close_button->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  close_button->SetFocusForPlatform();
   close_button_ = AddChildView(std::move(close_button));
 
   accessible_alert_ = AddChildView(std::make_unique<views::View>());

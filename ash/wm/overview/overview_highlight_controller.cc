@@ -260,6 +260,7 @@ void OverviewHighlightController::OnViewDestroyingOrDisabling(
   DCHECK_GE(current_index, 0);
   deleted_index_ = base::make_optional(current_index);
   highlight_widget_.reset();
+  highlighted_view_->OnViewUnhighlighted();
   highlighted_view_ = nullptr;
 }
 

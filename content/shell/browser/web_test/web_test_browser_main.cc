@@ -96,7 +96,7 @@ void WebTestBrowserMain(const content::MainFunctionParams& parameters) {
       browser_context_path_for_web_tests.GetPath().MaybeAsASCII());
 
   // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 15
+  // collection to avoid interference. This GPU process is launched 120
   // seconds after chrome starts.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableGpuProcessForDX12VulkanInfoCollection);

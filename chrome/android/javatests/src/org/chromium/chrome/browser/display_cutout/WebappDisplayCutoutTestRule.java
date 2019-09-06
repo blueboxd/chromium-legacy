@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
@@ -34,7 +32,7 @@ public class WebappDisplayCutoutTestRule extends DisplayCutoutTestRule<WebappAct
     private static final String WEBAPP_SHORT_NAME = "webapp short name";
 
     /** The maximum waiting time to start {@link WebActivity0} in ms. */
-    private static final long STARTUP_TIMEOUT = scaleTimeout(10000);
+    private static final long STARTUP_TIMEOUT = 10000L;
 
     /**
      * Contains test specific configuration for launching {@link WebappActivity0}.

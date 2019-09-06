@@ -15,6 +15,7 @@ js_modulizer("modulize") {
     "cr_input_test.js",
     "cr_radio_button_test.js",
     "cr_radio_group_test.js",
+    "cr_search_field_tests.js",
     "cr_tabs_test.js",
     "cr_toast_test.js",
     "cr_toggle_test.js",

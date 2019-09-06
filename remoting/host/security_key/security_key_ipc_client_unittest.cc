@@ -79,8 +79,8 @@ class SecurityKeyIpcClientTest : public testing::Test {
   mojo::NamedPlatformChannel::ServerName GenerateUniqueTestChannelName();
 
   // IPC tests require a valid MessageLoop to run.
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.

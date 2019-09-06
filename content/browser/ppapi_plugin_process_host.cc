@@ -487,7 +487,7 @@ void PpapiPluginProcessHost::OnProcessLaunched() {
 
 void PpapiPluginProcessHost::OnProcessCrashed(int exit_code) {
   VLOG(1) << "ppapi plugin process crashed.";
-  base::PostTask(
+  base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PluginServiceImpl::RegisterPluginCrash,
                      base::Unretained(PluginServiceImpl::GetInstance()),

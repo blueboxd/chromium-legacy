@@ -4430,19 +4430,6 @@
      "test_policy": { "DeviceScheduledUpdateCheck": {"update_check_time" : {"hour": 23, "minute": 35}, "frequency": "WEEKLY", "day_of_week": "MONDAY" }}
    },
 
-   "DeviceWebUsbAllowDevicesForUrls": {
-      "os": ["chromeos"],
-      "test_policy": { "DeviceWebUsbAllowDevicesForUrls": [{
-        "devices": [{"vendor_id": 1234, "product_id": 5678}],
-        "urls": ["https://google.com", "https://requesting.com,https://embedded.com"]
-      }]},
-      "pref_mappings": [
-        { "pref": "device_webusb_allow_devices_for_urls",
-          "local_state": true
-        }
-      ]
-    },
-
   "ChromeCleanupEnabled": {
     "os": ["win"],
     "test_policy": { "ChromeCleanupEnabled": true },
@@ -5151,6 +5138,14 @@
       { "pref": "renderer_code_integrity_enabled",
         "local_state": true
       }
+    ]
+  },
+
+  "HSTSPolicyBypassList": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "HSTSPolicyBypassList": ["example"] },
+    "pref_mappings": [
+      { "pref": "hsts.policy.upgrade_bypass_list", "local_state": true }
     ]
   }
 }

@@ -435,7 +435,10 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
   if (response && (response->threat_info_size() > 0) &&
       (response->threat_info(0).verdict_type() ==
        RTLookupResponse::ThreatInfo::DANGEROUS)) {
-    OnUrlResult(url, SB_THREAT_TYPE_URL_PHISHING, ThreatMetadata());
+    OnUrlResult(url,
+                RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                    response->threat_info(0).threat_type()),
+                ThreatMetadata());
   } else {
     OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }

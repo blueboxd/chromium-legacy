@@ -127,6 +127,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">왼쪽 화살표</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1분}other{#분}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{오늘 사용}=1{1일 전에 사용}other{#일 전에 사용}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1일 }other{#일 }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1년 후}other{#년 후}}</translation>
 <translation id="5895138241574237353">다시 시작</translation>

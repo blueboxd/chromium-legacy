@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/aw_metrics_log_uploader.h"
 
-#include "android_webview/native_jni/AwMetricsLogUploader_jni.h"
+#include "android_webview/browser_jni_headers/AwMetricsLogUploader_jni.h"
 #include "base/android/jni_array.h"
 #include "components/metrics/log_decoder.h"
 

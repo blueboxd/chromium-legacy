@@ -225,6 +225,11 @@ bool AppBannerManager::IsPromptAvailableForTesting() const {
   return receiver_.is_bound();
 }
 
+AppBannerManager::InstallableWebAppCheckResult
+AppBannerManager::GetInstallableWebAppCheckResultForTesting() {
+  return installable_web_app_check_result_;
+}
+
 AppBannerManager::AppBannerManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       SiteEngagementObserver(SiteEngagementService::Get(
@@ -301,7 +306,6 @@ std::string AppBannerManager::GetBannerType() {
   return "web";
 }
 
-
 bool AppBannerManager::HasSufficientEngagement() const {
   return has_sufficient_engagement_ || ShouldBypassEngagementChecks();
 }
@@ -316,6 +320,10 @@ bool AppBannerManager::IsWebAppConsideredInstalled(
     const GURL& validated_url,
     const GURL& start_url,
     const GURL& manifest_url) {
+  return false;
+}
+
+bool AppBannerManager::ShouldAllowWebAppReplacementInstall() {
   return false;
 }
 
@@ -377,7 +385,7 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  if (CheckIfInstalled()) {
+  if (CheckIfInstalled() && !ShouldAllowWebAppReplacementInstall()) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
     SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
     Stop(ALREADY_INSTALLED);

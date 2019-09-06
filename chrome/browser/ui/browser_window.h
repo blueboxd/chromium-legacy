@@ -34,7 +34,6 @@
 
 class Browser;
 class SharingDialog;
-class ClickToCallUiController;
 class DownloadShelf;
 class ExclusiveAccessContext;
 class ExtensionsContainer;
@@ -42,6 +41,7 @@ class FindBar;
 class GURL;
 class LocationBar;
 class PageActionIconContainer;
+class SharingUiController;
 class StatusBubble;
 class ToolbarActionsBar;
 
@@ -328,10 +328,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Visible() functions are renamed to Available().
   virtual bool IsToolbarShowing() const = 0;
 
-  // Shows the Click to Call dialog.
-  virtual SharingDialog* ShowClickToCallDialog(
-      content::WebContents* contents,
-      ClickToCallUiController* controller) = 0;
+  // Shows the dialog for a sharing feature.
+  virtual SharingDialog* ShowSharingDialog(content::WebContents* contents,
+                                           SharingUiController* controller) = 0;
 
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;

@@ -10,14 +10,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
-
-class IOBuffer;
-class IOBufferWithSize;
 
 // Represents a WebSocket frame header.
 //
@@ -103,7 +101,11 @@ struct NET_EXPORT_PRIVATE WebSocketFrame {
 
   // |data| is always unmasked even if the frame is masked. The size of |data|
   // is given by |header.payload_length|.
-  scoped_refptr<IOBuffer> data;
+  // TODO(yoichio): Rename this to "payload".
+  const char* data = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebSocketFrame);
 };
 
 // Structure describing one chunk of a WebSocket frame.
@@ -135,8 +137,12 @@ struct NET_EXPORT WebSocketFrameChunk {
   bool final_chunk;
 
   // |data| is always unmasked even if the frame is masked. |data| might be
-  // null in the first chunk.
-  scoped_refptr<IOBufferWithSize> data;
+  // empty in the first chunk.
+  // TODO(yoichio): Rename this to "payload".
+  base::span<const char> data;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebSocketFrameChunk);
 };
 
 using WebSocketMaskingKey = WebSocketFrameHeader::WebSocketMaskingKey;

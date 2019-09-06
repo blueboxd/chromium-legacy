@@ -29,11 +29,8 @@ struct ShortcutInfo {
   // is still used to generate the app id (windows app id, not chrome app id).
   // TODO(loyso): Rename it to app_id.
   std::string extension_id;
-  bool is_platform_app = false;
-  bool from_bookmark = false;
   base::string16 title;
   base::string16 description;
-  base::FilePath extension_path;
   gfx::ImageFamily favicon;
   base::FilePath profile_path;
   std::string profile_name;

@@ -41,12 +41,13 @@ NetworkContextOwner::~NetworkContextOwner() {
 
 void NetworkContextOwner::InitializeOnIOThread(
     const std::vector<std::string> cors_exempt_header_list,
-    network::mojom::NetworkContextRequest network_context_request) {
+    mojo::PendingReceiver<network::mojom::NetworkContext>
+        network_context_receiver) {
   DCHECK_CURRENTLY_ON(WebThread::IO);
   DCHECK(!network_context_);
 
   network_context_ = std::make_unique<network::NetworkContext>(
-      nullptr, std::move(network_context_request),
+      nullptr, std::move(network_context_receiver),
       request_context_->GetURLRequestContext(), cors_exempt_header_list);
   request_context_->AddObserver(this);
 }

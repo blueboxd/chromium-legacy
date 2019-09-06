@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -29,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class NotificationTestRule extends ChromeTabbedActivityTestRule {
     /** The maximum time to wait for a criteria to become valid. */
-    private static final long MAX_TIME_TO_POLL_MS = scaleTimeout(6000);
+    private static final long MAX_TIME_TO_POLL_MS = 6000L;
 
     /** The polling interval to wait between checking for a satisfied criteria. */
     private static final long POLLING_INTERVAL_MS = 50;

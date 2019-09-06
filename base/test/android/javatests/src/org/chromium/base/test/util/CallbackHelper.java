@@ -4,8 +4,6 @@
 
 package org.chromium.base.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -128,7 +126,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class CallbackHelper {
     /** The default timeout (in seconds) for a callback to wait. */
-    public static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(5);
+    public static final long WAIT_TIMEOUT_SECONDS = 5L;
 
     private final Object mLock = new Object();
     private int mCallCount;
@@ -229,22 +227,51 @@ public class CallbackHelper {
     }
 
     /**
+     * @deprecated Use waitForAnyCallback() instead.
+     */
+    public void waitForCallback(String msg) throws InterruptedException, TimeoutException {
+        waitForCallback(msg, getCallCount());
+    }
+
+    /**
+     * @deprecated Use waitForAnyCallback() instead.
+     */
+    public void waitForCallback() throws InterruptedException, TimeoutException {
+        waitForCallback(getCallCount());
+    }
+
+    /**
      * Wait until the callback has been called once.
      */
-    public void waitForFirst(String msg) throws InterruptedException, TimeoutException {
+    public void waitForFirst(String msg, long timeout, TimeUnit unit)
+            throws InterruptedException, TimeoutException {
         MatcherAssert.assertThat(
                 "Use waitForCallback(currentCallCount) for callbacks that are called multiple "
                         + "times.",
                 mCallCount, Matchers.lessThanOrEqualTo(1));
         mSingleShotMode = true;
-        waitForCallback(msg, 0);
+        waitForCallback(msg, 0, 1, timeout, unit);
+    }
+
+    /**
+     * Wait until the callback has been called once.
+     */
+    public void waitForFirst(long timeout, TimeUnit unit)
+            throws InterruptedException, TimeoutException {
+        waitForFirst(null, timeout, unit);
+    }
+
+    /**
+     * Wait until the callback has been called once.
+     */
+    public void waitForFirst(String msg) throws InterruptedException, TimeoutException {
+        waitForFirst(msg, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
      * Wait until the callback has been called at least once.
      */
     public void waitForFirst() throws InterruptedException, TimeoutException {
-        mSingleShotMode = true;
         waitForFirst(null);
     }
 

@@ -78,10 +78,24 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
 
         if (!shouldExpectConsentDialog()) return;
         PermissionUtils.waitForConsentPrompt(getRule().getActivity());
-        if (mConsentDialogAction == CONSENT_DIALOG_ACTION_ALLOW)
+        if (mConsentDialogAction == CONSENT_DIALOG_ACTION_ALLOW) {
             PermissionUtils.acceptConsentPrompt(getRule().getActivity());
-        else if (mConsentDialogAction == CONSENT_DIALOG_ACTION_DENY)
+        } else if (mConsentDialogAction == CONSENT_DIALOG_ACTION_DENY) {
             PermissionUtils.declineConsentPrompt(getRule().getActivity());
+        }
+    }
+
+    /**
+     * 'enterSessionWithUserGestureOrFail' is specific to immersive sessions. This method does the
+     * same, but for the magic window session.
+     */
+    public void enterMagicWindowSessionWithUserGestureOrFail() {
+        runJavaScriptOrFail(
+                "sessionTypeToRequest = sessionTypes.MAGIC_WINDOW", POLL_TIMEOUT_SHORT_MS);
+        enterSessionWithUserGesture();
+        pollJavaScriptBooleanOrFail(
+                "sessionInfos[sessionTypes.MAGIC_WINDOW].currentSession != null",
+                POLL_TIMEOUT_LONG_MS);
     }
 
     /**
@@ -121,6 +135,6 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
      */
     @Override
     public boolean shouldExpectConsentDialog(WebContents webContents) {
-        return shouldExpectConsentDialog("sessionTypes.IMMERSIVE", webContents);
+        return shouldExpectConsentDialog("sessionTypeToRequest", webContents);
     }
 }

@@ -776,6 +776,12 @@ void PaintLayerPainter::PaintForegroundForFragments(
           local_painting_info, paint_flags);
     }
 
+    if (RuntimeEnabledFeatures::ForcedColorsEnabled()) {
+      PaintForegroundForFragmentsWithPhase(
+          PaintPhase::kForcedColorsModeBackplate, layer_fragments, context,
+          local_painting_info, paint_flags);
+    }
+
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseFloat()) {
       if (force_paint_chunks) {

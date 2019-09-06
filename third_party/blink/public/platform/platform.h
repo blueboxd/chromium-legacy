@@ -653,6 +653,10 @@ class BLINK_PLATFORM_EXPORT Platform {
     return true;
   }
 
+  virtual bool IsWebRtcHWEncodingEnabled() { return true; }
+
+  virtual bool IsWebRtcHWDecodingEnabled() { return true; }
+
   // VideoCapture -------------------------------------------------------
 
   virtual WebVideoCaptureImplManager* GetVideoCaptureImplManager() {

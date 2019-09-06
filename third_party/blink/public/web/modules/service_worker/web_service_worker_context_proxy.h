@@ -69,6 +69,8 @@ class WebServiceWorkerContextProxy {
                                            int64_t decoded_body_length) = 0;
 
   virtual bool IsWindowInteractionAllowed() = 0;
+  virtual void PauseEvaluation() = 0;
+  virtual void ResumeEvaluation() = 0;
 };
 
 }  // namespace blink

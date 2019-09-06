@@ -40,6 +40,8 @@ namespace app_list {
 namespace {
 
 using LaunchType = ::metrics::ChromeOSAppListLaunchEventProto::LaunchType;
+using SearchProviderType =
+    ::metrics::ChromeOSAppListLaunchEventProto::SearchProviderType;
 
 using ::chromeos::ProfileHelper;
 using ::metrics::ChromeOSAppListLaunchEventProto;
@@ -73,6 +75,8 @@ void ExpectLoggingEventEquals(ChromeOSAppListLaunchEventProto proto,
                               const char* app_hash,
                               int search_query_length) {
   EXPECT_EQ(ChromeOSAppListLaunchEventProto::APP_TILES, proto.launch_type());
+  EXPECT_EQ(ChromeOSAppListLaunchEventProto::ZERO_STATE_FILE,
+            proto.search_provider_type());
   // Hour field is untested.
   EXPECT_EQ(kUserId, proto.recurrence_ranker_user_id());
   EXPECT_EQ(search_query_length, proto.search_query_length());
@@ -188,8 +192,11 @@ class AppListLaunchMetricsProviderTest : public testing::Test {
       const std::string& query,
       const std::string& domain,
       const std::string& app,
-      LaunchType launch_type = ChromeOSAppListLaunchEventProto::APP_TILES) {
-    provider_->OnAppListLaunch({launch_type, target, query, domain, app});
+      LaunchType launch_type = ChromeOSAppListLaunchEventProto::APP_TILES,
+      SearchProviderType search_provider_type =
+          ChromeOSAppListLaunchEventProto::ZERO_STATE_FILE) {
+    provider_->OnAppListLaunch(
+        {launch_type, search_provider_type, target, query, domain, app});
   }
 
   google::protobuf::RepeatedPtrField<ChromeOSAppListLaunchEventProto>

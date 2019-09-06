@@ -1055,19 +1055,6 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedFixedPos) {
   EXPECT_EQ(PhysicalOffset(0, 75), inner_sticky->StickyPositionOffset());
 }
 
-TEST_F(LayoutBoxModelObjectTest, NoCrashStackingContextChangeNonRooted) {
-  SetBodyInnerHTML("<div id='target'></div>");
-  auto& object = *GetLayoutObjectByElementId("target");
-  auto* parent = object.Parent();
-  object.SetDangerousOneWayParent(nullptr);
-  EXPECT_FALSE(object.IsRooted());
-
-  auto style = ComputedStyle::Create();
-  style->SetIsStackingContext(true);
-  object.SetStyle(style);  // This should not crash.
-  object.SetDangerousOneWayParent(parent);
-}
-
 TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   SetBodyInnerHTML(R"HTML(
     <style>

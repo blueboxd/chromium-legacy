@@ -10,6 +10,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 
@@ -50,8 +51,8 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
     }
 
     @Override
-    public boolean isLegalDisclosure() {
-        return true;
+    public int getPriority() {
+        return InfoBarPriority.CRITICAL;
     }
 
     @CalledByNative

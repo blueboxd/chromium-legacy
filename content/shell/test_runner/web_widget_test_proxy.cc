@@ -89,7 +89,7 @@ void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
   }
 }
 
-bool WebWidgetTestProxy::RequestPointerLock(blink::WebLocalFrame*) {
+bool WebWidgetTestProxy::RequestPointerLock(blink::WebLocalFrame*, bool) {
   return GetViewTestRunner()->RequestPointerLock();
 }
 
@@ -130,10 +130,8 @@ WebViewTestProxy* WebWidgetTestProxy::GetWebViewTestProxy() {
     // shimmed to return a WebViewTestProxy, it is safe to downcast here.
     return static_cast<WebViewTestProxy*>(delegate());
   } else {
-    blink::WebWidget* web_widget = GetWebWidget();
-    CHECK(web_widget->IsWebFrameWidget());
-    blink::WebView* web_view =
-        static_cast<blink::WebFrameWidget*>(web_widget)->LocalRoot()->View();
+    auto* web_widget = static_cast<blink::WebFrameWidget*>(GetWebWidget());
+    blink::WebView* web_view = web_widget->LocalRoot()->View();
 
     content::RenderView* render_view =
         content::RenderView::FromWebView(web_view);

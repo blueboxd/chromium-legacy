@@ -162,13 +162,6 @@ QUIC_FLAG(
 // allocated.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
 
-// When true, remove packets from inflight where they're declared lost,
-// rather than in MarkForRetransmission.  Also no longer marks handshake
-// packets as no longer inflight when they're retransmitted.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_loss_removes_from_inflight,
-          true)
-
 // If true, QuicEpollClock::Now() will monotonically increase.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 
@@ -358,13 +351,13 @@ QUIC_FLAG(bool,
 // When true, remove obsolete functionality intended to test IETF QUIC recovery.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_sent_packet_manager_cleanup,
-          false)
+          true)
 
 // If true, QUIC will track max ack height in BandwidthSampler.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler2,
-    false)
+    true)
 
 // If true, QuicSession::ShouldKeepConnectionAlive() will not consider locally
 // closed streams whose highest byte offset is not received yet.
@@ -409,3 +402,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, true)
 
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
+
+// If true, use the saved time of the last sent inflight packet rather than
+// traversing the deque.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simple_inflight_time, false)

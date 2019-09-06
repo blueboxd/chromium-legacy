@@ -247,6 +247,11 @@ class CORE_EXPORT StyleResolver final
                          const MatchResult& match_result,
                          bool apply_inherited_only,
                          NeedsApplyPass& needs_apply_pass);
+  template <CSSPropertyPriority priority>
+  void ApplyUaForcedColors(StyleResolverState& state,
+                           const MatchResult& match_result,
+                           bool apply_inherited_only,
+                           NeedsApplyPass& needs_apply_pass);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
                                         const MatchResult&);

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,8 +23,11 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
+#include "extensions/browser/extension_util.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
+#include "url/gurl.h"
 
 namespace policy {
 
@@ -97,6 +101,85 @@ void PolicyCertService::GetPolicyCertificatesForStoragePartition(
   *out_all_server_and_authority_certificates =
       profile_wide_all_server_and_authority_certs_;
   *out_trust_anchors = profile_wide_trust_anchors_;
+
+  if (policy_certificate_provider_->GetExtensionIdsWithPolicyCertificates()
+          .empty()) {
+    return;
+  }
+
+  // The following code adds policy-provided extension specific certificates.
+  // Policy can specify these keyed by extension ID.
+  // In general, there is no direct mapping from a StoragePartition path to an
+  // extension ID, because extensions could be using the default
+  // StoragePartition of the Profile.
+  // However, for extensions with isolated storage, the extension will be in a
+  // StoragePartition that is exclusively used by this extension.
+  // Policy-provided extension specific certificates are thus only allowed for
+  // extensions with isolated storage.
+  // The following code checks those preconditions and attempts to find the
+  // extension ID (among extensions IDs with policy-provided certificates) that
+  // corresponds to |partition_path|.
+
+  // Only allow certificates that are specific to |partition_path| if the
+  // built-in certificate verifier is active. The platform certificate verifier
+  // is not able to isolate contexts from each other.
+  auto* profile_network_context =
+      ProfileNetworkContextServiceFactory::GetForContext(profile_);
+  if (!profile_network_context->using_builtin_cert_verifier()) {
+    LOG(ERROR) << "Ignoring extension-scoped policy certificates";
+    return;
+  }
+
+  base::FilePath default_storage_partition_path =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)->GetPath();
+  // Among the extension IDs that have policy-provided certificates, attempt to
+  // find the extension ID which corresponds to |partition_path|.
+  // This is done by iterating the extension IDs because there's no trivial
+  // conversion from |partition_path| to extension ID as explained above.
+  std::string current_extension_id_with_policy_certificates;
+  std::set<std::string> extension_ids_with_policy_certificates =
+      policy_certificate_provider_->GetExtensionIdsWithPolicyCertificates();
+  for (const auto& extension_id : extension_ids_with_policy_certificates) {
+    const GURL extension_site =
+        extensions::util::GetSiteForExtensionId(extension_id, profile_);
+    // Only allow policy-provided certificates for extensions with isolated
+    // storage. Also sanity-check that it's not the default partition.
+    content::StoragePartition* extension_partition =
+        content::BrowserContext::GetStoragePartitionForSite(
+            profile_, extension_site, /*can_create=*/false);
+    if (!extension_partition)
+      continue;
+    if (!extensions::util::SiteHasIsolatedStorage(extension_site, profile_) ||
+        extension_partition->GetPath() == default_storage_partition_path) {
+      LOG(ERROR) << "Ignoring policy certificates for " << extension_id
+                 << " because it does not have isolated storage";
+      continue;
+    }
+    if (partition_path == extension_partition->GetPath()) {
+      current_extension_id_with_policy_certificates = extension_id;
+      break;
+    }
+  }
+
+  if (current_extension_id_with_policy_certificates.empty())
+    return;
+
+  net::CertificateList extension_all_server_and_authority_certificates =
+      policy_certificate_provider_->GetAllServerAndAuthorityCertificates(
+          chromeos::onc::CertificateScope::ForExtension(
+              current_extension_id_with_policy_certificates));
+  out_all_server_and_authority_certificates->insert(
+      out_all_server_and_authority_certificates->end(),
+      extension_all_server_and_authority_certificates.begin(),
+      extension_all_server_and_authority_certificates.end());
+
+  net::CertificateList extension_trust_anchors =
+      policy_certificate_provider_->GetWebTrustedCertificates(
+          chromeos::onc::CertificateScope::ForExtension(
+              current_extension_id_with_policy_certificates));
+  out_trust_anchors->insert(out_trust_anchors->end(),
+                            extension_trust_anchors.begin(),
+                            extension_trust_anchors.end());
 }
 
 bool PolicyCertService::UsedPolicyCertificates() const {

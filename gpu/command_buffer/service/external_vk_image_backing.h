@@ -25,7 +25,7 @@ namespace gpu {
 
 class VulkanCommandPool;
 
-class ExternalVkImageBacking : public SharedImageBacking {
+class ExternalVkImageBacking final : public SharedImageBacking {
  public:
   static std::unique_ptr<ExternalVkImageBacking> Create(
       SharedContextState* context_state,

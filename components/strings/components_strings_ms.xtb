@@ -348,7 +348,7 @@
 <translation id="2721148159707890343">Permintaan berjaya</translation>
 <translation id="2728127805433021124">Sijil pelayan ditandatangani menggunakan algoritma tandatangan yang lemah.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Jalankan Diagnostik Sambungan<ph name="END_LINK" /></translation>
-<translation id="2734544361860335147">Mendayakan ciri ini mungkin akan menyebabkan anda kehilangan data penyemak imbas atau
+<translation id="2734544361860335147">Langkah mendayakan ciri ini mungkin akan menyebabkan anda kehilangan data penyemak imbas atau
     menjejaskan keselamatan atau privasi anda. Ciri yang didayakan digunakan untuk semua
     pengguna penyemak imbas ini.</translation>
 <translation id="2735043616039983645">Lebih daripada satu sumber yang mempunyai nilai yang bercanggah terdapat dalam dasar ini!</translation>
@@ -1015,7 +1015,6 @@
 <translation id="6406765186087300643">C0 (Sampul Surat)</translation>
 <translation id="6410264514553301377">Masukkan tarikh tamat tempoh dan CVC untuk <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium boleh membantu anda melindungi Akaun Google anda dan menukar kata laluan anda.</translation>
-<translation id="6417515091412812850">Tidak dapat memeriksa sama ada sijil telah dibatalkan.</translation>
 <translation id="6431585503458005759">Jangan simpan</translation>
 <translation id="6433490469411711332">Edit maklumat hubungan</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> enggan menyambung.</translation>
@@ -1414,7 +1413,6 @@ Butiran tambahan:
 <translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Tambah no. tel.
 </translation>
-<translation id="859285277496340001">Sijil tidak menyatakan mekanisme untuk memeriksa sama ada ia telah dibatalkan.</translation>
 <translation id="860043288473659153">Nama pemegang kad</translation>
 <translation id="861775596732816396">Saiz 4</translation>
 <translation id="8622948367223941507">Perundangan-Ekstra</translation>

@@ -81,13 +81,6 @@ INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
 
-using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
-
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostFiltersPixelTestGL,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL));
-
 using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
 LayerTreeTest::RendererType const kRendererTypesGpu[] = {
@@ -287,7 +280,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_outsets.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
+TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurOffAxis) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorTRANSPARENT);
 
@@ -356,7 +349,8 @@ TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
 
   RunPixelTest(
       renderer_type(), background,
-      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis.png")));
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_off_axis_.png"))
+          .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBoundsWithChildren) {

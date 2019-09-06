@@ -37,26 +37,14 @@ bool PwaInstallView::Update() {
   if (!manager)
     return false;
 
-  bool show_install_button = false;
-
   bool is_probably_promotable = manager->IsProbablyPromotableWebApp();
   if (is_probably_promotable && manager->MaybeConsumeInstallAnimation())
     AnimateIn(base::nullopt);
   else
     ResetSlideAnimation(false);
-  if (is_probably_promotable)
-    show_install_button = true;
-
-  auto* web_app_tab_helper =
-      web_app::WebAppTabHelper::FromWebContents(web_contents);
-  if (web_app_tab_helper && web_app_tab_helper->HasAssociatedApp())
-    show_install_button = false;
-
-  if (PWAConfirmationBubbleView::IsShowing())
-    show_install_button = true;
 
   bool was_visible = GetVisible();
-  SetVisible(show_install_button);
+  SetVisible(is_probably_promotable || PWAConfirmationBubbleView::IsShowing());
   return GetVisible() != was_visible;
 }
 

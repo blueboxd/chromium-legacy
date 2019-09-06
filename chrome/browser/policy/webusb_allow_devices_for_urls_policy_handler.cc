@@ -17,7 +17,6 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_value_map.h"
 #include "url/gurl.h"
 
@@ -39,41 +38,12 @@ constexpr char kInvalidUrlError[] = "The urls item must contain valid URLs";
 
 }  // namespace
 
-// static
-std::unique_ptr<WebUsbAllowDevicesForUrlsPolicyHandler>
-WebUsbAllowDevicesForUrlsPolicyHandler::CreateForUserPolicy(
-    const Schema& chrome_schema) {
-  return std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(
-      key::kWebUsbAllowDevicesForUrls, prefs::kManagedWebUsbAllowDevicesForUrls,
-      chrome_schema);
-}
-
-#if defined(OS_CHROMEOS)
-// static
-std::unique_ptr<WebUsbAllowDevicesForUrlsPolicyHandler>
-WebUsbAllowDevicesForUrlsPolicyHandler::CreateForDevicePolicy(
-    const Schema& chrome_schema) {
-  return std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(
-      key::kDeviceWebUsbAllowDevicesForUrls,
-      prefs::kDeviceWebUsbAllowDevicesForUrls, chrome_schema);
-}
-
-// static
-void WebUsbAllowDevicesForUrlsPolicyHandler::RegisterPrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kDeviceWebUsbAllowDevicesForUrls);
-}
-#endif  // defined(OS_CHROMEOS)
-
 WebUsbAllowDevicesForUrlsPolicyHandler::WebUsbAllowDevicesForUrlsPolicyHandler(
-    const char* policy_name,
-    const char* pref_path,
-    const Schema& chrome_schema)
+    Schema schema)
     : SchemaValidatingPolicyHandler(
-          policy_name,
-          chrome_schema.GetKnownProperty(policy_name),
-          SchemaOnErrorStrategy::SCHEMA_ALLOW_UNKNOWN),
-      pref_path_(pref_path) {}
+          key::kWebUsbAllowDevicesForUrls,
+          schema.GetKnownProperty(key::kWebUsbAllowDevicesForUrls),
+          SchemaOnErrorStrategy::SCHEMA_ALLOW_UNKNOWN) {}
 
 WebUsbAllowDevicesForUrlsPolicyHandler::
     ~WebUsbAllowDevicesForUrlsPolicyHandler() {}
@@ -120,7 +90,7 @@ bool WebUsbAllowDevicesForUrlsPolicyHandler::CheckPolicySettings(
           device.FindKeyOfType(kProductIdKey, base::Value::Type::INTEGER);
       if (product_id_value) {
         // If a |product_id| is specified, then a |vendor_id| must also be
-        // specified. Otherwise, the policy is invalid.
+        // specified. Otherwise, the device policy is invalid.
         if (vendor_id_value) {
           const int product_id = product_id_value->GetInt();
           if (product_id > 0xFFFF || product_id < 0) {
@@ -211,7 +181,7 @@ void WebUsbAllowDevicesForUrlsPolicyHandler::ApplyPolicySettings(
   if (!value || !value->is_list())
     return;
 
-  prefs->SetValue(pref_path_,
+  prefs->SetValue(prefs::kManagedWebUsbAllowDevicesForUrls,
                   base::Value::FromUniquePtrValue(std::move(value)));
 }
 

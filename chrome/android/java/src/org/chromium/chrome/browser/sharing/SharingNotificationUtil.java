@@ -13,6 +13,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -67,14 +68,14 @@ public final class SharingNotificationUtil {
     /**
      * Shows a notification with a configuration common to all sharing notifications.
      *
-     * @param type          The type of notification.
-     * @param group         The notification group.
-     * @param id            The notification id.
+     * @param type The type of notification.
+     * @param group The notification group.
+     * @param id The notification id.
      * @param contentIntent The notification content intent.
-     * @param contentTitle  The notification title text.
-     * @param contentText   The notification content text.
-     * @param largeIconId   The large notification icon resource id, 0 if not used.
-     * @param color         The color to be used for the notification.
+     * @param contentTitle The notification title text.
+     * @param contentText The notification content text.
+     * @param largeIconId The large notification icon resource id, 0 if not used.
+     * @param color The color to be used for the notification.
      */
     public static void showNotification(@SystemNotificationType int type, String group, int id,
             PendingIntentProvider contentIntent, String contentTitle, String contentText,
@@ -116,9 +117,9 @@ public final class SharingNotificationUtil {
     /**
      * Shows a notification for sending outgoing Sharing messages.
      *
-     * @param type       The type of notification.
-     * @param group      The notification group.
-     * @param id         The notification id.
+     * @param type The type of notification.
+     * @param group The notification group.
+     * @param id The notification id.
      * @param targetName The name of target device
      * @return token of notification created to be used to call {@link #showSendErrorNotification}
      */
@@ -169,20 +170,20 @@ public final class SharingNotificationUtil {
     /**
      * Shows a notification for displaying error after sending outgoing Sharing message.
      *
-     * @param type          The type of notification.
-     * @param group         The notification group.
-     * @param id            The notification id.
-     * @param contentTitle  The title of the notification.
-     * @param contentText   The text shown in the notification.
-     * @param token         Token returned from {@link #showSendingNotification}
+     * @param type The type of notification.
+     * @param group The notification group.
+     * @param id The notification id.
+     * @param contentTitle The title of the notification.
+     * @param contentText The text shown in the notification.
+     * @param token Token returned from {@link #showSendingNotification}.
+     * @param tryAgainIntent PendingIntent to try sharing to same device again.
      */
     public static void showSendErrorNotification(@SystemNotificationType int type, String group,
-            int id, String contentTitle, String contentText, int token) {
+            int id, String contentTitle, String contentText, int token,
+            @Nullable PendingIntentProvider tryAgainIntent) {
         if (sDismissedSendingNotifications.remove(token)) {
             return;
         }
-
-        // TODO(himanshujaju) - Dismiss ongoing notification here?
 
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
@@ -194,13 +195,20 @@ public final class SharingNotificationUtil {
                                 new NotificationMetadata(type, group, id))
                         .setContentTitle(contentTitle)
                         .setGroup(group)
-                        .setColor(ApiCompatibilityUtils.getColor(
-                                context.getResources(), R.color.google_red_600))
+                        .setColor(ApiCompatibilityUtils.getColor(resources, R.color.google_red_600))
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
                         .setSmallIcon(R.drawable.ic_error_outline_red_24dp)
                         .setContentText(contentText)
-                        .setDefaults(Notification.DEFAULT_ALL);
+                        .setDefaults(Notification.DEFAULT_ALL)
+                        .setAutoCancel(true);
+
+        if (tryAgainIntent != null) {
+            builder.setContentIntent(tryAgainIntent)
+                    .addAction(R.drawable.ic_cancel_circle, resources.getString(R.string.try_again),
+                            tryAgainIntent, NotificationUmaTracker.ActionType.SHARING_TRY_AGAIN);
+        }
+
         ChromeNotification notification = builder.buildWithBigTextStyle(contentText);
 
         new NotificationManagerProxyImpl(context).notify(notification);

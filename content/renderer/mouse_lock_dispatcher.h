@@ -35,7 +35,9 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // Locks the mouse to |target| if |requester_frame| has transient user
   // activation. If true is returned, an asynchronous response to
   // target->OnLockMouseACK() will follow.
-  bool LockMouse(LockTarget* target, blink::WebLocalFrame* requester_frame);
+  bool LockMouse(LockTarget* target,
+                 blink::WebLocalFrame* requester_frame,
+                 bool request_unadjusted_movement);
   // Request to unlock the mouse. An asynchronous response to
   // target->OnMouseLockLost() will follow.
   void UnlockMouse(LockTarget* target);
@@ -57,7 +59,8 @@ class CONTENT_EXPORT MouseLockDispatcher {
  protected:
   // Subclasses must implement these methods to send mouse lock requests to the
   // browser.
-  virtual void SendLockMouseRequest(blink::WebLocalFrame* requester_frame) = 0;
+  virtual void SendLockMouseRequest(blink::WebLocalFrame* requester_frame,
+                                    bool request_unadjusted_movement) = 0;
   virtual void SendUnlockMouseRequest() = 0;
 
  private:

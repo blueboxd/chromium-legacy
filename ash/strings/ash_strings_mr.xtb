@@ -242,6 +242,7 @@
 <translation id="4477350412780666475">पुढील ट्रॅक</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">जोडणी वेगळी केलेली डिव्हाइस</translation>
+<translation id="4505050298327493054">अॅक्टिव्ह डेस्क.</translation>
 <translation id="4513946894732546136">अभिप्राय</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस पेअरिंगसाठी परवानगी घेऊ इच्छिते.</translation>
 <translation id="453661520163887813">पूर्ण होण्यात <ph name="TIME" /></translation>
@@ -476,6 +477,7 @@
 <translation id="813913629614996137">प्रारंभ करत आहे…</translation>
 <translation id="8142441511840089262">डबल क्लिक करा</translation>
 <translation id="8142699993796781067">खाजगी नेटवर्क</translation>
+<translation id="8152092012181020186">बंद करण्यासाठी Ctrl + W दाबा.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> वापरत आहे</translation>
 <translation id="8190698733819146287">भाषा आणि इनपुट कस्टमाइझ करा...</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
@@ -557,4 +559,5 @@
 <translation id="938963181863597773">माझ्या कॅलेंडरमधील इव्हेंट काय आहेत?</translation>
 <translation id="945522503751344254">अभिप्राय पाठवा</translation>
 <translation id="98515147261107953">लँडस्केप</translation>
+<translation id="990277280839877440"><ph name="WINDOW_TITILE" /> विंडो बंद केली आहे.</translation>
 </translationbundle>

@@ -150,9 +150,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     SnapshotTabHelper::CreateForWebState(web_state, tab_id);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
     PrintTabHelper::CreateForWebState(web_state);
-    if (IsInfobarUIRebootEnabled()) {
-      InfobarBadgeTabHelper::CreateForWebState(web_state);
-    }
+    InfobarBadgeTabHelper::CreateForWebState(web_state);
   }
 
   // Allow the embedder to attach tab helpers.

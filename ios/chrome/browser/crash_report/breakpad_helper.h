@@ -66,6 +66,10 @@ void SetMemoryWarningCount(int count);
 // is 'true'), otherwise remove the key.
 void SetMemoryWarningInProgress(bool value);
 
+// Sets a key indicating that UI thread is frozen (if value is 'true'),
+// otherwise remove the key.
+void SetHangReport(bool value);
+
 // Sets a key indicating the current free memory amount in KB. 0 does not remove
 // the key as getting no memory is important information.
 void SetCurrentFreeMemoryInKB(int value);

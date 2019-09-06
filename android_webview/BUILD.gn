@@ -37,7 +37,7 @@ generate_jni("common_jni_headers") {
   ]
 }
 
-generate_jni("native_jni") {
+generate_jni("browser_jni_headers") {
   sources = [
     "apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
@@ -86,33 +86,13 @@ generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
   classes = [ "android/os/CancellationSignal.class" ]
 }
 
-java_cpp_enum("aw_permission_request_resource") {
-  sources = [
-    "browser/permission/aw_permission_request.h",
-  ]
-}
-
-java_cpp_enum("android_webview_java_enums_srcjar") {
+java_cpp_enum("browser_enums") {
   sources = [
     "browser/aw_renderer_priority.h",
-  ]
-}
-
-java_cpp_enum("aw_error_ui") {
-  sources = [
-    "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
-  ]
-}
-
-java_cpp_enum("aw_safe_browsing_action") {
-  sources = [
-    "browser/safe_browsing/aw_url_checker_delegate_impl.h",
-  ]
-}
-
-java_cpp_enum("aw_settings_force_dark_mode") {
-  sources = [
     "browser/aw_settings.h",
+    "browser/permission/aw_permission_request.h",
+    "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
+    "browser/safe_browsing/aw_url_checker_delegate_impl.h",
   ]
 }
 
@@ -660,10 +640,10 @@ source_set("common") {
   ]
 
   deps = [
+    ":browser_jni_headers",
     ":generate_aw_resources",
     ":generate_aw_strings",
     ":generate_components_strings",
-    ":native_jni",
     "//android_webview/browser/gfx:gfx",
     "//android_webview/common",
     "//android_webview/common:common_mojom",
@@ -915,11 +895,7 @@ android_library("android_webview_java") {
   }
 
   srcjar_deps = [
-    ":aw_permission_request_resource",
-    ":android_webview_java_enums_srcjar",
-    ":aw_error_ui",
-    ":aw_safe_browsing_action",
-    ":aw_settings_force_dark_mode",
+    ":browser_enums",
     "//components/safe_browsing/db:sb_threat_values",
   ]
 

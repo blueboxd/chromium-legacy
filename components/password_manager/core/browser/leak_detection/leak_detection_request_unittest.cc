@@ -63,7 +63,8 @@ TEST_F(LeakDetectionRequestTest, ServerError) {
       "PasswordManager.LeakDetection.HttpResponseCode",
       net::HTTP_INTERNAL_SERVER_ERROR, 1);
   histogram_tester().ExpectUniqueSample(
-      "PasswordManager.LeakDetection.NetErrorCode", -net::ERR_FAILED, 1);
+      "PasswordManager.LeakDetection.NetErrorCode",
+      -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
 }
 
 TEST_F(LeakDetectionRequestTest, MalformedServerResponse) {

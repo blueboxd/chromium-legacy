@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -210,12 +209,7 @@ public class SavePasswordsPreferences
         getPreferenceScreen().removeAll();
         if (mSearchQuery == null) {
             createSavePasswordsSwitch();
-
-            ChromeSigninController signInController = ChromeSigninController.get();
-            if (signInController != null && signInController.isSignedIn()) {
-                createAutoLeakDetectionSwitch();
-            }
-
+            createAutoLeakDetectionSwitch();
             createAutoSignInCheckbox();
         }
         PasswordManagerHandlerProvider.getInstance()
@@ -448,16 +442,32 @@ public class SavePasswordsPreferences
         mAutoLeakDetectionSwitch.setKey(PREF_LEAK_DETECTION_SWITCH);
         mAutoLeakDetectionSwitch.setTitle(R.string.passwords_leak_detection_switch_title);
         mAutoLeakDetectionSwitch.setOrder(ORDER_AUTO_LEAK_DETECTION_SWITCH);
-        mAutoLeakDetectionSwitch.setSummary(R.string.passwords_leak_detection_switch_description);
-        mAutoLeakDetectionSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled((boolean) newValue);
-            return true;
-        });
         mAutoLeakDetectionSwitch.setManagedPreferenceDelegate(
                 preference -> PrefServiceBridge.getInstance().isPasswordLeakDetectionManaged());
+
         getPreferenceScreen().addPreference(mAutoLeakDetectionSwitch);
-        mAutoLeakDetectionSwitch.setChecked(
-                PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled());
+
+        if (PasswordUIView.hasAccountForLeakCheckRequest()) {
+            mAutoLeakDetectionSwitch.setChecked(
+                    PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled());
+            mAutoLeakDetectionSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
+                PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled((boolean) newValue);
+                return true;
+            });
+            mAutoLeakDetectionSwitch.setSummary(
+                    R.string.passwords_leak_detection_switch_signed_in_description);
+        } else {
+            mAutoLeakDetectionSwitch.setChecked(false);
+            mAutoLeakDetectionSwitch.setEnabled(false);
+            mAutoLeakDetectionSwitch.setOnPreferenceClickListener(null);
+            if (PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled()) {
+                mAutoLeakDetectionSwitch.setSummary(
+                        R.string.passwords_leak_detection_switch_signed_out_full_description);
+            } else {
+                mAutoLeakDetectionSwitch.setSummary(
+                        R.string.passwords_leak_detection_switch_signed_out_partial_description);
+            }
+        }
     }
 
     private void displayManageAccountLink() {

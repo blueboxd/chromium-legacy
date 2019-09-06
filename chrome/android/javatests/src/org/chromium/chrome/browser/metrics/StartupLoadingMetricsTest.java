@@ -24,7 +24,6 @@ import org.chromium.base.library_loader.LoadStatusRecorder.LoadLibraryStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -139,7 +138,7 @@ public class StartupLoadingMetricsTest {
             public boolean isSatisfied() {
                 return mWebApkActivityTestRule.getActivity().getActivityTab() != null;
             }
-        }, ScalableTimeout.scaleTimeout(10000), CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, 10000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         ChromeTabUtils.waitForTabPageLoaded(
                 mWebApkActivityTestRule.getActivity().getActivityTab(), startUrl);
     }

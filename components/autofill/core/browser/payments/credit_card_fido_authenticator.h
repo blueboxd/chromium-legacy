@@ -87,6 +87,9 @@ class CreditCardFIDOAuthenticator
   // and enabled. Otherwise invokes callback with false.
   virtual void IsUserVerifiable(base::OnceCallback<void(bool)> callback);
 
+  // The synchronous version of IsUserVerifiable. Used on settings page load.
+  bool IsUserVerifiable();
+
   // Returns true only if the user has opted-in to use WebAuthn for autofill.
   virtual bool IsUserOptedIn();
 
@@ -181,6 +184,9 @@ class CreditCardFIDOAuthenticator
   // Returns true if |request_options| contains a challenge.
   bool IsValidCreationOptions(const base::Value& creation_options);
 
+  // Sets the value for |user_is_verifiable_|.
+  void SetUserIsVerifiable(bool user_is_verifiable);
+
   // Card being unmasked.
   const CreditCard* card_;
 
@@ -208,6 +214,12 @@ class CreditCardFIDOAuthenticator
 
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;
+
+  // Set when callback for IsUserVerifiable() is invoked with passed value.
+  base::Optional<bool> user_is_verifiable_ = base::nullopt;
+
+  // Signaled when callback for IsUserVerifiable() is invoked.
+  base::WaitableEvent user_is_verifiable_callback_received_;
 
   base::WeakPtrFactory<CreditCardFIDOAuthenticator> weak_ptr_factory_{this};
 

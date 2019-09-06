@@ -27,6 +27,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -294,7 +295,8 @@ void AppListControllerImpl::SetItemMetadata(
   // Folder icon is generated on ash side and chrome side passes a null
   // icon here. Skip it.
   if (data->icon.isNull())
-    data->icon = item->icon();
+    data->icon = item->GetIcon(AppListConfigType::kShared);
+
   item->SetMetadata(std::move(data));
 }
 
@@ -302,7 +304,7 @@ void AppListControllerImpl::SetItemIcon(const std::string& id,
                                         const gfx::ImageSkia& icon) {
   app_list::AppListItem* item = model_->FindItem(id);
   if (item)
-    item->SetIcon(icon);
+    item->SetIcon(AppListConfigType::kShared, icon);
 }
 
 void AppListControllerImpl::SetItemIsInstalling(const std::string& id,

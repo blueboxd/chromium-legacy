@@ -197,7 +197,7 @@ network::mojom::NetworkService* GetNetworkService() {
               /*completion_event=*/nullptr);
         } else {
           base::WaitableEvent event;
-          base::PostTask(
+          base::PostTaskWithTraits(
               FROM_HERE, {BrowserThread::IO},
               base::BindOnce(CreateNetworkServiceOnIOForTesting,
                              mojo::MakeRequest(g_network_service_ptr),

@@ -23,8 +23,8 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
   weblayer::MainParams params;
   params.delegate = new weblayer::MainDelegateImpl;
-  params.pak_name = "weblayer_shell.pak";
-  params.brand = "weblayer_shell";
+  params.pak_name = "weblayer_support.pak";
+  params.brand = "WebLayer";
 
   content::SetContentMainDelegate(
       new weblayer::ContentMainDelegateImpl(params));

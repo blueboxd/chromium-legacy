@@ -228,6 +228,21 @@ class CORE_EXPORT WorkerGlobalScope
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
+  // State transition about worker top-level script evaluation.
+  enum class ScriptEvalState {
+    // Initial state: ReadyToRunWorkerScript() was not yet called.
+    // Worker top-level script fetch might or might not be completed, and even
+    // when the fetch completes in this state, script evaluation will be
+    // deferred to when ReadyToRunWorkerScript() is called later.
+    kPauseAfterFetch,
+    // ReadyToRunWorkerScript() was already called.
+    kReadyToEvaluate,
+    // The worker top-level script was evaluated.
+    kEvaluated,
+  };
+
+  ScriptEvalState GetScriptEvalState() const { return script_eval_state_; }
+
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 
@@ -272,18 +287,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
-  // State transition about worker-toplevel script evaluation.
-  enum class ScriptEvalState {
-    // Initial state: ReadyToRunWorkerScript() is not yet called.
-    // Worker top-level script fetch might or might not completed, and even when
-    // the fetch completes in this state, script evaluation will be deferred to
-    // when ReadyToRunWorkerScript() is called later.
-    kPauseAfterFetch,
-    // ReadyToRunWorkerScript() is already called.
-    kReadyToEvaluate,
-    // The worker top-level script is evaluated.
-    kEvaluated,
-  };
   ScriptEvalState script_eval_state_;
   Member<Script> worker_script_;
   base::Optional<v8_inspector::V8StackTraceId> stack_id_;

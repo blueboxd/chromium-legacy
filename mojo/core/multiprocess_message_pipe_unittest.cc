@@ -1275,7 +1275,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
   EXPECT_EQ(MOJO_RESULT_OK,
             WaitForSignals(handles[0], MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Wait on handle 1 using a SimpleWatcher.
   {

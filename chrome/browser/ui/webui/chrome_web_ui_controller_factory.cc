@@ -724,7 +724,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<security_interstitials::ConnectionHelpUI>;
   }
 
-  if (dom_distiller::IsEnableDomDistillerSet() &&
+  if (dom_distiller::IsDomDistillerEnabled() &&
       url.host_piece() == dom_distiller::kChromeUIDomDistillerHost) {
     return &NewWebUI<dom_distiller::DomDistillerUi>;
   }

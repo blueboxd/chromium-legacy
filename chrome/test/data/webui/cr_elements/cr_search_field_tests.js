@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
+//
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for cr-search-field. */
 suite('cr-search-field', function() {
   /** @type {?CrSearchFieldElement} */
@@ -19,6 +26,11 @@ suite('cr-search-field', function() {
 
   setup(function() {
     PolymerTest.clearBody();
+    // Ensure svg, which is referred to by a relative URL, is loaded from
+    // chrome://resources and not chrome://test
+    const base = document.createElement('base');
+    base.href = 'chrome://resources/cr_elements/';
+    document.head.appendChild(base);
     field = document.createElement('cr-search-field');
     searches = [];
     field.addEventListener('search-changed', function(event) {

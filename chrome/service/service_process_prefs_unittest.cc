@@ -27,7 +27,7 @@ class ServiceProcessPrefsTest : public testing::Test {
 
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<ServiceProcessPrefs> prefs_;
 };
 

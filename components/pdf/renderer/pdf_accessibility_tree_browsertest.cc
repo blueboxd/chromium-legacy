@@ -371,10 +371,14 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   ui::AXNode* previous_inline_node = static_text_node->children()[0];
   ASSERT_TRUE(previous_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+  ASSERT_FALSE(previous_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kPreviousOnLineId));
 
   ui::AXNode* next_inline_node = static_text_node->children()[1];
   ASSERT_TRUE(next_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+  ASSERT_TRUE(next_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kNextOnLineId));
 
   ASSERT_EQ(next_inline_node->data().id,
             previous_inline_node->GetIntAttribute(
@@ -382,10 +386,6 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   ASSERT_EQ(previous_inline_node->data().id,
             next_inline_node->GetIntAttribute(
                 ax::mojom::IntAttribute::kPreviousOnLineId));
-  ASSERT_FALSE(next_inline_node->HasIntAttribute(
-      ax::mojom::IntAttribute::kNextOnLineId));
-  ASSERT_FALSE(previous_inline_node->HasIntAttribute(
-      ax::mojom::IntAttribute::kPreviousOnLineId));
 
   ui::AXNode* link_node = paragraph_node->children()[1];
   ASSERT_TRUE(link_node);
@@ -402,10 +402,18 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   previous_inline_node = static_text_node->children()[0];
   ASSERT_TRUE(previous_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+  ASSERT_TRUE(previous_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kPreviousOnLineId));
+  // Test that text and link on the same line are connected.
+  ASSERT_EQ(next_inline_node->data().id,
+            previous_inline_node->GetIntAttribute(
+                ax::mojom::IntAttribute::kPreviousOnLineId));
 
   next_inline_node = static_text_node->children()[1];
   ASSERT_TRUE(next_inline_node);
   EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+  ASSERT_FALSE(next_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kNextOnLineId));
 
   ASSERT_EQ(next_inline_node->data().id,
             previous_inline_node->GetIntAttribute(
@@ -413,10 +421,6 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   ASSERT_EQ(previous_inline_node->data().id,
             next_inline_node->GetIntAttribute(
                 ax::mojom::IntAttribute::kPreviousOnLineId));
-  ASSERT_FALSE(next_inline_node->HasIntAttribute(
-      ax::mojom::IntAttribute::kNextOnLineId));
-  ASSERT_FALSE(previous_inline_node->HasIntAttribute(
-      ax::mojom::IntAttribute::kPreviousOnLineId));
 }
 
 TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {

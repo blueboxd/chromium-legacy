@@ -324,6 +324,14 @@ bool ServiceWorkerGlobalScopeProxy::IsWindowInteractionAllowed() {
   return WorkerGlobalScope()->IsWindowInteractionAllowed();
 }
 
+void ServiceWorkerGlobalScopeProxy::PauseEvaluation() {
+  WorkerGlobalScope()->PauseEvaluation();
+}
+
+void ServiceWorkerGlobalScopeProxy::ResumeEvaluation() {
+  WorkerGlobalScope()->ResumeEvaluation();
+}
+
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {
   DCHECK(client_);
   return *client_;

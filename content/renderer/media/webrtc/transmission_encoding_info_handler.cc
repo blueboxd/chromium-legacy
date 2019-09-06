@@ -16,11 +16,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
-#include "content/renderer/media/webrtc/video_codec_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
+#include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory.h"
 #include "third_party/webrtc/api/audio_codecs/audio_format.h"
@@ -81,7 +81,7 @@ const unsigned int kHdVideoAreaSize = 1280 * 720;
 // returns software encoder factory only.
 TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler()
     : TransmissionEncodingInfoHandler(
-          CreateWebrtcVideoEncoderFactory(GetGpuFactories()),
+          blink::CreateWebrtcVideoEncoderFactory(GetGpuFactories()),
           CanCpuEncodeHdSmoothly()) {}
 
 TransmissionEncodingInfoHandler::TransmissionEncodingInfoHandler(

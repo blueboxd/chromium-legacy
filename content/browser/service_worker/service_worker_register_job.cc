@@ -312,9 +312,21 @@ bool ServiceWorkerRegisterJob::IsUpdateCheckNeeded() const {
 }
 
 void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
-    ServiceWorkerUpdateChecker::UpdateStatusCallback callback) {
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK_EQ(GetUpdateCheckType(),
             UpdateCheckType::kAllScriptsBeforeStartWorker);
+
+  if (!loader_factory) {
+    // We can't continue with update checking appropriately without
+    // |loader_factory|. Null |loader_factory| means that the storage partition
+    // was not available probably because it's shutting down.
+    // This terminates the current job (|this|).
+    Complete(blink::ServiceWorkerStatusCode::kErrorAbort,
+             ServiceWorkerConsts::kShutdownErrorMessage);
+    return;
+  }
+
   ServiceWorkerVersion* version_to_update = registration()->GetNewestVersion();
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration()->last_update_check();
@@ -327,10 +339,12 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
-      context_->GetLoaderFactoryBundleForUpdateCheck(), force_bypass_cache_,
+      std::move(loader_factory), force_bypass_cache_,
       registration()->update_via_cache(), time_since_last_check,
       context_.get());
-  update_checker_->Start(std::move(callback));
+  update_checker_->Start(
+      base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
+                     weak_factory_.GetWeakPtr()));
 }
 
 ServiceWorkerRegisterJob::UpdateCheckType
@@ -492,8 +506,11 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
         StartWorkerForUpdate();
         return;
       }
-      TriggerUpdateCheckInBrowser(
-          base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
+
+      // This will start the update check after loader factory is retrieved.
+      context_->wrapper()->GetLoaderFactoryForUpdateCheck(
+          scope_,
+          base::BindOnce(&ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser,
                          weak_factory_.GetWeakPtr()));
       return;
     case UpdateCheckType::kMainScriptDuringStartWorker:

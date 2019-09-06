@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Activity;
 import android.os.Build;
 import android.view.View;
@@ -72,7 +70,7 @@ public class FullscreenTestUtils {
             public boolean isSatisfied() {
                 return isFullscreenFlagSet(tab, state, activity);
             }
-        }, scaleTimeout(6000), CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, 6000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /**

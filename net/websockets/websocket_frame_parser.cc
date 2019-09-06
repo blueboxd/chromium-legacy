@@ -190,12 +190,8 @@ std::unique_ptr<WebSocketFrameChunk> WebSocketFrameParser::DecodeFramePayload(
     frame_chunk->header = current_frame_header_->Clone();
   }
   frame_chunk->final_chunk = false;
-  if (chunk_data_size) {
-    frame_chunk->data = base::MakeRefCounted<IOBufferWithSize>(
-        static_cast<int>(chunk_data_size));
-    char* io_data = frame_chunk->data->data();
-    // TODO(yoichio): Remove copy by making |frame_chunk| having refs of |data|.
-    memcpy(io_data, data->data(), chunk_data_size);
+  if (chunk_data_size > 0) {
+    frame_chunk->data = data->subspan(0, chunk_data_size);
     *data = data->subspan(chunk_data_size);
     frame_offset_ += chunk_data_size;
   }

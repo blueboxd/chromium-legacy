@@ -1512,12 +1512,13 @@ void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
   GetEventHandler().AnimateSnapFling(monotonic_time);
 }
 
-void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
-    blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request) {
+void LocalFrame::BindPreviewsResourceLoadingHintsReceiver(
+    mojo::PendingReceiver<
+        blink::mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver) {
   DCHECK(!previews_resource_loading_hints_receiver_);
   previews_resource_loading_hints_receiver_ =
       std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
-          std::move(request), GetDocument());
+          std::move(receiver), GetDocument());
 }
 
 SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {

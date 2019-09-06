@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -44,10 +45,12 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                              public SyncEncryptionHandler {
  public:
   // |encryptor| must be not null and must outlive this object.
-  NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
-                       std::unique_ptr<NigoriStorage> storage,
-                       const Encryptor* encryptor,
-                       const std::string& packed_explicit_passphrase_key);
+  NigoriSyncBridgeImpl(
+      std::unique_ptr<NigoriLocalChangeProcessor> processor,
+      std::unique_ptr<NigoriStorage> storage,
+      const Encryptor* encryptor,
+      const base::RepeatingCallback<std::string()>& random_salt_generator,
+      const std::string& packed_explicit_passphrase_key);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -113,6 +116,10 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
   const std::unique_ptr<NigoriStorage> storage_;
+
+  // Used for generation of random salt for deriving keys from custom
+  // passphrase if SCRYPT is enabled.
+  const base::RepeatingCallback<std::string()> random_salt_generator_;
 
   // Stores serialized sync_pb::NigoriKey derived from explicit passphrase and
   // loaded from the prefs. Empty if prefs doesn't contain this key or in case

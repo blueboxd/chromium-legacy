@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -65,13 +66,17 @@ class CastWindowManagerAura : public CastWindowManager,
   }
 
   void Setup();
+  void OnWindowOrderChanged(std::vector<WindowId> window_order);
 
   // CastWindowManager implementation:
   void TearDown() override;
   void AddWindow(gfx::NativeView window) override;
   gfx::NativeView GetRootWindow() override;
+  std::vector<WindowId> GetWindowOrder() override;
   void SetWindowId(gfx::NativeView window, WindowId window_id) override;
   void InjectEvent(ui::Event* event) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
   // aura::client::WindowParentingClient implementation:
   aura::Window* GetDefaultParent(aura::Window* window,
@@ -100,6 +105,9 @@ class CastWindowManagerAura : public CastWindowManager,
   std::unique_ptr<CastSystemGestureDispatcher> system_gesture_dispatcher_;
   std::unique_ptr<CastSystemGestureEventHandler> system_gesture_event_handler_;
   std::unique_ptr<SideSwipeDetector> side_swipe_detector_;
+
+  std::vector<WindowId> window_order_;
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWindowManagerAura);
 };

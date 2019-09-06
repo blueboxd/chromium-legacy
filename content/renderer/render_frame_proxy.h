@@ -322,11 +322,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
       parent_local_surface_id_allocator_;
 
-  gfx::Rect last_intersection_rect_;
-  gfx::Rect last_compositor_visible_rect_;
-  blink::FrameOcclusionState last_occlusion_state_ =
-      blink::FrameOcclusionState::kUnknown;
-
   // The layer used to embed the out-of-process content.
   scoped_refptr<cc::Layer> embedded_layer_;
 

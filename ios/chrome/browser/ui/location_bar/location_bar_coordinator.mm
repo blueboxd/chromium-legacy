@@ -174,28 +174,24 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.omniboxPopupCoordinator start];
 
   // Create BadgeMediator and set the viewController as its consumer.
-  if (IsInfobarUIRebootEnabled()) {
-    BadgeButtonActionHandler* actionHandler =
-        [[BadgeButtonActionHandler alloc] init];
-    actionHandler.dispatcher =
-        static_cast<id<InfobarCommands>>(self.dispatcher);
-    BadgeButtonFactory* buttonFactory =
-        [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
-    self.badgeViewController =
-        [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
-    [self.viewController addChildViewController:self.badgeViewController];
-    [self.viewController setBadgeView:self.badgeViewController.view];
-    [self.badgeViewController
-        didMoveToParentViewController:self.viewController];
-    self.badgeMediator =
-        [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
-                                   webStateList:self.webStateList];
-    _fullscreenBadgeObserver =
-        std::make_unique<FullscreenUIUpdater>(self.badgeViewController);
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.browserState)
-        ->AddObserver(_fullscreenBadgeObserver.get());
-  }
+  BadgeButtonActionHandler* actionHandler =
+      [[BadgeButtonActionHandler alloc] init];
+  actionHandler.dispatcher = static_cast<id<InfobarCommands>>(self.dispatcher);
+  BadgeButtonFactory* buttonFactory =
+      [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+  self.badgeViewController =
+      [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
+  [self.viewController addChildViewController:self.badgeViewController];
+  [self.viewController setBadgeView:self.badgeViewController.view];
+  [self.badgeViewController didMoveToParentViewController:self.viewController];
+  self.badgeMediator =
+      [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
+                                 webStateList:self.webStateList];
+  _fullscreenBadgeObserver =
+      std::make_unique<FullscreenUIUpdater>(self.badgeViewController);
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->AddObserver(_fullscreenBadgeObserver.get());
 
   self.mediator = [[LocationBarMediator alloc]
       initWithLocationBarModel:[self locationBarModel]];
@@ -232,11 +228,9 @@ const int kLocationAuthorizationStatusCount = 5;
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(self.browserState)
       ->RemoveObserver(_fullscreenObserver.get());
-  if (IsInfobarUIRebootEnabled()) {
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.browserState)
-        ->RemoveObserver(_fullscreenBadgeObserver.get());
-  }
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->RemoveObserver(_fullscreenBadgeObserver.get());
   self.started = NO;
 }
 

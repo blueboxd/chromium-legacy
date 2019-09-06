@@ -92,7 +92,6 @@
 <translation id="1128109161498068552">禁止任何网站使用系统专有消息访问 MIDI 设备</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">修改搜索引擎</translation>
-<translation id="113124294734065964">基座出问题了</translation>
 <translation id="1134009406053225289">在无痕式窗口中打开</translation>
 <translation id="1136712381129578788">此安全密钥已被锁定，因为您输错 PIN 码的次数过多。要解锁此密钥，请先将其拔出，然后再重新插入。</translation>
 <translation id="1137673463384776352">在<ph name="APP" />中打开链接</translation>
@@ -248,7 +247,6 @@
 <translation id="1365180424462182382">您的<ph name="BEGIN_LINK" />浏览器<ph name="END_LINK" />由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="1366177842110999534">在 <ph name="DEVICE_TYPE" /> 上运行 Linux 工具、编辑器和 IDE。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="1367951781824006909">选择文件</translation>
-<translation id="1370749010280229230">与基座相连的显示器存在问题</translation>
 <translation id="1371301976177520732">在您的所有设备上都能访问您的书签、密码、历史记录等信息</translation>
 <translation id="1372841398847029212">同步到您的帐号中</translation>
 <translation id="1374844444528092021">网络“<ph name="NETWORK_NAME" />”所需的证书尚未安装或已无效。请获取新的证书并尝试重新连接。</translation>
@@ -910,7 +908,6 @@
 <translation id="2342740338116612727">书签已添加</translation>
 <translation id="2343747224442182863">聚焦此标签页</translation>
 <translation id="2344028582131185878">自动下载</translation>
-<translation id="2345574157728712751">通过“设置”允许 Play 商店中的应用访问此设备。</translation>
 <translation id="2345723121311404059">“<ph name="PRINTER_NAME" />”有 1 个页面需要打印</translation>
 <translation id="2347644257713614136">使用环聊和 Cast for Education 时须遵守《Google 隐私权政策》。</translation>
 <translation id="2348176352564285430">应用：<ph name="ARC_PROCESS_NAME" /></translation>
@@ -1383,7 +1380,6 @@
 <translation id="3017079585324758401">背景</translation>
 <translation id="3020183492814296499">快捷键</translation>
 <translation id="3020990233660977256">序列号：<ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021039405808358694">请使用 USB C 型电源适配器或与您的 Chromebook 品牌相同的适配器。</translation>
 <translation id="3021066826692793094">蝴蝶</translation>
 <translation id="3021426244864538700">访问此网站的数据</translation>
 <translation id="3021678814754966447">查看框架的源代码(&amp;V)</translation>
@@ -1416,7 +1412,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">此标签页正在使用您的摄像头或麦克风。</translation>
 <translation id="3083193146044397360">已暂时屏蔽相应权限以保护您的安全</translation>
-<translation id="3083259245974004342">密码保护</translation>
 <translation id="3084548735795614657">拖放以安装</translation>
 <translation id="3084771660770137092">Chrome 浏览器内存不足或因其他原因网页进程终止。要继续，请重新加载或转到其他网页。</translation>
 <translation id="3085412380278336437">该网站可能会使用您的摄像头</translation>
@@ -1560,7 +1555,6 @@
 <translation id="3308134619352333507">隐藏按钮</translation>
 <translation id="3308852433423051161">正在加载 Google 助理…</translation>
 <translation id="3312424061798279731">已启用的语言</translation>
-<translation id="3313473463670097216">要为此 Chromebook 充电，请使用同一品牌的电池。</translation>
 <translation id="3313622045786997898">证书签名值</translation>
 <translation id="3315158641124845231">隐藏<ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">双面</translation>
@@ -1682,7 +1676,6 @@
 <translation id="3497560059572256875">分享涂鸦</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="3505030558724226696">撤消对设备的访问权限</translation>
-<translation id="3505635633742443645">将 USB C 型端口用于视频输出时，无法使用基座的 HDMI 端口。请让某个显示器使用其他端口。</translation>
 <translation id="3507421388498836150">“<ph name="EXTENSION_NAME" />”目前拥有的权限</translation>
 <translation id="3507888235492474624">重新扫描蓝牙设备</translation>
 <translation id="3508492320654304609">无法删除您的登录数据</translation>
@@ -1757,7 +1750,6 @@
 <translation id="3603622770190368340">获取网络证书</translation>
 <translation id="3605780360466892872">男性商务人士</translation>
 <translation id="3608576286259426129">用户图片预览</translation>
-<translation id="3609895557594655134">添加 Android VPN…</translation>
 <translation id="361106536627977100">闪存数据</translation>
 <translation id="3612673635130633812">由&lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;下载</translation>
 <translation id="3613134908380545408">显示“<ph name="FOLDER_NAME" />”</translation>
@@ -2675,7 +2667,6 @@
 <translation id="4992066212339426712">取消静音</translation>
 <translation id="4992458225095111526">确认 Powerwash 操作</translation>
 <translation id="4992473555164495036">您的管理员限制了可用的输入法。</translation>
-<translation id="4992866843815555470">您的基座需要维修。由于没有正常运行的风扇，您的基座将关闭。</translation>
 <translation id="4994474651455208930">允许网站要求成为协议的默认处理程序</translation>
 <translation id="4994754230098574403">正在设置</translation>
 <translation id="4996978546172906250">分享方式</translation>
@@ -2798,6 +2789,7 @@
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
 <translation id="5192062846343383368">打开 Family Link 应用，查看您的监管设置</translation>
+<translation id="5193988420012215838">已复制到剪贴板</translation>
 <translation id="5204673965307125349">请对此设备执行 Powerwash，然后重试。</translation>
 <translation id="5206215183583316675">要删除“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="520621735928254154">导入证书时出现错误</translation>
@@ -3180,7 +3172,6 @@
 <translation id="5750324801516359607">远</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
-<translation id="5760765233610147582">请改用与此 Chromebook 兼容的基座。</translation>
 <translation id="5763315388120433852">设置或管理网络文件共享。</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
@@ -3385,7 +3376,6 @@
 <translation id="6043317578411397101"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享 Chrome 标签页。</translation>
 <translation id="604388835206766544">无法解析配置</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享 Chrome 标签页和音频。</translation>
-<translation id="6045021379489914695">您的 Chromebook 与 Android 手机可协同工作、相得益彰。您只需将它们相互连接，便可通过计算机收发短信、共享互联网连接以及利用手机解锁 Chromebook。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="6049004884579590341">按住 |<ph name="ACCELERATOR" />| 即可退出全屏模式</translation>
 <translation id="6049065490165456785">内部相机中的照片</translation>
 <translation id="6051354611314852653">糟糕！系统无法将 API 访问权限授予此设备。</translation>
@@ -4070,7 +4060,6 @@
 <translation id="7078120482318506217">所有网络</translation>
 <translation id="708060913198414444">复制音频地址(&amp;O)</translation>
 <translation id="7081952801286122383">您正在使用无痕模式</translation>
-<translation id="7082772857801260480">仅支持此基座的部分功能</translation>
 <translation id="708278670402572152">要想启用扫描，请先断开连接</translation>
 <translation id="70850504851191913">已报告数据泄露</translation>
 <translation id="7085389578340536476">允许 Chrome 录制音频？</translation>
@@ -4509,6 +4498,7 @@
 <translation id="7751260505918304024">全部显示</translation>
 <translation id="7754704193130578113">下载前询问每个文件的保存位置</translation>
 <translation id="7755287808199759310">您的父亲/母亲可为您取消屏蔽此网站</translation>
+<translation id="7757787379047923882">分享自“<ph name="DEVICE_NAME" />”的文字</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">调整显示屏的边界</translation>
 <translation id="7760004034676677601">这是您想要的启动页吗？</translation>
@@ -4652,6 +4642,7 @@
 <translation id="7926423016278357561">不是我本人。</translation>
 <translation id="7928836894214140642">由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="7930294771522048157">已保存的付款方式会显示在这里</translation>
+<translation id="7930681627240672853">检查密码安全性</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> 正在共享您的屏幕和音频。</translation>
 <translation id="7931318309563332511">未知</translation>
 <translation id="793293630927785390">“添加新 Wi-Fi 网络”对话框</translation>
@@ -5289,7 +5280,6 @@
 <translation id="8846132060409673887">查看此计算机的制造商和型号</translation>
 <translation id="8846141544112579928">正在搜索键盘…</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">连接您的设备即表示您同意 Chromebook 执行以下操作：</translation>
 <translation id="8850251000316748990">查看更多…</translation>
 <translation id="885246833287407341">API 函数参数</translation>
 <translation id="8853586775156634952">此信用卡信息将仅保存到此设备上</translation>
@@ -5424,7 +5414,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">要更新 <ph name="ORIGIN" /> 的密码吗？</translation>
 <translation id="9041692268811217999">您的管理员已禁止访问您计算机上的本地文件</translation>
-<translation id="9042858701776831292">Google Play 商店中的应用可能需要对外部存储设备的访问权限，以便对这些设备上的文件和文件夹进行读写。</translation>
 <translation id="9042893549633094279">隐私设置和安全性</translation>
 <translation id="904451693890288097">请输入“<ph name="DEVICE_NAME" />”的配对密钥：</translation>
 <translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS" /></translation>

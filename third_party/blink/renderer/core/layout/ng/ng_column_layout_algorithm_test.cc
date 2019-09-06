@@ -2023,6 +2023,43 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreaks) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakInSecondChild) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:33px; height:20px;"></div>
+        <div style="width:34px;">
+          <div style="width:35px; height:20px;"></div>
+          <div style="break-before:column; width:36px; height:20px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:33x20
+        offset:0,20 size:34x80
+          offset:0,0 size:35x20
+      offset:110,0 size:100x20
+        offset:0,0 size:34x20
+          offset:0,0 size:36x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, ForcedAndUnforcedBreaksAtSameBoundary) {
   // We have two parallel flows, one with a forced break inside and one with an
   // unforced break. Check that we handle the block-start margins correctly

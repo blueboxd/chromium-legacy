@@ -168,6 +168,8 @@ enum SendFilesForMalwareCheckValues {
   SEND_DOWNLOADS = 2,
   SEND_UPLOADS = 3,
   SEND_UPLOADS_AND_DOWNLOADS = 4,
+  // New options must be added before SEND_FILES_FOR_MALWARE_CHECK_MAX.
+  SEND_FILES_FOR_MALWARE_CHECK_MAX = SEND_UPLOADS_AND_DOWNLOADS,
 };
 
 // Enum representing possible values of the CheckContentCompliance policy. This
@@ -177,6 +179,8 @@ enum CheckContentComplianceValues {
   CHECK_DOWNLOADS = 1,
   CHECK_UPLOADS = 2,
   CHECK_UPLOADS_AND_DOWNLOADS = 3,
+  // New options must be added before CHECK_CONTENT_COMPLIANCE_MAX.
+  CHECK_CONTENT_COMPLIANCE_MAX = CHECK_UPLOADS_AND_DOWNLOADS,
 };
 
 // Enum representing possible values of the AllowPasswordProtectedFiles policy.

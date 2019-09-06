@@ -8,7 +8,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/native_jni/AwQuotaManagerBridge_jni.h"
+#include "android_webview/browser_jni_headers/AwQuotaManagerBridge_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"

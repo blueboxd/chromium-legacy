@@ -22,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/wm/overview/overview_animation_state_waiter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -71,40 +72,6 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
-};
-
-// Wait until an overview animation completes. This self destruct
-// after executing the callback.
-class OverviewAnimationStateWaiter : public OverviewObserver {
- public:
-  OverviewAnimationStateWaiter(OverviewAnimationState state,
-                               base::OnceClosure closure)
-      : state_(state), closure_(std::move(closure)) {
-    Shell::Get()->overview_controller()->AddObserver(this);
-  }
-  ~OverviewAnimationStateWaiter() override {
-    Shell::Get()->overview_controller()->RemoveObserver(this);
-  }
-
-  // OverviewObserver:
-  void OnOverviewModeStartingAnimationComplete(bool canceled) override {
-    if (state_ == OverviewAnimationState::kEnterAnimationComplete) {
-      std::move(closure_).Run();
-      delete this;
-    }
-  }
-  void OnOverviewModeEndingAnimationComplete(bool canceled) override {
-    if (state_ == OverviewAnimationState::kExitAnimationComplete) {
-      std::move(closure_).Run();
-      delete this;
-    }
-  }
-
- private:
-  OverviewAnimationState state_;
-  base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationStateWaiter);
 };
 
 class HomeLauncherStateWaiter : public HomeLauncherGestureHandlerObserver {
@@ -280,7 +247,10 @@ void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
     return;
   }
   base::RunLoop run_loop;
-  new OverviewAnimationStateWaiter(state, run_loop.QuitWhenIdleClosure());
+  new OverviewAnimationStateWaiter(
+      state, base::Bind([](base::RunLoop* run_loop,
+                           bool finished) { run_loop->QuitWhenIdle(); },
+                        base::Unretained(&run_loop)));
   run_loop.Run();
 }
 

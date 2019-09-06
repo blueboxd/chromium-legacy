@@ -469,6 +469,7 @@ void ExternalVkImageBacking::SetCleared() {
 void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   DCHECK(!in_fence);
   latest_content_ = kInSharedMemory;
+  SetCleared();
 }
 
 void ExternalVkImageBacking::Destroy() {
@@ -577,9 +578,17 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                size().width(), size().height());
     } else {
       DCHECK(memory_object);
-      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                  size().width(), size().height(),
-                                  memory_object, 0);
+      if (internal_format == GL_BGRA8_EXT) {
+        // BGRA8 internal format is not well supported, so use RGBA8 instead.
+        api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(),
+                                    size().height(), memory_object, 0);
+        api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+        api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+      } else {
+        api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                    size().width(), size().height(),
+                                    memory_object, 0);
+      }
     }
     texture_ = new gles2::Texture(texture_service_id);
     texture_->SetLightweightRef();

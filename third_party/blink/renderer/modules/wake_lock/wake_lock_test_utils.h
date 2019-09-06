@@ -51,7 +51,8 @@ class MockWakeLock : public device::mojom::blink::WakeLock {
   // device::mojom::blink::WakeLock implementation
   void RequestWakeLock() override;
   void CancelWakeLock() override;
-  void AddClient(device::mojom::blink::WakeLockRequest) override;
+  void AddClient(
+      mojo::PendingReceiver<device::mojom::blink::WakeLock>) override;
   void ChangeType(device::mojom::blink::WakeLockType,
                   ChangeTypeCallback) override;
   void HasWakeLockForTests(HasWakeLockForTestsCallback) override;
@@ -77,10 +78,11 @@ class MockWakeLockService : public mojom::blink::WakeLockService {
 
  private:
   // mojom::blink::WakeLockService implementation
-  void GetWakeLock(device::mojom::blink::WakeLockType type,
-                   device::mojom::blink::WakeLockReason reason,
-                   const String& description,
-                   device::mojom::blink::WakeLockRequest request) override;
+  void GetWakeLock(
+      device::mojom::blink::WakeLockType type,
+      device::mojom::blink::WakeLockReason reason,
+      const String& description,
+      mojo::PendingReceiver<device::mojom::blink::WakeLock> receiver) override;
 
   MockWakeLock mock_wake_lock_[kWakeLockTypeCount];
   mojo::ReceiverSet<mojom::blink::WakeLockService> receivers_;

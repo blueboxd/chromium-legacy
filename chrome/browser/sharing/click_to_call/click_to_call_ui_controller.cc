@@ -133,7 +133,7 @@ SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
                                    SharingClickToCallEntryPoint::kLeftClickLink,
                                    !devices().empty(), !apps().empty());
   }
-  return window->ShowClickToCallDialog(web_contents(), this);
+  return window->ShowSharingDialog(web_contents(), this);
 }
 
 base::string16 ClickToCallUiController::GetContentType() const {

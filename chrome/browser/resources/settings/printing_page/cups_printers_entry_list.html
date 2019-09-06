@@ -19,6 +19,12 @@
      iron-list {
         flex: 1 1 auto;
      }
+
+     #no-search-results {
+       margin-top: 20px;
+       text-align: center;
+     }
+
     </style>
     <iron-list class="list-frame vertical-list" id="printerEntryList"
         items="[[filteredPrinters_]]">
@@ -27,6 +33,10 @@
         </settings-cups-printers-entry>
       </template>
     </iron-list>
+    <div id="no-search-results"
+        hidden="[[!showNoSearchResultsMessage_]]">
+      $i18n{noSearchResults}
+    </div>
   </template>
   <script src="cups_printers_entry_list.js"></script>
 </dom-module>

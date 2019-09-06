@@ -12,7 +12,7 @@ FeatureDictionary::FeatureDictionary() = default;
 FeatureDictionary::~FeatureDictionary() = default;
 
 void FeatureDictionary::Lookup(const LearningTask& task,
-                               FeatureVector* features) {
+                               FeatureVector* features) const {
   const size_t num_features = task.feature_descriptions.size();
 
   if (features->size() < num_features)

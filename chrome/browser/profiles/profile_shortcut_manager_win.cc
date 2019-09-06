@@ -755,7 +755,7 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
 
 void ProfileShortcutManagerWin::RemoveProfileShortcuts(
     const base::FilePath& profile_path) {
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+  base::CreateCOMSTATaskRunnerWithTraits({base::ThreadPool(), base::MayBlock()})
       ->PostTask(FROM_HERE, base::BindOnce(&DeleteDesktopShortcuts,
                                            profile_path, base::nullopt, false));
 }
@@ -839,7 +839,7 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   if (all_profiles.size() > 0)
     first_profile_path = all_profiles[0]->GetPath();
 
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+  base::CreateCOMSTATaskRunnerWithTraits({base::ThreadPool(), base::MayBlock()})
       ->PostTask(FROM_HERE, base::BindOnce(&DeleteDesktopShortcuts,
                                            profile_path, first_profile_path,
                                            deleting_down_to_last_profile));

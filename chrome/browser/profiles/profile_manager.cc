@@ -53,6 +53,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -482,6 +483,14 @@ Profile* ProfileManager::CreateInitialProfile() {
   if (profile_manager->ShouldGoOffTheRecord(profile))
     return profile->GetOffTheRecordProfile();
   return profile;
+}
+
+void ProfileManager::AddObserver(ProfileManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ProfileManager::RemoveObserver(ProfileManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
@@ -1171,6 +1180,9 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   // GetProfileByPath().
   profile_info->created = true;
 
+  for (auto& observer : observers_)
+    observer.OnProfileAdded(profile);
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_ADDED,
       content::Source<Profile>(profile),
@@ -1471,12 +1483,10 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
   if (profile) {
-    // TODO: Migrate additional code in this block to observe this notification
-    // instead of being implemented here.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-        content::Source<Profile>(profile),
-        content::NotificationService::NoDetails());
+    // TODO(estade): Migrate additional code in this block to observe
+    // ProfileManager instead of handling shutdown here.
+    for (auto& observer : observers_)
+      observer.OnProfileMarkedForPermanentDeletion(profile);
 
     // Disable sync for doomed profile.
     if (ProfileSyncServiceFactory::HasSyncService(profile)) {

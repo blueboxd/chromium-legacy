@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/power.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 namespace content {
@@ -126,7 +127,7 @@ class PowerAPI : public BrowserContextKeyedAPI,
   ActivateWakeLockFunction activate_wake_lock_function_;
   CancelWakeLockFunction cancel_wake_lock_function_;
 
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
   bool is_wake_lock_active_;
 
   // Current level used by wake lock.

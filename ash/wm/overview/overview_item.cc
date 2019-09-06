@@ -21,7 +21,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
-#include "ash/wm/overview/overview_grid_pre_event_handler.h"
+#include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -260,6 +260,7 @@ void OverviewItem::EnsureVisible() {
 
 void OverviewItem::Shutdown() {
   item_widget_.reset();
+  caption_container_view_ = nullptr;
 }
 
 void OverviewItem::PrepareForOverview() {
@@ -818,21 +819,21 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
       if (IsDragItem())
         HandleDragEvent(location);
       else
-        overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
       break;
     case ui::ET_SCROLL_FLING_START:
       if (IsDragItem()) {
         HandleFlingStartEvent(location, event->details().velocity_x(),
                               event->details().velocity_y());
       } else {
-        overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
       }
       break;
     case ui::ET_GESTURE_SCROLL_END:
       if (IsDragItem())
         HandleReleaseEvent(location);
       else
-        overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       HandlePressEvent(location, /*from_touch_gesture=*/true);
@@ -844,7 +845,7 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
       HandleGestureEndEvent();
       break;
     default:
-      overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+      overview_grid()->grid_event_handler()->OnGestureEvent(event);
       break;
   }
 }

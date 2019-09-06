@@ -600,7 +600,6 @@ std::unique_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
   std::unique_ptr<web_app::ShortcutInfo> shortcut_info(
       new web_app::ShortcutInfo);
   shortcut_info->extension_id = bundle_info.GetExtensionId();
-  shortcut_info->is_platform_app = true;
   shortcut_info->url = bundle_info.GetURL();
   shortcut_info->title = bundle_info.GetTitle();
   shortcut_info->profile_name = bundle_info.GetProfileName();

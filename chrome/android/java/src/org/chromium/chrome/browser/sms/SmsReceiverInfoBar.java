@@ -15,6 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.infobar.ConfirmInfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.infobar.InfoBarLayout;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -46,6 +47,11 @@ public class SmsReceiverInfoBar extends ConfirmInfoBar {
                 /*secondaryButtonText=*/null);
         mMessage = message;
         mWindowAndroid = windowAndroid;
+    }
+
+    @Override
+    public int getPriority() {
+        return InfoBarPriority.USER_TRIGGERED;
     }
 
     @Override

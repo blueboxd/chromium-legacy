@@ -471,7 +471,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     VisualProperties visual_properties;
     visual_properties.screen_info.device_scale_factor = dsf;
     visual_properties.new_size = gfx::Size(100, 100);
-    visual_properties.compositor_viewport_pixel_size = gfx::Size(200, 200);
+    visual_properties.compositor_viewport_pixel_rect = gfx::Rect(200, 200);
     visual_properties.visible_viewport_size = visual_properties.new_size;
     visual_properties.auto_resize_enabled =
         view()->GetWidget()->auto_resize_mode();

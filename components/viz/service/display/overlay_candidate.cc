@@ -117,6 +117,9 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
   // We don't support an opacity value different than one for an overlay plane.
   if (quad->shared_quad_state->opacity != 1.f)
     return false;
+  // We can't support overlays with rounded corner clipping.
+  if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
+    return false;
   // We support only kSrc (no blending) and kSrcOver (blending with premul).
   if (!(quad->shared_quad_state->blend_mode == SkBlendMode::kSrc ||
         quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)) {

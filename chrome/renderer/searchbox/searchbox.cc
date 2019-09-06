@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/common/search.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "components/favicon_base/favicon_types.h"
@@ -429,6 +430,20 @@ void SearchBox::RevertThemeChanges() {
 
 void SearchBox::ConfirmThemeChanges() {
   embedded_search_service_->ConfirmThemeChanges();
+}
+
+void SearchBox::QueryAutocomplete(const std::string& input) {
+  embedded_search_service_->QueryAutocomplete(
+      input, base::BindOnce(&SearchBox::QueryAutocompleteResult,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SearchBox::QueryAutocompleteResult(
+    std::vector<chrome::mojom::AutocompleteMatchPtr> results) {
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchQueryAutocompleteResult(
+        render_frame()->GetWebFrame(), results);
+  }
 }
 
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {

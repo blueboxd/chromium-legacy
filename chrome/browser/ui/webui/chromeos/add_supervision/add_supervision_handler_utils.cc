@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 
+#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
@@ -12,4 +17,17 @@ bool ShouldIncludeAppUpdate(const apps::AppUpdate& app_update) {
   // attribute is available via the App Service (https://crbug.com/948408).
 
   return app_update.AppType() == apps::mojom::AppType::kArc;
+}
+
+void LogOutHelper() {
+  // Record UMA metric that the user clicked "Sign out".
+  AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
+      AddSupervisionMetricsRecorder::EnrollmentState::kSignedOut);
+  chrome::AttemptUserExit();
+}
+
+bool EnrollmentCompleted() {
+  SupervisedUserService* service = SupervisedUserServiceFactory::GetForProfile(
+      ProfileManager::GetPrimaryUserProfile());
+  return service->signout_required_after_supervision_enabled();
 }

@@ -19,14 +19,15 @@ MouseLockDispatcher::~MouseLockDispatcher() {
 }
 
 bool MouseLockDispatcher::LockMouse(LockTarget* target,
-                                    blink::WebLocalFrame* requester_frame) {
+                                    blink::WebLocalFrame* requester_frame,
+                                    bool request_unadjusted_movement) {
   if (MouseLockedOrPendingAction())
     return false;
 
   pending_lock_request_ = true;
   target_ = target;
 
-  SendLockMouseRequest(requester_frame);
+  SendLockMouseRequest(requester_frame, request_unadjusted_movement);
   return true;
 }
 

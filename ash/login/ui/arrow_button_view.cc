@@ -14,6 +14,8 @@ namespace {
 
 // Arrow icon size.
 constexpr int kArrowIconSizeDp = 20;
+// An alpha value for disabled button.
+constexpr SkAlpha kButtonDisabledAlpha = 0x80;
 
 }  // namespace
 
@@ -29,6 +31,10 @@ ArrowButtonView::ArrowButtonView(views::ButtonListener* listener, int size)
   SetImage(Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kLockScreenArrowIcon, kArrowIconSizeDp,
                                  SK_ColorWHITE));
+  SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(kLockScreenArrowIcon, kArrowIconSizeDp,
+                            SkColorSetA(SK_ColorWHITE, kButtonDisabledAlpha)));
 }
 
 ArrowButtonView::~ArrowButtonView() = default;

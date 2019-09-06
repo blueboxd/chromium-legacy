@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.net.Uri;
 import android.os.Build;
 import android.support.test.filters.LargeTest;
@@ -48,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                                               DecoderServiceHost.ServiceReadyCallback {
     // The timeout (in seconds) to wait for the decoder service to be ready.
-    private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(30);
+    private static final long WAIT_TIMEOUT_SECONDS = 30L;
 
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

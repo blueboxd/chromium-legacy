@@ -913,28 +913,6 @@ bool Textfield::CanHandleAccelerators() const {
   return GetRenderText()->focused() && View::CanHandleAccelerators();
 }
 
-void Textfield::RequestFocusWithPointer(ui::EventPointerType pointer_type) {
-  if (HasFocus())
-    return;
-
-  switch (pointer_type) {
-    case ui::EventPointerType::POINTER_TYPE_MOUSE:
-      focus_reason_ = ui::TextInputClient::FOCUS_REASON_MOUSE;
-      break;
-    case ui::EventPointerType::POINTER_TYPE_PEN:
-      focus_reason_ = ui::TextInputClient::FOCUS_REASON_PEN;
-      break;
-    case ui::EventPointerType::POINTER_TYPE_TOUCH:
-      focus_reason_ = ui::TextInputClient::FOCUS_REASON_TOUCH;
-      break;
-    default:
-      focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
-      break;
-  }
-
-  View::RequestFocus();
-}
-
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
   SelectAll(PlatformStyle::kTextfieldScrollsToStartOnFocusChange);
 }
@@ -2092,6 +2070,28 @@ bool Textfield::IsDropCursorForInsertion() const {
 
 bool Textfield::ShouldShowPlaceholderText() const {
   return GetText().empty() && !GetPlaceholderText().empty();
+}
+
+void Textfield::RequestFocusWithPointer(ui::EventPointerType pointer_type) {
+  if (HasFocus())
+    return;
+
+  switch (pointer_type) {
+    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_MOUSE;
+      break;
+    case ui::EventPointerType::POINTER_TYPE_PEN:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_PEN;
+      break;
+    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_TOUCH;
+      break;
+    default:
+      focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
+      break;
+  }
+
+  View::RequestFocus();
 }
 
 views::PropertyChangedSubscription Textfield::AddTextChangedCallback(

@@ -71,7 +71,7 @@ class AudioPumpTest : public testing::Test, public protocol::AudioStub {
                           base::OnceClosure done) override;
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // |source_| and |encoder_| are owned by the |pump_|.
   FakeAudioSource* source_;

@@ -198,6 +198,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
 bool ReplacedPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
   const auto& paint_info = paint_state.GetPaintInfo();
   if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
       !ShouldPaintSelfOutline(paint_info.phase) &&
       paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kMask &&

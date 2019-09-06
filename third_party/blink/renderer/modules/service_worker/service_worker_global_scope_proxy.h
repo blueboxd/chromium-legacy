@@ -91,6 +91,8 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
                                    int64_t encoded_body_length,
                                    int64_t decoded_body_length) override;
   bool IsWindowInteractionAllowed() override;
+  void PauseEvaluation() override;
+  void ResumeEvaluation() override;
 
   // WorkerReportingProxy overrides:
   void CountFeature(WebFeature) override;

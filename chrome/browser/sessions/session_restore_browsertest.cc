@@ -148,9 +148,17 @@ class SessionRestoreTest : public InProcessBrowserTest {
         KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
     CloseBrowserSynchronously(browser);
 
-    // Create a new window, which should trigger session restore.
     ui_test_utils::AllBrowserTabAddedWaiter tab_waiter;
     SessionRestoreTestHelper restore_observer;
+
+    // Ensure the session service factory is started, even if it was explicitly
+    // shut down.
+    SessionServiceTestHelper helper(
+        SessionServiceFactory::GetForProfileForSessionRestore(profile));
+    helper.SetForceBrowserNotAliveWithNoWindows(true);
+    helper.ReleaseService();
+
+    // Create a new window, which should trigger session restore.
     if (url.is_empty()) {
       chrome::NewEmptyWindow(profile);
     } else {
@@ -490,46 +498,24 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MaximizedApps) {
 }
 #endif  // OS_CHROMEOS
 
-#if !defined(OS_CHROMEOS)
-// This test does not apply to ChromeOS as it does not do session restore when
-// a new window is opened.
+// Creates a tabbed browser and popup and makes sure we restore both.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
+  // Open a popup.
+  Browser* popup = CreateBrowserForPopup(browser()->profile());
+  ASSERT_EQ(2u, active_browser_list_->size());
 
-// Makes sure when session restore is triggered in the same process we don't end
-// up with an extra tab.
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
-                       RestoreOnNewWindowWithNoTabbedBrowsers) {
-  const base::FilePath::CharType* kTitle1File =
-      FILE_PATH_LITERAL("title1.html");
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
-  ui_test_utils::NavigateToURL(browser(), url);
+  // Simulate an exit by shutting down the session service. If we don't do this
+  // the first window close is treated as though the user closed the window
+  // and won't be restored.
+  SessionServiceFactory::ShutdownForProfile(browser()->profile());
 
-  // Turn on session restore.
-  SessionStartupPref::SetStartupPref(
-      browser()->profile(),
-      SessionStartupPref(SessionStartupPref::LAST));
-
-  // Create a new popup.
-  Profile* profile = browser()->profile();
-  Browser* popup =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile, true));
-  popup->window()->Show();
-
-  // Close the browser.
-  CloseBrowserSynchronously(browser());
-
-  // Create a new window, which should trigger session restore.
-  chrome::NewWindow(popup);
-  Browser* new_browser = ui_test_utils::WaitForBrowserToOpen();
-  ASSERT_TRUE(new_browser);
-
-  // The browser should only have one tab.
-  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
-
-  // And the first url should be url.
-  EXPECT_EQ(url, new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+  // Restart and make sure we have two windows.
+  CloseBrowserSynchronously(popup);
+  QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(2u, active_browser_list_->size());
+  EXPECT_EQ(Browser::TYPE_NORMAL, active_browser_list_->get(0)->type());
+  EXPECT_EQ(Browser::TYPE_POPUP, active_browser_list_->get(1)->type());
 }
-#endif  // !OS_CHROMEOS
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(

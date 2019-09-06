@@ -176,6 +176,11 @@ class WebContentsTester {
 
   // Sets the last active time.
   virtual void SetLastActiveTime(base::TimeTicks last_active_time) = 0;
+
+  // Setting this to true will make IsConnectedToBluetoothDevice() return true,
+  // setting it to false will make the value use the logic from WebContentsImpl.
+  virtual void SetIsConnectedToBluetoothDevice(
+      bool is_connected_to_bluetooth_device) = 0;
 };
 
 }  // namespace content

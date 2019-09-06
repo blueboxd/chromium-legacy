@@ -901,4 +901,34 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   decision_details.Clear();
 }
 
+TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
+  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
+                                                   LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  content::WebContentsTester::For(web_contents_)
+      ->SetIsConnectedToBluetoothDevice(true);
+
+  DecisionDetails decision_details;
+  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH,
+            decision_details.FailureReason());
+
+  decision_details.Clear();
+  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
+      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
+  EXPECT_FALSE(decision_details.IsPositive());
+  EXPECT_EQ(DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH,
+            decision_details.FailureReason());
+
+  content::WebContentsTester::For(web_contents_)
+      ->SetIsConnectedToBluetoothDevice(false);
+}
+
 }  // namespace resource_coordinator

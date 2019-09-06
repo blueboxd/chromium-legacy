@@ -23,6 +23,7 @@
 namespace views {
 class Label;
 class LabelButton;
+class Textfield;
 }  // namespace views
 
 namespace ash {
@@ -50,13 +51,15 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
     explicit TestApi(ParentAccessView* view);
     ~TestApi();
 
-    LoginButton* back_button() const;
-    views::Label* title_label() const;
-    views::Label* description_label() const;
-    views::View* access_code_view() const;
-    views::LabelButton* help_button() const;
-    ArrowButtonView* submit_button() const;
-    LoginPinView* pin_keyboard_view() const;
+    LoginButton* back_button();
+    views::Label* title_label();
+    views::Label* description_label();
+    views::View* access_code_view();
+    views::LabelButton* help_button();
+    ArrowButtonView* submit_button();
+    LoginPinView* pin_keyboard_view();
+
+    views::Textfield* GetInputTextField(int index);
 
     State state() const;
 
@@ -180,6 +183,9 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   const base::Time validation_time_;
 
   State state_ = State::kNormal;
+
+  // Auto submit code when the last input has been inserted.
+  bool auto_submit_enabled_ = true;
 
   views::Label* title_label_ = nullptr;
   views::Label* description_label_ = nullptr;

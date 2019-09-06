@@ -25,7 +25,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -48,7 +47,7 @@ public class ChromeBrowserSyncAdapterTest {
 
     private static final Account TEST_ACCOUNT =
             AccountManagerFacade.createAccountFromName("test@gmail.com");
-    private static final long WAIT_FOR_LAUNCHER_MS = ScalableTimeout.scaleTimeout(10 * 1000);
+    private static final long WAIT_FOR_LAUNCHER_MS = (long) (10 * 1000);
     private static final long POLL_INTERVAL_MS = 100;
 
     private TestSyncAdapter mSyncAdapter;

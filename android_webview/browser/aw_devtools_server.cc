@@ -8,8 +8,8 @@
 
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
+#include "android_webview/browser_jni_headers/AwDevToolsServer_jni.h"
 #include "android_webview/common/aw_content_client.h"
-#include "android_webview/native_jni/AwDevToolsServer_jni.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"

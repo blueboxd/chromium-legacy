@@ -31,6 +31,8 @@ class AppListLaunchRecorder {
   // Record.
   struct LaunchInfo {
     LaunchInfo(metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type,
+               metrics::ChromeOSAppListLaunchEventProto::SearchProviderType
+                   search_provider_type,
                const std::string& target,
                const std::string& query,
                const std::string& domain,
@@ -40,6 +42,9 @@ class AppListLaunchRecorder {
 
     // Specifies which UI component this event was launched from.
     metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type;
+    // Specifies which search provider created this event's result.
+    metrics::ChromeOSAppListLaunchEventProto::SearchProviderType
+        search_provider_type;
     // A string identifier of the item being launched, eg. an app ID or
     // filepath.
     std::string target;

@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) FeatureDictionary {
   // Add features for |task| to |features| from our dictionary.  Features that
   // aren't present in the dictionary will be ignored.  |features| will be
   // expanded if needed to match |task|.
-  void Lookup(const LearningTask& task, FeatureVector* features);
+  void Lookup(const LearningTask& task, FeatureVector* features) const;
 
   // Add |name| to the dictionary with value |value|.
   void Add(const std::string& name, const FeatureValue& value);

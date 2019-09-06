@@ -22,15 +22,16 @@ void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }
 
-CSSMathFunctionValue::CSSMathFunctionValue(CSSMathExpressionNode* expression,
-                                           ValueRange range)
+CSSMathFunctionValue::CSSMathFunctionValue(
+    const CSSMathExpressionNode* expression,
+    ValueRange range)
     : CSSPrimitiveValue(kMathFunctionClass), expression_(expression) {
   is_non_negative_math_function_ = range == kValueRangeNonNegative;
 }
 
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(
-    CSSMathExpressionNode* expression,
+    const CSSMathExpressionNode* expression,
     ValueRange range) {
   if (!expression)
     return nullptr;

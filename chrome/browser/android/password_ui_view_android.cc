@@ -27,9 +27,11 @@
 #include "chrome/browser/android/password_editing_bridge.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
+#include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/browser/browser_thread.h"
@@ -217,6 +219,14 @@ ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(
     JNIEnv* env) {
   return ConvertUTF16ToJavaString(
       env, l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
+}
+
+jboolean JNI_PasswordUIView_HasAccountForLeakCheckRequest(JNIEnv* env) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  return password_manager::AuthenticatedLeakCheck::HasAccountForRequest(
+      identity_manager);
 }
 
 // static

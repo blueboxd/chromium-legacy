@@ -170,14 +170,14 @@
             sub-label="[[getPasswordState_(hasPin,
                 prefs.settings.enable_screen_lock.value)]]"></cr-link-row>
 
-        <cr-link-row id="manage-other-people-subpage-trigger"
-            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_">
-        </cr-link-row>
-
         <template is="dom-if" if="[[showParentalControls_]]">
           <settings-parental-controls-page>
           </settings-parental-controls-page>
         </template>
+
+        <cr-link-row id="manage-other-people-subpage-trigger"
+            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_">
+        </cr-link-row>
 
         <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"

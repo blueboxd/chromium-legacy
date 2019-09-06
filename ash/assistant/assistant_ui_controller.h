@@ -48,6 +48,12 @@ class AssistantContainerView;
 class AssistantController;
 class ProactiveSuggestionsView;
 
+namespace assistant {
+namespace metrics {
+enum class ProactiveSuggestionsShowResult;
+}  // namespace metrics
+}  // namespace assistant
+
 class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantControllerObserver,
@@ -87,7 +93,9 @@ class ASH_EXPORT AssistantUiController
 
   // AssistantSuggestionsModelObserver:
   void OnProactiveSuggestionsChanged(
-      scoped_refptr<const ProactiveSuggestions> proactive_suggestions) override;
+      scoped_refptr<const ProactiveSuggestions> proactive_suggestions,
+      scoped_refptr<const ProactiveSuggestions> old_proactive_suggestions)
+      override;
 
   // AssistantScreenContextModelObserver:
   void OnScreenContextRequestStateChanged(
@@ -156,7 +164,9 @@ class ASH_EXPORT AssistantUiController
 
   // Constructs/resets |proactive_suggestions_view_|.
   void CreateProactiveSuggestionsView();
-  void ResetProactiveSuggestionsView();
+  void ResetProactiveSuggestionsView(
+      int category,
+      assistant::metrics::ProactiveSuggestionsShowResult result);
 
   // Returns the root window for |container_view_| if it exists, otherwise
   // |proactive_suggestions_view_|. Note that this method may only be called

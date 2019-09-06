@@ -291,6 +291,10 @@ TEST_F(CreditCardFIDOAuthenticatorTest, IsUserVerifiable_False) {
   EXPECT_FALSE(requester_->is_user_verifiable().value());
 }
 
+TEST_F(CreditCardFIDOAuthenticatorTest, Sync_IsUserVerifiable_False) {
+  EXPECT_FALSE(fido_authenticator_->IsUserVerifiable());
+}
+
 TEST_F(CreditCardFIDOAuthenticatorTest, ParseRequestOptions) {
   base::Value request_options_json = GetTestRequestOptions(
       kTestChallenge, kTestRelyingPartyId, kTestCredentialId);

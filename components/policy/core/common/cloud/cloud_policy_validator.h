@@ -158,7 +158,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     return policy_data_;
   }
 
-  // ToDo
+  // Retrieve the policy value validation result.
   std::unique_ptr<ValidationResult> GetValidationResult() const;
 
   // Instruct the validator to check that the policy timestamp is present and is

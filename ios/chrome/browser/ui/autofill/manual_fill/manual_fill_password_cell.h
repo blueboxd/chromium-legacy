@@ -12,7 +12,7 @@
 @class FaviconAttributes;
 @class FaviconView;
 class GURL;
-@protocol ManualFillContentDelegate;
+@protocol ManualFillContentInjector;
 @class ManualFillCredential;
 
 // Wrapper to show password cells in a ChromeTableViewController.
@@ -31,7 +31,8 @@ class GURL;
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
          isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
              isConnectedToNextItem:(BOOL)isConnectedToNextItem
-                          delegate:(id<ManualFillContentDelegate>)delegate
+                   contentInjector:
+                       (id<ManualFillContentInjector>)contentInjector
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
@@ -50,7 +51,7 @@ class GURL;
 - (void)setUpWithCredential:(ManualFillCredential*)credential
     isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
         isConnectedToNextCell:(BOOL)isConnectedToNextCell
-                     delegate:(id<ManualFillContentDelegate>)delegate;
+              contentInjector:(id<ManualFillContentInjector>)contentInjector;
 
 // Configures the cell for the passed favicon attributes.
 - (void)configureWithFaviconAttributes:(FaviconAttributes*)attributes;

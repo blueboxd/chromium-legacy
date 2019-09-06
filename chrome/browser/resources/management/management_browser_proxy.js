@@ -36,9 +36,26 @@ cr.define('management', function() {
    *   managed: boolean,
    *   overview: string,
    *   customerLogo: string,
+   *   threatProtectionDescription: string
    * }}
    */
   let ManagedDataResponse;
+
+  /**
+   * @typedef {{
+   *  title: string,
+   *  permission: string
+   * }}
+   */
+  let ThreatProtectionPermission;
+
+  /**
+   * @typedef {{
+   *   info: !Array<!ThreatProtectionPermission>,
+   *   description: string
+   * }}
+   */
+  let ThreatProtectionInfo;
 
   // <if expr="chromeos">
   /**
@@ -87,6 +104,9 @@ cr.define('management', function() {
     /** @return {!Promise<!management.ManagedDataResponse>} */
     getContextualManagedData() {}
 
+    /** @return {!Promise<!management.ThreatProtectionInfo>} */
+    getThreatProtectionInfo() {}
+
     /**
      * @return {!Promise<!Array<!management.BrowserReportingResponse>>} The list
      *     of browser reporting info messages.
@@ -119,6 +139,11 @@ cr.define('management', function() {
     }
 
     /** @override */
+    getThreatProtectionInfo() {
+      return cr.sendWithPromise('getThreatProtectionInfo');
+    }
+
+    /** @override */
     initBrowserReportingInfo() {
       return cr.sendWithPromise('initBrowserReportingInfo');
     }
@@ -137,5 +162,6 @@ cr.define('management', function() {
     ManagementBrowserProxyImpl: ManagementBrowserProxyImpl,
     ManagementBrowserProxy: ManagementBrowserProxy,
     ReportingType: ReportingType,
+    ThreatProtectionInfo: ThreatProtectionInfo,
   };
 });

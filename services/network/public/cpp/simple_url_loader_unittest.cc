@@ -1052,7 +1052,8 @@ TEST_P(SimpleURLLoaderTest, HttpErrorStatusCodeResponse) {
       CreateHelperForURL(test_server_.GetURL("/echo?status=400"));
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
 
-  EXPECT_EQ(net::ERR_FAILED, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(net::ERR_HTTP_RESPONSE_CODE_FAILURE,
+            test_helper->simple_url_loader()->NetError());
   EXPECT_EQ(400, test_helper->GetResponseCode());
   EXPECT_FALSE(test_helper->response_body());
   EXPECT_EQ(0, test_helper->simple_url_loader()->GetContentSize());

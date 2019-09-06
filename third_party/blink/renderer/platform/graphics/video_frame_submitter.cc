@@ -59,6 +59,8 @@ void VideoFrameSubmitter::StartRendering() {
 
   if (compositor_frame_sink_)
     compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && ShouldSubmit());
+
+  frame_trackers_.StartSequence(cc::FrameSequenceTrackerType::kVideo);
 }
 
 void VideoFrameSubmitter::StopRendering() {
@@ -67,6 +69,9 @@ void VideoFrameSubmitter::StopRendering() {
   DCHECK(video_frame_provider_);
 
   is_rendering_ = false;
+
+  frame_trackers_.StopSequence(cc::FrameSequenceTrackerType::kVideo);
+
   UpdateSubmissionState();
 }
 
@@ -169,6 +174,9 @@ void VideoFrameSubmitter::OnBeginFrame(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
 
+  frame_trackers_.NotifyBeginImplFrame(args);
+  last_begin_frame_args_ = args;
+
   for (const auto& pair : timing_details) {
     if (viz::FrameTokenGT(pair.key, *next_frame_token_))
       continue;
@@ -176,6 +184,11 @@ void VideoFrameSubmitter::OnBeginFrame(
     if (base::Contains(frame_token_to_timestamp_map_, pair.key) &&
         !(pair.value->presentation_feedback->flags &
           gfx::PresentationFeedback::kFailure)) {
+      frame_trackers_.NotifyFramePresented(
+          pair.key, gfx::PresentationFeedback(
+                        pair.value->presentation_feedback->timestamp,
+                        pair.value->presentation_feedback->interval,
+                        pair.value->presentation_feedback->flags));
       UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter",
                           pair.value->presentation_feedback->timestamp -
                               frame_token_to_timestamp_map_[pair.key]);
@@ -192,6 +205,7 @@ void VideoFrameSubmitter::OnBeginFrame(
   viz::BeginFrameAck current_begin_frame_ack(args, false);
   if (args.type == viz::BeginFrameArgs::MISSED || !is_rendering_) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    frame_trackers_.NotifyImplFrameCausedNoDamage(current_begin_frame_ack);
     return;
   }
 
@@ -203,6 +217,7 @@ void VideoFrameSubmitter::OnBeginFrame(
                                     args.frame_time + args.interval,
                                     args.frame_time + 2 * args.interval)) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    frame_trackers_.NotifyImplFrameCausedNoDamage(current_begin_frame_ack);
     return;
   }
 
@@ -217,6 +232,7 @@ void VideoFrameSubmitter::OnBeginFrame(
   if (waiting_for_compositor_ack_ ||
       !SubmitFrame(current_begin_frame_ack, std::move(video_frame))) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    frame_trackers_.NotifyImplFrameCausedNoDamage(current_begin_frame_ack);
     return;
   }
 
@@ -418,6 +434,9 @@ bool VideoFrameSubmitter::SubmitFrame(
 
   // We can pass nullptr for the HitTestData as the CompositorFram will not
   // contain any SurfaceDrawQuads.
+  frame_trackers_.NotifySubmitFrame(compositor_frame.metadata.frame_token,
+                                    false, begin_frame_ack,
+                                    last_begin_frame_args_);
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
@@ -437,12 +456,15 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   if (!compositor_frame_sink_)
     return;
 
+  auto begin_frame_ack = viz::BeginFrameAck::CreateManualAckWithDamage();
+  auto compositor_frame = CreateCompositorFrame(begin_frame_ack, nullptr);
+  frame_trackers_.NotifySubmitFrame(compositor_frame.metadata.frame_token,
+                                    false, begin_frame_ack,
+                                    last_begin_frame_args_);
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
-      CreateCompositorFrame(viz::BeginFrameAck::CreateManualAckWithDamage(),
-                            nullptr),
-      nullptr, 0);
+      std::move(compositor_frame), nullptr, 0);
   waiting_for_compositor_ack_ = true;
 }
 

@@ -54,6 +54,8 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -219,6 +221,15 @@ void ProcessMirrorHeaderUIThread(
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
           profile, chrome::kAccountManagerSubPage);
     } else {
+      // Do not display the re-authentication dialog if this event was triggered
+      // by supervision being enabled for an account.  In this situation, a
+      // complete signout is required.
+      SupervisedUserService* service =
+          SupervisedUserServiceFactory::GetForProfile(profile);
+      if (service && service->signout_required_after_supervision_enabled()) {
+        return;
+      }
+
       // Display a re-authentication dialog.
       chromeos::InlineLoginHandlerDialogChromeOS::Show(
           manage_accounts_params.email);

@@ -25,8 +25,10 @@ public final class WebApkMetaDataKeys {
     public static final String DEFAULT_BACKGROUND_COLOR_ID =
             "org.chromium.webapk.shell_apk.defaultBackgroundColorId";
     public static final String ICON_ID = "org.chromium.webapk.shell_apk.iconId";
-    public static final String IS_ICON_MASKABLE = "org.chromium.webapk.shell_apk.isIconMaskable";
+    public static final String MASKABLE_ICON_ID = "org.chromium.webapk.shell_apk.maskableIconId";
     public static final String SPLASH_ID = "org.chromium.webapk.shell_apk.splashId";
+    public static final String IS_SPLASH_ICON_MASKABLE_BOOLEAN_ID =
+            "org.chromium.webapk.shell_apk.isSplashIconMaskableBooleanId";
 
     public static final String ICON_URLS_AND_ICON_MURMUR2_HASHES =
             "org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes";

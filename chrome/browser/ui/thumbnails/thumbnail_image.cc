@@ -96,8 +96,11 @@ void ThumbnailImage::AssignJPEGData(std::vector<uint8_t> data) {
 }
 
 bool ThumbnailImage::ConvertJPEGDataToImageSkiaAndNotifyObservers() {
-  if (!data_)
+  if (!data_) {
+    if (async_operation_finished_callback_)
+      async_operation_finished_callback_.Run();
     return false;
+  }
   return base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
@@ -109,6 +112,8 @@ bool ThumbnailImage::ConvertJPEGDataToImageSkiaAndNotifyObservers() {
 
 void ThumbnailImage::NotifyObservers(gfx::ImageSkia image) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (async_operation_finished_callback_)
+    async_operation_finished_callback_.Run();
   for (auto& observer : observers_)
     observer.OnThumbnailImageAvailable(image);
 }

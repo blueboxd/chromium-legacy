@@ -1,0 +1,28 @@
+# ChromeVox Classic
+
+## Overview
+ChromeVox Classic is a screen reader built utilizing only web api's available
+through the use of a content script (e.g. DOM).
+
+Over time, this project diverged from the approach taken by ChromeVox in Chrome
+OS, which takes an approach closer to other OS-level screen readers which talk
+to each renderering surface directly without direct knowledge of the specifics
+within each renderer (due to an accessibility api abstraction).
+
+## Building
+This directly contains everything you need. It can be loaded into Chrome as an
+unpacked extension and ready to use. Go to chrome://extensions, and click "Load
+Unpacked".
+
+## Maintenance/Contributions
+Tooling is minimal for this fork of ChromeVox. Much of what's available for
+ChromeVox in Chrome OS (chrome/browser/resources/chromeos/chromevox/tools is
+applicable) including deps.js generation, but requires adaptation.
+
+## Release/Testing
+Load ChromeVox Classic on at least Mac and Linux Chrome. Verify web content and
+the chrome of Chrome both speak (e.g. google.com, the address bar). These two
+paths are verbalized using entirely different code paths.
+
+Once confirmed, the entire directory can be uploaded once zipped to the Chrome
+webstore.

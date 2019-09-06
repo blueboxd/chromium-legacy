@@ -440,6 +440,17 @@ void SearchIPCRouter::ConfirmThemeChanges() {
   delegate_->OnConfirmThemeChanges();
 }
 
+void SearchIPCRouter::QueryAutocomplete(
+    const std::string& input,
+    chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
+  if (!policy_->ShouldProcessQueryAutocomplete(is_active_tab_)) {
+    std::move(callback).Run(std::vector<chrome::mojom::AutocompleteMatchPtr>());
+    return;
+  }
+
+  delegate_->QueryAutocomplete(input, std::move(callback));
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

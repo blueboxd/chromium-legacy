@@ -101,6 +101,7 @@ struct AutocompleteMatch {
     // Offset within the string that this classification starts
     size_t offset;
 
+    // Contains a bitmask of flags defined in enum Style.
     int style;
   };
 

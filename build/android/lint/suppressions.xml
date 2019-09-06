@@ -358,6 +358,13 @@ Still reading?
          not use R.style.SplashTheme but new-style WebAPKs do.
          TODO(crbug.com/971254): Remove suppression once old-style WebAPKs are deprecated. -->
     <ignore regexp="The resource `R.style.SplashTheme` appears to be unused"/>
+    <!-- The WAM server currently has 2 codes paths for minting a WebAPK, and
+         it needs these "unused" resources.
+         TODO(crbug.com/1001115): Remove suppression once 2 code paths are merged -->
+    <ignore regexp="The resource `R.mipmap.ic_launcher_background` appears to be unused"/>
+    <ignore regexp="The resource `R.mipmap.ic_launcher_foreground` appears to be unused"/>
+    <ignore regexp="The resource `R.mipmap.maskable_splash_icon_xxhdpi` appears to be unused"/>
+    <ignore regexp="The resource `R.mipmap.maskable_splash_icon_xxxhdpi` appears to be unused"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <issue id="UseCompoundDrawables">

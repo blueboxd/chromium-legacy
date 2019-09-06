@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">음성 중지</translation>
 <translation id="4373197658375206385">링크가 아닌 이전 항목이 없습니다.</translation>
 <translation id="4376316291247992553">그래픽을 점자로 인식하기</translation>
+<translation id="437809255587011096">텍스트 읽기 스타일 지정</translation>
 <translation id="4378308539633073595">앞으로 스크롤</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8503360654911991865">탐색 세밀도 낮추기</translation>
 <translation id="8504695234784218301">문법 오류 끝부분</translation>
 <translation id="8520472399088452386">스핀 버튼</translation>
+<translation id="8534394844575788431">서식</translation>
 <translation id="8538744478902126321">현재 셀의 행 헤더 추측</translation>
 <translation id="8540054775867439484">페이지 상단으로 행 이동</translation>
 <translation id="8542271685829952264">ChromeVox 명령어와 단축키를 모두 보려면 검색+마침표를 누른 다음 화살표 키를 사용하여 메뉴를 탐색하고 Enter 키를 사용하여 명령어를 활성화합니다. 여기로 다시 돌아오려면 Search+o를 누른 후 t를 누르세요.</translation>
@@ -1200,6 +1202,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">탭</translation>
 <translation id="9151211641321628915">현재 위치에 대한 간단한 설명을 들려줍니다.</translation>
+<translation id="9151249085738989067">언어에 따라 자동으로 ChromeVox 음성을 전환합니다.</translation>
 <translation id="9153606228985488238">음조: <ph name="PERCENT" />퍼센트</translation>
 <translation id="9160096769946561184">현재 열의 마지막으로 이동</translation>
 <translation id="9173115498289768110">볼륨: <ph name="PERCENT" />퍼센트</translation>

@@ -19,7 +19,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -227,6 +226,19 @@ bool ShelfLayoutManager::State::Equals(const State& other) const {
          other.session_state == session_state;
 }
 
+// ShelfLayoutManager::ScopedSuspendVisibilityUpdate ---------------------------
+
+ShelfLayoutManager::ScopedSuspendVisibilityUpdate::
+    ScopedSuspendVisibilityUpdate(ShelfLayoutManager* manager)
+    : manager_(manager) {
+  manager_->SuspendVisibilityUpdate();
+}
+
+ShelfLayoutManager::ScopedSuspendVisibilityUpdate::
+    ~ScopedSuspendVisibilityUpdate() {
+  manager_->ResumeVisiblityUpdate();
+}
+
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
@@ -241,6 +253,10 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
 ShelfLayoutManager::~ShelfLayoutManager() {
   if (update_shelf_observer_)
     update_shelf_observer_->Detach();
+
+  // Ensures that |overview_suspend_visibility_update_| is released before
+  // ShelfLayoutManager.
+  overview_suspend_visibility_update_.reset();
 
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
@@ -277,9 +293,10 @@ void ShelfLayoutManager::InitObservers() {
   shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
   display::Screen::GetScreen()->AddObserver(this);
-  ScreenRotationAnimator::GetForRootWindow(
-      shelf_widget_->GetNativeWindow()->GetRootWindow())
-      ->AddObserver(this);
+
+  // DesksController could be null when virtual desks feature is not enabled.
+  if (DesksController::Get())
+    DesksController::Get()->AddObserver(this);
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
@@ -287,9 +304,10 @@ void ShelfLayoutManager::PrepareForShutdown() {
 
   // Stop observing changes to avoid updating a partially destructed shelf.
   Shell::Get()->activation_client()->RemoveObserver(this);
-  ScreenRotationAnimator::GetForRootWindow(
-      shelf_widget_->GetNativeWindow()->GetRootWindow())
-      ->RemoveObserver(this);
+
+  // DesksController could be null when virtual desks feature is not enabled.
+  if (DesksController::Get())
+    DesksController::Get()->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -603,6 +621,26 @@ void ShelfLayoutManager::CancelDragOnShelfIfInProgress() {
     CancelDrag();
 }
 
+void ShelfLayoutManager::SuspendVisibilityUpdate() {
+  ++suspend_visibility_update_;
+}
+
+void ShelfLayoutManager::ResumeVisiblityUpdate() {
+  --suspend_visibility_update_;
+  DCHECK_GE(suspend_visibility_update_, 0);
+
+  if (suspend_visibility_update_ || in_shutdown_)
+    return;
+
+  UpdateVisibilityState();
+
+  TargetBounds target_bounds;
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  UpdateBoundsAndOpacity(target_bounds, /*animate=*/true, nullptr);
+
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
 void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }
@@ -644,23 +682,21 @@ void ShelfLayoutManager::OnSplitViewModeEnded() {
 }
 
 void ShelfLayoutManager::OnOverviewModeStarting() {
-  suspend_visibility_update_ = true;
+  overview_suspend_visibility_update_.emplace(this);
 }
 
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
-  suspend_visibility_update_ = false;
-  OnVisibilityUpdateResumed(/*animate=*/true);
+  overview_suspend_visibility_update_.reset();
 }
 
 void ShelfLayoutManager::OnOverviewModeEnding(
     OverviewSession* overview_session) {
-  suspend_visibility_update_ = true;
+  overview_suspend_visibility_update_.emplace(this);
 }
 
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
-  suspend_visibility_update_ = false;
-  OnVisibilityUpdateResumed(/*animate=*/true);
+  overview_suspend_visibility_update_.reset();
 }
 
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
@@ -775,16 +811,13 @@ void ShelfLayoutManager::OnLocaleChanged() {
   LayoutShelfAndUpdateBounds();
 }
 
-void ShelfLayoutManager::OnScreenCopiedBeforeRotation() {
-  if (suspend_visibility_update_) {
-    suspend_visibility_update_ = false;
-    OnVisibilityUpdateResumed(/*animate=*/false);
-  }
+void ShelfLayoutManager::OnDeskSwitchAnimationLaunching() {
+  SuspendVisibilityUpdate();
 }
 
-void ShelfLayoutManager::OnScreenRotationAnimationFinished(
-    ScreenRotationAnimator* animator,
-    bool canceled) {}
+void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
+  ResumeVisiblityUpdate();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
@@ -1892,19 +1925,6 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
         AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
   }
   previous_workspace_window_state_ = current_workspace_window_state;
-}
-
-void ShelfLayoutManager::OnVisibilityUpdateResumed(bool animate) {
-  DCHECK(!suspend_visibility_update_);
-
-  UpdateVisibilityState();
-
-  TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, animate, nullptr);
-
-  MaybeUpdateShelfBackground(animate ? AnimationChangeType::ANIMATE
-                                     : AnimationChangeType::IMMEDIATE);
 }
 
 }  // namespace ash

@@ -98,6 +98,9 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
     case PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE:
       return want_inverse_description ? "Allowed by server rules"
                                       : "Not allowed by server rules";
+    case PreviewsEligibilityReason::COINFLIP_HOLDBACK:
+      DCHECK(!want_inverse_description);
+      return "Coin flip holdback encountered";
     case PreviewsEligibilityReason::LAST:
       break;
   }

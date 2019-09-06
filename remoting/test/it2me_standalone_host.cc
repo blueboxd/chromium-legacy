@@ -38,7 +38,8 @@ constexpr char kSessionJid[] = "user@domain/rest-of-jid";
 using ::remoting::protocol::MockSession;
 
 It2MeStandaloneHost::It2MeStandaloneHost()
-    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+    : task_environment_(
+          base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
       context_(ChromotingHostContext::Create(
           new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
                                    run_loop_.QuitClosure()))),

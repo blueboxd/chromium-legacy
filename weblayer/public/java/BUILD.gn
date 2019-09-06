@@ -19,4 +19,8 @@ android_library("java") {
   deps = [
     "//weblayer/browser/java:client_java",
   ]
+
+  # Needed for android.webkit.WebViewDelegate.
+  alternative_android_sdk_dep =
+      "//third_party/android_sdk:public_framework_system_java"
 }

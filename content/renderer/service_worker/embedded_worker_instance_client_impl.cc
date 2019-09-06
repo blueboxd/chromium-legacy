@@ -28,8 +28,9 @@ namespace content {
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
   // We can't use MakeStrongBinding because must give the worker thread
@@ -37,6 +38,15 @@ void EmbeddedWorkerInstanceClientImpl::Create(
   // before destructing.
   new EmbeddedWorkerInstanceClientImpl(std::move(receiver),
                                        std::move(initiator_thread_task_runner));
+}
+
+void EmbeddedWorkerInstanceClientImpl::CreateForRequest(
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
+  // Implicit conversion from EmbeddedWorkerInstanceClientRequest to
+  // mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>.
+  EmbeddedWorkerInstanceClientImpl::Create(
+      std::move(initiator_thread_task_runner), std::move(request));
 }
 
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {

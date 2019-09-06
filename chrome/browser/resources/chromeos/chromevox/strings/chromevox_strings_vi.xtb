@@ -484,6 +484,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4372705107434148843">Dừng giọng nói</translation>
 <translation id="4373197658375206385">Không có mục trước nào không phải là liên kết.</translation>
 <translation id="4376316291247992553">Xem đồ thị dưới dạng chữ nổi</translation>
+<translation id="437809255587011096">Định kiểu văn bản thông báo</translation>
 <translation id="4378308539633073595">Cuộn tiến</translation>
 <translation id="4384583879834880242">Giải đáp</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8503360654911991865">Giảm mức độ chi tiết của điều hướng</translation>
 <translation id="8504695234784218301">Cuối lỗi ngữ pháp</translation>
 <translation id="8520472399088452386">Nút quay tròn</translation>
+<translation id="8534394844575788431">Định dạng</translation>
 <translation id="8538744478902126321">Đoán tại tiêu đề hàng của ô hiện tại</translation>
 <translation id="8540054775867439484">Đã bao gồm cả đầu trang</translation>
 <translation id="8542271685829952264">Để khám phá tất cả phím tắt và lệnh của ChromeVox, hãy nhấn Search + Dấu chấm, sau đó sử dụng các phím Mũi tên để điều hướng trong menu và phím Enter để kích hoạt lệnh. Quay lại đây bằng cách nhấn Search+o rồi nhấn t.</translation>
@@ -1200,6 +1202,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Thông báo mô tả ngắn của vị trí hiện tại</translation>
+<translation id="9151249085738989067">Tự động chuyển giọng nói ChromeVox theo ngôn ngữ</translation>
 <translation id="9153606228985488238">Cao độ <ph name="PERCENT" /> phần trăm</translation>
 <translation id="9160096769946561184">Đi tới cuối cột hiện tại</translation>
 <translation id="9173115498289768110">Âm lượng <ph name="PERCENT" /> phần trăm</translation>

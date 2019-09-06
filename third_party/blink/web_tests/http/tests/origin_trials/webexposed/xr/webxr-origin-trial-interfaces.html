@@ -15,12 +15,13 @@ test(t => {
     this, properties_to_check, 'webXREnabled');
 }, "WebXR's entrypoint properties are not available without a token.");
 
-// Policy-controlled features that are part of an origin trial are always
-// included for the reasons described in feature_policy_helper.cc.tmpl.
-// TODO(https://crbug.com/924670): Update the feature name(s) when fixing issue.
 test(() => {
-  assert_in_array('vr', document.featurePolicy.features());
-}, 'document.featurePolicy.features always advertises vr.');
+  if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
+    assert_in_array('xr', document.featurePolicy.features());
+  } else {
+    assert_equals(document.featurePolicy.features().indexOf("xr"), -1);
+  }
+}, 'document.featurePolicy.features does not advertise xr without a token or flag.');
 
 // Add the token, which was generated with the following command:
 // tools/origin_trials/generate_token.py http://127.0.0.1:8000 WebXRDeviceM76 --expire-timestamp=2000000000
@@ -32,6 +33,9 @@ test(t => {
   OriginTrialsHelper.check_properties_exist(this, properties_to_check);
 }, "WebXR's entrypoint properties are available with origin trial token.");
 
+test(() => {
+  assert_in_array('xr', document.featurePolicy.features());
+}, 'document.featurePolicy.features advertises xr after token added.');
 
 // Ensure Gamepad Extensions are NOT enabled by the WebXR origin trial token.
 test(t => {

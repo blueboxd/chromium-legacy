@@ -711,6 +711,16 @@ bool RendererBlinkPlatformImpl::IsWebRtcHWH264DecodingEnabled(
   return true;
 }
 
+bool RendererBlinkPlatformImpl::IsWebRtcHWEncodingEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebRtcHWEncoding);
+}
+
+bool RendererBlinkPlatformImpl::IsWebRtcHWDecodingEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebRtcHWDecoding);
+}
+
 blink::WebVideoCaptureImplManager*
 RendererBlinkPlatformImpl::GetVideoCaptureImplManager() {
   RenderThreadImpl* thread = RenderThreadImpl::current();

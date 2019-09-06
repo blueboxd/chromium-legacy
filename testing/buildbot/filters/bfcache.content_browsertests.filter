@@ -80,11 +80,6 @@
 -SitePerProcessBrowserTest.Unload_ABAB
 -WebContentsImplBrowserTest.SetTitleOnUnload
 
-# Check failed: false. Navigation in an inactive frame
-# https://crbug.com/999848
--NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithUserGesture
--SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
-
 # FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
 # In content::RenderFrameProxy::OnSetFrameOwnerProperties()
 # https://crbug.com/999849

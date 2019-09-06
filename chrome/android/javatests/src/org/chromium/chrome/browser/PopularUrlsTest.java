@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.os.Environment;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
@@ -285,14 +283,12 @@ public class PopularUrlsTest {
             }
         } else {
             try {
-                failedCallback.waitForCallback(
-                        0, 1, scaleTimeout(100 * 1000), TimeUnit.MILLISECONDS);
+                failedCallback.waitForCallback(0, 1, (long) (100 * 1000), TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
                 failed = false;
             }
             try {
-                crashedCallback.waitForCallback(
-                        0, 1, scaleTimeout(100 * 1000), TimeUnit.MILLISECONDS);
+                crashedCallback.waitForCallback(0, 1, (long) (100 * 1000), TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
                 crashed = false;
             }

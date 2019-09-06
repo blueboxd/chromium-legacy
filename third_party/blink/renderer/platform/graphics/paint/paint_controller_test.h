@@ -137,7 +137,7 @@ MATCHER_P5(IsPaintChunk, begin, end, id, properties, hit_test_data, "") {
 // Shorter names for frequently used display item types in tests.
 const DisplayItem::Type kBackgroundType = DisplayItem::kBoxDecorationBackground;
 const DisplayItem::Type kForegroundType =
-    static_cast<DisplayItem::Type>(DisplayItem::kDrawingPaintPhaseFirst + 4);
+    static_cast<DisplayItem::Type>(DisplayItem::kDrawingPaintPhaseFirst + 5);
 const DisplayItem::Type kDocumentBackgroundType =
     DisplayItem::kDocumentBackground;
 const DisplayItem::Type kScrollHitTestType = DisplayItem::kScrollHitTest;

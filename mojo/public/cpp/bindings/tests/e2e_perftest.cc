@@ -130,7 +130,7 @@ class MojoE2EPerftest : public core::test::MojoTestBase {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   void RunTests(MojoHandle client_mp, const std::string& test_name) {

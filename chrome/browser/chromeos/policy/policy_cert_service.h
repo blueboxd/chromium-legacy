@@ -75,6 +75,10 @@ class PolicyCertService : public KeyedService,
   // PolicyCertificateProvider::Observer:
   void OnPolicyProvidedCertsChanged() override;
 
+  // Fills *|out_all_server_and_authority_certificates| and *|out_trust_anchors|
+  // with policy-provided certificates that should be used when verifying a
+  // server certificate for Web requests from the StoragePartition identified by
+  // |partition_path|.
   void GetPolicyCertificatesForStoragePartition(
       const base::FilePath& partition_path,
       net::CertificateList* out_all_server_and_authority_certificates,

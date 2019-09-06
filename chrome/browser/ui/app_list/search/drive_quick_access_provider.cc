@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/ui/app_list/search/drive_quick_access_result.h"
 
@@ -32,7 +33,7 @@ DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
 
 void DriveQuickAccessProvider::Start(const base::string16& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/959679): Add latency metrics.
+  query_start_time_ = base::TimeTicks::Now();
   ClearResultsSilently();
   // Results are launched via DriveFS, so DriveFS must be mounted.
   if (!query.empty() || !drive_service_ || !drive_service_->IsMounted())
@@ -52,6 +53,8 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
         drive_service_->GetMountPointPath().Append(result.path),
         result.confidence, profile_));
   }
+  UMA_HISTOGRAM_TIMES("Apps.AppList.DriveQuickAccessProvider.Latency",
+                      base::TimeTicks::Now() - query_start_time_);
   SwapResults(&results);
 }
 
@@ -73,7 +76,6 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
     drive::FileError error,
     std::vector<drive::QuickAccessItem> drive_results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/959679): Add score distribution metrics.
   // An empty |drive_results| is likely caused by a failed call to ItemSuggest,
   // so don't replace the cache.
   if (!drive_results.empty())

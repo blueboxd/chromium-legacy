@@ -485,49 +485,12 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }
 
-// Makes sure we don't track popups.
-TEST_F(SessionServiceTest, IgnorePopups) {
-  SessionID window2_id = SessionID::NewUnique();
-  SessionID tab_id = SessionID::NewUnique();
-  SessionID tab2_id = SessionID::NewUnique();
-  ASSERT_NE(window2_id, window_id);
-
-  service()->SetWindowType(window2_id, Browser::TYPE_POPUP);
-  service()->SetWindowBounds(window2_id,
-                             window_bounds,
-                             ui::SHOW_STATE_NORMAL);
-  service()->SetWindowWorkspace(window2_id, window_workspace);
-
-  SerializedNavigationEntry nav1 =
-      ContentTestHelper::CreateNavigation("http://google.com", "abc");
-  SerializedNavigationEntry nav2 =
-      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
-
-  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
-  UpdateNavigation(window_id, tab_id, nav1, true);
-
-  helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
-  UpdateNavigation(window2_id, tab2_id, nav2, true);
-
-  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
-  ReadWindows(&windows, NULL);
-
-  ASSERT_EQ(1U, windows.size());
-  ASSERT_EQ(0, windows[0]->selected_tab_index);
-  ASSERT_EQ(window_id, windows[0]->window_id);
-  ASSERT_EQ(1U, windows[0]->tabs.size());
-
-  sessions::SessionTab* tab = windows[0]->tabs[0].get();
-  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
-  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
-}
-
 TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_list;
   windows_list.push_back(std::make_unique<sessions::SessionWindow>());
   windows_list.back()->type = sessions::SessionWindow::TYPE_NORMAL;
   windows_list.push_back(std::make_unique<sessions::SessionWindow>());
-  windows_list.back()->type = sessions::SessionWindow::TYPE_POPUP;
+  windows_list.back()->type = sessions::SessionWindow::TYPE_DEVTOOLS;
 
   service()->RemoveUnusedRestoreWindows(&windows_list);
   ASSERT_EQ(1U, windows_list.size());

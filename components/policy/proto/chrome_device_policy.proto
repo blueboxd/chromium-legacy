@@ -1337,14 +1337,6 @@ message DeviceScheduledUpdateCheckProto {
   optional string device_scheduled_update_check_settings = 1;
 }
 
-// Settings that controls which devices are whitelisted for certain urls to be
-// used via the WebUSB API.
-message DeviceWebUsbAllowDevicesForUrlsProto {
-  // This is a JSON string, for details see "DeviceWebUsbAllowDevicesForUrls" in
-  // policy_templates.json.
-  optional string device_webusb_allow_devices_for_urls = 1;
-}
-
 // Settings that control if the device is allowed to powerwash.
 message DevicePowerwashAllowedProto {
   // Determines if powerwash is allowed on the device.
@@ -1462,7 +1454,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceBatteryChargeModeProto device_battery_charge_mode = 87;
   optional DeviceUsbPowerShareProto device_usb_power_share = 88;
   optional DeviceScheduledUpdateCheckProto device_scheduled_update_check = 89;
-  optional DeviceWebUsbAllowDevicesForUrlsProto
-      device_webusb_allow_devices_for_urls = 90;
   optional DevicePowerwashAllowedProto device_powerwash_allowed = 91;
 }

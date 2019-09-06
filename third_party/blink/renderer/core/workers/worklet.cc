@@ -44,13 +44,13 @@ void Worklet::Dispose() {
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 ScriptPromise Worklet::addModule(ScriptState* script_state,
                                  const String& module_url,
-                                 const WorkletOptions* options) {
+                                 const WorkletOptions* options,
+                                 ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           "This frame is already detached"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This frame is already detached");
+    return ScriptPromise();
   }
   UseCounter::Count(GetExecutionContext(),
                     mojom::WebFeature::kWorkletAddModule);

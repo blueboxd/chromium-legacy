@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "media/gpu/android/codec_image.h"  // For CodecImage::BlockingMode
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -86,7 +87,11 @@ void MEDIA_GPU_EXPORT MaybeRenderEarly(std::vector<Image*>* image_vector_ptr) {
   size_t back_buffer_index = *front_buffer_index + 1;
   if (back_buffer_index < images.size() &&
       images[back_buffer_index]->is_texture_owner_backed()) {
-    images[back_buffer_index]->RenderToTextureOwnerBackBuffer();
+    // Try to render to the back buffer, but don't wait for any previous frame.
+    // While this does make it more likely that we'll have to wait the next time
+    // we draw, it does prevent us from waiting on frames we don't plan to draw.
+    images[back_buffer_index]->RenderToTextureOwnerBackBuffer(
+        CodecImage::BlockingMode::kForbidBlocking);
   }
 }
 

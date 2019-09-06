@@ -1987,7 +1987,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
         allow_consumer_accounts == 0) {
       LOGFN(ERROR) << "Consumer accounts are not allowed mdm_aca="
                    << allow_consumer_accounts;
-      *error_text = AllocErrorString(IDS_INVALID_EMAIL_DOMAIN_BASE);
+      *error_text = AllocErrorString(IDS_DISALLOWED_CONSUMER_EMAIL_BASE);
       return E_FAIL;
     }
   }

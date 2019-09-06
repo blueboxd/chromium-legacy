@@ -968,6 +968,13 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
     decision_details->AddReason(
         DecisionFailureReason::LIVE_STATE_DEVTOOLS_OPEN);
   }
+
+  // Do not freeze or discard tabs that are connected to at least one bluetooth
+  // device.
+  if (web_contents()->IsConnectedToBluetoothDevice()) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH);
+  }
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(

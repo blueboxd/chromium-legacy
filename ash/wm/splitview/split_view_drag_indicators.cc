@@ -4,6 +4,8 @@
 
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 
+#include <utility>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
@@ -276,6 +278,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
   ~SplitViewDragIndicatorsView() override {}
 
+  SplitViewHighlightView* left_highlight_view() { return left_highlight_view_; }
+
   // Called by parent widget when the state machine changes. Handles setting the
   // opacity and bounds of the highlights and labels.
   void OnIndicatorTypeChanged(IndicatorState indicator_state) {
@@ -321,6 +325,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   // animate when changing states, but not when bounds or orientation is
   // changed.
   void Layout(bool animate) {
+    // TODO(xdai|afakhry): Attempt to simplify this logic.
     const bool landscape = IsCurrentScreenOrientationLandscape();
     const int display_width = landscape ? width() : height();
     const int display_height = landscape ? height() : width();
@@ -380,12 +385,15 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
       aura::Window* root_window =
           GetWidget()->GetNativeWindow()->GetRootWindow();
+      wm::ConvertRectFromScreen(root_window, &preview_area_bounds);
+
       // Preview area should have no overlap with the shelf.
       preview_area_bounds.Subtract(
           Shelf::ForWindow(root_window)->GetIdealBounds());
 
-      const gfx::Rect work_area_bounds =
+      gfx::Rect work_area_bounds =
           GetWorkAreaBoundsNoOverlapWithShelf(root_window);
+      wm::ConvertRectFromScreen(root_window, &work_area_bounds);
       preview_area_bounds.set_y(preview_area_bounds.y() - work_area_bounds.y());
       if (!nix_preview_inset) {
         preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
@@ -639,6 +647,11 @@ bool SplitViewDragIndicators::GetIndicatorTypeVisibilityForTesting(
     IndicatorType type) const {
   return indicators_view_->GetViewForIndicatorType(type)->layer()->opacity() >
          0.f;
+}
+
+gfx::Rect SplitViewDragIndicators::GetLeftHighlightViewBoundsForTesting()
+    const {
+  return indicators_view_->left_highlight_view()->bounds();
 }
 
 }  // namespace ash

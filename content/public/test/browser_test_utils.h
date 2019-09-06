@@ -1569,7 +1569,8 @@ class PwnMessageHelper {
   static void LockMouse(RenderProcessHost* process,
                         int routing_id,
                         bool user_gesture,
-                        bool privileged);
+                        bool privileged,
+                        bool request_unadjusted_movement);
 
  private:
   PwnMessageHelper();  // Not instantiable.

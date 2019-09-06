@@ -321,8 +321,8 @@ class JingleSessionTest : public testing::Test {
     }
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   NetworkSettings network_settings_;
 

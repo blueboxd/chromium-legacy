@@ -934,8 +934,6 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     GraphicsLayerUpdater::UpdateContext& update_context) {
   FloatPoint old_position(graphics_layer_->GetPosition());
   IntSize old_size(graphics_layer_->Size());
-  // Previous offset of the LayoutObject relative to the main GraphicsLayer.
-  IntSize old_object_offset = -graphics_layer_->OffsetFromLayoutObject();
 
   FloatPoint new_position = FloatPoint(relative_compositing_bounds.Location() -
                                        graphics_layer_parent_location);
@@ -950,22 +948,6 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   if (new_position != old_position && !is_iframe_doc)
     graphics_layer_->SetPosition(new_position);
   graphics_layer_->SetOffsetFromLayoutObject(-new_object_offset);
-
-  IntSize obj_offset_delta = new_object_offset - old_object_offset;
-  IntSize position_delta = RoundedIntSize(new_position - old_position);
-  // Did our LayoutObject move in relation to the parent CLM's LayoutObject
-  // (accounting for their respective offsets from the main GraphicsLayers)?
-  IntSize layout_object_delta = position_delta + obj_offset_delta -
-                                update_context.parent_object_offset_delta;
-  if (!layout_object_delta.IsZero()) {
-    LocalFrameView* frame_view = layout_object.View()->GetFrameView();
-    frame_view->GetLayoutShiftTracker().NotifyCompositedLayerMoved(
-        layout_object,
-        FloatRect(FloatPoint(), FloatSize(old_size - old_object_offset)),
-        FloatRect(FloatPoint(layout_object_delta),
-                  FloatSize(new_size - new_object_offset)));
-  }
-  update_context.object_offset_delta = obj_offset_delta;
 
   if (old_size != new_size)
     graphics_layer_->SetSize(gfx::Size(new_size));

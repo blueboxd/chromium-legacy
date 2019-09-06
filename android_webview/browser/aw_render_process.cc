@@ -10,7 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
-#include "android_webview/native_jni/AwRenderProcess_jni.h"
+#include "android_webview/browser_jni_headers/AwRenderProcess_jni.h"
 
 using base::android::AttachCurrentThread;
 using content::BrowserThread;

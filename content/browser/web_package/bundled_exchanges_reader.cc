@@ -223,7 +223,7 @@ void BundledExchangesReader::ReadMetadataInternal(MetadataCallback callback,
                                                   base::File file) {
   base::File::Error error = parser_.OpenFile(std::move(file));
   if (base::File::FILE_OK != error) {
-    base::PostTask(
+    base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             std::move(callback),

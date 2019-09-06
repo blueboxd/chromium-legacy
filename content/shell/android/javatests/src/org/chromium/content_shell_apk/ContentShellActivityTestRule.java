@@ -4,8 +4,6 @@
 
 package org.chromium.content_shell_apk;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
@@ -56,11 +54,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellActivity> {
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
-    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = scaleTimeout(10000);
+    private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = 10000L;
 
     private static final String TAG = "ContentShellATR";
 
-    protected static final long WAIT_PAGE_LOADING_TIMEOUT_SECONDS = scaleTimeout(15);
+    protected static final long WAIT_PAGE_LOADING_TIMEOUT_SECONDS = 15L;
 
     private final boolean mLaunchActivity;
 

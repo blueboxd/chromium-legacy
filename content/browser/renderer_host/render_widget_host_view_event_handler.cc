@@ -116,6 +116,7 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
     Delegate* delegate)
     : accept_return_character_(false),
       mouse_locked_(false),
+      mouse_locked_unadjusted_movement_(false),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       set_focus_on_mouse_down_or_key_event_(false),
       enable_consolidated_movement_(
@@ -159,13 +160,19 @@ void RenderWidgetHostViewEventHandler::UpdateMouseLockRegion() {
 }
 #endif
 
-bool RenderWidgetHostViewEventHandler::LockMouse() {
+bool RenderWidgetHostViewEventHandler::LockMouse(
+    bool request_unadjusted_movement) {
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
     return false;
 
   if (mouse_locked_)
     return true;
+
+  if (request_unadjusted_movement) {
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   mouse_locked_ = true;
 #if !defined(OS_WIN)
@@ -195,6 +202,7 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
     return;
 
   mouse_locked_ = false;
+  mouse_locked_unadjusted_movement_ = false;
 
   if (window_->HasCapture())
     window_->ReleaseCapture();

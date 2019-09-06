@@ -17,6 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -70,8 +71,8 @@ public class DownloadProgressInfoBar extends InfoBar {
     }
 
     @Override
-    public boolean isBottomMostInfoBar() {
-        return true;
+    public int getPriority() {
+        return InfoBarPriority.BACKGROUND;
     }
 
     @Override

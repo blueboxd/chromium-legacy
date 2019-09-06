@@ -8,7 +8,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_form_database_service.h"
-#include "android_webview/native_jni/AwAutofillClient_jni.h"
+#include "android_webview/browser_jni_headers/AwAutofillClient_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"

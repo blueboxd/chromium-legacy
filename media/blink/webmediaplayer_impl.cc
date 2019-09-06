@@ -327,7 +327,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           base::BindRepeating(&WebMediaPlayerImpl::OnSimpleWatchTimerTick,
                               base::Unretained(this)),
           base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
-                              base::Unretained(this))) {
+                              base::Unretained(this))),
+      will_play_helper_(nullptr) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);
@@ -478,6 +479,9 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   // renderer thread.
   if (observer_)
     observer_->SetClient(nullptr);
+
+  // If we're in the middle of an observation, then finish it.
+  will_play_helper_.CompleteObservationIfNeeded(learning::TargetValue(false));
 
   // Handle destruction of things that need to be destructed after the pipeline
   // completes stopping on the media thread.
@@ -674,6 +678,13 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  // Start a new observation.  If there was one before, then we didn't play it.
+  will_play_helper_.CompleteObservationIfNeeded(learning::TargetValue(false));
+  // For now, send in an empty set of features.  We should fill some in here,
+  // and / or ask blink (via |client_|) for features from the DOM.
+  learning::FeatureDictionary dict;
+  will_play_helper_.BeginObservation(dict);
+
 #if defined(OS_ANDROID)
   // Only allow credentials if the crossorigin attribute is unspecified
   // (kCorsModeUnspecified) or "use-credentials" (kCorsModeUseCredentials).
@@ -790,6 +801,9 @@ void WebMediaPlayerImpl::Play() {
 
   MaybeUpdateBufferSizesForPlayback();
   UpdatePlayState();
+
+  // Notify the learning task, if needed.
+  will_play_helper_.CompleteObservationIfNeeded(learning::TargetValue(true));
 }
 
 void WebMediaPlayerImpl::Pause() {

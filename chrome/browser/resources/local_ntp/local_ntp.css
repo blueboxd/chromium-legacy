@@ -93,7 +93,9 @@ button {
 }
 
 #logo,
-#fakebox-container {
+#fakebox-container,
+#realbox-container {
+  --searchbox-height: 44px;
   flex-shrink: 0;
 }
 
@@ -122,29 +124,157 @@ body.hide-fakebox #fakebox {
   width: var(--content-width);
 }
 
-#fakebox {
+#realbox-input-wrapper {
+  position: relative;
+  z-index: 0;
+}
+
+#fakebox,
+#realbox {
   background: white;
   border-radius: 22px;
-  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
   box-sizing: border-box;
-  cursor: text;
   font-size: 16px;
-  height: 44px;
-  margin: 0 auto;
-  max-width: 584px;
+  height: var(--searchbox-height);
   opacity: 1;
   position: relative;
   transition: none;
 }
 
+#fakebox,
+#realbox-input-wrapper:not(.show-matches) #realbox,
+#realbox-input-wrapper.show-matches #realbox-matches {
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
+}
+
+#fakebox,
+#realbox-input-wrapper {
+  margin: 0 auto;
+  max-width: 584px;
+}
+
+#fakebox {
+  cursor: text;
+}
+
+#realbox {
+  border: none;
+  display: block;
+  outline: none;
+  padding-inline-end: 48px;
+  width: 100%;
+  z-index: 2;
+}
+
+#realbox::-webkit-search-decoration,
+#realbox::-webkit-search-cancel-button,
+#realbox::-webkit-search-results-button,
+#realbox::-webkit-search-results-decoration {
+  display: none;
+}
+
+#realbox::placeholder {
+  color: rgb(117, 117, 117);
+}
+
+#realbox:not(.show-placeholder):focus::placeholder {
+  color: transparent;
+}
+
 @media (prefers-color-scheme: dark) {
-  #fakebox {
+  #fakebox,
+  #realbox-input-wrapper:not(.show-matches) #realbox,
+  #realbox-input-wrapper.show-matches #realbox-matches {
     box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .78);
   }
 }
 
-.non-google-page #fakebox-container {
+.non-google-page :-webkit-any(#fakebox-container, #realbox-container) {
   display: none;
+}
+
+#realbox-matches {
+  background: white;
+  border-radius: 8px;
+  display: none;
+  left: 0;
+  overflow: hidden;
+  padding-top: var(--searchbox-height);
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+#realbox-input-wrapper.show-matches #realbox-matches {
+  display: flex;
+  flex-direction: column;
+}
+
+#realbox-matches :-webkit-any(a, span) {
+  color: inherit;
+  font-family: inherit;
+}
+
+#realbox-matches a {
+  font-size: 16px;
+  overflow: hidden;
+  padding-bottom: 8px;
+  padding-inline-end: 16px;
+  padding-inline-start: 48px;
+  padding-top: 8px;
+  position: relative;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#realbox-matches .search-icon {
+  -webkit-mask-size: 16px;
+}
+
+#realbox-matches :-webkit-any(.clock-icon, .url-icon) {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px;
+  background: 24px 24px rgb(117, 117, 117);
+  bottom: 0;
+  left: 16px;
+  position: absolute;
+  top: 0;
+  width: 24px;
+}
+
+#realbox-matches .clock-icon {
+  -webkit-mask-image: url(icons/clock.svg);
+}
+
+#realbox-matches .url-icon {
+  -webkit-mask-image: url(../../../../components/neterror/resources/images/generic-globe.svg);
+}
+
+html[dir=rtl] #realbox-matches :-webkit-any(.clock-icon, .url-icon) {
+  right: 16px;
+}
+
+#realbox-matches a:hover {
+  background: rgb(var(--GG100-rgb));
+}
+
+#realbox-matches a.selected {
+  background: rgb(var(--GG200-rgb));
+}
+
+#realbox-matches .match {
+  font-weight: bold;
+}
+
+#realbox-matches .dim {
+  color: rgb(var(--GG600-rgb));
+}
+
+#realbox-matches .url {
+  color: rgb(var(--GB600-rgb));
 }
 
 #fakebox > input {
@@ -163,24 +293,22 @@ html[dir=rtl] #fakebox > input {
   right: 0;
 }
 
-#fakebox-search-icon {
+.search-icon {
   -webkit-mask-image:
       url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   background: 24px 24px rgb(117, 117, 117);
   bottom: 0;
-  height: 24px;
-  left: 0;
-  margin: auto 0;
-  margin-inline-start: 16px;
+  left: 16px;
   position: absolute;
   top: 0;
   width: 24px;
 }
 
-html[dir=rtl] #fakebox-search-icon {
-  right: 0;
+html[dir=rtl] .search-icon {
+  right: 16px;
 }
 
 #fakebox-text {
@@ -192,7 +320,6 @@ html[dir=rtl] #fakebox-search-icon {
   line-height: 44px;
   margin: auto 0;
   overflow: hidden;
-  padding-inline-start: 48px;
   position: absolute;
   right: 44px;
   text-align: initial;
@@ -207,6 +334,11 @@ html[dir=rtl] #fakebox-search-icon {
 html[dir=rtl] #fakebox-text {
   left: 44px;
   right: 0;
+}
+
+#fakebox-text,
+#realbox {
+  padding-inline-start: 48px;
 }
 
 #fakebox-cursor {
@@ -226,7 +358,7 @@ html[dir=rtl] #fakebox-cursor {
   right: 48px;
 }
 
-#fakebox-microphone {
+.microphone-icon {
   background: url(icons/googlemic_clr_24px.svg) no-repeat center;
   background-size: 21px 21px;
   bottom: 0;
@@ -239,9 +371,13 @@ html[dir=rtl] #fakebox-cursor {
   width: 21px;
 }
 
-html[dir=rtl] #fakebox-microphone {
+html[dir=rtl] .microphone-icon {
   left: 0;
   right: auto;
+}
+
+#realbox-input-wrapper :-webkit-any(.search-icon, .microphone-icon) {
+  z-index: 3;
 }
 
 @keyframes blink {
@@ -339,7 +475,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not(.light-chip)  #mv-notice {
+  body:not(.light-chip) #mv-notice {
     background-color: rgb(var(--GG900-rgb));
     border-color: rgba(0, 0, 0, .1);
   }
@@ -356,7 +492,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not(.light-chip)  #mv-notice span {
+  body:not(.light-chip) #mv-notice span {
     color: rgb(var(--GG200-rgb));
   }
 }
@@ -374,7 +510,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not(.light-chip)  #mv-notice-links span {
+  body:not(.light-chip) #mv-notice-links span {
     color: rgb(var(--GB400-dark-rgb));
   }
 }
@@ -391,7 +527,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not(.light-chip)  #mv-notice-links
+  body:not(.light-chip) #mv-notice-links
   :-webkit-any(span:hover, span:active) {
     background-color: rgba(var(--GB400-dark-rgb), .1);
   }
@@ -403,8 +539,7 @@ body.fakebox-focused #fakebox-cursor {
 }
 
 @media (prefers-color-scheme: dark) {
-  body:not(.light-chip) .default-theme.dark #mv-msg,
-  body:not(.light-chip) .default-theme.dark #mv-notice-links span {
+  body:not(.light-chip) .default-theme.dark #mv-msg {
     color: rgb(var(--GG200-rgb));
   }
 }

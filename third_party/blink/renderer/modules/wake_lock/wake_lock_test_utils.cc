@@ -114,7 +114,8 @@ void MockWakeLock::CancelWakeLock() {
     std::move(cancel_wake_lock_callback_).Run();
 }
 
-void MockWakeLock::AddClient(device::mojom::blink::WakeLockRequest) {}
+void MockWakeLock::AddClient(
+    mojo::PendingReceiver<device::mojom::blink::WakeLock>) {}
 void MockWakeLock::ChangeType(device::mojom::blink::WakeLockType,
                               ChangeTypeCallback) {}
 void MockWakeLock::HasWakeLockForTests(HasWakeLockForTestsCallback) {}
@@ -138,9 +139,9 @@ void MockWakeLockService::GetWakeLock(
     device::mojom::blink::WakeLockType type,
     device::mojom::blink::WakeLockReason reason,
     const String& description,
-    device::mojom::blink::WakeLockRequest request) {
+    mojo::PendingReceiver<device::mojom::blink::WakeLock> receiver) {
   size_t pos = static_cast<size_t>(ToBlinkWakeLockType(type));
-  mock_wake_lock_[pos].Bind(std::move(request));
+  mock_wake_lock_[pos].Bind(std::move(receiver));
 }
 
 // MockPermissionService

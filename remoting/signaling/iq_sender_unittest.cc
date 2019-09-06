@@ -96,7 +96,7 @@ class IqSenderTest : public testing::Test {
     return result;
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   MockSignalStrategy signal_strategy_;
   std::unique_ptr<IqSender> sender_;
   base::MockCallback<IqSender::ReplyCallback> callback_;

@@ -4,9 +4,43 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 
+#include <cmath>
+
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 
 namespace app_list {
+namespace {
+
+ZeroStateResultType ZeroStateTypeFromRankingType(
+    RankingItemType ranking_item_type) {
+  switch (ranking_item_type) {
+    case RankingItemType::kUnknown:
+      return ZeroStateResultType::kUnknown;
+    case RankingItemType::kIgnored:
+    case RankingItemType::kFile:
+    case RankingItemType::kApp:
+    case RankingItemType::kArcAppShortcut:
+    case RankingItemType::kOmniboxBookmark:
+    case RankingItemType::kOmniboxDeprecated:
+    case RankingItemType::kOmniboxDocument:
+    case RankingItemType::kOmniboxHistory:
+    case RankingItemType::kOmniboxNavSuggest:
+      return ZeroStateResultType::kUnanticipated;
+    // Omnibox search results could be classified as either of these two cases,
+    // depending on whether Omnibox results were expanded.
+    case RankingItemType::kOmniboxGeneric:
+    case RankingItemType::kOmniboxSearch:
+      return ZeroStateResultType::kOmniboxSearch;
+    case RankingItemType::kZeroStateFile:
+      return ZeroStateResultType::kZeroStateFile;
+    case RankingItemType::kDriveQuickAccess:
+      return ZeroStateResultType::kDriveQuickAccess;
+  }
+}
+
+}  // namespace
 
 void LogInitializationStatus(const std::string& suffix,
                              InitializationStatus status) {
@@ -36,6 +70,21 @@ void LogJsonConfigConversionStatus(const std::string& suffix,
     return;
   base::UmaHistogramEnumeration(
       "RecurrenceRanker.JsonConfigConversion." + suffix, status);
+}
+
+void LogZeroStateLaunchType(RankingItemType ranking_item_type) {
+  const auto zero_state_type = ZeroStateTypeFromRankingType(ranking_item_type);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.ZeroStateResults.LaunchedItemType",
+                            zero_state_type);
+}
+
+void LogZeroStateReceivedScore(const std::string& suffix, float score) {
+  if (suffix.empty())
+    return;
+  // Record the score's floor in order to preserve its bucket.
+  base::UmaHistogramExactLinear(
+      "Apps.AppList.ZeroStateResults.ReceivedScore." + suffix,
+      floor(score * 100), 100);
 }
 
 }  // namespace app_list

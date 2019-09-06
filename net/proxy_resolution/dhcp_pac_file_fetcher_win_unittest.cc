@@ -521,14 +521,14 @@ void TestFailureCaseURLConfiguredMultipleAdaptersWithTimeout(
   // This is the first non-ERR_PAC_NOT_IN_DHCP error and as such
   // should be chosen.
   client->fetcher_.ConfigureAndPushBackAdapter(
-      "third", true, ERR_PAC_STATUS_NOT_OK, base::string16(),
+      "third", true, ERR_HTTP_RESPONSE_CODE_FAILURE, base::string16(),
       base::TimeDelta::FromMilliseconds(1));
   client->fetcher_.ConfigureAndPushBackAdapter(
       "fourth", true, ERR_NOT_IMPLEMENTED, base::string16(),
       base::TimeDelta::FromMilliseconds(1));
   client->RunTest();
   client->RunMessageLoopUntilComplete();
-  ASSERT_THAT(client->result_, IsError(ERR_PAC_STATUS_NOT_OK));
+  ASSERT_THAT(client->result_, IsError(ERR_HTTP_RESPONSE_CODE_FAILURE));
   ASSERT_EQ(base::string16(), client->pac_text_);
 }
 

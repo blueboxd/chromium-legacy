@@ -71,9 +71,10 @@ void GhostImageView::Init(AppListItemView* drag_view,
     for (size_t i = 0; i < num_items_.value(); i++) {
       gfx::ImageSkia inner_icon_outline =
           gfx::ImageSkiaOperations::CreateResizedImage(
-              folder_item->item_list()->item_at(i)->icon(),
+              folder_item->item_list()->item_at(i)->GetIcon(
+                  drag_view->GetAppListConfig().type()),
               skia::ImageOperations::RESIZE_BEST,
-              AppListConfig::instance().item_icon_in_folder_icon_size());
+              drag_view->GetAppListConfig().item_icon_in_folder_icon_size());
       inner_folder_icon_outlines_.push_back(GetIconOutline(inner_icon_outline));
     }
   } else {

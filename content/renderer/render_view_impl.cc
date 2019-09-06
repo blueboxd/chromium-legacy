@@ -1486,7 +1486,7 @@ void RenderViewImpl::DoDeferredClose() {
 
 void RenderViewImpl::CloseWindowSoon() {
   DCHECK(RenderThread::IsMainThread());
-  if (render_widget_->is_frozen()) {
+  if (render_widget_->IsFrozenOrProvisional()) {
     // Ask the RenderViewHost with a local main frame to initiate close.  We
     // could be called from deep in Javascript.  If we ask the RenderViewHost to
     // close now, the window could be closed before the JS finishes executing,
@@ -1530,7 +1530,10 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
-  DCHECK(GetWidget()->is_frozen() || GetWidget()->is_closing());
+  // We should detach when freezing the RenderWidget so we don't expect it to be
+  // frozen already. But when it is recycled for a provisional frame, then we
+  // can detach when closing the provisional frame.
+  DCHECK(GetWidget()->IsFrozenOrProvisional() || GetWidget()->is_closing());
   DCHECK(frame_widget_);
   frame_widget_->Close();
   frame_widget_ = nullptr;

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.test.util.browser.sync;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
 import android.util.Pair;
 
@@ -32,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public final class SyncTestUtil {
     private static final String TAG = "SyncTestUtil";
 
-    public static final long TIMEOUT_MS = scaleTimeout(20000);
+    public static final long TIMEOUT_MS = 20000L;
     public static final int INTERVAL_MS = 250;
 
     private SyncTestUtil() {}

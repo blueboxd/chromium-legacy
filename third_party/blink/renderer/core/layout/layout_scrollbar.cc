@@ -291,7 +291,7 @@ void LayoutScrollbar::UpdateScrollbarPart(ScrollbarPart part_type,
   }
 
   if (part_layout_object)
-    part_layout_object->SetStyleWithWritingModeOfParent(std::move(part_style));
+    part_layout_object->SetStyle(std::move(part_style));
 }
 
 IntRect LayoutScrollbar::ButtonRect(ScrollbarPart part_type) const {

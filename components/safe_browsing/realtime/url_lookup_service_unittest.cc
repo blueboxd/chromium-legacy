@@ -108,4 +108,19 @@ TEST_F(RealTimeUrlLookupServiceTest, TestBackoffAndLookupSuccessReset) {
   EXPECT_FALSE(IsInBackoffMode());
 }
 
+TEST_F(RealTimeUrlLookupServiceTest, TestGetSBThreatTypeForRTThreatType) {
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::WEB_MALWARE));
+  EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING));
+  EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE));
+  EXPECT_EQ(SB_THREAT_TYPE_BILLING,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::UNCLEAR_BILLING));
+}
+
 }  // namespace safe_browsing

@@ -331,6 +331,10 @@ bool RenderWidgetHostViewBase::IsMouseLocked() {
   return false;
 }
 
+bool RenderWidgetHostViewBase::GetIsMouseLockedUnadjustedMovementForTesting() {
+  return false;
+}
+
 bool RenderWidgetHostViewBase::LockKeyboard(
     base::Optional<base::flat_set<ui::DomCode>> codes) {
   NOTIMPLEMENTED_LOG_ONCE();

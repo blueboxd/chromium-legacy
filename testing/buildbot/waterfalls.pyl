@@ -667,7 +667,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'bfcache_gtests',
+          'gtest_tests': 'bfcache_android_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         }
       },
@@ -1537,7 +1537,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
-          'scripts': 'chromium_scripts',
         },
       },
       'Win7 Builder (dbg) Goma Canary': {
@@ -1770,7 +1769,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'bfcache_gtests',
+          'gtest_tests': 'bfcache_linux_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },

@@ -85,6 +85,8 @@ enum class PreviewsEligibilityReason {
   // optimization guide did not allow this preview type in the current browser
   // conditions.
   NOT_ALLOWED_BY_OPTIMIZATION_GUIDE = 19,
+  // The preview was not performed due to a coinflip experiment holdback.
+  COINFLIP_HOLDBACK = 20,
   LAST,
 };
 

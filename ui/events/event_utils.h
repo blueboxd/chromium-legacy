@@ -169,13 +169,6 @@ EVENTS_EXPORT MouseWheelEvent MouseWheelEventFromMSG(const MSG& msg);
 
 #endif  // defined(OS_WIN)
 
-#if defined(USE_X11)
-// Update the native X11 event to correspond to the new flags.
-EVENTS_EXPORT void UpdateX11EventForFlags(Event* event);
-// Update the native X11 event to correspond to the new button flags.
-EVENTS_EXPORT void UpdateX11EventForChangedButtonFlags(MouseEvent* event);
-#endif
-
 // Registers a custom event type.
 EVENTS_EXPORT int RegisterCustomEventType();
 

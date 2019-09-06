@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -51,9 +49,6 @@ import java.util.concurrent.Callable;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ContactsPickerDialogTest
         implements ContactsPickerListener, SelectionObserver<ContactDetails> {
-    // The timeout (in seconds) to wait for the decoder service to be ready.
-    private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(30);
-
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);

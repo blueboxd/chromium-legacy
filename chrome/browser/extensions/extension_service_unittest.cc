@@ -7262,9 +7262,7 @@ TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
   EXPECT_EQ(0u, registry()->terminated_extensions().size());
   EXPECT_EQ(0u, registry()->blacklisted_extensions().size());
 
-  service()->Observe(chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-                     content::Source<Profile>(profile()),
-                     content::NotificationService::NoDetails());
+  service()->OnProfileMarkedForPermanentDeletion(profile());
   EXPECT_EQ(UnloadedExtensionReason::PROFILE_SHUTDOWN, unloaded_reason_);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   EXPECT_EQ(0u, registry()->disabled_extensions().size());

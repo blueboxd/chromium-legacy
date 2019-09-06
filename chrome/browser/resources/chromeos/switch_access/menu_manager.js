@@ -384,12 +384,7 @@ class MenuManager {
   }
 
   /**
-   * Perform the action indicated by the current button (or no action if the
-   * entire menu is selected). If the back button is selected and the current
-   * menu is a submenu (i.e. not the main menu), then the current menu will be
-   * closed and the parent menu that opened the current menu will be re-opened.
-   * If the current menu is the main menu, then exit the menu panel entirely
-   * and return to traditional navigation.
+   * Perform the action indicated by the current button.
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
@@ -399,23 +394,33 @@ class MenuManager {
       return false;
     }
 
-    if (this.node_.role == RoleType.BUTTON) {
-      // An action was selected.
+    if (this.node_.role === RoleType.BUTTON) {
+      // A menu action was selected.
       this.node_.doDefault();
     } else {
       // The back button was selected.
-
-      // Id of the menu that opened the current menu (null if the current
-      // menu is the main menu and not a submenu).
-      const parentMenuId = this.menuStack_.pop();
-      if (parentMenuId && this.menuOriginNode_) {
-        // Re-open the parent menu.
-        this.openMenu_(this.menuOriginNode_, parentMenuId);
-      } else {
-        this.exit();
-      }
+      this.selectBackButton();
     }
     return true;
+  }
+
+  /**
+   * Selects the back button for the menu. If the current menu is a submenu
+   * (i.e. not the main menu), then the current menu will be
+   * closed and the parent menu that opened the current menu will be re-opened.
+   * If the current menu is the main menu, then exit the menu panel entirely
+   * and return to traditional navigation.
+   */
+  selectBackButton() {
+    // Id of the menu that opened the current menu (null if the current
+    // menu is the main menu and not a submenu).
+    const parentMenuId = this.menuStack_.pop();
+    if (parentMenuId && this.menuOriginNode_) {
+      // Re-open the parent menu.
+      this.openMenu_(this.menuOriginNode_, parentMenuId);
+    } else {
+      this.exit();
+    }
   }
 
   /**

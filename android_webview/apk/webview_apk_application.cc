@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/native_jni/WebViewApkApplication_jni.h"
+#include "android_webview/browser_jni_headers/WebViewApkApplication_jni.h"
 
 #include "android_webview/common/aw_resource_bundle.h"
 #include "base/android/base_jni_onload.h"

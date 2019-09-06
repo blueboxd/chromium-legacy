@@ -402,13 +402,15 @@ TEST_F(LabelButtonTest, TextSizeFromContext) {
   constexpr style::TextContext kAlternateContext = style::CONTEXT_DIALOG_TITLE;
 
   // First sanity that the TextConstants used in the test give different sizes.
-  int default_delta, alternate_delta;
-  gfx::Font::Weight default_weight, alternate_weight;
-  DefaultTypographyProvider::GetDefaultFont(
-      kDefaultContext, style::STYLE_PRIMARY, &default_delta, &default_weight);
-  DefaultTypographyProvider::GetDefaultFont(
-      kAlternateContext, style::STYLE_PRIMARY, &alternate_delta,
-      &alternate_weight);
+  const auto get_delta = [](auto context) {
+    return TypographyProvider()
+               .GetFont(context, style::STYLE_PRIMARY)
+               .GetFontSize() -
+           gfx::FontList().GetFontSize();
+  };
+  TypographyProvider typography_provider;
+  int default_delta = get_delta(kDefaultContext);
+  int alternate_delta = get_delta(kAlternateContext);
   EXPECT_LT(default_delta, alternate_delta);
 
   const base::string16 text(ASCIIToUTF16("abcdefghijklm"));

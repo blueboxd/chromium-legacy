@@ -120,8 +120,9 @@ class SessionTest : public mojom::ResourceProvider,
   }
 
   void GetNetworkContext(
-      network::mojom::NetworkContextRequest request) override {
-    network_context_ = std::make_unique<MockNetworkContext>(std::move(request));
+      mojo::PendingReceiver<network::mojom::NetworkContext> receiver) override {
+    network_context_ =
+        std::make_unique<MockNetworkContext>(std::move(receiver));
     OnGetNetworkContext();
   }
 

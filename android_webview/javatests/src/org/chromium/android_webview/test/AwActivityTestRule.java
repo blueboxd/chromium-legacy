@@ -4,8 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -46,7 +44,7 @@ import java.util.regex.Pattern;
 
 /** Custom ActivityTestRunner for WebView instrumentation tests */
 public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
-    public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000);
+    public static final long WAIT_TIMEOUT_MS = 15000L;
 
     public static final int CHECK_INTERVAL = 100;
 

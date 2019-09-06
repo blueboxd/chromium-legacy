@@ -13,17 +13,18 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell_observer.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/wm_default_layout_manager.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -66,8 +67,21 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public SessionObserver,
                                       public WallpaperControllerObserver,
                                       public LocaleChangeObserver,
-                                      public ScreenRotationAnimatorObserver {
+                                      public DesksController::Observer {
  public:
+  // Suspend shelf visibility update within its scope. Note that relevant
+  // ShelfLayoutManager must outlive this class.
+  class ScopedSuspendVisibilityUpdate {
+   public:
+    // |manager| is the ShelfLayoutManager whose visibility update is suspended.
+    explicit ScopedSuspendVisibilityUpdate(ShelfLayoutManager* manager);
+    ~ScopedSuspendVisibilityUpdate();
+
+   private:
+    ShelfLayoutManager* const manager_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedSuspendVisibilityUpdate);
+  };
+
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
   ~ShelfLayoutManager() override;
 
@@ -129,6 +143,11 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Cancel the drag if the shelf is in drag progress.
   void CancelDragOnShelfIfInProgress();
 
+  // Suspends/resumes visibility update. Use ScopedSuspendVisibilityUpdate when
+  // possible to ensure there are balanced calls.
+  void SuspendVisibilityUpdate();
+  void ResumeVisiblityUpdate();
+
   // WmDefaultLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,
@@ -178,10 +197,13 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // LocaleChangeObserver:
   void OnLocaleChanged() override;
 
-  // ScreenRotationAnimatorObserver:
-  void OnScreenCopiedBeforeRotation() override;
-  void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
-                                         bool canceled) override;
+  // DesksController::Observer:
+  void OnDeskAdded(const Desk* desk) override {}
+  void OnDeskRemoved(const Desk* desk) override {}
+  void OnDeskActivationChanged(const Desk* activated,
+                               const Desk* deactivated) override {}
+  void OnDeskSwitchAnimationLaunching() override;
+  void OnDeskSwitchAnimationFinished() override;
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
@@ -193,10 +215,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
-
-  void set_suspend_visibility_update(bool value) {
-    suspend_visibility_update_ = value;
-  }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -402,9 +420,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void SendA11yAlertForFullscreenWorkspaceState(
       WorkspaceWindowState current_workspace_window_state);
 
-  // Invoked after |suspend_visibility_update_| resets.
-  void OnVisibilityUpdateResumed(bool animate);
-
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_ = false;
@@ -435,8 +450,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // tablet mode.
   bool is_home_launcher_shown_ = false;
 
-  // True to skip updating shelf visibility state.
-  bool suspend_visibility_update_ = false;
+  // Count of pending visibility update suspensions. Skip updating shelf
+  // visibility state if it is greater than 0.
+  int suspend_visibility_update_ = 0;
 
   base::OneShotTimer auto_hide_timer_;
 
@@ -515,6 +531,13 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // When it is true, |CalculateAutoHideState| returns the current auto hide
   // state.
   bool is_auto_hide_state_locked_ = false;
+
+  // An optional ScopedSuspendVisibilityUpdate that gets created when suspend
+  // visibility update is requested for overview and resets when overview no
+  // longer needs it. It is used because OnOverviewModeStarting() and
+  // OnOverviewModeStartingAnimationComplete() calls are not balanced.
+  base::Optional<ScopedSuspendVisibilityUpdate>
+      overview_suspend_visibility_update_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

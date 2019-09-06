@@ -45,7 +45,8 @@ class NetworkContextOwner : public net::URLRequestContextGetterObserver {
  private:
   void InitializeOnIOThread(
       const std::vector<std::string> cors_exempt_header_list,
-      network::mojom::NetworkContextRequest network_context_request);
+      mojo::PendingReceiver<network::mojom::NetworkContext>
+          network_context_receiver);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;

@@ -15,13 +15,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
@@ -92,8 +89,8 @@ using NoteTakingAppInfos = std::vector<NoteTakingAppInfo>;
 // Singleton class used to launch a note-taking app.
 class NoteTakingHelper : public arc::ArcIntentHelperObserver,
                          public arc::ArcSessionManager::Observer,
-                         public content::NotificationObserver,
-                         public extensions::ExtensionRegistryObserver {
+                         public extensions::ExtensionRegistryObserver,
+                         public ProfileManagerObserver {
  public:
   // Interface for observing changes to the list of available apps.
   class Observer {
@@ -202,6 +199,9 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
+
   // Sets the profile which supports note taking apps on the lock screen.
   void SetProfileWithEnabledLockScreenApps(Profile* profile);
 
@@ -245,11 +245,6 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   LaunchResult LaunchAppInternal(Profile* profile,
                                  const std::string& app_id,
                                  const base::FilePath& path);
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -321,8 +316,6 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   PrefChangeRegistrar pref_change_registrar_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-
-  content::NotificationRegistrar registrar_;
 
   std::unique_ptr<NoteTakingControllerClient> note_taking_controller_client_;
 

@@ -109,6 +109,10 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
       RankingItemType type,
       base::flat_map<RankingItemType, int>* type_counts) const;
 
+  // Logs the result score received from a zero state search provider. Results
+  // of other types are ignored.
+  void LogZeroStateResultScore(RankingItemType type, float score);
+
   // Records the time of the last call to FetchRankings() and is used to
   // limit the number of queries to the models within a short timespan.
   base::Time time_of_last_fetch_;
@@ -166,6 +170,14 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Logs launch events and stores feature data for aggregated model.
   std::unique_ptr<app_list::AppLaunchEventLogger> app_launch_event_logger_;
   bool using_aggregated_app_inference_ = false;
+
+  // Stores the time of the last histogram logging event for each zero state
+  // search provider. Used to prevent scores from being logged multiple times
+  // for each user action.
+  // TODO(959679): Remove these timers once the multiple-call issue is fixed.
+  base::Time time_of_last_omnibox_log_;
+  base::Time time_of_last_local_file_log_;
+  base::Time time_of_last_drive_log_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

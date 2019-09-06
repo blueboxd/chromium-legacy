@@ -170,12 +170,9 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5940385492829620908">你瀏覽的網頁、書籤和其他 Chrome 設定都在這裡。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 做為我的預設瀏覽器</translation>
-<translation id="5977372243443849142">Chrome 能幫你記住密碼，讓你省去記憶密碼的麻煩。</translation>
 <translation id="6014844626092547096">你現在已登入 Chrome！但管理員已關閉同步功能。</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6070348360322141662">為了提升安全性，Google Chrome 會將你的資料加密保護</translation>
-<translation id="6102256037460917300">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
-    Chrome 瀏覽器設定<ph name="LINK_END" /></translation>
 <translation id="6113794647360055231">Chrome 變得更好用了</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome 測試版</translation>
@@ -248,7 +245,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. 保留所有權利。</translation>
 <translation id="840084489713044809">Google Chrome 要求匯出你的密碼。</translation>
 <translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
-<translation id="8432724323949790809">建議你立即重新啟動 Google Chrome</translation>
 <translation id="8455999171311319804">選擇性：自動將診斷資料和使用情況資料傳送給 Google，協助我們讓 Chrome 作業系統更臻完善。</translation>
 <translation id="8478823064122749032">在手機上安裝 Chrome。我們會傳送簡訊到你的帳戶備援電話號碼：<ph name="PHONE_NUMBER" /></translation>
 <translation id="8498858610309223613">Google Chrome 剛才套用了特殊的安全性更新。請立即重新啟動，系統會恢復你原先開啟的分頁。</translation>

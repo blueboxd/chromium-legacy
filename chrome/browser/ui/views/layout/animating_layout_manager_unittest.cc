@@ -41,6 +41,21 @@ using ProposedLayout = LayoutManagerBase::ProposedLayout;
 
 namespace {
 
+// View that allows directly setting minimum size.
+class TestView : public View {
+ public:
+  using View::View;
+  ~TestView() override = default;
+
+  void SetMinimumSize(gfx::Size minimum_size) { minimum_size_ = minimum_size; }
+  gfx::Size GetMinimumSize() const override {
+    return minimum_size_ ? *minimum_size_ : View::GetMinimumSize();
+  }
+
+ private:
+  base::Optional<gfx::Size> minimum_size_;
+};
+
 class TestLayoutManager : public LayoutManagerBase {
  public:
   void SetLayout(const ProposedLayout& layout) {
@@ -72,7 +87,7 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
     // Don't use a unique_ptr because derived classes may want to own this view.
     view_ = new View();
     for (int i = 0; i < 3; ++i) {
-      auto child = std::make_unique<View>();
+      auto child = std::make_unique<TestView>();
       child->SetPreferredSize(kChildViewSize);
       children_.push_back(view_->AddChildView(std::move(child)));
     }
@@ -105,7 +120,7 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
   void TearDown() override { DestroyView(); }
 
   View* view() { return view_; }
-  View* child(size_t index) const { return children_[index]; }
+  TestView* child(size_t index) const { return children_[index]; }
   size_t num_children() const { return children_.size(); }
   AnimatingLayoutManager* layout() { return animating_layout_manager_; }
   gfx::AnimationContainerTestApi* animation_api() {
@@ -141,7 +156,7 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
   ProposedLayout layout1_;
   ProposedLayout layout2_;
   View* view_;
-  std::vector<View*> children_;
+  std::vector<TestView*> children_;
   AnimatingLayoutManager* animating_layout_manager_ = nullptr;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<gfx::AnimationContainerTestApi> container_test_api_;
@@ -345,6 +360,728 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   expected = layout2();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_MiddleView_ScaleFromZero) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {20, 5, 10, 10}}}};
+
+  child(1)->SetMinimumSize({5, 5});
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  // No change to the layout yet.
+  EnsureLayout(initial_layout);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.25, initial_layout, final_layout);
+  DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
+  expected.child_layouts[1].visible = true;
+  expected.child_layouts[1].bounds = {
+      expected.child_layouts[0].bounds.right() + 5,
+      initial_layout.child_layouts[1].bounds.y(),
+      expected.child_layouts[2].bounds.x() -
+          expected.child_layouts[0].bounds.right() - 10,
+      initial_layout.child_layouts[1].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
+                                                     final_layout);
+  DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
+  expected.child_layouts[1].visible = true;
+  expected.child_layouts[1].bounds = {
+      expected.child_layouts[0].bounds.right() + 5,
+      initial_layout.child_layouts[1].bounds.y(),
+      expected.child_layouts[2].bounds.x() -
+          expected.child_layouts[0].bounds.right() - 10,
+      initial_layout.child_layouts[1].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  expected = InterpolatingLayoutManager::Interpolate(0.75, initial_layout,
+                                                     final_layout);
+  // At this point the layout is still animating but the middle view is below
+  // zero in size so it will disappear.
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_MiddleView_ScaleFromMinimum) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromMinimum);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), false},
+                                     {child(2), true, {20, 5, 10, 10}}}};
+
+  child(1)->SetMinimumSize({5, 5});
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  // No change to the layout yet.
+  EnsureLayout(initial_layout);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.25, initial_layout, final_layout);
+  DCHECK_EQ(expected.child_layouts[1].child_view, child(1));
+  expected.child_layouts[1].visible = true;
+  expected.child_layouts[1].bounds = {
+      expected.child_layouts[0].bounds.right() + 5,
+      initial_layout.child_layouts[1].bounds.y(),
+      expected.child_layouts[2].bounds.x() -
+          expected.child_layouts[0].bounds.right() - 10,
+      initial_layout.child_layouts[1].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
+                                                     final_layout);
+  // At this point the layout is still animating but the middle view is below
+  // its minimum size so it will disappear.
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_LeadingView_ScaleFromMinimum) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromMinimum);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), false},
+                                     {child(1), true, {5, 5, 10, 10}},
+                                     {child(2), true, {20, 5, 10, 10}}}};
+
+  child(0)->SetMinimumSize({5, 5});
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  // No change to the layout yet.
+  EnsureLayout(initial_layout);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.25, initial_layout, final_layout);
+  DCHECK_EQ(expected.child_layouts[0].child_view, child(0));
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = {
+      5, initial_layout.child_layouts[0].bounds.y(),
+      expected.child_layouts[1].bounds.x() - 10,
+      initial_layout.child_layouts[0].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
+                                                     final_layout);
+  // At this point the layout is still animating but the middle view is below
+  // its minimum size so it will disappear.
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_TrailingView_ScaleFromMinimum_FadeIn) {
+  const ProposedLayout initial_layout{{35, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), false}}};
+
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromMinimum);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  const ProposedLayout final_layout{{50, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), true, {20, 5, 10, 10}},
+                                     {child(2), true, {35, 5, 10, 10}}}};
+
+  child(2)->SetMinimumSize({5, 5});
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  // No change to the layout yet.
+  EnsureLayout(initial_layout);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.5, initial_layout, final_layout);
+  // At this point the layout is still animating but the middle view is below
+  // its minimum size so it will not be visible.
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  expected = InterpolatingLayoutManager::Interpolate(0.75, initial_layout,
+                                                     final_layout);
+  DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
+  expected.child_layouts[2].visible = true;
+  expected.child_layouts[2].bounds = {
+      expected.child_layouts[1].bounds.right() + 5,
+      final_layout.child_layouts[2].bounds.y(),
+      expected.host_size.width() - expected.child_layouts[1].bounds.right() -
+          10,
+      final_layout.child_layouts[2].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FadeInOutMode_TrailingView_ScaleFromMinimum) {
+  const ProposedLayout initial_layout{{50, 20},
+                                      {{child(0), true, {5, 5, 10, 10}},
+                                       {child(1), true, {20, 5, 10, 10}},
+                                       {child(2), true, {35, 5, 10, 10}}}};
+  layout()->SetShouldAnimateBounds(true);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromMinimum);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(initial_layout);
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  const ProposedLayout final_layout{{35, 20},
+                                    {{child(0), true, {5, 5, 10, 10}},
+                                     {child(1), true, {20, 5, 10, 10}},
+                                     {child(2), false}}};
+
+  child(2)->SetMinimumSize({5, 5});
+  test_layout->SetLayout(final_layout);
+  view()->InvalidateLayout();
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  // No change to the layout yet.
+  EnsureLayout(initial_layout);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.25, initial_layout, final_layout);
+  DCHECK_EQ(expected.child_layouts[2].child_view, child(2));
+  expected.child_layouts[2].visible = true;
+  expected.child_layouts[2].bounds = {
+      expected.child_layouts[1].bounds.right() + 5,
+      initial_layout.child_layouts[2].bounds.y(),
+      expected.host_size.width() - expected.child_layouts[1].bounds.right() -
+          10,
+      initial_layout.child_layouts[2].bounds.height()};
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance the animation.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(250));
+  view()->Layout();
+  expected = InterpolatingLayoutManager::Interpolate(0.5, initial_layout,
+                                                     final_layout);
+  // At this point the layout is still animating but the middle view is below
+  // its minimum size so it will disappear.
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(final_layout);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOutOnVisibilitySet) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), false},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(view()->GetPreferredSize());
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  child(0)->SetVisible(false);
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.5, expected_start, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_start.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeInOnVisibilitySet) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  child(0)->SetVisible(false);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), false},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(expected_end.host_size);
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  child(0)->SetVisible(true);
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.5, expected_start, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeInOnAdded) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  view()->RemoveChildView(child(0));
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout after_add{{50, 20},
+                                 {{child(0), false},
+                                  {child(1), true, {5, 5, 25, 10}},
+                                  {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(expected_end.host_size);
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  view()->AddChildViewAt(child(0), 0);
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(after_add);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected =
+      InterpolatingLayoutManager::Interpolate(0.5, after_add, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeIn) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  child(0)->SetVisible(false);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), false},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(expected_end.host_size);
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  layout()->FadeIn(child(0));
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.5, expected_start, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOut) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), false},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(view()->GetPreferredSize());
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  layout()->FadeOut(child(0));
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.5, expected_start, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_start.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOut_NoCrashOnRemove) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout after_remove{
+      {50, 20},
+      {{child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(view()->GetPreferredSize());
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  View* const removed = child(0);
+  view()->RemoveChildView(removed);
+  delete removed;
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(after_remove);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected =
+      InterpolatingLayoutManager::Interpolate(0.5, after_remove, expected_end);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeOut_IgnoreChildView) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(view()->GetPreferredSize());
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  layout()->SetChildViewIgnoredByLayout(child(0), true);
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected = InterpolatingLayoutManager::Interpolate(
+      0.5, expected_start, expected_end);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
 }
 
 // Test that when one view can flex to fill the space yielded by another view

@@ -103,6 +103,7 @@ if (is_chromeos) {
       ":cups_nearby_printers",
       ":cups_printers_browser_proxy",
       ":cups_saved_printers",
+      "..:route",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
       "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
       "//ui/webui/resources/cr_elements/cr_toast:cr_toast",

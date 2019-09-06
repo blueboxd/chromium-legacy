@@ -57,7 +57,8 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
 
  private:
   // MouseLockDispatcher implementation.
-  void SendLockMouseRequest(blink::WebLocalFrame* requester_frame) override;
+  void SendLockMouseRequest(blink::WebLocalFrame* requester_frame,
+                            bool request_unadjusted_movement) override;
   void SendUnlockMouseRequest() override;
 
   RenderWidgetFullscreenPepper* widget_;
@@ -117,12 +118,13 @@ FullscreenMouseLockDispatcher::~FullscreenMouseLockDispatcher() {
 }
 
 void FullscreenMouseLockDispatcher::SendLockMouseRequest(
-    blink::WebLocalFrame*) {
+    blink::WebLocalFrame* requester_frame,
+    bool request_unadjusted_movement) {
   // TODO(mustaq): Why is it not checking user activation state at all?  In
   // particular, the last Boolean param ("privileged") in the IPC below looks
   // scary without this check.
-  widget_->Send(
-      new WidgetHostMsg_LockMouse(widget_->routing_id(), false, true));
+  widget_->Send(new WidgetHostMsg_LockMouse(widget_->routing_id(), false, true,
+                                            request_unadjusted_movement));
 }
 
 void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {

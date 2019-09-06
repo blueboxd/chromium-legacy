@@ -104,7 +104,7 @@ class FocusRingManager {
       scopeRect = currentScopeRects[0];
     this.currentScope_ = scope;
 
-    if (primary === this.backButtonManager_.buttonNode()) {
+    if (primary === this.backButtonManager_.backButtonNode()) {
       this.backButtonManager_.show(scopeRect);
 
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];

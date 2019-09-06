@@ -460,22 +460,6 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionCookiesBrowserClose) {
   CheckReloadedPageRestored(new_browser);
 }
 
-// Test that leaving a popup open will not prevent session restore.
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       SessionCookiesBrowserCloseWithPopupOpen) {
-  // Set the startup preference to "continue where I left off" and visit a page
-  // which stores a session cookie.
-  StoreDataWithPage("session_cookies.html");
-  Browser* popup = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
-  popup->window()->Show();
-
-  Browser* new_browser = QuitBrowserAndRestore(browser(), false);
-  // The browsing session will be continued; just wait for the page to reload
-  // and check the stored data.
-  CheckReloadedPageRestored(new_browser);
-}
-
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PostBrowserClose) {
   PostFormWithPage("post.html", false);
   Browser* new_browser = QuitBrowserAndRestore(browser(), false);

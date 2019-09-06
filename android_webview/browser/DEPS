@@ -1,9 +1,9 @@
 include_rules = [
   "-android_webview",
   "+android_webview/browser",
+  "+android_webview/browser_jni_headers",
   "+android_webview/common",
   "+android_webview/grit",
-  "+android_webview/native_jni",
   "+android_webview/test/android_webview_unittests_jni",
   "+cc",
   "+components/autofill/android",

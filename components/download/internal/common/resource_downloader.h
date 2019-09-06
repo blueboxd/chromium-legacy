@@ -12,6 +12,7 @@
 #include "components/download/public/common/url_download_handler.h"
 #include "components/download/public/common/url_loader_factory_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -174,7 +175,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Used to keep the system from sleeping while a download is ongoing. If the
   // system enters power saving mode while a download is alive, it can cause
   // download to be interrupted.
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_{this};
 

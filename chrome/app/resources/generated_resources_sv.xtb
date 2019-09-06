@@ -92,7 +92,6 @@
 <translation id="1128109161498068552">Tillåt inte att några webbplatser använder systemexklusiva meddelanden för att komma åt MIDI-enheter</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Redigera sökmotor</translation>
-<translation id="113124294734065964">Ett problem har uppstått med dockningsstationen</translation>
 <translation id="1134009406053225289">Öppna i inkognitofönster</translation>
 <translation id="1136712381129578788">Säkerhetsnyckeln har låsts eftersom du har angett fel pinkod för många gånger. Ta ur och sätt i säkerhetsnyckeln igen för att låsa upp den.</translation>
 <translation id="1137673463384776352">Öppna länken i <ph name="APP" /></translation>
@@ -248,7 +247,6 @@
 <translation id="1365180424462182382">Din <ph name="BEGIN_LINK" />webbläsare hanteras<ph name="END_LINK" /> av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Kör Linux-verktyg, redigerare och IDE:er på <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Välj fil</translation>
-<translation id="1370749010280229230">Problem med en skärm ansluten till dockningsstationen</translation>
 <translation id="1371301976177520732">Bokmärken, lösenord, historik med mera på alla dina enheter</translation>
 <translation id="1372841398847029212">Synkronisera till ditt konto</translation>
 <translation id="1374844444528092021">Det certifikat som krävs av nätverket <ph name="NETWORK_NAME" /> är inte installerat eller inte längre giltigt. Hämta ett nytt certifikat och försök ansluta igen.</translation>
@@ -913,7 +911,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2342740338116612727">Bokmärkena har lagts till</translation>
 <translation id="2343747224442182863">Fokusera på den här fliken</translation>
 <translation id="2344028582131185878">Automatiska nedladdningar</translation>
-<translation id="2345574157728712751">Tillåt att appar från Play Butik ansluter till enheten via Inställningar.</translation>
 <translation id="2345723121311404059">1 sida till <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">Användning av Hangouts och Cast for Education regleras av Googles sekretesspolicy.</translation>
 <translation id="2348176352564285430">App: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -1387,7 +1384,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3017079585324758401">Bakgrund</translation>
 <translation id="3020183492814296499">Genvägar</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021039405808358694">Använd en USB Type-C-nätadapter eller en adapter av samma märke som Chromebook-enheten.</translation>
 <translation id="3021066826692793094">Fjäril</translation>
 <translation id="3021426244864538700">Har åtkomst till den här webbplatsens data</translation>
 <translation id="3021678814754966447">&amp;Visa ramkälla</translation>
@@ -1420,7 +1416,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Den här fliken använder kameran eller mikrofonen.</translation>
 <translation id="3083193146044397360">Blockerades tillfälligt av säkerhetsskäl</translation>
-<translation id="3083259245974004342">Lösenordsskydd</translation>
 <translation id="3084548735795614657">Släpp för att installera</translation>
 <translation id="3084771660770137092">Antingen tog minnet slut i Chrome eller så avslutades processen för webbsidan av någon annan anledning. Om du vill fortsätta läser du in sidan på nytt eller öppnar en annan sida.</translation>
 <translation id="3085412380278336437">Webbplatsen har åtkomst till kameran</translation>
@@ -1564,7 +1559,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3308134619352333507">Dölj knapp</translation>
 <translation id="3308852433423051161">Google Assistent läses in …</translation>
 <translation id="3312424061798279731">Aktiverade språk</translation>
-<translation id="3313473463670097216">Använd ett batteri av samma märke som Chromebook-enheten vid laddningen.</translation>
 <translation id="3313622045786997898">Certifikatets signaturvärde</translation>
 <translation id="3315158641124845231">Dölj <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Dubbelsidig</translation>
@@ -1686,7 +1680,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3497560059572256875">Dela doodle</translation>
 <translation id="3498215018399854026">Vi kunde inte nå din förälder just nu. Försök igen.</translation>
 <translation id="3505030558724226696">Återkalla enhetsåtkomst</translation>
-<translation id="3505635633742443645">Dockningsstationens HDMI-port kan inte användas när USB Type-C-porten används för videoutdata. Använd en annan port för en av skärmarna.</translation>
 <translation id="3507421388498836150">Aktuella behörigheter för <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507888235492474624">Sök efter Bluetooth-enheter igen</translation>
 <translation id="3508492320654304609">Det gick inte att radera inloggningsuppgifterna</translation>
@@ -1761,7 +1754,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3603622770190368340">Skaffa nätverkscertifikat</translation>
 <translation id="3605780360466892872">Proper</translation>
 <translation id="3608576286259426129">Förhandsgranskning av användarens bild</translation>
-<translation id="3609895557594655134">Lägg till Android VPN …</translation>
 <translation id="361106536627977100">Flash-data</translation>
 <translation id="3612673635130633812">Laddades ned med &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Visa <ph name="FOLDER_NAME" /></translation>
@@ -2395,7 +2387,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4559617833001311418">Den här webbplatsen använder enhetens rörelse- eller ljussensor.</translation>
 <translation id="4561098487691395071">Eller ange PPD-fil för skrivaren</translation>
 <translation id="4562155214028662640">Lägg till fingeravtryck</translation>
-<translation id="4562494484721939086">Ingen tjänst</translation>
+<translation id="4562494484721939086">Ingen täckning</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Dölj lösenord</translation>
 <translation id="456717285308019641">Språk på sidan som ska översättas</translation>
@@ -2499,7 +2491,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4722920479021006856"><ph name="APP_NAME" /> delar din skärm.</translation>
 <translation id="4724450788351008910">Tillhörigheten har ändrats</translation>
 <translation id="4725511304875193254">Welsh corgi</translation>
-<translation id="4725851834065990915">Ditt lösenord utsattes genom ett dataintrång på en webbplats eller i en app du använder. Du rekommenderas i Chrome att kontrollera dina sparade lösenord nu.</translation>
+<translation id="4725851834065990915">Ditt lösenord exponerades genom ett dataintrång på en webbplats eller i en app du använder. Du rekommenderas i Chrome att kontrollera dina sparade lösenord nu.</translation>
 <translation id="4726710629007580002">Varningar aktiverades när tillägget skulle installeras:</translation>
 <translation id="4727847987444062305">Hanterad gästsession</translation>
 <translation id="4728558894243024398">Plattform</translation>
@@ -2680,7 +2672,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4992066212339426712">Slå på ljudet</translation>
 <translation id="4992458225095111526">Bekräfta återställning med Powerwash</translation>
 <translation id="4992473555164495036">Administratören har begränsat vilka inmatningsmetoder som är tillgängliga.</translation>
-<translation id="4992866843815555470">Dockningsstationen behöver service. Utan fungerande fläkt kommer dockningsstationen att stängas av.</translation>
 <translation id="4994474651455208930">Tillåt att webbplatser begär att bli standardhanterare för protokoll</translation>
 <translation id="4994754230098574403">Konfigurerar</translation>
 <translation id="4996978546172906250">Dela via</translation>
@@ -2803,6 +2794,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> vill ladda ned flera filer</translation>
 <translation id="5192062846343383368">Öppna Family Link-appen om du vill se inställningarna för kontroll</translation>
+<translation id="5193988420012215838">Kopierat till urklipp</translation>
 <translation id="5204673965307125349">Gör en powerwash på enheten och försök igen.</translation>
 <translation id="5206215183583316675">Vill du radera <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Fel vid import av certifikat</translation>
@@ -3185,7 +3177,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5750324801516359607">Långt</translation>
 <translation id="5756163054456765343">Hjälpc&amp;enter</translation>
 <translation id="5759728514498647443">Dokument som du skickar till utskrift via <ph name="APP_NAME" /> kan läsas av <ph name="APP_NAME" />.</translation>
-<translation id="5760765233610147582">Använd en dockningsstation som är gjord för att användas med denna Chromebook.</translation>
 <translation id="5763315388120433852">Konfigurera eller hantera filresurser i nätverk.</translation>
 <translation id="5763751966069581670">Inga USB-enheter hittades</translation>
 <translation id="5764483294734785780">S&amp;para ljud som...</translation>
@@ -3390,7 +3381,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> delar en Chrome-flik med <ph name="TAB_NAME" />.</translation>
 <translation id="604388835206766544">Det gick inte att tolka konfigurationen</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> delar ljud och en flik i Chrome med <ph name="TAB_NAME" />.</translation>
-<translation id="6045021379489914695">Din Chromebook och Android-mobil fungerar bättre tillsammans. Anslut dem så kan du skicka sms från datorn, dela mobilens internetanslutning och låsa upp Chromebook med mobilen.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="6049004884579590341">Avsluta helskärmsläget genom att trycka på |<ph name="ACCELERATOR" />| och hålla kvar</translation>
 <translation id="6049065490165456785">Bild från intern kamera</translation>
 <translation id="6051354611314852653">Hoppsan! Det gick inte att auktorisera API-åtkomst för den här enheten.</translation>
@@ -3893,7 +3883,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> kan inte köras av en systemadministratör.</translation>
 <translation id="6812841287760418429">Behåll ändringarna</translation>
 <translation id="6817174620439930047">Fråga när en webbplats vill använda systemexklusiva meddelanden för att komma åt MIDI-enheter (rekommenderas)</translation>
-<translation id="6819440013020405090">Ditt lösenord utsattes genom ett dataintrång på en webbplats eller i en app du använder. Om du har återanvänd lösenordet på andra webbplatser rekommenderas du i Chrome att återställa lösenordet på <ph name="ORIGIN" />.</translation>
+<translation id="6819440013020405090">Ditt lösenord exponerades genom ett dataintrång på en webbplats eller i en app du använder. Om du har återanvänt lösenordet på andra webbplatser rekommenderas du i Chrome att återställa lösenordet på <ph name="ORIGIN" />.</translation>
 <translation id="682123305478866682">Casta skrivbordet</translation>
 <translation id="6823506025919456619">Du måste logga in i Chrome för att kunna visa dina enheter</translation>
 <translation id="6824564591481349393">Kopiera &amp;e-postadress</translation>
@@ -4075,7 +4065,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7078120482318506217">Alla nätverk</translation>
 <translation id="708060913198414444">K&amp;opiera ljudadress</translation>
 <translation id="7081952801286122383">Du använder inkognitoläget</translation>
-<translation id="7082772857801260480">Alla funktioner på den här dockningsstationen stöds inte</translation>
 <translation id="708278670402572152">Koppla från om du vill aktivera sökning</translation>
 <translation id="70850504851191913">Dataintrång har rapporterats</translation>
 <translation id="7085389578340536476">Tillåter du ljudinspelning i Chrome?</translation>
@@ -4514,6 +4503,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7751260505918304024">Visa alla</translation>
 <translation id="7754704193130578113">Fråga var filerna ska sparas före nedladdning</translation>
 <translation id="7755287808199759310">En förälder kan ta bort blockeringen</translation>
+<translation id="7757787379047923882">Texten delades från <ph name="DEVICE_NAME" /></translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Justera skärmens avgränsning</translation>
 <translation id="7760004034676677601">Är det här den startsida du väntade dig?</translation>
@@ -4657,6 +4647,7 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7926423016278357561">Det var inte jag.</translation>
 <translation id="7928836894214140642">Hanteras av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Sparade betalningsmetoder visas här</translation>
+<translation id="7930681627240672853">Kontrollera om lösenordet är säkert</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> delar skärmen och ljudet.</translation>
 <translation id="7931318309563332511">okänt</translation>
 <translation id="793293630927785390">Dialogruta för nytt Wi-Fi-nätverk</translation>
@@ -5295,7 +5286,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8846132060409673887">Läsa information om datorns tillverkare och modell</translation>
 <translation id="8846141544112579928">Söker efter tangentbord …</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">När du ansluter enheter godkänner du att Chromebook</translation>
 <translation id="8850251000316748990">Visa fler …</translation>
 <translation id="885246833287407341">API-funktionens argument</translation>
 <translation id="8853586775156634952">Det här kortet sparas enbart på den här enheten</translation>
@@ -5430,7 +5420,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Vill du uppdatera lösenordet för <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Administratören har inaktiverat åtkomsten till lokala filer på datorn</translation>
-<translation id="9042858701776831292">Appar från Google Play Butik kan behöva åtkomst till externa lagringsenheter för att kunna läsa och skriva filer och mappar på dem.</translation>
 <translation id="9042893549633094279">Sekretess och säkerhet</translation>
 <translation id="904451693890288097">Ange lösenordet för <ph name="DEVICE_NAME" />:</translation>
 <translation id="9044646465488564462">Det gick inte att ansluta till nätverket: <ph name="DETAILS" /></translation>

@@ -23,7 +23,8 @@ class PasswordManagerDialogProperties {
     static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
     // Multiline explanation text displayed under the illustration.
-    static final WritableObjectPropertyKey<String> DETAILS = new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<CharSequence> DETAILS =
+            new WritableObjectPropertyKey<>();
 
     private PasswordManagerDialogProperties() {}
 

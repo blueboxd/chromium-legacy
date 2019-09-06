@@ -51,7 +51,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
 
  private:
   void NotifyConversationStartersChanged();
-  void NotifyProactiveSuggestionsChanged();
+  void NotifyProactiveSuggestionsChanged(
+      const scoped_refptr<ProactiveSuggestions>& old_proactive_suggestions);
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
   scoped_refptr<ProactiveSuggestions> proactive_suggestions_;

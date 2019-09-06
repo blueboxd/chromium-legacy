@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "android_webview/browser_jni_headers/AwDebug_jni.h"
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
-#include "android_webview/native_jni/AwDebug_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"

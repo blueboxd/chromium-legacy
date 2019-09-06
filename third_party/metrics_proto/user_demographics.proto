@@ -30,7 +30,7 @@ message UserDemographicsProto {
   // highly identifying.
   //
   // Values from this enum are both sent to Chrome via Chrome Sync, and
-  // selectively forwarded from Chrome in its UMA logs.
+  // selectively forwarded from Chrome to UMA logs.
   enum Gender {
     // The default value for clients that do not have any gender information.
     GENDER_UNKNOWN = 0;
@@ -49,6 +49,6 @@ message UserDemographicsProto {
 
   // The gender specified by the user. If the user's gender is unknown or non-
   // binary, this field will be omitted, corresponding to a default
-  // value of GENDER_CUSTOM_OR_OTHER.
+  // value of GENDER_UNKNOWN.
   optional Gender gender = 2;
 }

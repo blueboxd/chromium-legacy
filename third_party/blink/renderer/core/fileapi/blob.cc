@@ -124,6 +124,7 @@ Blob* Blob::Create(
   bool normalize_line_endings_to_native = (options->endings() == "native");
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
+  UseCounter::Count(context, WebFeature::kCreateObjectBlob);
 
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(options->type()));

@@ -102,11 +102,12 @@ void NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner(
 }
 
 void NetworkServiceConfigTestUtil::CreateNetworkContextOnNetworkRunner(
-    network::mojom::NetworkContextRequest network_context_request,
+    mojo::PendingReceiver<network::mojom::NetworkContext>
+        network_context_receiver,
     base::WaitableEvent* notify) {
   DCHECK(net_runner_->RunsTasksInCurrentSequence());
   network_context_ = std::make_unique<network::NetworkContext>(
-      nullptr, std::move(network_context_request),
+      nullptr, std::move(network_context_receiver),
       url_request_context_getter_->GetURLRequestContext(),
       /*cors_exempt_header_list=*/std::vector<std::string>());
   if (notify)

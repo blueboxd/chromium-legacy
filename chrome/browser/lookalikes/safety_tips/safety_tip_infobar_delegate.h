@@ -15,9 +15,12 @@ namespace safety_tips {
 
 class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SafetyTipInfoBarDelegate(security_state::SafetyTipStatus safety_tip_status,
-                           const GURL& url,
-                           content::WebContents* web_contents);
+  SafetyTipInfoBarDelegate(
+      security_state::SafetyTipStatus safety_tip_status,
+      const GURL& url,
+      content::WebContents* web_contents,
+      base::OnceCallback<void(SafetyTipInteraction)> close_callback);
+  ~SafetyTipInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
   base::string16 GetMessageText() const override;
@@ -38,6 +41,8 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   security_state::SafetyTipStatus safety_tip_status_;
   GURL url_;
+  SafetyTipInteraction action_taken_ = SafetyTipInteraction::kNoAction;
+  base::OnceCallback<void(SafetyTipInteraction)> close_callback_;
   content::WebContents* web_contents_;
 };
 

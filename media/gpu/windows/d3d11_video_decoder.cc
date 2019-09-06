@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
@@ -346,6 +347,14 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   media_log_->AddEvent(
       media_log_->CreateStringEvent(MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
                                     "Video is supported by D3D11VideoDecoder"));
+
+  if (base::FeatureList::IsEnabled(kD3D11PrintCodecOnCrash)) {
+    static base::debug::CrashKeyString* codec_name =
+        base::debug::AllocateCrashKeyString("d3d11_playback_video_codec",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(codec_name,
+                                   config.GetHumanReadableCodecName());
+  }
 
   // |cdm_context| could be null for clear playback.
   // TODO(liberato): On re-init, should this still happen?

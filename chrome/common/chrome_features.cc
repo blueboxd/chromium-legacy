@@ -535,13 +535,6 @@ const base::Feature kParentAccessCodeForTimeChange{
 const base::Feature kPermissionDelegation{"PermissionDelegation",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Disables PostScript generation when printing to PostScript capable printers
-// and instead sends Emf files.
-#if defined(OS_WIN)
-const base::Feature kDisablePostScriptPrinting{
-    "DisablePostScriptPrinting", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Allows prediction operations (e.g., prefetching) on all connection types.
 const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",

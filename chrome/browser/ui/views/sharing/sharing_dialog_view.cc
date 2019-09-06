@@ -242,6 +242,9 @@ void SharingDialogView::OnThemeChanged() {
   LocationBarBubbleDelegateView::OnThemeChanged();
   MaybeShowHeaderImage();
 
+  if (!button_icons_.size())
+    return;
+
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
   const std::vector<SharingUiController::App>& apps = controller_->apps();

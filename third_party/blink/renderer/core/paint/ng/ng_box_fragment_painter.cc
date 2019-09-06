@@ -247,6 +247,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
       original_phase != PaintPhase::kSelfOutlineOnly) {
     if ((original_phase == PaintPhase::kForeground ||
          original_phase == PaintPhase::kFloat ||
+         original_phase == PaintPhase::kForcedColorsModeBackplate ||
          original_phase == PaintPhase::kDescendantOutlinesOnly) &&
         box_fragment_.GetLayoutObject()->IsBox()) {
       ScopedBoxContentsPaintState contents_paint_state(
@@ -856,6 +857,9 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   local_paint_info.phase = PaintPhase::kBlockBackground;
   PaintInternal(local_paint_info);
 
+  local_paint_info.phase = PaintPhase::kForcedColorsModeBackplate;
+  PaintInternal(local_paint_info);
+
   local_paint_info.phase = PaintPhase::kFloat;
   PaintInternal(local_paint_info);
 
@@ -906,6 +910,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     const PhysicalOffset& paint_offset) {
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
       paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip &&
       paint_info.phase != PaintPhase::kMask &&
@@ -939,8 +944,11 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     }
   }
 
-  if (layout_block.GetDocument().InForcedColorsMode())
+  if (paint_info.phase == PaintPhase::kForcedColorsModeBackplate &&
+      layout_block.GetDocument().InForcedColorsMode()) {
     PaintBackplate(line_boxes, paint_info, paint_offset);
+    return;
+  }
 
   const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();
 
@@ -995,7 +1003,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 void NGBoxFragmentPainter::PaintBackplate(NGPaintFragment::ChildList line_boxes,
                                           const PaintInfo& paint_info,
                                           const PhysicalOffset& paint_offset) {
-  if (paint_info.phase != PaintPhase::kForeground)
+  if (paint_info.phase != PaintPhase::kForcedColorsModeBackplate)
     return;
 
   // Only paint backplates behind text when forced-color-adjust is auto.

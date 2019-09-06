@@ -125,38 +125,6 @@ Note that it's possible to call functions or pass `this` and other expressions
 in initializers, so even some complex initializations can be done in the
 declaration.
 
-## Prefer structs over pairs/tuples when used repeatedly
-
-The Google style guide
-[recommends using return values over outparams](http://google.github.io/styleguide/cppguide.html#Output_Parameters).
-For functions which return multiple values, a convenient way to do this is to
-return a pair or tuple:
-
-```cpp
-std::pair<int, int> GetPaddingValues() {
-  ...
-  return {1, 2};  // Shorter and more readable than std::make_pair(), works with tuples also.
-}
-```
-
-However, this return type can be cumbersome, opaque, and error-prone.  An
-alternative is to define a struct with named fields:
-
-```cpp
-struct PaddingValues {
-  int header;
-  int footer;
-};
-PaddingValues GetPaddingValues() {
-  ...
-  return {1, 2};  // This abbreviated syntax still works!
-}
-```
-
-A good rule of thumb for when to prefer a struct is whenever you'd find
-declaring a type alias for the pair or tuple beneficial, which is usually
-whenever it's used more than just as a local one-off.
-
 ## Use `std::make_unique` and `base::MakeRefCounted` instead of bare `new`
 
 When possible, avoid bare `new` by using

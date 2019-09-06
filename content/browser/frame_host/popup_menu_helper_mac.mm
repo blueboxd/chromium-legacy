@@ -29,7 +29,8 @@ PopupMenuHelper::PopupMenuHelper(Delegate* delegate,
                                  RenderFrameHost* render_frame_host)
     : delegate_(delegate),
       observer_(this),
-      render_frame_host_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
+      render_frame_host_(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()),
       menu_runner_(nil),
       popup_was_hidden_(false),
       weak_ptr_factory_(this) {
@@ -150,7 +151,6 @@ void PopupMenuHelper::RenderWidgetHostVisibilityChanged(
 }
 
 void PopupMenuHelper::RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) {
-  render_frame_host_ = nullptr;
   observer_.Remove(widget_host);
 }
 

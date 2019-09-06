@@ -72,6 +72,8 @@ class MockNativeFileSystemPermissionContext
                     int process_id,
                     int frame_id,
                     base::OnceCallback<void(SafeBrowsingResult)>& callback));
+
+  MOCK_METHOD1(CanRequestWritePermission, bool(const url::Origin& origin));
 };
 
 }  // namespace content

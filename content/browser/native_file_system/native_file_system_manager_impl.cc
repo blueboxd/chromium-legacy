@@ -204,6 +204,18 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     return;
   }
 
+  // When site setting is block, it's better not to show file chooser for save.
+  if (type == blink::mojom::ChooseFileSystemEntryType::kSaveFile &&
+      permission_context_ &&
+      !permission_context_->CanRequestWritePermission(context.origin)) {
+    std::move(callback).Run(
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kPermissionDenied),
+        std::vector<blink::mojom::NativeFileSystemEntryPtr>());
+
+    return;
+  }
+
   FileSystemChooser::Options options(type, std::move(accepts),
                                      include_accepts_all);
   base::PostTask(
@@ -327,7 +339,7 @@ NativeFileSystemManagerImpl::CreateFileWriter(
   mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
       writer_receiver = result.InitWithNewPipeAndPassReceiver();
 
-  base::PostTaskAndReplyWithResult(
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HasTransientUserActivation, binding_context.process_id,
                      binding_context.frame_id),

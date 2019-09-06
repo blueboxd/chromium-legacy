@@ -37,7 +37,20 @@ Polymer({
      * Search term for filtering |printers|.
      * @type {string}
      */
-    searchTerm: String,
+    searchTerm: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * Whether to show the no search results message.
+     * @type {boolean}
+     * @private
+     */
+     showNoSearchResultsMessage_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
@@ -63,6 +76,9 @@ Polymer({
 
     this.updateList('filteredPrinters_', printer => printer.printerInfo,
         updatedPrinters);
+
+    this.showNoSearchResultsMessage_ =
+        !!this.searchTerm && !this.filteredPrinters_.length;
   },
 
 

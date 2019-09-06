@@ -62,7 +62,8 @@ void SharedClipboardContextMenuObserver::InitMenu(
   controller_->UpdateDevices();
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  // TODO(yasmo): add logging
+  LogSharingDevicesToShow(controller_->GetFeatureMetricsPrefix(),
+                          nullptr /* No suffix */, devices.size());
 
   if (devices.empty())
     return;
@@ -145,10 +146,11 @@ void SharedClipboardContextMenuObserver::SendSharedClipboardMessage(
       controller_->devices();
   if (chosen_device_index >= static_cast<int>(devices.size()))
     return;
-
-  // TODO(yasmo): Add logging
+  LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
+                                nullptr /* No suffix */, chosen_device_index);
 
   controller_->OnDeviceSelected(text_, *devices[chosen_device_index]);
+  LogSharedClipboardSelectedTextSize(text_.size());
 }
 
 gfx::ImageSkia SharedClipboardContextMenuObserver::GetContextMenuIcon() const {

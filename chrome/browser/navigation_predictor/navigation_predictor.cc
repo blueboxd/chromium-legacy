@@ -478,7 +478,8 @@ void NavigationPredictor::MaybeSendMetricsToUkm() const {
     auto iter = navigation_scores_map_.find(url);
 
     if (iter != navigation_scores_map_.end()) {
-      anchor_element_builder.SetAnchorIndex(i);
+      // Offset index to be 1-based indexing.
+      anchor_element_builder.SetAnchorIndex(i + 1);
       anchor_element_builder.SetIsInIframe(iter->second->is_in_iframe);
       anchor_element_builder.SetIsURLIncrementedByOne(
           iter->second->is_url_incremented_by_one);

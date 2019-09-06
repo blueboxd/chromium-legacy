@@ -78,6 +78,11 @@ LayoutUnit LayoutListBox::DefaultItemHeight() const {
 }
 
 LayoutUnit LayoutListBox::ItemHeight() const {
+  // If the content-size is specified while we have size containment, then we
+  // shouldn't ever need to get the ItemHeight.
+  DCHECK(!ShouldApplySizeContainment() ||
+         !HasSpecifiedContentSizeForSizeContainment());
+
   HTMLSelectElement* select = SelectElement();
   if (!select)
     return LayoutUnit();
@@ -105,7 +110,14 @@ void LayoutListBox::ComputeLogicalHeight(
     LayoutUnit,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
-  LayoutUnit height = ItemHeight() * size();
+  LayoutUnit height;
+  if (ShouldApplySizeContainment() &&
+      HasSpecifiedContentSizeForSizeContainment()) {
+    height = ContentLogicalHeightForSizeContainment();
+  } else {
+    height = ItemHeight() * size();
+  }
+
   // FIXME: The item height should have been added before updateLogicalHeight
   // was called to avoid this hack.
   SetIntrinsicContentLogicalHeight(height);

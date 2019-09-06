@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -40,6 +41,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -505,6 +507,17 @@ static const char kDispatchUpdateCustomLinkResult[] =
     "  true;"
     "}";
 
+static const char kDispatchQueryAutocompleteResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    window.chrome.embeddedSearch.searchBox.onqueryautocompletedone &&"
+    "    typeof window.chrome.embeddedSearch.searchBox"
+    "        .onqueryautocompletedone === 'function') {"
+    "  window.chrome.embeddedSearch.searchBox.onqueryautocompletedone(%s);"
+    "  true;"
+    "}";
+
 static const char kDispatchDeleteCustomLinkResult[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -606,6 +619,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
 
   // Handlers for JS functions.
   static void Paste(const std::string& text);
+  static void QueryAutocomplete(const std::string& input);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
 
@@ -626,6 +640,7 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
       .SetProperty("isKeyCaptureEnabled",
                    &SearchBoxBindings::IsKeyCaptureEnabled)
       .SetMethod("paste", &SearchBoxBindings::Paste)
+      .SetMethod("queryAutocomplete", &SearchBoxBindings::QueryAutocomplete)
       .SetMethod("startCapturingKeyStrokes",
                  &SearchBoxBindings::StartCapturingKeyStrokes)
       .SetMethod("stopCapturingKeyStrokes",
@@ -658,6 +673,14 @@ void SearchBoxBindings::Paste(const std::string& text) {
   if (!search_box)
     return;
   search_box->Paste(base::UTF8ToUTF16(text));
+}
+
+// static
+void SearchBoxBindings::QueryAutocomplete(const std::string& input) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->QueryAutocomplete(input);
 }
 
 // static
@@ -1382,6 +1405,47 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
   blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchDeleteCustomLinkResult, success ? "true" : "false")));
   Dispatch(frame, script);
+}
+
+void SearchBoxExtension::DispatchQueryAutocompleteResult(
+    blink::WebLocalFrame* frame,
+    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches) {
+  base::Value list(base::Value::Type::LIST);
+  for (const chrome::mojom::AutocompleteMatchPtr& match : matches) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetBoolKey("allowedToBeDefaultMatch",
+                    match->allowed_to_be_default_match);
+    dict.SetStringKey("contents", match->contents);
+    base::Value contents_class(base::Value::Type::LIST);
+    for (const auto& classification : match->contents_class) {
+      base::Value entry(base::Value::Type::DICTIONARY);
+      entry.SetIntKey("offset", classification->offset);
+      entry.SetIntKey("style", classification->style);
+      contents_class.GetList().push_back(std::move(entry));
+    }
+    dict.SetKey("contentsClass", std::move(contents_class));
+    dict.SetStringKey("description", match->description);
+    base::Value description_class(base::Value::Type::LIST);
+    for (const auto& classification : match->description_class) {
+      base::Value entry(base::Value::Type::DICTIONARY);
+      entry.SetIntKey("offset", classification->offset);
+      entry.SetIntKey("style", classification->style);
+      description_class.GetList().push_back(std::move(entry));
+    }
+    dict.SetKey("descriptionClass", std::move(description_class));
+    dict.SetStringKey("destinationUrl", match->destination_url);
+    dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
+    dict.SetBoolKey("isSearchType", match->is_search_type);
+    dict.SetStringKey("fillIntoEdit", match->fill_into_edit);
+    dict.SetBoolKey("swapContentsAndDescription",
+                    match->swap_contents_and_description);
+    dict.SetStringKey("type", match->type);
+    list.GetList().push_back(std::move(dict));
+  }
+  std::string json;
+  base::JSONWriter::Write(list, &json);
+  Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
+                      kDispatchQueryAutocompleteResult, json.c_str())));
 }
 
 // static

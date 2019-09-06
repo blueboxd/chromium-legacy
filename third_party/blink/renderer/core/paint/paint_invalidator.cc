@@ -278,7 +278,14 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
       PropertyTreeState(*context.tree_builder_context_->current.transform,
                         *context.tree_builder_context_->current.clip,
                         *context.tree_builder_context_->current_effect),
-      context.old_visual_rect, fragment_data.VisualRect());
+      context.old_visual_rect, fragment_data.VisualRect(),
+      // Don't report a diff for a LayoutView. Any paint offset translation
+      // it has was inherited from the parent frame, and movements of a
+      // frame relative to its parent are tracked in the parent frame's
+      // LayoutShiftTracker, not the child frame's.
+      object.IsLayoutView()
+          ? FloatSize()
+          : context.tree_builder_context_->paint_offset_delta);
 }
 
 void PaintInvalidator::UpdateEmptyVisualRectFlag(

@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
       fullscreen_view->GetRenderWidgetHost();
   content::RenderProcessHost* process = fullscreen_widget->GetProcess();
   content::PwnMessageHelper::LockMouse(
-      process, fullscreen_widget->GetRoutingID(), true, true);
+      process, fullscreen_widget->GetRoutingID(), true, true, false);
 
   // Make sure that the fullscreen widget got the mouse lock.
   EXPECT_TRUE(fullscreen_view->IsMouseLocked());

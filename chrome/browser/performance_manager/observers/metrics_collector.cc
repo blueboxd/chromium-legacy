@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/performance_manager/public/graph/graph_operations.h"
 #include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace performance_manager {
 

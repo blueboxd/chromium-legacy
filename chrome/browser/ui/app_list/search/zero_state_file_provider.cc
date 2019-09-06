@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
@@ -77,7 +78,7 @@ ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
 ZeroStateFileProvider::~ZeroStateFileProvider() = default;
 
 void ZeroStateFileProvider::Start(const base::string16& query) {
-  // TODO(crbug.com/959679): Add latency metrics.
+  query_start_time_ = base::TimeTicks::Now();
   ClearResultsSilently();
   if (!query.empty())
     return;
@@ -101,6 +102,8 @@ void ZeroStateFileProvider::SetSearchResults(
     new_results.emplace_back(std::make_unique<ZeroStateFileResult>(
         filepath_score.first, filepath_score.second, profile_));
   }
+  UMA_HISTOGRAM_TIMES("Apps.AppList.ZeroStateFileProvider.Latency",
+                      base::TimeTicks::Now() - query_start_time_);
   SwapResults(&new_results);
 }
 

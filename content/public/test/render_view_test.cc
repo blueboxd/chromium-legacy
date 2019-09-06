@@ -691,7 +691,7 @@ void RenderViewTest::Resize(gfx::Size new_size,
   VisualProperties visual_properties;
   visual_properties.screen_info = ScreenInfo();
   visual_properties.new_size = new_size;
-  visual_properties.compositor_viewport_pixel_size = new_size;
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(new_size);
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;

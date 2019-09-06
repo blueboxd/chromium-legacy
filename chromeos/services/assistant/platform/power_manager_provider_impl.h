@@ -16,6 +16,7 @@
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_system.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 namespace chromeos {
@@ -97,7 +98,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) PowerManagerProviderImpl
   AlarmId next_id_ = 1;
 
   // Lazily initialized in response to the first call to |AcquireWakeLock|.
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   // Current number of clients that requested |wake_lock_|. On zero |wake_lock_|
   // is released.

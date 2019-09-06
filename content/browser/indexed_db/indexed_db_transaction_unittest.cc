@@ -32,6 +32,13 @@
 
 namespace content {
 namespace indexed_db_transaction_unittest {
+namespace {
+
+void SetToTrue(bool* value) {
+  *value = true;
+}
+
+}  // namespace
 
 const int kFakeProcessId = 10;
 
@@ -121,6 +128,8 @@ class IndexedDBTransactionTest : public testing::Test {
     db_->AddConnectionForTesting(connection.get());
     return connection;
   }
+
+  DisjointRangeLockManager* lock_manager() { return &lock_manager_; }
 
  protected:
   std::unique_ptr<BrowserTaskEnvironment> task_environment_;
@@ -507,6 +516,53 @@ static const blink::mojom::IDBTransactionMode kTestModes[] = {
 INSTANTIATE_TEST_SUITE_P(IndexedDBTransactions,
                          IndexedDBTransactionTestMode,
                          ::testing::ValuesIn(kTestModes));
+
+TEST_F(IndexedDBTransactionTest, AbortCancelsLockRequest) {
+  const int64_t id = 0;
+  const int64_t object_store_id = 1ll;
+  const std::set<int64_t> scope = {object_store_id};
+  std::unique_ptr<IndexedDBConnection> connection = CreateConnection();
+  IndexedDBTransaction* transaction = connection->CreateTransaction(
+      id, scope, blink::mojom::IDBTransactionMode::ReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(leveldb::Status::OK()));
+
+  // Acquire a lock to block the transaction's lock acquisition.
+  bool locks_recieved = false;
+  std::vector<ScopesLockManager::ScopeLockRequest> lock_requests;
+  lock_requests.emplace_back(kDatabaseRangeLockLevel, GetDatabaseLockRange(id),
+                             ScopesLockManager::LockType::kShared);
+  lock_requests.emplace_back(kObjectStoreRangeLockLevel,
+                             GetObjectStoreLockRange(id, object_store_id),
+                             ScopesLockManager::LockType::kExclusive);
+  ScopesLocksHolder temp_lock_receiver;
+  lock_manager()->AcquireLocks(lock_requests,
+                               temp_lock_receiver.weak_factory.GetWeakPtr(),
+                               base::BindOnce(SetToTrue, &locks_recieved));
+  EXPECT_TRUE(locks_recieved);
+
+  // Register the transaction, which should request locks and wait for
+  // |temp_lock_receiver| to release the locks.
+  db_->RegisterAndScheduleTransaction(transaction);
+  EXPECT_EQ(transaction->state(), IndexedDBTransaction::CREATED);
+
+  // Abort the transaction, which should cancel the
+  // |RegisterAndScheduleTransaction()| pending lock request.
+  transaction->Abort(
+      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError));
+  EXPECT_EQ(transaction->state(), IndexedDBTransaction::FINISHED);
+
+  // Clear |temp_lock_receiver| so we can test later that all locks have
+  // cleared.
+  temp_lock_receiver.locks.clear();
+
+  // Verify that the locks are available for acquisition again, as the
+  // transaction should have cancelled its lock request.
+  locks_recieved = false;
+  lock_manager()->AcquireLocks(lock_requests,
+                               temp_lock_receiver.weak_factory.GetWeakPtr(),
+                               base::BindOnce(SetToTrue, &locks_recieved));
+  EXPECT_TRUE(locks_recieved);
+}
 
 }  // namespace indexed_db_transaction_unittest
 }  // namespace content

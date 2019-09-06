@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_STATE_RECORD_H_
 
 #include "base/gtest_prod_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
@@ -43,7 +44,7 @@ class MODULES_EXPORT WakeLockStateRecord
 
   // An actual platform WakeLock. If bound, it means there is an active wake
   // lock for a given type.
-  device::mojom::blink::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::blink::WakeLock> wake_lock_;
   device::mojom::blink::WakeLockType wake_lock_type_;
 
   // ExecutionContext from which we will connect to |wake_lock_service_|.

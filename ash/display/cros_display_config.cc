@@ -368,11 +368,13 @@ mojom::DisplayConfigResult ValidateDisplayProperties(
     // applied via the system display API. The said range is such that when a
     // display zoom is applied, the final logical width in pixels should lie
     // within the range of 640 pixels and 4096 pixels.
+    const int landscape_width =
+        std::max(current_mode.size().width(), current_mode.size().height());
     const int max_allowed_width =
-        std::max(kDefaultMaxZoomWidth, current_mode.size().width());
+        std::max(kDefaultMaxZoomWidth, landscape_width);
     const int min_allowed_width =
-        std::min(kDefaultMinZoomWidth, current_mode.size().width());
-    int current_width = static_cast<float>(current_mode.size().width()) /
+        std::min(kDefaultMinZoomWidth, landscape_width);
+    int current_width = static_cast<float>(landscape_width) /
                         current_mode.device_scale_factor();
     if (current_width / properties.display_zoom_factor > max_allowed_width ||
         current_width / properties.display_zoom_factor < min_allowed_width) {

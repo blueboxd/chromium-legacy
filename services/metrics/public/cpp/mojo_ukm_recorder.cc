@@ -12,16 +12,17 @@
 
 namespace ukm {
 
-MojoUkmRecorder::MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface)
+MojoUkmRecorder::MojoUkmRecorder(
+    mojo::PendingRemote<mojom::UkmRecorderInterface> interface)
     : interface_(std::move(interface)) {}
 MojoUkmRecorder::~MojoUkmRecorder() = default;
 
 // static
 std::unique_ptr<MojoUkmRecorder> MojoUkmRecorder::Create(
     service_manager::Connector* connector) {
-  ukm::mojom::UkmRecorderInterfacePtr interface;
-  connector->BindInterface(metrics::mojom::kMetricsServiceName,
-                           mojo::MakeRequest(&interface));
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> interface;
+  connector->Connect(metrics::mojom::kMetricsServiceName,
+                     interface.InitWithNewPipeAndPassReceiver());
   return std::make_unique<MojoUkmRecorder>(std::move(interface));
 }
 

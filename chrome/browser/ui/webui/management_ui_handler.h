@@ -48,6 +48,14 @@ extern const char kManagementExtensionReportSafeBrowsingWarnings[];
 extern const char kManagementExtensionReportPerfCrash[];
 extern const char kManagementExtensionReportUserBrowsingData[];
 
+extern const char kThreatProtectionTitle[];
+extern const char kManagementDataLossPreventionName[];
+extern const char kManagementDataLossPreventionPermissions[];
+extern const char kManagementMalwareScanningName[];
+extern const char kManagementMalwareScanningPermissions[];
+extern const char kManagementEnterpriseReportingName[];
+extern const char kManagementEnterpriseReportingPermissions[];
+
 extern const char kPolicyKeyReportMachineIdData[];
 extern const char kPolicyKeyReportUserIdData[];
 extern const char kPolicyKeyReportVersionData[];
@@ -108,6 +116,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   void AddExtensionReportingInfo(base::Value* report_sources);
 
   base::DictionaryValue GetContextualManagedData(Profile* profile);
+  base::Value GetThreatProtectionInfo(Profile* profile) const;
   virtual policy::PolicyService* GetPolicyService() const;
   virtual const extensions::Extension* GetEnabledExtension(
       const std::string& extensionId) const;
@@ -130,6 +139,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
 #endif  // defined(OS_CHROMEOS)
 
   void HandleGetContextualManagedData(const base::ListValue* args);
+  void HandleGetThreatProtectionInfo(const base::ListValue* args);
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
 
   void AsyncUpdateLogo();
@@ -138,6 +148,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
 
   void NotifyBrowserReportingInfoUpdated();
+  void NotifyThreatProtectionInfoUpdated();
 
   // extensions::ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,

@@ -50,6 +50,7 @@ class WebServiceWorkerContextProxy;
 
 namespace base {
 class ListValue;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -105,7 +106,26 @@ class Dispatcher : public content::RenderThreadObserver,
                               const v8::Local<v8::Context>& context,
                               int32_t world_id);
 
-  // Runs on a different thread and should only use thread safe member
+  // This is called when a service worker is ready to evaluate the toplevel
+  // script. This method suspends the service worker if:
+  // * the service worker is background of a service worker based extension,
+  // and
+  // * the extension isn't loaded yet.
+  // Suspending background service worker is required because we need to
+  // install extension API bindings before executing the service worker.
+  // TODO(crbug.com/1000890): Figure out better way to coalesce them.
+  //
+  // Runs on the service worker thread and should only use thread-safe member
+  // variables.
+  void DidInitializeServiceWorkerContextOnWorkerThread(
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      const GURL& service_worker_scope,
+      const GURL& script_url);
+
+  // This is called immediately before a service worker evaluates the
+  // toplevel script. This method installs extension API bindings.
+  //
+  // Runs on a different thread and should only use thread-safe member
   // variables.
   void WillEvaluateServiceWorkerOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
@@ -119,13 +139,13 @@ class Dispatcher : public content::RenderThreadObserver,
                                 int32_t world_id);
 
   // Runs on worker thread and should not use any member variables.
-  static void DidStartServiceWorkerContextOnWorkerThread(
+  void DidStartServiceWorkerContextOnWorkerThread(
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url);
 
   // Runs on a different thread and should not use any member variables.
-  static void WillDestroyServiceWorkerContextOnWorkerThread(
+  void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
@@ -320,6 +340,23 @@ class Dispatcher : public content::RenderThreadObserver,
   // if this renderer is a WebView guest render process. Otherwise, this will be
   // empty.
   std::string webview_partition_id_;
+
+  // Used to hold a service worker information which is ready to execute but the
+  // onloaded message haven't been received yet. We need to defer service worker
+  // execution until the ExtensionMsg_Loaded message is received because we can
+  // install extension bindings only after the onload message is received.
+  // TODO(bashi): Consider to have a separate class to put this logic?
+  struct PendingServiceWorker {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+    blink::WebServiceWorkerContextProxy* context_proxy;
+
+    PendingServiceWorker(blink::WebServiceWorkerContextProxy* context_proxy);
+    ~PendingServiceWorker();
+  };
+  // This will be accessed both from the main thread and worker threads.
+  std::map<ExtensionId, std::unique_ptr<PendingServiceWorker>>
+      service_workers_paused_for_on_loaded_message_;
+  base::Lock service_workers_paused_for_on_loaded_message_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

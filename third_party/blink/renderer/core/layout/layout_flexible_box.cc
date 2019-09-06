@@ -70,8 +70,8 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
   if (ShouldApplySizeContainment()) {
-    max_logical_width = scrollbar_width;
-    min_logical_width = scrollbar_width;
+    max_logical_width = min_logical_width =
+        ContentLogicalWidthForSizeContainment() + scrollbar_width;
     return;
   }
   if (DisplayLockInducesSizeContainment()) {
@@ -505,14 +505,15 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     }
 
     LayoutUnit child_intrinsic_content_logical_height;
-    if (!child.ShouldApplySizeContainment()) {
-      if (child.DisplayLockInducesSizeContainment()) {
-        child_intrinsic_content_logical_height =
-            child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
-      } else {
-        child_intrinsic_content_logical_height =
-            child.IntrinsicContentLogicalHeight();
-      }
+    if (child.ShouldApplySizeContainment()) {
+      child_intrinsic_content_logical_height =
+          child.ContentLogicalHeightForSizeContainment();
+    } else if (child.DisplayLockInducesSizeContainment()) {
+      child_intrinsic_content_logical_height =
+          child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
+    } else {
+      child_intrinsic_content_logical_height =
+          child.IntrinsicContentLogicalHeight();
     }
 
     LayoutUnit child_intrinsic_logical_height =
@@ -898,8 +899,10 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     // width includes the scrollbar, even for overflow: auto.
     main_axis_extent = child.MaxPreferredLogicalWidth();
   } else {
-    if (child.ShouldApplySizeContainment())
-      return LayoutUnit(child.ScrollbarLogicalHeight());
+    if (child.ShouldApplySizeContainment()) {
+      return child.ContentLogicalHeightForSizeContainment() +
+             LayoutUnit(child.ScrollbarLogicalHeight());
+    }
     // The needed value here is the logical height. This value does not include
     // the border/scrollbar/padding size, so we have to add the scrollbar.
     if (child.DisplayLockInducesSizeContainment()) {

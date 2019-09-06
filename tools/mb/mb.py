@@ -1092,7 +1092,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros or is_mac:
+      if is_android or is_cros:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1103,7 +1103,43 @@ class MetaBuildWrapper(object):
           f == 'mr_extension/' or # https://crbug.com/997947
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
-          f.startswith('ppapi_nacl_tests_libs/')):
+          f.startswith('ppapi_nacl_tests_libs/') or
+          (is_mac and f in (  # https://crbug.com/1000667
+              'AlertNotificationService.dSYM/',
+              'AlertNotificationService.xpc/',
+              'Chromium Framework.dSYM/',
+              'Chromium Framework.framework/',
+              'Chromium Helper.app/',
+              'Chromium.app/',
+              'Chromium.dSYM/',
+              'Content Shell.app/',
+              'Content Shell.dSYM/',
+              'Google Chrome Framework.dSYM/',
+              'Google Chrome Framework.framework/',
+              'Google Chrome Helper (GPU).app/',
+              'Google Chrome Helper (GPU).dSYM/',
+              'Google Chrome Helper (Plugin).app/',
+              'Google Chrome Helper (Plugin).dSYM/',
+              'Google Chrome Helper (Renderer).app/',
+              'Google Chrome Helper (Renderer).dSYM/',
+              'Google Chrome Helper.app/',
+              'Google Chrome Helper.dSYM/',
+              'Google Chrome.app/',
+              'Google Chrome.dSYM/',
+              'blink_deprecated_test_plugin.plugin/',
+              'blink_deprecated_test_plugin.so.dSYM/',
+              'blink_test_plugin.plugin/',
+              'blink_test_plugin.so.dSYM/',
+              'corb_test_plugin.plugin/',
+              'corb_test_plugin.so.dSYM/',
+              'obj/tools/grit/brotli_mac_asan_workaround/',
+              'power_saver_test_plugin.plugin/',
+              'power_saver_test_plugin.so.dSYM/',
+              'ppapi_tests.plugin/',
+              'ppapi_tests.so.dSYM/',
+              'ui_unittests Framework.dSYM/',
+              'ui_unittests Framework.framework/',
+          ))):
         continue
 
       # This runs before the build, so we can't use isdir(f). But

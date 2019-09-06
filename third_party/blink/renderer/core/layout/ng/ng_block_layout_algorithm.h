@@ -357,6 +357,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // set, and abort layout if it is.
   bool abort_when_bfc_block_offset_updated_ = false;
 
+  // This will be set during block fragmentation once we've processed the first
+  // in-flow child of a container. It is used to check if we're at a valid class
+  // A or B breakpoint (between block-level siblings or line box siblings).
   bool has_processed_first_child_ = false;
 
   NGExclusionSpace exclusion_space_;

@@ -131,6 +131,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 
   bool accept_return_character() { return accept_return_character_; }
   bool mouse_locked() { return mouse_locked_; }
+  bool mouse_locked_unadjusted_movement() {
+    return mouse_locked_ && mouse_locked_unadjusted_movement_;
+  }
   const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
   void set_focus_on_mouse_down_or_key_event(
       bool focus_on_mouse_down_or_key_event) {
@@ -139,7 +142,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   void set_window(aura::Window* window) { window_ = window; }
 
   // Lock/Unlock processing of future mouse events.
-  bool LockMouse();
+  bool LockMouse(bool request_unadjusted_movement);
   void UnlockMouse();
 
   // Start/Stop processing of future system keyboard events.
@@ -255,6 +258,10 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // indicates what the change in position of the mouse would be had it not been
   // locked.
   bool mouse_locked_;
+
+  // True if mouse is locked and we are reporting the unadjusted movement
+  // value (without mouse accelerations) from OS, i.e. WM_INPUT on Windows.
+  bool mouse_locked_unadjusted_movement_;
 
   // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
   // renderer.

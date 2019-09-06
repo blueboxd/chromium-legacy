@@ -145,6 +145,8 @@ bool ReadFileToDouble(const base::FilePath& path, double* value) {
   return true;
 }
 
+enum DriverState { WAITING, EXISTED, ABSENT };
+
 enum State { INITIALIZING, SUCCESS, FAILED };
 
 }  // namespace
@@ -158,9 +160,9 @@ class AccelerometerFileReader
  public:
   AccelerometerFileReader();
 
-  // Detects the accelerometer configuration, if an accelerometer is available
-  // triggers reads.
-  void Initialize(
+  // Prepare and start async initialization. InitializeInternal function
+  // contains actual code for initialization.
+  void PrepareAndInitialize(
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
 
   // Attempts to read the accelerometer data. Upon a success, converts the raw
@@ -232,7 +234,8 @@ class AccelerometerFileReader
 
   ~AccelerometerFileReader() override;
 
-  // This function MAY be called more than once.
+  // Detects the accelerometer configuration, if an accelerometer is available
+  // triggers reads. This function MAY be called more than once.
   //
   // This function contains the actual initialization code to be run for the
   // Initialize function. It is needed because on some devices the sensor hub
@@ -262,9 +265,9 @@ class AccelerometerFileReader
   // reading to an AccelerometerUpdate and notifies observers.
   void ReadFileAndNotify();
 
-  // True if has ChromeOS EC lid angle driver, which means EC can handle lid
-  // angle calculation.
-  bool ec_lid_angle_driver_present_ = false;
+  // State of ChromeOS EC lid angle driver, if EXISTED, it means EC can handle
+  // lid angle calculation.
+  DriverState ec_lid_angle_driver_state_ = WAITING;
 
   // The current initialization state of reader.
   State initialization_state_ = INITIALIZING;
@@ -295,17 +298,19 @@ AccelerometerFileReader::AccelerometerFileReader()
     : observers_(
           new base::ObserverListThreadSafe<AccelerometerReader::Observer>()) {}
 
-void AccelerometerFileReader::Initialize(
+void AccelerometerFileReader::PrepareAndInitialize(
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-
   task_runner_ = sequenced_task_runner;
 
   initialization_state_ = INITIALIZING;
 
   initialization_timeout_ = base::TimeTicks::Now() + kInitializeTimeout;
 
-  InitializeInternal();
+  // Asynchronously detect and initialize the accelerometer to avoid delaying
+  // startup.
+  task_runner_->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&AccelerometerFileReader::InitializeInternal, this));
 }
 
 void AccelerometerFileReader::TryScheduleInitializeInternal() {
@@ -324,6 +329,7 @@ void AccelerometerFileReader::TryScheduleInitializeInternal() {
 }
 
 void AccelerometerFileReader::InitializeInternal() {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   DCHECK_EQ(INITIALIZING, initialization_state_);
 
   // Check for accelerometer symlink which will be created by the udev rules
@@ -339,9 +345,12 @@ void AccelerometerFileReader::InitializeInternal() {
     return;
   }
 
-  ec_lid_angle_driver_present_ =
-      base::SysInfo::IsRunningOnChromeOS() &&
-      !base::IsDirectoryEmpty(base::FilePath(kEcLidAngleDriverPath));
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      !base::IsDirectoryEmpty(base::FilePath(kEcLidAngleDriverPath))) {
+    ec_lid_angle_driver_state_ = EXISTED;
+  } else {
+    ec_lid_angle_driver_state_ = ABSENT;
+  }
 
   // Find trigger to use:
   base::FileEnumerator trigger_dir(base::FilePath(kAccelerometerIioBasePath),
@@ -438,7 +447,7 @@ void AccelerometerFileReader::InitializeInternal() {
 
   // If ChromeOS lid angle driver is not present, start accelerometer read and
   // read is always on.
-  if (!ec_lid_angle_driver_present_)
+  if (ec_lid_angle_driver_state_ == ABSENT)
     EnableAccelerometerReading(/*read_switch=*/true);
 }
 
@@ -485,7 +494,8 @@ void AccelerometerFileReader::TriggerRead() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   switch (initialization_state_) {
     case SUCCESS:
-      EnableAccelerometerReading(/*read_switch=*/true);
+      if (ec_lid_angle_driver_state_ == EXISTED)
+        EnableAccelerometerReading(/*read_switch=*/true);
       break;
     case FAILED:
       LOG(ERROR) << "Failed to initialize for accelerometer read.\n";
@@ -500,8 +510,10 @@ void AccelerometerFileReader::TriggerRead() {
 
 void AccelerometerFileReader::CancelRead() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  if (initialization_state_ == SUCCESS)
+  if (initialization_state_ == SUCCESS &&
+      ec_lid_angle_driver_state_ == EXISTED) {
     EnableAccelerometerReading(/*read_switch=*/false);
+  }
 }
 
 void AccelerometerFileReader::AddObserver(
@@ -531,18 +543,17 @@ void AccelerometerFileReader::OnTabletModeStarted() {
   // When CrOS EC lid angle driver is not present, accelerometer read is always
   // ON and can't be tuned. Thus AccelerometerFileReader no longer listens to
   // tablet mode event.
-  if (!ec_lid_angle_driver_present_) {
+  if (ec_lid_angle_driver_state_ == ABSENT) {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
     return;
   }
 
   task_runner_->PostNonNestableTask(
-      FROM_HERE,
-      base::BindOnce(&AccelerometerFileReader::TriggerRead, this));
+      FROM_HERE, base::BindOnce(&AccelerometerFileReader::TriggerRead, this));
 }
 
 void AccelerometerFileReader::OnTabletModeEnding() {
-  if (!ec_lid_angle_driver_present_) {
+  if (ec_lid_angle_driver_state_ == ABSENT) {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
     return;
   }
@@ -680,7 +691,9 @@ void AccelerometerFileReader::ReadFileAndNotify() {
     for (AccelerometerSource source : reading_data.sources) {
       DCHECK(configuration_.has[source]);
       int16_t* values = reinterpret_cast<int16_t*>(reading);
-      update_->Set(source, ec_lid_angle_driver_present_,
+      bool is_driver_existed =
+          (ec_lid_angle_driver_state_ == EXISTED) ? true : false;
+      update_->Set(source, is_driver_existed,
                    values[configuration_.index[source][0]] *
                        configuration_.scale[source][0],
                    values[configuration_.index[source][1]] *
@@ -715,12 +728,8 @@ AccelerometerReader* AccelerometerReader::GetInstance() {
 void AccelerometerReader::Initialize(
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
   DCHECK(sequenced_task_runner.get());
-  // Asynchronously detect and initialize the accelerometer to avoid delaying
-  // startup.
-  sequenced_task_runner->PostNonNestableTask(
-      FROM_HERE,
-      base::BindOnce(&AccelerometerFileReader::Initialize,
-                     accelerometer_file_reader_.get(), sequenced_task_runner));
+
+  accelerometer_file_reader_->PrepareAndInitialize(sequenced_task_runner);
 }
 
 void AccelerometerReader::AddObserver(Observer* observer) {

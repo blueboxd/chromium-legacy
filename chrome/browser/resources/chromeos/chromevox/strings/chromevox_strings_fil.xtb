@@ -484,6 +484,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4372705107434148843">Ihinto ang speech</translation>
 <translation id="4373197658375206385">Walang nakaraang item na hindi isang link.</translation>
 <translation id="4376316291247992553">Tingnan ang Graphic Bilang Braille</translation>
+<translation id="437809255587011096">Ianunsyo ang pag-istilo ng text</translation>
 <translation id="4378308539633073595">Mag-scroll pasulong</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8503360654911991865">Bawasan ang granularity ng nabigasyon</translation>
 <translation id="8504695234784218301">Dulo ng error sa grammar</translation>
 <translation id="8520472399088452386">Spin button</translation>
+<translation id="8534394844575788431">Pag-format</translation>
 <translation id="8538744478902126321">Maglagay ng hula sa header ng row ng kasalukuyang cell</translation>
 <translation id="8540054775867439484">Naka-wrap sa itaas</translation>
 <translation id="8542271685829952264">Upang i-explore ang lahat ng command at shortcut sa ChromeVox, pindutin ang Search + Period, pagkatapos ay gamitin ang mga Arrow key upang i-navigate ang mga menu, at ang Enter upang mag-activate ng command. Bumalik dito sa pamamagitan ng pagpindot sa Search+o pagktapos ay sa t.</translation>
@@ -1200,6 +1202,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Nag-aanunsyo ng maikling paglalarawan sa kasalukuyang posisyon</translation>
+<translation id="9151249085738989067">Awtomatikong palitan ang boses ng ChromeVox batay sa wika</translation>
 <translation id="9153606228985488238"><ph name="PERCENT" /> (na) porsyento ang pitch</translation>
 <translation id="9160096769946561184">Pumunta sa dulo ng kasalukuyang column</translation>
 <translation id="9173115498289768110"><ph name="PERCENT" /> (na) porsyento ang volume</translation>

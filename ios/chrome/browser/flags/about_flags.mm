@@ -570,6 +570,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
+    {"credit-card-scanner", flag_descriptions::kCreditCardScannerName,
+     flag_descriptions::kCreditCardScannerDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCreditCardScanner)},
 };
 
 // Add all switches from experimental flags to |command_line|.

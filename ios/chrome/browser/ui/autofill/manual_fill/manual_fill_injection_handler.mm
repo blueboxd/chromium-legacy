@@ -93,7 +93,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   return self;
 }
 
-#pragma mark - ManualFillContentDelegate
+#pragma mark - ManualFillContentInjector
 
 - (BOOL)canUserInjectInPasswordField:(BOOL)passwordField
                        requiresHTTPS:(BOOL)requiresHTTPS {

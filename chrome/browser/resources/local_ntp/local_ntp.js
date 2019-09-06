@@ -31,6 +31,28 @@ let tilesAreLoaded = false;
 function LocalNTP() {
 'use strict';
 
+// Type definitions.
+
+/** @enum {number} */
+const ACMatchClassificationStyle = {
+  NONE: 0,
+  URL: 1 << 0,
+  MATCH: 1 << 1,
+  DIM: 1 << 2,
+};
+
+/** @typedef {{inline: string, text: string}} */
+let RealboxOutput;
+
+/**
+ * @typedef {{
+ *   moveCursorToEnd: (boolean|undefined),
+ *   inline: (string|undefined),
+ *   text: (string|undefined),
+ * }}
+ */
+let RealboxOutputUpdate;
+
 // Constants.
 
 /**
@@ -40,6 +62,8 @@ function LocalNTP() {
  */
 const CLASSES = {
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
+  // Shows a clock next to historical realbox results.
+  CLOCK_ICON: 'clock-icon',
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DARK: 'dark',
@@ -48,8 +72,6 @@ const CLASSES = {
   // Extended and elevated style for customization entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
-  // Applied when the fakebox placeholder text should not be hidden on focus.
-  SHOW_PLACEHOLDER: 'show-placeholder',
   // Applies float animations to the Most Visited notification
   FLOAT_DOWN: 'float-down',
   FLOAT_UP: 'float-up',
@@ -64,8 +86,15 @@ const CLASSES = {
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
-  RTL: 'rtl',  // Right-to-left language text.
+  RTL: 'rtl',                  // Right-to-left language text.
+  SEARCH_ICON: 'search-icon',  // Magnifying glass/search icon.
+  SELECTED: 'selected',  // A selected (via up/down arrow key) realbox match.
   SHOW_ELEMENT: 'show-element',
+  // When the realbox has matches to show.
+  SHOW_MATCHES: 'show-matches',
+  // Applied when the fakebox placeholder text should not be hidden on focus.
+  SHOW_PLACEHOLDER: 'show-placeholder',
+  URL_ICON: 'url-icon',  // Global/favicon/url icon.
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
 };
@@ -101,7 +130,6 @@ const IDS = {
   ERROR_NOTIFICATION_LINK: 'error-notice-link',
   ERROR_NOTIFICATION_MSG: 'error-notice-msg',
   FAKEBOX: 'fakebox',
-  FAKEBOX_ICON: 'fakebox-search-icon',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
@@ -112,6 +140,10 @@ const IDS = {
   NTP_CONTENTS: 'ntp-contents',
   OGB: 'one-google',
   PROMO: 'promo',
+  REALBOX: 'realbox',
+  REALBOX_INPUT_WRAPPER: 'realbox-input-wrapper',
+  REALBOX_MATCHES: 'realbox-matches',
+  REALBOX_MICROPHONE: 'realbox-microphone',
   RESTORE_ALL_LINK: 'mv-restore',
   SUGGESTIONS: 'suggestions',
   TILES: 'mv-tiles',
@@ -196,6 +228,15 @@ const NTP_DESIGN = {
   titleColorAgainstDark: [248, 249, 250, 255], /** GG050 */
 };
 
+const REALBOX_KEYDOWN_HANDLED_KEYS = [
+  'ArrowDown',
+  'ArrowUp',
+  'Enter',
+  'Escape',
+  'PageDown',
+  'PageUp',
+];
+
 /**
  * Background colors considered "white". Used to determine if it is possible to
  * display a Google Doodle, or if the notifier should be used instead. Also used
@@ -205,6 +246,9 @@ const NTP_DESIGN = {
 const WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
 // Local statics.
+
+/** @type {!Array<!AutocompleteMatch>} */
+let autocompleteMatches = [];
 
 /**
  * The currently visible notification element. Null if no notification is
@@ -226,12 +270,22 @@ let delayedHideNotification = null;
  */
 let isDarkModeEnabled = false;
 
+/** Used to prevent inline autocompleting recently deleted output. */
+let isDeleting = false;
+
 /**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
  */
 let lastBlacklistedTile = null;
+
+/**
+ * Last text/inline autocompletion shown in the realbox (either by user input or
+ * outputting autocomplete matches).
+ * @type {!RealboxOutput}
+ */
+let lastOutput = {text: '', inline: ''};
 
 /**
  * The browser embeddedSearch.newTabPage object.
@@ -617,6 +671,13 @@ function hideNotification() {
       $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER), /*showPromo=*/ true);
 }
 
+function hideRealboxMatches() {
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  realboxWrapper.classList.remove(CLASSES.SHOW_MATCHES);
+  realboxWrapper.removeEventListener('keydown', onRealboxKeyDown);
+  autocompleteMatches = [];
+}
+
 /**
  * Prepares the New Tab Page by adding listeners, the most visited pages
  * section, and Google-specific elements for a Google-provided page.
@@ -670,70 +731,93 @@ function init() {
 
     customize.init(showErrorNotification, hideNotification);
 
-    if (configData.showFakeboxPlaceholderOnFocus) {
-      $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
-    }
+    if (configData.realboxEnabled) {
+      const realboxEl = $(IDS.REALBOX);
+      realboxEl.placeholder = configData.translatedStrings.searchboxPlaceholder;
+      realboxEl.classList.toggle(
+          CLASSES.SHOW_PLACEHOLDER, configData.showPlaceholderOnFocus);
+      realboxEl.addEventListener('copy', onRealboxCopy);
+      realboxEl.addEventListener('input', onRealboxInput);
 
-    // Set up the fakebox (which only exists on the Google NTP).
-    ntpApiHandle.oninputstart = onInputStart;
-    ntpApiHandle.oninputcancel = onInputCancel;
+      const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+      realboxWrapper.addEventListener('focusin', onRealboxWrapperFocusIn);
+      realboxWrapper.addEventListener('focusout', onRealboxWrapperFocusOut);
 
-    if (ntpApiHandle.isInputInProgress) {
-      onInputStart();
-    }
+      searchboxApiHandle.onqueryautocompletedone = onQueryAutocompleteDone;
 
-    $(IDS.FAKEBOX_TEXT).textContent =
-        configData.translatedStrings.searchboxPlaceholder;
-
-    if (!iframesAndVoiceSearchDisabledForTesting) {
-      speech.init(
-          configData.googleBaseUrl, configData.translatedStrings,
-          $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
-    }
-
-    // Listener for updating the key capture state.
-    document.body.onmousedown = function(event) {
-      if (isFakeboxClick(event)) {
-        searchboxApiHandle.startCapturingKeyStrokes();
-      } else if (isFakeboxFocused()) {
-        searchboxApiHandle.stopCapturingKeyStrokes();
+      if (!iframesAndVoiceSearchDisabledForTesting) {
+        speech.init(
+            configData.googleBaseUrl, configData.translatedStrings,
+            $(IDS.REALBOX_MICROPHONE), searchboxApiHandle);
       }
-    };
-    searchboxApiHandle.onkeycapturechange = function() {
+
+      utils.disableOutlineOnMouseClick($(IDS.REALBOX_MICROPHONE));
+    } else {
+      if (configData.showPlaceholderOnFocus) {
+        $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
+      }
+
+      // Set up the fakebox (which only exists on the Google NTP).
+      ntpApiHandle.oninputstart = onInputStart;
+      ntpApiHandle.oninputcancel = onInputCancel;
+
+      if (ntpApiHandle.isInputInProgress) {
+        onInputStart();
+      }
+
+      $(IDS.FAKEBOX_TEXT).textContent =
+          configData.translatedStrings.searchboxPlaceholder;
+
+      if (!iframesAndVoiceSearchDisabledForTesting) {
+        speech.init(
+            configData.googleBaseUrl, configData.translatedStrings,
+            $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
+      }
+
+      // Listener for updating the key capture state.
+      document.body.onmousedown = function(event) {
+        if (isFakeboxClick(event)) {
+          searchboxApiHandle.startCapturingKeyStrokes();
+        } else if (isFakeboxFocused()) {
+          searchboxApiHandle.stopCapturingKeyStrokes();
+        }
+      };
+      searchboxApiHandle.onkeycapturechange = function() {
+        setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+      };
+      const inputbox = $(IDS.FAKEBOX_INPUT);
+      inputbox.onpaste = function(event) {
+        event.preventDefault();
+        // Send pasted text to Omnibox.
+        const text = event.clipboardData.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+      };
+      inputbox.ondrop = function(event) {
+        event.preventDefault();
+        const text = event.dataTransfer.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+        setFakeboxDragFocus(false);
+      };
+      inputbox.ondragenter = function() {
+        setFakeboxDragFocus(true);
+      };
+      inputbox.ondragleave = function() {
+        setFakeboxDragFocus(false);
+      };
+      utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
+
+      // Update the fakebox style to match the current key capturing state.
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-    };
-    const inputbox = $(IDS.FAKEBOX_INPUT);
-    inputbox.onpaste = function(event) {
-      event.preventDefault();
-      // Send pasted text to Omnibox.
-      const text = event.clipboardData.getData('text/plain');
-      if (text) {
-        searchboxApiHandle.paste(text);
+      // Also tell the browser that we're capturing, otherwise it's possible
+      // that both fakebox and Omnibox have visible focus at the same time, see
+      // crbug.com/792850.
+      if (searchboxApiHandle.isKeyCaptureEnabled) {
+        searchboxApiHandle.startCapturingKeyStrokes();
       }
-    };
-    inputbox.ondrop = function(event) {
-      event.preventDefault();
-      const text = event.dataTransfer.getData('text/plain');
-      if (text) {
-        searchboxApiHandle.paste(text);
-      }
-      setFakeboxDragFocus(false);
-    };
-    inputbox.ondragenter = function() {
-      setFakeboxDragFocus(true);
-    };
-    inputbox.ondragleave = function() {
-      setFakeboxDragFocus(false);
-    };
-    utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
-
-    // Update the fakebox style to match the current key capturing state.
-    setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-    // Also tell the browser that we're capturing, otherwise it's possible
-    // that both fakebox and Omnibox have visible focus at the same time, see
-    // crbug.com/792850.
-    if (searchboxApiHandle.isKeyCaptureEnabled) {
-      searchboxApiHandle.startCapturingKeyStrokes();
     }
 
     doodles.init();
@@ -934,6 +1018,212 @@ function onMostVisitedChange() {
   reloadTiles();
 }
 
+/** @param {!Array<!AutocompleteMatch>} matches */
+function onQueryAutocompleteDone(matches) {
+  const realboxMatchesEl = document.createElement('div');
+
+  for (const [i, match] of matches.entries()) {
+    const matchEl = document.createElement('a');
+    matchEl.href = match.destinationUrl;
+
+    let iconClass;
+    if (match.isSearchType) {
+      const isHistory = match.type === 'search-history';
+      const useClock = isHistory && configData.realboxUseClockIcon;
+      iconClass = useClock ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
+    } else {
+      // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
+      iconClass = CLASSES.URL_ICON;
+    }
+    const icon = document.createElement('div');
+    icon.classList.add(assert(iconClass));
+    matchEl.appendChild(icon);
+
+    const contentsEls =
+        renderMatchClassifications(match.contents, match.contentsClass);
+    const descriptionEls = [];
+    const separatorEls = [];
+
+    if (match.description) {
+      descriptionEls.push(...renderMatchClassifications(
+          match.description, match.descriptionClass));
+      separatorEls.push(document.createTextNode(
+          configData.translatedStrings.realboxSeparator));
+    }
+
+    const layout = match.swapContentsAndDescription ?
+        [descriptionEls, separatorEls, contentsEls] :
+        [contentsEls, separatorEls, descriptionEls];
+
+    for (const col of layout) {
+      col.forEach(colEl => matchEl.appendChild(colEl));
+    }
+
+    realboxMatchesEl.append(matchEl);
+  }
+  // TODO(crbug.com/996516): this should probably not select the first match by
+  // default in the case of zero-suggest. One easy (but possibly imperfect) way
+  // would be to check if ($(IDS.REALBOX).value) {...}.
+  realboxMatchesEl.firstElementChild.classList.add(CLASSES.SELECTED);
+
+  $(IDS.REALBOX_MATCHES).remove();
+  realboxMatchesEl.id = IDS.REALBOX_MATCHES;
+
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  realboxWrapper.appendChild(realboxMatchesEl);
+
+  const hasMatches = matches.length > 0;
+  realboxWrapper.classList.toggle(CLASSES.SHOW_MATCHES, hasMatches);
+
+  if (hasMatches) {
+    realboxWrapper.addEventListener('keydown', onRealboxKeyDown);
+
+    // If the user is deleting content, don't quickly re-suggest the same
+    // output.
+    if (!isDeleting) {
+      const first = matches[0];
+      if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
+        updateRealboxOutput({inline: first.inlineAutocompletion});
+      }
+    }
+  }
+
+  autocompleteMatches = matches;
+}
+
+/** @param {!Event} e */
+function onRealboxCopy(e) {
+  const realboxEl = $(IDS.REALBOX);
+  if (!realboxEl.value || realboxEl.selectionStart !== 0 ||
+      realboxEl.selectionEnd !== realboxEl.value.length ||
+      autocompleteMatches.length === 0) {
+    // Only handle copy events when realbox has content and it's all selected.
+    return;
+  }
+
+  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+  const selected = matchEls.findIndex(match => {
+    return match.classList.contains(CLASSES.SELECTED);
+  });
+
+  const selectedMatch = autocompleteMatches[selected];
+  if (!selectedMatch.isSearchType) {
+    e.clipboardData.setData('text/plain', selectedMatch.destinationUrl);
+    e.preventDefault();
+  }
+}
+
+/** @param {Event} e */
+function onRealboxKeyDown(e) {
+  const key = e.key;
+
+  const realboxEl = $(IDS.REALBOX);
+  if (e.target === realboxEl && lastOutput.inline) {
+    const realboxValue = realboxEl.value;
+    const realboxSelected = realboxValue.substring(
+        realboxEl.selectionStart, realboxEl.selectionEnd);
+    // If the current state matches the default text + inline autocompletion
+    // and the user types the next key in the inline autocompletion, just move
+    // the selection and requery autocomplete. This is required to avoid flicker
+    // while setting .value and .selection{Start,End} to keep typing smooth.
+    if (realboxSelected === lastOutput.inline &&
+        realboxValue === lastOutput.text + lastOutput.inline &&
+        lastOutput.inline[0].toLocaleLowerCase() === key.toLocaleLowerCase()) {
+      updateRealboxOutput({
+        inline: lastOutput.inline.substr(1),
+        text: lastOutput.text + key,
+      });
+      window.chrome.embeddedSearch.searchBox.queryAutocomplete(lastOutput.text);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if (!REALBOX_KEYDOWN_HANDLED_KEYS.includes(key)) {
+    return;
+  }
+
+  const hasMods = e.ctrlKey || e.metaKey || e.shiftKey;
+  if (hasMods && key !== 'Enter') {
+    return;
+  }
+
+  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+  const selected = matchEls.findIndex(match => {
+    return match.classList.contains(CLASSES.SELECTED);
+  });
+
+  if (key === 'Enter') {
+    if (matchEls[selected]) {
+      // Note: dispatching a MouseEvent here instead of using e.g. .click() as
+      // this forwards key modifiers. This enables Shift+Enter to open a match
+      // in a new window, for example.
+      matchEls[selected].dispatchEvent(new MouseEvent('click', e));
+    }
+    return;
+  }
+
+  e.preventDefault();
+
+  if (key === 'Escape' && selected === 0) {
+    updateRealboxOutput({inline: '', text: ''});
+    return;
+  }
+
+  /** @type {number} */ let newSelected;
+  if (key === 'ArrowDown') {
+    newSelected = selected + 1 < matchEls.length ? selected + 1 : 0;
+  } else if (key === 'ArrowUp') {
+    newSelected = selected - 1 >= 0 ? selected - 1 : matchEls.length - 1;
+  } else if (key === 'Escape' || key === 'PageUp') {
+    newSelected = 0;
+  } else if (key === 'PageDown') {
+    newSelected = matchEls.length - 1;
+  }
+  selectMatchEl(matchEls[newSelected]);
+
+  const newMatch = autocompleteMatches[newSelected];
+  const newFill = newMatch.fillIntoEdit;
+  let newInline = '';
+  if (newMatch.allowedToBeDefaultMatch) {
+    newInline = newMatch.inlineAutocompletion;
+  }
+  const newFillEnd = newFill.length - newInline.length;
+  updateRealboxOutput({
+    moveCursorToEnd: true,
+    inline: newInline,
+    text: newFill.substr(0, newFillEnd),
+  });
+}
+
+function onRealboxInput() {
+  updateRealboxOutput({inline: '', text: $(IDS.REALBOX).value});
+  if (lastOutput.text.trim()) {
+    window.chrome.embeddedSearch.searchBox.queryAutocomplete(lastOutput.text);
+  }
+}
+
+/** @param {Event} e */
+function onRealboxWrapperFocusIn(e) {
+  if (!e.target.matches(`#${IDS.REALBOX_MATCHES} a`)) {
+    return;
+  }
+  const selectedIndex = selectMatchEl(e.target);
+  // It doesn't really make sense to use fillFromMatch() here as the focus
+  // change drops the selection (and is probably just noisy to
+  // screenreaders).
+  const newFill = autocompleteMatches[selectedIndex].fillIntoEdit;
+  updateRealboxOutput({moveCursorToEnd: true, inline: '', text: newFill});
+}
+
+/** @param {Event} e */
+function onRealboxWrapperFocusOut(e) {
+  const relatedTarget = /** @type {Element} */ (e.relatedTarget);
+  if (!$(IDS.REALBOX_INPUT_WRAPPER).contains(relatedTarget)) {
+    hideRealboxMatches();  // Hide but don't clear input.
+  }
+}
+
 /**
  * Handles a click on the restore all notification link by hiding the
  * notification and informing Chrome.
@@ -1039,6 +1329,21 @@ function reloadTiles() {
   if (iframe) {
     iframe.contentWindow.postMessage(cmds, '*');
   }
+}
+
+/**
+ * @param {string} text
+ * @param {!Array<!ACMatchClassification>} classifications
+ * @return {!Array<!Element>}
+ */
+function renderMatchClassifications(text, classifications) {
+  return classifications.map((classification, i) => {
+    const classes = classificationStyleToClasses(classification.style);
+    const next = classifications[i + 1] || {offset: text.length};
+    const classifiedText = text.substring(classification.offset, next.offset);
+    return classes.length ? spanWithClasses(classifiedText, classes) :
+                            document.createTextNode(classifiedText);
+  });
 }
 
 /**
@@ -1198,6 +1503,22 @@ function requestAndInsertGoogleResources() {
   }
 }
 
+/**
+ * @param {!EventTarget} elToSelect
+ * @return {number} The selected index (if found); else -1.
+ */
+function selectMatchEl(elToSelect) {
+  let selectedIndex = -1;
+  Array.from($(IDS.REALBOX_MATCHES).children).forEach((matchEl, i) => {
+    const found = matchEl === elToSelect;
+    matchEl.classList.toggle(CLASSES.SELECTED, found);
+    if (found) {
+      selectedIndex = i;
+    }
+  });
+  return selectedIndex;
+}
+
 /** Sends the current theme info to the most visited iframe. */
 function sendThemeInfoToMostVisitedIframe() {
   const info = getThemeBackgroundInfo();
@@ -1314,6 +1635,71 @@ function showNotification(msg) {
 }
 
 /**
+ * @param {string} text
+ * @param {!Array<string>} classes
+ * @return {!Element}
+ */
+function spanWithClasses(text, classes) {
+  const span = document.createElement('span');
+  span.classList.add(...classes);
+  span.textContent = text;
+  return span;
+}
+
+/**
+ * @param {number} style
+ * @return {!Array<string>}
+ */
+function classificationStyleToClasses(style) {
+  const classes = [];
+  if (style & ACMatchClassificationStyle.DIM) {
+    classes.push('dim');
+  }
+  if (style & ACMatchClassificationStyle.MATCH) {
+    classes.push('match');
+  }
+  if (style & ACMatchClassificationStyle.URL) {
+    classes.push('url');
+  }
+  return classes;
+}
+
+/** @param {!RealboxOutputUpdate} update */
+function updateRealboxOutput(update) {
+  assert(Object.keys(update).length > 0);
+
+  const realboxEl = $(IDS.REALBOX);
+  const newOutput =
+      /** @type {!RealboxOutput} */ (Object.assign({}, lastOutput, update));
+  const newAll = newOutput.text + newOutput.inline;
+
+  const inlineDiffers = newOutput.inline !== lastOutput.inline;
+  const preserveSelection = !inlineDiffers && !update.moveCursorToEnd;
+  let needsSelectionUpdate = !preserveSelection;
+
+  const oldSelectionStart = realboxEl.selectionStart;
+
+  if (newAll !== realboxEl.value) {
+    realboxEl.value = newAll;
+    needsSelectionUpdate = true;  // Setting .value blows away selection.
+  }
+
+  if (!newAll.trim()) {
+    hideRealboxMatches();
+  } else if (needsSelectionUpdate) {
+    realboxEl.selectionStart =
+        preserveSelection ? oldSelectionStart : newOutput.text.length;
+    // If the selection shouldn't be preserved, set the selection end to the
+    // same as the selection start (i.e. drop selection but move cursor).
+    realboxEl.selectionEnd =
+        preserveSelection ? oldSelectionStart : newAll.length;
+  }
+
+  isDeleting = userDeletedOutput(lastOutput, newOutput);
+  lastOutput = newOutput;
+}
+
+/**
  * Renders the attribution if the URL is present, otherwise hides it.
  * @param {string|undefined} url The URL of the attribution image, if any.
  * @param {string|undefined} themeBackgroundAlignment The alignment of the theme
@@ -1338,6 +1724,17 @@ function updateThemeAttribution(url, themeBackgroundAlignment) {
   attribution.classList.toggle(
       CLASSES.LEFT_ALIGN_ATTRIBUTION, themeBackgroundAlignment == 'right');
   setAttributionVisibility(true);
+}
+
+/**
+ * @param {!RealboxOutput} before
+ * @param {!RealboxOutput} after
+ * @return {boolean}
+ */
+function userDeletedOutput(before, after) {
+  const beforeAll = before.text + before.inline;
+  const afterAll = after.text + after.inline;
+  return beforeAll.length > afterAll.length && beforeAll.startsWith(afterAll);
 }
 
 return {

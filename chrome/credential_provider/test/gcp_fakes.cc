@@ -694,11 +694,16 @@ void FakeInternetAvailabilityChecker::SetHasInternetConnection(
 
 FakePasswordRecoveryManager::FakePasswordRecoveryManager()
     : FakePasswordRecoveryManager(
-          PasswordRecoveryManager::kDefaultEscrowServiceRequestTimeout) {}
+          PasswordRecoveryManager::
+              kDefaultEscrowServiceEncryptionKeyRequestTimeout,
+          PasswordRecoveryManager::
+              kDefaultEscrowServiceDecryptionKeyRequestTimeout) {}
 
 FakePasswordRecoveryManager::FakePasswordRecoveryManager(
-    base::TimeDelta request_timeout)
-    : PasswordRecoveryManager(request_timeout),
+    base::TimeDelta encryption_key_request_timeout,
+    base::TimeDelta decryption_key_request_timeout)
+    : PasswordRecoveryManager(encryption_key_request_timeout,
+                              decryption_key_request_timeout),
       original_validator_(*GetInstanceStorage()) {
   *GetInstanceStorage() = this;
 }

@@ -22,7 +22,7 @@ Polymer({
 
   /** @return {!CrInputElement} */
   getSearchInput: function() {
-    return this.$.searchInput;
+    return /** @type {!CrInputElement} */ (this.$.searchInput);
   },
 
   /** @private */

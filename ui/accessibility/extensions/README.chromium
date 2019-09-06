@@ -15,6 +15,11 @@ The built extensions will be in your out directory, e.g.:
 
 out/Release/colorehancer
 
+All other extensions should be zipped and uploaded to the webstore.
+
+Note for chromevoxclassic:
+see chromevoxclassic/README for further details.
+
 #
 # Instructions for publishing to the web store (new as of August 2019):
 #

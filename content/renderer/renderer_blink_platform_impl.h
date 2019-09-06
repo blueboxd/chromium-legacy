@@ -159,6 +159,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebUserMediaRequest& web_request) override;
   bool IsWebRtcHWH264DecodingEnabled(
       webrtc::VideoCodecType video_coded_type) override;
+  bool IsWebRtcHWEncodingEnabled() override;
+  bool IsWebRtcHWDecodingEnabled() override;
+
   blink::WebVideoCaptureImplManager* GetVideoCaptureImplManager() override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>

@@ -19,7 +19,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.base.test.util.TimeoutTimer;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -36,7 +36,7 @@ import java.util.concurrent.Callable;
 public class ActivityUtils {
     private static final String TAG = "cr_ActivityUtils";
 
-    private static final long ACTIVITY_START_TIMEOUT_MS = ScalableTimeout.scaleTimeout(3000);
+    private static final long ACTIVITY_START_TIMEOUT_MS = 3000L;
     private static final long CONDITION_POLL_INTERVAL_MS = 100;
 
     /**
@@ -119,16 +119,17 @@ public class ActivityUtils {
      */
     public static <T> T waitForActivityWithTimeout(Instrumentation instrumentation,
             Class<T> activityType, Callable<Void> activityTrigger, long timeOut) throws Exception {
+        TimeoutTimer timer = new TimeoutTimer(timeOut);
         ActivityMonitor monitor =
                 instrumentation.addMonitor(activityType.getCanonicalName(), null, false);
 
         activityTrigger.call();
         instrumentation.waitForIdleSync();
         Activity activity = monitor.getLastActivity();
-        if (activity == null) {
-            activity = monitor.waitForActivityWithTimeout(timeOut);
-            if (activity == null) logRunningChromeActivities();
+        while (activity == null && !timer.isTimedOut()) {
+            activity = monitor.waitForActivityWithTimeout(timer.getRemainingMs());
         }
+        if (activity == null) logRunningChromeActivities();
         Assert.assertNotNull(activityType.getName() + " did not start in: " + timeOut, activity);
 
         return activityType.cast(activity);

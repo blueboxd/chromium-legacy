@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
+#include "android_webview/browser_jni_headers/AwBrowserProcess_jni.h"
 #include "android_webview/common/aw_descriptors.h"
-#include "android_webview/native_jni/AwBrowserProcess_jni.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/stl_util.h"

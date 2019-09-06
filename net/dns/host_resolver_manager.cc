@@ -2500,6 +2500,8 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
   bool changed = dns_client_->SetConfigOverrides(std::move(overrides));
 
   if (changed) {
+    NetworkChangeNotifier::TriggerNonSystemDnsChange();
+
     // Only invalidate cache if new overrides have resulted in a config change.
     InvalidateCaches();
 

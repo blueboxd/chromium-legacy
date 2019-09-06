@@ -598,6 +598,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // properties of this widget.
   VisualProperties GetVisualProperties();
 
+  // Tracks the compositor viewport requested for an OOPIF subframe.
+  void SetCompositorViewport(const gfx::Rect& compositor_viewport);
+
   // Sets the |visual_properties| that were sent to the renderer bundled with
   // the request to create a new RenderWidget.
   void SetInitialVisualProperties(const VisualProperties& visual_properties);
@@ -869,7 +872,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnTextInputStateChanged(const TextInputState& params);
 
   void OnLockMouse(bool user_gesture,
-                   bool privileged);
+                   bool privileged,
+                   bool request_unadjusted_movement);
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
@@ -1078,6 +1082,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // True when the renderer is currently undergoing a pinch-zoom gesture.
   bool is_pinch_gesture_active_ = false;
 
+  gfx::Rect compositor_viewport_;
+
   bool waiting_for_screen_rects_ack_ = false;
   gfx::Rect last_view_screen_rect_;
   gfx::Rect last_window_screen_rect_;
@@ -1128,7 +1134,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool pending_mouse_lock_request_ = false;
   bool allow_privileged_mouse_lock_ = false;
-
+  bool mouse_lock_raw_movement_ = false;
   // Stores the keyboard keys to lock while waiting for a pending lock request.
   base::Optional<base::flat_set<ui::DomCode>> keyboard_keys_to_lock_;
   bool keyboard_lock_requested_ = false;
@@ -1204,7 +1210,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool monitoring_composition_info_ = false;
 
 #if defined(OS_MACOSX)
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;

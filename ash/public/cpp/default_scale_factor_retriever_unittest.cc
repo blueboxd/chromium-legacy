@@ -73,7 +73,7 @@ class DefaultScaleFactorRetrieverTest : public testing::Test {
   ~DefaultScaleFactorRetrieverTest() override = default;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(DefaultScaleFactorRetrieverTest);
 };
 

@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
-#include "android_webview/native_jni/AwProxyController_jni.h"
+#include "android_webview/browser_jni_headers/AwProxyController_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"

@@ -130,7 +130,7 @@ void ElementPositionGetter::OnGetBoxModelForStableCheck(
   }
 
   --remaining_rounds_;
-  base::PostDelayedTask(
+  base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ElementPositionGetter::GetAndWaitBoxModelStable,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -149,7 +149,7 @@ void ElementPositionGetter::OnScrollIntoView(
   }
 
   --remaining_rounds_;
-  base::PostDelayedTask(
+  base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ElementPositionGetter::GetAndWaitBoxModelStable,
                      weak_ptr_factory_.GetWeakPtr()),

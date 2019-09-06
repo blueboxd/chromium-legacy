@@ -280,6 +280,8 @@ crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/render
 crbug.com/angleproject/3883 [ win nvidia vulkan passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
+crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
+crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-half-float-with-canvas.html [ Failure ]
 crbug.com/angleproject/2722 [ win amd vulkan passthrough ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/angleproject/2926 [ win amd vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
 crbug.com/angleproject/2926 [ win amd vulkan passthrough ] deqp/data/gles2/shaders/linkage.html [ Failure ]

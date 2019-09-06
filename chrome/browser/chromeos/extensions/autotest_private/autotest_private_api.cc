@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -2097,6 +2098,47 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   ash::SetShelfAlignmentPref(profile->GetPrefs(), display_id, alignment);
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetOverviewModeStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetOverviewModeStateFunction::
+    AutotestPrivateSetOverviewModeStateFunction() = default;
+
+AutotestPrivateSetOverviewModeStateFunction::
+    ~AutotestPrivateSetOverviewModeStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetOverviewModeStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetOverviewModeState::Params> params(
+      api::autotest_private::SetOverviewModeState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  ash::OverviewTestApi().SetOverviewMode(
+      params->start,
+      base::BindOnce(
+          &AutotestPrivateSetOverviewModeStateFunction::OnOverviewModeChanged,
+          this, params->start));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void AutotestPrivateSetOverviewModeStateFunction::OnOverviewModeChanged(
+    bool for_start,
+    bool finished) {
+  auto arg = OneArgument(std::make_unique<base::Value>(finished));
+  // On starting the overview animation, it needs to wait for 1 extra second
+  // to trigger the occlusion tracker.
+  if (for_start) {
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AutotestPrivateSetOverviewModeStateFunction::Respond,
+                       this, std::move(arg)),
+        base::TimeDelta::FromSeconds(1));
+  } else {
+    Respond(std::move(arg));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

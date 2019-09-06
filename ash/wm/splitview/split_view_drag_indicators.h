@@ -88,6 +88,8 @@ class ASH_EXPORT SplitViewDragIndicators {
 
   bool GetIndicatorTypeVisibilityForTesting(IndicatorType type) const;
 
+  gfx::Rect GetLeftHighlightViewBoundsForTesting() const;
+
   IndicatorState current_indicator_state() const {
     return current_indicator_state_;
   }

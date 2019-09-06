@@ -18,7 +18,7 @@ class StreamTextureWrapperImplTest : public testing::Test {
   StreamTextureWrapperImplTest() {}
 
   // Necessary, or else GetSingleThreadTaskRunnerForTesting() fails.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StreamTextureWrapperImplTest);

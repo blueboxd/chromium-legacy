@@ -29,6 +29,11 @@ public class WebApkExtras {
     public final WebappIcon splashIcon;
 
     /**
+     * Whether the WebAPK's splash icon should be masked.
+     */
+    public final boolean isSplashIconMaskable;
+
+    /**
      * Version of the code in //chrome/android/webapk/shell_apk.
      */
     public final int shellApkVersion;
@@ -85,20 +90,23 @@ public class WebApkExtras {
 
     public static WebApkExtras createEmpty() {
         return new WebApkExtras(null /* webApkPackageName */, new WebappIcon(), new WebappIcon(),
-                0 /* shellApkVersion */, null /* manifestUrl */, null /* manifestStartUrl */,
-                WebApkDistributor.OTHER, null /* iconUrlToMurmur2HashMap */, new ShareTarget(),
+                false /* isSplashIconMaskable */, 0 /* shellApkVersion */, null /* manifestUrl */,
+                null /* manifestStartUrl */, WebApkDistributor.OTHER,
+                null /* iconUrlToMurmur2HashMap */, new ShareTarget(),
                 null /* shareTargetActivityName */, false /* isSplashProvidedByWebApk */,
                 null /* shareData */, 0 /* webApkVersionCode */);
     }
 
     public WebApkExtras(String webApkPackageName, WebappIcon badgeIcon, WebappIcon splashIcon,
-            int shellApkVersion, String manifestUrl, String manifestStartUrl,
-            @WebApkDistributor int distributor, Map<String, String> iconUrlToMurmur2HashMap,
-            ShareTarget shareTarget, String shareTargetActivityName,
-            boolean isSplashProvidedByWebApk, ShareData shareData, int webApkVersionCode) {
+            boolean isSplashIconMaskable, int shellApkVersion, String manifestUrl,
+            String manifestStartUrl, @WebApkDistributor int distributor,
+            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
+            String shareTargetActivityName, boolean isSplashProvidedByWebApk, ShareData shareData,
+            int webApkVersionCode) {
         this.webApkPackageName = webApkPackageName;
         this.badgeIcon = badgeIcon;
         this.splashIcon = splashIcon;
+        this.isSplashIconMaskable = isSplashIconMaskable;
         this.shellApkVersion = shellApkVersion;
         this.manifestUrl = manifestUrl;
         this.manifestStartUrl = manifestStartUrl;

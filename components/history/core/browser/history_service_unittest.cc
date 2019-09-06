@@ -58,7 +58,8 @@ namespace history {
 class HistoryServiceTest : public testing::Test {
  public:
   HistoryServiceTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
   ~HistoryServiceTest() override {}
 
@@ -154,7 +155,7 @@ class HistoryServiceTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   MostVisitedURLList most_visited_urls_;
 

@@ -55,6 +55,10 @@ void PointerLockController::RequestPointerLock(
     UseCounter::Count(target->GetDocument(),
                       WebFeature::kElementRequestPointerLockInShadow);
   }
+  if (options && options->unadjustedMovement()) {
+    UseCounter::Count(target->GetDocument(),
+                      WebFeature::kPointerLockUnadjustedMovement);
+  }
 
   if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to
@@ -76,7 +80,8 @@ void PointerLockController::RequestPointerLock(
     EnqueueEvent(event_type_names::kPointerlockchange, target);
     element_ = target;
   } else if (page_->GetChromeClient().RequestPointerLock(
-                 target->GetDocument().GetFrame())) {
+                 target->GetDocument().GetFrame(),
+                 (options ? options->unadjustedMovement() : false))) {
     lock_pending_ = true;
     element_ = target;
   } else {

@@ -407,8 +407,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return client_hints_preferences_;
   }
 
-  void BindPreviewsResourceLoadingHintsRequest(
-      blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request);
+  void BindPreviewsResourceLoadingHintsReceiver(
+      mojo::PendingReceiver<
+          blink::mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver);
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 

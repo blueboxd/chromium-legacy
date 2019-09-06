@@ -228,6 +228,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/transport_security_state.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -7297,6 +7298,43 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
   UpdateProviderPolicy(policies);
 
   EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup());
+}
+
+class HSTSPolicyTest : public PolicyTest {
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    std::vector<base::Value> bypass_list;
+    bypass_list.push_back(base::Value("example"));
+    SetPolicy(&policies, key::kHSTSPolicyBypassList,
+              std::make_unique<base::ListValue>(bypass_list));
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ private:
+  net::ScopedTransportSecurityStateSource hsts_source_;
+};
+
+IN_PROC_BROWSER_TEST_F(HSTSPolicyTest, HSTSPolicyBypassList) {
+  if (content::IsOutOfProcessNetworkService()) {
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    // The port number 1234 here doesn't matter - it just needs to be a non-zero
+    // value so that we use the unittest_default preload list.
+    network_service_test->SetTransportSecurityStateSource(1234);
+  }
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url("http://example/");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // If the policy didn't take effect, the request to http://example would be
+  // upgraded to https://example. This checks that the HSTS upgrade to https
+  // didn't happen.
+  EXPECT_EQ(url, contents->GetURL());
 }
 
 }  // namespace policy

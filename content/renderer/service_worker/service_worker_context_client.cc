@@ -258,6 +258,11 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   DCHECK(controller_receiver_.is_valid());
   proxy_->BindControllerServiceWorker(controller_receiver_.PassPipe());
+
+  GetContentClient()
+      ->renderer()
+      ->DidInitializeServiceWorkerContextOnWorkerThread(
+          proxy_, service_worker_scope_, script_url_);
 }
 
 void ServiceWorkerContextClient::WillEvaluateScript(

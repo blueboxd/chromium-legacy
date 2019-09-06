@@ -166,6 +166,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
                                    int64_t encoded_data_length,
                                    int64_t encoded_body_length,
                                    int64_t decoded_body_length);
+  // Pauses the toplevel script evaluation until ResumeEvaluation is called.
+  // Must be called before InitializeGlobalScope().
+  void PauseEvaluation();
+  // Resumes the toplevel script evaluation. Must be called only after
+  // PauseEvaluation() is called.
+  void ResumeEvaluation();
 
   // Creates a ServiceWorkerTimeoutTimer::StayAwakeToken to ensure that the idle
   // timer won't be triggered while any of these are alive.
@@ -535,6 +541,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // Timer triggered when the service worker considers it should be stopped or
   // an event should be aborted.
   std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer_;
+
+  // InitializeGlobalScope() doesn't run the script when this flag is true.
+  // TODO(bashi): Consider merging this flag into
+  // WorkerGlobalScope::ScriptEvalState
+  bool pause_evaluation_ = false;
 
   // Connected by the ServiceWorkerProviderHost in the browser process and by
   // the controllees. |controller_bindings_| should be destroyed before

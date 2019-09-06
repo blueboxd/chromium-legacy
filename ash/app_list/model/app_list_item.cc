@@ -21,11 +21,29 @@ AppListItem::~AppListItem() {
     observer.ItemBeingDestroyed();
 }
 
-void AppListItem::SetIcon(const gfx::ImageSkia& icon) {
-  metadata_->icon = icon;
-  metadata_->icon.EnsureRepsForSupportedScales();
+void AppListItem::SetIcon(ash::AppListConfigType config_type,
+                          const gfx::ImageSkia& icon) {
+  if (config_type == ash::AppListConfigType::kShared) {
+    metadata_->icon = icon;
+  } else {
+    per_config_icons_[config_type] = icon;
+  }
+  icon.EnsureRepsForSupportedScales();
+
   for (auto& observer : observers_)
-    observer.ItemIconChanged();
+    observer.ItemIconChanged(config_type);
+}
+
+const gfx::ImageSkia& AppListItem::GetIcon(
+    ash::AppListConfigType config_type) const {
+  if (config_type != ash::AppListConfigType::kShared) {
+    const auto& it = per_config_icons_.find(config_type);
+    if (it != per_config_icons_.end())
+      return it->second;
+    // If icon for requested config cannt be found, default to the shared config
+    // icon.
+  }
+  return metadata_->icon;
 }
 
 void AppListItem::SetIsInstalling(bool is_installing) {

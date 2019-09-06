@@ -17,6 +17,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item.InfoBarPriority;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
@@ -238,13 +239,8 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     @Override
-    public boolean isLegalDisclosure() {
-        return false;
-    }
-
-    @Override
-    public boolean isBottomMostInfoBar() {
-        return false;
+    public int getPriority() {
+        return InfoBarPriority.PAGE_TRIGGERED;
     }
 
     @Override

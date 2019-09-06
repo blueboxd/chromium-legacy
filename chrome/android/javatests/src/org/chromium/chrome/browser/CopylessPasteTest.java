@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -49,7 +47,7 @@ public class CopylessPasteTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     // The default timeout (in seconds) for a callback to wait.
-    public static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(20);
+    public static final long WAIT_TIMEOUT_SECONDS = 20L;
 
     // NODATA_PAGE doesn't contain desired metadata.
     private static final String NODATA_PAGE = "/chrome/test/data/android/about.html";

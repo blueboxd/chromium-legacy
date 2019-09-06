@@ -39,10 +39,18 @@ public class PasswordManagerDialogCoordinator {
                 mModel, customView, PasswordManagerDialogViewBinder::bind);
     }
 
+    public void showDialog(String title, String details, int boldRangeStart, int boldRangeEnd,
+            @DrawableRes int drawableId, String positiveButtonText, String negativeButtonText,
+            Callback<Integer> onClick, boolean primaryButtonFilled) {
+        mMediator.setContents(title, details, boldRangeStart, boldRangeEnd, drawableId);
+        mMediator.setButtons(positiveButtonText, negativeButtonText, onClick, primaryButtonFilled);
+        mMediator.showDialog();
+    }
+
     public void showDialog(String title, String details, @DrawableRes int drawableId,
             String positiveButtonText, String negativeButtonText, Callback<Integer> onClick,
             boolean primaryButtonFilled) {
-        mMediator.setContents(title, details, drawableId);
+        mMediator.setContents(title, details, 0, 0, drawableId);
         mMediator.setButtons(positiveButtonText, negativeButtonText, onClick, primaryButtonFilled);
         mMediator.showDialog();
     }

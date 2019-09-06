@@ -4,6 +4,7 @@
 
 import './tab.js';
 
+import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
@@ -45,6 +46,9 @@ class TabListElement extends CustomElement {
 
     /** @private {number} */
     this.windowId_;
+
+    addWebUIListener(
+        'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
   }
 
   /**
@@ -218,6 +222,18 @@ class TabListElement extends CustomElement {
         // location
         this.insertTabOrMoveTo_(tabElement, tab.index);
       }
+    }
+  }
+
+  /**
+   * @param {number} tabId
+   * @param {string} imgData
+   * @private
+   */
+  tabThumbnailUpdated_(tabId, imgData) {
+    const tab = this.findTabElement_(tabId);
+    if (tab) {
+      tab.updateThumbnail(imgData);
     }
   }
 

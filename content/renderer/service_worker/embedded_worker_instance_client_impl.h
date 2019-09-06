@@ -46,9 +46,16 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
   static void Create(
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
       mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
-          receiver,
-      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner);
+          receiver);
+
+  // TODO(https://crbug.com/955171): Remove this method and use Create once
+  // RenderFrameHostImpl uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  static void CreateForRequest(
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
+      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 

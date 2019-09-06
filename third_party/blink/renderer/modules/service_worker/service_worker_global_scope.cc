@@ -1442,6 +1442,20 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
 
   SetFetchHandlerExistence(fetch_hander_existence);
 
+  if (!pause_evaluation_)
+    ReadyToRunWorkerScript();
+}
+
+void ServiceWorkerGlobalScope::PauseEvaluation() {
+  DCHECK(IsContextThread());
+  pause_evaluation_ = true;
+}
+
+void ServiceWorkerGlobalScope::ResumeEvaluation() {
+  DCHECK(IsContextThread());
+  DCHECK(pause_evaluation_);
+  DCHECK_EQ(ScriptEvalState::kReadyToEvaluate, ScriptEvalState());
+  pause_evaluation_ = false;
   ReadyToRunWorkerScript();
 }
 

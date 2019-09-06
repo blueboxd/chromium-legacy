@@ -26,6 +26,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_web_ui.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,8 @@ class FakeWakeLock : public device::mojom::WakeLock {
   // Implement device::mojom::WakeLock:
   void RequestWakeLock() override { has_wakelock_ = true; }
   void CancelWakeLock() override { has_wakelock_ = false; }
-  void AddClient(device::mojom::WakeLockRequest request) override {}
+  void AddClient(
+      mojo::PendingReceiver<device::mojom::WakeLock> receiver) override {}
   void ChangeType(device::mojom::WakeLockType type,
                   ChangeTypeCallback callback) override {
     NOTIMPLEMENTED();

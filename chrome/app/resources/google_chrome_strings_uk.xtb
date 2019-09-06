@@ -168,11 +168,9 @@
 <translation id="5906655207909574370">Майже оновлено. Перезапустіть пристрій, щоб завершити оновлення.</translation>
 <translation id="5940385492829620908">Тут містяться ваші веб-сторінки, закладки та інші дані Chrome.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
-<translation id="5977372243443849142">Chrome може зберігати паролі, тож вам не доведеться запам'ятовувати їх.</translation>
 <translation id="6014844626092547096">Ви ввійшли в Chrome. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6070348360322141662">Щоб підвищити безпеку, Google Chrome шифруватиме ваші дані</translation>
-<translation id="6102256037460917300">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />налаштуваннях веб-переглядача Chrome<ph name="LINK_END" /></translation>
 <translation id="6113794647360055231">Chrome став ще кращим</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Бета-версія Google Chrome</translation>
@@ -245,7 +243,6 @@
 <translation id="8370517070665726704">Авторське право <ph name="YEAR" /> Google LLC. Усі права захищено.</translation>
 <translation id="840084489713044809">Google Chrome хоче експортувати ваші паролі.</translation>
 <translation id="8406086379114794905">Допоможіть покращити Chrome</translation>
-<translation id="8432724323949790809">Перезапустіть Google Chrome</translation>
 <translation id="8455999171311319804">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи в Google дані про діагностику та використання.</translation>
 <translation id="8478823064122749032">Установіть Chrome на телефоні. Ми надішлемо SMS на номер телефону для відновлення облікового запису: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8498858610309223613">Щойно було застосовано спеціальне оновлення для захисту Google Chrome. Перезапустіть веб-переглядач, і ваші вкладки буде відновлено.</translation>

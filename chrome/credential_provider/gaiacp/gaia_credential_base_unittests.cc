@@ -1235,8 +1235,8 @@ TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
     ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
   } else {
     // Error message concerning invalid domain is sent.
-    ASSERT_EQ(S_OK,
-              FinishLogonProcess(false, false, IDS_INVALID_EMAIL_DOMAIN_BASE));
+    ASSERT_EQ(S_OK, FinishLogonProcess(false, false,
+                                       IDS_DISALLOWED_CONSUMER_EMAIL_BASE));
   }
 
   if (user_created) {

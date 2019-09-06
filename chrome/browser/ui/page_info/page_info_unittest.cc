@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
@@ -1086,6 +1087,119 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
     } else {
       histograms.ExpectTotalCount(
           kHistogramPrefix + "NoAction." + test.security_level_name, 1);
+    }
+  }
+
+  // PageInfoTest expects a valid PageInfo instance to exist at end of test.
+  ResetMockUI();
+  SetDefaultUIExpectations(mock_ui());
+  page_info();
+}
+
+// Tests that metrics are recorded on a PageInfo for pages with
+// various Safety Tip statuses.
+TEST_F(PageInfoTest, SafetyTipMetrics) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kSafetyTipUI);
+  struct TestCase {
+    const security_state::SafetyTipStatus safety_tip_status;
+    const std::string histogram_name;
+  };
+  const char kGenericHistogram[] = "WebsiteSettings.Action";
+
+  const TestCase kTestCases[] = {
+      {security_state::SafetyTipStatus::kNone,
+       "Security.SafetyTips.PageInfo.Action.SafetyTip_None"},
+      {security_state::SafetyTipStatus::kBadReputation,
+       "Security.SafetyTips.PageInfo.Action.SafetyTip_BadReputation"},
+      {security_state::SafetyTipStatus::kLookalike,
+       "Security.SafetyTips.PageInfo.Action.SafetyTip_Lookalike"},
+  };
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL("https://example.test");
+    visible_security_state_.safety_tip_status = test.safety_tip_status;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kGenericHistogram, 0);
+    histograms.ExpectTotalCount(test.histogram_name, 0);
+
+    page_info()->RecordPageInfoAction(
+        PageInfo::PageInfoAction::PAGE_INFO_OPENED);
+
+    // RecordPageInfoAction() is called during PageInfo
+    // creation in addition to the explicit RecordPageInfoAction()
+    // call, so it is called twice in total.
+    histograms.ExpectTotalCount(kGenericHistogram, 2);
+    histograms.ExpectBucketCount(kGenericHistogram,
+                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+
+    histograms.ExpectTotalCount(test.histogram_name, 2);
+    histograms.ExpectBucketCount(test.histogram_name,
+                                 PageInfo::PageInfoAction::PAGE_INFO_OPENED, 2);
+  }
+}
+
+// Tests that the duration of time the PageInfo is open is recorded for pages
+// with various Safety Tip statuses.
+TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
+  struct TestCase {
+    const security_state::SafetyTipStatus safety_tip_status;
+    const std::string safety_tip_status_name;
+    const PageInfo::PageInfoAction action;
+  };
+
+  const std::string kHistogramPrefix("Security.PageInfo.TimeOpen.");
+
+  const TestCase kTestCases[] = {
+      // PAGE_INFO_COUNT used as shorthand for "take no action".
+      {security_state::SafetyTipStatus::kNone, "SafetyTip_None",
+       PageInfo::PAGE_INFO_COUNT},
+      {security_state::SafetyTipStatus::kLookalike, "SafetyTip_Lookalike",
+       PageInfo::PAGE_INFO_COUNT},
+      {security_state::SafetyTipStatus::kBadReputation,
+       "SafetyTip_BadReputation", PageInfo::PAGE_INFO_COUNT},
+      {security_state::SafetyTipStatus::kNone, "SafetyTip_None",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {security_state::SafetyTipStatus::kLookalike, "SafetyTip_Lookalike",
+       PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+      {security_state::SafetyTipStatus::kBadReputation,
+       "SafetyTip_BadReputation", PageInfo::PAGE_INFO_SITE_SETTINGS_OPENED},
+  };
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+    SetURL("https://example.test");
+    visible_security_state_.safety_tip_status = test.safety_tip_status;
+    ResetMockUI();
+    ClearPageInfo();
+    SetDefaultUIExpectations(mock_ui());
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.safety_tip_status_name,
+                                0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "Action." + test.safety_tip_status_name, 0);
+    histograms.ExpectTotalCount(
+        kHistogramPrefix + "NoAction." + test.safety_tip_status_name, 0);
+
+    PageInfo* test_page_info = page_info();
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      test_page_info->RecordPageInfoAction(test.action);
+    }
+    ClearPageInfo();
+
+    histograms.ExpectTotalCount(kHistogramPrefix + test.safety_tip_status_name,
+                                1);
+
+    if (test.action != PageInfo::PAGE_INFO_COUNT) {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "Action." + test.safety_tip_status_name, 1);
+    } else {
+      histograms.ExpectTotalCount(
+          kHistogramPrefix + "NoAction." + test.safety_tip_status_name, 1);
     }
   }
 

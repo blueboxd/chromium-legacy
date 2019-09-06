@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
@@ -30,8 +28,8 @@ import java.util.concurrent.TimeoutException;
  * Custom ActivityTestRule for all instrumentation tests that require a {@link CustomTabActivity}.
  */
 public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabActivity> {
-    protected static final long STARTUP_TIMEOUT_MS = scaleTimeout(5) * 1000;
-    protected static final long LONG_TIMEOUT_MS = scaleTimeout(10) * 1000;
+    protected static final long STARTUP_TIMEOUT_MS = 5L * 1000;
+    protected static final long LONG_TIMEOUT_MS = 10L * 1000;
 
     public CustomTabActivityTestRule() {
         super(CustomTabActivity.class);

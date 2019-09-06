@@ -98,7 +98,7 @@ class FakeProcessStatsAgent : public ProcessStatsAgent {
 }  // namespace
 
 TEST(ProcessStatsSenderTest, ReportUsage) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   FakeProcessStatsStub stub;
   std::unique_ptr<ProcessStatsSender> stats;
@@ -134,7 +134,7 @@ TEST(ProcessStatsSenderTest, ReportUsage) {
 }
 
 TEST(ProcessStatsSenderTest, MergeUsage) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   FakeProcessStatsStub stub;
   std::unique_ptr<ProcessStatsSender> stats;

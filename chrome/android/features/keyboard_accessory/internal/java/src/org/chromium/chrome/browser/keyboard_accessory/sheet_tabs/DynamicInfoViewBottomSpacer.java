@@ -35,6 +35,6 @@ class DynamicInfoViewBottomSpacer extends RecyclerView.ItemDecoration {
     }
 
     private boolean isUserInfoView(View view) {
-        return view.getClass().isAssignableFrom(mInfoViewClass);
+        return view.getClass().getCanonicalName().equals(mInfoViewClass.getCanonicalName());
     }
 }

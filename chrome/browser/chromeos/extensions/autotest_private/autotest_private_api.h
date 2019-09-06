@@ -699,6 +699,21 @@ class AutotestPrivateSetShelfAlignmentFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+// Returns the overview mode state.
+class AutotestPrivateSetOverviewModeStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetOverviewModeStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setOverviewModeState",
+                             AUTOTESTPRIVATE_SETOVERVIEWMODESTATE)
+
+ private:
+  ~AutotestPrivateSetOverviewModeStateFunction() override;
+  ResponseAction Run() override;
+
+  // Called when the overview mode changes.
+  void OnOverviewModeChanged(bool for_start, bool finished);
+};
+
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
     : public ExtensionFunction {
  public:

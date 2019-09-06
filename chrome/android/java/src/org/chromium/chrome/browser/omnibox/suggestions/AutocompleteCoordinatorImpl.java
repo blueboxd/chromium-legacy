@@ -79,6 +79,9 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
         mMediator =
                 new AutocompleteMediator(context, delegate, urlBarEditingTextProvider, listModel);
+
+        // https://crbug.com/966227 Set initial layout direction ahead of inflating the suggestions.
+        updateSuggestionListLayoutDirection();
     }
 
     @Override

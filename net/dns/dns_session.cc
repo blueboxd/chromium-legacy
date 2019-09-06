@@ -281,7 +281,12 @@ void DnsSession::RecordServerSuccess(unsigned server_index,
 void DnsSession::SetProbeSuccess(unsigned doh_server_index, bool success) {
   DCHECK_GE(doh_server_index, 0u);
   DCHECK_LT(doh_server_index, config_.dns_over_https_servers.size());
+
+  bool doh_available_before = HasAvailableDohServer();
   doh_server_stats_[doh_server_index].second = success;
+
+  if (doh_available_before != HasAvailableDohServer())
+    NetworkChangeNotifier::TriggerNonSystemDnsChange();
 }
 
 void DnsSession::RecordRTT(unsigned server_index,

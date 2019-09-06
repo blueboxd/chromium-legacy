@@ -129,6 +129,16 @@ interface OffscreenCanvas : EventTarget
 interface HTMLCanvasElement : HTMLElement
     method transferControlToOffscreen
 
+# interfaces for streams aren't exposed quite right in WebView, crbug.com/994324
+interface ByteLengthQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
+interface CountQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
+
 [GLOBAL OBJECT]
     method openDatabase
     attribute eventSender                    # test only

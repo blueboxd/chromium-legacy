@@ -14,7 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/media_session/public/cpp/media_position.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
@@ -304,15 +304,15 @@ void MediaWebContentsObserver::ClearWakeLocks(
 device::mojom::WakeLock* MediaWebContentsObserver::GetAudioWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!audio_wake_lock_) {
-    device::mojom::WakeLockRequest request =
-        mojo::MakeRequest(&audio_wake_lock_);
+    mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+        audio_wake_lock_.BindNewPipeAndPassReceiver();
     device::mojom::WakeLockContext* wake_lock_context =
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
       wake_lock_context->GetWakeLock(
           device::mojom::WakeLockType::kPreventAppSuspension,
           device::mojom::WakeLockReason::kAudioPlayback, "Playing audio",
-          std::move(request));
+          std::move(receiver));
     }
   }
   return audio_wake_lock_.get();

@@ -13,9 +13,13 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import android.support.annotation.Nullable;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -93,6 +98,7 @@ public class TabGroupModelFilterUnitTest {
     private List<Tab> mTabs = new ArrayList<>();
 
     private TabGroupModelFilter mTabGroupModelFilter;
+    private InOrder mTabModelInOrder;
 
     private Tab prepareTab(int tabId, int rootId, int parentTabId) {
         Tab tab = mock(Tab.class);
@@ -138,7 +144,9 @@ public class TabGroupModelFilterUnitTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Tab tab = invocation.getArgument(0);
-                mTabs.add(tab);
+                int index = invocation.getArgument(1);
+                index = index == -1 ? mTabs.size() : index;
+                mTabs.add(index, tab);
                 return null;
             }
         }).when(mTabModel).addTab(any(Tab.class), anyInt(), anyInt());
@@ -185,11 +193,16 @@ public class TabGroupModelFilterUnitTest {
 
         doReturn(0).when(mTabModel).index();
         doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
+        mTabModelInOrder = inOrder(mTabModel);
     }
 
     private Tab addTabToTabModel() {
-        Tab tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
-        mTabModel.addTab(tab, -1, TabLaunchType.FROM_CHROME_UI);
+        return addTabToTabModel(-1, null);
+    }
+
+    private Tab addTabToTabModel(int index, @Nullable Tab tab) {
+        if (tab == null) tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
+        mTabModel.addTab(tab, index, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(tab, TabLaunchType.FROM_CHROME_UI);
         return tab;
     }
@@ -320,73 +333,151 @@ public class TabGroupModelFilterUnitTest {
     }
 
     @Test
-    public void moveTabOutOfGroup_NoUpdateTabModel() {
+    public void moveTabOutOfGroup_NonRootTab_NoUpdateTabModel() {
         List<Tab> expectedTabModel =
                 new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3, mTab4, mTab5, mTab6));
+        assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab6.getRootId(), equalTo(TAB5_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
 
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB3_ID);
         mTabGroupModelFilter.moveTabOutOfGroup(TAB6_ID);
 
         verify(mTabModel, never()).moveTab(anyInt(), anyInt());
         assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+        assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
         assertThat(mTab6.getRootId(), equalTo(TAB6_ID));
     }
 
     @Test
-    public void moveTabOutOfGroup_NonRootTab() {
+    public void moveTabOutOfGroup_RootTab_NoUpdateTabModel() {
         List<Tab> expectedTabModel =
-                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab4, mTab5, mTab6, mTab3));
+                new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab2, mTab4, mTab6, mTab5));
+
+        // Move Tab2 and Tab5 to the end of respective group so that root tab is the last tab in
+        // group. Plus one as offset because we are moving backwards in tab model.
+        mTabModel.moveTab(TAB2_ID, POSITION3 + 1);
+        mTabModel.moveTab(TAB5_ID, POSITION6 + 1);
+
+        mTabModelInOrder.verify(mTabModel, times(2)).moveTab(anyInt(), anyInt());
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
         assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab6.getRootId(), equalTo(TAB5_ID));
+
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB2_ID);
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB5_ID);
+
+        mTabModelInOrder.verify(mTabModel, never()).moveTab(anyInt(), anyInt());
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
+        assertThat(mTab5.getRootId(), equalTo(TAB5_ID));
+        assertThat(mTab6.getRootId(), equalTo(TAB6_ID));
+    }
+
+    @Test
+    public void moveTabOutOfGroup_NonRootTab_FirstTab_UpdateTabModel() {
+        List<Tab> expectedTabModelBeforeUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab2, mTab4, mTab5, mTab6));
+        List<Tab> expectedTabModelAfterUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3, mTab4, mTab5, mTab6));
+        // Move Tab3 so that Tab3 is the first tab in group.
+        mTabModel.moveTab(TAB3_ID, POSITION2);
+
+        mTabModelInOrder.verify(mTabModel).moveTab(TAB3_ID, POSITION2);
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelBeforeUngroup.toArray());
 
         mTabGroupModelFilter.moveTabOutOfGroup(TAB3_ID);
 
-        verify(mTabModel).moveTab(mTab3.getId(), mTabs.size());
+        // Plus one as offset because we are moving backwards in tab model.
+        mTabModelInOrder.verify(mTabModel).moveTab(TAB3_ID, POSITION3 + 1);
+        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab3, POSITION2);
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelAfterUngroup.toArray());
+    }
+
+    @Test
+    public void moveTabOutOfGroup_NonRootTab_NotFirstTab_UpdateTabModel() {
+        Tab newTab = prepareTab(NEW_TAB_ID, TAB2_ROOT_ID, TAB2_ID);
+        List<Tab> expectedTabModelBeforeUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3, newTab, mTab4, mTab5, mTab6));
+        List<Tab> expectedTabModelAfterUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab, mTab3, mTab4, mTab5, mTab6));
+
+        // Add one tab to the end of {Tab2, Tab3} group so that Tab3 is neither the first nor the
+        // last tab in group.
+        addTabToTabModel(POSITION4, newTab);
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+        assertThat(newTab.getRootId(), equalTo(TAB2_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelBeforeUngroup.toArray());
+
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB3_ID);
+
+        // Plus one as offset because we are moving backwards in tab model.
+        mTabModelInOrder.verify(mTabModel).moveTab(TAB3_ID, POSITION4 + 1);
         verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab3, POSITION2);
         assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
-        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        assertThat(newTab.getRootId(), equalTo(TAB2_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelAfterUngroup.toArray());
     }
 
     @Test
-    public void moveTabOutOfGroup_RootTabFirstTab() {
-        List<Tab> expectedTabModel =
-                new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab4, mTab5, mTab6, mTab2));
-        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
-        assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
-
-        mTabGroupModelFilter.moveTabOutOfGroup(TAB2_ID);
-
-        verify(mTabModel).moveTab(mTab2.getId(), mTabs.size());
-        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab2, POSITION2);
-        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
-        assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
-        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
-    }
-
-    @Test
-    public void moveTabOutOfGroup_RootTabNotFirstTab() {
-        // Move the root tab so that first tab in group is not the root tab.
-        mTabModel.moveTab(TAB2_ID, POSITION4);
-        List<Tab> tabModelBeforeUngroup =
+    public void moveTabOutOfGroup_RootTab_FirstTab_UpdateTabModel() {
+        List<Tab> expectedTabModelBeforeUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab3, mTab4, mTab5, mTab6));
+        List<Tab> expectedTabModelAfterUngroup =
                 new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab2, mTab4, mTab5, mTab6));
-        assertArrayEquals(mTabs.toArray(), tabModelBeforeUngroup.toArray());
-
-        List<Tab> expectedTabModel =
-                new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab4, mTab5, mTab6, mTab2));
         assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
         assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelBeforeUngroup.toArray());
 
         mTabGroupModelFilter.moveTabOutOfGroup(TAB2_ID);
 
-        verify(mTabModel).moveTab(mTab2.getId(), mTabs.size());
+        // Plus one as offset because we are moving backwards in tab model.
+        verify(mTabModel).moveTab(mTab2.getId(), POSITION3 + 1);
         verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab2, POSITION2);
         assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
         assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
-        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+        assertArrayEquals(mTabs.toArray(), expectedTabModelAfterUngroup.toArray());
+    }
+
+    @Test
+    public void moveTabOutOfGroup_RootTab_NotFirstTab_UpdateTabModel() {
+        Tab newTab = prepareTab(NEW_TAB_ID, TAB2_ROOT_ID, TAB2_ID);
+        List<Tab> expectedTabModelBeforeUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, newTab, mTab2, mTab3, mTab4, mTab5, mTab6));
+        List<Tab> expectedTabModelAfterUngroup =
+                new ArrayList<>(Arrays.asList(mTab1, newTab, mTab3, mTab2, mTab4, mTab5, mTab6));
+
+        // Add one tab to {Tab2, Tab3} group as the first tab in group, so that Tab2 is neither the
+        // first nor the last tab in group.
+        addTabToTabModel(POSITION2, newTab);
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+        assertThat(newTab.getRootId(), equalTo(TAB2_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelBeforeUngroup.toArray());
+
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB2_ID);
+
+        // Plus one as offset because we are moving backwards in tab model.
+        verify(mTabModel).moveTab(mTab2.getId(), POSITION4 + 1);
+        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab2, POSITION2);
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
+        // NEW_TAB_ID becomes the new root id for {Tab3, newTab} group.
+        assertThat(mTab3.getRootId(), equalTo(NEW_TAB_ID));
+        assertThat(mTab3.getRootId(), equalTo(NEW_TAB_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModelAfterUngroup.toArray());
     }
 
     @Test
     public void moveTabOutOfGroup_OtherGroupsLastShownIdUnchanged() {
         List<Tab> expectedTabModel =
-                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab4, mTab5, mTab6, mTab3));
+                new ArrayList<>(Arrays.asList(mTab1, mTab3, mTab2, mTab4, mTab5, mTab6));
         assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
 
         // By default, the last shown tab is the first tab in group by order in tab model.
@@ -403,10 +494,12 @@ public class TabGroupModelFilterUnitTest {
         assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
                 equalTo(TAB6_ID));
 
-        mTabGroupModelFilter.moveTabOutOfGroup(TAB3_ID);
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB2_ID);
 
-        verify(mTabModel).moveTab(mTab3.getId(), mTabs.size());
-        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab3, POSITION2);
+        // Plus one as offset because we are moving backwards in tab model.
+        verify(mTabModel).moveTab(mTab2.getId(), POSITION3 + 1);
+        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab2, POSITION2);
+        assertThat(mTab2.getRootId(), equalTo(TAB2_ID));
         assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
         assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
 

@@ -14,7 +14,7 @@ namespace autofill {
 class CreditCard;
 }  // namespace autofill
 
-@protocol ManualFillContentDelegate;
+@protocol ManualFillContentInjector;
 @protocol ManualFillCardConsumer;
 @protocol CardListDelegate;
 
@@ -32,7 +32,7 @@ extern NSString* const ManageCardsAccessibilityIdentifier;
 @property(nonatomic, weak) id<ManualFillCardConsumer> consumer;
 
 // The delegate in charge of using the content selected by the user.
-@property(nonatomic, weak) id<ManualFillContentDelegate> contentDelegate;
+@property(nonatomic, weak) id<ManualFillContentInjector> contentInjector;
 
 // The delegate in charge of navigation.
 @property(nonatomic, weak) id<CardListDelegate> navigationDelegate;

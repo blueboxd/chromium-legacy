@@ -6,7 +6,6 @@
 #define MEDIA_GPU_WINDOWS_D3D11_PICTURE_BUFFER_H_
 
 #include <d3d11.h>
-#include <dxva.h>
 #include <wrl/client.h>
 
 #include <memory>

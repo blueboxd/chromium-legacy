@@ -177,7 +177,7 @@ const char* CheckImmersiveSessionRequestAllowed(LocalFrame* frame,
     return kPageNotVisible;
   }
 
-  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
+  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr,
                              ReportOptions::kReportOnFailure)) {
     return kFeaturePolicyBlocked;
   }
@@ -220,7 +220,7 @@ const char* XR::CheckInlineSessionRequestAllowed(
   }
 
   // Make sure the WebXR feature policy is enabled
-  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
+  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr,
                              ReportOptions::kReportOnFailure)) {
     return kFeaturePolicyBlocked;
   }
@@ -494,7 +494,7 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
     return promise;
   }
 
-  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
+  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr,
                              ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.

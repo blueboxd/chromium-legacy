@@ -17,7 +17,6 @@
 #include "base/task_runner_util.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "google_apis/drive/drive_api_parser.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 using google_apis::CancelCallback;
@@ -106,7 +105,7 @@ struct DriveUploader::UploadFileInfo {
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventAppSuspension,
           device::mojom::WakeLockReason::kOther, "Upload in progress",
-          mojo::MakeRequest(&wake_lock));
+          wake_lock.BindNewPipeAndPassReceiver());
       wake_lock->RequestWakeLock();
     }
   }
@@ -147,7 +146,7 @@ struct DriveUploader::UploadFileInfo {
   int64_t next_start_position;
 
   // Blocks system suspend while upload is in progress.
-  device::mojom::WakeLockPtr wake_lock;
+  mojo::Remote<device::mojom::WakeLock> wake_lock;
 
   // Fields for implementing cancellation. |cancel_callback| is non-null if
   // there is an in-flight HTTP request. In that case, |cancell_callback| will

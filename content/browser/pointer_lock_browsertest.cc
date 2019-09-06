@@ -4,6 +4,7 @@
 
 #include "content/browser/pointer_lock_browsertest.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -20,6 +21,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/ui_base_features.h"
 
 #ifdef USE_AURA
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -54,14 +56,17 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
       UnlockMouse();
   }
 
-  bool LockMouse() override {
+  bool LockMouse(bool request_unadjusted_movement) override {
     event_handler()->mouse_locked_ = true;
+    event_handler()->mouse_locked_unadjusted_movement_ =
+        request_unadjusted_movement;
     return true;
   }
 
   void UnlockMouse() override {
     host_->LostMouseLock();
     event_handler()->mouse_locked_ = false;
+    event_handler()->mouse_locked_unadjusted_movement_ = false;
   }
 
   bool IsMouseLocked() override { return event_handler()->mouse_locked(); }
@@ -71,6 +76,11 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override {
     // Ignore window focus events.
+  }
+
+  bool GetIsMouseLockedUnadjustedMovementForTesting() override {
+    return IsMouseLocked() &&
+           event_handler()->mouse_locked_unadjusted_movement_;
   }
 
   RenderWidgetHostImpl* host_;
@@ -597,4 +607,122 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWidgetHidden) {
   EXPECT_EQ(nullptr, web_contents()->GetMouseLockWidget());
 }
 
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       PointerLockRequestUnadjustedMovement) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kPointerLockOptions);
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var PointerLockErrorReceived=false;"
+                     "document.addEventListener('pointerlockerror', "
+                     "function() {PointerLockErrorReceived = true;});"));
+  // Request a pointer lock.
+  EXPECT_TRUE(ExecJs(root, "document.body.requestPointerLock()"));
+  // Root frame should have been granted pointer lock.
+  EXPECT_EQ(true, EvalJs(root, "document.pointerLockElement == document.body"));
+  // Mouse is locked and unadjusted_movement is not set.
+  EXPECT_TRUE(root->current_frame_host()->GetView()->IsMouseLocked());
+  // Release pointer lock.
+  EXPECT_TRUE(ExecJs(root, "document.exitPointerLock()"));
+
+  EXPECT_EQ("false", EvalJs(root, "JSON.stringify(PointerLockErrorReceived)"));
+
+  // Request a pointer lock with unadjustedMovement.
+  EXPECT_TRUE(ExecJs(
+      root, "document.body.requestPointerLock({unadjustedMovement:true})"));
+#if defined(USE_AURA)
+  // Root frame should have been granted pointer lock.
+  EXPECT_EQ(true, EvalJs(root, "document.pointerLockElement == document.body"));
+  // Mouse is locked and unadjusted_movement is set.
+  EXPECT_TRUE(root->current_frame_host()->GetView()->IsMouseLocked());
+  EXPECT_TRUE(root->current_frame_host()
+                  ->GetView()
+                  ->GetIsMouseLockedUnadjustedMovementForTesting());
+
+  // Release pointer lock, unadjusted_movement bit is reset.
+  EXPECT_TRUE(ExecJs(root, "document.exitPointerLock()"));
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetView()
+                   ->GetIsMouseLockedUnadjustedMovementForTesting());
+#else
+  // On platform that does not support unadjusted movement yet, do not lock and
+  // a pointerlockerror event is dispatched.
+  EXPECT_FALSE(root->current_frame_host()->GetView()->IsMouseLocked());
+  EXPECT_EQ("true", EvalJs(root, "JSON.stringify(PointerLockErrorReceived)"));
+#endif
+}
+
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, UnadjustedMovement) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kPointerLockOptions);
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetView());
+
+  // Add a mouse move event listener to the root frame.
+  EXPECT_TRUE(ExecJs(
+      root,
+      "var x; var y; var mX; var mY; document.addEventListener('mousemove', "
+      "function(e) {x = e.x; y = e.y; mX = e.movementX; mY = e.movementY;});"));
+
+  // Send a mouse move to root frame before lock.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+  mouse_event.SetPositionInWidget(6, 7);
+  mouse_event.SetPositionInScreen(6, 7);
+  mouse_event.movement_x = 8;
+  mouse_event.movement_y = 9;
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
+
+  // Make sure that the renderer handled the input event.
+  MainThreadFrameObserver root_observer(root_view->GetRenderWidgetHost());
+  root_observer.Wait();
+
+  EXPECT_EQ("[6,7,0,0]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
+
+  // Request a pointer lock with unadjustedMovement.
+  EXPECT_TRUE(ExecJs(
+      root, "document.body.requestPointerLock({unadjustedMovement:true})"));
+  // Root frame should have been granted pointer lock.
+  EXPECT_EQ(true, EvalJs(root, "document.pointerLockElement == document.body"));
+  // Mouse is locked and unadjusted_movement is not set.
+  EXPECT_TRUE(root->current_frame_host()->GetView()->IsMouseLocked());
+
+  mouse_event.SetPositionInWidget(10, 10);
+  mouse_event.SetPositionInScreen(10, 10);
+  mouse_event.movement_x = 12;
+  mouse_event.movement_y = 9;
+  mouse_event.is_raw_movement_event = true;
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
+  root_observer.Wait();
+
+  // Raw movement events movement value from WebMouseEvent.movement_x/y.
+  EXPECT_EQ("[6,7,12,9]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
+
+  mouse_event.SetPositionInWidget(20, 21);
+  mouse_event.SetPositionInScreen(20, 21);
+  mouse_event.movement_x = 1;
+  mouse_event.movement_y = 2;
+  mouse_event.is_raw_movement_event = false;
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
+  root_observer.Wait();
+
+  // Non-raw movement events movement value from screen pos - last screen pos.
+  EXPECT_EQ("[6,7,10,11]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
+}
+#endif
 }  // namespace content

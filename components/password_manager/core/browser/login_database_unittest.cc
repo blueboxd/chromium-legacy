@@ -612,17 +612,12 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 
-  // Example password form.
+  // Saved password form on Google sign-in page.
   PasswordForm form;
   form.origin = GURL("https://accounts.google.com/");
-  form.action = GURL("https://accounts.google.com/login");
-  form.username_element = ASCIIToUTF16("username");
   form.username_value = ASCIIToUTF16("test@gmail.com");
-  form.password_element = ASCIIToUTF16("password");
   form.password_value = ASCIIToUTF16("test");
-  form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://accounts.google.com/";
-  form.preferred = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
   // Add it and make sure it is there.
@@ -633,20 +628,26 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
 
   // Match against an exact copy.
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
-  EXPECT_EQ(1U, result.size());
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ(form.signon_realm, result[0]->signon_realm);
   result.clear();
 
-  // We go to a different site on the same domain where feature is not needed.
+  // Google change password should match to the saved sign-in form.
   PasswordStore::FormDigest form2 = {PasswordForm::Scheme::kHtml,
+                                     "https://myaccount.google.com/",
+                                     GURL("https://myaccount.google.com/")};
+
+  EXPECT_TRUE(db().GetLogins(form2, &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ(form.signon_realm, result[0]->signon_realm);
+  EXPECT_TRUE(result[0]->is_public_suffix_match);
+
+  // There should be no PSL match on other subdomains.
+  PasswordStore::FormDigest form3 = {PasswordForm::Scheme::kHtml,
                                      "https://some.other.google.com/",
                                      GURL("https://some.other.google.com/")};
 
-  // Match against the other site. Should not match since feature should not be
-  // enabled for this domain.
-  ASSERT_FALSE(ShouldPSLDomainMatchingApply(
-      GetRegistryControlledDomain(GURL(form2.signon_realm))));
-
-  EXPECT_TRUE(db().GetLogins(form2, &result));
+  EXPECT_TRUE(db().GetLogins(form3, &result));
   EXPECT_EQ(0U, result.size());
 }
 
@@ -686,8 +687,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   EXPECT_THAT(result, testing::ElementsAre(Pointee(form)));
 
   // Match against the second one.
-  ASSERT_FALSE(ShouldPSLDomainMatchingApply(
-      GetRegistryControlledDomain(GURL(form2.signon_realm))));
   form_request.origin = form2.origin;
   form_request.signon_realm = form2.signon_realm;
   EXPECT_TRUE(db().GetLogins(form_request, &result));

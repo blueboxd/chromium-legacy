@@ -155,8 +155,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
 TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
   LoadHTML("<input/>");
 
-  // Normally, we have a WebFrameWidget.
-  EXPECT_TRUE(GetWebWidget()->IsWebFrameWidget());
+  // We have a WebFrameWidget on the root RenderWidget while a local main frame
+  // is attached.
+  EXPECT_TRUE(GetWebWidget());
 
   // Swap out the main frame so that the frame widget is destroyed.
   auto* view = static_cast<RenderViewImpl*>(view_);

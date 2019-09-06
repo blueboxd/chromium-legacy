@@ -14,6 +14,7 @@
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -113,6 +114,11 @@ class SecurityStatePageLoadMetricsBrowserTest : public InProcessBrowserTest {
   }
   net::EmbeddedTestServer* http_test_server() {
     return http_test_server_.get();
+  }
+
+  void ClearUkmRecorder() {
+    test_ukm_recorder_.reset();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
  private:
@@ -226,6 +232,62 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, ReloadPage) {
           GetSecurityLevelPageEndReasonHistogramNameForTesting(
               security_state::SECURE),
       page_load_metrics::END_RELOAD, 1);
+}
+
+// Tests that Site Engagement histograms are recorded correctly on a page with a
+// Safety Tip.
+IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
+                       SafetyTipSiteEngagement) {
+  const std::string kSiteEngagementHistogramPrefix = "Security.SiteEngagement.";
+  const std::string kSiteEngagementDeltaHistogramPrefix =
+      "Security.SiteEngagementDelta.";
+
+  StartHttpsServer(net::EmbeddedTestServer::CERT_OK);
+  GURL url = https_test_server()->GetURL("/simple.html");
+
+  // The histogram should be recorded regardless of whether the page is flagged
+  // with a Safety Tip or not.
+  for (bool flag_page : {false, true}) {
+    ClearUkmRecorder();
+    base::HistogramTester histogram_tester;
+    if (flag_page) {
+      SetSafetyTipBadRepPatterns({url.host() + "/"});
+    }
+
+    chrome::AddTabAt(browser(), GURL(), -1, true);
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    safety_tips::ReputationWebContentsObserver* rep_observer =
+        safety_tips::ReputationWebContentsObserver::FromWebContents(contents);
+    ASSERT_TRUE(rep_observer);
+
+    // Navigate to |url| and wait for the reputation check to complete before
+    // checking the histograms.
+    base::RunLoop run_loop;
+    rep_observer->RegisterReputationCheckCallbackForTesting(
+        run_loop.QuitClosure());
+    ui_test_utils::NavigateToURL(browser(), url);
+    run_loop.Run();
+    // The UKM isn't recorded until the page is destroyed.
+    ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
+        1, TabStripModel::CLOSE_NONE));
+
+    histogram_tester.ExpectTotalCount(
+        kSiteEngagementHistogramPrefix +
+            (flag_page ? "SafetyTip_BadReputation" : "SafetyTip_None"),
+        1);
+    histogram_tester.ExpectTotalCount(
+        kSiteEngagementDeltaHistogramPrefix +
+            (flag_page ? "SafetyTip_BadReputation" : "SafetyTip_None"),
+        1);
+    EXPECT_EQ(1u, CountUkmEntries());
+    ExpectMetricForUrl(
+        url, UkmEntry::kSafetyTipStatusName,
+        static_cast<int64_t>(
+            flag_page ? security_state::SafetyTipStatus::kBadReputation
+                      : security_state::SafetyTipStatus::kNone));
+  }
 }
 
 // Tests that the Safety Tip page end reason histogram is recorded properly, by

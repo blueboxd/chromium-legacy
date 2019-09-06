@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Activity;
 import android.graphics.Rect;
 import android.util.JsonReader;
@@ -30,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  */
 @JNINamespace("content")
 public class DOMUtils {
-    private static final long MEDIA_TIMEOUT_SECONDS = scaleTimeout(10);
+    private static final long MEDIA_TIMEOUT_SECONDS = 10L;
     private static final long MEDIA_TIMEOUT_MILLISECONDS = MEDIA_TIMEOUT_SECONDS * 1000;
 
     /**

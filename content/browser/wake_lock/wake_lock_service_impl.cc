@@ -17,17 +17,19 @@ void WakeLockServiceImpl::Create(
   new WakeLockServiceImpl(render_frame_host, std::move(receiver));
 }
 
-void WakeLockServiceImpl::GetWakeLock(device::mojom::WakeLockType type,
-                                      device::mojom::WakeLockReason reason,
-                                      const std::string& description,
-                                      device::mojom::WakeLockRequest request) {
+void WakeLockServiceImpl::GetWakeLock(
+    device::mojom::WakeLockType type,
+    device::mojom::WakeLockReason reason,
+    const std::string& description,
+    mojo::PendingReceiver<device::mojom::WakeLock> receiver) {
   device::mojom::WakeLockContext* wake_lock_context =
       web_contents()->GetWakeLockContext();
 
   if (!wake_lock_context)
     return;
 
-  wake_lock_context->GetWakeLock(type, reason, description, std::move(request));
+  wake_lock_context->GetWakeLock(type, reason, description,
+                                 std::move(receiver));
 }
 
 WakeLockServiceImpl::WakeLockServiceImpl(

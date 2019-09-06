@@ -152,7 +152,7 @@ class X11CharacterInjectorTest : public testing::Test {
   std::unique_ptr<X11CharacterInjector> injector_;
   FakeX11Keyboard* keyboard_;  // Owned by |injector_|.
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 void X11CharacterInjectorTest::SetUp() {

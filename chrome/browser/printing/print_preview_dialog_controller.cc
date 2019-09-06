@@ -47,6 +47,10 @@
 #include "chrome/browser/win/conflicts/module_database.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/print_spooler/print_session_impl.h"
+#endif
+
 using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -60,6 +64,17 @@ PrintPreviewUI* GetPrintPreviewUIForDialog(WebContents* dialog) {
   return web_ui ? static_cast<PrintPreviewUI*>(web_ui->GetController())
                 : nullptr;
 }
+
+#if defined(OS_CHROMEOS)
+void CloseArcPrintSession(WebContents* initiator) {
+  WebContents* outermost_web_contents =
+      guest_view::GuestViewBase::GetTopLevelWebContents(initiator);
+  auto* arc_print_session =
+      arc::PrintSessionImpl::FromWebContents(outermost_web_contents);
+  if (arc_print_session)
+    arc_print_session->OnPrintPreviewClosed();
+}
+#endif
 
 // A ui::WebDialogDelegate that specifies the print preview dialog appearance.
 class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
@@ -495,6 +510,10 @@ void PrintPreviewDialogController::RemoveInitiator(
 
   PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
 
+#if defined(OS_CHROMEOS)
+  CloseArcPrintSession(initiator);
+#endif
+
   // Initiator is closed. Close the print preview dialog too.
   auto* print_preview_ui = GetPrintPreviewUIForDialog(preview_dialog);
   if (print_preview_ui)
@@ -508,6 +527,10 @@ void PrintPreviewDialogController::RemovePreviewDialog(
   if (initiator) {
     RemoveObserver(initiator);
     PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
+
+#if defined(OS_CHROMEOS)
+    CloseArcPrintSession(initiator);
+#endif
   }
 
   preview_dialog_map_.erase(preview_dialog);

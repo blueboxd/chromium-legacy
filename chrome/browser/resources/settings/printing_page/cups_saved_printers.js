@@ -14,17 +14,13 @@ Polymer({
   ],
 
   properties: {
-    /**
-     * @type {!Array<!PrinterListEntry>}
-     * @private
-     */
-    savedPrinters_: {
+    /** @type {!Array<!PrinterListEntry>} */
+    savedPrinters: {
       type: Array,
-      value: () => [],
     },
 
     /**
-     * Search term for filtering |savedPrinters_|.
+     * Search term for filtering |savedPrinters|.
      * @type {string}
      */
     searchTerm: {
@@ -60,35 +56,6 @@ Polymer({
     this.browserProxy_ = settings.CupsPrintersBrowserProxyImpl.getInstance();
   },
 
-  /** @override */
-  ready: function() {
-    this.addWebUIListener(
-        'on-printers-changed', this.printersChanged_.bind(this));
-    this.updateSavedPrintersList();
-  },
-
-  /** Public function to update the printer list. */
-  updateSavedPrintersList: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .getCupsPrintersList()
-        .then(this.printersChanged_.bind(this));
-  },
-
-  /**
-   * @param {!CupsPrintersList} cupsPrintersList
-   * @private
-   */
-  printersChanged_: function(cupsPrintersList) {
-    if (!cupsPrintersList) {
-      return;
-    }
-
-    this.savedPrinters_ = cupsPrintersList.printerList.map(
-        printer => /** @type {!PrinterListEntry} */({
-            printerInfo: printer,
-            printerType: PrinterType.SAVED}));
-  },
-
   /**
    * @param {!CustomEvent<{target: !HTMLElement, item: !PrinterListEntry}>} e
    * @private
@@ -96,10 +63,10 @@ Polymer({
   onOpenActionMenu_: function(e) {
     const item = /** @type {!PrinterListEntry} */(e.detail.item);
     this.activePrinterListEntryIndex_ =
-        this.savedPrinters_.findIndex(
+        this.savedPrinters.findIndex(
             printer => printer.printerInfo == item.printerInfo);
     this.activePrinter =
-        this.get(['savedPrinters_', this.activePrinterListEntryIndex_])
+        this.get(['savedPrinters', this.activePrinterListEntryIndex_])
         .printerInfo;
 
     const target = /** @type {!HTMLElement} */ (e.detail.target);
@@ -115,7 +82,6 @@ Polymer({
 
   /** @private */
   onRemoveTap_: function() {
-    this.splice('savedPrinters_', this.activePrinterListEntryIndex_, 1);
     this.browserProxy_.removeCupsPrinter(
         this.activePrinter.printerId, this.activePrinter.printerName);
     this.activePrinter = null;

@@ -1716,7 +1716,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
   //  ******************** Start System trace **********************
   perfetto::TraceConfig trace_config =
-      StopTracingTriggerConfig("org.chromium.backgroud_tracing.system_test");
+      StopTracingTriggerConfig("org.chromium.background_tracing.system_test");
   base::RunLoop system_no_more_packets_runloop;
   auto system_consumer = CreateDefaultConsumer(std::move(trace_config),
                                                system_service->GetService(),

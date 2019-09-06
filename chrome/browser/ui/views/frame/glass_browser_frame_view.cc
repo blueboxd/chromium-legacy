@@ -439,7 +439,8 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // Restored windows have a smaller top resize handle than the system default.
   // When maximized, the OS sizes the window such that the border extends beyond
   // the screen edges. In that case, we must return the default value.
-  if ((!frame()->IsFullscreen() && !IsMaximized()) || restored) {
+  if (browser_view()->IsTabStripVisible() &&
+      ((!frame()->IsFullscreen() && !IsMaximized()) || restored)) {
     return drag_handle_padding_;
   }
 

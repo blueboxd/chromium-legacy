@@ -753,7 +753,7 @@
   {
     "name": "download-rename",
     "owners": [ "hesen", "dtrainor" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "download-resumption-without-strong-validators",
@@ -1047,12 +1047,12 @@
   {
     "name": "enable-cloud-print-xps",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-cloud-printer-handler",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-command-line-on-non-rooted-devices",
@@ -1088,8 +1088,8 @@
   },
   {
     "name": "enable-custom-mac-paper-sizes",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "owners": [ "thestig" ],
+    "expiry_milestone": 82
   },
   {
     "name": "enable-data-reduction-proxy-server-experiment",
@@ -1502,6 +1502,11 @@
     "name": "enable-play-store-search",
     "owners": [ "jennyz", "kaznacheev" ],
     "expiry_milestone": 78
+  },
+  {
+    "name" : "enable-pointer-lock-options",
+    "owners" : [ "eirage", "nzolghadr", "input-dev" ],
+    "expiry_milestone" : 85
   },
   {
     "name": "enable-portals",
@@ -2154,11 +2159,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "foreground-notification-manager",
-    "owners": [ "//components/download/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "form-controls-refresh",
     "owners": [ "iopopesc@microsoft.com", "//third_party/blink/renderer/core/OWNERS" ],
     "expiry_milestone": 78
@@ -2176,7 +2176,7 @@
   {
     "name": "gdi-text-printing",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 84
   },
   {
     "name": "gesture-properties-dbus-service",
@@ -2511,12 +2511,12 @@
   {
     "name": "offline-pages-live-page-sharing",
     "owners": [ "petewil", "jianli", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offline-pages-load-signal-collecting",
     "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offline-pages-pending-download",
@@ -2531,12 +2531,12 @@
   {
     "name": "offline-pages-renovations",
     "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offline-pages-resource-based-snapshot",
     "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "offlining-recent-pages",
@@ -2798,12 +2798,7 @@
   {
     "name": "pdf-form-save",
     "owners": [ "thestig" ],
-    "expiry_milestone": 78
-  },
-  {
-    "name": "pdf-isolation",
-    "owners": [ "tsepez" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "per-method-can-make-payment-quota",
@@ -2819,11 +2814,6 @@
     "name": "policy-atomic-group-enabled",
     "owners": [ "ydago" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "postscript-printing",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
   },
   {
     "name": "prefetch-main-resource-network-isolation-key",
@@ -3303,7 +3293,7 @@
   {
     "name": "use-pdf-compositor-service-for-print",
     "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "use-search-click-for-right-click",

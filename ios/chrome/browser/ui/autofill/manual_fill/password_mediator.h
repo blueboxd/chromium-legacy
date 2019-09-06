@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 
-@protocol ManualFillContentDelegate;
+@protocol ManualFillContentInjector;
 @protocol ManualFillPasswordConsumer;
 @protocol PasswordListNavigator;
 
@@ -39,7 +39,7 @@ extern NSString* const SuggestPasswordAccessibilityIdentifier;
 // methods with the current data.
 @property(nonatomic, weak) id<ManualFillPasswordConsumer> consumer;
 // The delegate in charge of using the content selected by the user.
-@property(nonatomic, weak) id<ManualFillContentDelegate> contentDelegate;
+@property(nonatomic, weak) id<ManualFillContentInjector> contentInjector;
 // The object in charge of navigation.
 @property(nonatomic, weak) id<PasswordListNavigator> navigator;
 // If YES  actions will be post to the consumer. Set this value before

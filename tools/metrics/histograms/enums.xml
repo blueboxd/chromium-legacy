@@ -1054,6 +1054,14 @@ Unknown properties are collapsed to zero. -->
       label="The user saw the dialog but closed it without adding an engine"/>
 </enum>
 
+<enum name="AddSupervisionEnrollment">
+  <summary>Tracks the state of the Add Supervision dialog process.</summary>
+  <int value="0" label="Initiated"/>
+  <int value="1" label="Completed"/>
+  <int value="2" label="Signed out"/>
+  <int value="3" label="Closed"/>
+</enum>
+
 <enum name="AddToHomescreenTimeoutStatus">
   <obsolete>
     Deprecated in M77.
@@ -2891,6 +2899,7 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="kStylus"/>
   <int value="8" label="kLauncherSearchResult"/>
   <int value="9" label="kLauncherSearchBoxMic"/>
+  <int value="10" label="kProactiveSuggestions"/>
 </enum>
 
 <enum name="AssistantExitPoint">
@@ -9079,6 +9088,7 @@ Called by update_net_error_codes.py.-->
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-379" label="HTTP_RESPONSE_CODE_FAILURE"/>
   <int value="-378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="-377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
   <int value="-376" label="HTTP2_STREAM_CLOSED"/>
@@ -17964,7 +17974,6 @@ Called by update_net_error_codes.py.-->
   <int value="566" label="CommandLineFlagSecurityWarningsEnabled"/>
   <int value="567" label="RelaunchHeadsUpPeriod"/>
   <int value="568" label="StartupBrowserWindowLaunchSuppressed"/>
-  <int value="569" label="DeviceWebUsbAllowDevicesForUrls"/>
   <int value="570" label="UserFeedbackAllowed"/>
   <int value="571" label="DevicePowerwashAllowed"/>
   <int value="572" label="ExternalPrintServers"/>
@@ -17996,6 +18005,7 @@ Called by update_net_error_codes.py.-->
   <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
   <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
+  <int value="601" label="HSTSPolicyBlocklist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -19344,7 +19354,7 @@ Called by update_net_error_codes.py.-->
   <int value="224" label="WEBNAVIGATION_GETFRAME"/>
   <int value="225" label="EXPERIMENTAL_POWER_RELEASEKEEPAWAKE"/>
   <int value="226" label="APP_CURRENTWINDOWINTERNAL_SETICON"/>
-  <int value="227" label="PUSHMESSAGING_GETCHANNELID"/>
+  <int value="227" label="DELETED_PUSHMESSAGING_GETCHANNELID"/>
   <int value="228" label="DELETED_EXPERIMENTAL_INFOBARS_SHOW"/>
   <int value="229" label="INPUT_IME_SETCANDIDATEWINDOWPROPERTIES"/>
   <int value="230" label="METRICSPRIVATE_RECORDPERCENTAGE"/>
@@ -19990,14 +20000,15 @@ Called by update_net_error_codes.py.-->
   <int value="852"
       label="DELETED_EASYUNLOCKPRIVATE_SEEKBLUETOOTHDEVICEBYADDRESS"/>
   <int value="853" label="DELETED_EASYUNLOCKPRIVATE_GETSTRINGS"/>
-  <int value="854" label="NOTIFICATIONPROVIDER_SENDONCLEAR"/>
-  <int value="855" label="NOTIFICATIONPROVIDER_NOTIFYONCLEARED"/>
-  <int value="856" label="NOTIFICATIONPROVIDER_NOTIFYONCLICKED"/>
-  <int value="857" label="NOTIFICATIONPROVIDER_NOTIFYONBUTTONCLICKED"/>
-  <int value="858" label="NOTIFICATIONPROVIDER_NOTIFYONPERMISSIONLEVELCHANGED"/>
-  <int value="859" label="NOTIFICATIONPROVIDER_NOTIFYONSHOWSETTINGS"/>
-  <int value="860" label="NOTIFICATIONPROVIDER_GETNOTIFIER"/>
-  <int value="861" label="NOTIFICATIONPROVIDER_GETALLNOTIFIERS"/>
+  <int value="854" label="DELETED_NOTIFICATIONPROVIDER_SENDONCLEAR"/>
+  <int value="855" label="DELETED_NOTIFICATIONPROVIDER_NOTIFYONCLEARED"/>
+  <int value="856" label="DELETED_NOTIFICATIONPROVIDER_NOTIFYONCLICKED"/>
+  <int value="857" label="DELETED_NOTIFICATIONPROVIDER_NOTIFYONBUTTONCLICKED"/>
+  <int value="858"
+      label="DELETED_NOTIFICATIONPROVIDER_NOTIFYONPERMISSIONLEVELCHANGED"/>
+  <int value="859" label="DELETED_NOTIFICATIONPROVIDER_NOTIFYONSHOWSETTINGS"/>
+  <int value="860" label="DELETED_NOTIFICATIONPROVIDER_GETNOTIFIER"/>
+  <int value="861" label="DELETED_NOTIFICATIONPROVIDER_GETALLNOTIFIERS"/>
   <int value="862" label="DELETED_GCDPRIVATE_GETPREFETCHEDWIFINAMELIST"/>
   <int value="863" label="GUESTVIEWINTERNAL_SETAUTOSIZE"/>
   <int value="864" label="DELETED_COPRESENCEPRIVATE_SENDFOUND"/>
@@ -20541,6 +20552,7 @@ Called by update_net_error_codes.py.-->
   <int value="1379" label="LOGINSTATE_GETPROFILETYPE"/>
   <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
   <int value="1381" label="AUTOTESTPRIVATE_GETARCSTARTTIME"/>
+  <int value="1382" label="AUTOTESTPRIVATE_SETOVERVIEWMODESTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24584,6 +24596,16 @@ Called by update_net_error_codes.py.-->
       label="V8FileSystemDirectoryHandle_GetSystemDirectory_Method"/>
   <int value="3017" label="NotificationShowTrigger"/>
   <int value="3018" label="WebSocketStreamConstructor"/>
+  <int value="3019" label="DOMStorageRead"/>
+  <int value="3020" label="DOMStorageWrite"/>
+  <int value="3021" label="CacheStorageRead"/>
+  <int value="3022" label="CacheStorageWrite"/>
+  <int value="3023" label="IndexedDBRead"/>
+  <int value="3024" label="IndexedDBWrite"/>
+  <int value="3025" label="DeprecatedFileSystemRead"/>
+  <int value="3026" label="DeprecatedFileSystemWrite"/>
+  <int value="3027" label="PointerLockUnadjustedMovement"/>
+  <int value="3028" label="CreateObjectBlob"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -24670,6 +24692,7 @@ Called by update_net_error_codes.py.-->
   <int value="63" label="ClientHintViewportWidth"/>
   <int value="64" label="ClientHintWidth"/>
   <int value="65" label="DocumentAccess"/>
+  <int value="66" label="WebXr"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -35278,7 +35301,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1166745977"
       label="BluetoothAggressiveAppearanceFilter:disabled"/>
   <int value="-1166715563" label="ChromeOSAssistant:disabled"/>
-  <int value="-1165191758" label="ForegroundNotificationManager:disabled"/>
   <int value="-1164858657" label="CrostiniUsbAllowUnsupported:disabled"/>
   <int value="-1163777157" label="ContextualSearchSimplifiedServer:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
@@ -35521,6 +35543,7 @@ from previous Chrome versions.
   <int value="-855277252" label="CookiesWithoutSameSiteMustBeSecure:disabled"/>
   <int value="-855130893" label="enable-touch-calibration-setting"/>
   <int value="-854716639" label="TranslateAndroidManualTrigger:enabled"/>
+  <int value="-854519621" label="PointerLockOptions:disabled"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-850821337" label="WebContentsForceDark:enabled"/>
   <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
@@ -35720,7 +35743,6 @@ from previous Chrome versions.
   <int value="-595819071"
       label="OmniboxUIExperimentBlueTitlesOnPageSuggestions:disabled"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
-  <int value="-592331266" label="ForegroundNotificationManager:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
@@ -36078,6 +36100,7 @@ from previous Chrome versions.
   <int value="-76953963" label="CloseTabSuggestionsStale:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
+  <int value="-76348564" label="PointerLockOptions:enabled"/>
   <int value="-75418012" label="ContextualSuggestionsOptOut:disabled"/>
   <int value="-73282711" label="EnableAppListSearchAutocomplete:enabled"/>
   <int value="-72455054" label="WebVrAutopresent:disabled"/>
@@ -41598,6 +41621,7 @@ Called by update_net_error_codes.py.-->
   <int value="376" label="HTTP2_STREAM_CLOSED"/>
   <int value="377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
   <int value="378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
+  <int value="379" label="HTTP_RESPONSE_CODE_FAILURE"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -49250,6 +49274,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="Optimization hints not loaded."/>
   <int value="18" label="The navigation URL had an excluded media suffix."/>
   <int value="19" label="Not allowed by server rules provided to the client."/>
+  <int value="20" label="Coin flip holdback encountered."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
@@ -49609,6 +49634,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="PRIVET_NOTIFICATION_CANCELED"/>
   <int value="6" label="PRIVET_NOTIFICATION_CLICKED"/>
   <int value="7" label="PRIVET_DISABLE_NOTIFICATIONS_CLICKED"/>
+</enum>
+
+<enum name="ProactiveSuggestionsCategory">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kShopping"/>
+  <int value="2" label="kNews"/>
+</enum>
+
+<enum name="ProactiveSuggestionsRequestResult">
+  <int value="0" label="kError"/>
+  <int value="1" label="kSuccessWithContent"/>
+  <int value="2" label="kSuccessWithoutContent"/>
+</enum>
+
+<enum name="ProactiveSuggestionsShowAttempt">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kAbortedByDuplicateSuppression"/>
+</enum>
+
+<enum name="ProactiveSuggestionsShowResult">
+  <int value="0" label="kClick"/>
+  <int value="1" label="kCloseByContextChange"/>
+  <int value="2" label="kCloseByTimeout"/>
+  <int value="3" label="kCloseByUser"/>
 </enum>
 
 <enum name="ProbeResult">
@@ -52533,6 +52582,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="BLOCKED"/>
   <int value="3" label="ABANDONED"/>
   <int value="4" label="NOT_SUPPORTED"/>
+</enum>
+
+<enum name="SafetyTipInteraction">
+  <int value="0" label="User dismissed the Safety Tip"/>
+  <int value="1" label="User left the site with the Safety Tip"/>
 </enum>
 
 <enum name="SafetyTipStatus">
@@ -58660,6 +58714,8 @@ would be helpful to identify which type is being sent.
   <int value="7" label="Web app action share"/>
   <int value="8" label="Web app action open in Chrome"/>
   <int value="9" label="Offline content suggestion settings"/>
+  <int value="10" label="Sharing notification dismiss button"/>
+  <int value="11" label="Sharing error notification try again button"/>
 </enum>
 
 <enum name="SystemNotificationType">
@@ -65686,6 +65742,14 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Embed not rewritten, JS API enabled">
     Embed was not rewritten because JS API was enabled.
   </int>
+</enum>
+
+<enum name="ZeroStateResultType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Unanticipated"/>
+  <int value="2" label="OmniboxSearch"/>
+  <int value="3" label="ZeroStateFile"/>
+  <int value="4" label="DriveQuickAccess"/>
 </enum>
 
 <enum name="ZeroSuggestEligibleOnFocus">

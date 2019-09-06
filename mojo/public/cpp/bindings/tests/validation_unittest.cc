@@ -220,7 +220,7 @@ class ValidationTest : public testing::Test {
   ValidationTest() {}
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 class ValidationIntegrationTest : public ValidationTest {

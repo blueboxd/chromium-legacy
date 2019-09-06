@@ -6,21 +6,27 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
+#include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -39,6 +45,7 @@
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #include "chromeos/test/chromeos_test_utils.h"
+#include "components/onc/onc_constants.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -47,6 +54,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -54,14 +62,21 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/scoped_test_nss_db.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "net/base/features.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/test_root_certs.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 
@@ -84,6 +99,14 @@ constexpr char kServerCertByIntermediate[] = "ok_cert_by_intermediate.pem";
 // The PEM-encoded Authority certificate specified by |kRootCaCertOnc|.
 constexpr char kRootCaCert[] = "root_ca_cert.pem";
 constexpr char kDeviceLocalAccountId[] = "dla1@example.com";
+
+constexpr char kSigninScreenExtension1[] = "ngjobkbdodapjbbncmagbccommkggmnj";
+constexpr char kSigninScreenExtension1UpdateManifestPath[] =
+    "/extensions/signin_screen_manual_test_extension/update_manifest.xml";
+
+const char kSigninScreenExtension2[] = "oclffehlkdgibkainkilopaalpdobkan";
+const char kSigninScreenExtension2UpdateManifestPath[] =
+    "/extensions/api_test/login_screen_apis/update_manifest.xml";
 
 // Allows waiting until the list of policy-pushed web-trusted certificates
 // changes.
@@ -143,6 +166,38 @@ class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
+};
+
+// Observer that allows waiting until the background page of the specified
+// extension/app loads.
+// TODO(https://crbug.com/991464): Extract this into a more generic helper class
+// for using in other tests.
+class ExtensionBackgroundPageReadyObserver final {
+ public:
+  explicit ExtensionBackgroundPageReadyObserver(const std::string& extension_id)
+      : extension_id_(extension_id),
+        notification_observer_(
+            extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+            base::Bind(
+                &ExtensionBackgroundPageReadyObserver::IsNotificationRelevant,
+                base::Unretained(this))) {}
+
+  void Wait() { notification_observer_.Wait(); }
+
+ private:
+  // Callback which is used for |WindowedNotificationObserver| for checking
+  // whether the condition being awaited is met.
+  bool IsNotificationRelevant(
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) const {
+    return content::Source<const extensions::Extension>(source)->id() ==
+           extension_id_;
+  }
+
+  const std::string extension_id_;
+  content::WindowedNotificationObserver notification_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionBackgroundPageReadyObserver);
 };
 
 // Retrieves the path to the directory containing certificates designated for
@@ -270,18 +325,27 @@ class UserPolicyCertsHelper {
   scoped_refptr<net::X509Certificate> server_cert_by_intermediate_;
 };
 
-// Verifies |certificate| with |profile|'s CertVerifier and returns the result.
-int VerifyTestServerCert(
-    Profile* profile,
+// Verifies |certificate| with |storage_partition|'s CertVerifier and returns
+// the result.
+int VerifyTestServerCertInStoragePartition(
+    content::StoragePartition* storage_partition,
     const scoped_refptr<net::X509Certificate>& certificate) {
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   int result = net::OK;
-  content::BrowserContext::GetDefaultStoragePartition(profile)
-      ->GetNetworkContext()
-      ->VerifyCertificateForTesting(certificate, "127.0.0.1",
-                                    /*ocsp_response=*/std::string(),
-                                    /*sct_list=*/std::string(), &result);
+  storage_partition->GetNetworkContext()->VerifyCertificateForTesting(
+      certificate, "127.0.0.1", /*ocsp_response=*/std::string(),
+      /*sct_list=*/std::string(), &result);
   return result;
+}
+
+// Verifies |certificate| with the CertVerifier for |profile|'s default
+// StoragePartition and returns the result.
+int VerifyTestServerCert(
+    Profile* profile,
+    const scoped_refptr<net::X509Certificate>& certificate) {
+  return VerifyTestServerCertInStoragePartition(
+      content::BrowserContext::GetDefaultStoragePartition(profile),
+      certificate);
 }
 
 // Returns true if |cert_handle| refers to a certificate that has a subject
@@ -360,9 +424,9 @@ bool IsCertInCertificateList(
 
 // Allows testing if user policy provided trust roots take effect, without
 // having device policy.
-class PolicyProvidedTrustAnchorsRegularUserTest : public InProcessBrowserTest {
+class PolicyProvidedCertsRegularUserTest : public InProcessBrowserTest {
  protected:
-  PolicyProvidedTrustAnchorsRegularUserTest() {
+  PolicyProvidedCertsRegularUserTest() {
     // Use the same testing slot as private and public slot for testing.
     test_nss_cert_db_ = std::make_unique<net::NSSCertDatabase>(
         crypto::ScopedPK11Slot(
@@ -382,15 +446,14 @@ class PolicyProvidedTrustAnchorsRegularUserTest : public InProcessBrowserTest {
   std::unique_ptr<net::NSSCertDatabase> test_nss_cert_db_;
 };
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
-                       TrustAnchorApplied) {
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest, TrustAnchorApplied) {
   user_policy_certs_helper_.SetRootCertONCUserPolicy(browser()->profile());
   EXPECT_EQ(net::OK,
             VerifyTestServerCert(browser()->profile(),
                                  user_policy_certs_helper_.server_cert()));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest,
                        UntrustedIntermediateAuthorityApplied) {
   // Sanity check: Apply ONC policy which does not mention the intermediate
   // authority.
@@ -410,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
                 user_policy_certs_helper_.server_cert_by_intermediate()));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest,
                        AuthorityAvailableThroughNetworkCertLoader) {
   // Set |NetworkCertLoader| to use a test NSS database - otherwise, it is not
   // properly initialized because |UserSessionManager| only sets the primary
@@ -437,10 +500,10 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
 
 // Base class for testing policy-provided trust roots with device-local
 // accounts. Needs device policy.
-class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
+class PolicyProvidedCertsDeviceLocalAccountTest
     : public DevicePolicyCrosBrowserTest {
  public:
-  PolicyProvidedTrustAnchorsDeviceLocalAccountTest() {
+  PolicyProvidedCertsDeviceLocalAccountTest() {
     // Use the same testing slot as private and public slot for testing.
     test_nss_cert_db_ = std::make_unique<net::NSSCertDatabase>(
         crypto::ScopedPK11Slot(
@@ -487,10 +550,10 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
 
 // Sets up device policy for public session and provides functions to sing into
 // it.
-class PolicyProvidedTrustAnchorsPublicSessionTest
-    : public PolicyProvidedTrustAnchorsDeviceLocalAccountTest {
+class PolicyProvidedCertsPublicSessionTest
+    : public PolicyProvidedCertsDeviceLocalAccountTest {
  protected:
-  // PolicyProvidedTrustAnchorsDeviceLocalAccountTest:
+  // PolicyProvidedCertsDeviceLocalAccountTest:
   void SetupDevicePolicy() override {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     em::DeviceLocalAccountInfoProto* account =
@@ -526,7 +589,7 @@ class PolicyProvidedTrustAnchorsPublicSessionTest
 
 // TODO(https://crbug.com/874831): Re-enable this after the source of the
 // flakiness has been identified.
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsPublicSessionTest,
                        DISABLED_AllowedInPublicSession) {
   StartLogin();
   chromeos::test::WaitForPrimaryUserSessionStart();
@@ -542,10 +605,9 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
                                  user_policy_certs_helper_.server_cert()));
 }
 
-class PolicyProvidedTrustAnchorsOnUserSessionInitTest
-    : public LoginPolicyTestBase {
+class PolicyProvidedCertsOnUserSessionInitTest : public LoginPolicyTestBase {
  protected:
-  PolicyProvidedTrustAnchorsOnUserSessionInitTest() {}
+  PolicyProvidedCertsOnUserSessionInitTest() {}
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     std::string user_policy_blob = GetTestCertsFileContents(kRootCaCertOnc);
@@ -569,12 +631,12 @@ class PolicyProvidedTrustAnchorsOnUserSessionInitTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyProvidedTrustAnchorsOnUserSessionInitTest);
+  DISALLOW_COPY_AND_ASSIGN(PolicyProvidedCertsOnUserSessionInitTest);
 };
 
 // Verifies that the policy-provided trust root is active as soon as the user
 // session starts.
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsOnUserSessionInitTest,
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsOnUserSessionInitTest,
                        TrustAnchorsAvailableImmediatelyAfterSessionStart) {
   // Load the certificate which is only OK if the policy-provided authority is
   // actually trusted.
@@ -643,5 +705,174 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedClientCertsTest, ClientCertsImported) {
 }
 
 // TODO(https://crbug.com/874937): Add a test case for a kiosk session.
+
+// Class for testing policy-provided extensions in the sign-in profile.
+// Sets a device policy which applies the |kRootCaCert| for
+// |kSigninScreenExtension1|. Force-installs |kSigninScreenExtension1| and
+// |kSigninScreenExtension2| into the sign-in profile.
+class PolicyProvidedCertsForSigninExtensionTest
+    : public SigninProfileExtensionsPolicyTestBase {
+ protected:
+  // Use DEV channel as sign-in screen extensions are currently usable there.
+  PolicyProvidedCertsForSigninExtensionTest()
+      : SigninProfileExtensionsPolicyTestBase(version_info::Channel::DEV) {}
+  ~PolicyProvidedCertsForSigninExtensionTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        net::features::kCertVerifierBuiltinFeature);
+
+    // Apply |kRootCaCert| for |kSigninScreenExtension1| in Device ONC policy.
+    base::FilePath test_certs_path = GetTestCertsPath();
+    std::string x509_contents;
+    {
+      base::ScopedAllowBlockingForTesting allow_io;
+      ASSERT_TRUE(base::ReadFileToString(
+          test_certs_path.AppendASCII(kRootCaCert), &x509_contents));
+    }
+
+    base::Value onc_dict = BuildONCForExtensionScopedCertificate(
+        x509_contents, kSigninScreenExtension1);
+    ASSERT_TRUE(base::JSONWriter::Write(
+        onc_dict, device_policy()
+                      ->payload()
+                      .mutable_open_network_configuration()
+                      ->mutable_open_network_configuration()));
+
+    // Load the certificate which is only OK if the policy-provided authority is
+    // actually trusted.
+    base::FilePath server_cert_path = test_certs_path.AppendASCII(kServerCert);
+    server_cert_ = net::ImportCertFromFile(server_cert_path.DirName(),
+                                           server_cert_path.BaseName().value());
+    ASSERT_TRUE(server_cert_);
+
+    SigninProfileExtensionsPolicyTestBase::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpOnMainThread() override {
+    chromeos::StartupUtils::MarkOobeCompleted();  // Pretend that OOBE was
+                                                  // complete.
+
+    SigninProfileExtensionsPolicyTestBase::SetUpOnMainThread();
+
+    signin_profile_ = GetInitialProfile();
+    ASSERT_TRUE(chromeos::ProfileHelper::IsSigninProfile(signin_profile_));
+
+    ExtensionBackgroundPageReadyObserver extension_1_observer(
+        kSigninScreenExtension1);
+    ExtensionBackgroundPageReadyObserver extension_2_observer(
+        kSigninScreenExtension2);
+
+    AddExtensionForForceInstallation(kSigninScreenExtension1,
+                                     kSigninScreenExtension1UpdateManifestPath);
+    AddExtensionForForceInstallation(kSigninScreenExtension2,
+                                     kSigninScreenExtension2UpdateManifestPath);
+
+    extension_1_observer.Wait();
+    extension_2_observer.Wait();
+  }
+
+  content::StoragePartition* GetStoragePartitionForSigninExtension(
+      const std::string& extension_id) {
+    const GURL site =
+        extensions::util::GetSiteForExtensionId(extension_id, signin_profile_);
+    return content::BrowserContext::GetStoragePartitionForSite(
+        signin_profile_, site, /*can_create=*/false);
+  }
+
+  Profile* signin_profile_ = nullptr;
+  scoped_refptr<net::X509Certificate> server_cert_;
+
+ private:
+  // Builds an ONC policy value that specifies exactly one certificate described
+  // by |x509_contents| with Web trust to be used for |extension_id|.
+  base::Value BuildONCForExtensionScopedCertificate(
+      const std::string& x509_contents,
+      const std::string& extension_id) {
+    base::Value onc_cert_scope(base::Value::Type::DICTIONARY);
+    onc_cert_scope.SetKey(onc::scope::kType,
+                          base::Value(onc::scope::kExtension));
+    onc_cert_scope.SetKey(onc::scope::kId, base::Value(extension_id));
+
+    base::Value onc_cert_trust_bits(base::Value::Type::LIST);
+    onc_cert_trust_bits.GetList().push_back(
+        base::Value(onc::certificate::kWeb));
+
+    base::Value onc_certificate(base::Value::Type::DICTIONARY);
+    onc_certificate.SetKey(onc::certificate::kGUID, base::Value("guid"));
+    onc_certificate.SetKey(onc::certificate::kType,
+                           base::Value(onc::certificate::kAuthority));
+    onc_certificate.SetKey(onc::certificate::kX509, base::Value(x509_contents));
+    onc_certificate.SetKey(onc::certificate::kScope, std::move(onc_cert_scope));
+    onc_certificate.SetKey(onc::certificate::kTrustBits,
+                           std::move(onc_cert_trust_bits));
+
+    base::Value onc_certificates(base::Value::Type::LIST);
+    onc_certificates.GetList().emplace_back(std::move(onc_certificate));
+
+    base::Value onc_dict(base::Value::Type::DICTIONARY);
+    onc_dict.SetKey(onc::toplevel_config::kCertificates,
+                    std::move(onc_certificates));
+    onc_dict.SetKey(
+        onc::toplevel_config::kType,
+        base::Value(onc::toplevel_config::kUnencryptedConfiguration));
+
+    return onc_dict;
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyProvidedCertsForSigninExtensionTest);
+};  // namespace policy
+
+// Verifies that a device-policy-provided, extension-scoped trust anchor is
+// active only in the sign-in profile extension for which it was specified.
+// Additionally verifies that it is not active
+// (*) in the default StoragePartition of the sign-in profile,
+// (*) in the StoragePartition used for the webview hosting GAIA and
+// (*) in a different sign-in profile extension than the one for which it was
+//     specified.
+// Verification of all these aspects has been intentionally put into one test,
+// so if the verification result leaks (e.g. due to accidentally reusing
+// caches), the test is able to catch that.
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsForSigninExtensionTest,
+                       ActiveOnlyInSelectedExtension) {
+  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+  content::StoragePartition* signin_profile_default_partition =
+      content::BrowserContext::GetDefaultStoragePartition(signin_profile_);
+
+  // Active in the StoragePartition of the extension for which the certificate
+  // has been specified in policy.
+  content::StoragePartition* extension_1_partition =
+      GetStoragePartitionForSigninExtension(kSigninScreenExtension1);
+  ASSERT_TRUE(extension_1_partition);
+  EXPECT_NE(signin_profile_default_partition, extension_1_partition);
+  EXPECT_EQ(net::OK, VerifyTestServerCertInStoragePartition(
+                         extension_1_partition, server_cert_));
+
+  // Not active in default StoragePartition.
+  EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
+            VerifyTestServerCertInStoragePartition(
+                signin_profile_default_partition, server_cert_));
+
+  // Not active in the StoragePartition used for the webview hosting GAIA.
+  content::StoragePartition* signin_frame_partition =
+      chromeos::login::GetSigninPartition();
+  EXPECT_NE(signin_profile_default_partition, signin_frame_partition);
+
+  EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
+            VerifyTestServerCertInStoragePartition(signin_frame_partition,
+                                                   server_cert_));
+
+  // Not active in the StoragePartition of another extension.
+  content::StoragePartition* extension_2_partition =
+      GetStoragePartitionForSigninExtension(kSigninScreenExtension2);
+  ASSERT_TRUE(extension_2_partition);
+  EXPECT_NE(signin_profile_default_partition, extension_2_partition);
+
+  EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
+            VerifyTestServerCertInStoragePartition(extension_2_partition,
+                                                   server_cert_));
+}
 
 }  // namespace policy

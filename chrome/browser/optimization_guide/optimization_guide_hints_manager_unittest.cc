@@ -316,8 +316,11 @@ class OptimizationGuideHintsManagerTest
   std::unique_ptr<content::MockNavigationHandle>
   CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
       const GURL& url) {
+    if (!testing_profile_) {
+      testing_profile_ = std::make_unique<TestingProfile>();
+    }
     content::WebContents* web_contents =
-        web_contents_factory_->CreateWebContents(&testing_profile_);
+        web_contents_factory_->CreateWebContents(testing_profile_.get());
     OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
     std::unique_ptr<content::MockNavigationHandle> navigation_handle =
         std::make_unique<content::MockNavigationHandle>(web_contents);
@@ -371,7 +374,7 @@ class OptimizationGuideHintsManagerTest
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestingProfile testing_profile_;
+  std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;

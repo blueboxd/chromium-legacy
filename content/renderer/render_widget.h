@@ -258,8 +258,11 @@ class CONTENT_EXPORT RenderWidget
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
 
-  // This can return nullptr while the RenderWidget is closing.
-  blink::WebWidget* GetWebWidget() const;
+  // This can return nullptr while the RenderWidget is closing. When for_frame()
+  // is true, the widget returned is a blink::WebFrameWidget.
+  // TODO(crbug.com/419087): The main frame RenderWidget will also return
+  // nullptr while the main frame is remote.
+  blink::WebWidget* GetWebWidget() const { return webwidget_internal_; }
 
   // Returns the current instance of WebInputMethodController which is to be
   // used for IME related tasks. This instance corresponds to the one from
@@ -293,21 +296,13 @@ class CONTENT_EXPORT RenderWidget
   // sent, and it does no compositing. The process is free to exit when there
   // are no other unfrozen (thawed) RenderWidgets.
   void SetIsFrozen(bool is_frozen);
-  bool is_frozen() const { return is_frozen_; }
 
-  // When a RenderWidget is created, even if frozen, if we expect to unfreeze
-  // and use the RenderWidget imminently, then we want to pre-emptively start
-  // the process of getting the resources needed for the compositor. This helps
-  // to parallelize the critical path to first pixels with the loading process.
-  // This should only be called when the RenderWidget is frozen, otherwise it
-  // would be redundant at best. Non-frozen RenderWidgets will start to warmup
-  // immediately on their own.
-  void WarmupCompositor();
-  // If after calling WarmupCompositor() we can determine that the RenderWidget
-  // does not expect to be used shortly after all, call this to cancel the
-  // warmup process and release any unused resources that had been created by
-  // it.
-  void AbortWarmupCompositor();
+  // A main frame RenderWidget is frozen instead of being deleted. Then when a
+  // provisional frame is created, the RenderWidget is recycled and attached to
+  // it. Code that wants to prevent using the RenderWidget once it has been
+  // frozen would race with a new provisional frame attaching it, so should
+  // check for both states via this method instead.
+  bool IsFrozenOrProvisional() { return is_frozen_ || IsForProvisionalFrame(); }
 
   // This is true once a Close IPC has been received. The actual action of
   // closing must be done on another stack frame, in case the IPC receipt
@@ -442,7 +437,8 @@ class CONTENT_EXPORT RenderWidget
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
-  bool RequestPointerLock(blink::WebLocalFrame* requester_frame) override;
+  bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
+                          bool request_unadjusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
@@ -930,19 +926,13 @@ class CONTENT_EXPORT RenderWidget
   // belongs to the frame tree associated with this RenderWidget.
   blink::WebLocalFrame* GetFocusedWebLocalFrameInWidget() const;
 
-  // Called with the resulting frame sink from WarmupCompositor() since frame
-  // sink creation can be asynchronous.
-  void OnReplyForWarmupCompositor(std::unique_ptr<cc::LayerTreeFrameSink> sink);
-
-  // Common code shared to execute the creation of a LayerTreeFrameSink, shared
-  // by the warmup and standard request paths. Callers should verify they really
-  // want to do this before calling it as this method does no verification.
-  void DoRequestNewLayerTreeFrameSink(LayerTreeFrameSinkCallback callback);
-
   // Whether this widget is for a frame. This excludes widgets that are not for
   // a frame (eg popups, pepper), but includes both the main frame
   // (via delegate_) and subframes (via for_child_local_root_frame_).
   bool for_frame() const { return delegate_ || for_child_local_root_frame_; }
+
+  // Whether this widget is for a frame that is currently provisional.
+  bool IsForProvisionalFrame() const;
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost.
@@ -1133,18 +1123,6 @@ class CONTENT_EXPORT RenderWidget
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
-  // Set to true while a warmup is in progress. Set to false if the warmup is
-  // completed or aborted. If aborted, the reply callback is also cancelled by
-  // invalidating the |warmup_weak_ptr_factory_|.
-  bool warmup_frame_sink_request_pending_ = false;
-  // Set after warmup completes without being aborted. This frame sink will be
-  // returned on the next request for a frame sink instead of creating a new
-  // one.
-  std::unique_ptr<cc::LayerTreeFrameSink> warmup_frame_sink_;
-  // Set if a request for a frame sink arrives while a warmup is in progress.
-  // Then this stores the request to be satisfied once the warmup completes.
-  LayerTreeFrameSinkCallback after_warmup_callback_;
-
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
 
   // Indicates whether this widget has focus.
@@ -1162,8 +1140,7 @@ class CONTENT_EXPORT RenderWidget
 #if defined(OS_MACOSX)
   // Responds to IPCs from TextInputClientMac regarding getting string at given
   // position or range as well as finding character index at a given position.
-  std::unique_ptr<TextInputClientObserver> text_input_client_observer_ =
-      std::make_unique<TextInputClientObserver>(this);
+  std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
 #endif
 
   // Stores edit commands associated to the next key event.
@@ -1207,14 +1184,6 @@ class CONTENT_EXPORT RenderWidget
 
   uint32_t last_capture_sequence_number_ = 0u;
 
-  // State that is saved in OnUpdateRenderThrottlingStatus() before being
-  // propagated to the frame widget.
-  bool is_throttled_ = false;
-  bool subtree_throttled_ = false;
-
-  // Used to generate a callback for the reply when making the warmup frame
-  // sink, and to cancel that callback if the warmup is aborted.
-  base::WeakPtrFactory<RenderWidget> warmup_weak_ptr_factory_{this};
   // This factory is invalidated when the WebWidget is closed.
   base::WeakPtrFactory<RenderWidget> close_weak_ptr_factory_{this};
   // This factory is invalidated when the RenderWidget is destroyed.

@@ -99,7 +99,7 @@ source_set("manual_fill_ui") {
     "manual_fill_cell_button.mm",
     "manual_fill_cell_utils.h",
     "manual_fill_cell_utils.mm",
-    "manual_fill_content_delegate.h",
+    "manual_fill_content_injector.h",
     "manual_fill_password_cell.h",
     "manual_fill_password_cell.mm",
     "password_consumer.h",

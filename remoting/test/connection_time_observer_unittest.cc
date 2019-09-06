@@ -115,8 +115,8 @@ TEST_F(ConnectionTimeObserverTest, TestOnConnectionStateChangedWithoutTestMap) {
   connection_time_observer_->SetTransitionTimesMapForTest(
       std::map<protocol::ConnectionToHost::State, base::TimeTicks>());
 
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   base::RunLoop run_loop;
 
   // Should fail to find INITIALIZING in an empty map.

@@ -70,13 +70,11 @@ class WebAppShortcutCreatorSortingMock : public web_app::WebAppShortcutCreator {
 std::unique_ptr<web_app::ShortcutInfo> GetShortcutInfo() {
   std::unique_ptr<web_app::ShortcutInfo> info(new web_app::ShortcutInfo);
   info->extension_id = "extensionid";
-  info->extension_path = base::FilePath("/fake/extension/path");
   info->title = base::ASCIIToUTF16("Shortcut Title");
   info->url = GURL("http://example.com/");
   info->profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info->profile_name = "profile name";
   info->version_for_display = "stable 1.0";
-  info->from_bookmark = false;
   return info;
 }
 
@@ -291,7 +289,6 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
   EXPECT_TRUE(other_folder_temp_dir.CreateUniqueTempDir());
   base::FilePath other_folder = other_folder_temp_dir.GetPath();
   base::FilePath other_shim_path = other_folder.Append(shim_base_name_);
-  info_->from_bookmark = true;
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());

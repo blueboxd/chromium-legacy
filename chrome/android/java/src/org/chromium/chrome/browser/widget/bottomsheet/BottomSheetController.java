@@ -378,7 +378,7 @@ public class BottomSheetController implements Destroyable {
         clearRequests(mContentQueue.iterator());
 
         BottomSheetContent currentContent = mBottomSheet.getCurrentSheetContent();
-        if (currentContent != null && !currentContent.hasCustomLifecycle()) {
+        if (currentContent == null || !currentContent.hasCustomLifecycle()) {
             if (mContentQueue.isEmpty()) mIsSuppressed = false;
 
             hideContent(currentContent, /* animate= */ true);

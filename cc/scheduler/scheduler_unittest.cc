@@ -699,7 +699,7 @@ TEST_F(SchedulerTest, RequestCommit) {
   client_->Reset();
 }
 
-TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
+TEST_F(SchedulerTest, RequestCommitAfterSetDeferBeginMainFrame) {
   SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetDeferBeginMainFrame(true);
@@ -724,7 +724,7 @@ TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
 }
 
-TEST_F(SchedulerTest, DeferCommitWithRedraw) {
+TEST_F(SchedulerTest, DeferBeginMainFrameWithRedraw) {
   SetUpScheduler(EXTERNAL_BFS);
 
   scheduler_->SetDeferBeginMainFrame(true);

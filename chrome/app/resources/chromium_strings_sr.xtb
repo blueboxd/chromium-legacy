@@ -17,7 +17,6 @@
 <translation id="1524282610922162960">Делите Chromium картицу</translation>
 <translation id="1668054258064581266">Када уклоните налог из Chromium-а, можда ћете морати поново да учитате отворене картице да би то ступило на снагу.</translation>
 <translation id="1688750314291223739">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Chromium-а на било ком рачунару.</translation>
-<translation id="1705503634486268204">Chromium може да сачува лозинке да не бисте морали да их памтите.</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
 <translation id="1766096484055239003">Администратор захтева да поново покренете Chromium да бисте применили ажурирање</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
@@ -31,7 +30,6 @@
 <translation id="2008474315282236005">Овим ћете избрисати 1 ставку са овог уређаја. Да бисте касније вратили податке, пријавите се у Chromium као <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Администратор тражи да поново покренете Chromium да бисте применили ово ажурирање</translation>
 <translation id="2119636228670142020">О &amp;Chromium ОС-у</translation>
-<translation id="2178765360243863853">Рестартујте Chromium</translation>
 <translation id="2241627712206172106">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chromium баш онако како желе.</translation>
 <translation id="2265088490657775772">преузмите Chromium на iPhone</translation>
 <translation id="2347108572062610441">Овај додатак је променио страницу која се приказује када покренете Chromium.</translation>
@@ -143,8 +141,6 @@
 <translation id="6096348254544841612">Прилагодите и контролишите Chromium. Доступно је ажурирање.</translation>
 <translation id="6120345080069858279">Chromium ће сачувати ову лозинку на Google налогу. Нећете морати да је памтите.</translation>
 <translation id="6129621093834146363">Датотека <ph name="FILE_NAME" /> је опасна, па ју је Chromium блокирао.</translation>
-<translation id="6173098285107411678">Ако се подешавање не приказује на овој страници, потражите га у <ph name="LINK_BEGIN" />
-    подешавањима Chromium прегледача<ph name="LINK_END" /></translation>
 <translation id="6212496753309875659">Овај рачунар већ има новију верзију Chromium-а. Ако софтвер не функционише, деинсталирајте Chromium и покушајте поново.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Поново ћемо покренути Chromium}=1{Поново ћемо покренути Chromium за 1 секунду}one{Поново ћемо покренути Chromium за # секунду}few{Поново ћемо покренути Chromium за # секунде}other{Поново ћемо покренути Chromium за # секунди}}</translation>
 <translation id="6248213926982192922">Подеси Chromium за подразумевани прегледач</translation>

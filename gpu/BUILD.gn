@@ -525,7 +525,7 @@ test("gpu_unittests") {
     "command_buffer/service/transform_feedback_manager_unittest.cc",
     "command_buffer/service/vertex_array_manager_unittest.cc",
     "command_buffer/service/vertex_attrib_manager_unittest.cc",
-    "config/gpu_blacklist_unittest.cc",
+    "config/gpu_blocklist_unittest.cc",
     "config/gpu_control_list_entry_unittest.cc",
     "config/gpu_control_list_testing_arrays_and_structs_autogen.h",
     "config/gpu_control_list_testing_autogen.cc",

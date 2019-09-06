@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/video_frame_factory_impl.h"
 
+#include "media/gpu/android/codec_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,17 +35,20 @@ struct MockImage {
     }
 
     if (expectation == kRenderToBackBuffer) {
-      EXPECT_CALL(*this, RenderToTextureOwnerBackBuffer())
+      EXPECT_CALL(*this, RenderToTextureOwnerBackBuffer(
+                             CodecImage::BlockingMode::kForbidBlocking))
           .WillOnce(Return(phase != kInvalidated));
     } else {
-      EXPECT_CALL(*this, RenderToTextureOwnerBackBuffer()).Times(0);
+      EXPECT_CALL(*this, RenderToTextureOwnerBackBuffer(
+                             CodecImage::BlockingMode::kForbidBlocking))
+          .Times(0);
     }
   }
 
   MOCK_METHOD0(was_rendered_to_front_buffer, bool());
   MOCK_METHOD0(is_texture_owner_backed, bool());
   MOCK_METHOD0(RenderToFrontBuffer, bool());
-  MOCK_METHOD0(RenderToTextureOwnerBackBuffer, bool());
+  MOCK_METHOD1(RenderToTextureOwnerBackBuffer, bool(CodecImage::BlockingMode));
 };
 
 class MaybeRenderEarlyTest : public testing::Test {

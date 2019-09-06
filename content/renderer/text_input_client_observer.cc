@@ -20,19 +20,16 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/mac/web_substring_util.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_MACOSX)
-#include "third_party/blink/public/web/mac/web_substring_util.h"
-#endif
-
 namespace content {
 
 namespace {
-uint32_t GetCurrentCursorPositionInFrame(blink::WebLocalFrame* localFrame) {
-  blink::WebRange range = localFrame->SelectionRange();
+uint32_t GetCurrentCursorPositionInFrame(blink::WebLocalFrame* local_frame) {
+  blink::WebRange range = local_frame->SelectionRange();
   return range.IsNull() ? 0U : static_cast<uint32_t>(range.StartOffset());
 }
 }
@@ -70,23 +67,9 @@ bool TextInputClientObserver::Send(IPC::Message* message) {
 }
 
 blink::WebFrameWidget* TextInputClientObserver::GetWebFrameWidget() const {
-  blink::WebWidget* widget = render_widget_->GetWebWidget();
-  // While the main frame is remote, the WebWidget of the main frame's
-  // RenderWidget is not a WebFrameWidget.
-  // TODO(crbug.com/669219): The browser shouldn't be sending IPCs that land
-  // in this class when the main frame is remote.
-  // TODO(danakj): This should instead be checking:
-  //   if (render_widget_->is_frozen())
-  // But is_frozen() is currently true also for provisional frames, and in that
-  // case there is actually a WebFrameWidget to be used. In the future we should
-  // separate these states and then this can return null if frozen *and there is
-  // no provisional main frame attached to the RenderWidget*.
-  // TODO(https://crbug.com/995981): The lifetime of the WebFrameWidget should
-  // eventually be tied to the lifetime of the RenderWidget so we should not
-  // need a null !widget check.
-  if (!widget || !widget->IsWebFrameWidget())
+  if (!render_widget_)
     return nullptr;
-  return static_cast<blink::WebFrameWidget*>(widget);
+  return static_cast<blink::WebFrameWidget*>(render_widget_->GetWebWidget());
 }
 
 blink::WebLocalFrame* TextInputClientObserver::GetFocusedFrame() const {
@@ -109,7 +92,6 @@ PepperPluginInstanceImpl* TextInputClientObserver::GetFocusedPepperPlugin()
 #endif
 
 void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
-#if defined(OS_MACOSX)
   blink::WebPoint baseline_point;
   NSAttributedString* string = nil;
 
@@ -122,9 +104,6 @@ void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
       mac::AttributedStringCoder::Encode(string));
   Send(new TextInputClientReplyMsg_GotStringAtPoint(
       MSG_ROUTING_NONE, *encoded.get(), baseline_point));
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
@@ -164,7 +143,6 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
 }
 
 void TextInputClientObserver::OnStringForRange(gfx::Range range) {
-#if defined(OS_MACOSX)
   blink::WebPoint baseline_point;
   NSAttributedString* string = nil;
   blink::WebLocalFrame* frame = GetFocusedFrame();
@@ -178,9 +156,6 @@ void TextInputClientObserver::OnStringForRange(gfx::Range range) {
       mac::AttributedStringCoder::Encode(string));
   Send(new TextInputClientReplyMsg_GotStringForRange(
       MSG_ROUTING_NONE, *encoded.get(), baseline_point));
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 }  // namespace content

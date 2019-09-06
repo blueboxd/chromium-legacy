@@ -226,7 +226,7 @@ bool CodecImage::RenderToFrontBuffer() {
              : RenderToOverlay();
 }
 
-bool CodecImage::RenderToTextureOwnerBackBuffer() {
+bool CodecImage::RenderToTextureOwnerBackBuffer(BlockingMode blocking_mode) {
   DCHECK(codec_buffer_wait_coordinator_);
   DCHECK_NE(phase_, Phase::kInFrontBuffer);
   if (phase_ == Phase::kInBackBuffer)
@@ -236,8 +236,11 @@ bool CodecImage::RenderToTextureOwnerBackBuffer() {
 
   // Wait for a previous frame available so we don't confuse it with the one
   // we're about to release.
-  if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable())
+  if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable()) {
+    if (blocking_mode == BlockingMode::kForbidBlocking)
+      return false;
     codec_buffer_wait_coordinator_->WaitForFrameAvailable();
+  }
   if (!output_buffer_->ReleaseToSurface()) {
     phase_ = Phase::kInvalidated;
     return false;

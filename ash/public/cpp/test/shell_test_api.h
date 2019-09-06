@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/overview_test_api.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
@@ -27,11 +28,6 @@ class ScreenPositionController;
 class Shell;
 class SystemGestureEventFilter;
 class WorkspaceController;
-
-enum class OverviewAnimationState : int32_t {
-  kEnterAnimationComplete,
-  kExitAnimationComplete,
-};
 
 // Accesses private data from a Shell for testing.
 class ASH_EXPORT ShellTestApi {

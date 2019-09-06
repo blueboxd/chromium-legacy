@@ -244,41 +244,6 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
 
-  void InstallRequestHeaderModifyingExtension() {
-    TestExtensionDir test_dir;
-    test_dir.WriteManifest(R"({
-        "name": "Web Request Header Modifying Extension",
-        "manifest_version": 2,
-        "version": "0.1",
-        "background": { "scripts": ["background.js"] },
-        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
-      })");
-    test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
-        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
-          details.requestHeaders.push({name: 'foo', value: 'bar'});
-          details.requestHeaders.push({
-            name: 'frameId',
-            value: details.frameId.toString()
-          });
-          details.requestHeaders.push({
-            name: 'resourceType',
-            value: details.type
-          });
-          return {requestHeaders: details.requestHeaders};
-        }, {urls: ['*://*/echoheader*']}, ['blocking', 'requestHeaders']);
-
-        chrome.test.sendMessage('ready');
-      )");
-
-    ExtensionTestMessageListener listener("ready", false);
-    ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
-    EXPECT_TRUE(listener.WaitUntilSatisfied());
-  }
-
-  // Ensures requests made by the |worker_script_name| service worker can be
-  // intercepted by extensions.
-  void RunServiceWorkerFetchTest(const std::string& worker_script_name);
-
   network::mojom::URLLoaderFactoryPtr CreateURLLoaderFactory() {
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
@@ -305,18 +270,6 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
     dir->WriteManifest(base::StringPrintf(kManifest, name.c_str()));
     LoadExtension(dir->UnpackedPath());
     test_dirs_.push_back(std::move(dir));
-  }
-
-  void RegisterServiceWorker(const std::string& worker_path,
-                             const base::Optional<std::string>& scope) {
-    GURL url = embedded_test_server()->GetURL(
-        "/service_worker/create_service_worker.html");
-    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-    std::string script = content::JsReplace("register($1, $2);", worker_path,
-                                            scope ? *scope : std::string());
-    EXPECT_EQ(
-        "DONE",
-        EvalJs(browser()->tab_strip_model()->GetActiveWebContents(), script));
   }
 
  private:
@@ -770,30 +723,6 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
       "window.domAutomationController.send(document.body.textContent)",
       &body));
   EXPECT_EQ(exptected_content_incognito_window, body);
-}
-
-void ExtensionWebRequestApiTest::RunServiceWorkerFetchTest(
-    const std::string& worker_script_name) {
-  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Install the test extension.
-  InstallRequestHeaderModifyingExtension();
-
-  // Register a service worker and navigate to a page it controls.
-  RegisterServiceWorker(worker_script_name, base::nullopt);
-  EXPECT_TRUE(ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
-
-  // Make a fetch from the controlled page. Depending on the worker script, the
-  // fetch might go to the service worker and be re-issued, or might fallback to
-  // network, or skip the worker, etc. In any case, this function expects a
-  // network request to happen, and that the extension modify the headers of the
-  // request before it goes to network. Verify that it was able to inject a
-  // header of "foo=bar".
-  EXPECT_EQ("bar", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                          "fetch_from_page('/echoheader?foo');"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
@@ -2512,25 +2441,123 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
                             ResponseHeaderType::kNone, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFetch) {
+// The parameter is for opt_extraInfoSpec passed to addEventListener.
+// 'blocking' and 'requestHeaders' if it's false, and 'extraHeaders' in addition
+// to them if it's true.
+class ServiceWorkerWebRequestApiTest : public testing::WithParamInterface<bool>,
+                                       public ExtensionApiTest {
+ public:
+  // The options passed as opt_extraInfoSpec to addEventListener.
+  enum class ExtraInfoSpec {
+    // 'blocking', 'requestHeaders'
+    kDefault,
+    // kDefault + 'extraHeaders'
+    kExtraHeaders
+  };
+
+  static ExtraInfoSpec GetExtraInfoSpec() {
+    return GetParam() ? ExtraInfoSpec::kExtraHeaders : ExtraInfoSpec::kDefault;
+  }
+
+  void InstallRequestHeaderModifyingExtension() {
+    TestExtensionDir test_dir;
+    test_dir.WriteManifest(R"({
+        "name": "Web Request Header Modifying Extension",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+
+    const char kBackgroundScript[] = R"(
+        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+              details.requestHeaders.push({name: 'foo', value: 'bar'});
+              details.requestHeaders.push({
+                name: 'frameId',
+                value: details.frameId.toString()
+              });
+              details.requestHeaders.push({
+                name: 'resourceType',
+                value: details.type
+              });
+              return {requestHeaders: details.requestHeaders};
+            },
+            {urls: ['*://*/echoheader*']},
+            [%s]);
+
+        chrome.test.sendMessage('ready');
+      )";
+    std::string opt_extra_info_spec = "'blocking', 'requestHeaders'";
+    if (GetExtraInfoSpec() == ExtraInfoSpec::kExtraHeaders)
+      opt_extra_info_spec += ", 'extraHeaders'";
+    test_dir.WriteFile(
+        FILE_PATH_LITERAL("background.js"),
+        base::StringPrintf(kBackgroundScript, opt_extra_info_spec.c_str()));
+
+    ExtensionTestMessageListener listener("ready", false);
+    ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  void RegisterServiceWorker(const std::string& worker_path,
+                             const base::Optional<std::string>& scope) {
+    GURL url = embedded_test_server()->GetURL(
+        "/service_worker/create_service_worker.html");
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+    std::string script = content::JsReplace("register($1, $2);", worker_path,
+                                            scope ? *scope : std::string());
+    EXPECT_EQ(
+        "DONE",
+        EvalJs(browser()->tab_strip_model()->GetActiveWebContents(), script));
+  }
+
+  // Ensures requests made by the |worker_script_name| service worker can be
+  // intercepted by extensions.
+  void RunServiceWorkerFetchTest(const std::string& worker_script_name) {
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Install the test extension.
+    InstallRequestHeaderModifyingExtension();
+
+    // Register a service worker and navigate to a page it controls.
+    RegisterServiceWorker(worker_script_name, base::nullopt);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(
+                       "/service_worker/fetch_from_page.html")));
+
+    // Make a fetch from the controlled page. Depending on the worker script,
+    // the fetch might go to the service worker and be re-issued, or might
+    // fallback to network, or skip the worker, etc. In any case, this function
+    // expects a network request to happen, and that the extension modify the
+    // headers of the request before it goes to network. Verify that it was able
+    // to inject a header of "foo=bar".
+    EXPECT_EQ("bar",
+              EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                     "fetch_from_page('/echoheader?foo');"));
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(/* No prefix */,
+                         ServiceWorkerWebRequestApiTest,
+                         ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerFetch) {
   RunServiceWorkerFetchTest("fetch_event_respond_with_fetch.js");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFallback) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerFallback) {
   RunServiceWorkerFetchTest("fetch_event_pass_through.js");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest,
                        ServiceWorkerNoFetchHandler) {
   RunServiceWorkerFetchTest("empty.js");
 }
 
 // An extension should be able to modify the request header for service worker
 // script by using WebRequest API.
-//
-// Disabled due to https://crbug.com/995763.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       DISABLED_ServiceWorkerScript) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest, ServiceWorkerScript) {
   // The extension to be used in this test adds foo=bar request header.
   const char kScriptPath[] = "/echoheader_service_worker.js";
   int served_service_worker_count = 0;
@@ -2584,7 +2611,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
 // Ensure that extensions can intercept service worker navigation preload
 // requests.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+IN_PROC_BROWSER_TEST_P(ServiceWorkerWebRequestApiTest,
                        ServiceWorkerNavigationPreload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

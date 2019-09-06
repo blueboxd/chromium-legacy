@@ -15,7 +15,6 @@ import org.junit.Assert;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -131,7 +130,7 @@ public class ChromeTabUtils {
      */
     public static void waitForTabPageLoaded(final Tab tab, @Nullable final String url)
             throws InterruptedException {
-        waitForTabPageLoaded(tab, url, null, ScalableTimeout.scaleTimeout(10));
+        waitForTabPageLoaded(tab, url, null, 10L);
     }
 
     /**
@@ -313,8 +312,7 @@ public class ChromeTabUtils {
         });
 
         try {
-            interactableCallback.waitForCallback(
-                    0, 1, ScalableTimeout.scaleTimeout(10), TimeUnit.SECONDS);
+            interactableCallback.waitForCallback(0, 1, 10L, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             Assert.fail("Page never became interactable.");
         }

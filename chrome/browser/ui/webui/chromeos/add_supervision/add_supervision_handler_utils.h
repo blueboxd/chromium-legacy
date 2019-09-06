@@ -17,4 +17,10 @@ class AppUpdate;
 // returned to clients or uninstalled.
 bool ShouldIncludeAppUpdate(const apps::AppUpdate& app_update);
 
+// Records UMA metric and signs out the user.
+void LogOutHelper();
+
+// Checks if the user has completed enrollment in supervision.
+bool EnrollmentCompleted();
+
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_ADD_SUPERVISION_ADD_SUPERVISION_HANDLER_UTILS_H_

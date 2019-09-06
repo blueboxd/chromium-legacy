@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.preferences.developer;
 
 import static android.app.Notification.FLAG_ONGOING_EVENT;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -100,7 +98,7 @@ public class TracingPreferencesTest {
             public boolean isSatisfied() {
                 return mMockNotificationManager.getMutationCountAndDecrement() > 0;
             }
-        }, scaleTimeout(15000) /* maxTimeoutMs */, 50 /* checkIntervalMs */);
+        }, 15000L /* maxTimeoutMs */, 50 /* checkIntervalMs */);
     }
 
     private void waitForTracingControllerInitialization(PreferenceFragmentCompat fragment)
@@ -210,7 +208,7 @@ public class TracingPreferencesTest {
         // Initiate stopping the recording and wait for state changes to STOPPING and STOPPED.
         stopIntent.send();
         callbackHelper.waitForCallback(1 /* currentCallCount */, 2 /* numberOfCallsToWaitFor */,
-                scaleTimeout(15000) /* timeout */, TimeUnit.MILLISECONDS);
+                15000L /* timeout */, TimeUnit.MILLISECONDS);
 
         // Notification should be replaced twice, once with an "is stopping" notification and then
         // with a notification to share the trace. Because the former is temporary, we can't

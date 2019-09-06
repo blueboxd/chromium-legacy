@@ -61,9 +61,6 @@ class WebFrameWidget : public WebWidget {
   // Returns the local root of this WebFrameWidget.
   virtual WebLocalFrame* LocalRoot() const = 0;
 
-  // WebWidget implementation.
-  bool IsWebFrameWidget() const final { return true; }
-
   // Called when the root LocalFrame of this WebFrameWidget (and implicitly its
   // subtree) are being detached. The frame pointer and the WebWidgetClient are
   // still valid while this is called, for them to be used for any cleanup.

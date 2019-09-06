@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,11 @@ class RealTimeUrlLookupService {
   // Start the full URL lookup for |url| and call |callback| on the same thread
   // when done.
   void StartLookup(const GURL& url, RTLookupResponseCallback callback);
+
+  // Returns the SBThreatType for a given
+  // RTLookupResponse::ThreatInfo::ThreatType
+  static SBThreatType GetSBThreatTypeForRTThreatType(
+      RTLookupResponse::ThreatInfo::ThreatType rt_threat_type);
 
  private:
   using PendingRTLookupRequests =

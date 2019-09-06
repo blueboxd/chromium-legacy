@@ -18,9 +18,8 @@ public class TimeoutTimer {
      * @param timeoutMs Relative time for the timeout (unscaled).
      */
     public TimeoutTimer(long timeoutMs) {
-        // TODO(agrieve): Apply ScalableTimeout.scaleTimeout() here rather than at callsites.
-        this.mTimeoutMs = timeoutMs;
-        this.mEndTimeMs = SystemClock.uptimeMillis() + timeoutMs;
+        mTimeoutMs = ScalableTimeout.scaleTimeout(timeoutMs);
+        mEndTimeMs = SystemClock.uptimeMillis() + mTimeoutMs;
     }
 
     /** Whether this timer has expired. */

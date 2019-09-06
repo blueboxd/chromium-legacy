@@ -372,7 +372,7 @@ bool BrowserFrameMac::UseCustomFrame() const {
 }
 
 bool BrowserFrameMac::UsesNativeSystemMenu() const {
-  return false;
+  return true;
 }
 
 bool BrowserFrameMac::ShouldSaveWindowPlacement() const {

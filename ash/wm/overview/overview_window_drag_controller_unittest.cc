@@ -4,21 +4,31 @@
 
 #include "ash/wm/overview/overview_window_drag_controller.h"
 
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget.h"
+
+using ash::desks_util::BelongsToActiveDesk;
 
 namespace ash {
 
@@ -42,10 +52,19 @@ void StartDraggingItemBy(OverviewItem* item,
   }
 }
 
+// Given x, and y of a point, returns the screen in pixels corresponding point
+// which can be used to provide event locations to the event generator when
+// the display is rotated.
+gfx::Point GetScreenInPixelsPoint(int x, int y) {
+  gfx::Point point{x, y};
+  Shell::GetPrimaryRootWindow()->GetHost()->ConvertDIPToScreenInPixels(&point);
+  return point;
+}
+
 // Waits for a window to be destroyed.
 class WindowCloseWaiter : public aura::WindowObserver {
  public:
-  WindowCloseWaiter(aura::Window* window) : window_(window) {
+  explicit WindowCloseWaiter(aura::Window* window) : window_(window) {
     DCHECK(window_);
     window_->AddObserver(this);
   }
@@ -275,6 +294,196 @@ TEST_F(OverviewWindowDragControllerWithDesksTest,
   const Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
   EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
+}
+
+// Tests the behavior of dragging a window in portrait tablet mode with virtual
+// desks enabled.
+class OverviewWindowDragControllerDesksPortraitTabletTest
+    : public OverviewWindowDragControllerWithDesksTest {
+ public:
+  OverviewWindowDragControllerDesksPortraitTabletTest() = default;
+  ~OverviewWindowDragControllerDesksPortraitTabletTest() override = default;
+
+  OverviewController* overview_controller() {
+    return Shell::Get()->overview_controller();
+  }
+
+  SplitViewController* split_view_controller() {
+    return Shell::Get()->split_view_controller();
+  }
+
+  OverviewSession* overview_session() {
+    DCHECK(overview_controller()->InOverviewSession());
+    return overview_controller()->overview_session();
+  }
+
+  OverviewWindowDragController* drag_controller() {
+    return overview_session()->window_drag_controller();
+  }
+
+  SplitViewDragIndicators* drag_indicators() {
+    return overview_session()->split_view_drag_indicators();
+  }
+
+  OverviewGrid* overview_grid() {
+    return overview_session()->GetGridWithRootWindow(
+        Shell::GetPrimaryRootWindow());
+  }
+
+  const views::Widget* desks_bar_widget() {
+    DCHECK(overview_grid()->desks_bar_view());
+    return overview_grid()->desks_bar_view()->GetWidget();
+  }
+
+  // OverviewWindowDragControllerWithDesksTest:
+  void SetUp() override {
+    OverviewWindowDragControllerWithDesksTest::SetUp();
+
+    // Setup a portrait internal display in tablet mode.
+    UpdateDisplay("800x600");
+    const int64_t display_id =
+        display::Screen::GetScreen()->GetPrimaryDisplay().id();
+    display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                           display_id);
+    ScreenOrientationControllerTestApi test_api(
+        Shell::Get()->screen_orientation_controller());
+    // Set the screen orientation to primary portrait.
+    test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                                display::Display::RotationSource::ACTIVE);
+    EXPECT_EQ(test_api.GetCurrentOrientation(),
+              OrientationLockType::kPortraitPrimary);
+    // Enter tablet mode. Avoid TabletModeController::OnGetSwitchStates() from
+    // disabling tablet mode.
+    base::RunLoop().RunUntilIdle();
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+    // Setup two desks.
+    auto* desks_controller = DesksController::Get();
+    desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+    ASSERT_EQ(2u, desks_controller->desks().size());
+  }
+
+  OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
+    return overview_session()->GetOverviewItemForWindow(window);
+  }
+
+  int GetExpectedDesksBarShiftAmount() {
+    return drag_indicators()->GetLeftHighlightViewBoundsForTesting().bottom() +
+           kHighlightScreenEdgePaddingDp;
+  }
+
+  void StartDraggingAndValidateDesksBarShifted(aura::Window* window) {
+    // Enter overview mode, and start dragging the window. Validate that the
+    // desks bar widget is shifted down to make room for the indicators.
+    overview_controller()->StartOverview();
+    EXPECT_TRUE(overview_controller()->InOverviewSession());
+    auto* overview_item = GetOverviewItemForWindow(window);
+    ASSERT_TRUE(overview_item);
+    StartDraggingItemBy(overview_item, 30, 200, /*by_touch_gestures=*/false,
+                        GetEventGenerator());
+    ASSERT_TRUE(drag_controller());
+    EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
+              drag_controller()->current_drag_behavior());
+    ASSERT_TRUE(drag_indicators());
+    EXPECT_EQ(IndicatorState::kDragArea,
+              drag_indicators()->current_indicator_state());
+    // Note that it's ok to use screen bounds here since we only have a single
+    // primary display.
+    EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
+              desks_bar_widget()->GetWindowBoundsInScreen().y());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverviewWindowDragControllerDesksPortraitTabletTest);
+};
+
+TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
+       DragAndDropInEmptyArea) {
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  StartDraggingAndValidateDesksBarShifted(window.get());
+
+  // Dropping the window any where outside the bounds of the desks widget or the
+  // snap bounds should restore the desks widget to its correct position.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 400));
+  event_generator->ReleaseLeftButton();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(0, desks_bar_widget()->GetWindowBoundsInScreen().y());
+}
+
+TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
+       DragAndDropInSnapAreas) {
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  StartDraggingAndValidateDesksBarShifted(window.get());
+
+  // Drag towards the area at the bottom of the display and note that the desks
+  // bar widget is not shifted.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 800));
+  ASSERT_TRUE(drag_indicators());
+  EXPECT_EQ(IndicatorState::kPreviewAreaRight,
+            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(overview_grid()->bounds().y(),
+            desks_bar_widget()->GetWindowBoundsInScreen().y());
+
+  // Drag back to the middle, the desks bar should be shifted again.
+  event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 400));
+  ASSERT_TRUE(drag_indicators());
+  EXPECT_EQ(IndicatorState::kDragArea,
+            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
+            desks_bar_widget()->GetWindowBoundsInScreen().y());
+
+  // Drag towards the area at the top of the display and note that the desks bar
+  // widget is no longer shifted.
+  event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 0));
+  ASSERT_TRUE(drag_indicators());
+  EXPECT_EQ(IndicatorState::kPreviewAreaLeft,
+            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(overview_grid()->bounds().y(),
+            desks_bar_widget()->GetWindowBoundsInScreen().y());
+
+  // Drop it at this location and expect the window to snap. The desks bar
+  // remains unshifted.
+  event_generator->ReleaseLeftButton();
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
+  EXPECT_EQ(window.get(), split_view_controller()->left_window());
+  EXPECT_EQ(overview_grid()->bounds().y(),
+            desks_bar_widget()->GetWindowBoundsInScreen().y());
+}
+
+TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  StartDraggingAndValidateDesksBarShifted(window.get());
+
+  // Drag the window to the second desk's mini_view. While dragging is in
+  // progress, the desks bar remains shifted.
+  const auto* desks_bar_view = overview_grid()->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  ASSERT_TRUE(desk_2_mini_view);
+  const auto mini_view_location =
+      desk_2_mini_view->GetBoundsInScreen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      GetScreenInPixelsPoint(mini_view_location.x(), mini_view_location.y()));
+  ASSERT_TRUE(drag_indicators());
+  EXPECT_EQ(IndicatorState::kDragArea,
+            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
+            desks_bar_widget()->GetWindowBoundsInScreen().y());
+
+  // Once the window is dropped on that desk, the desks bar should return to its
+  // unshifted position, and the window should move to the second desk.
+  EXPECT_TRUE(desks_util::BelongsToActiveDesk(window.get()));
+  event_generator->ReleaseLeftButton();  // Drop.
+  EXPECT_FALSE(desks_util::BelongsToActiveDesk(window.get()));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(overview_grid()->bounds().y(),
+            desks_bar_widget()->GetWindowBoundsInScreen().y());
+  EXPECT_EQ(IndicatorState::kNone,
+            drag_indicators()->current_indicator_state());
 }
 
 }  // namespace ash

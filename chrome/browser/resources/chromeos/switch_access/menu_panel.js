@@ -42,11 +42,11 @@ class Panel {
     let menuList = Object.values(SAConstants.MenuId);
     for (const menuId of menuList) {
       this.updateButtonOrder_(menuId);
-    }
 
-    const buttons = document.getElementsByTagName('button');
-    for (const button of buttons) {
-      this.setupButton_(button);
+      const menu = document.getElementById(menuId);
+      for (const button of menu.children) {
+        this.setupButton_(button);
+      }
     }
 
     const background = chrome.extension.getBackgroundPage();
@@ -68,7 +68,8 @@ class Panel {
   }
 
   /**
-   * Adds an event listener to the given button to send a message when clicked.
+   * Adds an event listener to the given button to perform
+   * the corresponding menu action when clicked.
    * @param {!Element} button
    * @private
    */
@@ -77,6 +78,14 @@ class Panel {
     button.addEventListener('click', function(action) {
       this.menuManager_.performAction(action);
     }.bind(this, action));
+  }
+
+  /**
+   * Get the HTML element for the back button.
+   * @return {Element}
+   */
+  backButtonElement() {
+    return document.getElementById(SAConstants.BACK_ID);
   }
 
   /**
@@ -107,6 +116,7 @@ class Panel {
     if (menuId !== this.currentMenuId_) {
       this.clear();
       this.panel_.appendChild(menu);
+      menu.hidden = false;
     }
 
     // Hide menu actions not applicable to the current node.
@@ -127,6 +137,7 @@ class Panel {
     if (this.currentMenuId_) {
       const menu = document.getElementById(this.currentMenuId_);
       document.body.appendChild(menu);
+      menu.hidden = true;
 
       this.currentMenuId_ = null;
     }

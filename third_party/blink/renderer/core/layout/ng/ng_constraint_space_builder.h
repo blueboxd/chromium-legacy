@@ -199,7 +199,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     is_margin_strut_set_ = true;
 #endif
     if (!is_new_fc_ && margin_strut != NGMarginStrut())
-      space_.EnsureRareData()->margin_strut = margin_strut;
+      space_.EnsureRareData()->SetMarginStrut(margin_strut);
   }
 
   // Set up a margin strut that discards all adjoining margins. This is used to
@@ -211,7 +211,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 #endif
     NGMarginStrut discarding_margin_strut;
     discarding_margin_strut.discard_margins = true;
-    space_.EnsureRareData()->margin_strut = discarding_margin_strut;
+    space_.EnsureRareData()->SetMarginStrut(discarding_margin_strut);
   }
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) {
@@ -229,8 +229,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     is_optimistic_bfc_block_offset_set_ = true;
 #endif
     if (LIKELY(!is_new_fc_)) {
-      space_.EnsureRareData()->optimistic_bfc_block_offset =
-          optimistic_bfc_block_offset;
+      space_.EnsureRareData()->SetOptimisticBfcBlockOffset(
+          optimistic_bfc_block_offset);
     }
   }
 
@@ -239,10 +239,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_forced_bfc_block_offset_set_);
     is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_)) {
-      space_.EnsureRareData()->forced_bfc_block_offset =
-          forced_bfc_block_offset;
-    }
+    if (LIKELY(!is_new_fc_))
+      space_.EnsureRareData()->SetForcedBfcBlockOffset(forced_bfc_block_offset);
   }
 
   void SetClearanceOffset(LayoutUnit clearance_offset) {
@@ -251,7 +249,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     is_clearance_offset_set_ = true;
 #endif
     if (!is_new_fc_ && clearance_offset != LayoutUnit::Min())
-      space_.EnsureRareData()->clearance_offset = clearance_offset;
+      space_.EnsureRareData()->SetClearanceOffset(clearance_offset);
   }
 
   void SetTableCellBorders(const NGBoxStrut& table_cell_borders) {
@@ -260,7 +258,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     is_table_cell_borders_set_ = true;
 #endif
     if (table_cell_borders != NGBoxStrut())
-      space_.EnsureRareData()->table_cell_borders = table_cell_borders;
+      space_.EnsureRareData()->SetTableCellBorders(table_cell_borders);
   }
 
   void SetTableCellIntrinsicPadding(
@@ -270,8 +268,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     is_table_cell_intrinsic_padding_set_ = true;
 #endif
     if (table_cell_intrinsic_padding != NGBoxStrut()) {
-      space_.EnsureRareData()->table_cell_intrinsic_padding =
-          table_cell_intrinsic_padding;
+      space_.EnsureRareData()->SetTableCellIntrinsicPadding(
+          table_cell_intrinsic_padding);
     }
   }
 
@@ -293,8 +291,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     is_custom_layout_data_set_ = true;
 #endif
     if (custom_layout_data) {
-      space_.EnsureRareData()->custom_layout_data =
-          std::move(custom_layout_data);
+      space_.EnsureRareData()->SetCustomLayoutData(
+          std::move(custom_layout_data));
     }
   }
 

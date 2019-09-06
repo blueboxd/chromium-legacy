@@ -181,6 +181,7 @@ static_library("test_support") {
     "//components/network_time:network_time_test_support",
     "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
+    "//components/payments/core:test_support",
     "//components/prefs:test_support",
     "//components/rappor:test_support",
     "//components/safe_browsing/db:v4_test_util",
@@ -507,6 +508,7 @@ if (is_android) {
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
+      "../browser/payments/hybrid_request_skip_ui_browsertest.cc",
       "../browser/payments/payment_handler_exploit_browsertest.cc",
       "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "../browser/payments/personal_data_manager_test_util.cc",
@@ -1918,7 +1920,6 @@ if (!is_android) {
         ]
       }
       deps += [
-        "//components/payments/core:test_support",
         "//ui/views",
         "//url",
       ]
@@ -2264,6 +2265,7 @@ if (!is_android) {
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_launcher_view_browsertest.cc",
+        "../browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder_browsertest.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.cc",
         "../browser/ui/webui/chromeos/login/discover/discover_browser_test.h",
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app_test.cc",
@@ -2807,6 +2809,7 @@ test("unit_tests") {
     "../browser/android/chrome_backup_agent_unittest.cc",
     "../browser/android/customtabs/detached_resource_request_unittest.cc",
     "../browser/android/favicon_helper_unittest.cc",
+    "../browser/android/metrics/background_task_memory_metrics_emitter_unittest.cc",
     "../browser/android/mock_location_settings.cc",
     "../browser/android/mock_location_settings.h",
     "../browser/android/oom_intervention/near_oom_monitor_unittest.cc",
@@ -5149,6 +5152,10 @@ test("unit_tests") {
       "../browser/media/router/providers/openscreen/discovery/open_screen_listener_unittest.cc",
       "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc",
     ]
+  }
+
+  if (enable_webui_tab_strip) {
+    sources += [ "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc" ]
   }
 }
 

@@ -1610,6 +1610,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/add_supervision/add_supervision_handler.h",
       "webui/chromeos/add_supervision/add_supervision_handler_utils.cc",
       "webui/chromeos/add_supervision/add_supervision_handler_utils.h",
+      "webui/chromeos/add_supervision/add_supervision_metrics_recorder.cc",
+      "webui/chromeos/add_supervision/add_supervision_metrics_recorder.h",
       "webui/chromeos/add_supervision/add_supervision_ui.cc",
       "webui/chromeos/add_supervision/add_supervision_ui.h",
       "webui/chromeos/add_supervision/confirm_signout_dialog.cc",
@@ -3545,12 +3547,12 @@ jumbo_split_static_library("ui") {
     if (is_chromeos) {
       sources += [
         "app_icon_loader_delegate.h",
-        "app_list/app_service_app_icon_loader.cc",
-        "app_list/app_service_app_icon_loader.h",
-        "app_list/app_service_app_item.cc",
-        "app_list/app_service_app_item.h",
-        "app_list/app_service_app_model_builder.cc",
-        "app_list/app_service_app_model_builder.h",
+        "app_list/app_service/app_service_app_icon_loader.cc",
+        "app_list/app_service/app_service_app_icon_loader.h",
+        "app_list/app_service/app_service_app_item.cc",
+        "app_list/app_service/app_service_app_item.h",
+        "app_list/app_service/app_service_app_model_builder.cc",
+        "app_list/app_service/app_service_app_model_builder.h",
         "app_list/arc/arc_app_context_menu.cc",
         "app_list/arc/arc_app_context_menu.h",
         "app_list/arc/arc_app_dialog.h",
@@ -3974,6 +3976,8 @@ jumbo_split_static_library("ui") {
       "views/frame/webui_tab_strip_container_view.h",
       "webui/tab_strip/tab_strip_ui.cc",
       "webui/tab_strip/tab_strip_ui.h",
+      "webui/tab_strip/thumbnail_tracker.cc",
+      "webui/tab_strip/thumbnail_tracker.h",
     ]
   }
 }

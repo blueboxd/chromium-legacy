@@ -614,7 +614,7 @@
 <translation id="5304943142864553931">علامة التبويب <ph name="TITLE" /></translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5310788376443009632">تمت إزالة:</translation>
-<translation id="5320727453979144100">تم تفعيل الوضع الثابت</translation>
+<translation id="5320727453979144100">تم تفعيل وضع التثبيت</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{فاصلة واحدة}zero{# commas}two{فاصلتان (#)}few{# فواصل}many{# فاصلة}other{# من الفواصل}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />، مربع النص</translation>
 <translation id="5330443287809544590">الرابط <ph name="NAME" /></translation>

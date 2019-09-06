@@ -92,7 +92,7 @@ class MouseCursorMonitorProxyTest
                              const webrtc::DesktopVector& position) override;
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   base::Thread capture_thread_;
   std::unique_ptr<MouseCursorMonitorProxy> proxy_;

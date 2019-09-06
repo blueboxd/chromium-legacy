@@ -140,7 +140,7 @@
     Your device name and network address
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_USERNAME" desc="Message explaining that an extension currently reports the user's username">
-    Usernames for your device and browser
+    Your device username and Chrome username
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_VERSION" desc="Message explaining that an extension currently reports the user's browser and machine version">
     Version information about your device and browser
@@ -156,5 +156,34 @@
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH" desc="Message explaining that an extension currently reports the user's  performance data and crash report">
     Performance data and crash reports
+  </message>
+
+  <!-- Strings related to Chrome Enterprise Threat Protection -->
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION" desc="Title of the Chrome Enterprise Threat Protection section of the page">
+    Chrome Enterprise Threat Protection
+  </message>
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION" desc="Description of the Chrome Enterprise Threat Protection section of the page">
+    Your administrator has enabled Chrome Enterprise Threat Protection on your browser. Chrome Enterprise Threat Protection has access to some of your data.
+  </message>
+  <message name="IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY" desc="Description of the Chrome Enterprise Threat Protection section of the page">
+    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> has enabled Chrome Enterprise Threat Protection on your browser. Chrome Enterprise Threat Protection has access to some of your data.
+  </message>
+  <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_NAME" desc="Name for the data loss prevention feature">
+    Data Loss Prevention
+  </message>
+  <message name="IDS_MANAGEMENT_DATA_LOSS_PREVENTION_PERMISSIONS" desc="Permissions description for the data loss prevention feature">
+    Scan the contents of the cache and files that you download or upload in Chrome.
+  </message>
+  <message name="IDS_MANAGEMENT_MALWARE_SCANNING_NAME" desc="Name for the malware scanning feature">
+    Malware Scanning
+  </message>
+  <message name="IDS_MANAGEMENT_MALWARE_SCANNING_PERMISSIONS" desc="Permissions description for the malware scanning feature">
+    Scan files that you download or upload in Chrome.
+  </message>
+  <message name="IDS_MANAGEMENT_ENTERPRISE_REPORTING_NAME" desc="Name for the enterprise reporting feature">
+    Enterprise Reporting
+  </message>
+  <message name="IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS" desc="Permissions description for the enterprise reporting feature">
+    Share data about security events that have been flagged by Chrome Enterprise Threat Protection with your Administrator. These may include page urls, file name and file metadata, your device username and Chrome username.
   </message>
 </grit-part>

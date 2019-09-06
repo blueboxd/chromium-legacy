@@ -13,7 +13,8 @@ test can query for whether each submitted frame used the correct pose.
   <body>
     <canvas id="webgl-canvas"></canvas>
     <script>
-      let shouldDeferNonImmersiveSessionCreation = true;
+      // Since we requre the 'local' feature, let the test driver create the non-immersive session instead.
+      let shouldAutoCreateNonImmersiveSession = false;
     </script>
     <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
     <script src="../resources/webxr_e2e.js"></script>
@@ -26,9 +27,7 @@ test can query for whether each submitted frame used the correct pose.
         [sessionTypes.MAGIC_WINDOW]: 'local',
         [sessionTypes.AR]: 'local'
       };
-
       nonImmersiveSessionInit = { requiredFeatures: ['local'] };
-      requestMagicWindowSession();
 
       let MAX_FRAME_CALLBACKS = 10;
 

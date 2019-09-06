@@ -181,17 +181,18 @@ public class WebApkInfo extends WebappInfo {
             WebappIcon badgeIcon, WebappIcon splashIcon, String name, String shortName,
             @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
             long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
-            String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, @WebApkDistributor int distributor,
+            boolean isSplashIconMaskable, String webApkPackageName, int shellApkVersion,
+            String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             String shareTargetActivityName, boolean forceNavigation,
             boolean isSplashProvidedByWebApk, ShareData shareData, int webApkVersionCode) {
         return create(WebApkIntentDataProvider.create(url, scope, primaryIcon, badgeIcon,
                 splashIcon, name, shortName, displayMode, orientation, source, themeColor,
-                backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, distributor,
-                iconUrlToMurmur2HashMap, shareTarget, shareTargetActivityName, forceNavigation,
-                isSplashProvidedByWebApk, shareData, webApkVersionCode));
+                backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,
+                isSplashIconMaskable, webApkPackageName, shellApkVersion, manifestUrl,
+                manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
+                shareTargetActivityName, forceNavigation, isSplashProvidedByWebApk, shareData,
+                webApkVersionCode));
     }
 
     private static WebApkInfo create(@Nullable BrowserServicesIntentDataProvider provider) {
@@ -214,6 +215,10 @@ public class WebApkInfo extends WebappInfo {
      */
     public WebappIcon splashIcon() {
         return getWebApkExtras().splashIcon;
+    }
+
+    public boolean isSplashIconMaskable() {
+        return getWebApkExtras().isSplashIconMaskable;
     }
 
     /** Returns data about the WebAPK's share intent handlers. */

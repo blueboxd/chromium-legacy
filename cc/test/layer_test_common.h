@@ -158,6 +158,11 @@ class LayerTestCommon {
       host_impl()->active_tree()->SetElementIdsForTesting();
     }
 
+    // These two functions calculates draw properties by directly calling
+    // LayerTreeHostCommon, not through LayerTreeImpl API, thus they don't
+    // update LayerTreeImpl's needs_update_draw_properties flag.
+    // TODO(wangxianzhu): Remove this version after cleaning up
+    // LayerTreeHostCommon API.
     void ExecuteCalculateDrawProperties(
         LayerImpl* root_layer,
         float device_scale_factor = 1.0f,
@@ -167,6 +172,9 @@ class LayerTestCommon {
 
     void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
         LayerImpl* root_layer);
+
+    // This function updates draw properties through LayerTreeImpl API.
+    void UpdateDrawProperties(LayerTreeImpl*);
 
     const RenderSurfaceList* render_surface_list_impl() const {
       return render_surface_list_impl_.get();

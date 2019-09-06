@@ -9,5 +9,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent {
-    [CallWith=ScriptState] Promise<void> updateUI(BackgroundFetchUIOptions options);
+    [CallWith=ScriptState] Promise<void> updateUI(optional BackgroundFetchUIOptions options);
 };

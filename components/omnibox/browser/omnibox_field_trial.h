@@ -421,6 +421,9 @@ bool IsMaxURLMatchesFeatureEnabled();
 // between top and bottom is enabled.
 bool IsOmniboxWrapPopupPositionEnabled();
 
+// Returns whether on device head provider is enabled for incognito mode.
+bool IsOnDeviceHeadProviderEnabledForIncognito();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 

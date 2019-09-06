@@ -41,7 +41,6 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -1405,9 +1404,9 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
   return bubble;
 }
 
-SharingDialog* BrowserView::ShowClickToCallDialog(
+SharingDialog* BrowserView::ShowSharingDialog(
     content::WebContents* web_contents,
-    ClickToCallUiController* controller) {
+    SharingUiController* controller) {
   auto* dialog_view = new SharingDialogView(
       toolbar_button_provider()->GetAnchorView(), web_contents, controller);
 
@@ -2161,7 +2160,16 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   if (!IsFullscreen() && frame_->ShouldSaveWindowPlacement() &&
       chrome::ShouldSaveWindowPlacement(browser_.get())) {
     WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-    chrome::SaveWindowPlacement(browser_.get(), bounds, show_state);
+    gfx::Rect saved_bounds = bounds;
+    if (chrome::SavedBoundsAreContentBounds(browser_.get())) {
+      // Invert the transformation done in GetSavedWindowPlacement().
+      gfx::Size client_size =
+          frame_->GetFrameView()->GetBoundsForClientView().size();
+      if (IsToolbarVisible())
+        client_size.Enlarge(0, -toolbar_->GetPreferredSize().height());
+      saved_bounds.set_size(client_size);
+    }
+    chrome::SaveWindowPlacement(browser_.get(), saved_bounds, show_state);
   }
 }
 

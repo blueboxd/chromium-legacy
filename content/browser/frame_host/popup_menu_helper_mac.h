@@ -72,7 +72,7 @@ class PopupMenuHelper : public RenderWidgetHostObserver {
   Delegate* delegate_;  // Weak. Owns |this|.
 
   ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_;
-  RenderFrameHostImpl* render_frame_host_;
+  base::WeakPtr<RenderFrameHostImpl> render_frame_host_;
   WebMenuRunner* menu_runner_;
   bool popup_was_hidden_;
 

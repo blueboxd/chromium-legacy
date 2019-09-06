@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
@@ -70,7 +71,7 @@ class ResourceLoadingHintsWebContentsObserver
   // Set in constructor.
   Profile* profile_ = nullptr;
 
-  blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedPtr
+  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
   GetResourceLoadingHintsReceiver(content::NavigationHandle* navigation_handle);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

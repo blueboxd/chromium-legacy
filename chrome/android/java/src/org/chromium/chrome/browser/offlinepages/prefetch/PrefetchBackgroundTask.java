@@ -198,7 +198,9 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
     @Override
     protected boolean supportsServiceManagerOnly() {
-        if (sAlwaysSupportServiceManagerOnlyForTesting) return true;
+        if (sAlwaysSupportServiceManagerOnlyForTesting) {
+            return true;
+        }
 
         return FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled();
     }

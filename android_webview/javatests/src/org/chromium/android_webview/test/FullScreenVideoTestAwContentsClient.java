@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.base.test.util.CallbackHelper;
 
@@ -24,7 +22,7 @@ import java.util.concurrent.TimeoutException;
  * This class is a AwContentsClient for full screen video test.
  */
 public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
-    public static final long WAITING_SECONDS = scaleTimeout(20);
+    public static final long WAITING_SECONDS = 20L;
     private CallbackHelper mOnShowCustomViewCallbackHelper = new CallbackHelper();
     private CallbackHelper mOnHideCustomViewCallbackHelper = new CallbackHelper();
     private CallbackHelper mOnUnhandledKeyUpEventCallbackHelper = new CallbackHelper();

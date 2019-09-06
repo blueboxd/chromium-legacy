@@ -34,6 +34,8 @@ struct CONTENT_EXPORT ScopesLocksHolder {
     return weak_factory.GetWeakPtr();
   }
 
+  void AbortLockRequest() { weak_factory.InvalidateWeakPtrs(); }
+
   std::vector<ScopeLock> locks;
   base::WeakPtrFactory<ScopesLocksHolder> weak_factory{this};
 

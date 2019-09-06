@@ -119,16 +119,21 @@ void SetFilter(const LayerType* layer, const FilterOperations& filters) {
 
 // Creates viewport layers and (in layer list mode) paint properties.
 // Convenient overload of the method below that creates a scrolling layer as
-// the outer viewport scroll layer.
+// the outer viewport scroll layer. The inner viewport size will be
+// root->bounds().
 void SetupViewport(Layer* root,
-                   const gfx::Size& outer_bounds,
-                   const gfx::Size& scroll_bounds);
-
+                   const gfx::Size& outer_viewport_size,
+                   const gfx::Size& content_size);
 // Creates viewport layers and (in layer list mode) paint properties.
 // Uses the given scroll layer as the content "outer viewport scroll layer".
 void SetupViewport(Layer* root,
-                   scoped_refptr<Layer> outer_scroll_layer,
-                   const gfx::Size& outer_bounds);
+                   scoped_refptr<Layer> outer_viewport_scroll_layer,
+                   const gfx::Size& outer_viewport_size);
+
+// The impl-side counterpart of the first version of SetupViewport().
+void SetupViewport(LayerImpl* root,
+                   const gfx::Size& outer_viewport_size,
+                   const gfx::Size& content_size);
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
 inline RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer) {

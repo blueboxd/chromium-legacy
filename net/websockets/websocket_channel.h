@@ -255,16 +255,16 @@ class NET_EXPORT WebSocketChannel {
   // HandleFrame() method.
   ChannelState HandleFrameByState(const WebSocketFrameHeader::OpCode opcode,
                                   bool final,
-                                  scoped_refptr<IOBuffer> data_buffer,
-                                  uint64_t size) WARN_UNUSED_RESULT;
+                                  base::span<const char> payload)
+      WARN_UNUSED_RESULT;
 
   // Forwards a received data frame to the renderer, if connected. If
   // |expecting_continuation| is not equal to |expecting_to_read_continuation_|,
   // will fail the channel. Also checks the UTF-8 validity of text frames.
   ChannelState HandleDataFrame(WebSocketFrameHeader::OpCode opcode,
                                bool final,
-                               scoped_refptr<IOBuffer> data_buffer,
-                               uint64_t size) WARN_UNUSED_RESULT;
+                               base::span<const char> payload)
+      WARN_UNUSED_RESULT;
 
   // Handles an incoming close frame with |code| and |reason|.
   ChannelState HandleCloseFrame(uint16_t code,
@@ -308,8 +308,7 @@ class NET_EXPORT WebSocketChannel {
   // is 1, or the supplied code is not permitted to be sent over the network,
   // then false is returned and |message| is set to an appropriate console
   // message.
-  bool ParseClose(scoped_refptr<IOBuffer> buffer,
-                  uint64_t size,
+  bool ParseClose(base::span<const char> payload,
                   uint16_t* code,
                   std::string* reason,
                   std::string* message);

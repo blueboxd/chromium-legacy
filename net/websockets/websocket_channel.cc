@@ -144,7 +144,8 @@ class WebSocketChannel::SendBuffer {
   SendBuffer() : total_bytes_(0) {}
 
   // Add a WebSocketFrame to the buffer and increase total_bytes_.
-  void AddFrame(std::unique_ptr<WebSocketFrame> chunk);
+  void AddFrame(std::unique_ptr<WebSocketFrame> chunk,
+                scoped_refptr<IOBuffer> buffer);
 
   // Return a pointer to the frames_ for write purposes.
   std::vector<std::unique_ptr<WebSocketFrame>>* frames() { return &frames_; }
@@ -152,6 +153,8 @@ class WebSocketChannel::SendBuffer {
  private:
   // The frames_ that will be sent in the next call to WriteFrames().
   std::vector<std::unique_ptr<WebSocketFrame>> frames_;
+  // References of each WebSocketFrame.data;
+  std::vector<scoped_refptr<IOBuffer>> buffers_;
 
   // The total size of the payload data in |frames_|. This will be used to
   // measure the throughput of the link.
@@ -160,9 +163,11 @@ class WebSocketChannel::SendBuffer {
 };
 
 void WebSocketChannel::SendBuffer::AddFrame(
-    std::unique_ptr<WebSocketFrame> frame) {
+    std::unique_ptr<WebSocketFrame> frame,
+    scoped_refptr<IOBuffer> buffer) {
   total_bytes_ += frame->header.payload_length;
   frames_.push_back(std::move(frame));
+  buffers_.push_back(std::move(buffer));
 }
 
 // Implementation of WebSocketStream::ConnectDelegate that simply forwards the
@@ -696,15 +701,15 @@ ChannelState WebSocketChannel::HandleFrame(
   }
 
   // Respond to the frame appropriately to its type.
-  return HandleFrameByState(opcode, frame->header.final, std::move(frame->data),
-                            frame->header.payload_length);
+  return HandleFrameByState(
+      opcode, frame->header.final,
+      base::make_span(frame->data, frame->header.payload_length));
 }
 
 ChannelState WebSocketChannel::HandleFrameByState(
     const WebSocketFrameHeader::OpCode opcode,
     bool final,
-    scoped_refptr<IOBuffer> data_buffer,
-    uint64_t size) {
+    base::span<const char> payload) {
   DCHECK_NE(RECV_CLOSED, state_)
       << "HandleFrame() does not support being called re-entrantly from within "
          "SendClose()";
@@ -722,18 +727,21 @@ ChannelState WebSocketChannel::HandleFrameByState(
     case WebSocketFrameHeader::kOpCodeText:  // fall-thru
     case WebSocketFrameHeader::kOpCodeBinary:
     case WebSocketFrameHeader::kOpCodeContinuation:
-      return HandleDataFrame(opcode, final, std::move(data_buffer), size);
+      return HandleDataFrame(opcode, final, std::move(payload));
 
     case WebSocketFrameHeader::kOpCodePing:
-      DVLOG(1) << "Got Ping of size " << size;
-      if (state_ == CONNECTED)
+      DVLOG(1) << "Got Ping of size " << payload.size();
+      if (state_ == CONNECTED) {
+        auto buffer = base::MakeRefCounted<IOBuffer>(payload.size());
+        memcpy(buffer->data(), payload.data(), payload.size());
         return SendFrameInternal(true, WebSocketFrameHeader::kOpCodePong,
-                                 std::move(data_buffer), size);
+                                 std::move(buffer), payload.size());
+      }
       DVLOG(3) << "Ignored ping in state " << state_;
       return CHANNEL_ALIVE;
 
     case WebSocketFrameHeader::kOpCodePong:
-      DVLOG(1) << "Got Pong of size " << size;
+      DVLOG(1) << "Got Pong of size " << payload.size();
       // There is no need to do anything with pong messages.
       return CHANNEL_ALIVE;
 
@@ -741,7 +749,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
       uint16_t code = kWebSocketNormalClosure;
       std::string reason;
       std::string message;
-      if (!ParseClose(std::move(data_buffer), size, &code, &reason, &message)) {
+      if (!ParseClose(payload, &code, &reason, &message)) {
         FailChannel(message, code, reason);
         return CHANNEL_DELETED;
       }
@@ -760,11 +768,10 @@ ChannelState WebSocketChannel::HandleFrameByState(
 ChannelState WebSocketChannel::HandleDataFrame(
     WebSocketFrameHeader::OpCode opcode,
     bool final,
-    scoped_refptr<IOBuffer> data_buffer,
-    uint64_t size) {
+    base::span<const char> payload) {
   DVLOG(3) << "WebSocketChannel::HandleDataFrame opcode=" << opcode
-           << ", final?" << final
-           << ", data_buffer=" << (void*)data_buffer.get() << ", size=" << size;
+           << ", final?" << final << ", data=" << (void*)payload.data()
+           << ", size=" << payload.size();
   if (state_ != CONNECTED) {
     DVLOG(3) << "Ignored data packet received in state " << state_;
     return CHANNEL_ALIVE;
@@ -802,7 +809,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     // This call is not redundant when size == 0 because it tells us what
     // the current state is.
     StreamingUtf8Validator::State state = incoming_utf8_validator_.AddBytes(
-        size ? data_buffer->data() : nullptr, static_cast<size_t>(size));
+        payload.data(), static_cast<size_t>(payload.size()));
     if (state == StreamingUtf8Validator::INVALID ||
         (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
       FailChannel("Could not decode a text frame as UTF-8.",
@@ -812,13 +819,12 @@ ChannelState WebSocketChannel::HandleDataFrame(
     receiving_text_message_ = !final;
     DCHECK(!final || state == StreamingUtf8Validator::VALID_ENDPOINT);
   }
-  if (size == 0U && !final)
+  if (payload.size() == 0U && !final)
     return CHANNEL_ALIVE;
 
   initial_frame_forwarded_ = !final;
   // Sends the received frame to the renderer process.
-  event_interface_->OnDataFrame(final, opcode_to_send, std::move(data_buffer),
-                                size);
+  event_interface_->OnDataFrame(final, opcode_to_send, payload);
   return CHANNEL_ALIVE;
 }
 
@@ -887,7 +893,7 @@ ChannelState WebSocketChannel::SendFrameInternal(
     bool fin,
     WebSocketFrameHeader::OpCode op_code,
     scoped_refptr<IOBuffer> buffer,
-    uint64_t size) {
+    uint64_t buffer_size) {
   DCHECK(state_ == CONNECTED || state_ == RECV_CLOSED);
   DCHECK(stream_);
 
@@ -895,8 +901,8 @@ ChannelState WebSocketChannel::SendFrameInternal(
   WebSocketFrameHeader& header = frame->header;
   header.final = fin;
   header.masked = true;
-  header.payload_length = size;
-  frame->data = std::move(buffer);
+  header.payload_length = buffer_size;
+  frame->data = buffer->data();
 
   if (data_being_sent_) {
     // Either the link to the WebSocket server is saturated, or several messages
@@ -905,12 +911,12 @@ ChannelState WebSocketChannel::SendFrameInternal(
     // quota appropriately.
     if (!data_to_send_next_)
       data_to_send_next_ = std::make_unique<SendBuffer>();
-    data_to_send_next_->AddFrame(std::move(frame));
+    data_to_send_next_->AddFrame(std::move(frame), std::move(buffer));
     return CHANNEL_ALIVE;
   }
 
   data_being_sent_ = std::make_unique<SendBuffer>();
-  data_being_sent_->AddFrame(std::move(frame));
+  data_being_sent_->AddFrame(std::move(frame), std::move(buffer));
   return WriteFrames();
 }
 
@@ -960,11 +966,11 @@ ChannelState WebSocketChannel::SendClose(uint16_t code,
                            std::move(body), size);
 }
 
-bool WebSocketChannel::ParseClose(scoped_refptr<IOBuffer> buffer,
-                                  uint64_t size,
+bool WebSocketChannel::ParseClose(base::span<const char> payload,
                                   uint16_t* code,
                                   std::string* reason,
                                   std::string* message) {
+  const uint64_t size = static_cast<uint64_t>(payload.size());
   reason->clear();
   if (size < kWebSocketCloseCodeLength) {
     if (size == 0U) {
@@ -974,14 +980,14 @@ bool WebSocketChannel::ParseClose(scoped_refptr<IOBuffer> buffer,
 
     DVLOG(1) << "Close frame with payload size " << size << " received "
              << "(the first byte is " << std::hex
-             << static_cast<int>(buffer->data()[0]) << ")";
+             << static_cast<int>(payload.data()[0]) << ")";
     *code = kWebSocketErrorProtocolError;
     *message =
         "Received a broken close frame containing an invalid size body.";
     return false;
   }
 
-  const char* data = buffer->data();
+  const char* data = payload.data();
   uint16_t unchecked_code = 0;
   base::ReadBigEndian(data, &unchecked_code);
   static_assert(sizeof(unchecked_code) == kWebSocketCloseCodeLength,

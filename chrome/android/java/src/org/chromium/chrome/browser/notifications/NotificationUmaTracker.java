@@ -117,8 +117,10 @@ public class NotificationUmaTracker {
         int OFFLINE_CONTENT_SUGGESTION_SETTINGS = 9;
         // Dismiss button on sharing notification.
         int SHARING_DISMISS = 10;
+        // Try again button on sharing error notification.
+        int SHARING_TRY_AGAIN = 11;
 
-        int NUM_ENTRIES = 11;
+        int NUM_ENTRIES = 12;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =

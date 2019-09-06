@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "android_webview/browser/input_stream.h"
-#include "android_webview/native_jni/AwWebResourceResponse_jni.h"
+#include "android_webview/browser_jni_headers/AwWebResourceResponse_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"

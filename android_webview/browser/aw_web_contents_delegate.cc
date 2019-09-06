@@ -12,7 +12,7 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/permission/media_access_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
-#include "android_webview/native_jni/AwWebContentsDelegate_jni.h"
+#include "android_webview/browser_jni_headers/AwWebContentsDelegate_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"

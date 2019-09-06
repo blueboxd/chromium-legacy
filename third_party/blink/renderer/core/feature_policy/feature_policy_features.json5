@@ -303,11 +303,16 @@
       feature_policy_name: "wake-lock",
       depends_on: ["WakeLock"],
     },
-    // The feature is added manually in feature_policy_helper.cc.
+    {
+      name: "WebXr",
+      feature_policy_name: "xr",
+      depends_on: ["WebXR"],
+    },
+    // TODO(crbug.com/960132): WebVR added manually in feature_policy_helper.cc.
     // {
     //   name: "WebVr",
     //   feature_policy_name: "vr",
-    //   depends_on: ["WebVR", "WebXR"],
+    //   depends_on: ["WebVR"],
     // },
   ],
 }

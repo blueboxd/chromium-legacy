@@ -4,8 +4,11 @@
 
 #include "net/base/network_change_notifier.h"
 
+#include "base/run_loop.h"
 #include "build/build_config.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_interfaces.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -187,6 +190,37 @@ TEST(NetworkChangeNotifierTest, IgnoreVMInterfaces) {
 TEST(NetworkChangeNotifierTest, GetConnectionSubtype) {
   // Call GetConnectionSubtype() and ensure that there is no crash.
   NetworkChangeNotifier::GetConnectionSubtype();
+}
+
+class NetworkChangeNotifierMockedTest : public TestWithTaskEnvironment {
+ private:
+  test::ScopedMockNetworkChangeNotifier mock_notifier_;
+};
+
+class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
+ public:
+  void OnDNSChanged() override { ++dns_changed_calls_; }
+
+  void OnInitialDNSConfigRead() override { ++dns_changed_calls_; }
+
+  int dns_changed_calls() const { return dns_changed_calls_; }
+
+ private:
+  int dns_changed_calls_ = 0;
+};
+
+TEST_F(NetworkChangeNotifierMockedTest, TriggerNonSystemDnsChange) {
+  TestDnsObserver observer;
+  NetworkChangeNotifier::AddDNSObserver(&observer);
+
+  ASSERT_EQ(0, observer.dns_changed_calls());
+
+  NetworkChangeNotifier::TriggerNonSystemDnsChange();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, observer.dns_changed_calls());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&observer);
 }
 
 }  // namespace net

@@ -102,16 +102,31 @@ class NavigationManager {
    * Open the Switch Access menu for the currently highlighted node.
    */
   enterMenu() {
-    // If the back button is focused, select it.
-    if (this.backButtonManager_.select())
-      return;
-
     // If we're currently visiting the Switch Access menu, this command should
     // select the highlighted element.
-    if (this.menuManager_.selectCurrentNode())
+    if (this.menuManager_.selectCurrentNode()) {
       return;
+    }
+
+    // If the back button is focused, select it.
+    if (this.backButtonManager_.select()) {
+      return;
+    }
 
     this.menuManager_.enter(this.node_);
+  }
+
+  /**
+   * Selects the back button while navigating in the menu.
+   * @return {boolean} Whether or not the back button was successfully selected.
+   */
+  selectBackButtonInMenu() {
+    if (!this.menuManager_.inMenu()) {
+      return false;
+    }
+
+    this.menuManager_.selectBackButton();
+    return true;
   }
 
   /**
@@ -122,7 +137,7 @@ class NavigationManager {
     if (this.menuManager_.moveBackward())
       return;
 
-    if (this.node_ === this.backButtonManager_.buttonNode()) {
+    if (this.node_ === this.backButtonManager_.backButtonNode()) {
       if (SwitchAccessPredicate.isActionable(this.scope_))
         this.setCurrentNode_(this.scope_);
       else
@@ -139,7 +154,7 @@ class NavigationManager {
     let node = treeWalker.next().node;
 
     if (node === this.scope_)
-      node = this.backButtonManager_.buttonNode();
+      node = this.backButtonManager_.backButtonNode();
 
     if (!node)
       node = this.youngestDescendant_(this.scope_);
@@ -164,7 +179,7 @@ class NavigationManager {
 
     this.startAtValidNode_();
 
-    const backButtonNode = this.backButtonManager_.buttonNode();
+    const backButtonNode = this.backButtonManager_.backButtonNode();
     if (this.node_ === this.scope_ && backButtonNode) {
       this.setCurrentNode_(backButtonNode);
       return;
@@ -378,14 +393,17 @@ class NavigationManager {
    * interesting, perform the default action on it.
    */
   selectCurrentNode() {
-    if (this.backButtonManager_.select())
+    if (this.menuManager_.selectCurrentNode()) {
       return;
+    }
 
-    if (this.menuManager_.selectCurrentNode())
+    if (this.backButtonManager_.select()) {
       return;
+    }
 
-    if (!this.node_.role)
+    if (!this.node_.role) {
       return;
+    }
 
     if (this.switchAccess_.improvedTextInputEnabled()) {
       if (SwitchAccessPredicate.isTextInput(this.node_)) {
@@ -673,7 +691,7 @@ class NavigationManager {
 
     // The first node will come immediately after the back button, so we set
     // |this.node_| to the back button and call |moveForward|.
-    const backButtonNode = this.backButtonManager_.buttonNode();
+    const backButtonNode = this.backButtonManager_.backButtonNode();
     if (backButtonNode)
       this.node_ = backButtonNode;
     else

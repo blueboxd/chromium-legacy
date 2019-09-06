@@ -19,7 +19,6 @@
 #include "content/public/browser/system_connector.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -181,8 +180,6 @@ device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-
   // The system Connector might be not initialized in some testing environments.
   if (!content::GetSystemConnector())
     return wake_lock_.get();
@@ -203,6 +200,6 @@ device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
       device::mojom::WakeLockReason::kOther, "Requested By PepperFlash",
-      std::move(request));
+      wake_lock_.BindNewPipeAndPassReceiver());
   return wake_lock_.get();
 }

@@ -1245,8 +1245,10 @@ void GpuImageDecodeCache::ClearCache() {
 void GpuImageDecodeCache::RecordStats() {
   base::AutoLock lock(lock_);
   double cache_usage;
-  if (base::CheckDiv(static_cast<double>(working_set_bytes_),
-                     max_working_set_bytes_).AssignIfValid(&cache_usage)) {
+  if (working_set_bytes_ > 0 &&
+      base::CheckDiv(static_cast<double>(working_set_bytes_),
+                     max_working_set_bytes_)
+          .AssignIfValid(&cache_usage)) {
     UMA_HISTOGRAM_PERCENTAGE(
         "Renderer4.GpuImageDecodeState.CachePeakUsagePercent",
         cache_usage * 100);

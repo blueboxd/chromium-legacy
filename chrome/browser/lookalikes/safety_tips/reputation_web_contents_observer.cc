@@ -4,11 +4,39 @@
 
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_entry.h"
+
+namespace {
+
+void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
+                       base::Time start_time,
+                       safety_tips::SafetyTipInteraction action) {
+  std::string action_suffix;
+  switch (action) {
+    case safety_tips::SafetyTipInteraction::kNoAction:
+      action_suffix = "NoAction";
+      break;
+    case safety_tips::SafetyTipInteraction::kLeaveSite:
+      action_suffix = "LeaveSite";
+      break;
+    case safety_tips::SafetyTipInteraction::kDismiss:
+      action_suffix = "Dismiss";
+      break;
+  }
+  base::UmaHistogramCustomTimes(
+      security_state::GetSafetyTipHistogramName(
+          std::string("Security.SafetyTips.OpenTime.") + action_suffix,
+          safety_tip_status),
+      base::Time::Now() - start_time, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromHours(1), 100);
+}
+
+}  // namespace
 
 namespace safety_tips {
 
@@ -108,7 +136,9 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   if (!base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
     return;
   }
-  ShowSafetyTipDialog(web_contents(), safety_tip_status, url);
+  ShowSafetyTipDialog(
+      web_contents(), safety_tip_status, url,
+      base::BindOnce(OnSafetyTipClosed, safety_tip_status, base::Time::Now()));
 }
 
 void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {

@@ -209,7 +209,6 @@
 <translation id="3928666092801078803">Объединить данные</translation>
 <translation id="3929457972718048006">Адреса</translation>
 <translation id="3943492037546055397">Пароли</translation>
-<translation id="3950820424414687140">Вход</translation>
 <translation id="3967822245660637423">Скачивание завершено.</translation>
 <translation id="3989635538409502728">Выйти</translation>
 <translation id="3995521777587992544">Индикатор загрузки страницы: выполнено <ph name="EMAIL" />.</translation>
@@ -229,7 +228,6 @@
 <translation id="4172051516777682613">Показывать всегда</translation>
 <translation id="418156467088430727">Открыть офлайн-версию в новой вкладке</translation>
 <translation id="4181841719683918333">Языки</translation>
-<translation id="4237682350741091554">Управление персонализацией и синхронизацией Chrome доступно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Введите кодовую фразу</translation>
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
 <translation id="4281844954008187215">Условия использования</translation>
@@ -283,7 +281,6 @@
 <translation id="4979397965658815378">Войдите в аккаунт Google, чтобы пользоваться своими закладками, паролями, историей и другими настройками на любом устройстве</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5010803260590204777">Чтобы просматривать веб-страницы, не оставляя следов, откройте вкладку инкогнито.</translation>
-<translation id="5011684439661633295">Здравствуйте, <ph name="FULL_ACCOUNT_NAME" />!</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5059136629401106827">ОК</translation>
 <translation id="5062321486222145940">Установить Google Диск</translation>
@@ -445,7 +442,6 @@
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7192050974311852563">Начать запись журнала</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
-<translation id="722055596168483966">Персонализация сервисов Google</translation>
 <translation id="7265758999917665941">Никогда для этого сайта</translation>
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
 <translation id="7285236536143823449">ОК</translation>
@@ -457,7 +453,6 @@
 <translation id="7383797227493018512">Список для чтения</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это не повлияет на данные, сохраненные в аккаунте ранее.</translation>
-<translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Регион</translation>
 <translation id="7456847797759667638">Открыть адрес...</translation>
 <translation id="7460314822154045102">Использовать камеру</translation>
@@ -544,13 +539,10 @@
 <translation id="8840513115188359703">Вы останетесь в аккаунте Google.</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8881801611828450202">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
-<translation id="8904976895050290827">Синхронизация Chrome</translation>
 <translation id="895541991026785598">Сообщить о проблеме</translation>
-<translation id="8971089644512329999">ОК</translation>
 <translation id="8976382372951310360">Справка</translation>
 <translation id="8981454092730389528">Отслеживание действий в Google</translation>
 <translation id="8985320356172329008">Вы вошли в аккаунт</translation>
-<translation id="902659348151742535">Google может использовать историю браузера для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="9034759925968272072">Вы не выйдете из аккаунта Google. Остальная история ваших действий в Интернете доступна на странице <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Контроль трафика</translation>
 <translation id="9055772144595778347">Ошибка</translation>
@@ -567,7 +559,6 @@
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Отчет отправлен</translation>
-<translation id="935490618240037774">Пароли, закладки, история и другие параметры будут синхронизированы с аккаунтом Google, чтобы у вас был доступ к ним на любом устройстве.</translation>
 <translation id="952704832371081537">Отмена</translation>
 <translation id="976982866697960176">Управление синхронизированными данными</translation>
 <translation id="988141524645182168">Другие устройства</translation>

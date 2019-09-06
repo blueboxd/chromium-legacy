@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
+#include "android_webview/browser_jni_headers/AwDrawFnImpl_jni.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/native_jni/AwDrawFnImpl_jni.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"

@@ -107,21 +107,22 @@ TEST_F(NetworkChangeNotifierPosixTest, OnMaxBandwidthChanged) {
 
 class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
  public:
-  void OnDNSChanged() override { subsequent_dns_changes_++; }
+  void OnDNSChanged() override { dns_changes_++; }
 
-  void OnInitialDNSConfigRead() override { initial_dns_changes_++; }
+  void OnInitialDNSConfigRead() override { dns_changes_++; }
 
-  int initial_dns_changes() const { return initial_dns_changes_; }
-  int subsequent_dns_changes() const { return subsequent_dns_changes_; }
+  int dns_changes() const { return dns_changes_; }
 
  private:
-  int initial_dns_changes_ = 0;
-  int subsequent_dns_changes_ = 0;
+  int dns_changes_ = 0;
 };
 
 TEST_F(NetworkChangeNotifierPosixTest, OnDNSChanged) {
   TestDnsObserver observer;
   NetworkChangeNotifier::AddDNSObserver(&observer);
+
+  FastForwardUntilIdle();
+  EXPECT_EQ(0, observer.dns_changes());
 
   DnsConfig config;
   config.nameservers = {IPEndPoint(IPAddress(1, 2, 3, 4), 233)};
@@ -129,22 +130,19 @@ TEST_F(NetworkChangeNotifierPosixTest, OnDNSChanged) {
   dns_config_service()->SetConfigForRefresh(config);
   notifier()->OnDNSChanged();
   FastForwardUntilIdle();
-  EXPECT_EQ(1, observer.initial_dns_changes());
-  EXPECT_EQ(0, observer.subsequent_dns_changes());
+  EXPECT_EQ(1, observer.dns_changes());
 
   config.nameservers.push_back(IPEndPoint(IPAddress(2, 3, 4, 5), 234));
   dns_config_service()->SetConfigForRefresh(config);
   notifier()->OnDNSChanged();
   FastForwardUntilIdle();
-  EXPECT_EQ(1, observer.initial_dns_changes());
-  EXPECT_EQ(1, observer.subsequent_dns_changes());
+  EXPECT_EQ(2, observer.dns_changes());
 
   config.nameservers.push_back(IPEndPoint(IPAddress(3, 4, 5, 6), 235));
   dns_config_service()->SetConfigForRefresh(config);
   notifier()->OnDNSChanged();
   FastForwardUntilIdle();
-  EXPECT_EQ(1, observer.initial_dns_changes());
-  EXPECT_EQ(2, observer.subsequent_dns_changes());
+  EXPECT_EQ(3, observer.dns_changes());
 
   NetworkChangeNotifier::RemoveDNSObserver(&observer);
 }

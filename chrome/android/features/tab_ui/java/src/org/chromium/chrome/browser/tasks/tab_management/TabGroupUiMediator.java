@@ -113,8 +113,10 @@ public class TabGroupUiMediator {
 
             @Override
             public void didAddTab(Tab tab, int type) {
-                if (type == TabLaunchType.FROM_CHROME_UI || type == TabLaunchType.FROM_RESTORE)
+                if (type == TabLaunchType.FROM_CHROME_UI || type == TabLaunchType.FROM_RESTORE
+                        || type == TabLaunchType.FROM_STARTUP) {
                     return;
+                }
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
 
@@ -127,8 +129,9 @@ public class TabGroupUiMediator {
 
             @Override
             public void tabClosureUndone(Tab tab) {
-                if (!mIsTabGroupUiVisible && !mIsShowingOverViewMode)
+                if (!mIsTabGroupUiVisible && !mIsShowingOverViewMode) {
                     resetTabStripWithRelatedTabsForId(tab.getId());
+                }
             }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {

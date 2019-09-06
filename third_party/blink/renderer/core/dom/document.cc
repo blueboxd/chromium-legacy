@@ -38,6 +38,7 @@
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -6880,9 +6881,9 @@ ukm::UkmRecorder* Document::UkmRecorder() {
   if (ukm_recorder_)
     return ukm_recorder_.get();
 
-  ukm::mojom::UkmRecorderInterfacePtr recorder;
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
   Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-      mojo::MakeRequest(&recorder));
+      recorder.InitWithNewPipeAndPassReceiver());
   ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
 
   // TODO(crbug/795354): Move handling of URL recording out of the renderer.

@@ -24,6 +24,7 @@
 #include "net/net_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
+class PrefRegistrySimple;
 class Profile;
 class TrialComparisonCertVerifierController;
 
@@ -55,6 +56,7 @@ class ProfileNetworkContextService
 #endif
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Packages up configuration info in |profile| and |cookie_settings| into a
   // mojo-friendly form.

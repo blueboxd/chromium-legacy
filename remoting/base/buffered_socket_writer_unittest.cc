@@ -158,7 +158,7 @@ class BufferedSocketWriterTest : public testing::Test {
     VerifyWrittenData();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   net::NetLog net_log_;
   SocketDataProvider socket_data_provider_;
   std::unique_ptr<net::StreamSocket> socket_;

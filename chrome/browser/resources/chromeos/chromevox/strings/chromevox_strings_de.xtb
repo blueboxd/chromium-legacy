@@ -483,7 +483,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4372705107434148843">Sprachausgabe anhalten</translation>
 <translation id="4373197658375206385">Kein vorheriges Element, das kein Link ist</translation>
 <translation id="4376316291247992553">Grafik als Braille anzeigen</translation>
-<translation id="437809255587011096">Stil des Mitteilungstexts</translation>
+<translation id="437809255587011096">Textstil ansagen</translation>
 <translation id="4378308539633073595">Weiterscrollen</translation>
 <translation id="4384583879834880242">Fragen und Antworten</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1201,7 +1201,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Kurze Beschreibung der aktuellen Position ansagen</translation>
-<translation id="9151249085738989067">ChromeVox-Stimme auf Grundlage der Sprache automatisch wechseln</translation>
+<translation id="9151249085738989067">ChromeVox-Stimme je nach Sprache automatisch wechseln</translation>
 <translation id="9153606228985488238">Tonhöhe: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Zum Ende der aktuellen Spalte gehen</translation>
 <translation id="9173115498289768110">Lautstärke: <ph name="PERCENT" /> %</translation>

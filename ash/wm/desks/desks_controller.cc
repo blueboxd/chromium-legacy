@@ -105,6 +105,9 @@ class DesksController::DeskAnimationBase
   // potential race conditions that might happen if one animator finished phase
   // (1) of the animation while other animators are still being constructed.
   void Launch() {
+    for (auto& observer : controller_->observers_)
+      observer.OnDeskSwitchAnimationLaunching();
+
     DCHECK(!desk_switch_animators_.empty());
     for (auto& animator : desk_switch_animators_)
       animator->TakeStartingDeskScreenshot();

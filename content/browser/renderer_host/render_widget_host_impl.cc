@@ -95,7 +95,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/image_operations.h"
@@ -811,8 +811,16 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
     visual_properties.new_size = view_->GetRequestedRendererSize();
     visual_properties.capture_sequence_number =
         view_->GetCaptureSequenceNumber();
-    visual_properties.compositor_viewport_pixel_size =
-        view_->GetCompositorViewportPixelSize();
+    // For OOPIFs, use the compositor viewport received from the FrameConnector.
+    visual_properties.compositor_viewport_pixel_rect =
+        view_->IsRenderWidgetHostViewChildFrame() &&
+                !view_->IsRenderWidgetHostViewGuest()
+            ? gfx::ScaleToEnclosingRect(
+                  compositor_viewport_,
+                  IsUseZoomForDSFEnabled()
+                      ? 1.f
+                      : visual_properties.screen_info.device_scale_factor)
+            : gfx::Rect(view_->GetCompositorViewportPixelSize());
     visual_properties.visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.
@@ -1942,6 +1950,7 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
   DCHECK(!pending_mouse_lock_request_ || !IsMouseLocked());
   if (pending_mouse_lock_request_) {
     pending_mouse_lock_request_ = false;
+    mouse_lock_raw_movement_ = false;
     Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
@@ -1988,6 +1997,11 @@ void RenderWidgetHostImpl::SetPageScaleState(float page_scale_factor,
                                              bool is_pinch_gesture_active) {
   page_scale_factor_ = page_scale_factor;
   is_pinch_gesture_active_ = is_pinch_gesture_active;
+}
+
+void RenderWidgetHostImpl::SetCompositorViewport(
+    const gfx::Rect& compositor_viewport) {
+  compositor_viewport_ = compositor_viewport;
 }
 
 void RenderWidgetHostImpl::Destroy(bool also_delete) {
@@ -2246,8 +2260,8 @@ bool RenderWidgetHostImpl::DidVisualPropertiesSizeChange(
                new_visual_properties.max_size_for_auto_resize)) ||
          (!old_visual_properties.auto_resize_enabled &&
           (old_visual_properties.new_size != new_visual_properties.new_size ||
-           (old_visual_properties.compositor_viewport_pixel_size.IsEmpty() &&
-            !new_visual_properties.compositor_viewport_pixel_size.IsEmpty())));
+           (old_visual_properties.compositor_viewport_pixel_rect.IsEmpty() &&
+            !new_visual_properties.compositor_viewport_pixel_rect.IsEmpty())));
 }
 
 // static
@@ -2262,7 +2276,7 @@ bool RenderWidgetHostImpl::DoesVisualPropertiesNeedAck(
       g_check_for_pending_visual_properties_ack &&
       !new_visual_properties.auto_resize_enabled &&
       !new_visual_properties.new_size.IsEmpty() &&
-      !new_visual_properties.compositor_viewport_pixel_size.IsEmpty() &&
+      !new_visual_properties.compositor_viewport_pixel_rect.IsEmpty() &&
       new_visual_properties.local_surface_id_allocation;
 
   // If acking is applicable, then check if there has been an
@@ -2310,8 +2324,10 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
   return zoom_changed || size_changed || parent_local_surface_id_changed ||
          old_visual_properties->screen_info !=
              new_visual_properties.screen_info ||
-         old_visual_properties->compositor_viewport_pixel_size !=
-             new_visual_properties.compositor_viewport_pixel_size ||
+         old_visual_properties->compositor_viewport_pixel_rect !=
+             new_visual_properties.compositor_viewport_pixel_rect ||
+         old_visual_properties->compositor_viewport_pixel_rect !=
+             new_visual_properties.compositor_viewport_pixel_rect ||
          old_visual_properties->is_fullscreen_granted !=
              new_visual_properties.is_fullscreen_granted ||
          old_visual_properties->display_mode !=
@@ -2469,7 +2485,8 @@ void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
 }
 
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
-                                       bool privileged) {
+                                       bool privileged,
+                                       bool request_unadjusted_movement) {
   if (delegate_ && delegate_->GetInputEventShim()) {
     delegate_->GetInputEventShim()->DidLockMouse(user_gesture, privileged);
     return;
@@ -2481,6 +2498,7 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
   }
 
   pending_mouse_lock_request_ = true;
+  mouse_lock_raw_movement_ = request_unadjusted_movement;
   if (delegate_) {
     delegate_->RequestToLockMouse(this, user_gesture,
                                   is_last_unlocked_by_target_,
@@ -2769,7 +2787,8 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   }
 
   pending_mouse_lock_request_ = false;
-  if (!view_ || !view_->HasFocus()|| !view_->LockMouse()) {
+  if (!view_ || !view_->HasFocus() ||
+      !view_->LockMouse(mouse_lock_raw_movement_)) {
     Send(new WidgetMsg_LockMouse_ACK(routing_id_, false));
     return false;
   }
@@ -3029,7 +3048,8 @@ void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
 device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+    mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+        wake_lock_.BindNewPipeAndPassReceiver();
     // In some testing contexts, the system Connector isn't3 initialized.
     if (GetSystemConnector()) {
       mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
@@ -3039,7 +3059,7 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventDisplaySleep,
           device::mojom::WakeLockReason::kOther, "GetSnapshot",
-          std::move(request));
+          std::move(receiver));
     }
   }
   return wake_lock_.get();

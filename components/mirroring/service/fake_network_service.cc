@@ -53,8 +53,8 @@ void MockUdpSocket::VerifySendingPacket(const media::cast::Packet& packet) {
 }
 
 MockNetworkContext::MockNetworkContext(
-    network::mojom::NetworkContextRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<network::mojom::NetworkContext> receiver)
+    : receiver_(this, std::move(receiver)) {}
 MockNetworkContext::~MockNetworkContext() {}
 
 void MockNetworkContext::CreateUDPSocket(

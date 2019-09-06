@@ -187,3 +187,14 @@ TEST_F(SharingDialogViewTest, HelpTextClickedOnlyApps) {
   dialog->StyledLabelLinkClicked(/*label=*/nullptr, /*range=*/{},
                                  /*event_flags=*/0);
 }
+
+TEST_F(SharingDialogViewTest, ThemeChangedEmptyList) {
+  controller_->set_send_result_for_testing(
+      SharingSendMessageResult::kDeviceNotFound);
+  auto dialog = CreateDialogView(/*devices=*/1, /*apps=*/1);
+
+  EXPECT_EQ(SharingDialogType::kErrorDialog, dialog->GetDialogType());
+
+  // Regression test for crbug.com/1001112
+  dialog->OnThemeChanged();
+}

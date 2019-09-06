@@ -92,7 +92,6 @@
 <translation id="1128109161498068552">Запретить сайтам доступ к устройствам MIDI с помощью системных сообщений</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Изменить поисковую систему</translation>
-<translation id="113124294734065964">Док-станция неисправна</translation>
 <translation id="1134009406053225289">Открыть в режиме инкогнито</translation>
 <translation id="1136712381129578788">Слишком много попыток ввода PIN-кода. Электронный ключ заблокирован. Чтобы разблокировать ключ, извлеките его и вставьте снова.</translation>
 <translation id="1137673463384776352">Открыть ссылку в приложении "<ph name="APP" />"</translation>
@@ -248,7 +247,6 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Браузер находится под управлением<ph name="END_LINK" /> домена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="1366177842110999534">Запускайте инструменты, редакторы и интегрированные среды разработки Linux на устройстве <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Выберите файл</translation>
-<translation id="1370749010280229230">Обнаружена проблема с дисплеем, подключенным к док-станции</translation>
 <translation id="1371301976177520732">Синхронизируйте закладки, пароли, историю и другие данные на всех ваших устройствах.</translation>
 <translation id="1372841398847029212">Синхронизировать с моим аккаунтом</translation>
 <translation id="1374844444528092021">Сертификат, запрашиваемый сетью <ph name="NETWORK_NAME" />, не установлен или уже не действителен. Получите новый и попробуйте подключиться еще раз.</translation>
@@ -912,7 +910,6 @@
 <translation id="2342740338116612727">Закладки добавлены</translation>
 <translation id="2343747224442182863">Переключиться на эту вкладку</translation>
 <translation id="2344028582131185878">Автоматическая загрузка</translation>
-<translation id="2345574157728712751">Разрешить приложениям из Play Маркета доступ к этому устройству через настройки.</translation>
 <translation id="2345723121311404059">Печать 1 страницы на принтере <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">Использование Hangouts и Cast for Education регулируется Политикой конфиденциальности Google.</translation>
 <translation id="2348176352564285430">Приложение: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -1385,7 +1382,6 @@
 <translation id="3017079585324758401">Фон</translation>
 <translation id="3020183492814296499">Ярлыки</translation>
 <translation id="3020990233660977256">Серийный номер: <ph name="SERIAL_NUMBER" /></translation>
-<translation id="3021039405808358694">Используйте адаптер питания USB Type-C или выпущенный производителем вашего устройства Chromebook.</translation>
 <translation id="3021066826692793094">Бабочка</translation>
 <translation id="3021426244864538700">Есть доступ к данным этого сайта</translation>
 <translation id="3021678814754966447">Просмотр кода фрейма</translation>
@@ -1418,7 +1414,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Эта вкладка использует вашу камеру или микрофон</translation>
 <translation id="3083193146044397360">Временно заблокировано в целях безопасности</translation>
-<translation id="3083259245974004342">Защита паролей</translation>
 <translation id="3084548735795614657">Чтобы установить расширение, перетащите его</translation>
 <translation id="3084771660770137092">Выполнение процесса этой веб-страницы было прекращено. Это может быть вызвано тем, что Chrome не хватает памяти, или иными причинами. Чтобы продолжить, обновите страницу или перейдите на другой URL.</translation>
 <translation id="3085412380278336437">Сайт может использовать камеру</translation>
@@ -1562,7 +1557,6 @@
 <translation id="3308134619352333507">Скрыть кнопку</translation>
 <translation id="3308852433423051161">Загрузка Google Ассистента…</translation>
 <translation id="3312424061798279731">Добавленные языки</translation>
-<translation id="3313473463670097216">Чтобы зарядить Chromebook, используйте батарею от производителя устройства.</translation>
 <translation id="3313622045786997898">Значение подписи сертификата</translation>
 <translation id="3315158641124845231">Скрыть <ph name="PRODUCT_NAME" /></translation>
 <translation id="3317459757438853210">Двусторонняя печать</translation>
@@ -1684,7 +1678,6 @@
 <translation id="3497560059572256875">Поделиться дудлом</translation>
 <translation id="3498215018399854026">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="3505030558724226696">Запретить доступ к устройствам</translation>
-<translation id="3505635633742443645">Порт HDMI док-станции недоступен, если для вывода видеоданных используется порт USB Type-C. Выберите другой порт для одного из дисплеев.</translation>
 <translation id="3507421388498836150">Текущие разрешения расширения "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507888235492474624">Повторите поиск устройств Bluetooth</translation>
 <translation id="3508492320654304609">Невозможно удалить ваши учетные данные</translation>
@@ -1759,7 +1752,6 @@
 <translation id="3603622770190368340">Получение сетевого сертификата</translation>
 <translation id="3605780360466892872">Бизнесмен</translation>
 <translation id="3608576286259426129">Предварительный просмотр фото</translation>
-<translation id="3609895557594655134">Добавить Android VPN...</translation>
 <translation id="361106536627977100">Данные Flash</translation>
 <translation id="3612673635130633812">Скачано с помощью расширения &lt;a href="<ph name="URL" />"&gt;<ph name="EXTENSION" />&lt;/a&gt;</translation>
 <translation id="3613134908380545408">Показать папку "<ph name="FOLDER_NAME" />"</translation>
@@ -2000,7 +1992,7 @@
 <translation id="3925842537050977900">Открепить от панели запуска</translation>
 <translation id="3926002189479431949">Smart Lock – телефон заменен</translation>
 <translation id="3927932062596804919">Запретить</translation>
-<translation id="3928570707778085600">Сохранить изменения в "<ph name="FILE_OR_FOLDER_NAME" />"?</translation>
+<translation id="3928570707778085600"><ph name="FILE_OR_FOLDER_NAME" />: сохранить изменения?</translation>
 <translation id="3930737994424905957">Поиск устройств…</translation>
 <translation id="3930968231047618417">Цвет фона</translation>
 <translation id="3933283459331715412">Восстановить пароль пользователя <ph name="USERNAME" /></translation>
@@ -2678,7 +2670,6 @@
 <translation id="4992066212339426712">Включить звук</translation>
 <translation id="4992458225095111526">Подтверждение Powerwash</translation>
 <translation id="4992473555164495036">Администратор запретил некоторые способы ввода.</translation>
-<translation id="4992866843815555470">Вашей док-станции требуется ремонт. Без работающего вентилятора она будет автоматически выключаться.</translation>
 <translation id="4994474651455208930">Разрешить запрашивать установку обработчиков протоколов для сайтов по умолчанию</translation>
 <translation id="4994754230098574403">Настройка</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
@@ -2801,6 +2792,7 @@
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хочет скачать несколько файлов</translation>
 <translation id="5192062846343383368">Чтобы открыть настройки родительского контроля, запустите приложение Family Link.</translation>
+<translation id="5193988420012215838">Скопировано в буфер обмена.</translation>
 <translation id="5204673965307125349">Сбросьте настройки устройства и повторите попытку.</translation>
 <translation id="5206215183583316675">Удалить "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Ошибка при импорте сертификата</translation>
@@ -2928,7 +2920,7 @@
 <translation id="5390100381392048184">Разрешить сайтам воспроизводить звуки</translation>
 <translation id="5390677308841849479">Темно-красный с оранжевым</translation>
 <translation id="5390743329570580756">Отправка</translation>
-<translation id="5397361543868847016">{COUNT,plural, =0{Этот сайт не использует файлы cookie для отслеживания активности между сайтами.}=1{Chrome заблокировал файлы cookie с 1 сайта.}one{Chrome заблокировал файлы cookie с # сайта.}few{Chrome заблокировал файлы cookie с # сайтов.}many{Chrome заблокировал файлы cookie с # сайтов.}other{Chrome заблокировал файлы cookie с # сайта.}}</translation>
+<translation id="5397361543868847016">{COUNT,plural, =0{Этот сайт не использует файлы cookie для отслеживания активности на других ресурсах.}=1{Браузер Chrome заблокировал файлы cookie с 1 сайта.}one{Браузер Chrome заблокировал файлы cookie с # сайта.}few{Браузер Chrome заблокировал файлы cookie с # сайтов.}many{Браузер Chrome заблокировал файлы cookie с # сайтов.}other{Браузер Chrome заблокировал файлы cookie с # сайта.}}</translation>
 <translation id="5397794290049113714">Вы</translation>
 <translation id="5398572795982417028">Размер страницы больше максимально допустимого (лимит ‒ <ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">Реклама заблокирована</translation>
@@ -3183,7 +3175,6 @@
 <translation id="5750324801516359607">Далеко</translation>
 <translation id="5756163054456765343">Справочный &amp;центр</translation>
 <translation id="5759728514498647443">"<ph name="APP_NAME" />" может читать документы, отправленные на печать через приложение "<ph name="APP_NAME" />".</translation>
-<translation id="5760765233610147582">Используйте док-станцию, предназначенную для устройства Chromebook.</translation>
 <translation id="5763315388120433852">Как настроить общие папки сети</translation>
 <translation id="5763751966069581670">USB-устройства не найдены</translation>
 <translation id="5764483294734785780">Со&amp;хранить аудио как...</translation>
@@ -3388,7 +3379,6 @@
 <translation id="6043317578411397101">Приложение "<ph name="APP_NAME" />" предоставило сайту <ph name="TAB_NAME" /> доступ к вкладке Chrome.</translation>
 <translation id="604388835206766544">Не удалось выполнить синтаксический анализ конфигурации.</translation>
 <translation id="6044805581023976844">Приложение "<ph name="APP_NAME" />" предоставило сайту <ph name="TAB_NAME" /> доступ к вкладке Chrome и к аудио.</translation>
-<translation id="6045021379489914695">Получите доступ к функциям телефона Android на устройстве Chromebook. Подключив телефон Android, вы сможете отправлять с устройства Chromebook SMS, пользоваться на нем настроенным на телефоне интернет-подключением, а также разблокировать Chromebook с помощью телефона.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="6049004884579590341">Чтобы выйти из полноэкранного режима, нажмите и удерживайте клавишу |<ph name="ACCELERATOR" />|</translation>
 <translation id="6049065490165456785">Фотография с устройства</translation>
 <translation id="6051354611314852653">Не удалось предоставить доступ API на этом устройстве.</translation>
@@ -4073,7 +4063,6 @@
 <translation id="7078120482318506217">Все сети</translation>
 <translation id="708060913198414444">&amp;Копировать URL аудио</translation>
 <translation id="7081952801286122383">Режим инкогнито</translation>
-<translation id="7082772857801260480">Часть функций на этой док-станции недоступна</translation>
 <translation id="708278670402572152">Чтобы запустить сканирование, отключитесь от сети.</translation>
 <translation id="70850504851191913">Сообщение об утечке данных</translation>
 <translation id="7085389578340536476">Разрешить Chrome записывать аудио?</translation>
@@ -4512,6 +4501,7 @@
 <translation id="7751260505918304024">Показать все</translation>
 <translation id="7754704193130578113">Всегда указывать место для скачивания</translation>
 <translation id="7755287808199759310">Для разблокировки обратитесь к родителю.</translation>
+<translation id="7757787379047923882">Текст с устройства <ph name="DEVICE_NAME" /></translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Настройте границы экрана</translation>
 <translation id="7760004034676677601">Другая стартовая страница?</translation>
@@ -4655,6 +4645,7 @@
 <translation id="7926423016278357561">Это не я</translation>
 <translation id="7928836894214140642">Под управлением домена <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Здесь появятся сохраненные способы оплаты.</translation>
+<translation id="7930681627240672853">Проверка безопасности паролей</translation>
 <translation id="79312157130859720">Приложение "<ph name="APP_NAME" />" предоставило доступ к экрану и аудио.</translation>
 <translation id="7931318309563332511">Неизвестно</translation>
 <translation id="793293630927785390">Окно добавления сети Wi-Fi</translation>
@@ -5292,7 +5283,6 @@
 <translation id="8846132060409673887">Доступ к информации о производителе и модели компьютера</translation>
 <translation id="8846141544112579928">Поиск клавиатуры…</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="8848561196844274665">После подключения устройство Chromebook сможет:</translation>
 <translation id="8850251000316748990">Ещё...</translation>
 <translation id="885246833287407341">Аргументы функций API</translation>
 <translation id="8853586775156634952">Карта будет сохранена только на этом устройстве.</translation>
@@ -5427,7 +5417,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Обновить пароль для <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Доступ к локальным файлам на вашем компьютере отключен администратором.</translation>
-<translation id="9042858701776831292">Приложения из Google Play Маркета могут запрашивать разрешение на доступ к внешним запоминающим устройствам для чтения и создания файлов и папок.</translation>
 <translation id="9042893549633094279">Конфиденциальность и безопасность</translation>
 <translation id="904451693890288097">Введите пароль для устройства "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9044646465488564462">Не удалось подключиться к сети: <ph name="DETAILS" /></translation>

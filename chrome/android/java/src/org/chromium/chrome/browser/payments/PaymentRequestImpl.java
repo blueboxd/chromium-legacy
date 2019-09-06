@@ -431,6 +431,9 @@ public class PaymentRequestImpl
      */
     private boolean mIsProhibitedOriginOrInvalidSsl;
 
+    /** A helper to manage the Skip-to-GPay experimental flow. */
+    private SkipToGPayHelper mSkipToGPayHelper;
+
     /**
      * Builds the PaymentRequest service implementation.
      *
@@ -535,7 +538,16 @@ public class PaymentRequestImpl
             return;
         }
 
-        mMethodData = getValidatedMethodData(methodData, mCardEditor);
+        boolean googlePayBridgeActivated = googlePayBridgeEligible
+                && PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.PAYMENT_REQUEST_SKIP_TO_GPAY);
+
+        mMethodData = getValidatedMethodData(methodData, googlePayBridgeActivated, mCardEditor);
+        if (googlePayBridgeActivated) {
+            PaymentMethodData data = mMethodData.get(PAY_WITH_GOOGLE_METHOD_NAME);
+            mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
+        }
+
         if (mMethodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
@@ -829,7 +841,7 @@ public class PaymentRequestImpl
         mIsUserGestureShow = isUserGesture;
         mWaitForUpdatedDetails = waitForUpdatedDetails;
 
-        if (!mShouldSkipShowingPaymentRequestUi) {
+        if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
             if (!buildUI(chromeActivity)) return;
             mUI.show();
         }
@@ -840,8 +852,9 @@ public class PaymentRequestImpl
     private void triggerPaymentAppUiSkipIfApplicable(ChromeActivity chromeActivity) {
         // If we are skipping showing the Payment Request UI, we should call into the
         // PaymentApp immediately after we determine the instruments are ready and UI is shown.
-        if (mShouldSkipShowingPaymentRequestUi && isFinishedQueryingPaymentApps()
-                && mIsCurrentPaymentRequestShowing && !mWaitForUpdatedDetails) {
+        if ((mShouldSkipShowingPaymentRequestUi || mSkipToGPayHelper != null)
+                && isFinishedQueryingPaymentApps() && mIsCurrentPaymentRequestShowing
+                && !mWaitForUpdatedDetails) {
             assert !mPaymentMethodsSection.isEmpty();
 
             PaymentInstrument selectedInstrument =
@@ -875,7 +888,8 @@ public class PaymentRequestImpl
     }
 
     private static Map<String, PaymentMethodData> getValidatedMethodData(
-            PaymentMethodData[] methodData, CardEditor paymentMethodsCollector) {
+            PaymentMethodData[] methodData, boolean googlePayBridgeEligible,
+            CardEditor paymentMethodsCollector) {
         // Payment methodData are required.
         if (methodData == null || methodData.length == 0) return null;
         Map<String, PaymentMethodData> result = new ArrayMap<>();
@@ -883,6 +897,17 @@ public class PaymentRequestImpl
             String method = methodData[i].supportedMethod;
 
             if (TextUtils.isEmpty(method)) return null;
+
+            if (googlePayBridgeEligible) {
+                // If skip-to-GPay flow is activated, ignore all other payment methods, which can be
+                // either "basic-card" or "https://android.com/pay". The latter is safe to ignore
+                // because merchant has already requested Google Pay.
+                if (!method.equals(PAY_WITH_GOOGLE_METHOD_NAME)) continue;
+                if (methodData[i].gpayBridgeData != null
+                        && !methodData[i].gpayBridgeData.stringifiedData.isEmpty()) {
+                    methodData[i].stringifiedData = methodData[i].gpayBridgeData.stringifiedData;
+                }
+            }
             result.put(method, methodData[i]);
 
             paymentMethodsCollector.addAcceptedPaymentMethodIfRecognized(methodData[i]);
@@ -1213,6 +1238,10 @@ public class PaymentRequestImpl
 
         if (mUiShippingOptions == null || details.shippingOptions != null) {
             mUiShippingOptions = getShippingOptions(details.shippingOptions);
+        }
+
+        if (mSkipToGPayHelper != null && !mSkipToGPayHelper.setShippingOption(details)) {
+            return false;
         }
 
         if (details.modifiers != null) {
@@ -2288,6 +2317,11 @@ public class PaymentRequestImpl
 
     @Override
     public void onPaymentResponseReady(PaymentResponse response) {
+        if (mSkipToGPayHelper != null && !mSkipToGPayHelper.patchPaymentResponse(response)) {
+            disconnectFromClientWithDebugMessage(
+                    ErrorStrings.PAYMENT_APP_INVALID_RESPONSE, PaymentErrorReason.NOT_SUPPORTED);
+        }
+
         mClient.onPaymentResponse(response);
         mPaymentResponseHelper = null;
         if (sObserverForTest != null) sObserverForTest.onPaymentResponseReady();

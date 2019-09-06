@@ -47,5 +47,7 @@ const base::Feature kWebPaymentsRedactShippingAddress{
 const base::Feature kStrictHasEnrolledAutofillInstrument{
     "StrictHasEnrolledAutofillInstrument", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPaymentRequestSkipToGPay{
+    "PaymentRequestSkipToGPay", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace payments

@@ -31,7 +31,6 @@
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 #if defined(OS_LINUX)
 #include "base/allocator/buildflags.h"

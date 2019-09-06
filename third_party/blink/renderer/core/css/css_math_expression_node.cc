@@ -127,7 +127,7 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
 
 // static
 CSSMathExpressionNumericLiteral* CSSMathExpressionNumericLiteral::Create(
-    CSSNumericLiteralValue* value,
+    const CSSNumericLiteralValue* value,
     bool is_integer) {
   return MakeGarbageCollected<CSSMathExpressionNumericLiteral>(value,
                                                                is_integer);
@@ -145,7 +145,7 @@ CSSMathExpressionNumericLiteral* CSSMathExpressionNumericLiteral::Create(
 }
 
 CSSMathExpressionNumericLiteral::CSSMathExpressionNumericLiteral(
-    CSSNumericLiteralValue* value,
+    const CSSNumericLiteralValue* value,
     bool is_integer)
     : CSSMathExpressionNode(UnitCategory(value->GetType()), is_integer),
       value_(value) {}
@@ -358,8 +358,8 @@ static bool IsIntegerResult(const CSSMathExpressionNode* left_side,
 
 // static
 CSSMathExpressionNode* CSSMathExpressionBinaryOperation::Create(
-    CSSMathExpressionNode* left_side,
-    CSSMathExpressionNode* right_side,
+    const CSSMathExpressionNode* left_side,
+    const CSSMathExpressionNode* right_side,
     CSSMathOperator op) {
   DCHECK_NE(left_side->Category(), kCalcOther);
   DCHECK_NE(right_side->Category(), kCalcOther);
@@ -375,8 +375,8 @@ CSSMathExpressionNode* CSSMathExpressionBinaryOperation::Create(
 
 // static
 CSSMathExpressionNode* CSSMathExpressionBinaryOperation::CreateSimplified(
-    CSSMathExpressionNode* left_side,
-    CSSMathExpressionNode* right_side,
+    const CSSMathExpressionNode* left_side,
+    const CSSMathExpressionNode* right_side,
     CSSMathOperator op) {
   CalculationCategory left_category = left_side->Category();
   CalculationCategory right_category = right_side->Category();
@@ -432,12 +432,13 @@ CSSMathExpressionNode* CSSMathExpressionBinaryOperation::CreateSimplified(
   } else {
     // Simplify multiplying or dividing by a number for simplifiable types.
     DCHECK(op == CSSMathOperator::kMultiply || op == CSSMathOperator::kDivide);
-    CSSMathExpressionNode* number_side = GetNumberSide(left_side, right_side);
+    const CSSMathExpressionNode* number_side =
+        GetNumberSide(left_side, right_side);
     if (!number_side)
       return Create(left_side, right_side, op);
     if (number_side == left_side && op == CSSMathOperator::kDivide)
       return nullptr;
-    CSSMathExpressionNode* other_side =
+    const CSSMathExpressionNode* other_side =
         left_side == number_side ? right_side : left_side;
 
     double number = number_side->DoubleValue();
@@ -458,8 +459,8 @@ CSSMathExpressionNode* CSSMathExpressionBinaryOperation::CreateSimplified(
 }
 
 CSSMathExpressionBinaryOperation::CSSMathExpressionBinaryOperation(
-    CSSMathExpressionNode* left_side,
-    CSSMathExpressionNode* right_side,
+    const CSSMathExpressionNode* left_side,
+    const CSSMathExpressionNode* right_side,
     CSSMathOperator op,
     CalculationCategory category)
     : CSSMathExpressionNode(category,
@@ -681,9 +682,9 @@ void CSSMathExpressionBinaryOperation::Trace(blink::Visitor* visitor) {
 }
 
 // static
-CSSMathExpressionNode* CSSMathExpressionBinaryOperation::GetNumberSide(
-    CSSMathExpressionNode* left_side,
-    CSSMathExpressionNode* right_side) {
+const CSSMathExpressionNode* CSSMathExpressionBinaryOperation::GetNumberSide(
+    const CSSMathExpressionNode* left_side,
+    const CSSMathExpressionNode* right_side) {
   if (left_side->Category() == kCalcNumber)
     return left_side;
   if (right_side->Category() == kCalcNumber)
@@ -1154,7 +1155,7 @@ CSSMathExpressionNode* CSSMathExpressionNode::Create(
 
   DCHECK(node.IsComparison());
   const auto& comparison = To<CalculationExpressionComparisonNode>(node);
-  HeapVector<Member<CSSMathExpressionNode>> operands;
+  CSSMathExpressionVariadicOperation::Operands operands;
   for (const auto& operand : comparison.GetOperands())
     operands.push_back(Create(*operand));
   CSSMathOperator op =

@@ -399,6 +399,10 @@ struct NetworkContextParams {
   // Specifies header keys that are allowed to be used in
   // network::url_request.cors_exempt_headers.
   array<string> cors_exempt_header_list;
+
+  // List of single-label hostnames that are exempted from the HSTS upgrade
+  // policy.
+  array<string> hsts_policy_bypass_list;
 };
 
 struct NetworkConditions {

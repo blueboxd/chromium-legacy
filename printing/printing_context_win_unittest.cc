@@ -147,7 +147,7 @@ TEST_F(PrintingContextTest, PrintAll) {
   if (IsTestCaseDisabled())
     return;
 
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   MockPrintingContextWin context(this);
   context.AskUserForSettings(
       123, false, false,
@@ -162,7 +162,7 @@ TEST_F(PrintingContextTest, Color) {
   if (IsTestCaseDisabled())
     return;
 
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   MockPrintingContextWin context(this);
   context.AskUserForSettings(
       123, false, false,

@@ -126,7 +126,9 @@ base::StringPiece CastContentClient::GetDataResource(
 
 base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
     int resource_id) {
-  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+  // Chromecast loads localized resources for the home screen via this code
+  // path. See crbug.com/643886 for details.
+  return ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceBytes(
       resource_id);
 }
 

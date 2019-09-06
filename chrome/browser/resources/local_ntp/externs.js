@@ -31,8 +31,10 @@ let MostVisitedData;
  *            googleBaseUrl: string,
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
+ *            realboxEnabled: boolean,
+ *            realboxUseClockIcon: boolean,
  *            richerPicker: boolean,
- *            showFakeboxPlaceholderOnFocus: boolean,
+ *            showPlaceholderOnFocus: boolean,
  *            translatedStrings: Array<string>}}
  */
 let configData;
@@ -384,7 +386,31 @@ window.chrome.embeddedSearch.searchBox.paste;
 window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
+/** @param {string} input */
+window.chrome.embeddedSearch.searchBox.queryAutocomplete;
 
+/** @typedef {{offset: number, style: number}} */
+let ACMatchClassification;
+
+/**
+ * @typedef {{
+ *   allowedToBeDefaultMatch: boolean,
+ *   contents: string,
+ *   contentsClass: !Array<!ACMatchClassification>,
+ *   description: string,
+ *   descriptionClass: !Array<!ACMatchClassification>,
+ *   destinationUrl: string,
+ *   inlineAutocompletion: string,
+ *   isSearchType: boolean,
+ *   fillIntoEdit: string,
+ *   swapContentsAndDescription: boolean,
+ *   type: string,
+ * }}
+ */
+let AutocompleteMatch;
+
+/** @type {function(!Array<!AutocompleteMatch>):void} */
+window.chrome.embeddedSearch.searchBox.onqueryautocompletedone;
 
 /**************************** Translated Strings *****************************/
 
@@ -432,6 +458,7 @@ configData.translatedStrings.noVoice;
 configData.translatedStrings.otherError;
 configData.translatedStrings.permissionError;
 configData.translatedStrings.ready;
+configData.translatedStrings.realboxSeparator;
 configData.translatedStrings.removeThumbnailTooltip;
 configData.translatedStrings.restoreDefaultBackground;
 configData.translatedStrings.restoreDefaultLinks;

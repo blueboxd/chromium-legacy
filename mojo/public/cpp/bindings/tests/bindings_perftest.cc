@@ -93,7 +93,7 @@ class MojoBindingsPerftest : public testing::Test {
   MojoBindingsPerftest() = default;
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(MojoBindingsPerftest, InProcessPingPong) {

@@ -35,6 +35,7 @@ const char* kDecisionFailureReasonStrings[] = {
     "Tab is currently using DevTools",
     "Tab is currently capturing a window or screen",
     "Tab is sharing its BrowsingInstance with another tab",
+    "Tab is currently connected to a bluetooth device",
 };
 static_assert(base::size(kDecisionFailureReasonStrings) ==
                   static_cast<size_t>(DecisionFailureReason::MAX),
@@ -133,6 +134,9 @@ void PopulateFailureReason(
       break;
     case DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE:
       ukm->SetFailureLiveStateSharingBrowsingInstance(1);
+      break;
+    case DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH:
+      ukm->SetFailureLiveStateUsingBluetooth(1);
       break;
     case DecisionFailureReason::MAX:
       break;

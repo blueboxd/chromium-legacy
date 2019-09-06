@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
@@ -57,7 +55,7 @@ import java.util.concurrent.Callable;
  */
 public class CriteriaHelper {
     /** The default maximum time to wait for a criteria to become valid. */
-    public static final long DEFAULT_MAX_TIME_TO_POLL = scaleTimeout(3000);
+    public static final long DEFAULT_MAX_TIME_TO_POLL = 3000L;
     /** The default polling interval to wait between checking for a satisfied criteria. */
     public static final long DEFAULT_POLLING_INTERVAL = 50;
 

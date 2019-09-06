@@ -243,9 +243,7 @@ crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 # Skip some tests for rendersubtree
-crbug.com/991095 wpt_internal/display-lock/rendersubtree/paint/locked-svg-doesnt-paint-contents.html [ Skip ]
 crbug.com/991095 wpt_internal/display-lock/rendersubtree/sizing [ Skip ]
-crbug.com/991095 wpt_internal/display-lock/rendersubtree/acquire-clone.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
@@ -3245,9 +3243,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linet
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
-# Flaky because of timestamps in error messages.
-crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
@@ -5733,7 +5728,6 @@ crbug.com/922951 fast/dom/shadow/move-marquee-crossing-treescope-crash.html [ Sk
 crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Skip ]
 crbug.com/922951 fast/loader/detach-while-printing.html [ Skip ]
 crbug.com/922951 fast/loader/document-open-iframe-then-detach.html [ Skip ]
-crbug.com/922951 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Skip ]
 crbug.com/922951 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Skip ]
@@ -5805,10 +5799,6 @@ crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure 
 
 # Sheriff 2019-01-24
 crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-radius.html [ Pass Failure ]
-
-# Chrome does not implement the feature policy name currently in the spec,
-# which is still in flux.
-crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
 # Sheriff 2019-02-01, 2019-02-19
 # These are crashy on Win10, and seem to leave processes lying around, causing the swarming
@@ -6196,9 +6186,6 @@ crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-1.js
 crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Pass Timeout ]
 crbug.com/985869 [ Linux Win7 ] http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
-
-# Sheriff 2019-07-20
-crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 
 # ecosystem-infra sheriff 2019-07-22
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]

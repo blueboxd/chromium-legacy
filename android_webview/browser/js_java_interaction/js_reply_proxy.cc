@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/js_java_interaction/js_reply_proxy.h"
 
-#include "android_webview/native_jni/JsReplyProxy_jni.h"
+#include "android_webview/browser_jni_headers/JsReplyProxy_jni.h"
 #include "base/android/jni_string.h"
 
 namespace android_webview {

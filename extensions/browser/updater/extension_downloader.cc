@@ -119,8 +119,8 @@ ExtensionDownloaderTestDelegate* g_test_delegate = nullptr;
 bool ShouldRetryRequest(const network::SimpleURLLoader* loader) {
   DCHECK(loader);
 
-  // Since HTTP errors are now presented as ERR_FAILED by default, this will
-  // let both network and HTTP errors through.
+  // Since HTTP errors are now presented as ERR_HTTP_RESPONSE_CODE_FAILURE
+  // by default, this will let both network and HTTP errors through.
   if (loader->NetError() == net::OK)
     return false;
 

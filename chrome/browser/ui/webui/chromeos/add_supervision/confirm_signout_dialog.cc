@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -55,7 +55,7 @@ base::string16 ConfirmSignoutDialog::GetWindowTitle() const {
 }
 
 bool ConfirmSignoutDialog::Accept() {
-  chrome::AttemptUserExit();
+  LogOutHelper();
   return true;
 }
 

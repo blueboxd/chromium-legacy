@@ -109,7 +109,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
 
   void DidStopFlinging() override;
-  bool LockMouse() override;
+  bool LockMouse(bool request_unadjusted_movement) override;
   void UnlockMouse() override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()

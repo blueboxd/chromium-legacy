@@ -632,9 +632,10 @@ void RenderWidgetHostViewChildFrame::DidStopFlinging() {
     selection_controller_client_->DidStopFlinging();
 }
 
-bool RenderWidgetHostViewChildFrame::LockMouse() {
+bool RenderWidgetHostViewChildFrame::LockMouse(
+    bool request_unadjusted_movement) {
   if (frame_connector_)
-    return frame_connector_->LockMouse();
+    return frame_connector_->LockMouse(request_unadjusted_movement);
   return false;
 }
 

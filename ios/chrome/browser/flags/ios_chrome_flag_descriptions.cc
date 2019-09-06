@@ -134,6 +134,11 @@ const char kCopiedContentBehaviorDescription[] =
     "When enabled, places that handled copied urls (omnibox long-press, toolbar"
     "menus) will differentiate between copied urls, text, and images.";
 
+const char kCreditCardScannerName[] = "Enable the 'Use Camera' button";
+const char kCreditCardScannerDescription[] =
+    "Allow a user to scan a credit card using the credit card camera scanner."
+    "The 'Use Camera' button is located in the 'Add Payment Method' view";
+
 #if defined(DCHECK_IS_CONFIGURABLE)
 const char kDcheckIsFatalName[] = "DCHECKs are fatal";
 const char kDcheckIsFatalDescription[] =

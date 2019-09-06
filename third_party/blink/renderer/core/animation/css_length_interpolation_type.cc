@@ -138,22 +138,28 @@ void CSSLengthInterpolationType::ApplyStandardPropertyValue(
   Length length = To<InterpolableLength>(interpolable_value)
                       .CreateLength(conversion_data, value_range_);
   if (LengthPropertyFunctions::SetLength(CssProperty(), style, length)) {
-    // TODO(crbug.com/996037): Turn this block into DCHECK in version 3904
+#if DCHECK_IS_ON()
     // Assert that setting the length on ComputedStyle directly is identical to
     // the StyleBuilder code path. This check is useful for catching differences
     // in clamping behaviour.
     Length before;
     Length after;
-    CHECK(LengthPropertyFunctions::GetLength(CssProperty(), style, before));
+    DCHECK(LengthPropertyFunctions::GetLength(CssProperty(), style, before));
     StyleBuilder::ApplyProperty(GetProperty().GetCSSProperty(), state,
                                 *CSSValue::Create(length, zoom));
-    CHECK(LengthPropertyFunctions::GetLength(CssProperty(), style, after));
-    CHECK(before.IsSpecified());
-    CHECK(after.IsSpecified());
-    const float kSlack = 0.1;
-    float delta =
-        FloatValueForLength(after, 100) - FloatValueForLength(before, 100);
-    CHECK_LT(std::abs(delta), kSlack);
+    DCHECK(LengthPropertyFunctions::GetLength(CssProperty(), style, after));
+    DCHECK(before.IsSpecified());
+    DCHECK(after.IsSpecified());
+    const float kSlack = 1e-6;
+    const float before_length = FloatValueForLength(before, 100);
+    const float after_length = FloatValueForLength(after, 100);
+    // Test relative difference for large values to avoid floating point
+    // inaccuracies tripping the check.
+    const float delta = std::abs(before_length) < kSlack
+                            ? after_length - before_length
+                            : (after_length - before_length) / before_length;
+    DCHECK_LT(std::abs(delta), kSlack);
+#endif
     return;
   }
   StyleBuilder::ApplyProperty(GetProperty().GetCSSProperty(), state,

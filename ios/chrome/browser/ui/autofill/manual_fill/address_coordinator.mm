@@ -74,7 +74,7 @@ initWithBaseViewController:(UIViewController*)viewController
     _addressMediator =
         [[ManualFillAddressMediator alloc] initWithProfiles:profiles];
     _addressMediator.navigationDelegate = self;
-    _addressMediator.contentDelegate = self.manualFillInjectionHandler;
+    _addressMediator.contentInjector = self.manualFillInjectionHandler;
     _addressMediator.consumer = _addressViewController;
   }
   return self;

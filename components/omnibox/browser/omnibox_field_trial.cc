@@ -680,6 +680,11 @@ bool OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxWrapPopupPosition);
 }
 
+bool OmniboxFieldTrial::IsOnDeviceHeadProviderEnabledForIncognito() {
+  return base::GetFieldTrialParamByFeatureAsBool(omnibox::kOnDeviceHeadProvider,
+                                                 "EnableForIncongnito", false);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";

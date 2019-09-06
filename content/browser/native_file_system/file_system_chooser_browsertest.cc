@@ -174,6 +174,35 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
                    "return await file.text(); })()"));
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_BlockedPermission) {
+  const base::FilePath test_file = CreateTestFile("Save File");
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context,
+              CanRequestWritePermission(url::Origin::Create(
+                  embedded_test_server()->GetURL("/title1.html"))))
+      .WillOnce(testing::Return(false));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+  EXPECT_TRUE(result.error.find("not allowed") != std::string::npos)
+      << result.error;
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_NONE, dialog_params.type);
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {
   const base::FilePath test_file1 = CreateTestFile("file1");
   const base::FilePath test_file2 = CreateTestFile("file2");
@@ -267,6 +296,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
                                       testing::_, testing::_, testing::_))
       .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAbort));
 
+  EXPECT_CALL(permission_context,
+              CanRequestWritePermission(url::Origin::Create(
+                  embedded_test_server()->GetURL("/title1.html"))))
+      .WillOnce(testing::Return(true));
+
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
@@ -309,6 +343,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
                                       testing::_, testing::_, testing::_,
                                       testing::_, testing::_, testing::_))
       .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAbort));
+
+  EXPECT_CALL(permission_context,
+              CanRequestWritePermission(url::Origin::Create(
+                  embedded_test_server()->GetURL("/title1.html"))))
+      .WillOnce(testing::Return(true));
 
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));

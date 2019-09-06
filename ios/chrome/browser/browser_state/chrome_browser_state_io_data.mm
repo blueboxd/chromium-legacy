@@ -58,7 +58,6 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -216,19 +215,6 @@ ChromeBrowserStateIOData::~ChromeBrowserStateIOData() {
     delete it->second;
     current_context++;
   }
-}
-
-// static
-bool ChromeBrowserStateIOData::IsHandledProtocol(const std::string& scheme) {
-  DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
-  static const char* const kProtocolList[] = {
-      url::kFileScheme, kChromeUIScheme, url::kDataScheme, url::kAboutScheme,
-  };
-  for (size_t i = 0; i < base::size(kProtocolList); ++i) {
-    if (scheme == kProtocolList[i])
-      return true;
-  }
-  return net::URLRequest::IsHandledProtocol(scheme);
 }
 
 // static
@@ -415,17 +401,7 @@ std::unique_ptr<net::URLRequestJobFactory>
 ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
     net::NetworkDelegate* network_delegate) const {
-  // NOTE(willchan): Keep these protocol handlers in sync with
-  // ChromeBrowserStateIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
-      url::kFileScheme,
-      std::make_unique<net::FileProtocolHandler>(base::CreateTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
-  DCHECK(set_protocol);
-
-  set_protocol = job_factory->SetProtocolHandler(
       url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
 

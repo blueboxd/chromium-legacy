@@ -8,7 +8,9 @@
 namespace dom_distiller {
 
 // Returns true when flag enable-dom-distiller is set or enabled from Finch.
-bool IsEnableDomDistillerSet();
+bool IsDomDistillerEnabled();
+
+bool ShouldStartDistillabilityService();
 
 }  // namespace dom_distiller
 

@@ -91,8 +91,14 @@ TEST(PSLMatchingUtilsTest, GetMatchResultPSL) {
       {"https://www.facebook.com/", "https://m.facebook.com",
        MatchResult::PSL_MATCH},
 
-      // Don't apply PSL matching to Google domains.
-      {"https://google.com/", "https://maps.google.com/",
+      // Google sign-in and change password pages are PSL matched.
+      {"https://accounts.google.com/", "https://myaccount.google.com/",
+       MatchResult::PSL_MATCH},
+
+      // Don't apply PSL matching to other Google domains.
+      {"https://accounts.google.com/", "https://maps.google.com/",
+       MatchResult::NO_MATCH},
+      {"https://subdomain1.google.com/", "https://maps.google.com/",
        MatchResult::NO_MATCH},
 
       // Scheme mismatch.

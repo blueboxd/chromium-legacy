@@ -80,7 +80,7 @@ class WakeLockTest : public DeviceServiceTestBase {
     wake_lock_provider_->GetWakeLockWithoutContext(
         mojom::WakeLockType::kPreventAppSuspension,
         mojom::WakeLockReason::kOther, "WakeLockTest",
-        mojo::MakeRequest(&wake_lock_));
+        wake_lock_.BindNewPipeAndPassReceiver());
   }
 
   void OnChangeType(base::Closure quit_closure, bool result) {
@@ -137,7 +137,7 @@ class WakeLockTest : public DeviceServiceTestBase {
   bool result_;
 
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
-  mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<mojom::WakeLock> wake_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockTest);
 };
@@ -246,8 +246,8 @@ TEST_F(WakeLockTest, ChangeType) {
   EXPECT_EQ(1, GetActiveWakeLocks(
                    mojom::WakeLockType::kPreventDisplaySleepAllowDimming));
 
-  mojom::WakeLockPtr wake_lock_1;
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
+  mojo::Remote<mojom::WakeLock> wake_lock_1;
+  wake_lock_->AddClient(wake_lock_1.BindNewPipeAndPassReceiver());
   // Not allowed to change type when shared by multiple clients.
   EXPECT_FALSE(ChangeType(device::mojom::WakeLockType::kPreventAppSuspension));
 
@@ -304,12 +304,12 @@ TEST_F(WakeLockTest, MultipleClients) {
   EXPECT_FALSE(HasWakeLock());
   EXPECT_EQ(0, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
 
-  mojom::WakeLockPtr wake_lock_1;
-  mojom::WakeLockPtr wake_lock_2;
-  mojom::WakeLockPtr wake_lock_3;
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_2));
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_3));
+  mojo::Remote<mojom::WakeLock> wake_lock_1;
+  mojo::Remote<mojom::WakeLock> wake_lock_2;
+  mojo::Remote<mojom::WakeLock> wake_lock_3;
+  wake_lock_->AddClient(wake_lock_1.BindNewPipeAndPassReceiver());
+  wake_lock_->AddClient(wake_lock_2.BindNewPipeAndPassReceiver());
+  wake_lock_->AddClient(wake_lock_3.BindNewPipeAndPassReceiver());
 
   EXPECT_FALSE(HasWakeLock());
   EXPECT_EQ(0, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
@@ -336,12 +336,12 @@ TEST_F(WakeLockTest, OnWakeLockConnectionError) {
   EXPECT_FALSE(HasWakeLock());
   EXPECT_EQ(0, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
 
-  mojom::WakeLockPtr wake_lock_1;
-  mojom::WakeLockPtr wake_lock_2;
-  mojom::WakeLockPtr wake_lock_3;
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_2));
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_3));
+  mojo::Remote<mojom::WakeLock> wake_lock_1;
+  mojo::Remote<mojom::WakeLock> wake_lock_2;
+  mojo::Remote<mojom::WakeLock> wake_lock_3;
+  wake_lock_->AddClient(wake_lock_1.BindNewPipeAndPassReceiver());
+  wake_lock_->AddClient(wake_lock_2.BindNewPipeAndPassReceiver());
+  wake_lock_->AddClient(wake_lock_3.BindNewPipeAndPassReceiver());
 
   EXPECT_FALSE(HasWakeLock());
   EXPECT_EQ(0, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
@@ -369,12 +369,12 @@ TEST_F(WakeLockTest, MixedTest) {
   EXPECT_FALSE(HasWakeLock());
   EXPECT_EQ(0, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
 
-  mojom::WakeLockPtr wake_lock_1;
-  mojom::WakeLockPtr wake_lock_2;
-  mojom::WakeLockPtr wake_lock_3;
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_1));
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_2));
-  wake_lock_->AddClient(mojo::MakeRequest(&wake_lock_3));
+  mojo::Remote<mojom::WakeLock> wake_lock_1;
+  mojo::Remote<mojom::WakeLock> wake_lock_2;
+  mojo::Remote<mojom::WakeLock> wake_lock_3;
+  wake_lock_->AddClient(wake_lock_1.BindNewPipeAndPassReceiver());
+  wake_lock_->AddClient(wake_lock_2.BindNewPipeAndPassReceiver());
+  wake_lock_->AddClient(wake_lock_3.BindNewPipeAndPassReceiver());
 
   EXPECT_FALSE(HasWakeLock());
   EXPECT_EQ(0, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
@@ -445,11 +445,11 @@ TEST_F(WakeLockTest, SameWakeLockTypeObserverTest) {
   // Add another client for the same wake lock type and make a request. This
   // shouldn't affect wake up counts as a |kPreventAppSuspension| wake lock is
   // already held.
-  mojom::WakeLockPtr wake_lock2;
+  mojo::Remote<mojom::WakeLock> wake_lock2;
   wake_lock_provider_->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther, "WakeLockTest",
-      mojo::MakeRequest(&wake_lock2));
+      wake_lock2.BindNewPipeAndPassReceiver());
   wake_lock2->RequestWakeLock();
   wake_lock2.FlushForTesting();
   EXPECT_EQ(2, GetActiveWakeLocks(mojom::WakeLockType::kPreventAppSuspension));
@@ -508,11 +508,11 @@ TEST_F(WakeLockTest, DifferentWakeLockTypesObserverTest) {
 
   // Acquire two different type of wake locks and check if the observer for each
   // gets an acquire event.
-  mojom::WakeLockPtr wake_lock2;
+  mojo::Remote<mojom::WakeLock> wake_lock2;
   wake_lock_provider_->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
       device::mojom::WakeLockReason::kOther, "WakeLockTest",
-      mojo::MakeRequest(&wake_lock2));
+      wake_lock2.BindNewPipeAndPassReceiver());
   wake_lock_->RequestWakeLock();
   wake_lock2->RequestWakeLock();
   wake_lock_.FlushForTesting();

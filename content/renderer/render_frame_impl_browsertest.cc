@@ -222,7 +222,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   gfx::Size size(200, 200);
   visual_properties.screen_info = ScreenInfo();
   visual_properties.new_size = size;
-  visual_properties.compositor_viewport_pixel_size = size;
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(size);
   visual_properties.visible_viewport_size = size;
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;

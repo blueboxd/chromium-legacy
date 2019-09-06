@@ -125,7 +125,11 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
     cached_layout_ = layout;
   }
 
-  bool IsChildIncludedInLayout(const View* child) const;
+  // Returns true if the specified view is a child of the host view and is not
+  // ignored. Views hidden by external code are only included if
+  // |include_hidden| is set.
+  bool IsChildIncludedInLayout(const View* child,
+                               bool include_hidden = false) const;
 
   // Creates a proposed layout for the host view, including bounds and
   // visibility for all children currently included in the layout.

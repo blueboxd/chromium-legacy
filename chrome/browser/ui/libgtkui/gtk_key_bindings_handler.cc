@@ -184,6 +184,8 @@ void GtkKeyBindingsHandler::BuildGdkEventKeyFromKeyEvent(
   gdk_event->state = EventFlagsToGdkModifierType(
       static_cast<ui::EventFlags>(key_event.flags()));
   gdk_event->hardware_keycode = key_event.key_code();
+  // TODO(crbug.com/987939): Fix keyboard layout switching in Ozone/X11
+  gdk_event->group = 0;
 #endif
 
   gdk_event->keyval = GDK_KEY_VoidSymbol;

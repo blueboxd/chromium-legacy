@@ -153,7 +153,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
       &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
-      base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderRequest,
+      base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderReceiver,
                  base::Unretained(this)));
   registry_.AddInterface<mojom::ScreenOrientationListener>(
       base::Bind(&DeviceService::BindScreenOrientationListenerRequest,
@@ -165,9 +165,10 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
       &DeviceService::BindWakeLockProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
-      &DeviceService::BindUsbDeviceManagerRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::UsbDeviceManagerTest>(base::Bind(
-      &DeviceService::BindUsbDeviceManagerTestRequest, base::Unretained(this)));
+      &DeviceService::BindUsbDeviceManagerReceiver, base::Unretained(this)));
+  registry_.AddInterface<mojom::UsbDeviceManagerTest>(
+      base::Bind(&DeviceService::BindUsbDeviceManagerTestReceiver,
+                 base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(GetJavaInterfaceProvider()
@@ -183,7 +184,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::HidManager>(base::Bind(
       &DeviceService::BindHidManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::NFCProvider>(base::Bind(
-      &DeviceService::BindNFCProviderRequest, base::Unretained(this)));
+      &DeviceService::BindNFCProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
       &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
 #endif
@@ -240,7 +241,8 @@ void DeviceService::BindHidManagerRequest(mojom::HidManagerRequest request) {
   hid_manager_->AddBinding(std::move(request));
 }
 
-void DeviceService::BindNFCProviderRequest(mojom::NFCProviderRequest request) {
+void DeviceService::BindNFCProviderReceiver(
+    mojo::PendingReceiver<mojom::NFCProvider> receiver) {
   LOG(ERROR) << "NFC is only supported on Android";
   NOTREACHED();
 }
@@ -302,15 +304,15 @@ void DeviceService::BindPowerMonitorRequest(
   power_monitor_message_broadcaster_->Bind(std::move(request));
 }
 
-void DeviceService::BindPublicIpAddressGeolocationProviderRequest(
-    mojom::PublicIpAddressGeolocationProviderRequest request) {
+void DeviceService::BindPublicIpAddressGeolocationProviderReceiver(
+    mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider> receiver) {
   if (!public_ip_address_geolocation_provider_) {
     public_ip_address_geolocation_provider_ =
         std::make_unique<PublicIpAddressGeolocationProvider>(
             url_loader_factory_, network_connection_tracker_,
             geolocation_api_key_);
   }
-  public_ip_address_geolocation_provider_->Bind(std::move(request));
+  public_ip_address_geolocation_provider_->Bind(std::move(receiver));
 }
 
 void DeviceService::BindScreenOrientationListenerRequest(
@@ -348,16 +350,16 @@ void DeviceService::BindWakeLockProviderReceiver(
   wake_lock_provider_.AddBinding(std::move(receiver));
 }
 
-void DeviceService::BindUsbDeviceManagerRequest(
-    mojom::UsbDeviceManagerRequest request) {
+void DeviceService::BindUsbDeviceManagerReceiver(
+    mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 
-  usb_device_manager_->AddReceiver(std::move(request));
+  usb_device_manager_->AddReceiver(std::move(receiver));
 }
 
-void DeviceService::BindUsbDeviceManagerTestRequest(
-    mojom::UsbDeviceManagerTestRequest request) {
+void DeviceService::BindUsbDeviceManagerTestReceiver(
+    mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver) {
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 
@@ -366,7 +368,7 @@ void DeviceService::BindUsbDeviceManagerTestRequest(
         usb_device_manager_->GetUsbService());
   }
 
-  usb_device_manager_test_->BindReceiver(std::move(request));
+  usb_device_manager_test_->BindReceiver(std::move(receiver));
 }
 
 #if defined(OS_ANDROID)

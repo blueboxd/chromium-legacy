@@ -290,6 +290,11 @@ class NET_EXPORT URLRequestContextBuilder {
     transport_security_persister_path_ = transport_security_persister_path;
   }
 
+  void set_hsts_policy_bypass_list(
+      const std::vector<std::string>& hsts_policy_bypass_list) {
+    hsts_policy_bypass_list_ = hsts_policy_bypass_list;
+  }
+
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
 
@@ -388,6 +393,7 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpNetworkSession::Params http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
   base::FilePath transport_security_persister_path_;
+  std::vector<std::string> hsts_policy_bypass_list_;
   NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
   std::string host_mapping_rules_;

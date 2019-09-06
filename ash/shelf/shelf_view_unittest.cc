@@ -44,6 +44,8 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/ui_controls_factory_ash.h"
+#include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
@@ -68,6 +70,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -1821,6 +1824,71 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromShelfToOtherShelf) {
                                           false /* cancel */);
   TestDraggingAnItemFromShelfToOtherShelf(true /* main_to_overflow */,
                                           true /* cancel */);
+}
+
+// Checks taking a screenshot while dragging an app into the overflow menu.
+TEST_F(ShelfViewTest, TestDragToOverflowAndTakeScreenshot) {
+  // We'll need UI controls to trigger the accelerator for taking a screenshot.
+  ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
+
+  AddAppShortcutsUntilOverflow();
+  // Add a couple more to make sure we can easily drag into the overflow menu.
+  AddAppShortcut();
+  AddAppShortcut();
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
+
+  ShelfView* overflow_shelf_view = shelf_view_->overflow_shelf();
+  ShelfViewTestAPI test_api_for_overflow(overflow_shelf_view);
+  EXPECT_LE(2, overflow_shelf_view->number_of_visible_apps());
+
+  views::View* drag_button =
+      test_api_.get()->GetViewAt(shelf_view_->last_visible_index());
+  ShelfID drag_id = GetItemId(shelf_view_->last_visible_index());
+  const gfx::Point drag_point = drag_button->GetBoundsInScreen().CenterPoint();
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(drag_point);
+
+  // Rip the item off the main shelf.
+  generator->PressLeftButton();
+  const gfx::Point rip_off_point(drag_point.x(), 0);
+  generator->MoveMouseTo(rip_off_point);
+  test_api_.get()->RunMessageLoopUntilAnimationsDone();
+  test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
+  ASSERT_TRUE(test_api_.get()->IsRippedOffFromShelf());
+  ASSERT_FALSE(test_api_.get()->DraggedItemToAnotherShelf());
+
+  // Move the dragged item into the overflow shelf.
+  views::View* drop_button = test_api_for_overflow.GetViewAt(
+      overflow_shelf_view->last_visible_index());
+  const gfx::Point drop_point = drop_button->GetBoundsInScreen().CenterPoint();
+
+  generator->MoveMouseTo(drop_point);
+  test_api_.get()->RunMessageLoopUntilAnimationsDone();
+  test_api_for_overflow.RunMessageLoopUntilAnimationsDone();
+  ASSERT_TRUE(test_api_.get()->IsRippedOffFromShelf());
+  ASSERT_TRUE(test_api_.get()->DraggedItemToAnotherShelf());
+
+  // Do not release the mouse button yet.
+
+  TestScreenshotDelegate* screenshot_delegate = GetScreenshotDelegate();
+  screenshot_delegate->set_can_take_screenshot(true);
+  EXPECT_EQ(0, screenshot_delegate->handle_take_screenshot_count());
+
+  // Send the key press to take a screenshot, synchronously.
+  base::RunLoop loop;
+  ui_controls::SendKeyPressNotifyWhenDone(
+      Shell::GetPrimaryRootWindow(), ui::VKEY_SNAPSHOT, false /* ctrl */,
+      false /* shift */, false /* alt */, false /* cmd */, loop.QuitClosure());
+  loop.Run();
+  EXPECT_EQ(1, screenshot_delegate->handle_take_screenshot_count());
+
+  // Now, finally complete the drag and verify that it was successful.
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(drag_id, GetItemId(overflow_shelf_view->last_visible_index()));
+
+  ui_controls::InstallUIControlsAura(nullptr);
 }
 
 // Checks drag-reorder items within the overflow shelf.

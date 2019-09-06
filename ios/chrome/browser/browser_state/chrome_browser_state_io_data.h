@@ -67,10 +67,6 @@ class ChromeBrowserStateIOData {
 
   virtual ~ChromeBrowserStateIOData();
 
-  // Returns true if |scheme| is handled in Chrome, or by default handlers in
-  // net::URLRequest.
-  static bool IsHandledProtocol(const std::string& scheme);
-
   // Utility to install additional WebUI handlers into the |job_factory|.
   // Ownership of the handlers is transferred from |protocol_handlers|
   // to the |job_factory|.

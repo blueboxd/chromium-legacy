@@ -36,10 +36,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::k{{feature.name}});
     {% endif %}
     {% endfor %}
-    // WebVr manually added here. Its declaration should go to
-    // 'feature_policy_features.json5' once it is out of the origin trial.
+    // TODO(crbug.com/960132): WebVR manually added here for compatibility.
+    // Remove this when WebVR is removed.
     ASSERT_ORIGIN_TRIAL(WebVR);
-    ASSERT_ORIGIN_TRIAL(WebXR);
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     {% for runtime_feature_name, FP_features in runtime_to_feature_policy_map.items() %}
     if (RuntimeEnabledFeatures::{{runtime_feature_name}}Enabled()) {

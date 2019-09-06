@@ -15,7 +15,8 @@ import org.chromium.ui.ContactsPickerListener;
  * UI for the contacts picker that shows on the Android platform as a result of
  * &lt;input type=file accept=contacts &gt; form element.
  */
-public class ContactsPickerDialog extends AlertDialog {
+public class ContactsPickerDialog
+        extends AlertDialog implements ContactsPickerToolbar.ContactsToolbarDelegate {
     // The category we're showing contacts for.
     private PickerCategoryView mCategoryView;
 
@@ -36,10 +37,18 @@ public class ContactsPickerDialog extends AlertDialog {
         super(context, R.style.Theme_Chromium_Fullscreen);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(
-                context, allowMultiple, includeNames, includeEmails, includeTel, formattedOrigin);
+        mCategoryView = new PickerCategoryView(context, allowMultiple, includeNames, includeEmails,
+                includeTel, formattedOrigin, this);
         mCategoryView.initialize(this, listener);
         setView(mCategoryView);
+    }
+
+    /**
+     * Cancels the dialog in response to a back navigation.
+     */
+    @Override
+    public void onNavigationBackCallback() {
+        cancel();
     }
 
     @VisibleForTesting

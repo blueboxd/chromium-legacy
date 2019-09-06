@@ -48,6 +48,9 @@ class ASH_EXPORT DesksController : public wm::ActivationChangeObserver,
     virtual void OnDeskActivationChanged(const Desk* activated,
                                          const Desk* deactivated) = 0;
 
+    // Called when the desk switch animations is launching.
+    virtual void OnDeskSwitchAnimationLaunching() = 0;
+
     // Called when the desk switch animations on all root windows finish.
     virtual void OnDeskSwitchAnimationFinished() = 0;
 

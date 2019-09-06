@@ -168,7 +168,7 @@ void NewDeskButton::OnViewUnhighlighted() {
 }
 
 void NewDeskButton::UpdateBorderState() {
-  if (IsViewHighlighted()) {
+  if (IsViewHighlighted() && DesksController::Get()->CanCreateDesks()) {
     SetBorder(views::CreateRoundedRectBorder(
         kHighlightThicknessDp, kCornerRadius,
         GetNativeTheme()->GetSystemColor(

@@ -87,6 +87,12 @@ bool ExternalVkImageGlRepresentation::BeginAccess(GLenum mode) {
          mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   const bool readonly = (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
+  if (!readonly && backing()->format() == viz::ResourceFormat::BGRA_8888) {
+    NOTIMPLEMENTED()
+        << "BeginAccess write on a BGRA_8888 backing is not supported.";
+    return false;
+  }
+
   std::vector<SemaphoreHandle> handles;
 
   if (!backing_impl()->BeginAccess(readonly, &handles, true /* is_gl */))

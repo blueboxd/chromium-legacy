@@ -69,11 +69,6 @@ class SecurityStatePageLoadMetricsObserver
   double initial_engagement_score_ = 0.0;
   security_state::SecurityLevel initial_security_level_ = security_state::NONE;
   security_state::SecurityLevel current_security_level_ = security_state::NONE;
-  // For Safety Tips, unlike SecurityLevel, we only track the current status
-  // because Safety Tip status does not change once the initial reputation check
-  // (begun at commit time) completes.
-  security_state::SafetyTipStatus current_safety_tip_status_ =
-      security_state::SafetyTipStatus::kUnknown;
   ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStatePageLoadMetricsObserver);

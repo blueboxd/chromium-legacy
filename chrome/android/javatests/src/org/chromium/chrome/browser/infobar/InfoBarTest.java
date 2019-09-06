@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -58,7 +56,7 @@ public class InfoBarTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    private static final long MAX_TIMEOUT = scaleTimeout(2000);
+    private static final long MAX_TIMEOUT = 2000L;
     private static final int CHECK_INTERVAL = 500;
     private static final String POPUP_PAGE =
             "/chrome/test/data/popup_blocker/popup-window-open.html";

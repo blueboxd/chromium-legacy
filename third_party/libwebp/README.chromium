@@ -23,3 +23,5 @@ Local changes:
    (crbug.com/654974)
  * Pulled in fuzzers from OSS-Fuzz
    https://github.com/google/oss-fuzz/tree/master/projects/libwebp
+ * cherry-pick af650c0b Fix a Wxor-used-as-pow false positive
+ * cherry-pick 0e48d889 bugfix: last alpha rows were incorrectly decoded

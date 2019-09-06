@@ -128,6 +128,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":chrome_browser_state_client",
+    ":features",
     ":metrics",
     "//base",
     "//base/test:test_support",

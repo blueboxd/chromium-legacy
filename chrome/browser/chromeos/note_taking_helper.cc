@@ -18,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
@@ -34,7 +33,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
@@ -329,6 +327,24 @@ void NoteTakingHelper::OnArcPlayStoreEnabledChanged(bool enabled) {
     observer.OnAvailableNoteTakingAppsUpdated();
 }
 
+void NoteTakingHelper::OnProfileAdded(Profile* profile) {
+  auto* registry = extensions::ExtensionRegistry::Get(profile);
+  DCHECK(!extension_registry_observer_.IsObserving(registry));
+  extension_registry_observer_.Add(registry);
+
+  // TODO(derat): Remove this once OnArcPlayStoreEnabledChanged() is always
+  // called after an ARC-enabled user logs in: http://b/36655474
+  if (!play_store_enabled_ && arc::IsArcPlayStoreEnabledForProfile(profile)) {
+    play_store_enabled_ = true;
+    for (Observer& observer : observers_)
+      observer.OnAvailableNoteTakingAppsUpdated();
+  }
+
+  auto* bridge = arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
+  if (bridge)
+    bridge->AddObserver(this);
+}
+
 void NoteTakingHelper::SetProfileWithEnabledLockScreenApps(Profile* profile) {
   DCHECK(!profile_with_enabled_lock_screen_apps_);
   profile_with_enabled_lock_screen_apps_ = profile;
@@ -361,8 +377,7 @@ NoteTakingHelper::NoteTakingHelper()
                                      kExtensionIds + base::size(kExtensionIds));
 
   // Track profiles so we can observe their extension registries.
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+  g_browser_process->profile_manager()->AddObserver(this);
   play_store_enabled_ = false;
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
@@ -398,6 +413,8 @@ NoteTakingHelper::NoteTakingHelper()
 
 NoteTakingHelper::~NoteTakingHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  g_browser_process->profile_manager()->RemoveObserver(this);
 
   // ArcSessionManagerTest shuts down ARC before NoteTakingHelper.
   if (arc::ArcSessionManager::Get())
@@ -536,30 +553,6 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
     return LaunchResult::CHROME_SUCCESS;
   }
   NOTREACHED();
-}
-
-void NoteTakingHelper::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_ADDED);
-  Profile* profile = content::Source<Profile>(source).ptr();
-  DCHECK(profile);
-
-  auto* registry = extensions::ExtensionRegistry::Get(profile);
-  DCHECK(!extension_registry_observer_.IsObserving(registry));
-  extension_registry_observer_.Add(registry);
-
-  // TODO(derat): Remove this once OnArcPlayStoreEnabledChanged() is always
-  // called after an ARC-enabled user logs in: http://b/36655474
-  if (!play_store_enabled_ && arc::IsArcPlayStoreEnabledForProfile(profile)) {
-    play_store_enabled_ = true;
-    for (Observer& observer : observers_)
-      observer.OnAvailableNoteTakingAppsUpdated();
-  }
-
-  auto* bridge = arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
-  if (bridge)
-    bridge->AddObserver(this);
 }
 
 void NoteTakingHelper::OnExtensionLoaded(

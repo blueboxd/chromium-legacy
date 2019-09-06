@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -60,6 +61,9 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -2358,6 +2362,43 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
   BrowserHandler handler(nullptr, std::string());
   handler.Close();
   ui_test_utils::WaitForBrowserToClose(browser());
+}
+
+class DevToolsPolicyTest : public InProcessBrowserTest {
+ protected:
+  DevToolsPolicyTest() {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+  policy::MockConfigurationPolicyProvider provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlackListedDevTools) {
+  base::ListValue blacklist;
+  blacklist.AppendString("chrome-devtools://*");
+  policy::PolicyMap policies;
+  policies.Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               blacklist.CreateDeepCopy(), nullptr);
+  provider_.UpdateChromePolicy(policies);
+
+  WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
+  scoped_refptr<content::DevToolsAgentHost> agent(
+      content::DevToolsAgentHost::GetOrCreateFor(wc));
+  DevToolsWindow::OpenDevToolsWindow(wc);
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
+  if (window) {
+    base::RunLoop run_loop;
+    DevToolsWindowTesting::Get(window)->SetCloseCallback(
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  window = DevToolsWindow::FindDevToolsWindow(agent.get());
+  ASSERT_EQ(nullptr, window);
 }
 
 // Flaky on Mus. See https://crbug.com/819285.

@@ -118,8 +118,8 @@ class WebSocketTest : public testing::Test {
 
   void SetReadBufferSize(size_t size) { read_buffer_size_ = size; }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   TestHttpServer server_;
   size_t read_buffer_size_ = 0;
 };

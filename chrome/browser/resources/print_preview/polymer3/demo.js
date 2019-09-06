@@ -10,6 +10,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
 import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
@@ -89,6 +90,10 @@ class HelloPolymer3Element extends PolymerElement {
           <div slot="title">I am a dialog</div>
         </cr-dialog>
       </div>
+
+      <div>
+        <cr-search-field label="test search field"></cr-search-field>
+      <div>
     `;
   }
 

@@ -34,6 +34,8 @@ void DeskSwitchAnimationWaiter::OnDeskActivationChanged(
     const Desk* activated,
     const Desk* deactivated) {}
 
+void DeskSwitchAnimationWaiter::OnDeskSwitchAnimationLaunching() {}
+
 void DeskSwitchAnimationWaiter::OnDeskSwitchAnimationFinished() {
   run_loop_.Quit();
 }

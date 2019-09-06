@@ -60,7 +60,13 @@ var CrElementsInputV3Test = class extends CrElementsV3FocusTest {
   }
 };
 
-TEST_F('CrElementsInputV3Test', 'DISABLED_All', function() {
+// https://crbug.com/997943: Flaky on Mac
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('CrElementsInputV3Test', 'MAYBE_All', function() {
   mocha.run();
 });
 

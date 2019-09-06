@@ -329,6 +329,7 @@
 <translation id="3443221991560634068">Last inn den aktive siden på nytt</translation>
 <translation id="3445014427084483498">Nå nettopp</translation>
 <translation id="3478363558367712427">Du kan velge søkemotor</translation>
+<translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om foreslått innhold</translation>
 <translation id="3513704683820682405">Utvidet virkelighet</translation>
@@ -532,8 +533,8 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5011311129201317034"><ph name="SITE" /> vil koble til</translation>
 <translation id="5013696553129441713">Ingen nye forslag</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Når du er i VR, kan dette nettstedet finne ut
-    - fysiske kjennetegn, som hvor høy du er
+<translation id="5033865233969348410">Når du er i VR, kan dette nettstedet finne ut mer om følgende:
+    – fysiske kjennetegn, som hvor høy du er
 
     Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="5039804452771397117">Tillat</translation>
@@ -541,7 +542,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5048398596102334565">Gi nettsteder tilgang til bevegelsessensorer (anbefalt)</translation>
 <translation id="5063480226653192405">Bruk</translation>
 <translation id="5087580092889165836">Legg til et kort</translation>
-<translation id="5098406615395468004">Legg til i appene mine</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="510275257476243843">1 time igjen</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
@@ -612,9 +612,9 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5527082711130173040">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK1" />Oppdater tillatelsene<ph name="END_LINK1" />. Posisjonstilgang er også <ph name="BEGIN_LINK2" />slått av for denne enheten<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Spør før nettsteder får tilgang til tekst og bilder fra utklipptavlen (anbefalt)</translation>
 <translation id="5530766185686772672">Lukk inkognitofaner</translation>
-<translation id="5534334044554683961">Når du er i VR, kan dette nettstedet finne ut
-    - fysiske kjennetegn, som hvor høy du er
-    - hvordan rommet ditt ser ut
+<translation id="5534334044554683961">Når du er i VR, kan dette nettstedet finne ut mer om følgende:
+    – fysiske kjennetegn, som hvor høy du er
+    – hvordan rommet ditt ser ut
 
     Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="5534640966246046842">Nettstedet er kopiert</translation>
@@ -937,7 +937,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7886917304091689118">Kjører i Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Laster ned filen.}other{Laster ned # filer.}}</translation>
 <translation id="7929962904089429003">Åpne menyen</translation>
-<translation id="7930681627240672853">Sjekk passordtrygghet</translation>
+<translation id="7930681627240672853">Sjekk passordsikkerheten</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er utdatert.</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="7963646190083259054">Leverandør:</translation>

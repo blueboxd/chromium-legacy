@@ -1142,11 +1142,13 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
     client->SetTouchAction(static_cast<TouchAction>(touch_action));
 }
 
-bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {
+bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame,
+                                          bool request_unadjusted_movement) {
   return WebLocalFrameImpl::FromFrame(frame)
       ->LocalRootFrameWidget()
       ->Client()
-      ->RequestPointerLock(WebLocalFrameImpl::FromFrame(frame));
+      ->RequestPointerLock(WebLocalFrameImpl::FromFrame(frame),
+                           request_unadjusted_movement);
 }
 
 void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {

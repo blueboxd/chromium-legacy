@@ -17,8 +17,11 @@
 namespace performance_manager {
 namespace features {
 
-// TODO(bgeffon): The WorkingSetTrimmer for windows feature should also be moved
-// from resource manager to here.
+#if defined(OS_WIN)
+// The EmptyWorkingSet feature as used on Windows.
+extern const base::Feature kEmptyWorkingSet;
+#endif  // defined(OS_WIN)
+
 #if defined(OS_CHROMEOS)
 
 // The trim on Memory Pressure feature will trim a process nodes working set

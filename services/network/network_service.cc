@@ -419,14 +419,14 @@ void NetworkService::SetSSLKeyLogFile(base::File file) {
 }
 
 void NetworkService::CreateNetworkContext(
-    mojom::NetworkContextRequest request,
+    mojo::PendingReceiver<mojom::NetworkContext> receiver,
     mojom::NetworkContextParamsPtr params) {
   // Only the first created NetworkContext can have |primary_next_context| set
   // to true.
   DCHECK(!params->primary_network_context || network_contexts_.empty());
 
   owned_network_contexts_.emplace(std::make_unique<NetworkContext>(
-      this, std::move(request), std::move(params),
+      this, std::move(receiver), std::move(params),
       base::BindOnce(&NetworkService::OnNetworkContextConnectionClosed,
                      base::Unretained(this))));
 }

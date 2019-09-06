@@ -253,6 +253,8 @@ namespace autotestPrivate {
 
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
+  callback SetOverviewModeStateCallback = void(boolean finished);
+
   dictionary App {
     DOMString appId;
     DOMString name;
@@ -515,6 +517,12 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setShelfAlignment(DOMString displayId,
         ShelfAlignmentType alignment, VoidCallback callback);
+
+    // Enter or exit the overview mode.
+    // |start|: whether entering to or exiting from the overview mode.
+    // |callback|: called after the overview mode switch finishes.
+    static void setOverviewModeState(boolean start,
+        SetOverviewModeStateCallback callback);
 
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();

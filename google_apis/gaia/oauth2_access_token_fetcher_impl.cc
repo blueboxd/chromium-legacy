@@ -209,8 +209,6 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
   int histogram_value;
   if (url_loader_->NetError() == net::OK && url_loader_->ResponseInfo() &&
       url_loader_->ResponseInfo()->headers) {
-    // Note that the SimpleURLLoader reports net::ERR_FAILED for HTTP codes
-    // other than 200s.
     histogram_value = url_loader_->ResponseInfo()->headers->response_code();
   } else {
     histogram_value = url_loader_->NetError();

@@ -42,6 +42,13 @@ class PanelInterface {
    */
   currentMenuId() {}
 
+
+  /**
+   * Get the HTML element for the back button.
+   * @return {Element}
+   */
+  backButtonElement() {}
+
   /**
    * Tells the menu panel to try to connect to the background page.
    */

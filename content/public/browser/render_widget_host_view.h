@@ -158,10 +158,13 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual base::Optional<SkColor> GetBackgroundColor() = 0;
 
   // Return value indicates whether the mouse is locked successfully or not.
-  virtual bool LockMouse() = 0;
+  virtual bool LockMouse(bool request_unadjusted_movement) = 0;
   virtual void UnlockMouse() = 0;
   // Returns true if the mouse pointer is currently locked.
   virtual bool IsMouseLocked() = 0;
+  // Get the pointer lock unadjusted movement setting for testing.
+  // Returns true if mouse is locked and is in unadjusted movement mode.
+  virtual bool GetIsMouseLockedUnadjustedMovementForTesting() = 0;
 
   // Start/Stop intercepting future system keyboard events.
   virtual bool LockKeyboard(

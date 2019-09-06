@@ -16,12 +16,13 @@ namespace blink {
 class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
  public:
   static CSSMathFunctionValue* Create(const Length&, float zoom);
-  static CSSMathFunctionValue* Create(CSSMathExpressionNode*,
+  static CSSMathFunctionValue* Create(const CSSMathExpressionNode*,
                                       ValueRange = kValueRangeAll);
 
-  CSSMathFunctionValue(CSSMathExpressionNode* expression, ValueRange range);
+  CSSMathFunctionValue(const CSSMathExpressionNode* expression,
+                       ValueRange range);
 
-  CSSMathExpressionNode* ExpressionNode() const { return expression_; }
+  const CSSMathExpressionNode* ExpressionNode() const { return expression_; }
 
   scoped_refptr<CalculationValue> ToCalcValue(
       const CSSToLengthConversionData& conversion_data) const;
@@ -94,7 +95,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
 
   double ClampToPermittedRange(double) const;
 
-  Member<CSSMathExpressionNode> expression_;
+  Member<const CSSMathExpressionNode> expression_;
 };
 
 template <>

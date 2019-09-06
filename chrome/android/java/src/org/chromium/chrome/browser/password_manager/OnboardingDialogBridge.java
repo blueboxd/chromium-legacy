@@ -63,7 +63,7 @@ public class OnboardingDialogBridge {
     public void showDialog(String onboardingTitle, String onboardingDetails) {
         mOnboardingDialog.showDialog(onboardingTitle, onboardingDetails,
                 getDrawableResourceFromFeature(), mResources.getString(R.string.continue_button),
-                mResources.getString(R.string.cancel), this::onClick, true);
+                mResources.getString(R.string.not_now), this::onClick, true);
     }
 
     @CalledByNative

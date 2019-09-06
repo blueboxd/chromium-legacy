@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
@@ -177,10 +178,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentCenter;
-  if (@available(iOS 13, *)) {
-    [model addSectionWithIdentifier:SectionIdentifierCameraButton];
-    [model addItem:cameraButtonItem
-        toSectionWithIdentifier:SectionIdentifierCameraButton];
+  if (base::FeatureList::IsEnabled(kCreditCardScanner)) {
+    if (@available(iOS 13, *)) {
+      [model addSectionWithIdentifier:SectionIdentifierCameraButton];
+      [model addItem:cameraButtonItem
+          toSectionWithIdentifier:SectionIdentifierCameraButton];
+    }
   }
 }
 

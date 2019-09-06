@@ -54,9 +54,11 @@ class CORE_EXPORT SnapCoordinator final
 
   // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
   // SnapForEndAndDirection() return true if snapping was performed, and false
-  // otherwise.
-  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current scroll
-  // position.
+  // otherwise. Note that this does not necessarily mean that any scrolling was
+  // performed as a result e.g., if we are already at the snap point.
+  //
+  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current
+  // scroll position.
   bool SnapAtCurrentPosition(const LayoutBox& snap_container,
                              bool scrolled_x,
                              bool scrolled_y) const;
@@ -81,6 +83,8 @@ class CORE_EXPORT SnapCoordinator final
 
  private:
   friend class SnapCoordinatorTest;
+
+  // Returns true if a snap point was found.
   bool PerformSnapping(const LayoutBox& snap_container,
                        const cc::SnapSelectionStrategy& strategy) const;
 

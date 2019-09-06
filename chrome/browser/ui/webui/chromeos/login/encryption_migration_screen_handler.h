@@ -18,6 +18,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 
@@ -201,7 +202,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // Point in time when minimal migration started, as reported by |tick_clock_|.
   base::TimeTicks minimal_migration_start_;
 
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   std::unique_ptr<LoginFeedback> login_feedback_;
 

@@ -5,7 +5,6 @@
 package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.AwActivityTestRule.CHECK_INTERVAL;
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -350,7 +349,7 @@ public class AwContentsGarbageCollectionTest {
         // that the WebView still has transient references during load so it does not get
         // gc-ed in the one gc-call above. Instead call gc again if exit criteria fails to
         // catch this case.
-        final long timeoutBetweenGcMs = scaleTimeout(1000);
+        final long timeoutBetweenGcMs = 1000L;
         for (int i = 0; i < 15; ++i) {
             try {
                 CriteriaHelper.pollInstrumentationThread(

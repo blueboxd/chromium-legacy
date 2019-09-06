@@ -211,9 +211,25 @@ void SearchController::Train(AppLaunchData&& app_launch_data) {
       launch_type = ChromeOSAppListLaunchEventProto::RESULTS_LIST;
     }
 
+    ChromeOSAppListLaunchEventProto::SearchProviderType provider_type;
+    switch (app_launch_data.ranking_item_type) {
+      case RankingItemType::kOmniboxGeneric:
+        provider_type = ChromeOSAppListLaunchEventProto::OMNIBOX;
+        break;
+      case RankingItemType::kZeroStateFile:
+        provider_type = ChromeOSAppListLaunchEventProto::ZERO_STATE_FILE;
+        break;
+      case RankingItemType::kDriveQuickAccess:
+        provider_type = ChromeOSAppListLaunchEventProto::DRIVE_QUICK_ACCESS;
+        break;
+      default:
+        provider_type = ChromeOSAppListLaunchEventProto::PROVIDER_UNSPECIFIED;
+        break;
+    }
+
     // TODO(951287): Record the last-used domain.
     AppListLaunchRecorder::GetInstance()->Record(
-        {launch_type, NormalizeId(app_launch_data.id),
+        {launch_type, provider_type, NormalizeId(app_launch_data.id),
          base::UTF16ToUTF8(last_query_), std::string(), last_launched_app_id_});
 
     // Only record the last launched app if the hashed logging feature flag is

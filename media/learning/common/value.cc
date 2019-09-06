@@ -21,6 +21,8 @@ Value::Value(const char* x) {
 
 Value::Value(const std::string& x) : value_(base::PersistentHash(x)) {}
 
+Value::Value(bool x) : value_(static_cast<int>(x)) {}
+
 Value::Value(const Value& other) : value_(other.value_) {}
 
 Value::Value(Value&& rhs) noexcept = default;

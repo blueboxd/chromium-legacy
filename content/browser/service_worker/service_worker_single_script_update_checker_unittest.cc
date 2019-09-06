@@ -8,9 +8,10 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
@@ -18,6 +19,7 @@
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -103,6 +105,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
         loader_factory, out_check_result);
   }
 
+  // Note that |loader_factory| should be alive as long as the single script
+  // update checker is running.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker>
   CreateSingleScriptUpdateChecker(
       const char* url,
@@ -116,14 +120,14 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
-    helper_->SetNetworkFactory(loader_factory);
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
         GURL(url), url == main_script_url, GURL(main_script_url), scope,
         force_bypass_cache, update_via_cache, time_since_last_check,
         net::HttpRequestHeaders(),
         base::BindRepeating([](BrowserContext* context) { return context; },
                             browser_context_.get()),
-        helper_->context()->GetLoaderFactoryBundleForUpdateCheck(),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            loader_factory),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,

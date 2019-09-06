@@ -116,7 +116,8 @@ gfx::Rect CastWindowTreeHost::GetTransformedRootWindowBoundsInPixels(
 // A layout manager owned by the root window.
 class CastLayoutManager : public aura::LayoutManager {
  public:
-  CastLayoutManager();
+  CastLayoutManager(CastWindowManagerAura* window_manager,
+                    aura::Window* parent);
   ~CastLayoutManager() override;
 
  private:
@@ -130,10 +131,22 @@ class CastLayoutManager : public aura::LayoutManager {
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
 
+  // Reorder child windows of the root window tree to reflect changes in layout.
+  void ReorderChildWindows(aura::Window* changed_window);
+
+  CastWindowManagerAura* const window_manager_;
+  aura::Window* const parent_;
+
   DISALLOW_COPY_AND_ASSIGN(CastLayoutManager);
 };
 
-CastLayoutManager::CastLayoutManager() {}
+CastLayoutManager::CastLayoutManager(CastWindowManagerAura* window_manager,
+                                     aura::Window* parent)
+    : window_manager_(window_manager), parent_(parent) {
+  DCHECK(window_manager_);
+  DCHECK(parent_);
+}
+
 CastLayoutManager::~CastLayoutManager() {}
 
 void CastLayoutManager::OnWindowResized() {
@@ -141,21 +154,25 @@ void CastLayoutManager::OnWindowResized() {
 }
 
 void CastLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  // Invoked when a window is added to the window tree host.
+  ReorderChildWindows(child);
 }
 
-void CastLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
-  // Invoked when the root window of the window tree host will be removed.
-}
+void CastLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {}
 
 void CastLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-  // Invoked when the root window of the window tree host has been removed.
+  ReorderChildWindows(child);
 }
 
 void CastLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                        bool visible) {
-  aura::Window* parent = child->parent();
-  if (!visible || !parent->IsRootWindow()) {
+  ReorderChildWindows(child);
+}
+
+void CastLayoutManager::ReorderChildWindows(aura::Window* changed_window) {
+  // Only update the window order if the child's parent matches the parent
+  // window for this layout. If the child has no parent, then that means it
+  // was removed from the layout and we should update the window ordering.
+  if (changed_window->parent() && changed_window->parent() != parent_) {
     return;
   }
 
@@ -166,23 +183,33 @@ void CastLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
   // logic will execute infrequently.
 
   // Determine z-order relative to existing windows.
-  aura::Window::Windows windows = parent->children();
+  aura::Window::Windows windows = parent_->children();
   std::stable_sort(windows.begin(), windows.end(),
-                   [child](aura::Window* lhs, aura::Window* rhs) {
-                     // Promote |child| to the top of the stack of windows with
-                     // the same ID.
-                     if (lhs->id() == rhs->id() && rhs == child)
+                   [changed_window](aura::Window* lhs, aura::Window* rhs) {
+                     // Promote |changed_window| to the top of the stack of
+                     // windows with the same ID.
+                     if (lhs->id() == rhs->id() && rhs == changed_window)
                        return true;
 
                      return lhs->id() < rhs->id();
                    });
 
+  std::vector<CastWindowManager::WindowId> visible_window_order;
   for (size_t i = 0; i < windows.size(); ++i) {
-    if (i == 0)
-      parent->StackChildAtBottom(windows[i]);
-    else
-      parent->StackChildAbove(windows[i], windows[i - 1]);
+    if (windows[i]->IsVisible()) {
+      // static_cast is safe since the window ID value is originally derived
+      // from CastWindowManager::WindowId.
+      visible_window_order.push_back(
+          static_cast<CastWindowManager::WindowId>(windows[i]->id()));
+    }
+    if (i == 0) {
+      parent_->StackChildAtBottom(windows[i]);
+    } else {
+      parent_->StackChildAbove(windows[i], windows[i - 1]);
+    }
   }
+
+  window_manager_->OnWindowOrderChanged(visible_window_order);
 }
 
 void CastLayoutManager::SetChildBounds(aura::Window* child,
@@ -223,23 +250,23 @@ void CastWindowManagerAura::Setup() {
   window_tree_host_ = std::make_unique<CastWindowTreeHost>(
       enable_input_, std::move(properties));
   window_tree_host_->InitHost();
-  window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
+  aura::Window* tree_window = window_tree_host_->window();
+  tree_window->SetLayoutManager(new CastLayoutManager(this, tree_window));
   window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
 
   // Allow seeing through to the hardware video plane:
   window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   focus_client_ = std::make_unique<CastFocusClientAura>();
-  aura::client::SetFocusClient(window_tree_host_->window(),
-                               focus_client_.get());
-  wm::SetActivationClient(window_tree_host_->window(), focus_client_.get());
-  aura::client::SetWindowParentingClient(window_tree_host_->window(), this);
-  capture_client_.reset(
-      new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+  aura::client::SetFocusClient(tree_window, focus_client_.get());
+  wm::SetActivationClient(tree_window, focus_client_.get());
+  aura::client::SetWindowParentingClient(tree_window, this);
+  capture_client_.reset(new aura::client::DefaultCaptureClient(tree_window));
 
   screen_position_client_ = std::make_unique<wm::DefaultScreenPositionClient>();
 
-  aura::Window* root_window = window_tree_host_->window()->GetRootWindow();
+  // TODO(seantopping): Is |root_window| different from |tree_window|?
+  aura::Window* root_window = tree_window->GetRootWindow();
   aura::client::SetScreenPositionClient(root_window,
                                         screen_position_client_.get());
 
@@ -255,6 +282,14 @@ void CastWindowManagerAura::Setup() {
           system_gesture_dispatcher_.get(), root_window);
   side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
       system_gesture_dispatcher_.get(), root_window);
+}
+
+void CastWindowManagerAura::OnWindowOrderChanged(
+    std::vector<WindowId> window_order) {
+  window_order_.swap(window_order);
+  for (auto& observer : observer_list_) {
+    observer.WindowOrderChanged();
+  }
 }
 
 CastWindowTreeHost* CastWindowManagerAura::window_tree_host() const {
@@ -289,9 +324,22 @@ void CastWindowManagerAura::InjectEvent(ui::Event* event) {
   window_tree_host_->DispatchEvent(event);
 }
 
+void CastWindowManagerAura::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void CastWindowManagerAura::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 gfx::NativeView CastWindowManagerAura::GetRootWindow() {
   Setup();
   return window_tree_host_->window();
+}
+
+std::vector<CastWindowManager::WindowId>
+CastWindowManagerAura::GetWindowOrder() {
+  return window_order_;
 }
 
 aura::Window* CastWindowManagerAura::GetDefaultParent(aura::Window* window,

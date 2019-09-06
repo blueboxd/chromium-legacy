@@ -119,17 +119,10 @@ enum NotificationType {
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_CREATED,
 
+  // Use ProfileManagerObserver::OnProfileAdded instead of this notification.
   // Sent after a Profile has been added to ProfileManager.
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_ADDED,
-
-  // Use KeyedServiceShutdownNotifier instead this notification type (you did
-  // read the comment at the top of the file, didn't you?).
-  // Sent early in the process of destroying a Profile, at the time a user
-  // initiates the deletion of a profile versus the much later time when the
-  // profile object is actually destroyed (use NOTIFICATION_PROFILE_DESTROYED).
-  // The details are none and the source is a Profile*.
-  NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
 
   // Use KeyedServiceShutdownNotifier instead this notification type (you did
   // read the comment at the top of the file, didn't you?).
@@ -137,10 +130,6 @@ enum NotificationType {
   // normal and OTR profiles.
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_DESTROYED,
-
-  // Sent after the URLRequestContextGetter for a Profile has been initialized.
-  // The details are none and the source is a Profile*.
-  NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
   // Printing ----------------------------------------------------------------
 

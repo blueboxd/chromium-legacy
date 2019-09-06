@@ -8,10 +8,12 @@
 
 #include "base/base64.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/nigori/nigori_storage.h"
@@ -99,6 +101,36 @@ base::Optional<NigoriSpecifics> MakeDefaultKeystoreNigori(
   specifics.set_keybag_is_frozen(true);
   specifics.set_keystore_migration_time(TimeToProtoTime(base::Time::Now()));
   return specifics;
+}
+
+// Returns the key derivation method to be used when a user sets a new
+// custom passphrase.
+KeyDerivationMethod GetDefaultKeyDerivationMethodForCustomPassphrase() {
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncUseScryptForNewCustomPassphrases) &&
+      !base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase)) {
+    return KeyDerivationMethod::SCRYPT_8192_8_11;
+  }
+
+  return KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003;
+}
+
+KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
+    const base::RepeatingCallback<std::string()>& random_salt_generator) {
+  KeyDerivationMethod method =
+      GetDefaultKeyDerivationMethodForCustomPassphrase();
+  switch (method) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return KeyDerivationParams::CreateForPbkdf2();
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return KeyDerivationParams::CreateForScrypt(random_salt_generator.Run());
+    case KeyDerivationMethod::UNSUPPORTED:
+      break;
+  }
+
+  NOTREACHED();
+  return KeyDerivationParams::CreateWithUnsupportedMethod();
 }
 
 KeyDerivationMethod GetKeyDerivationMethodFromSpecifics(
@@ -458,10 +490,12 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriLocalChangeProcessor> processor,
     std::unique_ptr<NigoriStorage> storage,
     const Encryptor* encryptor,
+    const base::RepeatingCallback<std::string()>& random_salt_generator,
     const std::string& packed_explicit_passphrase_key)
     : encryptor_(encryptor),
       processor_(std::move(processor)),
       storage_(std::move(storage)),
+      random_salt_generator_(random_salt_generator),
       serialized_explicit_passphrase_key_(
           UnpackExplicitPassphraseKey(*encryptor,
                                       packed_explicit_passphrase_key)),
@@ -559,13 +593,27 @@ bool NigoriSyncBridgeImpl::Init() {
   if (passphrase_type_ != NigoriSpecifics::UNKNOWN) {
     // if |passphrase_type_| is unknown, it is not yet initialized and we
     // shouldn't expose it.
+    PassphraseType enum_passphrase_type =
+        *ProtoPassphraseInt32ToEnum(passphrase_type_);
     for (auto& observer : observers_) {
-      observer.OnPassphraseTypeChanged(
-          *ProtoPassphraseInt32ToEnum(passphrase_type_),
-          GetExplicitPassphraseTime());
+      observer.OnPassphraseTypeChanged(enum_passphrase_type,
+                                       GetExplicitPassphraseTime());
     }
+    UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", enum_passphrase_type,
+                              PassphraseType::PASSPHRASE_TYPE_SIZE);
   }
-
+  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady", cryptographer_.is_ready());
+  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys",
+                        cryptographer_.has_pending_keys());
+  if (cryptographer_.has_pending_keys() &&
+      passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    // If this is happening, it means the keystore decryptor is either
+    // undecryptable with the available keystore keys or does not match the
+    // nigori keybag's encryption key. Otherwise we're simply missing the
+    // keystore key.
+    UMA_HISTOGRAM_BOOLEAN("Sync.KeystoreDecryptionFailed",
+                          !keystore_keys_.empty());
+  }
   return true;
 }
 
@@ -593,9 +641,10 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
   }
   DCHECK(cryptographer_.is_ready());
   passphrase_type_ = NigoriSpecifics::CUSTOM_PASSPHRASE;
-  cryptographer_.AddKey({KeyDerivationParams::CreateForPbkdf2(), passphrase});
   custom_passphrase_key_derivation_params_ =
-      KeyDerivationParams::CreateForPbkdf2();
+      CreateKeyDerivationParamsForCustomPassphrase(random_salt_generator_);
+  cryptographer_.AddKey(
+      {*custom_passphrase_key_derivation_params_, passphrase});
   encrypt_everything_ = true;
   custom_passphrase_time_ = base::Time::Now();
   processor_->Put(GetData());
@@ -615,10 +664,9 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
                                      encrypt_everything_);
   }
   MaybeNotifyBootstrapTokenUpdated();
+  UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
   // OnLocalSetPassphraseEncryption() is intentionally not called here, because
   // it's needed only for the Directory implementation unit tests.
-  // TODO(crbug.com/922900): support SCRYPT key derivation method.
-  NOTIMPLEMENTED();
 }
 
 void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
@@ -977,9 +1025,17 @@ ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(
 
 void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The user intended to disable sync, so we need to clear all the data.
+  // The user intended to disable sync, so we need to clear all the data,
+  // except |serialized_explicit_passphrase_key_| in memory, because this
+  // function can be called due to BackendMigrator. It's safe even if this
+  // function called due to actual disabling sync, since we remove the
+  // persisted key by clearing sync prefs explicitly, and don't reuse current
+  // instance of the bridge after that.
+  // TODO(crbug.com/922900): idea with keeping
+  // |serialized_explicit_passphrase_key_| will become not working, once we
+  // clean up storing explicit passphrase key in prefs, we need to find better
+  // solution.
   storage_->ClearData();
-  serialized_explicit_passphrase_key_ = "";
   keystore_keys_.clear();
   cryptographer_.CopyFrom(Cryptographer());
   passphrase_type_ = NigoriSpecifics::UNKNOWN;

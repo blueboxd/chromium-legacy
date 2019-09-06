@@ -52,7 +52,8 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcher {
   //
   //      ERR_TIMED_OUT         -- fetch took too long to complete.
   //      ERR_FILE_TOO_BIG      -- response body was too large.
-  //      ERR_PAC_STATUS_NOT_OK -- script failed to download.
+  //      ERR_HTTP_RESPONSE_CODE_FAILURE -- script downloaded but returned a
+  //                                        non-200 HTTP response.
   //      ERR_NOT_IMPLEMENTED   -- script required authentication.
   //
   // If the request is cancelled (either using the "Cancel()" method or by

@@ -36,9 +36,12 @@
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/engine/common.h"
+#include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "media/base/key_system_names.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -203,6 +206,18 @@ void ContextProviderImpl::Create(
   bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
                        fuchsia::web::ContextFeatureFlags::VULKAN;
 
+  bool enable_widevine =
+      (features & fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM) ==
+      fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
+  bool enable_playready = params.has_playready_key_system();
+  bool enable_protected_graphics = enable_widevine || enable_playready;
+
+  if (enable_protected_graphics && !enable_vulkan) {
+    DLOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require VULKAN.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
   if (enable_vulkan) {
     launch_command.AppendSwitch(switches::kUseVulkan);
     launch_command.AppendSwitchASCII(switches::kEnableFeatures,
@@ -210,6 +225,27 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
     launch_command.AppendSwitchASCII(switches::kUseGL,
                                      gl::kGLImplementationStubName);
+  }
+
+  if (enable_protected_graphics) {
+    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+  }
+
+  if (enable_widevine) {
+    launch_command.AppendSwitch(switches::kEnableWidevine);
+  }
+
+  if (enable_playready) {
+    const std::string& key_system = params.playready_key_system();
+    if (key_system == kWidevineKeySystem || media::IsClearKey(key_system)) {
+      DLOG(ERROR)
+          << "Invalid value for CreateContextParams/playready_key_system: "
+          << key_system;
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+    launch_command.AppendSwitchNative(switches::kPlayreadyKeySystem,
+                                      key_system);
   }
 
   // Validate embedder-supplied product, and optional version, and pass it to

@@ -22,7 +22,7 @@ interface WakeLockProvider {
   GetWakeLockWithoutContext(WakeLockType type,
                             WakeLockReason reason,
                             string description,
-                            WakeLock& wake_lock);
+                            pending_receiver<WakeLock> wake_lock);
 
   // Notifies the caller if no wake lock of type |type| is currently activated.
   // If it is activated then the caller is notified on each deactivation event

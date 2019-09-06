@@ -120,9 +120,8 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
-  SharingDialog* ShowClickToCallDialog(
-      content::WebContents* contents,
-      ClickToCallUiController* controller) override;
+  SharingDialog* ShowSharingDialog(content::WebContents* contents,
+                                   SharingUiController* controller) override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
 #if !defined(OS_ANDROID)

@@ -139,7 +139,7 @@ void PowerManagerProviderImpl::AcquireWakeLockOnMainThread() {
     provider->GetWakeLockWithoutContext(
         device::mojom::WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, kWakeLockReason,
-        mojo::MakeRequest(&wake_lock_));
+        wake_lock_.BindNewPipeAndPassReceiver());
   }
 
   DVLOG(1) << "Wake lock new acquire";

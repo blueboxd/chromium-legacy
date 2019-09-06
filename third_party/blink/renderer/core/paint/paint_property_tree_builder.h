@@ -109,6 +109,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // offset to paint at the desired place.
   PhysicalOffset repeating_paint_offset_adjustment;
 
+  FloatSize paint_offset_delta;
   PhysicalOffset old_paint_offset;
 };
 

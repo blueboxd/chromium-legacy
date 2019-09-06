@@ -167,7 +167,8 @@ std::vector<float> GetDisplayZoomFactors(const ManagedDisplayMode& mode) {
   // There may be cases where the device scale factor is less than 1. This can
   // happen during testing or local linux builds.
   const int effective_width = std::round(
-      static_cast<float>(mode.size().width()) / mode.device_scale_factor());
+      static_cast<float>(std::max(mode.size().width(), mode.size().height())) /
+      mode.device_scale_factor());
 
   std::size_t index = kZoomListBuckets.size() - 1;
   while (index > 0 && effective_width < kZoomListBuckets[index].first)

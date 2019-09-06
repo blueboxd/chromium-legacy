@@ -180,6 +180,7 @@ void BlockPainter::PaintAllChildPhasesAtomically(const LayoutBox& child,
 void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
                                   const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kForcedColorsModeBackplate &&
       paint_info.phase != PaintPhase::kSelection)
     return;
 
@@ -232,6 +233,14 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   if (ShouldPaintSelfBlockBackground(paint_phase))
     layout_block_.PaintBoxDecorationBackground(paint_info, paint_offset);
 
+  // Draw a backplate behind all text if in forced colors mode.
+  if (paint_phase == PaintPhase::kForcedColorsModeBackplate &&
+      layout_block_.GetFrame()->GetDocument()->InForcedColorsMode() &&
+      layout_block_.ChildrenInline()) {
+    LineBoxListPainter(To<LayoutBlockFlow>(layout_block_).LineBoxes())
+        .PaintBackplate(layout_block_, paint_info, paint_offset);
+  }
+
   // If we're in any phase except *just* the self (outline or background) or a
   // mask, paint children now. This is step #5, 7, 8, and 9 of the CSS spec (see
   // above).
@@ -270,11 +279,8 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
   } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
   } else {
-    LineBoxListPainter painter(To<LayoutBlockFlow>(layout_block_).LineBoxes());
-    // Draw a backplate behind all text if forced colors mode is enabled.
-    if (layout_block_.GetFrame()->GetDocument()->InForcedColorsMode())
-      painter.PaintBackplate(layout_block_, paint_info, paint_offset);
-    painter.Paint(layout_block_, paint_info, paint_offset);
+    LineBoxListPainter(To<LayoutBlockFlow>(layout_block_).LineBoxes())
+        .Paint(layout_block_, paint_info, paint_offset);
   }
 
   // If we don't have any floats to paint, or we're in the wrong paint phase,

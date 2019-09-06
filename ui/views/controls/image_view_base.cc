@@ -32,8 +32,14 @@ void ImageViewBase::ResetImageSize() {
 }
 
 void ImageViewBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  const base::string16& name = GetAccessibleName();
+  if (name.empty()) {
+    node_data->role = ax::mojom::Role::kIgnored;
+    return;
+  }
+
   node_data->role = ax::mojom::Role::kImage;
-  node_data->SetName(GetAccessibleName());
+  node_data->SetName(name);
 }
 
 void ImageViewBase::SetHorizontalAlignment(Alignment alignment) {

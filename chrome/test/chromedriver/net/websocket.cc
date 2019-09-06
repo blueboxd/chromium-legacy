@@ -280,20 +280,21 @@ void WebSocket::OnReadDuringOpen(const char* data, int len) {
   CHECK(parser_.Decode(data, len, &frame_chunks));
   for (size_t i = 0; i < frame_chunks.size(); ++i) {
     const auto& header = frame_chunks[i]->header;
-    scoped_refptr<net::IOBufferWithSize> buffer = frame_chunks[i]->data;
     if (header) {
       DCHECK_EQ(0u, current_frame_offset_);
       is_current_frame_masked_ = header->masked;
       current_masking_key_ = header->masking_key;
     }
-    if (buffer.get()) {
-      if (is_current_frame_masked_) {
-        MaskWebSocketFramePayload(current_masking_key_, current_frame_offset_,
-                                  buffer->data(), buffer->size());
-      }
-      next_message_ += std::string(buffer->data(), buffer->size());
-      current_frame_offset_ += buffer->size();
+
+    auto& buffer = frame_chunks[i]->data;
+    std::vector<char> payload(buffer.begin(), buffer.end());
+    if (is_current_frame_masked_) {
+      MaskWebSocketFramePayload(current_masking_key_, current_frame_offset_,
+                                payload.data(), payload.size());
     }
+    next_message_ += std::string(payload.data(), payload.size());
+    current_frame_offset_ += payload.size();
+
     if (frame_chunks[i]->final_chunk) {
       VLOG(4) << "WebSocket::OnReadDuringOpen " << next_message_;
       listener_->OnMessageReceived(next_message_);

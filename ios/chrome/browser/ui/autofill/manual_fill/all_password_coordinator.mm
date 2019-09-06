@@ -76,7 +76,7 @@ NSString* const kPasswordDoneButtonAccessibilityIdentifier =
     [_passwordMediator fetchPasswordsForURL:GURL::EmptyGURL()];
     _passwordMediator.actionSectionEnabled = NO;
     _passwordMediator.consumer = _passwordViewController;
-    _passwordMediator.contentDelegate = injectionHandler;
+    _passwordMediator.contentInjector = injectionHandler;
     _passwordMediator.navigator = navigator;
 
     _passwordViewController.imageDataSource = _passwordMediator;

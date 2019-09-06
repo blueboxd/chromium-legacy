@@ -218,18 +218,9 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     Profile* profile) {
   std::unique_ptr<ShortcutInfo> shortcut_info(new ShortcutInfo);
   shortcut_info->extension_id = app->id();
-  shortcut_info->is_platform_app = app->is_platform_app();
-
-  // Some default-installed apps are converted into bookmark apps on Chrome
-  // first run. These should not be considered as being created (by the user)
-  // from a web page.
-  shortcut_info->from_bookmark =
-      app->from_bookmark() && !app->was_installed_by_default();
-
   shortcut_info->url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
   shortcut_info->title = base::UTF8ToUTF16(app->name());
   shortcut_info->description = base::UTF8ToUTF16(app->description());
-  shortcut_info->extension_path = app->path();
   shortcut_info->profile_path = profile->GetPath();
   shortcut_info->profile_name =
       profile->GetPrefs()->GetString(prefs::kProfileName);

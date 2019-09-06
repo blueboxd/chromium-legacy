@@ -10,8 +10,10 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/native_inference.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/pairwise_inference.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/assist_ranker/example_preprocessing.h"
@@ -45,14 +47,14 @@ inline float DiscardCountToScore(const float discard_count) {
 
 // Loads the preprocessor config protobuf, which lists each feature, their
 // types, bucket configurations, etc.
-// Returns true if the protobuf was successfully populated.
+// Returns nullptr if the protobuf was not successfully populated.
 std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
-LoadExamplePreprocessorConfig() {
+LoadExamplePreprocessorConfig(const int resource_id) {
   auto config = std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
 
   scoped_refptr<base::RefCountedMemory> raw_config =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          IDR_TAB_RANKER_EXAMPLE_PREPROCESSOR_CONFIG_PB);
+          resource_id);
   if (!raw_config || !raw_config->front()) {
     LOG(ERROR) << "Failed to load TabRanker example preprocessor config.";
     return nullptr;
@@ -86,6 +88,8 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
     result = ScoreTabWithMRUScorer(tab, score);
   } else if (type_ == kMLScorer) {
     result = ScoreTabWithMLScorer(tab, score);
+  } else if (type_ == KPairwiseScorer) {
+    result = ScoreTabsWithPairwiseScorer(tab, TabFeatures(), score);
   } else {
     return TabRankerResult::kUnrecognizableScorer;
   }
@@ -119,7 +123,7 @@ TabRankerResult TabScorePredictor::ScoreTabWithMLScorer(const TabFeatures& tab,
                                                         float* score) {
   // Lazy-load the preprocessor config.
   LazyInitialize();
-  if (!preprocessor_config_ || !model_alloc_) {
+  if (!preprocessor_config_ || !tfnative_alloc_) {
     return TabRankerResult::kPreprocessorInitializationFailed;
   }
   // Build the RankerExample using the tab's features.
@@ -149,9 +153,13 @@ TabRankerResult TabScorePredictor::PredictWithPreprocess(
           .float_list()
           .float_value();
 
-  // Fixed amount of memory the inference function will use.
-  tfnative_model::Inference(vectorized_features.data(), score,
-                            model_alloc_.get());
+  // Call correct inference function based on the type_.
+  if (type_ == kMLScorer)
+    tfnative_model::Inference(vectorized_features.data(), score,
+                              tfnative_alloc_.get());
+  if (type_ == KPairwiseScorer)
+    pairwise_model::Inference(vectorized_features.data(), score,
+                              pairwise_alloc_.get());
 
   if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
       preprocessor_error !=
@@ -169,14 +177,55 @@ TabRankerResult TabScorePredictor::ScoreTabWithMRUScorer(const TabFeatures& tab,
   return TabRankerResult::kSuccess;
 }
 
+TabRankerResult TabScorePredictor::ScoreTabsWithPairwiseScorer(
+    const TabFeatures& tab1,
+    const TabFeatures& tab2,
+    float* score) {
+  // Lazy-load the preprocessor config.
+  LazyInitialize();
+  if (!preprocessor_config_ || !pairwise_alloc_) {
+    return TabRankerResult::kPreprocessorInitializationFailed;
+  }
+
+  // Build the RankerExamples using the tab's features.
+  assist_ranker::RankerExample example1, example2;
+  PopulateTabFeaturesToRankerExample(tab1, &example1);
+  PopulateTabFeaturesToRankerExample(tab2, &example2);
+
+  // Merge features from example2 to example1.
+  auto& features = *example1.mutable_features();
+  for (const auto& feature : example2.features()) {
+    const std::string new_name = base::StrCat({feature.first, "_1"});
+    features[new_name] = feature.second;
+  }
+
+  // Inference on example1.
+  return PredictWithPreprocess(&example1, score);
+}
+
 void TabScorePredictor::LazyInitialize() {
-  if (!preprocessor_config_)
-    preprocessor_config_ = LoadExamplePreprocessorConfig();
-  if (!model_alloc_)
-    model_alloc_ = std::make_unique<tfnative_model::FixedAllocations>();
-  DCHECK(preprocessor_config_);
-  DCHECK_EQ(preprocessor_config_->feature_indices().size(),
-            static_cast<std::size_t>(tfnative_model::FEATURES_SIZE));
+  // Load correct config and alloc based on type_.
+  if (type_ == kMLScorer) {
+    if (!preprocessor_config_)
+      preprocessor_config_ = LoadExamplePreprocessorConfig(
+          IDR_TAB_RANKER_EXAMPLE_PREPROCESSOR_CONFIG_PB);
+    if (!tfnative_alloc_)
+      tfnative_alloc_ = std::make_unique<tfnative_model::FixedAllocations>();
+    DCHECK(preprocessor_config_);
+    DCHECK_EQ(preprocessor_config_->feature_indices().size(),
+              static_cast<std::size_t>(tfnative_model::FEATURES_SIZE));
+  }
+
+  if (type_ == KPairwiseScorer) {
+    if (!preprocessor_config_)
+      preprocessor_config_ = LoadExamplePreprocessorConfig(
+          IDR_TAB_RANKER_PAIRWISE_EXAMPLE_PREPROCESSOR_CONFIG_PB);
+    if (!pairwise_alloc_)
+      pairwise_alloc_ = std::make_unique<pairwise_model::FixedAllocations>();
+    DCHECK(preprocessor_config_);
+    DCHECK_EQ(preprocessor_config_->feature_indices().size(),
+              static_cast<std::size_t>(pairwise_model::FEATURES_SIZE));
+  }
 }
 
 }  // namespace tab_ranker

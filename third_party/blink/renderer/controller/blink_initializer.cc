@@ -197,9 +197,9 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
       &LocalFrame::PauseSubresourceLoading, WrapWeakPersistent(&frame)));
   if (!base::FeatureList::IsEnabled(
           blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    frame.GetInterfaceRegistry()->AddInterface(
-        WTF::BindRepeating(&LocalFrame::BindPreviewsResourceLoadingHintsRequest,
-                           WrapWeakPersistent(&frame)));
+    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+        &LocalFrame::BindPreviewsResourceLoadingHintsReceiver,
+        WrapWeakPersistent(&frame)));
   }
   ModulesInitializer::InitLocalFrame(frame);
 }

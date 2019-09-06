@@ -267,7 +267,7 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
                          "v8.wasm.cachedModule", TRACE_EVENT_SCOPE_THREAD,
                          "producedCacheSize", serialized_module.size);
 
-    // The resources needed for caching have been GC'ed, but we should still
+    // The resources needed for caching may have been GC'ed, but we should still
     // save the compiled module. Use the platform API directly.
     scoped_refptr<CachedMetadata> cached_metadata = CachedMetadata::Create(
         kWasmModuleTag,
@@ -285,10 +285,15 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
         serialized_data.data(), serialized_data.size());
   }
 
+  void SetBuffer(scoped_refptr<CachedMetadata> cached_module) {
+    cached_module_ = cached_module;
+  }
+
  private:
   String response_url_;
   base::Time response_time_;
   v8::Global<v8::Context> context_;
+  scoped_refptr<CachedMetadata> cached_module_;
 
   DISALLOW_COPY_AND_ASSIGN(WasmStreamingClient);
 };
@@ -359,9 +364,10 @@ void StreamFromResponseCallback(
     SingleCachedMetadataHandler* cache_handler =
         raw_resource->ScriptCacheHandler();
     if (cache_handler) {
-      streaming->SetClient(std::make_shared<WasmStreamingClient>(
+      auto client = std::make_shared<WasmStreamingClient>(
           url, raw_resource->GetResponse().ResponseTime(), args.GetIsolate(),
-          script_state->GetContext()));
+          script_state->GetContext());
+      streaming->SetClient(client);
       scoped_refptr<CachedMetadata> cached_module =
           cache_handler->GetCachedMetadata(kWasmModuleTag);
       if (cached_module) {
@@ -372,7 +378,12 @@ void StreamFromResponseCallback(
         bool is_valid = streaming->SetCompiledModuleBytes(
             reinterpret_cast<const uint8_t*>(cached_module->Data()),
             cached_module->size());
-        if (!is_valid) {
+        if (is_valid) {
+          // Keep the buffer alive until V8 is ready to deserialize it.
+          // TODO(bbudge) V8 should notify us if deserialization fails, so we
+          // can release the data and reset the cache.
+          client->SetBuffer(cached_module);
+        } else {
           TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                                "v8.wasm.moduleCacheInvalid",
                                TRACE_EVENT_SCOPE_THREAD);

@@ -978,11 +978,6 @@ const char kAppReinstallRecommendationEnabled[] =
 const char kStartupBrowserWindowLaunchSuppressed[] =
     "startup_browser_window_launch_suppressed";
 
-// A JSON pref for controlling which devices are whitelisted for certain urls to
-// be used via the WebUSB API.
-const char kDeviceWebUsbAllowDevicesForUrls[] =
-    "device_webusb_allow_devices_for_urls";
-
 // A string pref stored in local state. Set and read by extensions using the
 // chrome.login API.
 const char kLoginExtensionApiDataForNextLoginAttempt[] =
@@ -1849,6 +1844,10 @@ const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 // matches that hostname and all subdomains.
 const char kH2ClientCertCoalescingHosts[] =
     "ssl.client_certs.h2_coalescing_hosts";
+
+// List of single-label hostnames that will skip the check to possibly upgrade
+// from http to https.
+const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
 
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";

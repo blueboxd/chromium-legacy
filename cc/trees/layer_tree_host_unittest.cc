@@ -3499,9 +3499,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostInvalidLocalSurfaceIdDefersCommit);
 // This verifies that we can abort a commit inside the main frame, and
 // we don't leave any weird states around if we never allow the commit
 // to happen.
-// TODO(schenney): This should be renamed back to
-// LayerTreeHostTestDeferCommitInsideBeginMainFrame when we re-create
-// the concept of defer commit when not defering main frame updates.
 class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrame
     : public LayerTreeHostTest {
  public:
@@ -3542,10 +3539,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 
 // This verifies that we can abort a commit inside the main frame, and
 // we will finish the commit once it is allowed.
-// TODO(schenney): This should be renamed back to
-// LayerTreeHostTestDeferCommitInsideBeginMainFrameWithCommitAfter when
-// we re-create the concept of defer commit when not defering main frame
-// updates.
 class LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter
     : public LayerTreeHostTest {
  public:

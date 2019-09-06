@@ -31,13 +31,14 @@ namespace {
 
 const int kInvalidResponseCode = -1;
 
-void BindNetworkContext(network::mojom::CustomProxyConfigPtr config,
-                        network::mojom::NetworkContextRequest request,
-                        const std::string& user_agent) {
+void BindNetworkContext(
+    network::mojom::CustomProxyConfigPtr config,
+    mojo::PendingReceiver<network::mojom::NetworkContext> receiver,
+    const std::string& user_agent) {
   auto params = network::mojom::NetworkContextParams::New();
   params->user_agent = user_agent;
   params->initial_custom_proxy_config = std::move(config);
-  content::GetNetworkService()->CreateNetworkContext(std::move(request),
+  content::GetNetworkService()->CreateNetworkContext(std::move(receiver),
                                                      std::move(params));
 }
 }

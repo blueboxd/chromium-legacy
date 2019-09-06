@@ -230,30 +230,17 @@
     return;
 
   NSEventType type = [event type];
-
-  // Draggable regions only respond to left-click dragging, but the system will
-  // still suppress right-clicks in a draggable region. Forwarding right-clicks
-  // allows the underlying views to respond to right-click to potentially bring
-  // up a frame context menu.
-  if (type == NSRightMouseDown) {
-    [[self contentView] rightMouseDown:event];
+  if ((type != NSKeyDown && type != NSKeyUp) || ![self hasViewsMenuActive]) {
+    [super sendEvent:event];
     return;
-  } else if (type == NSRightMouseUp) {
-    [[self contentView] rightMouseUp:event];
-    return;
-  } else if ([self hasViewsMenuActive]) {
-    // Send to the menu, after converting the event into an action message using
-    // the content view.
-    if (type == NSKeyDown) {
-      [[self contentView] keyDown:event];
-      return;
-    } else if (type == NSKeyUp) {
-      [[self contentView] keyUp:event];
-      return;
-    }
   }
 
-  [super sendEvent:event];
+  // Send to the menu, after converting the event into an action message using
+  // the content view.
+  if (type == NSKeyDown)
+    [[self contentView] keyDown:event];
+  else
+    [[self contentView] keyUp:event];
 }
 
 // Override window order functions to intercept other visibility changes. This

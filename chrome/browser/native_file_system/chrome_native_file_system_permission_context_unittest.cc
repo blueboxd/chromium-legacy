@@ -106,7 +106,7 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
     auto* grant = static_cast<
         ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl*>(
         actual_grant);
-    EXPECT_EQ(expected, permission_context_->CanRequestWritePermission(grant));
+    EXPECT_EQ(expected, grant->CanRequestPermission());
   }
 
  protected:
@@ -571,6 +571,21 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
           [&](PermissionRequestOutcome outcome) { loop4.Quit(); }));
   loop4.Run();
   EXPECT_EQ(PermissionStatus::DENIED, grant2->GetStatus());
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest,
+       CanRequestWritePermission_Allowed) {
+  bool expected = permission_context()->CanRequestWritePermission(kTestOrigin);
+  EXPECT_EQ(true, expected);
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest,
+       CanRequestWritePermission_ContentSettingsBlock) {
+  SetDefaultContentSettingValue(
+      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      CONTENT_SETTING_BLOCK);
+  bool expected = permission_context()->CanRequestWritePermission(kTestOrigin);
+  EXPECT_EQ(false, expected);
 }
 
 #endif  // !defined(OS_ANDROID)

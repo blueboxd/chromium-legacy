@@ -48,8 +48,9 @@ public class WebApkInfoBuilder {
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, Color.WHITE,
-                false /* isPrimaryIconMaskable */, mWebApkPackageName, /* shellApkVersion */ 1,
-                mManifestUrl, mUrl, WebApkDistributor.BROWSER,
+                false /* isPrimaryIconMaskable */, false /* isSplashIconMaskable */,
+                mWebApkPackageName, /* shellApkVersion */ 1, mManifestUrl, mUrl,
+                WebApkDistributor.BROWSER,
                 new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, null, null,
                 false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null,
                 1 /* webApkVersionCode */);

@@ -512,7 +512,7 @@ class NetworkContext::ContextNetworkDelegate
 
 NetworkContext::NetworkContext(
     NetworkService* network_service,
-    mojom::NetworkContextRequest request,
+    mojo::PendingReceiver<mojom::NetworkContext> receiver,
     mojom::NetworkContextParamsPtr params,
     OnConnectionCloseCallback on_connection_close_callback)
     : network_service_(network_service),
@@ -523,7 +523,7 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -533,7 +533,7 @@ NetworkContext::NetworkContext(
   // by the NetworkService. In the other constructors, lifetime is shared with
   // other consumers, and thus self-deletion is not safe and can result in
   // double-frees.
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
 
   socket_factory_ = std::make_unique<SocketFactory>(
@@ -548,7 +548,7 @@ NetworkContext::NetworkContext(
 
 NetworkContext::NetworkContext(
     NetworkService* network_service,
-    mojom::NetworkContextRequest request,
+    mojo::PendingReceiver<mojom::NetworkContext> receiver,
     net::URLRequestContext* url_request_context,
     const std::vector<std::string>& cors_exempt_header_list)
     : network_service_(network_service),
@@ -557,7 +557,7 @@ NetworkContext::NetworkContext(
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
                                           nullptr,
@@ -1885,6 +1885,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     builder.set_transport_security_persister_path(
         *params_->transport_security_persister_path);
   }
+  builder.set_hsts_policy_bypass_list(params_->hsts_policy_bypass_list);
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(params_->enable_ftp_url_support);

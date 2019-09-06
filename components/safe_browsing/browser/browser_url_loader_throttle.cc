@@ -160,9 +160,6 @@ BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
   if (deferred_)
     TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
 
-  if (!user_action_involved_)
-    LogNoUserActionResourceLoadingDelay(total_delay_);
-
   DeleteCheckerOnIO();
 }
 

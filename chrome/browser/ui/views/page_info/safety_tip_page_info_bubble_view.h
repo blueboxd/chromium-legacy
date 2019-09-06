@@ -32,12 +32,18 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
  public:
   // If |anchor_view| is nullptr, or has no Widget, |parent_window| may be
   // provided to ensure this bubble is closed when the parent closes.
-  SafetyTipPageInfoBubbleView(views::View* anchor_view,
-                              const gfx::Rect& anchor_rect,
-                              gfx::NativeView parent_window,
-                              content::WebContents* web_contents,
-                              security_state::SafetyTipStatus safety_tip_status,
-                              const GURL& url);
+  //
+  // |close_callback| will be called when the bubble is destroyed. The argument
+  // indicates what action (if any) the user took to close the bubble.
+  SafetyTipPageInfoBubbleView(
+      views::View* anchor_view,
+      const gfx::Rect& anchor_rect,
+      gfx::NativeView parent_window,
+      content::WebContents* web_contents,
+      security_state::SafetyTipStatus safety_tip_status,
+      const GURL& url,
+      base::OnceCallback<void(safety_tips::SafetyTipInteraction)>
+          close_callback);
   ~SafetyTipPageInfoBubbleView() override;
 
   // views::WidgetObserver:
@@ -53,6 +59,9 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
 
   const GURL url_;
   views::Button* leave_button_;
+  base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback_;
+  safety_tips::SafetyTipInteraction action_taken_ =
+      safety_tips::SafetyTipInteraction::kNoAction;
 
   DISALLOW_COPY_AND_ASSIGN(SafetyTipPageInfoBubbleView);
 };
@@ -62,6 +71,7 @@ PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     gfx::NativeView parent_view,
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
-    const GURL& virtual_url);
+    const GURL& virtual_url,
+    base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_SAFETY_TIP_PAGE_INFO_BUBBLE_VIEW_H_

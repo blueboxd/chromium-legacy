@@ -414,4 +414,31 @@ TEST_F(PointerEventManagerTest, PointerRawUpdateMovements) {
   ASSERT_EQ(callback->last_movement_y_, 3);
 }
 
+TEST_F(PointerEventManagerTest, PointerUnadjustedMovement) {
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<body style='padding: 0px; width: 400px; height: 400px;'>"
+      "</body>");
+  PointerEventCoordinateListenerCallback* callback =
+      PointerEventCoordinateListenerCallback::Create();
+  GetDocument().body()->addEventListener(event_type_names::kPointermove,
+                                         callback);
+
+  WebPointerEvent event = CreateTestPointerEvent(
+      WebInputEvent::kPointerMove, WebPointerProperties::PointerType::kMouse,
+      WebFloatPoint(150, 210), WebFloatPoint(100, 50), 120, -321);
+  event.is_raw_movement_event = true;
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event, {}, {}));
+
+  // If is_raw_movement_event is true, PE use the raw movement value from
+  // movement_x/y.
+  ASSERT_EQ(callback->last_screen_x_, 100);
+  ASSERT_EQ(callback->last_screen_y_, 50);
+  ASSERT_EQ(callback->last_movement_x_, 120);
+  ASSERT_EQ(callback->last_movement_y_, -321);
+}
+
 }  // namespace blink

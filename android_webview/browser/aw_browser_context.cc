@@ -21,7 +21,7 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
-#include "android_webview/native_jni/AwBrowserContext_jni.h"
+#include "android_webview/browser_jni_headers/AwBrowserContext_jni.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"

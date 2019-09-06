@@ -66,7 +66,7 @@ class MouseShapePumpTest : public testing::Test {
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   std::unique_ptr<MouseShapePump> pump_;
 

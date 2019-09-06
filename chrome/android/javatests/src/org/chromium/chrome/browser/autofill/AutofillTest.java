@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.support.test.filters.SmallTest;
 import android.view.View;
 
@@ -72,7 +70,7 @@ public class AutofillTest {
         });
     }
 
-    private static final long CALLBACK_TIMEOUT_MS = scaleTimeout(4000);
+    private static final long CALLBACK_TIMEOUT_MS = 4000L;
     private static final int CHECK_INTERVAL_MS = 100;
 
     private class MockAutofillCallback implements AutofillDelegate {

@@ -16,6 +16,12 @@
 namespace performance_manager {
 namespace features {
 
+#if defined(OS_WIN)
+// Empty the working set of processes in which all frames are frozen.
+const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
+
 #if defined(OS_CHROMEOS)
 
 const base::Feature kTrimOnMemoryPressure{"TrimOnMemoryPressure",

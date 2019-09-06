@@ -109,7 +109,7 @@ class ConnectorTest : public testing::Test {
   ScopedMessagePipeHandle handle1_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(ConnectorTest, Basic) {

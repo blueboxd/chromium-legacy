@@ -34,12 +34,12 @@ const blink::WebVector<blink::WebString> convert_to_web_vector(
 ResourceLoadingHintsAgent::ResourceLoadingHintsAgent(
     blink::AssociatedInterfaceRegistry* associated_interfaces,
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame), binding_(this) {
+    : content::RenderFrameObserver(render_frame) {
   DCHECK(render_frame);
   DCHECK(IsMainFrame());
 
   associated_interfaces->AddInterface(base::BindRepeating(
-      &ResourceLoadingHintsAgent::SetBinding, base::Unretained(this)));
+      &ResourceLoadingHintsAgent::SetReceiver, base::Unretained(this)));
 }
 
 GURL ResourceLoadingHintsAgent::GetDocumentURL() const {
@@ -74,10 +74,10 @@ void ResourceLoadingHintsAgent::OnDestruct() {
 
 ResourceLoadingHintsAgent::~ResourceLoadingHintsAgent() = default;
 
-void ResourceLoadingHintsAgent::SetBinding(
-    blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedRequest
-        request) {
-  binding_.Bind(std::move(request));
+void ResourceLoadingHintsAgent::SetReceiver(
+    mojo::PendingAssociatedReceiver<
+        blink::mojom::PreviewsResourceLoadingHintsReceiver> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 bool ResourceLoadingHintsAgent::IsMainFrame() const {

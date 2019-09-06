@@ -38,7 +38,7 @@ class DataPipeDrainerTest : public testing::Test,
 
   void OnDataComplete() override { completion_callback_.Run(); }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::string data_;
   std::unique_ptr<DataPipeDrainer> drainer_;
 

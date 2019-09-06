@@ -20,7 +20,8 @@
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -46,9 +47,10 @@ namespace {
 // A test service which can be driven by browser tests for various reasons.
 class TestRendererServiceImpl : public mojom::TestService {
  public:
-  explicit TestRendererServiceImpl(mojom::TestServiceRequest request)
-      : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(base::BindOnce(
+  explicit TestRendererServiceImpl(
+      mojo::PendingReceiver<mojom::TestService> receiver)
+      : receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(base::BindOnce(
         &TestRendererServiceImpl::OnConnectionError, base::Unretained(this)));
   }
 
@@ -62,7 +64,7 @@ class TestRendererServiceImpl : public mojom::TestService {
     // Instead of responding normally, unbind the pipe, write some garbage,
     // and go away.
     const std::string kBadMessage = "This is definitely not a valid response!";
-    mojo::ScopedMessagePipeHandle pipe = binding_.Unbind().PassMessagePipe();
+    mojo::ScopedMessagePipeHandle pipe = receiver_.Unbind().PassPipe();
     MojoResult rv = mojo::WriteMessageRaw(
         pipe.get(), kBadMessage.data(), kBadMessage.size(), nullptr, 0,
         MOJO_WRITE_MESSAGE_FLAG_NONE);
@@ -91,14 +93,15 @@ class TestRendererServiceImpl : public mojom::TestService {
     NOTREACHED();
   }
 
-  mojo::Binding<mojom::TestService> binding_;
+  mojo::Receiver<mojom::TestService> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRendererServiceImpl);
 };
 
-void CreateRendererTestService(mojom::TestServiceRequest request) {
+void CreateRendererTestService(
+    mojo::PendingReceiver<mojom::TestService> receiver) {
   // Owns itself.
-  new TestRendererServiceImpl(std::move(request));
+  new TestRendererServiceImpl(std::move(receiver));
 }
 
 }  // namespace

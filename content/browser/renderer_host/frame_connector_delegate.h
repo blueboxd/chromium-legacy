@@ -150,8 +150,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Cause the root RenderWidgetHostView to become focused.
   virtual void FocusRootView() {}
 
-  // Locks the mouse. Returns true if mouse is locked.
-  virtual bool LockMouse();
+  // Locks the mouse, if |request_unadjusted_movement_| is true, try setting the
+  // unadjusted movement mode. Returns true if mouse is locked.
+  virtual bool LockMouse(bool request_unadjusted_movement);
 
   // Unlocks the mouse if the mouse is locked.
   virtual void UnlockMouse() {}

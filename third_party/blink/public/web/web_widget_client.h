@@ -153,7 +153,8 @@ class WebWidgetClient {
   // returned via a single call to WebWidget::didAcquirePointerLock() or
   // WebWidget::didNotAcquirePointerLock().
   // If false, the request has been denied synchronously.
-  virtual bool RequestPointerLock(WebLocalFrame* requester_frame) {
+  virtual bool RequestPointerLock(WebLocalFrame* requester_frame,
+                                  bool request_unadjusted_movement) {
     return false;
   }
 

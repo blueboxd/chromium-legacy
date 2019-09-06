@@ -111,7 +111,8 @@ namespace remoting {
 class TokenValidatorFactoryImplTest : public testing::Test {
  public:
   TokenValidatorFactoryImplTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::IO) {}
 
   void SuccessCallback(const std::string& shared_secret) {
     EXPECT_FALSE(shared_secret.empty());
@@ -176,7 +177,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     context->SetErrorResponse(failure_phase, net_error);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

@@ -376,7 +376,9 @@ class FakeInternetAvailabilityChecker : public InternetAvailabilityChecker {
 class FakePasswordRecoveryManager : public PasswordRecoveryManager {
  public:
   FakePasswordRecoveryManager();
-  explicit FakePasswordRecoveryManager(base::TimeDelta request_timeout);
+  explicit FakePasswordRecoveryManager(
+      base::TimeDelta encryption_key_request_timeout,
+      base::TimeDelta decryption_key_request_timeout);
   ~FakePasswordRecoveryManager() override;
 
   using PasswordRecoveryManager::MakeGenerateKeyPairResponseForTesting;

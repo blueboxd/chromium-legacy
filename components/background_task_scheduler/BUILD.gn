@@ -58,6 +58,7 @@ if (is_android) {
       "$google_play_services_package:google_play_services_gcm_java",
       "$google_play_services_package:google_play_services_tasks_java",
       "//base:base_java",
+      "//content/public/android:content_java",
       "//third_party/android_deps:com_android_support_support_annotations_java",
       "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     ]

@@ -172,12 +172,9 @@
 <translation id="5906655207909574370">Η ενημέρωση σχεδόν ολοκληρώθηκε! Επανεκκινήστε τη συσκευή σας για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="5940385492829620908">Εδώ μπορείτε να βρείτε τις ιστοσελίδες, τους σελιδοδείκτες σας και άλλα δεδομένα του Chrome.</translation>
 <translation id="5941830788786076944">Ορισμός Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
-<translation id="5977372243443849142">Το Chrome μπορεί να σας βοηθήσει να απομνημονεύσετε τους κωδικούς πρόσβασής σας έτσι ώστε να μην χρειάζεται να το κάνετε εσείς.</translation>
 <translation id="6014844626092547096">Έχετε πλέον συνδεθεί στο Chrome! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6070348360322141662">Για επιπλέον ασφάλεια, το Google Chrome θα κρυπτογραφήσει τα δεδομένα σας</translation>
-<translation id="6102256037460917300">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, αναζητήστε τη στις <ph name="LINK_BEGIN" />
-    ρυθμίσεις του προγράμματος περιήγησης Chrome<ph name="LINK_END" /></translation>
 <translation id="6113794647360055231">Το Chrome έγινε ακόμα καλύτερο</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
@@ -250,7 +247,6 @@
 <translation id="8370517070665726704">Πνευματικά δικαιώματα <ph name="YEAR" /> Google LLC. Με την επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="840084489713044809">Το Google Chrome θέλει να εξαγάγει τους κωδικούς πρόσβασής σας.</translation>
 <translation id="8406086379114794905">Βοηθήστε μας να κάνουμε καλύτερο το Chrome</translation>
-<translation id="8432724323949790809">Τώρα θα πρέπει να επανεκκινήσετε το Google Chrome</translation>
 <translation id="8455999171311319804">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google διαγνωστικά και δεδομένα χρήσης.</translation>
 <translation id="8478823064122749032">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8498858610309223613">Μόλις εφαρμόστηκε μια ειδική ενημέρωση ασφαλείας για το Google Chrome. Επανεκκινήστε τώρα και θα γίνει επαναφορά των καρτελών σας.</translation>

@@ -32,6 +32,7 @@
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/test_service_worker_observer.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fake_network_url_loader_factory.h"
@@ -1303,12 +1304,22 @@ class ServiceWorkerUpdateJobTest : public ServiceWorkerJobTest,
 
     update_helper_ = new UpdateJobTestHelper();
     helper_.reset(update_helper_);
+
+    // Create a StoragePartition with the testing browser context so that the
+    // ServiceWorkerUpdateChecker can find the BrowserContext through it.
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        helper_->browser_context(), /* in_memory= */ true, base::FilePath(),
+        /* partition_domain= */ "");
+    storage_partition_impl_->Initialize();
+    helper_->context_wrapper()->set_storage_partition(
+        storage_partition_impl_.get());
   }
 
   static bool IsImportedScriptUpdateCheckEnabled() { return GetParam(); }
 
  protected:
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   UpdateJobTestHelper* update_helper_;
 };
 

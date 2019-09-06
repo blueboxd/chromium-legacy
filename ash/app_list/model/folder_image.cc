@@ -38,7 +38,9 @@ class FolderImageSource : public gfx::CanvasImageSource {
  public:
   typedef std::vector<gfx::ImageSkia> Icons;
 
-  FolderImageSource(const Icons& icons, const gfx::Size& size);
+  FolderImageSource(const AppListConfig& app_list_config,
+                    const Icons& icons,
+                    const gfx::Size& size);
   ~FolderImageSource() override;
 
  private:
@@ -51,14 +53,20 @@ class FolderImageSource : public gfx::CanvasImageSource {
   // gfx::CanvasImageSource overrides:
   void Draw(gfx::Canvas* canvas) override;
 
+  const AppListConfig& app_list_config_;
   Icons icons_;
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderImageSource);
 };
 
-FolderImageSource::FolderImageSource(const Icons& icons, const gfx::Size& size)
-    : gfx::CanvasImageSource(size), icons_(icons), size_(size) {
+FolderImageSource::FolderImageSource(const AppListConfig& app_list_config,
+                                     const Icons& icons,
+                                     const gfx::Size& size)
+    : gfx::CanvasImageSource(size),
+      app_list_config_(app_list_config),
+      icons_(icons),
+      size_(size) {
   DCHECK(icons.size() <= FolderImage::kNumFolderTopItems);
 }
 
@@ -101,15 +109,15 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
 
 void FolderImageSource::Draw(gfx::Canvas* canvas) {
   gfx::PointF bubble_center(size().width() / 2, size().height() / 2);
-  bubble_center.Offset(0, -AppListConfig::instance().folder_bubble_y_offset());
+  bubble_center.Offset(0, -app_list_config_.folder_bubble_y_offset());
 
   // Draw circle for folder bubble.
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(AppListConfig::instance().folder_bubble_color());
-  canvas->DrawCircle(bubble_center,
-                     AppListConfig::instance().folder_bubble_radius(), flags);
+  flags.setColor(app_list_config_.folder_bubble_color());
+  canvas->DrawCircle(bubble_center, app_list_config_.folder_bubble_radius(),
+                     flags);
 
   if (icons_.size() == 0)
     return;
@@ -118,11 +126,11 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   const size_t num_items =
       std::min(FolderImage::kNumFolderTopItems, icons_.size());
   std::vector<gfx::Rect> top_icon_bounds = FolderImage::GetTopIconsBounds(
-      AppListConfig::instance(), gfx::Rect(size()), num_items);
+      app_list_config_, gfx::Rect(size()), num_items);
 
   for (size_t i = 0; i < num_items; ++i) {
     DrawIcon(canvas, icons_[i],
-             AppListConfig::instance().item_icon_in_folder_icon_size(),
+             app_list_config_.item_icon_in_folder_icon_size(),
              top_icon_bounds[i].x(), top_icon_bounds[i].y());
   }
 }
@@ -132,7 +140,10 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
 // static
 const size_t FolderImage::kNumFolderTopItems = 4;
 
-FolderImage::FolderImage(AppListItemList* item_list) : item_list_(item_list) {
+FolderImage::FolderImage(const AppListConfig* app_list_config,
+                         AppListItemList* item_list)
+    : app_list_config_(app_list_config), item_list_(item_list) {
+  DCHECK(app_list_config_);
   item_list_->AddObserver(this);
 }
 
@@ -175,6 +186,11 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
   DCHECK_LE(num_items, kNumFolderTopItems);
   std::vector<gfx::Rect> top_icon_bounds;
 
+  const AppListConfig& base_config =
+      app_list_config.type() == ash::AppListConfigType::kShared
+          ? AppListConfig::instance()
+          : app_list_config;
+
   // The folder icons are generated as unclipped icons for default app list
   // config, and then scaled down to the required unclipped folder size as
   // needed (if clipped icon is needed, the unclipped icon bounds are clipped to
@@ -188,9 +204,9 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
   //      to be the |folder_icon_bounds| origin).
   // Steps 2 - 4 are done using |scale_and_translate_bounds|.
   const int item_icon_dimension =
-      AppListConfig::instance().item_icon_in_folder_icon_dimension();
+      base_config.item_icon_in_folder_icon_dimension();
   const int folder_unclipped_icon_dimension =
-      AppListConfig::instance().folder_unclipped_icon_dimension();
+      base_config.folder_unclipped_icon_dimension();
   gfx::Point icon_center(folder_unclipped_icon_dimension / 2,
                          folder_unclipped_icon_dimension / 2);
   const gfx::Rect center_rect(icon_center.x() - item_icon_dimension / 2,
@@ -198,9 +214,7 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
                               item_icon_dimension, item_icon_dimension);
 
   const int origin_offset =
-      (item_icon_dimension +
-       AppListConfig::instance().item_icon_in_folder_icon_margin()) /
-      2;
+      (item_icon_dimension + base_config.item_icon_in_folder_icon_margin()) / 2;
 
   const int scaled_folder_unclipped_icon_dimension =
       app_list_config.folder_unclipped_icon_dimension();
@@ -295,7 +309,12 @@ void FolderImage::RemoveObserver(FolderImageObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FolderImage::ItemIconChanged() {
+void FolderImage::ItemIconChanged(ash::AppListConfigType config_type) {
+  if (config_type != ash::AppListConfigType::kShared &&
+      config_type != app_list_config_->type()) {
+    return;
+  }
+
   // Note: Must update the image only (cannot simply call UpdateIcon), because
   // UpdateIcon removes and re-adds the FolderImage as an observer of the
   // AppListItems, which causes the current iterator to call ItemIconChanged
@@ -323,14 +342,14 @@ void FolderImage::OnListItemMoved(size_t from_index,
 void FolderImage::RedrawIconAndNotify() {
   FolderImageSource::Icons top_icons;
   for (const auto* item : top_items_)
-    top_icons.push_back(item->icon());
-  const gfx::Size icon_size =
-      AppListConfig::instance().folder_unclipped_icon_size();
-  icon_ = gfx::ImageSkia(
-      std::make_unique<FolderImageSource>(top_icons, icon_size), icon_size);
+    top_icons.push_back(item->GetIcon(app_list_config_->type()));
+  const gfx::Size icon_size = app_list_config_->folder_unclipped_icon_size();
+  icon_ = gfx::ImageSkia(std::make_unique<FolderImageSource>(
+                             *app_list_config_, top_icons, icon_size),
+                         icon_size);
 
   for (auto& observer : observers_)
-    observer.OnFolderImageUpdated();
+    observer.OnFolderImageUpdated(app_list_config_->type());
 }
 
 }  // namespace app_list

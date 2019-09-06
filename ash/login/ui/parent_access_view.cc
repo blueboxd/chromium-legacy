@@ -92,7 +92,7 @@ constexpr int kArrowSizeDp = 20;
 
 constexpr SkColor kTextColor = SK_ColorWHITE;
 constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
-constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x57, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -177,6 +177,15 @@ class AccessibleInputField : public views::Textfield {
     return parent() ? parent()->GetSelectedViewForGroup(group) : nullptr;
   }
 
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      RequestFocusWithPointer(event->details().primary_pointer_type());
+      return;
+    }
+
+    views::Textfield::OnGestureEvent(event);
+  }
+
  private:
   base::string16 accessible_description_;
 
@@ -238,6 +247,22 @@ class ParentAccessView::AccessCodeInput : public views::View,
   using OnInputChange =
       base::RepeatingCallback<void(bool complete, bool last_field_active)>;
   using OnEnter = base::RepeatingClosure;
+
+  class TestApi {
+   public:
+    explicit TestApi(ParentAccessView::AccessCodeInput* access_code_input)
+        : access_code_input_(access_code_input) {}
+    ~TestApi() = default;
+
+    views::Textfield* GetInputTextField(int index) {
+      DCHECK_LT(static_cast<size_t>(index),
+                access_code_input_->input_fields_.size());
+      return access_code_input_->input_fields_[index];
+    }
+
+   private:
+    ParentAccessView::AccessCodeInput* access_code_input_;
+  };
 
   // Builds the view for an access code that consists out of |length| digits.
   // |on_input_change| will be called upon access code digit insertion, deletion
@@ -378,8 +403,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
 
   bool HandleMouseEvent(views::Textfield* sender,
                         const ui::MouseEvent& mouse_event) override {
-    if (!mouse_event.IsOnlyLeftMouseButton())
+    if (!(mouse_event.IsOnlyLeftMouseButton() ||
+          mouse_event.IsOnlyRightMouseButton())) {
       return false;
+    }
 
     // Move focus to the field that was selected with mouse input.
     for (size_t i = 0; i < input_fields_.size(); ++i) {
@@ -467,32 +494,37 @@ ParentAccessView::TestApi::TestApi(ParentAccessView* view) : view_(view) {
 
 ParentAccessView::TestApi::~TestApi() = default;
 
-LoginButton* ParentAccessView::TestApi::back_button() const {
+LoginButton* ParentAccessView::TestApi::back_button() {
   return view_->back_button_;
 }
 
-views::Label* ParentAccessView::TestApi::title_label() const {
+views::Label* ParentAccessView::TestApi::title_label() {
   return view_->title_label_;
 }
 
-views::Label* ParentAccessView::TestApi::description_label() const {
+views::Label* ParentAccessView::TestApi::description_label() {
   return view_->description_label_;
 }
 
-views::View* ParentAccessView::TestApi::access_code_view() const {
+views::View* ParentAccessView::TestApi::access_code_view() {
   return view_->access_code_view_;
 }
 
-views::LabelButton* ParentAccessView::TestApi::help_button() const {
+views::LabelButton* ParentAccessView::TestApi::help_button() {
   return view_->help_button_;
 }
 
-ArrowButtonView* ParentAccessView::TestApi::submit_button() const {
+ArrowButtonView* ParentAccessView::TestApi::submit_button() {
   return view_->submit_button_;
 }
 
-LoginPinView* ParentAccessView::TestApi::pin_keyboard_view() const {
+LoginPinView* ParentAccessView::TestApi::pin_keyboard_view() {
   return view_->pin_keyboard_view_;
+}
+
+views::Textfield* ParentAccessView::TestApi::GetInputTextField(int index) {
+  return ParentAccessView::AccessCodeInput::TestApi(view_->access_code_view_)
+      .GetInputTextField(index);
 }
 
 ParentAccessView::State ParentAccessView::TestApi::state() const {
@@ -520,7 +552,6 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       request_reason_(reason),
       validation_time_(validation_time) {
   DCHECK(callbacks.on_finished);
-
   // Main view contains all other views aligned vertically and centered.
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -676,7 +707,6 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   submit_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   footer->AddChildView(submit_button_);
-
   add_spacer(kSubmitButtonBottomMarginDp);
 
   // Pin keyboard is only shown in tablet mode.
@@ -832,6 +862,12 @@ void ParentAccessView::OnInputChange(bool complete, bool last_field_active) {
   submit_button_->SetEnabled(complete);
 
   if (complete && last_field_active) {
+    if (auto_submit_enabled_) {
+      auto_submit_enabled_ = false;
+      SubmitCode();
+      return;
+    }
+
     // Moving focus is delayed by using PostTask to allow for proper
     // a11y announcements.
     base::ThreadTaskRunnerHandle::Get()->PostTask(

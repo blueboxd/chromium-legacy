@@ -119,8 +119,6 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
       SecurityStateTabHelper::FromWebContents(web_contents);
   initial_security_level_ = security_state_tab_helper_->GetSecurityLevel();
   current_security_level_ = initial_security_level_;
-  current_safety_tip_status_ =
-      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
 
   base::UmaHistogramEnumeration(kSecurityLevelOnCommit, initial_security_level_,
                                 security_state::SECURITY_LEVEL_COUNT);
@@ -134,6 +132,9 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   if (!GetDelegate().DidCommit())
     return;
 
+  security_state::SafetyTipStatus safety_tip_status =
+      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
+
   if (engagement_service_) {
     double final_engagement_score =
         engagement_service_->GetScore(GetDelegate().GetUrl());
@@ -146,6 +147,7 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
     ukm::builders::Security_SiteEngagement(source_id_)
         .SetInitialSecurityLevel(initial_security_level_)
         .SetFinalSecurityLevel(current_security_level_)
+        .SetSafetyTipStatus(static_cast<int64_t>(safety_tip_status))
         .SetScoreDelta(final_engagement_score - initial_engagement_score_)
         .SetScoreFinal(coarse_engagement_score)
         .Record(ukm_recorder);
@@ -161,6 +163,14 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
     base::UmaHistogramExactLinear(
         security_state::GetSecurityLevelHistogramName(
             kEngagementFinalPrefix, current_security_level_),
+        final_engagement_score, 100);
+    base::UmaHistogramExactLinear(
+        security_state::GetSafetyTipHistogramName(kEngagementDeltaPrefix,
+                                                  safety_tip_status),
+        delta, 100);
+    base::UmaHistogramExactLinear(
+        security_state::GetSafetyTipHistogramName(kEngagementFinalPrefix,
+                                                  safety_tip_status),
         final_engagement_score, 100);
   }
 
@@ -180,14 +190,13 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
                                 security_state::SECURITY_LEVEL_COUNT);
 
   // Record Safety Tip UMA histograms.
-  base::UmaHistogramEnumeration(
-      security_state::GetSafetyTipHistogramName(kPageEndReasonPrefix,
-                                                current_safety_tip_status_),
-      GetDelegate().GetPageEndReason(),
-      page_load_metrics::PAGE_END_REASON_COUNT);
+  base::UmaHistogramEnumeration(security_state::GetSafetyTipHistogramName(
+                                    kPageEndReasonPrefix, safety_tip_status),
+                                GetDelegate().GetPageEndReason(),
+                                page_load_metrics::PAGE_END_REASON_COUNT);
   base::UmaHistogramCustomTimes(
       security_state::GetSafetyTipHistogramName(kTimeOnPagePrefix,
-                                                current_safety_tip_status_),
+                                                safety_tip_status),
       GetDelegate().GetVisibilityTracker().GetForegroundDuration(),
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
 }
@@ -196,6 +205,4 @@ void SecurityStatePageLoadMetricsObserver::DidChangeVisibleSecurityState() {
   if (!security_state_tab_helper_)
     return;
   current_security_level_ = security_state_tab_helper_->GetSecurityLevel();
-  current_safety_tip_status_ =
-      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
 }

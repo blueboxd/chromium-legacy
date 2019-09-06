@@ -376,8 +376,7 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   request.set_arc_custom_tabs_experiment(is_custom_tab_enabled);
   const bool is_arc_print_spooler_enabled =
       base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature) &&
-      delegate_->GetChannel() != version_info::Channel::STABLE &&
-      delegate_->GetChannel() != version_info::Channel::BETA;
+      delegate_->GetChannel() != version_info::Channel::STABLE;
   request.set_arc_print_spooler_experiment(is_arc_print_spooler_enabled);
   request.set_lcd_density(lcd_density);
 

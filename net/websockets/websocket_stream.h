@@ -222,6 +222,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // Extensions which use reserved header bits should clear them when they are
   // set correctly. If the reserved header bits are set incorrectly, it is okay
   // to leave it to the caller to report the error.
+  //
+  // Each WebSocketFrame.data is owned by WebSocketStream and must be valid
+  // until next ReadFrames() call.
   virtual int ReadFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
                          CompletionOnceCallback callback) = 0;
 

@@ -122,6 +122,9 @@ class CC_EXPORT LayerTreeHostCommon {
       CalcDrawPropsMainInputsForTesting* inputs);
 
   static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
+
+  // TODO(wangxianzhu): Move these functions into testing classes.
+  static void PrepareForUpdateDrawPropertiesForTesting(LayerTreeImpl*);
   static void CalculateDrawPropertiesForTesting(
       CalcDrawPropsImplInputsForTesting* inputs);
 

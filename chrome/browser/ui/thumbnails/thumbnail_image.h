@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_IMAGE_H_
 #define CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_IMAGE_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -55,6 +56,11 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
   // long it will take, though in most cases it should happen very quickly.
   virtual void RequestThumbnailImage();
 
+  void set_async_operation_finished_callback_for_testing(
+      base::RepeatingClosure callback) {
+    async_operation_finished_callback_ = std::move(callback);
+  }
+
  private:
   friend class Delegate;
   friend class base::RefCounted<ThumbnailImage>;
@@ -70,6 +76,12 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
   scoped_refptr<base::RefCountedData<std::vector<uint8_t>>> data_;
 
   base::ObserverList<Observer> observers_;
+
+  // Called when an asynchronous operation (such as encoding image data upon
+  // assignment or decoding image data for observers) finishes or fails.
+  // Intended for unit tests that want to wait for internal operations following
+  // AssignSkBitmap() or RequestThumbnailImage() calls.
+  base::RepeatingClosure async_operation_finished_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

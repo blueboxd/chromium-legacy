@@ -19,11 +19,13 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
@@ -165,6 +167,8 @@ class SearchResultRankerTest : public testing::Test {
 
   std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<Profile> profile_;
+
+  const base::HistogramTester histogram_tester_;
 
  private:
   // All the relevant feature flags for the SearchResultRanker. New experiments
@@ -528,7 +532,7 @@ TEST_F(SearchResultRankerTest, ZeroStateGroupModelDisabledWithFlag) {
   }
   ranker->FetchRankings(base::string16());
 
-  // A and B should be ranked first because their group score should be higher.
+  // C and D should be ranked first because their group score should be higher.
   auto results =
       MakeSearchResults({"A", "B", "C", "D"},
                         {ResultType::kLauncher, ResultType::kLauncher,
@@ -852,6 +856,53 @@ TEST_F(SearchResultRankerTest, ZeroStateGroupRankerUsesFinchConfig) {
   // to "fake" in the json config.
   ASSERT_THAT(ranker->zero_state_group_ranker_->GetPredictorNameForTesting(),
               StrEq(FakePredictor::kPredictorName));
+}
+
+// The zero state result type should be logged whenever a zero state item is
+// clicked and trained on.
+TEST_F(SearchResultRankerTest, ZeroStateClickedTypeMetrics) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "1.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // Zero state types should be logged during training.
+
+  AppLaunchData app_launch_data_a;
+  app_launch_data_a.id = "A";
+  app_launch_data_a.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_a.query = "";
+
+  ranker->Train(app_launch_data_a);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResults.LaunchedItemType",
+      ZeroStateResultType::kUnanticipated, 1);
+
+  AppLaunchData app_launch_data_b;
+  app_launch_data_b.id = "B";
+  app_launch_data_b.ranking_item_type = RankingItemType::kOmniboxGeneric;
+  app_launch_data_b.query = "";
+
+  ranker->Train(app_launch_data_b);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResults.LaunchedItemType",
+      ZeroStateResultType::kOmniboxSearch, 1);
+
+  AppLaunchData app_launch_data_c;
+  app_launch_data_c.id = "D";
+  app_launch_data_c.ranking_item_type = RankingItemType::kDriveQuickAccess;
+  app_launch_data_c.query = "";
+
+  ranker->Train(app_launch_data_c);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResults.LaunchedItemType",
+      ZeroStateResultType::kDriveQuickAccess, 1);
 }
 
 }  // namespace app_list

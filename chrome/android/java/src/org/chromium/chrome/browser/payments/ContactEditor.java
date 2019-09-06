@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Patterns;
 
 import org.chromium.base.Callback;
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -277,9 +278,13 @@ public class ContactEditor extends EditorBase<AutofillContact> {
             mPhoneValidator = new EditorFieldValidator() {
                 @Override
                 public boolean isValid(@Nullable CharSequence value) {
-                    return value != null
-                            && PhoneNumberUtils.isGlobalPhoneNumber(
-                                       PhoneNumberUtils.stripSeparators(value.toString()));
+                    // TODO(crbug.com/999286): PhoneNumberUtils internally trigger disk reads for
+                    //                         certain devices/configurations.
+                    try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                        return value != null
+                                && PhoneNumberUtils.isGlobalPhoneNumber(
+                                        PhoneNumberUtils.stripSeparators(value.toString()));
+                    }
                 }
 
                 @Override

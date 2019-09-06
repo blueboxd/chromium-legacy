@@ -110,6 +110,9 @@ if (is_win) {
   if (needs_stack_alignment) {
     dav1d_copts += [ stackalign_flag ]
   }
+  if (is_mac) {
+    dav1d_copts += [ "-D_DARWIN_C_SOURCE" ]
+  }
 }
 
 if (enable_nasm) {

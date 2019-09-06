@@ -4964,7 +4964,7 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseDown(
 
   InputHandlerPointerResult result;
   if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandleMouseDown(viewport_point);
+    result = scrollbar_controller_->HandlePointerDown(viewport_point);
 
   return result;
 }
@@ -4984,7 +4984,7 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseUp(
 
   InputHandlerPointerResult result;
   if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandleMouseUp(viewport_point);
+    result = scrollbar_controller_->HandlePointerUp(viewport_point);
 
   return result;
 }

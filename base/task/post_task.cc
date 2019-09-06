@@ -139,4 +139,54 @@ scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
 }
 #endif  // defined(OS_WIN)
 
+// TODO(crbug.com/968047): Update all call sites and remove these forwarding
+// wrappers.
+bool PostTaskWithTraits(const Location& from_here,
+                        const TaskTraits& traits,
+                        OnceClosure task) {
+  return PostTask(from_here, traits, std::move(task));
+}
+
+bool PostDelayedTaskWithTraits(const Location& from_here,
+                               const TaskTraits& traits,
+                               OnceClosure task,
+                               TimeDelta delay) {
+  return PostDelayedTask(from_here, traits, std::move(task), delay);
+}
+
+bool PostTaskWithTraitsAndReply(const Location& from_here,
+                                const TaskTraits& traits,
+                                OnceClosure task,
+                                OnceClosure reply) {
+  return PostTaskAndReply(from_here, traits, std::move(task), std::move(reply));
+}
+
+scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(const TaskTraits& traits) {
+  return CreateTaskRunner(traits);
+}
+
+scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+    const TaskTraits& traits) {
+  return CreateSequencedTaskRunner(traits);
+}
+
+scoped_refptr<UpdateableSequencedTaskRunner>
+CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits) {
+  return CreateUpdateableSequencedTaskRunner(traits);
+}
+
+scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode) {
+  return CreateSingleThreadTaskRunner(traits, thread_mode);
+}
+
+#if defined(OS_WIN)
+scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode) {
+  return CreateCOMSTATaskRunner(traits, thread_mode);
+}
+#endif  // defined(OS_WIN)
+
 }  // namespace base

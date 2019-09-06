@@ -1263,6 +1263,10 @@ void StyleResolver::ApplyAnimatedStandardProperties(
             : entry.key.PresentationAttribute().PropertyID();
     if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property))
       continue;
+    if (IsForcedColorsModeEnabled() && entry.key.IsCSSProperty() &&
+        entry.key.GetCSSProperty().IsAffectedByForcedColors() &&
+        state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone)
+      continue;
     const Interpolation& interpolation = *entry.value.front();
     if (interpolation.IsInvalidatableInterpolation()) {
       CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
@@ -1683,6 +1687,8 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
   // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
   if (priority == kHighPropertyPriority) {
     ApplyProperty(GetCSSPropertyColor(), state, *unset, apply_mask);
+    ApplyUaForcedColors<priority>(state, match_result, apply_inherited_only,
+                                  needs_apply_pass);
   } else {
     DCHECK(priority == kLowPropertyPriority);
     ApplyProperty(GetCSSPropertyBorderBottomColor(), state, *unset, apply_mask);
@@ -1704,18 +1710,31 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
 
     // Background colors compute to the Window system color for all values
     // except for the alpha channel.
+    RGBA32 prev_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
     RGBA32 sys_bg_color =
         LayoutTheme::GetTheme()
             .SystemColor(CSSValueID::kWindow, WebColorScheme::kLight)
             .Rgb();
+    ApplyProperty(GetCSSPropertyBackgroundColor(), state,
+                  *cssvalue::CSSColorValue::Create(sys_bg_color), apply_mask);
+
+    ApplyUaForcedColors<priority>(state, match_result, apply_inherited_only,
+                                  needs_apply_pass);
+
     RGBA32 current_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
     RGBA32 bg_color =
-        MakeRGBA(RedChannel(sys_bg_color), GreenChannel(sys_bg_color),
-                 BlueChannel(sys_bg_color), AlphaChannel(current_bg_color));
+        MakeRGBA(RedChannel(current_bg_color), GreenChannel(current_bg_color),
+                 BlueChannel(current_bg_color), AlphaChannel(prev_bg_color));
     ApplyProperty(GetCSSPropertyBackgroundColor(), state,
                   *cssvalue::CSSColorValue::Create(bg_color), apply_mask);
   }
+}
 
+template <CSSPropertyPriority priority>
+void StyleResolver::ApplyUaForcedColors(StyleResolverState& state,
+                                        const MatchResult& match_result,
+                                        bool apply_inherited_only,
+                                        NeedsApplyPass& needs_apply_pass) {
   auto force_colors = ForcedColorFilter::kEnabled;
   ApplyMatchedProperties<priority, kCheckNeedsApplyPass>(
       state, match_result.UaRules(), false, apply_inherited_only,
@@ -1750,8 +1769,6 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     // then only need to apply the inherited properties, if any, as their values
     // can depend on the element context. This is fast and saves memory by
     // reusing the style data structures.
-    state.Style()->CopyNonInheritedFromCached(
-        *cached_matched_properties->computed_style);
     if (state.ParentStyle()->InheritedDataShared(
             *cached_matched_properties->parent_computed_style) &&
         !IsAtShadowBoundary(&element) &&
@@ -1770,11 +1787,14 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
       // need to explicitly restore it.
       state.Style()->SetInsideLink(link_status);
 
-      UpdateFont(state);
       is_inherited_cache_hit = true;
     }
-
-    is_non_inherited_cache_hit = true;
+    if (!IsForcedColorsModeEnabled() || is_inherited_cache_hit) {
+      state.Style()->CopyNonInheritedFromCached(
+          *cached_matched_properties->computed_style);
+      is_non_inherited_cache_hit = true;
+    }
+    UpdateFont(state);
   }
 
   return CacheSuccess(is_inherited_cache_hit, is_non_inherited_cache_hit,

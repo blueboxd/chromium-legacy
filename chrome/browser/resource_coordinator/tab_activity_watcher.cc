@@ -42,7 +42,7 @@
                              base::TimeDelta::FromDays(1), 50)
 
 namespace resource_coordinator {
-
+using tab_ranker::TabFeatures;
 
 // Per-WebContents helper class that observes its WebContents, notifying
 // TabActivityWatcher when interesting events occur. Also provides
@@ -57,28 +57,14 @@ class TabActivityWatcher::WebContentsData
   // Calculates the tab reactivation score for a background tab. Returns nullopt
   // if the score could not be calculated, e.g. because the tab is in the
   // foreground.
-  base::Optional<float> CalculateReactivationScore(bool log_this_query) {
+  base::Optional<float> CalculateReactivationScore() {
     if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
       return base::nullopt;
 
-    const auto mru = GetMRUFeatures();
-
-    base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures(mru);
+    // No log for CalculateReactivationScore.
+    base::Optional<TabFeatures> tab = GetTabFeatures();
     if (!tab.has_value())
       return base::nullopt;
-
-    if (log_this_query) {
-      // Update label_id_: a new label_id is generated for this query if the
-      // label_id_ is 0; otherwise the old label_id_ is incremented. This allows
-      // us to better pairing TabMetrics with ForegroundedOrClosed events
-      // offline. The same label_id_ will be logged with ForegroundedOrClosed
-      // event later on so that TabFeatures can be paired with
-      // ForegroundedOrClosed.
-      label_id_ = label_id_ ? label_id_ + 1 : NewInt64ForLabelIdOrQueryId();
-
-      TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
-          ukm_source_id_, tab.value(), web_contents(), label_id_);
-    }
 
     float score = 0.0f;
     const tab_ranker::TabRankerResult result =
@@ -147,7 +133,7 @@ class TabActivityWatcher::WebContentsData
     if (backgrounded_time_.is_null() || DisableBackgroundLogWithTabRanker())
       return;
 
-    base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures();
+    base::Optional<TabFeatures> tab = GetTabFeatures();
     if (tab.has_value()) {
       // Background time logging always logged with label_id == 0, since we
       // only use label_id for query time logging for now.
@@ -156,15 +142,10 @@ class TabActivityWatcher::WebContentsData
     }
   }
 
-  // Logs current TabFeatures; skips if current tab is foregrounded.
-  void LogCurrentTabFeatures() {
-    if (backgrounded_time_.is_null())
-      return;
-    const base::Optional<tab_ranker::TabFeatures> tab =
-        GetTabFeatures(mru_features_);
+  // Logs current TabFeatures; skips if current tab is null.
+  void LogCurrentTabFeatures(const base::Optional<TabFeatures>& tab) {
     if (!tab.has_value())
       return;
-
     // Update label_id_: a new label_id is generated for this query if the
     // label_id_ is 0; otherwise the old label_id_ is incremented. This allows
     // us to better pairing TabMetrics with ForegroundedOrClosed events offline.
@@ -399,11 +380,11 @@ class TabActivityWatcher::WebContentsData
   // WindowFeatures and MRUFeatures.
   // TODO(charleszhao): refactor TabMetricsLogger::GetTabFeatures to return a
   // full TabFeatures instead of a partial TabFeatures.
-  base::Optional<tab_ranker::TabFeatures> GetTabFeatures(
-      const tab_ranker::MRUFeatures& mru = tab_ranker::MRUFeatures()) {
-
+  base::Optional<TabFeatures> GetTabFeatures() {
+    if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
+      return base::nullopt;
     // For tab features.
-    base::Optional<tab_ranker::TabFeatures> tab =
+    base::Optional<TabFeatures> tab =
         TabMetricsLogger::GetTabFeatures(page_metrics_, web_contents());
     if (!tab.has_value())
       return tab;
@@ -414,8 +395,10 @@ class TabActivityWatcher::WebContentsData
             : (NowTicks() - backgrounded_time_).InMilliseconds();
 
     // For mru features.
+    const tab_ranker::MRUFeatures& mru = GetMRUFeatures();
     tab->mru_index = mru.index;
     tab->total_tab_count = mru.total;
+
     return tab;
   }
 
@@ -513,13 +496,12 @@ TabActivityWatcher::TabActivityWatcher()
 TabActivityWatcher::~TabActivityWatcher() = default;
 
 base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
-    content::WebContents* web_contents,
-    bool log_this_query) {
+    content::WebContents* web_contents) {
   WebContentsData* web_contents_data =
       WebContentsData::FromWebContents(web_contents);
   if (!web_contents_data)
     return base::nullopt;
-  return web_contents_data->CalculateReactivationScore(log_this_query);
+  return web_contents_data->CalculateReactivationScore();
 }
 
 void TabActivityWatcher::LogOldestNTabFeatures() {
@@ -538,33 +520,39 @@ void TabActivityWatcher::LogOldestNTabFeatures() {
   const int last_index_to_log =
       std::max(contents_data_size - oldest_n_to_log, 0);
   for (int i = contents_data_size - 1; i >= last_index_to_log; --i) {
-    // Set correct mru_features_.
-    web_contents_data[i]->mru_features_.index = i;
-    web_contents_data[i]->mru_features_.total = contents_data_size;
-    web_contents_data[i]->LogCurrentTabFeatures();
+    web_contents_data[i]->LogCurrentTabFeatures(
+        web_contents_data[i]->GetTabFeatures());
   }
 }
 
 void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
     std::vector<LifecycleUnit*>* tabs) {
-  std::map<int32_t, float> reactivation_scores;
-
   // Set query_id so that all TabFeatures logged in this query can be joined.
   tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
 
+  std::map<int32_t, base::Optional<TabFeatures>> tab_features;
   for (auto* lifecycle_unit : *tabs) {
-    content::WebContents* web_content =
+    content::WebContents* web_contents =
         lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents();
-    base::Optional<float> score = CalculateReactivationScore(web_content, true);
-    reactivation_scores[lifecycle_unit->GetID()] =
-        score.has_value() ? score.value() : std::numeric_limits<float>::max();
+    WebContentsData* web_contents_data =
+        WebContentsData::FromWebContents(web_contents);
+    if (!web_contents_data) {
+      tab_features[lifecycle_unit->GetID()] = base::nullopt;
+    } else {
+      const base::Optional<TabFeatures>& tab =
+          web_contents_data->GetTabFeatures();
+      tab_features[lifecycle_unit->GetID()] = tab;
+      web_contents_data->LogCurrentTabFeatures(tab);
+    }
   }
-
+  const std::map<int32_t, float> reactivation_scores =
+      predictor_.ScoreTabs(tab_features);
   // Sort with larger reactivation_score first (desending importance).
   std::sort(tabs->begin(), tabs->end(),
-            [&reactivation_scores](LifecycleUnit* a, LifecycleUnit* b) {
-              return reactivation_scores[a->GetID()] >
-                     reactivation_scores[b->GetID()];
+            [&reactivation_scores](const LifecycleUnit* const a,
+                                   const LifecycleUnit* const b) {
+              return reactivation_scores.at(a->GetID()) >
+                     reactivation_scores.at(b->GetID());
             });
 }
 

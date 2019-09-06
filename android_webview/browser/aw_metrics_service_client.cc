@@ -10,8 +10,8 @@
 
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_metrics_log_uploader.h"
+#include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/native_jni/AwMetricsServiceClient_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"

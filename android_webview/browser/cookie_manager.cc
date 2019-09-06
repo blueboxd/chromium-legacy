@@ -12,7 +12,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
-#include "android_webview/native_jni/AwCookieManager_jni.h"
+#include "android_webview/browser_jni_headers/AwCookieManager_jni.h"
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"

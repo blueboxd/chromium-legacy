@@ -68,6 +68,7 @@ class SharingDialogView : public SharingDialog,
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, PopulateDialogView);
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, DevicePressed);
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, AppPressed);
+  FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, ThemeChangedEmptyList);
 
   SharingDialogType GetDialogType() const;
 

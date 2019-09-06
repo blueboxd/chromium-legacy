@@ -167,9 +167,17 @@ id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
     // reference.
     __block bool verified = false;
 
-    // Inject the verifier.
-    std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription =
-        AddVerifierToElementWithPrefix(state, selector, prefix, &verified);
+    __block std::unique_ptr<web::WebState::ScriptCommandSubscription>
+        subscription;
+    // GREYPerformBlock executes on background thread by default in EG2.
+    // Dispatch any call involving UI API to UI thread as they can't be executed
+    // on background thread. See go/eg2-migration#greyactions-threading-behavior
+    grey_dispatch_sync_on_main_thread(^{
+      // Inject the verifier.
+      subscription =
+          AddVerifierToElementWithPrefix(state, selector, prefix, &verified);
+    });
+
     if (!subscription) {
       NSString* description = [NSString
           stringWithFormat:@"It wasn't possible to add the verification "
@@ -273,33 +281,43 @@ id<GREYAction> WebViewScrollElementToVisible(WebState* state,
             return NO;
           }
 
-          // First checks if there is really a need to scroll, if the element is
-          // already visible just returns early.
-          CGRect rect = web::test::GetBoundingRectOfElement(state, selector);
-          if (CGRectIsEmpty(rect)) {
-            *error_or_nil = error_block(@"Element not found.");
-            return false;
-          }
-          if (IsRectVisibleInView(rect, web_view)) {
-            return YES;
-          }
+          __block BOOL success = NO;
+          // GREYPerformBlock executes on background thread by default in EG2.
+          // Dispatch any call involving UI API to UI thread as they can't be
+          // executed on background thread. See
+          // go/eg2-migration#greyactions-threading-behavior
+          grey_dispatch_sync_on_main_thread(^{
+            // First checks if there is really a need to scroll, if the element
+            // is already visible just returns early.
+            CGRect rect = web::test::GetBoundingRectOfElement(state, selector);
+            if (CGRectIsEmpty(rect)) {
+              *error_or_nil = error_block(@"Element not found.");
+              return;
+            }
+            if (IsRectVisibleInView(rect, web_view)) {
+              success = YES;
+              return;
+            }
 
-          // Ask the element to scroll itself into view.
-          web::test::ExecuteJavaScript(state, kScrollToVisibleScript);
+            // Ask the element to scroll itself into view.
+            web::test::ExecuteJavaScript(state, kScrollToVisibleScript);
 
-          // Wait until the element is visible.
-          bool check = base::test::ios::WaitUntilConditionOrTimeout(
-              base::test::ios::kWaitForUIElementTimeout, ^{
-                CGRect rect =
-                    web::test::GetBoundingRectOfElement(state, selector);
-                return IsRectVisibleInView(rect, web_view);
-              });
+            // Wait until the element is visible.
+            bool check = base::test::ios::WaitUntilConditionOrTimeout(
+                base::test::ios::kWaitForUIElementTimeout, ^{
+                  CGRect rect =
+                      web::test::GetBoundingRectOfElement(state, selector);
+                  return IsRectVisibleInView(rect, web_view);
+                });
 
-          if (!check) {
-            *error_or_nil = error_block(@"Element still not visible.");
-            return NO;
-          }
-          return YES;
+            if (!check) {
+              *error_or_nil = error_block(@"Element still not visible.");
+              return;
+            }
+            success = YES;
+          });
+
+          return success;
         }];
 
   return scroll_to_visible;

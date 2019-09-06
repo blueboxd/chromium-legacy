@@ -60,8 +60,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/keyboard_accessory_sheet_padding"
                     android:layout_marginEnd="@dimen/keyboard_accessory_sheet_padding"
-                    android:textAppearance="@style/TextAppearance.BlackHint1"
-                    />
+                    android:textAppearance="@style/TextAppearance.DividerText"/>
 
                 <org.chromium.ui.widget.ChipView
                     android:id="@+id/exp_year"

@@ -78,6 +78,7 @@ class ServiceWorkerPaymentAppFactory {
   friend struct base::DefaultSingletonTraits<ServiceWorkerPaymentAppFactory>;
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFactoryBrowserTest;
+  friend class HybridRequestSkipUITest;
 
   ServiceWorkerPaymentAppFactory();
   ~ServiceWorkerPaymentAppFactory();

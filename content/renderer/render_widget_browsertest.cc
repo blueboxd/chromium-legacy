@@ -57,7 +57,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   VisualProperties visual_properties;
   visual_properties.screen_info = ScreenInfo();
   visual_properties.new_size = gfx::Size();
-  visual_properties.compositor_viewport_pixel_size = gfx::Size();
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect();
   visual_properties.top_controls_height = 0.f;
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = false;
@@ -75,7 +75,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   visual_properties.local_surface_id_allocation =
       local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation();
   visual_properties.new_size = size;
-  visual_properties.compositor_viewport_pixel_size = size;
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(size);
   OnSynchronizeVisualProperties(visual_properties);
 
   // Clear the flag.
@@ -87,7 +87,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
 
   // Resetting the rect to empty should not send the ack.
   visual_properties.new_size = gfx::Size();
-  visual_properties.compositor_viewport_pixel_size = gfx::Size();
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect();
   visual_properties.local_surface_id_allocation = base::nullopt;
   OnSynchronizeVisualProperties(visual_properties);
 
@@ -106,7 +106,8 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
     std::unique_ptr<VisualProperties> initial_visual_properties(
         new VisualProperties());
     initial_visual_properties->new_size = initial_size_;
-    initial_visual_properties->compositor_viewport_pixel_size = initial_size_;
+    initial_visual_properties->compositor_viewport_pixel_rect =
+        gfx::Rect(initial_size_);
     initial_visual_properties->local_surface_id_allocation =
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
     return initial_visual_properties;

@@ -79,6 +79,10 @@ void PrintSessionImpl::Close() {
   web_contents_->RemoveUserData(UserDataKey());
 }
 
+void PrintSessionImpl::OnPrintPreviewClosed() {
+  instance_->OnPrintPreviewClosed();
+}
+
 void PrintSessionImpl::StartPrintAfterDelay() {
   printing::StartPrint(web_contents_.get(), false, false);
 }

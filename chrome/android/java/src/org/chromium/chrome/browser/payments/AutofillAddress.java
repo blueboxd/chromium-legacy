@@ -11,6 +11,7 @@ import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -238,10 +239,14 @@ public class AutofillAddress extends EditableOption {
             completionStatus |= CompletionStatus.INVALID_RECIPIENT;
         }
 
-        if (checkType != CompletenessCheckType.IGNORE_PHONE
-                && !PhoneNumberUtils.isGlobalPhoneNumber(
-                           PhoneNumberUtils.stripSeparators(profile.getPhoneNumber().toString()))) {
-            completionStatus |= CompletionStatus.INVALID_PHONE_NUMBER;
+        // TODO(crbug.com/999286): PhoneNumberUtils internally trigger disk reads for certain
+        //                         devices/configurations.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            if (checkType != CompletenessCheckType.IGNORE_PHONE
+                    && !PhoneNumberUtils.isGlobalPhoneNumber(PhoneNumberUtils.stripSeparators(
+                            profile.getPhoneNumber().toString()))) {
+                completionStatus |= CompletionStatus.INVALID_PHONE_NUMBER;
+            }
         }
 
         List<Integer> requiredFields = AutofillProfileBridge.getRequiredAddressFields(

@@ -173,6 +173,24 @@ void RealTimeUrlLookupService::ResetFailures() {
   reset_backoff_timer_.Stop();
 }
 
+// static
+SBThreatType RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+    RTLookupResponse::ThreatInfo::ThreatType rt_threat_type) {
+  switch (rt_threat_type) {
+    case RTLookupResponse::ThreatInfo::WEB_MALWARE:
+      return SB_THREAT_TYPE_URL_MALWARE;
+    case RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING:
+      return SB_THREAT_TYPE_URL_PHISHING;
+    case RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE:
+      return SB_THREAT_TYPE_URL_UNWANTED;
+    case RTLookupResponse::ThreatInfo::UNCLEAR_BILLING:
+      return SB_THREAT_TYPE_BILLING;
+    case RTLookupResponse::ThreatInfo::THREAT_TYPE_UNSPECIFIED:
+      NOTREACHED() << "Unexpected RTLookupResponse::ThreatType encountered";
+      return SB_THREAT_TYPE_SAFE;
+  }
+}
+
 base::WeakPtr<RealTimeUrlLookupService> RealTimeUrlLookupService::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

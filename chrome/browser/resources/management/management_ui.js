@@ -66,6 +66,9 @@ cr.define('management', function() {
 
       /** @private */
       extensionReportingSubtitle_: String,
+
+      /** @private {!management.ThreatProtectionInfo} */
+      threatProtectionInfo_: Object,
     },
 
     /** @private {?management.ManagementBrowserProxy} */
@@ -77,6 +80,7 @@ cr.define('management', function() {
       this.browserProxy_ = management.ManagementBrowserProxyImpl.getInstance();
       this.updateManagedFields_();
       this.initBrowserReportingInfo_();
+      this.getThreatProtectionInfo_();
 
       this.addWebUIListener(
           'browser-reporting-info-updated',
@@ -85,6 +89,10 @@ cr.define('management', function() {
       this.addWebUIListener('managed_data_changed', () => {
         this.updateManagedFields_();
       });
+
+      this.addWebUIListener(
+          'threat-protection-info-updated',
+          info => this.threatProtectionInfo_ = info);
 
       this.getExtensions_();
       // <if expr="chromeos">
@@ -132,6 +140,22 @@ cr.define('management', function() {
       this.browserProxy_.getExtensions().then(extensions => {
         this.extensions_ = extensions;
       });
+    },
+
+    /** @private */
+    getThreatProtectionInfo_() {
+      this.browserProxy_.getThreatProtectionInfo().then(info => {
+        this.threatProtectionInfo_ = info;
+      });
+    },
+
+    /**
+     * @return {boolean} True if there is threat protection info to show.
+     * @private
+     */
+    showThreatProtectionInfo_() {
+      return !!this.threatProtectionInfo_ &&
+          this.threatProtectionInfo_.info.length > 0;
     },
 
     // <if expr="chromeos">

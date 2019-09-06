@@ -10,7 +10,6 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 namespace net {

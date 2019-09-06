@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,7 +68,8 @@ class MockUdpSocket final : public network::mojom::UDPSocket {
 
 class MockNetworkContext final : public network::TestNetworkContext {
  public:
-  explicit MockNetworkContext(network::mojom::NetworkContextRequest request);
+  explicit MockNetworkContext(
+      mojo::PendingReceiver<network::mojom::NetworkContext> receiver);
   ~MockNetworkContext() override;
 
   MOCK_METHOD0(OnUDPSocketCreated, void());
@@ -82,7 +84,7 @@ class MockNetworkContext final : public network::TestNetworkContext {
   MockUdpSocket* udp_socket() const { return udp_socket_.get(); }
 
  private:
-  mojo::Binding<network::mojom::NetworkContext> binding_;
+  mojo::Receiver<network::mojom::NetworkContext> receiver_;
   std::unique_ptr<MockUdpSocket> udp_socket_;
   DISALLOW_COPY_AND_ASSIGN(MockNetworkContext);
 };

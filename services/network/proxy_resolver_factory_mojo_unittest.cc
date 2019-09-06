@@ -590,15 +590,15 @@ TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Url) {
 
 TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Failed) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
-      CreateProxyResolverAction::ReturnResult(kScriptData,
-                                              net::ERR_PAC_STATUS_NOT_OK));
+      CreateProxyResolverAction::ReturnResult(
+          kScriptData, net::ERR_HTTP_RESPONSE_CODE_FAILURE));
 
   net::TestCompletionCallback callback;
   scoped_refptr<net::PacFileData> pac_script(
       net::PacFileData::FromUTF8(kScriptData));
   std::unique_ptr<net::ProxyResolverFactory::Request> request;
   EXPECT_EQ(
-      net::ERR_PAC_STATUS_NOT_OK,
+      net::ERR_HTTP_RESPONSE_CODE_FAILURE,
       callback.GetResult(proxy_resolver_factory_mojo_->CreateProxyResolver(
           pac_script, &proxy_resolver_mojo_, callback.callback(), &request)));
   EXPECT_TRUE(request);

@@ -143,9 +143,17 @@ void ContentsView::Init(AppListModel* model) {
 }
 
 void ContentsView::ResetForShow() {
-  SetActiveState(ash::AppListState::kStateApps);
   GetAppsContainerView()->ResetForShowApps();
+  // SearchBoxView::ResetForShow() before SetActiveState(). It clears the search
+  // query internally, which can show the search results page through
+  // QueryChanged(). Since it wants to reset to kStateApps, first reset the
+  // search box and then set its active state to kStateApps.
   GetSearchBoxView()->ResetForShow();
+  SetActiveState(ash::AppListState::kStateApps, /*animate=*/false);
+  // Make other pages invisible.
+  search_results_page_view_->SetVisible(false);
+  if (assistant_page_view_)
+    assistant_page_view_->SetVisible(false);
   // In side shelf, the opacity of the contents is not animated so set it to the
   // final state. In tablet mode, opacity of the elements is controlled by the
   // HomeLauncherGestureHandler which expects these elements to be opaque.
@@ -587,6 +595,12 @@ void ContentsView::Layout() {
   search_box_bounds.set_origin(
       gfx::Point(search_box_bounds.x() * scale, search_box_bounds.y() * scale));
   search_box->GetWidget()->SetBounds(search_box_bounds);
+  search_box->UpdateLayout(1.f, current_state, current_state);
+  search_box->UpdateBackground(1.f, current_state, current_state);
+  // Reset the transform which can be set through animation.
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  search_box->GetWidget()->GetLayer()->SetTransform(transform);
 }
 
 const char* ContentsView::GetClassName() const {

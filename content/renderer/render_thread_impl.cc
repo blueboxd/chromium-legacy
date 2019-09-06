@@ -406,9 +406,9 @@ class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
   ~UkmRecorderFactoryImpl() override = default;
 
   std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
-    process_host_->BindHostReceiver(mojo::MakeRequest(&recorder_ptr));
-    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+    process_host_->BindHostReceiver(recorder.InitWithNewPipeAndPassReceiver());
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }
 
  private:
@@ -766,6 +766,23 @@ void RenderThreadImpl::Init() {
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kOffMainThreadServiceWorkerStartup)) {
+    auto task_runner = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    registry->AddInterface(
+        base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
+                            task_runner),
+        task_runner);
+  } else {
+    registry->AddInterface(
+        base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
+                            GetWebMainThreadScheduler()->DefaultTaskRunner()),
+        GetWebMainThreadScheduler()->DefaultTaskRunner());
+  }
 
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
@@ -2063,39 +2080,6 @@ void RenderThreadImpl::CreateFrameProxy(
       routing_id, render_view_routing_id,
       RenderFrameImpl::ResolveOpener(opener_routing_id), parent_routing_id,
       replicated_state, devtools_frame_token);
-}
-
-void StartEmbeddedWorkerInstanceClientOnThreadPool(
-    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
-        client_receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner) {
-  DCHECK(initiator_task_runner->BelongsToCurrentThread());
-  EmbeddedWorkerInstanceClientImpl::Create(std::move(client_receiver),
-                                           std::move(initiator_task_runner));
-}
-
-void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
-    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
-        client_receiver) {
-  // TODO(bashi): This is a tentative workaround to start service worker on a
-  // background thread. We should decouple EmbeddedWorkerInstanceClient from
-  // Renderer and bind EmbeddedWorkerInstanceClient on a background thread.
-  if (base::FeatureList::IsEnabled(
-          blink::features::kOffMainThreadServiceWorkerStartup)) {
-    auto task_runner = base::CreateSingleThreadTaskRunner(
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&StartEmbeddedWorkerInstanceClientOnThreadPool,
-                       std::move(client_receiver), std::move(task_runner)));
-    return;
-  }
-
-  EmbeddedWorkerInstanceClientImpl::Create(
-      std::move(client_receiver),
-      GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(

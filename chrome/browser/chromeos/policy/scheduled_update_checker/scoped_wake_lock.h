@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 namespace service_manager {
@@ -30,7 +31,7 @@ class ScopedWakeLock {
   ScopedWakeLock& operator=(ScopedWakeLock&& other);
 
  private:
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWakeLock);
 };

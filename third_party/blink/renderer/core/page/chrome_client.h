@@ -407,7 +407,10 @@ class CORE_EXPORT ChromeClient
 
   virtual bool IsSVGImageChromeClient() const { return false; }
 
-  virtual bool RequestPointerLock(LocalFrame*) { return false; }
+  virtual bool RequestPointerLock(LocalFrame*,
+                                  bool request_unadjusted_movement) {
+    return false;
+  }
   virtual void RequestPointerUnlock(LocalFrame*) {}
 
   virtual IntSize MinimumWindowSize() const { return IntSize(100, 100); }

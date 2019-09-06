@@ -11,7 +11,7 @@
 namespace send_tab_to_self {
 
 const base::Feature kSendTabToSelfShowSendingUI{
-    "SendTabToSelfShowSendingUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SendTabToSelfShowSendingUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSendTabToSelfBroadcast{"SendTabToSelfBroadcast",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

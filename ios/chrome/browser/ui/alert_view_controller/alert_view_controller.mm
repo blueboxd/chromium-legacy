@@ -206,6 +206,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
   ]];
 
   UIScrollView* scrollView = [[UIScrollView alloc] init];
+  scrollView.delaysContentTouches = NO;
   scrollView.showsVerticalScrollIndicator = YES;
   scrollView.showsHorizontalScrollIndicator = NO;
   scrollView.translatesAutoresizingMaskIntoConstraints = NO;

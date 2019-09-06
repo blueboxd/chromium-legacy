@@ -713,6 +713,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   options->SetDouble("height", page_size.height);
   options->SetDouble("topMargin", page_layout.margin_top);
   options->SetDouble("bottomMargin", page_layout.margin_bottom);
+  options->SetDouble("leftMargin", page_layout.margin_left);
+  options->SetDouble("rightMargin", page_layout.margin_right);
   options->SetInteger("pageNumber", page_number);
   options->SetInteger("totalPages", total_pages);
   options->SetString("url", params.url);

@@ -3,5 +3,43 @@
  * found in the LICENSE file. */
 
 body {
-  font-family: 'DejaVu Sans', Arial, sans-serif;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-family: sans, Arial, sans-serif;
+  font-size: 93.75%;
+  justify-content: flex-start;
+}
+
+/* This is needed to hide elements that have "display" set. */
+[hidden] {
+  display: none !important;
+}
+
+#failure-message {
+  display: inline-block;
+  padding-top: 100px;
+}
+
+h1.heading {
+  color: rgb(32, 33, 36);
+  font-size: 1.6em;
+  font-weight: normal;
+  line-height: 1.25em;
+  margin: 0 0 15px 0;
+}
+
+.list-header {
+  color: #2B2B2B;
+  line-height: 1.61em;
+  margin: 0 8px 0 0;
+}
+
+ul.suggestions-list {
+  margin-top: 0;
+}
+
+ul.suggestions-list li {
+  color: #2B2B2B;
+  line-height: 1.55;
 }

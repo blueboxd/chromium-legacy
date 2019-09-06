@@ -291,7 +291,7 @@ void PacFileFetcherImpl::OnResponseStarted(URLRequest* request, int net_error) {
     if (request->GetResponseCode() != 200) {
       VLOG(1) << "Fetched PAC script had (bad) status line: "
               << request->response_headers()->GetStatusLine();
-      result_code_ = ERR_PAC_STATUS_NOT_OK;
+      result_code_ = ERR_HTTP_RESPONSE_CODE_FAILURE;
       request->Cancel();
       return;
     }

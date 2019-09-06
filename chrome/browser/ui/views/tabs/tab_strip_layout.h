@@ -44,7 +44,7 @@ class TabSizer {
 TabSizer CalculateSpaceFractionAvailable(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    int width);
+    base::Optional<int> width);
 
 // Calculates and returns the bounds of the tabs. |width| is the available
 // width to use for tab layout. This never sizes the tabs smaller then the
@@ -54,7 +54,7 @@ TabSizer CalculateSpaceFractionAvailable(
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    int width,
+    base::Optional<int> width,
     base::Optional<TabSizer> override_tab_sizer);
 
 std::vector<gfx::Rect> CalculatePinnedTabBounds(

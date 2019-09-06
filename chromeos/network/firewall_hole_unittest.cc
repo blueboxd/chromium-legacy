@@ -27,7 +27,8 @@ void CopyFirewallHole(base::RunLoop* run_loop,
 class FirewallHoleTest : public testing::Test {
  public:
   FirewallHoleTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
   ~FirewallHoleTest() override = default;
 
   void SetUp() override { PermissionBrokerClient::InitializeFake(); }
@@ -35,7 +36,7 @@ class FirewallHoleTest : public testing::Test {
   void TearDown() override { PermissionBrokerClient::Shutdown(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(FirewallHoleTest, GrantTcpPortAccess) {

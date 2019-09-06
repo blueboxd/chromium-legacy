@@ -344,7 +344,8 @@ TEST_F(DetachedResourceRequestTest, SimpleFailure) {
   histogram_tester.ExpectTotalCount(
       "CustomTabs.DetachedResourceRequest.Duration.Failure", 1);
   histogram_tester.ExpectBucketCount(
-      "CustomTabs.DetachedResourceRequest.FinalStatus", -net::ERR_FAILED, 1);
+      "CustomTabs.DetachedResourceRequest.FinalStatus",
+      -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
 }
 
 TEST_F(DetachedResourceRequestTest, ResponseTooLarge) {

@@ -626,6 +626,10 @@ void NetworkChangeNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
   }
 }
 
+void NetworkChangeNotifier::TriggerNonSystemDnsChange() {
+  NetworkChangeNotifier::NotifyObserversOfDNSChange();
+}
+
 // static
 void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests() {
   if (g_network_change_notifier)

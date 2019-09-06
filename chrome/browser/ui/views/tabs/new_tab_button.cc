@@ -233,7 +233,8 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
   flags.setAntiAlias(true);
 
   const float scale = canvas->image_scale();
-  const base::Optional<int> bg_id = tab_strip_->GetCustomBackgroundId();
+  const base::Optional<int> bg_id =
+      tab_strip_->GetCustomBackgroundId(BrowserNonClientFrameView::kUseCurrent);
   if (bg_id.has_value() && !new_tab_promo_observer_.IsObservingSources()) {
     float x_scale = scale;
     const gfx::Rect& contents_bounds = GetContentsBounds();
@@ -260,8 +261,8 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
 }
 
 void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
-  const SkColor background_color =
-      tab_strip_->GetTabBackgroundColor(TabActive::kInactive);
+  const SkColor background_color = tab_strip_->GetTabBackgroundColor(
+      TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
@@ -294,7 +295,8 @@ SkColor NewTabButton::GetButtonFillColor() const {
 
   return GetThemeProvider()->GetDisplayProperty(
              ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
-             ? tab_strip_->GetTabBackgroundColor(TabActive::kInactive)
+             ? tab_strip_->GetTabBackgroundColor(
+                   TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent)
              : SK_ColorTRANSPARENT;
 }
 

@@ -269,6 +269,10 @@ class UI_BASE_EXPORT ResourceBundle {
   // resource_id is not found.
   base::string16 GetLocalizedString(int resource_id);
 
+  // Get a localized resource (for example, localized image logo) given a
+  // resource id.
+  base::RefCountedMemory* LoadLocalizedResourceBytes(int resource_id);
+
   // Returns a font list derived from the platform-specific "Base" font list.
   // The result is always cached and exists for the lifetime of the process.
   const gfx::FontList& GetFontListWithDelta(

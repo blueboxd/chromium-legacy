@@ -1771,9 +1771,13 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
     FlushBatchedQuads();
 
   SkPaint paint = params->paint();
-  if (!rpdq_params.image_filter && !rpdq_params.backdrop_filter) {
-    // When there are no filters, there is no need to save a layer, but we do
-    // have to incorporate the mask directly into the paint then.
+  paint.setImageFilter(rpdq_params.image_filter);
+
+  // When there's no backdrop filter, there's no need to use an explicit layer.
+  // SkCanvas will do so implicitly (if needed) when processing the regular
+  // filter.
+  if (!rpdq_params.backdrop_filter) {
+    // Since there is no layer, use the mask on the paint itself
     if (rpdq_params.mask_image) {
       paint.setMaskFilter(
           SkShaderMaskFilter::Make(rpdq_params.mask_image->makeShader(
@@ -1813,11 +1817,6 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   current_canvas_->clipRect(gfx::RectToSkRect(rpdq_params.filter_bounds),
                             paint.isAntiAlias());
 
-  // Add the image filter to the restoration paint.
-  if (rpdq_params.image_filter) {
-    paint.setImageFilter(rpdq_params.image_filter);
-  }
-
   // Save the layer with the restoration paint (which holds the final image
   // filters, the backdrop filters, and mask image. If we have a backdrop filter
   // the layer will blended with src-over, and the rpdq's blend mode will apply
@@ -1836,15 +1835,26 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
                              rpdq_params.mask_image.get(),
                              &rpdq_params.mask_to_quad_matrix, layer_flags));
 
-  if (rpdq_params.backdrop_filter_bounds.has_value()) {
+  if (rpdq_params.backdrop_filter_bounds.has_value() ||
+      params->draw_region.has_value()) {
     // The initial contents of saved layer is all of the background within
     // |bounds| filtered by the backdrop filters. Must set all pixels outside
     // of the border rrect to transparent black. This cannot simply be a clip
     // when the layer is restored since this rrect should not clip the rest
-    // of the render pass content.
+    // of the render pass content. The same logic applies when this draw is
+    // rendering a split quadrilateral from the RPDQ. We don't want to keep the
+    // backdrop filtered contents that are outside of the quad being rendered.
     current_canvas_->save();
-    current_canvas_->clipRRect(SkRRect(*rpdq_params.backdrop_filter_bounds),
-                               SkClipOp::kDifference, paint.isAntiAlias());
+    if (rpdq_params.backdrop_filter_bounds.has_value()) {
+      current_canvas_->clipRRect(SkRRect(*rpdq_params.backdrop_filter_bounds),
+                                 SkClipOp::kDifference, paint.isAntiAlias());
+    }
+    if (params->draw_region.has_value()) {
+      SkPath clipPath;
+      clipPath.addPoly(params->draw_region->points, 4, true /* close */);
+      current_canvas_->clipPath(clipPath, SkClipOp::kDifference,
+                                paint.isAntiAlias());
+    }
     current_canvas_->clear(SK_ColorTRANSPARENT);
     current_canvas_->restore();
   }
@@ -1864,7 +1874,6 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
   current_canvas_->experimental_DrawEdgeAAImageSet(
       &entry, 1, draw_region, nullptr, &content_paint, constraint);
-
   // And the saved layer will be auto-restored when |acr| is destructed
 }
 

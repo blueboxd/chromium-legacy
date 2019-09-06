@@ -30,14 +30,22 @@ class CORE_EXPORT LayoutShiftTracker {
  public:
   LayoutShiftTracker(LocalFrameView*);
   ~LayoutShiftTracker() {}
+  // |paint_offset_diff| is an additional amount by which the paint offset
+  // shifted that is not tracked in visual rects. Visual rects are in the
+  // local transform space of the LayoutObject. Any time the transform space is
+  // changed, the offset of that rect to the "origin" is reset. This offset
+  // is also known as the paint offset.
+  // In cases where we can communicate paint offset diffs across transform
+  // space change boundaries, |paint_offset_diff| is how to do it. In
+  // particular, many transform spaces are artificial and are used as an
+  // implementation detail of compositing to make it easier to isolate state for
+  // composited layers. We can easily pass the paint offset diff across such
+  // boundaries.
   void NotifyObjectPrePaint(const LayoutObject& object,
                             const PropertyTreeState& property_tree_state,
                             const IntRect& old_visual_rect,
-                            const IntRect& new_visual_rect);
-  // Layer rects are relative to old layer position.
-  void NotifyCompositedLayerMoved(const LayoutObject& object,
-                                  FloatRect old_layer_rect,
-                                  FloatRect new_layer_rect);
+                            const IntRect& new_visual_rect,
+                            FloatSize paint_offset_delta);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(ScrollType, ScrollOffset delta);
@@ -56,7 +64,8 @@ class CORE_EXPORT LayoutShiftTracker {
   void ObjectShifted(const LayoutObject&,
                      const PropertyTreeState&,
                      FloatRect old_rect,
-                     FloatRect new_rect);
+                     FloatRect new_rect,
+                     FloatSize paint_offset_diff);
   void ReportShift(double score_delta, double weighted_score_delta);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,

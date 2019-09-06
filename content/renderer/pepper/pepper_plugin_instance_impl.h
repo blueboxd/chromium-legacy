@@ -652,7 +652,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool SetFullscreenCommon(bool fullscreen) const;
 
   bool IsMouseLocked();
-  bool LockMouse();
+  bool LockMouse(bool request_unadjusted_movement);
   MouseLockDispatcher* GetMouseLockDispatcher();
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
   void UnSetAndDeleteLockTargetAdapter();

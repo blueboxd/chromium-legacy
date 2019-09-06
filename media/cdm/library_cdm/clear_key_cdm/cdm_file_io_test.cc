@@ -596,7 +596,7 @@ void FileIOTest::RunNextStep() {
       case ACTION_CREATE:
         file_io = create_file_io_cb_.Run(this);
         if (!file_io) {
-          FILE_IO_DVLOG(3) << "Cannot create FileIO object.";
+          LOG(WARNING) << test_name_ << " cannot create FileIO object.";
           OnTestComplete(false);
           return;
         }
@@ -627,6 +627,16 @@ void FileIOTest::RunNextStep() {
 void FileIOTest::OnResult(const TestStep& result) {
   DCHECK(IsResult(result));
   if (!CheckResult(result)) {
+    LOG(WARNING) << test_name_ << " got unexpected result. type=" << result.type
+                 << ", status=" << (uint32_t)result.status
+                 << ", data_size=" << result.data_size;
+    for (const auto& step : test_steps_) {
+      if (IsResult(step)) {
+        LOG(WARNING) << test_name_ << " expected type=" << step.type
+                     << ", status=" << (uint32_t)step.status
+                     << ", data_size=" << step.data_size;
+      }
+    }
     OnTestComplete(false);
     return;
   }
@@ -660,7 +670,7 @@ void FileIOTest::OnTestComplete(bool success) {
     file_io_stack_.pop();
   }
   FILE_IO_DVLOG(3) << test_name_ << (success ? " PASSED" : " FAILED");
-  DLOG_IF(WARNING, !success) << test_name_ << " FAILED";
+  LOG_IF(WARNING, !success) << test_name_ << " FAILED";
   std::move(completion_cb_).Run(success);
 }
 

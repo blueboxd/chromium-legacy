@@ -233,7 +233,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
     for (size_t i = 0; i < first_page_item_views_bounds.size(); ++i) {
       const AppListItem* top_item =
           folder_view_->folder_item()->item_list()->item_at(i);
-      if (top_item->icon().isNull() ||
+      if (top_item->GetIcon(folder_view_->GetAppListConfig().type()).isNull() ||
           (folder_view_->items_grid_view()->drag_view() &&
            top_item == folder_view_->items_grid_view()->drag_view()->item())) {
         // The item being dragged should be excluded.
@@ -246,7 +246,8 @@ class TopIconAnimation : public AppListFolderView::Animation,
                                   : folder_view_->folder_item_icon_bounds();
 
       auto icon_view = std::make_unique<TopIconAnimationView>(
-          folder_view_->items_grid_view(), top_item->icon(),
+          folder_view_->items_grid_view(),
+          top_item->GetIcon(folder_view_->GetAppListConfig().type()),
           base::UTF8ToUTF16(top_item->GetDisplayName()), scaled_rect, show_,
           item_in_folder_icon);
       auto* icon_view_ptr = icon_view.get();

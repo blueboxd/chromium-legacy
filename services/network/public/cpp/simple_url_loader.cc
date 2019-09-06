@@ -1585,7 +1585,7 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
   request_state_->response_info =
       std::make_unique<ResourceResponseHead>(response_head);
   if (!allow_http_error_results_ && response_code / 100 != 2)
-    FinishWithResult(net::ERR_FAILED);
+    FinishWithResult(net::ERR_HTTP_RESPONSE_CODE_FAILURE);
 }
 
 void SimpleURLLoaderImpl::OnReceiveRedirect(

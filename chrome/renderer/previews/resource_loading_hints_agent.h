@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -47,17 +47,17 @@ class ResourceLoadingHintsAgent
   void SetResourceLoadingHints(blink::mojom::PreviewsResourceLoadingHintsPtr
                                    resource_loading_hints) override;
 
-  void SetBinding(
-      blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedRequest
-          request);
+  void SetReceiver(
+      mojo::PendingAssociatedReceiver<
+          blink::mojom::PreviewsResourceLoadingHintsReceiver> receiver);
 
   bool IsMainFrame() const;
 
   std::vector<std::string> subresource_patterns_to_block_;
   base::Optional<int64_t> ukm_source_id_;
 
-  mojo::AssociatedBinding<blink::mojom::PreviewsResourceLoadingHintsReceiver>
-      binding_;
+  mojo::AssociatedReceiver<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+      receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsAgent);
 };

@@ -9,6 +9,14 @@
     "repository": "chromium"
   },
   {
+    "name": "Try job for v8: enable TurboProp",
+    "target": "performance_test_suite",
+    "configuration": "android-go-perf",
+    "benchmark": "speedometer2",
+    "patch": "https://chromium-review.googlesource.com/c/v8/v8/+/1784285",
+    "repository": "chromium"
+  },
+  {
     "name": "Try job for scheduler: disable bootstrap prioritization",
     "target": "performance_test_suite",
     "configuration": "android-go-perf",

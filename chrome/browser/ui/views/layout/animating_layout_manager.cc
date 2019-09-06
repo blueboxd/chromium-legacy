@@ -11,7 +11,36 @@
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
+#include "ui/views/layout/flex_layout_types_internal.h"
 #include "ui/views/view.h"
+
+// TODO(dfried): move AnimatingLayoutManager into ui/views and change
+// flex_layout_types_internal to layout_types_internal so that these internal
+// classes are appropriately used.
+using views::internal::Denormalize;
+using views::internal::Normalize;
+using views::internal::NormalizedRect;
+using views::internal::NormalizedSize;
+
+// Holds data about a view that is fading in or out as part of an animation.
+struct AnimatingLayoutManager::LayoutFadeInfo {
+  // Whether the view is fading in or out.
+  bool fading_in = false;
+  // The child view which is fading.
+  views::View* child_view = nullptr;
+  // The view previous (leading side) to the fading view which is in both the
+  // starting and target layout, or null if none.
+  views::View* prev_view = nullptr;
+  // The view next (trailing side) to the fading view which is in both the
+  // starting and target layout, or null if none.
+  views::View* next_view = nullptr;
+  // The full-size bounds, normalized to the orientation of the layout manaer,
+  // that |child_view| starts with, if fading out, or ends with, if fading in.
+  NormalizedRect reference_bounds;
+  // The offset from the end of |prev_view| and the start of |next_view|. Insets
+  // may be negative if the views overlap.
+  views::Inset1D offsets_;
+};
 
 // Manages the animation and various callbacks from the animation system that
 // are required to update the layout during animations.
@@ -174,6 +203,22 @@ AnimatingLayoutManager& AnimatingLayoutManager::SetTweenType(
   return *this;
 }
 
+AnimatingLayoutManager& AnimatingLayoutManager::SetOrientation(
+    views::LayoutOrientation orientation) {
+  if (orientation_ != orientation) {
+    orientation_ = orientation;
+    ResetLayout();
+    InvalidateHost(false);
+  }
+  return *this;
+}
+
+AnimatingLayoutManager& AnimatingLayoutManager::SetDefaultFadeMode(
+    FadeInOutMode default_fade_mode) {
+  default_fade_mode_ = default_fade_mode;
+  return *this;
+}
+
 void AnimatingLayoutManager::ResetLayout() {
   if (animation_delegate_)
     animation_delegate_->Reset();
@@ -188,8 +233,38 @@ void AnimatingLayoutManager::ResetLayout() {
   target_layout_ = target_layout_manager()->GetProposedLayout(target_size);
   current_layout_ = target_layout_;
   starting_layout_ = current_layout_;
+  fade_infos_.clear();
   current_offset_ = 1.0;
   set_cached_layout_size(target_size);
+}
+
+void AnimatingLayoutManager::FadeOut(views::View* child_view) {
+  DCHECK(child_view);
+  DCHECK(child_view->parent());
+  DCHECK_EQ(host_view(), child_view->parent());
+
+  // Indicate that the view should become hidden in the layout without
+  // immediately changing its visibility. Instead, this triggers an animation
+  // which results in the view being hidden.
+  //
+  // This method is typically only called from View and has a private final
+  // implementation in LayoutManagerBase so we have to cast to call it.
+  static_cast<LayoutManager*>(this)->ViewVisibilitySet(host_view(), child_view,
+                                                       false);
+}
+
+void AnimatingLayoutManager::FadeIn(views::View* child_view) {
+  DCHECK(child_view);
+  DCHECK(child_view->parent());
+  DCHECK_EQ(host_view(), child_view->parent());
+  // Indicate that the view should become visible in the layout without
+  // immediately changing its visibility. Instead, this triggers an animation
+  // which results in the view being shown.
+  //
+  // This method is typically only called from View and has a private final
+  // implementation in LayoutManagerBase so we have to cast to call it.
+  static_cast<LayoutManager*>(this)->ViewVisibilitySet(host_view(), child_view,
+                                                       true);
 }
 
 void AnimatingLayoutManager::AddObserver(Observer* observer) {
@@ -350,10 +425,8 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   } else {
     starting_offset_ = current_offset_;
   }
-  // This drops out any child view elements that don't exist in the target
-  // layout.
-  current_layout_ = InterpolatingLayoutManager::Interpolate(
-      0.0, starting_layout_, target_layout_);
+  CalculateFadeInfos();
+  UpdateCurrentLayout(0.0);
   return true;
 }
 
@@ -365,10 +438,9 @@ void AnimatingLayoutManager::AnimateTo(double value) {
   if (current_offset_ == value)
     return;
   current_offset_ = value;
-  double percent =
+  const double percent =
       (current_offset_ - starting_offset_) / (1.0 - starting_offset_);
-  current_layout_ = InterpolatingLayoutManager::Interpolate(
-      percent, starting_layout_, target_layout_);
+  UpdateCurrentLayout(percent);
   InvalidateHost(false);
 }
 
@@ -381,4 +453,197 @@ void AnimatingLayoutManager::RunDelayedActions() {
   for (auto& action : delayed_actions_)
     std::move(action).Run();
   delayed_actions_.clear();
+}
+
+void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
+  // This drops out any child view elements that don't exist in the target
+  // layout. We'll add them back in later.
+  current_layout_ = InterpolatingLayoutManager::Interpolate(
+      percent, starting_layout_, target_layout_);
+
+  if (default_fade_mode_ == FadeInOutMode::kHide)
+    return;
+
+  std::map<const views::View*, size_t> view_indices;
+  for (size_t i = 0; i < current_layout_.child_layouts.size(); ++i)
+    view_indices.emplace(current_layout_.child_layouts[i].child_view, i);
+
+  for (const LayoutFadeInfo& fade_info : fade_infos_) {
+    // This shouldn't happen but we should ensure that with a check.
+    DCHECK_NE(-1, host_view()->GetIndexOf(fade_info.child_view));
+
+    const double scale_percent = fade_info.fading_in ? percent : 1.0 - percent;
+
+    int leading_reference_point = 0;
+    if (fade_info.prev_view) {
+      const auto& prev_bounds =
+          current_layout_.child_layouts[view_indices[fade_info.prev_view]]
+              .bounds;
+      leading_reference_point =
+          Normalize(orientation(), prev_bounds).max_main();
+    }
+    leading_reference_point += fade_info.offsets_.leading();
+
+    int trailing_reference_point;
+    if (fade_info.next_view) {
+      const auto& next_bounds =
+          current_layout_.child_layouts[view_indices[fade_info.next_view]]
+              .bounds;
+      trailing_reference_point =
+          Normalize(orientation(), next_bounds).origin_main();
+    } else {
+      trailing_reference_point =
+          Normalize(orientation(), current_layout_.host_size).main();
+    }
+    trailing_reference_point -= fade_info.offsets_.trailing();
+
+    const int new_size =
+        std::min(int{scale_percent * fade_info.reference_bounds.size_main()},
+                 trailing_reference_point - leading_reference_point);
+
+    ChildLayout child_layout;
+    child_layout.child_view = fade_info.child_view;
+    if (new_size > 0 &&
+        (default_fade_mode_ == FadeInOutMode::kScaleFromZero ||
+         (default_fade_mode_ == FadeInOutMode::kScaleFromMinimum &&
+          new_size >=
+              Normalize(orientation(), fade_info.child_view->GetMinimumSize())
+                  .main()))) {
+      child_layout.visible = true;
+      NormalizedRect new_bounds = fade_info.reference_bounds;
+      if (fade_info.fading_in) {
+        new_bounds.set_origin_main(leading_reference_point);
+      } else {
+        new_bounds.set_origin_main(trailing_reference_point - new_size);
+      }
+      new_bounds.set_size_main(new_size);
+      child_layout.bounds = Denormalize(orientation(), new_bounds);
+    }
+
+    auto it = view_indices.find(fade_info.child_view);
+    if (it == view_indices.end())
+      current_layout_.child_layouts.push_back(child_layout);
+    else
+      current_layout_.child_layouts[it->second] = child_layout;
+  }
+}
+
+void AnimatingLayoutManager::CalculateFadeInfos() {
+  fade_infos_.clear();
+
+  struct ChildInfo {
+    base::Optional<size_t> start;
+    NormalizedRect start_bounds;
+    bool start_visible = false;
+    base::Optional<size_t> target;
+    NormalizedRect target_bounds;
+    bool target_visible = false;
+  };
+
+  std::map<views::View*, ChildInfo> child_to_info;
+  std::map<int, views::View*> start_leading_edges;
+  std::map<int, views::View*> target_leading_edges;
+
+  // Collect some bookkeping info to prevent linear searches later.
+
+  for (views::View* child : host_view()->children()) {
+    if (IsChildIncludedInLayout(child, /* include hidden */ true))
+      child_to_info.emplace(child, ChildInfo());
+  }
+
+  for (size_t i = 0; i < starting_layout_.child_layouts.size(); ++i) {
+    const auto& child_layout = starting_layout_.child_layouts[i];
+    auto it = child_to_info.find(child_layout.child_view);
+    if (it != child_to_info.end()) {
+      it->second.start = i;
+      it->second.start_bounds = Normalize(orientation(), child_layout.bounds);
+      it->second.start_visible = child_layout.visible;
+    }
+  }
+
+  for (size_t i = 0; i < target_layout_.child_layouts.size(); ++i) {
+    const auto& child_layout = target_layout_.child_layouts[i];
+    auto it = child_to_info.find(child_layout.child_view);
+    if (it != child_to_info.end()) {
+      it->second.target = i;
+      it->second.target_bounds = Normalize(orientation(), child_layout.bounds);
+      it->second.target_visible = child_layout.visible;
+    }
+  }
+
+  for (views::View* child : host_view()->children()) {
+    const auto& index = child_to_info[child];
+    if (index.start_visible && index.target_visible) {
+      start_leading_edges.emplace(index.start_bounds.origin_main(), child);
+      target_leading_edges.emplace(index.target_bounds.origin_main(), child);
+    }
+  }
+
+  // Build the LayoutFadeInfo data.
+
+  const NormalizedSize start_host_size =
+      Normalize(orientation(), starting_layout_.host_size);
+  const NormalizedSize target_host_size =
+      Normalize(orientation(), target_layout_.host_size);
+
+  for (views::View* child : host_view()->children()) {
+    const auto& current = child_to_info[child];
+    if (current.start_visible && !current.target_visible) {
+      LayoutFadeInfo fade_info;
+      fade_info.fading_in = false;
+      fade_info.child_view = child;
+      fade_info.reference_bounds = current.start_bounds;
+      auto next =
+          start_leading_edges.upper_bound(current.start_bounds.origin_main());
+      if (next == start_leading_edges.end()) {
+        fade_info.next_view = nullptr;
+        fade_info.offsets_.set_trailing(start_host_size.main() -
+                                        current.start_bounds.max_main());
+      } else {
+        fade_info.next_view = next->second;
+        fade_info.offsets_.set_trailing(next->first -
+                                        current.start_bounds.max_main());
+      }
+      if (next == start_leading_edges.begin()) {
+        fade_info.prev_view = nullptr;
+        fade_info.offsets_.set_leading(current.start_bounds.origin_main());
+      } else {
+        auto prev = next;
+        --prev;
+        const auto& prev_info = child_to_info[prev->second];
+        fade_info.prev_view = prev->second;
+        fade_info.offsets_.set_leading(current.start_bounds.origin_main() -
+                                       prev_info.start_bounds.max_main());
+      }
+      fade_infos_.push_back(fade_info);
+    } else if (!current.start_visible && current.target_visible) {
+      LayoutFadeInfo fade_info;
+      fade_info.fading_in = true;
+      fade_info.child_view = child;
+      fade_info.reference_bounds = current.target_bounds;
+      auto next =
+          target_leading_edges.upper_bound(current.target_bounds.origin_main());
+      if (next == target_leading_edges.end()) {
+        fade_info.next_view = nullptr;
+        fade_info.offsets_.set_trailing(target_host_size.main() -
+                                        current.target_bounds.max_main());
+      } else {
+        fade_info.next_view = next->second;
+        fade_info.offsets_.set_trailing(next->first -
+                                        current.target_bounds.max_main());
+      }
+      if (next == target_leading_edges.begin()) {
+        fade_info.prev_view = nullptr;
+        fade_info.offsets_.set_leading(current.target_bounds.origin_main());
+      } else {
+        auto prev = next;
+        --prev;
+        const auto& prev_info = child_to_info[prev->second];
+        fade_info.prev_view = prev->second;
+        fade_info.offsets_.set_leading(current.target_bounds.origin_main() -
+                                       prev_info.target_bounds.max_main());
+      }
+      fade_infos_.push_back(fade_info);
+    }
+  }
 }

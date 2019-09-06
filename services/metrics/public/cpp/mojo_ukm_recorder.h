@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
@@ -32,7 +34,8 @@ namespace ukm {
  */
 class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
  public:
-  explicit MojoUkmRecorder(mojom::UkmRecorderInterfacePtr recorder_interface);
+  explicit MojoUkmRecorder(
+      mojo::PendingRemote<mojom::UkmRecorderInterface> recorder_interface);
   ~MojoUkmRecorder() override;
 
   // Helper for getting the wrapper from a connector.
@@ -51,7 +54,7 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
   void AddEntry(mojom::UkmEntryPtr entry) override;
   void MarkSourceForDeletion(ukm::SourceId source_id) override;
 
-  mojom::UkmRecorderInterfacePtr interface_;
+  mojo::Remote<mojom::UkmRecorderInterface> interface_;
 
   base::WeakPtrFactory<MojoUkmRecorder> weak_factory_{this};
 

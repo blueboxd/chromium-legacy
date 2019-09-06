@@ -5,21 +5,23 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREVIEWS_RESOURCE_LOADING_HINTS_RECEIVER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREVIEWS_RESOURCE_LOADING_HINTS_RECEIVER_IMPL_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
-// Created and attached to a LocalFrame when
-// PreviewsResourceLoadingHintsReceiverRequest is received by the frame from the
-// browser process.
+// Created and attached to a LocalFrame when the frame receives a
+// PreviewsResourceLoadingHintsReceiver interface receiver from the browser
+// process.
 class PreviewsResourceLoadingHintsReceiverImpl
     : public mojom::blink::PreviewsResourceLoadingHintsReceiver {
  public:
   PreviewsResourceLoadingHintsReceiverImpl(
-      mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request,
+      mojo::PendingReceiver<mojom::blink::PreviewsResourceLoadingHintsReceiver>
+          receiver,
       Document* document);
   ~PreviewsResourceLoadingHintsReceiverImpl() override;
 
@@ -28,7 +30,7 @@ class PreviewsResourceLoadingHintsReceiverImpl
                                    resource_loading_hints) override;
 
   // TODO(tbansal): https://crbug.com/800641. Consider using a RevocableBinding.
-  mojo::Binding<mojom::blink::PreviewsResourceLoadingHintsReceiver> binding_;
+  mojo::Receiver<mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver_;
 
   WeakPersistent<Document> document_;
 

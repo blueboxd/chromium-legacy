@@ -1,3 +1,7 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "third_party/blink/renderer/modules/payments/skip_to_gpay_utils.h"
 
 #include <memory>
@@ -62,12 +66,13 @@ TEST(SkipToGPayUtilsTest, NothingRequested) {
   }
 }
 
-TEST(SkipToGPayUtilsTest, InvalidInputData_MissingApiVersion) {
+TEST(SkipToGPayUtilsTest, MissingApiVersionConsideredV1) {
   auto* options = PaymentOptions::Create();
   PaymentMethodDataPtr output = MakeTestPaymentMethodData();
+  output->stringified_data = "{}";
 
-  ASSERT_FALSE(SkipToGPayUtils::PatchPaymentMethodData(*options, output));
-  EXPECT_TRUE(output->gpay_bridge_data.is_null());
+  ASSERT_TRUE(SkipToGPayUtils::PatchPaymentMethodData(*options, output));
+  EXPECT_EQ("{}", output->gpay_bridge_data->stringified_data);
 }
 
 TEST(SkipToGPayUtilsTest, InvalidInputData_NotJSON) {
@@ -128,6 +133,49 @@ TEST(SkipToGPayUtilsTest, RequestEverything) {
     EXPECT_TRUE(output->gpay_bridge_data->name_requested);
     EXPECT_TRUE(output->gpay_bridge_data->email_requested);
     EXPECT_TRUE(output->gpay_bridge_data->shipping_requested);
+    EXPECT_EQ(kInputDataV2, output->stringified_data);
+  }
+}
+
+TEST(SkipToGPayUtilsTest, RequestPhoneOnly) {
+  auto* options = PaymentOptions::Create();
+  options->setRequestPayerPhone(true);
+
+  {
+    PaymentMethodDataPtr output = MakeTestPaymentMethodData();
+    output->stringified_data = kInputDataV1;
+
+    ASSERT_TRUE(SkipToGPayUtils::PatchPaymentMethodData(*options, output));
+
+    EXPECT_EQ(
+        "{\"apiVersion\":1,\"cardRequirements\":{\"billingAddressRequired\":"
+        "true},\"phoneNumberRequired\":true}",
+        output->gpay_bridge_data->stringified_data);
+    EXPECT_TRUE(output->gpay_bridge_data->phone_requested);
+    // Phone number can only be requested as part of billing address, which
+    // implies that name will be requested too.
+    EXPECT_TRUE(output->gpay_bridge_data->name_requested);
+    EXPECT_FALSE(output->gpay_bridge_data->email_requested);
+    EXPECT_FALSE(output->gpay_bridge_data->shipping_requested);
+    EXPECT_EQ(kInputDataV1, output->stringified_data);
+  }
+  {
+    PaymentMethodDataPtr output = MakeTestPaymentMethodData();
+    output->stringified_data = kInputDataV2;
+
+    ASSERT_TRUE(SkipToGPayUtils::PatchPaymentMethodData(*options, output));
+
+    EXPECT_EQ(
+        "{\"apiVersion\":2,\"apiVersionMinor\":0,\"allowedPaymentMethods\":[{"
+        "\"type\":\"CARD\",\"parameters\":{\"billingAddressRequired\":true,"
+        "\"billingAddressParameters\":{\"phoneNumberRequired\":true}}}]}",
+        output->gpay_bridge_data->stringified_data);
+    EXPECT_TRUE(output->gpay_bridge_data->phone_requested);
+    // Phone number can only be requested as part of billing address, which
+    // implies that name will be requested too.
+    EXPECT_TRUE(output->gpay_bridge_data->name_requested);
+    EXPECT_FALSE(output->gpay_bridge_data->email_requested);
+    EXPECT_FALSE(output->gpay_bridge_data->shipping_requested);
     EXPECT_EQ(kInputDataV2, output->stringified_data);
   }
 }

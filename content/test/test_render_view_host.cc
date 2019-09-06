@@ -189,7 +189,7 @@ void TestRenderWidgetHostView::TakeFallbackContentFrom(
     SetBackgroundColor(*color);
 }
 
-bool TestRenderWidgetHostView::LockMouse() {
+bool TestRenderWidgetHostView::LockMouse(bool) {
   return false;
 }
 

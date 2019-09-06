@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "android_webview/native_jni/AwFeatureList_jni.h"
+#include "android_webview/browser_jni_headers/AwFeatureList_jni.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"

@@ -77,6 +77,10 @@ base::string16 CredentialLeakControllerAndroid::GetTitle() const {
   return leak_dialog_utils::GetTitle(leak_type_);
 }
 
+gfx::Range CredentialLeakControllerAndroid::GetDescriptionBoldRange() const {
+  return leak_dialog_utils::GetChangePasswordBoldRange(leak_type_);
+}
+
 bool CredentialLeakControllerAndroid::ShouldCheckPasswords() const {
   return leak_dialog_utils::ShouldCheckPasswords(leak_type_);
 }

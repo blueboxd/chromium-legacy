@@ -73,7 +73,7 @@ CSSMathExpressionNode* CSSMathMin::ToCalcExpressionNode() const {
   if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
     return nullptr;
 
-  HeapVector<Member<CSSMathExpressionNode>> operands;
+  CSSMathExpressionVariadicOperation::Operands operands;
   operands.ReserveCapacity(NumericValues().size());
   for (const auto& value : NumericValues()) {
     CSSMathExpressionNode* operand = value->ToCalcExpressionNode();

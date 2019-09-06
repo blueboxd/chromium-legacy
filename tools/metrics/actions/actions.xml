@@ -1395,6 +1395,41 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AddSupervisionDialog_AttemptedSignoutAfterEnrollment">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>michaelpg@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <description>
+    Emitted when the user clicks &quot;Sign out&quot; to complete the Add
+    Supervision process.
+  </description>
+</action>
+
+<action name="AddSupervisionDialog_Closed">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>michaelpg@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <description>
+    Emitted when the Add Supervision dialog is closed, excluding sign out.
+  </description>
+</action>
+
+<action name="AddSupervisionDialog_EnrollmentCompleted">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>michaelpg@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <description>
+    Emitted when the user's account is successfully enrolled in supervision.
+  </description>
+</action>
+
+<action name="AddSupervisionDialog_Launched">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>michaelpg@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <description>Emitted when the Add Supervision dialog is opened.</description>
+</action>
+
 <action name="AlertIndicatorButton_Dragged">
   <owner>miu@chromium.org</owner>
   <description>

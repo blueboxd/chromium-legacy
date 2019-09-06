@@ -76,6 +76,8 @@ component("cpp") {
     "assistant/proactive_suggestions.h",
     "assistant/proactive_suggestions_client.cc",
     "assistant/proactive_suggestions_client.h",
+    "assistant/util/histogram_util.cc",
+    "assistant/util/histogram_util.h",
     "caption_buttons/caption_button_model.h",
     "caption_buttons/frame_back_button.cc",
     "caption_buttons/frame_back_button.h",

@@ -70,12 +70,8 @@ void GetIsPinnedToTaskbarState(
     const IsPinnedToTaskbarCallback& result_callback);
 
 // Migrates existing chrome taskbar pins by tagging them with correct app id.
-// see http://crbug.com/28104. Migrates taskbar pins via a task.
+// see http://crbug.com/28104
 void MigrateTaskbarPins();
-
-// Callback for MigrateTaskbarPins(). Exposed for testing.
-void MigrateTaskbarPinsCallback(const base::FilePath& pins_path,
-                                const base::FilePath& implicit_apps_path);
 
 // Migrates all shortcuts in |path| which point to |chrome_exe| such that they
 // have the appropriate AppUserModelId. Also clears the legacy dual_mode

@@ -8,13 +8,17 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -122,9 +126,10 @@ void OpenPageInfoBubble(Browser* browser) {
   page_info->set_close_on_deactivate(false);
 }
 
-// Go to |url| in such a way as to trigger a warning. This is just for
-// convenience, since how we trigger warnings will change. Even if the warning
-// is triggered, it may not be shown if the URL is opened in the background.
+// Go to |url| in such a way as to trigger a bad reputation safety tip. This is
+// just for convenience, since how we trigger warnings will change. Even if the
+// warning is triggered, it may not be shown if the URL is opened in the
+// background.
 //
 // This function blocks the entire host + path, ignoring query parameters.
 void TriggerWarning(Browser* browser,
@@ -312,6 +317,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // After the user closes the warning, they should still be on the same domain.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStaysOnPage) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
@@ -327,6 +335,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // re-visits the page.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStopsWarning) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
@@ -387,7 +398,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // interstitial.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnLookalike) {
-  // This domain is a top domain, but not top 500
+  // This domain is a top domain, but not top 500.
   const GURL kNavigatedUrl = GetURL("googlé.sk");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -398,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // distance when enabled, and not otherwise.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnEditDistance) {
-  // This domain is an edit distance of one from the top 500
+  // This domain is an edit distance of one from the top 500.
   const GURL kNavigatedUrl = GetURL("goooglé.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -445,4 +456,108 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   histograms.ExpectBucketCount("Security.SafetyTips.SafetyTipIgnoredPageLoad",
                                security_state::SafetyTipStatus::kBadReputation,
                                1);
+}
+
+// Tests that Safety Tip interactions are recorded in a histogram.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       InteractionsHistogram) {
+  const std::string kHistogramPrefix = "Security.SafetyTips.Interaction.";
+
+  // These histograms are only recorded when the UI feature is enabled, so bail
+  // out when disabled.
+  if (ui_status() != UIStatus::kEnabledWithEditDistance) {
+    return;
+  }
+
+  {
+    // This domain is an edit distance of one from the top 500.
+    const GURL kNavigatedUrl = GetURL("goooglé.com");
+    SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+    base::HistogramTester histogram_tester;
+    NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+    // The histogram should not be recorded until the user has interacted with
+    // the safety tip.
+    histogram_tester.ExpectTotalCount(kHistogramPrefix + "SafetyTip_Lookalike",
+                                      0);
+    CloseWarningLeaveSite(browser());
+    histogram_tester.ExpectUniqueSample(
+        kHistogramPrefix + "SafetyTip_Lookalike",
+        safety_tips::SafetyTipInteraction::kLeaveSite, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    // The histogram should not be recorded until the user has interacted with
+    // the safety tip.
+    histogram_tester.ExpectTotalCount(
+        kHistogramPrefix + "SafetyTip_BadReputation", 0);
+    CloseWarningIgnore();
+    histogram_tester.ExpectUniqueSample(
+        kHistogramPrefix + "SafetyTip_BadReputation",
+        safety_tips::SafetyTipInteraction::kDismiss, 1);
+  }
+}
+
+// Tests that the histograms recording how long the Safety Tip is open are
+// recorded properly.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TimeOpenHistogram) {
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
+  const base::TimeDelta kMinWarningTime = base::TimeDelta::FromMilliseconds(10);
+
+  // Test the histogram for no user action taken.
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    // Ensure that the tab is open for more than 0 ms, even in the face of bots
+    // with bad clocks.
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    NavigateToURL(browser(), GURL("about:blank"),
+                  WindowOpenDisposition::CURRENT_TAB);
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.NoAction.SafetyTip_BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
+
+  // Test the histogram for when the user adheres to the warning.
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    CloseWarningLeaveSite(browser());
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.LeaveSite.SafetyTip_BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
+
+  // Test the histogram for when the user dismisses the warning.
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site1.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    CloseWarningIgnore();
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
 }

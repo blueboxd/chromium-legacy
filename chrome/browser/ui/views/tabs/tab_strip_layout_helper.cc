@@ -153,20 +153,51 @@ void TabStripLayoutHelper::RemoveTabNoAnimation(int model_index, Tab* tab) {
 
 void TabStripLayoutHelper::RemoveTab(int model_index, Tab* tab) {
   int slot_index = GetSlotIndexForTabModelIndex(model_index, tab->group());
+  if (WidthsConstrainedForClosingMode()) {
+    if (slot_index == int{slots_.size()} - 1) {
+      // Removing the last tab. Constrain available width to place the next
+      // tab to the left under the cursor.
+      if (!tabstrip_width_override_.has_value()) {
+        // We are currently constrained by tab_width_override_. Express the
+        // equivalent constraint with tabstrip_width_override_.
+        tabstrip_width_override_ = LayoutTabs(base::nullopt);
+      }
+      tab_width_override_.reset();
+    } else {
+      // Removing a tab other than the last tab. Constrain the width of each
+      // tab to place the next tab to the right under the cursor.
+      if (!tab_width_override_.has_value()) {
+        // We are currently constrained by tabstrip_width_override_. Express
+        // the equivalent constraint with tab_width_override_.
+        tab_width_override_ = CalculateSpaceFractionAvailable(
+            GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
+            tabstrip_width_override_.value());
+      }
+      tabstrip_width_override_.reset();
+    }
+  }
   AnimateSlot(slot_index, slots_[slot_index].animation->target_state().WithOpen(
                               TabOpen::kClosed));
 }
 
 void TabStripLayoutHelper::EnterTabClosingMode(int available_width) {
-  if (!cached_sizer_.has_value()) {
-    cached_sizer_ = base::make_optional(CalculateSpaceFractionAvailable(
+  if (!WidthsConstrainedForClosingMode()) {
+    tab_width_override_ = CalculateSpaceFractionAvailable(
         GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
-        available_width));
+        available_width);
+    tabstrip_width_override_ = available_width;
   }
 }
 
-void TabStripLayoutHelper::ExitTabClosingMode() {
-  cached_sizer_ = base::nullopt;
+base::Optional<int> TabStripLayoutHelper::ExitTabClosingMode() {
+  if (!WidthsConstrainedForClosingMode())
+    return base::nullopt;
+
+  int available_width = LayoutTabs(base::nullopt);
+  tab_width_override_.reset();
+  tabstrip_width_override_.reset();
+
+  return available_width;
 }
 
 void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
@@ -271,6 +302,9 @@ void TabStripLayoutHelper::CompleteAnimationsWithoutDestroyingTabs() {
 }
 
 void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
+  int tabstrip_width = tabstrip_width_override_.value_or(available_width);
+  DCHECK_LE(tabstrip_width, available_width);
+
   views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
   std::map<TabGroupId, TabGroupHeader*> group_headers =
       get_group_headers_callback_.Run();
@@ -307,7 +341,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
   }
 
   const std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      layout_constants, tab_widths, available_width, cached_sizer_);
+      layout_constants, tab_widths, tabstrip_width, tab_width_override_);
   DCHECK_EQ(slots_.size(), bounds.size());
 
   int current_tab_model_index = 0;
@@ -356,10 +390,18 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs() {
   }
 }
 
-int TabStripLayoutHelper::LayoutTabs(int available_width) {
+int TabStripLayoutHelper::LayoutTabs(base::Optional<int> available_width) {
+  base::Optional<int> tabstrip_width = tabstrip_width_override_.has_value()
+                                           ? tabstrip_width_override_
+                                           : available_width;
+  if (DCHECK_IS_ON() && tabstrip_width_override_.has_value() &&
+      available_width.has_value()) {
+    DCHECK_LE(tabstrip_width_override_.value(), available_width.value());
+  }
+
   std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabLayoutConstants(), GetCurrentTabWidthConstraints(), available_width,
-      cached_sizer_);
+      GetTabLayoutConstants(), GetCurrentTabWidthConstraints(), tabstrip_width,
+      tab_width_override_);
 
   if (DCHECK_IS_ON()) {
     views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
@@ -501,4 +543,9 @@ void TabStripLayoutHelper::UpdateCachedTabWidth(int tab_index,
     active_tab_width_ = tab_width;
   else
     inactive_tab_width_ = tab_width;
+}
+
+bool TabStripLayoutHelper::WidthsConstrainedForClosingMode() {
+  return tab_width_override_.has_value() ||
+         tabstrip_width_override_.has_value();
 }

@@ -140,8 +140,7 @@ class LineHelper {
 };
 
 void FinishStaticNode(ui::AXNodeData** static_text_node,
-                      std::string* static_text,
-                      ui::AXNodeData** previous_on_line_node) {
+                      std::string* static_text) {
   // If we're in the middle of building a static text node, finish it before
   // moving on to the next object.
   if (*static_text_node) {
@@ -150,7 +149,6 @@ void FinishStaticNode(ui::AXNodeData** static_text_node,
     static_text->clear();
   }
   *static_text_node = nullptr;
-  *previous_on_line_node = nullptr;
 }
 
 bool BreakParagraph(
@@ -359,7 +357,6 @@ void PdfAccessibilityTree::AddPageContent(
   uint32_t char_index = 0;
   uint32_t current_link_index = 0;
   uint32_t current_image_index = 0;
-  bool is_run_on_same_line = false;
   LineHelper line_helper(text_runs);
 
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
@@ -374,8 +371,7 @@ void PdfAccessibilityTree::AddPageContent(
     // If the |text_run_index| is less than or equal to the link's
     // text_run_index, then push the link node in the paragraph.
     if (IsObjectInTextRun(links, current_link_index, text_run_index)) {
-      FinishStaticNode(&static_text_node, &static_text, &previous_on_line_node);
-      is_run_on_same_line = false;
+      FinishStaticNode(&static_text_node, &static_text);
       const ppapi::PdfAccessibilityLinkInfo& link = links[current_link_index++];
       ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds);
       para_node->child_ids.push_back(link_node->id);
@@ -392,15 +388,15 @@ void PdfAccessibilityTree::AddPageContent(
           std::min(text_run_index + link.text_run_count, text_runs.size()) - 1;
 
       AddTextToLinkNode(text_run_index, link_end_text_run_index, text_runs,
-                        chars, page_bounds, &char_index, link_node);
+                        chars, page_bounds, &char_index, link_node,
+                        &previous_on_line_node);
 
       para_node->relative_bounds.bounds.Union(
           link_node->relative_bounds.bounds);
 
       text_run_index = link_end_text_run_index;
     } else if (IsObjectInTextRun(images, current_image_index, text_run_index)) {
-      FinishStaticNode(&static_text_node, &static_text, &previous_on_line_node);
-      is_run_on_same_line = false;
+      FinishStaticNode(&static_text_node, &static_text);
       // If the |text_run_index| is less than or equal to the image's text run
       // index, then push the image ahead of the current text run.
       ui::AXNodeData* image_node =
@@ -439,17 +435,19 @@ void PdfAccessibilityTree::AddPageContent(
         inline_text_box_node->AddIntAttribute(
             ax::mojom::IntAttribute::kPreviousOnLineId,
             previous_on_line_node->id);
-      }
-
-      if (!previous_on_line_node)
+      } else {
         line_helper.StartNewLine(text_run_index);
+      }
       line_helper.ProcessNextRun(text_run_index);
 
-      if (text_run_index < text_runs.size() - 1)
-        is_run_on_same_line = line_helper.IsRunOnSameLine(text_run_index + 1);
-      if (is_run_on_same_line) {
-        // The next run is on the same line.
-        previous_on_line_node = inline_text_box_node;
+      if (text_run_index < text_runs.size() - 1) {
+        if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
+          // The next run is on the same line.
+          previous_on_line_node = inline_text_box_node;
+        } else {
+          // The next run is on a new line.
+          previous_on_line_node = nullptr;
+        }
       }
     }
 
@@ -461,10 +459,7 @@ void PdfAccessibilityTree::AddPageContent(
       break;
     }
 
-    if (!is_run_on_same_line) {
-      // The next run is on a new line.
-      previous_on_line_node = nullptr;
-
+    if (!previous_on_line_node) {
       if (BreakParagraph(text_runs, text_run_index,
                          paragraph_spacing_threshold)) {
         if (static_text_node) {
@@ -750,12 +745,12 @@ void PdfAccessibilityTree::AddTextToLinkNode(
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const gfx::RectF& page_bounds,
     uint32_t* char_index,
-    ui::AXNodeData* link_node) {
+    ui::AXNodeData* link_node,
+    ui::AXNodeData** previous_on_line_node) {
   ui::AXNodeData* link_static_text_node = CreateStaticTextNode(*char_index);
   link_node->child_ids.push_back(link_static_text_node->id);
   // Accumulate the text of the link.
   std::string link_name;
-  ui::AXNodeData* previous_on_line_node = nullptr;
   LineHelper line_helper(text_runs);
 
   for (size_t text_run_index = start_text_run_index;
@@ -774,21 +769,26 @@ void PdfAccessibilityTree::AddTextToLinkNode(
 
     *char_index += text_run.len;
 
-    if (previous_on_line_node) {
-      previous_on_line_node->AddIntAttribute(
-          ax::mojom::IntAttribute::kNextOnLineId, inline_text_box_node->id);
+    if (*previous_on_line_node) {
+      (*previous_on_line_node)
+          ->AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                            inline_text_box_node->id);
       inline_text_box_node->AddIntAttribute(
           ax::mojom::IntAttribute::kPreviousOnLineId,
-          previous_on_line_node->id);
-    }
-    if (!previous_on_line_node)
+          (*previous_on_line_node)->id);
+    } else {
       line_helper.StartNewLine(text_run_index);
+    }
     line_helper.ProcessNextRun(text_run_index);
 
-    if (text_run_index < text_runs.size() - 1 &&
-        line_helper.IsRunOnSameLine(text_run_index + 1)) {
-      // The next run is on the same line.
-      previous_on_line_node = inline_text_box_node;
+    if (text_run_index < text_runs.size() - 1) {
+      if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
+        // The next run is on the same line.
+        *previous_on_line_node = inline_text_box_node;
+      } else {
+        // The next run is on a new line.
+        *previous_on_line_node = nullptr;
+      }
     }
   }
 

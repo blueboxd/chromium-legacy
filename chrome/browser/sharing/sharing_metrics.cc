@@ -4,7 +4,10 @@
 
 #include "chrome/browser/sharing/sharing_metrics.h"
 
+#include <string.h>
+
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "components/cast_channel/enum_table.h"
@@ -85,6 +88,8 @@ void LogSharingDevicesToShow(SharingFeatureName feature,
   base::UmaHistogramExactLinear(
       base::StrCat({"Sharing.", feature_str, "DevicesToShow"}), count,
       /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
   base::UmaHistogramExactLinear(
       base::StrCat(
           {"Sharing.", feature_str, "DevicesToShow.", histogram_suffix}),
@@ -101,6 +106,8 @@ void LogSharingAppsToShow(SharingFeatureName feature,
   base::UmaHistogramExactLinear(
       base::StrCat({"Sharing.", feature_str, "AppsToShow"}), count,
       /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
   base::UmaHistogramExactLinear(
       base::StrCat({"Sharing.", feature_str, "AppsToShow.", histogram_suffix}),
       count,
@@ -116,6 +123,8 @@ void LogSharingSelectedDeviceIndex(SharingFeatureName feature,
   base::UmaHistogramExactLinear(
       base::StrCat({"Sharing.", feature_str, "SelectedDeviceIndex"}), index,
       /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
   base::UmaHistogramExactLinear(
       base::StrCat(
           {"Sharing.", feature_str, "SelectedDeviceIndex.", histogram_suffix}),
@@ -132,6 +141,8 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
   base::UmaHistogramExactLinear(
       base::StrCat({"Sharing.", feature_str, "SelectedAppIndex"}), index,
       /*value_max=*/20);
+  if (!histogram_suffix)
+    return;
   base::UmaHistogramExactLinear(
       base::StrCat(
           {"Sharing.", feature_str, "SelectedAppIndex.", histogram_suffix}),
@@ -181,4 +192,9 @@ void LogClickToCallUKM(content::WebContents* web_contents,
       .SetHasApps(has_apps)
       .SetSelection(static_cast<int64_t>(selection))
       .Record(ukm_recorder);
+}
+
+void LogSharedClipboardSelectedTextSize(int text_size) {
+  UMA_HISTOGRAM_COUNTS_100000("Sharing.SharedClipboardSelectedTextSize",
+                              text_size);
 }

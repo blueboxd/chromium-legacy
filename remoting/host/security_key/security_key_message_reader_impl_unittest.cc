@@ -61,8 +61,8 @@ class SecurityKeyMessageReaderImplTest : public testing::Test {
   std::vector<std::unique_ptr<SecurityKeyMessage>> messages_received_;
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyMessageReaderImplTest);

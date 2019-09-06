@@ -952,6 +952,9 @@ extern const char kPeriodicBackgroundSyncDescription[];
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
 
+extern const char kPointerLockOptionsName[];
+extern const char kPointerLockOptionsDescription[];
+
 extern const char kPolicyAtomicGroupsEnabledName[];
 extern const char kPolicyAtomicGroupsEnabledDescription[];
 
@@ -1463,9 +1466,6 @@ extern const char kExploreSitesDescription[];
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 
-extern const char kForegroundNotificationManagerName[];
-extern const char kForegroundNotificationManagerDescription[];
-
 extern const char kHomePageButtonName[];
 extern const char kHomePageButtonDescription[];
 
@@ -1745,9 +1745,6 @@ extern const char kCloudPrintXpsDescription[];
 
 extern const char kD3D11VideoDecoderName[];
 extern const char kD3D11VideoDecoderDescription[];
-
-extern const char kDisablePostscriptPrinting[];
-extern const char kDisablePostscriptPrintingDescription[];
 
 extern const char kEnableAuraTooltipsOnWindowsName[];
 extern const char kEnableAuraTooltipsOnWindowsDescription[];

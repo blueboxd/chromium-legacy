@@ -329,6 +329,7 @@
 <translation id="3443221991560634068">טען מחדש את הדף הנוכחי</translation>
 <translation id="3445014427084483498">ממש עכשיו</translation>
 <translation id="3478363558367712427">אפשר לבחור את מנוע החיפוש</translation>
+<translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="3492207499832628349">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> על הצעות לתוכן</translation>
 <translation id="3513704683820682405">מציאות רבודה</translation>
@@ -535,13 +536,12 @@
 <translation id="5033865233969348410">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
   -  התכונות הפיזיות שלך, כמו הגובה
 
-חשוב לוודא תחילה שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
+חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5039804452771397117">זה בסדר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5087580092889165836">הוסף כרטיס</translation>
-<translation id="5098406615395468004">הוספה לאפליקציות שלי</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="510275257476243843">נותרה שעה אחת</translation>
 <translation id="5123685120097942451">כרטיסיית גלישה בסתר</translation>
@@ -616,7 +616,7 @@
   -   התכונות הפיזיות שלך, כמו הגובה
   -   הצורה שבה החדר שלך מסודר
 
-חשוב לוודא תחילה שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
+חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5534640966246046842">האתר הועתק</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5561549206367097665">ממתין לרשת…</translation>
@@ -906,7 +906,7 @@
 <translation id="7665369617277396874">חשבון חדש</translation>
 <translation id="766587987807204883">כאן יוצגו מאמרים, ואפשר לקרוא אותם גם במצב לא מקוון</translation>
 <translation id="7682724950699840886">אפשר לנסות את הטיפים הבאים: צריך לוודא שיש מספיק מקום פנוי במכשיר ואז לנסות לייצא שוב.</translation>
-<translation id="7685301384041462804">‏חשוב לוודא תחילה שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
+<translation id="7685301384041462804">‏חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="7725024127233776428">הדפים שהוספת לסימניות מופיעים כאן</translation>

@@ -958,7 +958,16 @@
     Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL" desc="Label for a checkbox that allows users to choose whether chrome should check that credentials have been part of a leak.">
-    Password protection
+    Check password safety
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_IN_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-in users.">
+    Warns you if a password you use was part of a data breach
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_DISABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have disabled the feature.">
+    Google can check if your passwords were part of a data breach
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature.">
+    Google can check if your passwords were part of a data breach. This will be turned on when you sign in with your Google Account.
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_DESC" desc="Text that describes the 'Password Leak Detection' functionality to users">
     Show a warning when you use an unsafe password that was a part of data breach. It is available for signed-in users only.
@@ -4315,7 +4324,7 @@
       Remove
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
-      Add person
+      Add user
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS_EMAIL" desc="Label for the email input field for adding users.">
       Email address
@@ -4806,10 +4815,10 @@
       External storage preferences
     </message>
     <message name="IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE" desc="Label for the additional note for the subpage for setting preferences for external storage.">
-      Google Play Store applications may require access to external storage devices in order to read and write files and folders on them.
+      Apps from Google Play may require full file system access to read and write files on external storage devices. Files and folders created on the device are visible to anyone who uses the external drive.
     </message>
     <message name="IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER" desc="Header of the list of external storage devices for the subpage for setting preferences for external storage.">
-      Available USB devices will appear here.
+      Available devices will appear here.
     </message>
 
     <!-- Power -->

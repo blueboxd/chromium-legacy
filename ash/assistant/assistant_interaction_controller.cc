@@ -364,7 +364,7 @@ void AssistantInteractionController::OnCommittedQueryChanged(
   assistant::util::RecordAssistantQuerySource(assistant_query.source());
 }
 
-// TODO(dmblack): Set pending query from |metadata| and remove calls to set
+// TODO(b/140565663): Set pending query from |metadata| and remove calls to set
 // pending query that occur outside of this method.
 void AssistantInteractionController::OnInteractionStarted(
     AssistantInteractionMetadataPtr metadata) {
@@ -401,15 +401,13 @@ void AssistantInteractionController::OnInteractionStarted(
       model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
     }
   } else {
-    // TODO(b/112000321): It should not be possible to reach this code without
-    // having previously pended a query. It does currently happen, however, in
-    // the case of notifications and device action queries which bypass the
-    // AssistantInteractionController when beginning an interaction. To address
-    // this, we temporarily pend an empty text query to commit until we can do
-    // development to expose something more meaningful.
-    if (model_.pending_query().type() == AssistantQueryType::kNull)
-      model_.SetPendingQuery(std::make_unique<AssistantTextQuery>());
-
+    // Once b/140565663 has been addressed to remove all calls which currently
+    // set the pending query from outside of the interaction lifecycle, the
+    // pending query type will always be |kNull| here.
+    if (model_.pending_query().type() == AssistantQueryType::kNull) {
+      model_.SetPendingQuery(
+          std::make_unique<AssistantTextQuery>(metadata->query));
+    }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
   }
@@ -837,19 +835,22 @@ void AssistantInteractionController::StartProactiveSuggestionsInteraction(
   if (model_.interaction_state() != InteractionState::kInactive)
     return;
 
-  const std::string& query = proactive_suggestions->description();
+  const std::string& description = proactive_suggestions->description();
+  const std::string& search_query = proactive_suggestions->search_query();
 
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(query));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(description));
 
   OnInteractionStarted(AssistantInteractionMetadata::New(
-      /*type=*/AssistantInteractionType::kText, /*query=*/query));
+      AssistantInteractionType::kText, /*query=*/description));
 
   OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
 
   // TODO(dmblack): Support suggestion chips from the server when available.
-  std::vector<AssistantSuggestionPtr> suggestions;
-  suggestions.push_back(CreateSearchSuggestion(query));
-  OnSuggestionsResponse(std::move(suggestions));
+  if (!search_query.empty()) {
+    std::vector<AssistantSuggestionPtr> suggestions;
+    suggestions.push_back(CreateSearchSuggestion(search_query));
+    OnSuggestionsResponse(std::move(suggestions));
+  }
 
   OnInteractionFinished(AssistantInteractionResolution::kNormal);
 }

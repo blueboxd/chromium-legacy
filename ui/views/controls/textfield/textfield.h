@@ -416,6 +416,11 @@ class VIEWS_EXPORT Textfield : public View,
   // override this to customize when the placeholder text is shown.
   virtual bool ShouldShowPlaceholderText() const;
 
+ protected:
+  // Like RequestFocus, but explicitly states that the focus is triggered by
+  // a pointer event.
+  void RequestFocusWithPointer(ui::EventPointerType pointer_type);
+
  private:
   friend class TextfieldTestApi;
 
@@ -523,10 +528,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Callback for the cursor blink timer. Called every
   // Textfield::GetCaretBlinkMs().
   void OnCursorBlinkTimerFired();
-
-  // Like RequestFocus, but explicitly states that the focus is triggered by
-  // a pointer event.
-  void RequestFocusWithPointer(ui::EventPointerType pointer_type);
 
   // Returns the color to use for the FocusRing, if one is present.
   SkColor GetFocusRingColor() const;

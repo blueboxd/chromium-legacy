@@ -200,6 +200,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       prefs::kAllowPasswordProtectedFiles,
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   registry->RegisterIntegerPref(prefs::kCheckContentCompliance, 0);
+  registry->RegisterListPref(
+      prefs::kDomainsToCheckComplianceOfDownloadedContent);
 }
 
 void SetExtendedReportingPrefAndMetric(

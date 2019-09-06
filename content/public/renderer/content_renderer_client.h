@@ -327,6 +327,15 @@ class CONTENT_EXPORT ContentRendererClient {
   // function is called from the worker thread.
   virtual void WillInitializeServiceWorkerContextOnWorkerThread() {}
 
+  // Notifies that a service worker context has been created. This function is
+  // called from the worker thread.
+  // |context_proxy| is valid until
+  // WillDestroyServiceWorkerContextOnWorkerThread() is called.
+  virtual void DidInitializeServiceWorkerContextOnWorkerThread(
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      const GURL& service_worker_scope,
+      const GURL& script_url) {}
+
   // Notifies that the main script of a service worker is about to evaluate.
   // This function is called from the worker thread.
   // |context_proxy| is valid until

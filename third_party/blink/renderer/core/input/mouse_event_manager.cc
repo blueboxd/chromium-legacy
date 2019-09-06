@@ -68,6 +68,7 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
                            LocalDOMWindow* dom_window,
                            MouseEventInit* initializer) {
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
+      !mouse_event.is_raw_movement_event &&
       mouse_event.GetType() == WebInputEvent::kMouseMove && last_position) {
     // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
     // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align

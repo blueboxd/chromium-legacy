@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -57,6 +58,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -95,6 +97,19 @@ const char kManagementExtensionReportPerfCrash[] =
     "managementExtensionReportPerfCrash";
 const char kManagementExtensionReportUserBrowsingData[] =
     "managementExtensionReportUserBrowsingData";
+
+const char kThreatProtectionTitle[] = "threatProtectionTitle";
+const char kManagementDataLossPreventionName[] =
+    "managementDataLossPreventionName";
+const char kManagementDataLossPreventionPermissions[] =
+    "managementDataLossPreventionPermissions";
+const char kManagementMalwareScanningName[] = "managementMalwareScanningName";
+const char kManagementMalwareScanningPermissions[] =
+    "managementMalwareScanningPermissions";
+const char kManagementEnterpriseReportingName[] =
+    "managementEnterpriseReportingName";
+const char kManagementEnterpriseReportingPermissions[] =
+    "managementEnterpriseReportingPermissions";
 
 const char kReportingTypeDevice[] = "device";
 const char kReportingTypeExtensions[] = "extensions";
@@ -378,6 +393,10 @@ void ManagementUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
+      "getThreatProtectionInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleGetThreatProtectionInfo,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "initBrowserReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleInitBrowserReportingInfo,
                           base::Unretained(this)));
@@ -561,6 +580,70 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
   return response;
 }
 
+base::Value ManagementUIHandler::GetThreatProtectionInfo(
+    Profile* profile) const {
+  base::Value info(base::Value::Type::LIST);
+  const policy::PolicyService* policy_service = GetPolicyService();
+  const auto& chrome_policies = policy_service->GetPolicies(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  // CheckContentCompliance is a int-enum policy. The accepted values are
+  // defined in the enum CheckContentComplianceValues.
+  auto* check_content_compliance_value =
+      chrome_policies.GetValue(policy::key::kCheckContentCompliance);
+  if (check_content_compliance_value &&
+      check_content_compliance_value->GetInt() > safe_browsing::CHECK_NONE &&
+      check_content_compliance_value->GetInt() <=
+          safe_browsing::CHECK_CONTENT_COMPLIANCE_MAX) {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementDataLossPreventionName);
+    value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
+    info.GetList().push_back(std::move(value));
+  }
+
+  // SendFilesForMalwareCheck is a int-enum policy. The accepted values are
+  // defined in the enum SendFilesForMalwareCheckValues.
+  auto* send_files_for_malware_check_value =
+      chrome_policies.GetValue(policy::key::kSendFilesForMalwareCheck);
+  if (send_files_for_malware_check_value &&
+      send_files_for_malware_check_value->GetInt() >
+          safe_browsing::SEND_FILES_DISABLED &&
+      send_files_for_malware_check_value->GetInt() <=
+          safe_browsing::SEND_FILES_FOR_MALWARE_CHECK_MAX) {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementMalwareScanningName);
+    value.SetStringKey("permission", kManagementMalwareScanningPermissions);
+    info.GetList().push_back(std::move(value));
+  }
+
+  auto* unsafe_event_reporting_value =
+      chrome_policies.GetValue(policy::key::kUnsafeEventsReportingEnabled);
+  if (unsafe_event_reporting_value && unsafe_event_reporting_value->GetBool()) {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementEnterpriseReportingName);
+    value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
+    info.GetList().push_back(std::move(value));
+  }
+
+#if defined(OS_CHROMEOS)
+  std::string management_domain = GetDeviceDomain();
+  if (management_domain.empty())
+    management_domain = GetAccountDomain(profile);
+#else
+  std::string management_domain = GetAccountDomain(profile);
+#endif  // defined(OS_CHROMEOS)
+
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetStringKey("description",
+                      management_domain.empty()
+                          ? l10n_util::GetStringUTF16(
+                                IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION)
+                          : l10n_util::GetStringFUTF16(
+                                IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY,
+                                base::UTF8ToUTF16(management_domain)));
+  result.SetKey("info", std::move(info));
+  return result;
+}
+
 policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
   return Profile::FromWebUI(web_ui())
       ->GetProfilePolicyConnector()
@@ -730,6 +813,14 @@ void ManagementUIHandler::HandleGetContextualManagedData(
                             std::move(result));
 }
 
+void ManagementUIHandler::HandleGetThreatProtectionInfo(
+    const base::ListValue* args) {
+  AllowJavascript();
+  ResolveJavascriptCallback(
+      args->GetList()[0] /* callback_id */,
+      GetThreatProtectionInfo(Profile::FromWebUI(web_ui())));
+}
+
 void ManagementUIHandler::HandleInitBrowserReportingInfo(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
@@ -743,6 +834,11 @@ void ManagementUIHandler::NotifyBrowserReportingInfoUpdated() {
   base::Value report_sources(base::Value::Type::LIST);
   AddExtensionReportingInfo(&report_sources);
   FireWebUIListener("browser-reporting-info-updated", report_sources);
+}
+
+void ManagementUIHandler::NotifyThreatProtectionInfoUpdated() {
+  FireWebUIListener("threat-protection-info-updated",
+                    GetThreatProtectionInfo(Profile::FromWebUI(web_ui())));
 }
 
 void ManagementUIHandler::OnExtensionLoaded(
@@ -788,6 +884,7 @@ void ManagementUIHandler::OnPolicyUpdated(
     const policy::PolicyMap& /*current*/) {
   UpdateManagedState();
   NotifyBrowserReportingInfoUpdated();
+  NotifyThreatProtectionInfoUpdated();
 }
 
 void ManagementUIHandler::AddObservers() {

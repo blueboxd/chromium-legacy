@@ -7148,6 +7148,20 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="SafetyTipStatus" enum="SafetyTipStatus">
+    <summary>
+      The Safety Tip status of the page when the navigation commits, after the
+      reputation check finishes.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="ScoreDelta">
     <summary>
       The change in Site Engagement score for the page before it is closed or
@@ -7765,6 +7779,12 @@ be describing additional metrics about the same event.
     <summary>
       Boolean indicating that the intervention was disallowed because the tab is
       sharing its BrowsingInstance with at least one other tab.
+    </summary>
+  </metric>
+  <metric name="FailureLiveStateUsingBluetooth">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab is
+      currently connnected to at least one bluetooth device.
     </summary>
   </metric>
   <metric name="FailureLiveStateUsingWebSockets">

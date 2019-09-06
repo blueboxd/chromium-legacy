@@ -62,7 +62,7 @@ app_list::AppListView* DemoAppListViewDelegate::InitView(
   for (size_t i = 0; i < item_list->item_count(); ++i) {
     app_list::AppListItem* item = item_list->item_at(i);
     // Alternate images with shadows and images without.
-    item->SetIcon(*test_image.ToImageSkia());
+    item->SetIcon(ash::AppListConfigType::kShared, *test_image.ToImageSkia());
   }
   return view_;
 }

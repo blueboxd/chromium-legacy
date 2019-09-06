@@ -148,6 +148,8 @@ public class WebXrVrDeviceTest {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
                 PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
+
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         Assert.assertTrue("Browser did not enter VR", VrShellDelegate.isInVr());
 
@@ -186,6 +188,7 @@ public class WebXrVrDeviceTest {
                 PAGE_LOAD_TIMEOUT_S);
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
 
+        mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
         mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");
 
         mWebXrVrTestFramework.executeStepAndWait("resetCounters()");
@@ -220,6 +223,7 @@ public class WebXrVrDeviceTest {
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
                 PAGE_LOAD_TIMEOUT_S);
 
+        mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
         mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");
 
         mWebXrVrTestFramework.executeStepAndWait("resetCounters()");

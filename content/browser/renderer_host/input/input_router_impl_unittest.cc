@@ -205,7 +205,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 class InputRouterImplTestBase : public testing::Test {
  public:
   InputRouterImplTestBase()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
   ~InputRouterImplTestBase() override {}
 
@@ -498,7 +499,7 @@ class InputRouterImplTestBase : public testing::Test {
   std::unique_ptr<MockInputDispositionHandler> disposition_handler_;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   SyntheticWebTouchEvent touch_event_;
 };
 

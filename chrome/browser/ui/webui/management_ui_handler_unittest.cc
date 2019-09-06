@@ -15,6 +15,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
@@ -64,6 +65,10 @@ class TestManagementUIHandler : public ManagementUIHandler {
     return report_sources;
   }
 
+  base::Value GetThreatProtectionInfo(Profile* profile) {
+    return ManagementUIHandler::GetThreatProtectionInfo(profile);
+  }
+
   policy::PolicyService* GetPolicyService() const override {
     return policy_service_;
   }
@@ -100,6 +105,20 @@ class ManagementUIHandlerTests : public testing::Test {
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(true), nullptr);
+  }
+  void SetPolicyValue(const char* policy_key,
+                      policy::PolicyMap& policies,
+                      int value) {
+    policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(value), nullptr);
+  }
+  void SetPolicyValue(const char* policy_key,
+                      policy::PolicyMap& policies,
+                      bool value) {
+    policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(value), nullptr);
   }
 
   void ExtractContextualSourceUpdate(
@@ -605,4 +624,82 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
     EXPECT_TRUE(expected_messages.find(*message_id) != expected_messages.end());
   }
   EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
+}
+
+TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
+  policy::PolicyMap chrome_policies;
+  const policy::PolicyNamespace chrome_policies_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+
+  TestingProfile::Builder builder_no_domain;
+  auto profile_no_domain = builder_no_domain.Build();
+
+  TestingProfile::Builder builder_known_domain;
+  builder_known_domain.SetProfileName("managed@manager.com");
+  auto profile_known_domain = builder_known_domain.Build();
+
+#if defined(OS_CHROMEOS)
+  handler_.SetDeviceDomain("");
+#endif  // !defined(OS_CHROMEOS)
+
+  EXPECT_CALL(policy_service_, GetPolicies(chrome_policies_namespace))
+      .WillRepeatedly(ReturnRef(chrome_policies));
+
+  base::DictionaryValue* threat_protection_info = nullptr;
+
+  // When no policies are set, nothing to report.
+  auto info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
+  info.GetAsDictionary(&threat_protection_info);
+  EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
+      base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
+
+  // When policies are set to uninteresting values, nothing to report.
+  SetPolicyValue(policy::key::kCheckContentCompliance, chrome_policies, 0);
+  SetPolicyValue(policy::key::kSendFilesForMalwareCheck, chrome_policies, 0);
+  SetPolicyValue(policy::key::kUnsafeEventsReportingEnabled, chrome_policies,
+                 false);
+  info = handler_.GetThreatProtectionInfo(profile_known_domain.get());
+  info.GetAsDictionary(&threat_protection_info);
+  EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY,
+          base::UTF8ToUTF16("manager.com")),
+      base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
+
+  // When policies are set to values that enable the feature, report it.
+  SetPolicyValue(policy::key::kCheckContentCompliance, chrome_policies, 1);
+  SetPolicyValue(policy::key::kSendFilesForMalwareCheck, chrome_policies, 2);
+  SetPolicyValue(policy::key::kUnsafeEventsReportingEnabled, chrome_policies,
+                 true);
+  info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
+  info.GetAsDictionary(&threat_protection_info);
+  EXPECT_EQ(3u, threat_protection_info->FindListKey("info")->GetList().size());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
+      base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
+
+  base::Value expected_info(base::Value::Type::LIST);
+  {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementDataLossPreventionName);
+    value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
+    expected_info.GetList().push_back(std::move(value));
+  }
+  {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementMalwareScanningName);
+    value.SetStringKey("permission", kManagementMalwareScanningPermissions);
+    expected_info.GetList().push_back(std::move(value));
+  }
+  {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementEnterpriseReportingName);
+    value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
+    expected_info.GetList().push_back(std::move(value));
+  }
+
+  EXPECT_EQ(expected_info, *threat_protection_info->FindListKey("info"));
 }

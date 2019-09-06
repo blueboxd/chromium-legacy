@@ -2681,9 +2681,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"gdi-text-printing", flag_descriptions::kGdiTextPrinting,
      flag_descriptions::kGdiTextPrintingDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kGdiTextPrinting)},
-    {"postscript-printing", flag_descriptions::kDisablePostscriptPrinting,
-     flag_descriptions::kDisablePostscriptPrintingDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kDisablePostScriptPrinting)},
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
@@ -3056,6 +3053,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-parallel-downloading", flag_descriptions::kParallelDownloadingName,
      flag_descriptions::kParallelDownloadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(download::features::kParallelDownloading)},
+
+    {"enable-pointer-lock-options", flag_descriptions::kPointerLockOptionsName,
+     flag_descriptions::kPointerLockOptionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPointerLockOptions)},
 
 #if defined(OS_ANDROID)
     {"enable-async-dns", flag_descriptions::kAsyncDnsName,
@@ -3865,13 +3866,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHardwareMediaKeyHandlingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
 #endif
-
-#if defined(OS_ANDROID)
-    {"foreground-notification-manager",
-     flag_descriptions::kForegroundNotificationManagerName,
-     flag_descriptions::kForegroundNotificationManagerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kForegroundNotificationManager)},
-#endif  // defined(OS_ANDROID)
 
     {"enable-avoid-flash-between-navigation",
      flag_descriptions::kAvoidFlashBetweenNavigationName,

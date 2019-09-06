@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -105,7 +104,7 @@ bool VideoWakeLock::ShouldBeActive() const {
 }
 
 void VideoWakeLock::EnsureWakeLockService() {
-  if (wake_lock_service_ && wake_lock_service_.is_bound())
+  if (wake_lock_service_)
     return;
 
   LocalFrame* frame = VideoElement().GetDocument().GetFrame();
@@ -121,8 +120,8 @@ void VideoWakeLock::EnsureWakeLockService() {
   service->GetWakeLock(device::mojom::WakeLockType::kPreventDisplaySleep,
                        device::mojom::blink::WakeLockReason::kVideoPlayback,
                        "Video Wake Lock",
-                       mojo::MakeRequest(&wake_lock_service_));
-  wake_lock_service_.set_connection_error_handler(
+                       wake_lock_service_.BindNewPipeAndPassReceiver());
+  wake_lock_service_.set_disconnect_handler(
       WTF::Bind(&VideoWakeLock::OnConnectionError, WrapWeakPersistent(this)));
 }
 

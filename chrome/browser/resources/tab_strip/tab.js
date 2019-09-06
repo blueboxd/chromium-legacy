@@ -25,6 +25,15 @@ export class TabElement extends CustomElement {
     this.faviconEl_ =
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#favicon'));
 
+    /** @private {!HTMLElement} */
+    this.thumbnailContainer_ =
+        /** @type {!HTMLElement} */ (
+            this.shadowRoot.querySelector('#thumbnail'));
+
+    /** @private {!Image} */
+    this.thumbnail_ =
+        /** @type {!Image} */ (this.shadowRoot.querySelector('#thumbnailImg'));
+
     /** @private {!Tab} */
     this.tab_;
 
@@ -64,7 +73,19 @@ export class TabElement extends CustomElement {
     // Expose the ID to an attribute to allow easy querySelector use
     this.setAttribute('data-tab-id', tab.id);
 
+    if (!this.tab_ || this.tab_.id !== tab.id) {
+      // Request thumbnail updates
+      chrome.send('addTrackedTab', [tab.id]);
+    }
+
     this.tab_ = Object.freeze(tab);
+  }
+
+  /**
+   * @param {string} imgData
+   */
+  updateThumbnail(imgData) {
+    this.thumbnail_.src = imgData;
   }
 
   /** @private */

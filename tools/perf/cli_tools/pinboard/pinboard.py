@@ -43,7 +43,8 @@ MEASUREMENTS = set([
     'V8-Only:duration',
     'Total-Main-Thread:duration',
     'V8-Only-Main-Thread:duration',
-    'total:500ms_window:renderer_eqt:v8'
+    'total:500ms_window:renderer_eqt:v8',
+    'RunsPerMinute'
 ])
 
 # Compute averages over a fixed set of active stories. These may need to be

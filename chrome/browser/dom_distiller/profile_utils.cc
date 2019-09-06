@@ -16,7 +16,7 @@
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_constants.h"
 
 #if defined(OS_ANDROID)
@@ -26,9 +26,7 @@
 namespace dom_distiller {
 
 void RegisterViewerSource(Profile* profile) {
-  bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDomDistiller);
-  if (!enabled_distiller)
+  if (!dom_distiller::IsDomDistillerEnabled())
     return;
 
   DomDistillerServiceFactory* dom_distiller_service_factory =

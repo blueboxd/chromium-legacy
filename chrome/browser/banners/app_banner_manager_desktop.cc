@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -114,15 +115,26 @@ bool AppBannerManagerDesktop::IsRelatedAppInstalled(
   return false;
 }
 
+web_app::AppRegistrar& AppBannerManagerDesktop::registrar() {
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  DCHECK(provider);
+  return provider->registrar();
+}
+
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
     content::WebContents* web_contents,
     const GURL& validated_url,
     const GURL& start_url,
     const GURL& manifest_url) {
-  return web_app::WebAppProvider::Get(
-             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->registrar()
-      .IsLocallyInstalled(start_url);
+  return registrar().IsLocallyInstalled(start_url);
+}
+
+bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
+  web_app::AppId app_id = web_app::GenerateAppIdFromURL(manifest_.start_url);
+  DCHECK(registrar().IsLocallyInstalled(app_id));
+  auto launch_container = registrar().GetAppLaunchContainer(app_id);
+  return launch_container == web_app::LaunchContainer::kTab;
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {

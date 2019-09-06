@@ -9,6 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
@@ -27,9 +29,14 @@
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/search.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
+#include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -46,6 +53,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -414,6 +422,42 @@ void SearchTabHelper::FileSelectionCanceled(void* params) {
       ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
 }
 
+void SearchTabHelper::OnResultChanged(bool default_result_changed) {
+  if (!autocomplete_controller_ || !autocomplete_controller_->done() ||
+      !query_autocomplete_callback_) {
+    return;
+  }
+
+  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
+  for (const AutocompleteMatch& match : autocomplete_controller_->result()) {
+    chrome::mojom::AutocompleteMatchPtr mojom_match =
+        chrome::mojom::AutocompleteMatch::New();
+    mojom_match->allowed_to_be_default_match =
+        match.allowed_to_be_default_match;
+    mojom_match->contents = match.contents;
+    for (const auto& contents_class : match.contents_class) {
+      mojom_match->contents_class.push_back(
+          chrome::mojom::ACMatchClassification::New(contents_class.offset,
+                                                    contents_class.style));
+    }
+    mojom_match->description = match.description;
+    for (const auto& description_class : match.description_class) {
+      mojom_match->description_class.push_back(
+          chrome::mojom::ACMatchClassification::New(description_class.offset,
+                                                    description_class.style));
+    }
+    mojom_match->destination_url = match.destination_url.spec();
+    mojom_match->fill_into_edit = match.fill_into_edit;
+    mojom_match->inline_autocompletion = match.inline_autocompletion;
+    mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
+    mojom_match->swap_contents_and_description =
+        match.swap_contents_and_description;
+    mojom_match->type = AutocompleteMatchType::ToString(match.type);
+    matches.push_back(std::move(mojom_match));
+  }
+  std::move(query_autocomplete_callback_).Run(std::move(matches));
+}
+
 void SearchTabHelper::OnSelectLocalBackgroundImage() {
   if (select_file_dialog_)
     return;
@@ -493,6 +537,32 @@ void SearchTabHelper::OnRevertThemeChanges() {
 void SearchTabHelper::OnConfirmThemeChanges() {
   if (chrome_colors_service_)
     chrome_colors_service_->ConfirmThemeChanges();
+}
+
+void SearchTabHelper::QueryAutocomplete(
+    const std::string& input,
+    chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
+  if (!search::DefaultSearchProviderIsGoogle(profile())) {
+    std::move(callback).Run(std::vector<chrome::mojom::AutocompleteMatchPtr>());
+    return;
+  }
+
+  if (!autocomplete_controller_) {
+    int providers = AutocompleteProvider::TYPE_BOOKMARK |
+                    AutocompleteProvider::TYPE_BUILTIN |
+                    AutocompleteProvider::TYPE_HISTORY_QUICK |
+                    AutocompleteProvider::TYPE_HISTORY_URL |
+                    AutocompleteProvider::TYPE_SEARCH;
+    autocomplete_controller_ = std::make_unique<AutocompleteController>(
+        std::make_unique<ChromeAutocompleteProviderClient>(profile()), this,
+        providers);
+  }
+
+  query_autocomplete_callback_ = std::move(callback);
+
+  autocomplete_controller_->Start(AutocompleteInput(
+      base::UTF8ToUTF16(input), metrics::OmniboxEventProto::NTP_REALBOX,
+      ChromeAutocompleteSchemeClassifier(profile())));
 }
 
 OmniboxView* SearchTabHelper::GetOmniboxView() {

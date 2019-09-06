@@ -102,7 +102,7 @@ class PerfBenchmark(benchmark.Benchmark):
           GetAdTaggingProfileFiles(
               self._GetOutDirectoryEstimate(finder_options)))
 
-    # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
+    # A non-sandboxed, 120-seconds-delayed gpu process is currently running in
     # the browser to collect gpu info. A command line switch is added here to
     # skip this gpu process for all perf tests to prevent any interference
     # with the test results.

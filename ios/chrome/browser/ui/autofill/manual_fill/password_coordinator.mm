@@ -68,7 +68,7 @@
     _passwordMediator.actionSectionEnabled = YES;
     _passwordMediator.consumer = _passwordViewController;
     _passwordMediator.navigator = self;
-    _passwordMediator.contentDelegate = injectionHandler;
+    _passwordMediator.contentInjector = injectionHandler;
 
     _passwordViewController.imageDataSource = _passwordMediator;
   }

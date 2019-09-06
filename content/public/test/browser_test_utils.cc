@@ -3033,10 +3033,12 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
 void PwnMessageHelper::LockMouse(RenderProcessHost* process,
                                  int routing_id,
                                  bool user_gesture,
-                                 bool privileged) {
+                                 bool privileged,
+                                 bool request_unadjusted_movement) {
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       process->GetChannel(),
-      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged));
+      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged,
+                              request_unadjusted_movement));
 }
 
 #if defined(USE_AURA)

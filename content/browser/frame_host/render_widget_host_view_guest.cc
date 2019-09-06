@@ -478,8 +478,8 @@ void RenderWidgetHostViewGuest::DidStopFlinging() {
     rwhv->DidStopFlinging();
 }
 
-bool RenderWidgetHostViewGuest::LockMouse() {
-  return platform_view_->LockMouse();
+bool RenderWidgetHostViewGuest::LockMouse(bool request_unadjusted_movement) {
+  return platform_view_->LockMouse(request_unadjusted_movement);
 }
 
 void RenderWidgetHostViewGuest::UnlockMouse() {

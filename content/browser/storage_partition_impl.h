@@ -310,6 +310,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   friend class CookieStoreManagerTest;
   friend class PaymentAppContentUnitTestBase;
   friend class ServiceWorkerRegistrationTest;
+  friend class ServiceWorkerUpdateJobTest;
   friend class StoragePartitionImplMap;
   friend class URLLoaderFactoryForBrowserProcess;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);

@@ -1068,6 +1068,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return appcache_handle_.get();
   }
 
+  base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
+
  protected:
   friend class RenderFrameHostFactory;
 

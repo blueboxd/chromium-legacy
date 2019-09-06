@@ -29,7 +29,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
 
   // Invoked when the cache of proactive suggestions has changed.
   virtual void OnProactiveSuggestionsChanged(
-      scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {}
+      scoped_refptr<const ProactiveSuggestions> proactive_suggestions,
+      scoped_refptr<const ProactiveSuggestions> old_proactive_suggestions) {}
 
  protected:
   ~AssistantSuggestionsModelObserver() override = default;

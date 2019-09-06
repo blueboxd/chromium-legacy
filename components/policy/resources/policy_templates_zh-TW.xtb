@@ -756,24 +756,13 @@
       你仍可使用下載的字典執行拼字檢查，這項政策僅可控制是否使用線上服務。
 
       如果你並未設置這項設定，則使用者可自行選擇是否要使用拼字檢查服務。</translation>
-<translation id="229322770310505679">啟用政策不可部分完成群組的概念</translation>
+<translation id="229322770310505679">啟用不可部分完成的政策群組概念</translation>
 <translation id="2294382669900758280">即使將這項政策設為 <ph name="TRUE" />，在 Android 應用程式中播放的影片仍不會受到影響。</translation>
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="2303795211377219696">啟用信用卡的自動填入功能</translation>
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="2327252517317514801">定義可存取 G Suite 的網域</translation>
 <translation id="2345547870894930157">啟用 DNS-over-HTTPS，而且禁止改用不安全查詢</translation>
-<translation id="2356878440219553005">指定充電模式電源管理政策。
-
-          以動態方式控管充電模式，儘可能降低因過度使用造成的電池耗損，並延長電池壽命。
-
-          如果已選取自訂充電模式，就必須指定 DeviceBatteryChargeCustomStartCharging 和 DeviceBatteryChargeCustomStopCharging。
-
-          如果設定了這項政策，系統將一律在支援的裝置上套用充電模式。
-
-          如果裝置支援這項政策但你未設定政策，系統會套用標準充電模式，且使用者無法變更這個模式。
-
-          注意：如果你已指定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />，這項政策就會遭到覆寫。</translation>
 <translation id="237494535617297575">允許你設定網址模式清單，指定可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
 <translation id="2411817661175306360">密碼保護警告已關閉</translation>
@@ -934,9 +923,6 @@
           如果未設定這項政策，則預設值為 true 且系統將啟用 NTLMv2。</translation>
 <translation id="26023406105317310">設定 Kerberos 帳戶</translation>
 <translation id="2604182581880595781">設定網路檔案共用功能相關政策。</translation>
-<translation id="2618423683250606383"> 允許用來更新作業系統的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，同時也可能讓使用者必須支付額外費用，因此當使用者使用較昂貴的連線類型 (目前僅包括「cellular」) 時，預設情況並不允許進行作業系統更新。
-
-      系統可識別的連線類型識別碼包括「ethernet」、「wifi」和「cellular」。</translation>
 <translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME" />」文件提交功能</translation>
 <translation id="2627554163382448569">為企業印表機進行設定。
@@ -969,6 +955,7 @@
 
       如未設定這項政策，在預設情況下，受管理的使用者無法使用這項功能，未受管理的使用者則可使用這項功能。</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
+<translation id="2665422249821137126">在登入畫面上啟用大型游標</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
@@ -1181,6 +1168,15 @@
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3021562480854470924">允許復原的重要事件數</translation>
 <translation id="3023572080620427845">XML 檔案的網址，其中包含要在替代瀏覽器中載入的網址。</translation>
+<translation id="3026740867910702435">在登入畫面上啟用大型游標無障礙功能。
+
+          如果將這項政策設為 True，系統將一律在登入畫面上啟用大型游標。
+
+          如果將這項政策設為 False，系統將一律在登入畫面上停用大型游標。
+
+          設定這項政策後，使用者即無法變更或覆寫。
+
+          如果不設定這項政策，系統會在初次顯示登入畫面時停用大型游標，但使用者隨時可以啟用。</translation>
 <translation id="3030000825273123558">啟用計量回報功能</translation>
 <translation id="3033660238345063904">你可以在這裡指定 Proxy 伺服器的網址。
 
@@ -1352,17 +1348,13 @@
       這項政策僅能設為建議政策。你可以使用這項政策將一些建議語言代碼移到頂端，但使用者隨時能為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
       </translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
-<translation id="3384115339826100753">啟用「用電尖峰轉移」電源管理政策。
+<translation id="3388153794103186066">你可以設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID。否則這項政策將不會生效，並會遭到忽略。
 
-          「用電尖峰轉移」是一項省電政策，能夠在一天中的用電尖峰期間，將交流電的使用量降到最低。你可以針對每個工作日，個別設定「用電尖峰轉移」模式的開始和結束時間。在你所設定的時間內，只要電池電量高於指定閾值，即使裝置已連接到交流電源，系統仍會強制使用電池供電。到達指定的結束時間之後，如果裝置連接到交流電源，系統就會改用交流電源，但不會對電池充電。到達指定的充電開始時間之後，如果裝置連接到交流電源，系統會再次使用交流電源運作，同時為電池充電。
+        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「嵌入網址」)，將 USB 裝置的存取權授予要求網址。當要求網站在 iframe 中載入時，要求網址可能與嵌入網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以分別指定要求網址和嵌入網址。如果只指定一個網址，當要求網站的網址與這個網址相符時，不論其是否為嵌入網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
 
-          如果將這項政策設為 True，並設定 DevicePowerPeakShiftBatteryThreshold、DevicePowerPeakShiftDayConfig 政策，系統將一律在支援的裝置上開啟用電尖峰轉移功能。
+        如果不設定這項政策，所有網站都將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
 
-          如果將這項政策設為 False，系統一律會關閉尖峰用電轉移功能。
-
-          設定這項政策後，使用者即無法變更或覆寫。
-
-          如果未設定這項政策，系統預設會關閉用電尖峰轉移功能，且使用者無法啟用這項功能。</translation>
+        這項政策中的網址模式應與透過 WebUsbBlockedForUrls 所設定的網址模式保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。</translation>
 <translation id="3414260318408232239">如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本 TLS 1.0。
 
       這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
@@ -1666,15 +1658,6 @@
       設定這項裝置桌布政策後，當沒有任何使用者登入裝置時，Chrome 作業系統裝置將下載桌布圖片並顯示在登入畫面上。只要有使用者登入裝置，系統就會改用使用者的桌布政策。
 
       如果未設定這項裝置桌布政策，則會由使用者的桌布政策 (如有設定) 決定要顯示的圖片。</translation>
-<translation id="3965237961188543309">自訂停止充電的值 (以百分比表示)。
-
-          電池電量達到自訂的停止充電值時，就會停止充電。
-
-          DeviceBatteryChargeCustomStartCharging 的設定值必須至少小於 DeviceBatteryChargeCustomStopCharging 五個百分點。
-
-          你必須將 DeviceBatteryChargeMode 設為自訂，才能使用這項政策。
-
-          如果未設定或不設定這項政策，系統將套用標準充電模式。</translation>
 <translation id="3965339130942650562">逾時直到閒置使用者登出</translation>
 <translation id="3973371701361892765">永不自動隱藏檔案櫃</translation>
 <translation id="3984028218719007910">決定登出後 <ph name="PRODUCT_OS_NAME" /> 是否要保留本機帳戶資料。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 不會保留任何永久帳戶，並且在登出後會刪除使用者工作階段的所有資料。如果這項政策設為 False 或未設定，裝置會保留 (加密) 本機使用者資料。</translation>
@@ -1878,15 +1861,6 @@
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4285674129118156176">允許無關聯的使用者使用 ARC</translation>
-<translation id="4289903996435140853">你可以設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID，否則這項政策將不會生效，並會遭到忽略。
-
-        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「嵌入網址」)，將 USB 裝置的存取權授予要求網址。當要求網站在 iframe 中載入時，要求網址可能與嵌入網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以分別指定要求網址和嵌入網址。如果只指定一個網址，當要求網站的網址與這個網址相符時，不論其是否為嵌入網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
-
-        如果不設定這項政策，所有網站都將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
-
-        這項政策中的網址模式應與透過 WebUsbBlockedForUrls 所設定的網址模式保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。
-
-        系統會將這項政策的值和 WebUsbAllowDevicesForUrls 政策的值合併。</translation>
 <translation id="4298509794364745131">指定可在「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面中做為筆記應用程式使用的應用程式清單。
 
       如果你偏好的筆記應用程式可在螢幕鎖定畫面中啟用，螢幕鎖定畫面就會顯示使用者介面元素，供你啟動該應用程式。
@@ -2031,6 +2005,7 @@
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
+<translation id="4632261735235986857">禁止掃描檔案</translation>
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
 <translation id="4632566332417930481">禁止在由企業政策安裝的擴充功能中使用開發人員工具，允許在其他情況下使用開發人員工具</translation>
 <translation id="4633786464238689684">變更以鍵盤最上方一排按鍵做為功能鍵的預設行為。
@@ -2165,11 +2140,6 @@
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
 <translation id="5009903818924226868">不要檢查內容是否符合規範</translation>
 <translation id="5032164758660626397">禁止使用者傳輸大型檔案</translation>
-<translation id="5034604678285451405">設定用電尖峰轉移電池閾值 (以百分比為單位)。
-
-          你必須將 DevicePowerPeakShiftEnabled 設為 True，才能使用這項政策。
-
-          如果未設定這項政策，系統將一律關閉用電尖峰轉移功能。</translation>
 <translation id="5047604665028708335">允許存取內容套件以外的網站</translation>
 <translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽記錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽記錄。如果未設定這項政策，系統會自動匯入瀏覽記錄，或詢問使用者是否要匯入瀏覽記錄。</translation>
 <translation id="5055312535952606505">這項政策可設定 <ph name="PRODUCT_NAME" /> 的 Proxy 設定。ARC 應用程式也能使用這些 Proxy 設定。
@@ -2255,6 +2225,7 @@
 <translation id="5148753489738115745">允許你指定 <ph name="PRODUCT_FRAME_NAME" /> 啟動 <ph name="PRODUCT_NAME" /> 時使用的其他參數。
 
           如果未設定這項政策，系統會使用預設命令列。</translation>
+<translation id="5150323673529584553">不要掃描檔案</translation>
 <translation id="5152787786897382519">Chromium 和 Google Chrome 有部分政策群組具有相依關係，依此共同管控特定功能。這些組合如下列政策群組所示。由於政策可能具有多個來源，系統只會套用群組中最高優先來源所提供的值，忽略同個群組中優先順序較低的來源所提供的值。請參閱 <ph name="POLICY_PRIORITY_DOC_URL" /> 瞭解來源的優先順序。</translation>
 <translation id="5159469559091666409">監控網路封包的傳送頻率 (以毫秒為單位)。
 
@@ -2305,15 +2276,6 @@
 <translation id="5212810195096589189">指定 VM CLI 的權限</translation>
 <translation id="5213038356678567351">完全不該觸發瀏覽器切換的網站。</translation>
 <translation id="5219844027738217407">這項政策對 Android 應用程式的影響僅限於麥克風。將這項政策設為 true 時，所有 Android 應用程式皆無法使用麥克風 (設為靜音)，沒有任何例外。</translation>
-<translation id="5221394278852982313">你可以設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID。否則這項政策將不會生效，並會遭到忽略。
-
-        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「嵌入網址」)，將 USB 裝置的存取權授予要求網址。當要求網站在 iframe 中載入時，要求網址可能與嵌入網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以分別指定要求網址和嵌入網址。如果只指定一個網址，當要求網站的網址與這個網址相符時，不論其是否為嵌入網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
-
-        如果不設定這項政策，所有網站都將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
-
-        這項政策中的網址模式應與透過 WebUsbBlockedForUrls 所設定的網址模式保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。
-
-        系統會將這項政策的值和 DeviceWebUsbAllowDevicesForUrls 政策的值合併。</translation>
 <translation id="5228316810085661003">裝置本機帳戶自動登入延遲。
 
       如未設定 |DeviceLocalAccountAutoLoginId| 政策，這項政策不會生效。否則：
@@ -2379,11 +2341,11 @@
 
       如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 不會檢查資料是否符合規範。
 
-      如果將這項政策設為「Check downloads」，且使用者嘗試從 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中列出的網址下載檔案，<ph name="PRODUCT_NAME" /> 會檢查下載的資料是否遵守企業規則。
+      如果將這項政策設為「檢查下載檔案」，且使用者嘗試從 <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> 政策中列出的網址下載檔案，<ph name="PRODUCT_NAME" /> 會檢查下載的資料是否遵守企業規則。
 
-      如果將這項政策設為「Check uploads」，且使用者嘗試將檔案上傳至未列在 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 政策中的網域，<ph name="PRODUCT_NAME" /> 會檢查使用者上傳的檔案、從剪貼簿貼上或拖曳的資料是否遵守企業規則。
+      如果將這項政策設為「檢查上傳檔案」，且使用者嘗試將檔案上傳至未列在 <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> 政策中的網域，<ph name="PRODUCT_NAME" /> 會檢查使用者上傳的檔案、從剪貼簿貼上或拖曳的資料是否遵守企業規則。
 
-      如果將這項政策設為「Check uploads and downloads」，<ph name="PRODUCT_NAME" /> 將依照「Check downloads」和「Check uploads」設定的規則執行作業。
+      如果將這項政策設為「檢查上傳及下載檔案」，<ph name="PRODUCT_NAME" /> 將依照「檢查下載檔案」和「檢查上傳檔案」設定的規則執行作業。
       </translation>
 <translation id="532848608876725157">啟用 DNS-over-HTTPS，而且可以改用不安全查詢</translation>
 <translation id="5329007337159326804">警告：自 <ph name="PRODUCT_NAME" /> 版本 75 (2019 年 6 月左右推出) 起，我們將全面移除 TLS 最高版本政策。
@@ -2406,6 +2368,17 @@
 <translation id="5369937289900051171">僅限彩色列印</translation>
 <translation id="5370279767682621504">在非預設通訊埠啟用 HTTP/0.9 支援功能</translation>
 <translation id="5378985487213287085">允許你設定是否要讓網站顯示桌面通知。你可以將網站預設為允許或禁止顯示桌面通知，也可以設為每次網站要顯示桌面通知時再詢問使用者。如果未設定這項政策，系統會使用「AskNotifications」，但使用者可以變更這項設定。</translation>
+<translation id="5380329473151894945">設定大型游標無障礙功能在登入畫面中的預設狀態。
+
+          如果將這項政策設為 True，系統會在登入畫面顯示時啟用大型游標。
+
+          如果將這項政策設為 True，系統會在登入畫面顯示時停用大型游標。
+
+          設定這項政策後，使用者可以啟用或停用大型游標以暫時覆寫此政策。不過，使用者的選擇並非持續有效；每當系統顯示新的登入畫面，或使用者在登入畫面上閒置一分鐘後，系統便會還原預設設定。
+
+          如果不設定這項政策，系統會在初次顯示登入畫面時停用大型游標。使用者隨時可以啟用或停用大型游標，這項功能在登入畫面中的狀態，會在不同使用者之間持續下去。
+
+          注意：如果你已指定 <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" />，這項政策會遭到覆寫。</translation>
 <translation id="538108065117008131">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型。</translation>
 <translation id="5391388690191341203">用於自動登入的裝置本機帳戶</translation>
 <translation id="5392172595902933844">將 Android 狀態的相關資訊傳回
@@ -2919,11 +2892,11 @@
 
       如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 會允許使用者上傳或下載任何大小的檔案。
 
-      如果將這項政策設為「Block large downloads」，當檔案過大而無法掃描時，系統會在將檔案提供給使用者之前就先刪除檔案。由於 <ph name="PRODUCT_NAME" /> 不一定可在下載前判定檔案大小，系統可能會先下載檔案，再判斷檔案大小是否超過允許的大小上限。
+      如果將這項政策設為「禁止下載大型檔案」，當檔案過大而無法掃描時，系統會在將檔案提供給使用者之前就先刪除檔案。由於 <ph name="PRODUCT_NAME" /> 不一定可在下載前判定檔案大小，系統可能會先下載檔案，再判斷檔案大小是否超過允許的大小上限。
 
-      如果將這項政策設為「Block large uploads」，使用者在上傳時將無法選取因大小過大而無法掃描的檔案。
+      如果將這項政策設為「禁止上傳大型檔案」，使用者在上傳時將無法選取因大小過大而無法掃描的檔案。
 
-      如果將這項政策設為「Block large file uploads and downloads」，<ph name="PRODUCT_NAME" /> 會依照「Block large downloads」和「Block large uploads」設定的規則執行作業。
+      如果將這項政策設為「禁止上傳及下載大型檔案」，<ph name="PRODUCT_NAME" /> 會依照「禁止下載大型檔案」和「禁止上傳大型檔案」設定的規則執行作業。
       </translation>
 <translation id="6310223829319187614">允許在使用者登入過程中以自動完成功能填入網域名稱</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
@@ -3144,7 +3117,7 @@
 
       如果將這項政策設為 False，使用者將無法透過非無痕式瀏覽器內容區域和 Android 應用程式登入其他 Google 帳戶。
 
-      如果將這項政策設為 True 或不予設定，系統就會採用預設行為：使用者可透過瀏覽器內容區域和 Android 應用程式登入其他 Google 帳戶，但無法透過非無痕式內容區域登入子帳戶。
+      如果將這項政策設為 True 或不予設定，系統就會採用預設行為：使用者可透過瀏覽器內容區域和 Android 應用程式登入其他 Google 帳戶，但無法透過非無痕式內容區域登入兒童帳戶。
 
       如要禁止透過無痕模式登入其他帳戶，建議你使用 IncognitoModeAvailability 政策封鎖該模式。
 
@@ -3246,17 +3219,6 @@
 在螢幕即將變暗時，智慧型調光模式會評估是否要延遲螢幕變暗的時間。如果智慧型調光模式決定延遲螢幕變暗的時間，使用時間就會確實延長至螢幕變暗為止。在這種情況下，關閉螢幕、鎖定螢幕和閒置狀態的延遲時間也會隨之調整，以維持原本所設定的相同時間比例。
 
 如果你將這項政策設為 True 或不予設定，系統會啟用智慧型調光模式並允許延長使用時間，直到螢幕變暗為止。如果將這項政策設為 False，智慧型調光模式便無法管理螢幕的調光設定。</translation>
-<translation id="6967394885063085697">啟用進階充電模式電源管理政策。
-
-          進階充電模式可讓使用者大幅延長電池壽命。使用進階充電模式時，系統會在非工作時間採用標準充電演算法和其他技術儘可能延長電池壽命。在工作時間則會使用快速充電模式。這種快速充電模式會加快充電速度，因此電池可以更快充飽。你可以設定開始時間和持續期間，指定每天最常使用系統的時間。
-
-          如果將這項政策設為 True，且已設定 DeviceAdvancedBatteryChargeModeDayConfig，系統將一律在支援的裝置上啟用進階充電模式。
-
-          如果將這項政策設為 False，系統將一律停用進階充電模式。
-
-          設定這項政策後，使用者即無法變更或覆寫。
-
-          如果未設定這項政策，系統會停用進階充電模式，且使用者無法啟用。</translation>
 <translation id="6972540544240464302">選取工作排程器設定</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
@@ -3543,11 +3505,11 @@
 
       如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 不會延遲任何檔案的上傳作業，也不會延後從剪貼簿貼上或拖曳資料，或是讓使用者延後存取任何下載的檔案。掃描作業會在背景執行。
 
-      如果將這項政策設為「Delay downloads」，系統必須先掃描下載檔案並取得掃描結果，使用者才能存取該檔案。
+      如果將這項政策設為「延遲下載」，系統必須先掃描下載檔案並取得掃描結果，使用者才能存取該檔案。
 
-      如果將這項政策設為「Delay uploads」，則使用者必須等到系統完成掃描作業並取得掃描結果後，才能嘗試上傳檔案、從剪貼簿貼上或拖曳資料。
+      如果將這項政策設為「延遲上傳」，則使用者必須等到系統完成掃描作業並取得掃描結果後，才能嘗試上傳檔案、從剪貼簿貼上或拖曳資料。
 
-      如果將這項政策設為「Delay both uploads and downloads」，<ph name="PRODUCT_NAME" /> 會依照「Delay downloads」和「Delay uploads」設定的規則執行作業。
+      如果將這項政策設為「延遲上傳及下載」，<ph name="PRODUCT_NAME" /> 會依照「延遲下載」和「延遲上傳」設定的規則執行作業。
       </translation>
 <translation id="7372831798009983116">啟用自動點擊無障礙功能</translation>
 <translation id="737655323154569539">限制列印頁面大小。未設定這項政策或將設定留空，系統會視為未設限制。</translation>
@@ -3704,15 +3666,6 @@
 <translation id="7712109699186360774">每當有任何網站要使用攝影機和/或麥克風時詢問我</translation>
 <translation id="7713608076604149344">下載限制</translation>
 <translation id="7715711044277116530">簡報模式中的螢幕調暗延遲時間延長百分比</translation>
-<translation id="7716781462866245042">設定進階充電模式日間配置。
-
-          你必須將 DeviceAdvancedBatteryChargeModeEnabled 設為 True，才能使用這項政策。
-
-          如果未設定這項政策，系統將一律停用進階充電模式。
-
-          注意：「<ph name="CHARGE_START_TIME_FIELD_NAME" />」必須小於「<ph name="CHARGE_END_TIME_FIELD_NAME" />」。
-
-          注意：「<ph name="CHARGE_START_TIME_FIELD_NAME" />」和「<ph name="CHARGE_END_TIME_FIELD_NAME" />」的「<ph name="MINUTE_FIELD_NAME" />」欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 無障礙功能。</translation>
 <translation id="7744220323108979821">將下載內容儲存到本機儲存空間之前，必須檢查內容是否符合規範的網域清單。只有在 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 設為啟用的情況下，系統才會使用這項政策。
 
@@ -3986,11 +3939,11 @@
 
       如果將這項政策設為 False，系統不會回報統計資料。
       如果設為 True 或不設定，則系統會回報統計資料。</translation>
-<translation id="829337533107201925">如果啟用這項政策，當政策來自不可部分完成群組，而且該群組並未與來源分享最高優先權，則這項政策會遭到忽略。
+<translation id="829337533107201925">如果啟用這項政策，那麼只要是來自不可部分完成的群組，而且來源與該群組中最高優先權項目不同的政策，即會遭到忽略。
 
       如果將這項政策設為停用，政策不會因來源而遭到忽略，只會在發生政策衝突或沒有最高優先權的情況下遭到忽略。
 
-      如果透過雲端來源設定這項政策，該政策就不能指定特定使用者</translation>
+      如果透過雲端來源設定這項政策，就不能將特定使用者設為政策目標</translation>
 <translation id="8294750666104911727">無論「ChromeFrameRendererSettings」政策為何，一般而言，X-UA-Compatible 設為 chrome=1 的網頁將會在 <ph name="PRODUCT_FRAME_NAME" /> 中開啟。
 
           如果你啟用這項設定，系統將不會掃描網頁的中繼標記。
@@ -4137,6 +4090,7 @@
 
       如果將這項政策設為 False 或不予設定，使用者不必登入 <ph name="PRODUCT_NAME" /> 即可使用瀏覽器。</translation>
 <translation id="858309738002328421">禁止上傳大型檔案</translation>
+<translation id="8585558195682146109">傳送使用者下載內容以供掃描</translation>
 <translation id="8586528890725660268">指定哪些印表機是禁止使用的。
 
       只有在為 <ph name="BULK_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_BLACKLIST" /> 的情況下，這項政策才有作用。
@@ -4168,15 +4122,6 @@
       https://support.google.com/a/answer/1668854。
 
       使用者無法變更或覆寫這項設定。</translation>
-<translation id="8621541220777415304">自訂開始充電的值 (以百分比表示)。
-
-          電池電量耗用到自訂的開始充電值時，就會開始充電。
-
-          DeviceBatteryChargeCustomStartCharging 的設定值必須至少小於 DeviceBatteryChargeCustomStopCharging 五個百分點。
-
-          你必須將 DeviceBatteryChargeMode 設為自訂，才能使用這項政策。
-
-          如果未設定或不設定這項政策，系統將套用標準充電模式。</translation>
 <translation id="8631434304112909927">到第 <ph name="UNTIL_VERSION" /> 版為止</translation>
 <translation id="8649763579836720255">當 Chrome 作業系統 CA 判斷裝置可播放受保護內容，Chrome 作業系統裝置可以使用遠端證明 (已驗證存取權) 取得其所發出的憑證。在此過程中，系統會傳送硬體簽署資訊到識別裝置的 Chrome 作業系統 CA。
 
@@ -4198,13 +4143,6 @@
 <translation id="8698286761337647563">當 SAML 使用者的密碼即將到期，系統要提前幾天通知</translation>
 <translation id="870193046368370542">不須檢查上傳內容是否符合規範的網域清單</translation>
 <translation id="8703488928438047864">回報主機板狀態</translation>
-<translation id="8703872185032220081">設定日間用電尖峰轉移配置。
-
-          你必須將 DevicePowerPeakShiftEnabled 設為 True，才能使用這項政策。
-
-          如果未設定這項政策，系統將一律關閉用電尖峰轉移功能。
-
-          注意：在 <ph name="START_TIME_FIELD_NAME" />、<ph name="END_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 的 <ph name="MINUTE_FIELD_NAME" /> 欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
 <translation id="8711086062295757690">指定關鍵字，這是網址列用來為這個引擎觸發搜尋的捷徑。這項政策是選擇性的，如果未設定，就沒有關鍵字會啟動搜尋引擎。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="8733448613597049197">啟用 <ph name="PRODUCT_NAME" /> 安全瀏覽模式的進階回報功能，並禁止使用者變更這項設定。
@@ -4463,16 +4401,6 @@
 <translation id="9167719789236691545">禁止在 <ph name="PRODUCT_OS_NAME" />的「檔案」應用程式中使用 Google 雲端硬碟</translation>
 <translation id="9185107612228451403">這會設定擴充功能相關政策。使用者不得安裝黑名單上的擴充功能，只有將相關擴充功能加到許可清單後才能安裝。你也可以強制 <ph name="PRODUCT_NAME" /> 自動安裝某些擴充功能，只要在 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> 政策中指定這些擴充功能即可。如果強制安裝某些擴充功能，不論這些擴充功能是否列在黑名單上，系統一律會予以安裝。</translation>
 <translation id="9187743794267626640">停用外部儲存裝置掛載功能</translation>
-<translation id="9194104903662563224">必須進行掃描時，控管使用者是否可以上傳或下載受密碼保護的檔案。如果 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 或控管已啟用檢查功能的網域清單政策判斷檔案需要掃描，系統才會套用這項限制。
-
-      如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 會禁止使用者上傳或下載受密碼保護的檔案。
-
-      如果將這項政策設為「Allow downloads」，<ph name="PRODUCT_NAME" /> 會允許使用者下載受密碼保護的檔案。
-
-      如果將這項政策設為「Allow uploads」，<ph name="PRODUCT_NAME" /> 會允許使用者上傳受密碼保護的檔案。
-
-      如果這項政策設為「Allow uploads and downloads」，<ph name="PRODUCT_NAME" /> 會依照「Allow downloads」和「Allow uploads」設定的規則執行作業。
-      </translation>
 <translation id="9197740283131855199">使用者在螢幕調暗後繼續使用裝置時的螢幕調暗時間延長百分比</translation>
 <translation id="9200828125069750521">使用 POST 的圖片網址參數</translation>
 <translation id="920209539000507585">強制啟用或停用列印對話方塊中的「頁首及頁尾」選項

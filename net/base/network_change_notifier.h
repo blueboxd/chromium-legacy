@@ -439,6 +439,9 @@ class NET_EXPORT NetworkChangeNotifier {
   static void RemoveMaxBandwidthObserver(MaxBandwidthObserver* observer);
   static void RemoveNetworkObserver(NetworkObserver* observer);
 
+  // Called to signify a non-system DNS config change.
+  static void TriggerNonSystemDnsChange();
+
   // Allow unit tests to trigger notifications.
   static void NotifyObserversOfIPAddressChangeForTests();
   static void NotifyObserversOfConnectionTypeChangeForTests(

@@ -15,7 +15,6 @@
 <translation id="1524282610922162960">Compartilhar uma guia do Chromium</translation>
 <translation id="1668054258064581266">Depois de remover sua conta do Chromium, pode ser necessário recarregar as guias abertas para que a alteração entre em vigor.</translation>
 <translation id="1688750314291223739">Configure a sincronização para salvar suas características de navegador personalizadas na web e acessá-las do Chromium em qualquer computador.</translation>
-<translation id="1705503634486268204">O Chromium pode ajudar a lembrar suas senhas para que você não tenha que memorizá-las.</translation>
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
 <translation id="1766096484055239003">Seu administrador exige que você reinicie o Chromium para que uma atualização seja aplicada</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
@@ -29,7 +28,6 @@
 <translation id="2008474315282236005">Essa ação excluirá 1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Seu administrador pede que você reinicie o Chromium para que essa atualização seja aplicada</translation>
 <translation id="2119636228670142020">Sobre o &amp;Chromium OS</translation>
-<translation id="2178765360243863853">Reinicie o Chromium agora</translation>
 <translation id="2241627712206172106">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que desejarem.</translation>
 <translation id="2265088490657775772">use o Chromium no seu iPhone</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
@@ -139,7 +137,6 @@
 <translation id="6096348254544841612">Personalize e controle o Chromium. Uma atualização está disponível.</translation>
 <translation id="6120345080069858279">O Chromium salvará essa senha na sua Conta do Google. Você não precisará se lembrar dela.</translation>
 <translation id="6129621093834146363">O arquivo <ph name="FILE_NAME" /> é perigoso. Por isso ele foi bloqueado pelo Chromium.</translation>
-<translation id="6173098285107411678">Se uma configuração não for exibida nesta página, verifique as <ph name="LINK_BEGIN" />configurações do navegador Chromium<ph name="LINK_END" /></translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver funcionando, desinstale o Chromium e tente novamente.</translation>
 <translation id="6219195342503754812">{0,plural, =0{O Chromium será reiniciado agora}=1{O Chromium será reiniciado em 1 segundo}one{O Chromium será reiniciado em # segundo}other{O Chromium será reiniciado em # segundos}}</translation>
 <translation id="6248213926982192922">Tornar o Chromium o navegador padrão</translation>

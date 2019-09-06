@@ -354,7 +354,8 @@ TEST_F(PacFileFetcherImplTest, HttpStatusCode) {
     int result = pac_fetcher->Fetch(url, &text, callback.callback(),
                                     TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
-    EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_STATUS_NOT_OK));
+    EXPECT_THAT(callback.WaitForResult(),
+                IsError(ERR_HTTP_RESPONSE_CODE_FAILURE));
     EXPECT_TRUE(text.empty());
   }
   {  // Fetch a PAC which gives a 404 -- FAIL
@@ -364,7 +365,8 @@ TEST_F(PacFileFetcherImplTest, HttpStatusCode) {
     int result = pac_fetcher->Fetch(url, &text, callback.callback(),
                                     TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_THAT(result, IsError(ERR_IO_PENDING));
-    EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PAC_STATUS_NOT_OK));
+    EXPECT_THAT(callback.WaitForResult(),
+                IsError(ERR_HTTP_RESPONSE_CODE_FAILURE));
     EXPECT_TRUE(text.empty());
   }
 }

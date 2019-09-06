@@ -229,6 +229,12 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
 
 ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
+  // The BlinkIDL definition for GetDatabaseInfo already has a [MeasureAs]
+  // attribute, so the kIndexedDBRead use counter for kIndexedDBRead must be
+  // explicitly updated.
+  UseCounter::Count(ExecutionContext::From(script_state),
+                    WebFeature::kIndexedDBRead);
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (!IsContextValid(ExecutionContext::From(script_state))) {

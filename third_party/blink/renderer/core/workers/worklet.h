@@ -38,7 +38,8 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // addModule() imports ES6 module scripts.
   ScriptPromise addModule(ScriptState*,
                           const String& module_url,
-                          const WorkletOptions*);
+                          const WorkletOptions*,
+                          ExceptionState&);
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

@@ -31,6 +31,8 @@ class NET_EXPORT WebSocketFrameParser {
 
   // Decodes the given byte stream and stores parsed WebSocket frames in
   // |frame_chunks|.
+  // Each WebSocketFrameChunk's payload is a subspan of [data, data + length).
+  // Thus callers must take care of its lifecycle.
   //
   // If the parser encounters invalid payload length format, Decode() fails
   // and returns false. Once Decode() has failed, the parser refuses to decode

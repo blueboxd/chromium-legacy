@@ -53,6 +53,9 @@ extern const base::Feature kWebPaymentsRedactShippingAddress;
 // hasEnrolledInstrument() queries.
 extern const base::Feature kStrictHasEnrolledAutofillInstrument;
 
+// Used to enable skip-to-GPay experimental flow.
+extern const base::Feature kPaymentRequestSkipToGPay;
+
 }  // namespace features
 }  // namespace payments
 

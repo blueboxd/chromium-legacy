@@ -37,11 +37,22 @@ TEST_F(DisplayUtilTest, DisplayZooms) {
       {2400, {1.f, 1.10f, 1.15f, 1.20f, 1.30f, 1.40f, 1.50f, 1.75f, 2.00f}},
   }};
   for (const auto& data : kTestData) {
-    ManagedDisplayMode mode(gfx::Size(data.first, data.first), 60, false, true,
-                            1.f);
-    const std::vector<float> zoom_values = GetDisplayZoomFactors(mode);
-    for (std::size_t j = 0; j < kNumOfZoomFactors; j++)
-      EXPECT_FLOAT_EQ(zoom_values[j], data.second[j]);
+    {
+      SCOPED_TRACE("Landscape");
+      ManagedDisplayMode mode(gfx::Size(data.first, data.first / 2), 60, false,
+                              true, 1.f);
+      const std::vector<float> zoom_values = GetDisplayZoomFactors(mode);
+      for (std::size_t j = 0; j < kNumOfZoomFactors; j++)
+        EXPECT_FLOAT_EQ(zoom_values[j], data.second[j]);
+    }
+    {
+      SCOPED_TRACE("Portrait");
+      ManagedDisplayMode mode(gfx::Size(data.first / 2, data.first), 60, false,
+                              true, 1.f);
+      const std::vector<float> zoom_values = GetDisplayZoomFactors(mode);
+      for (std::size_t j = 0; j < kNumOfZoomFactors; j++)
+        EXPECT_FLOAT_EQ(zoom_values[j], data.second[j]);
+    }
   }
 }
 

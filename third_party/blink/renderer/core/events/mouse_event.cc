@@ -246,7 +246,10 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
   initializer->setClientX(client_point.X());
   initializer->setClientY(client_point.Y());
 
-  if (!RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled()) {
+  // TODO(crbug.com/982379): We need to merge the code path of raw movement
+  // events and regular events so that we can remove the block below.
+  if (web_pointer_properties.is_raw_movement_event ||
+      !RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled()) {
     // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we
     // do that here and round it to the int again it causes inconsistencies
     // between screenX/Y and cumulative movementX/Y.

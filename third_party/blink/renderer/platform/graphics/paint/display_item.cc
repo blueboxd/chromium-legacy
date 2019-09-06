@@ -30,20 +30,22 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case 2:
       return "PaintPhaseDescendantBlockBackgroundsOnly";
     case 3:
-      return "PaintPhaseFloat";
+      return "PaintPhaseForcedColorsModeBackplate";
     case 4:
-      return "PaintPhaseForeground";
+      return "PaintPhaseFloat";
     case 5:
-      return "PaintPhaseOutline";
+      return "PaintPhaseForeground";
     case 6:
-      return "PaintPhaseSelfOutlineOnly";
+      return "PaintPhaseOutline";
     case 7:
-      return "PaintPhaseDescendantOutlinesOnly";
+      return "PaintPhaseSelfOutlineOnly";
     case 8:
-      return "PaintPhaseOverlayScrollbars";
+      return "PaintPhaseDescendantOutlinesOnly";
     case 9:
-      return "PaintPhaseSelection";
+      return "PaintPhaseOverlayScrollbars";
     case 10:
+      return "PaintPhaseSelection";
+    case 11:
       return "PaintPhaseTextClip";
     case DisplayItem::kPaintPhaseMax:
       return "PaintPhaseMask";

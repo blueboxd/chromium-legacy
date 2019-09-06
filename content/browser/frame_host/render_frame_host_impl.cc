@@ -3913,6 +3913,10 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
       bypass_redirect_checks);
 }
 
+base::WeakPtr<RenderFrameHostImpl> RenderFrameHostImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void RenderFrameHostImpl::TransferUserActivationFrom(
     int32_t source_routing_id) {
   RenderFrameHostImpl* source_rfh =

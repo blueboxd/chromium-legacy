@@ -1351,8 +1351,7 @@ bool LoginDatabase::GetLogins(
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
   const bool should_PSL_matching_apply =
-      form.scheme == PasswordForm::Scheme::kHtml &&
-      ShouldPSLDomainMatchingApply(registered_domain);
+      !registered_domain.empty() && form.scheme == PasswordForm::Scheme::kHtml;
   const bool should_federated_apply =
       form.scheme == PasswordForm::Scheme::kHtml;
   DCHECK(!get_statement_.empty());

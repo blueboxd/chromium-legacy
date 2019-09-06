@@ -28,6 +28,8 @@ namespace autofill {
 namespace {
 // Default timeout for user to respond to WebAuthn prompt.
 constexpr int kWebAuthnTimeoutMs = 3 * 60 * 1000;  // 3 minutes
+// Timeout to wait for synchronous version of IsUserVerifiable().
+constexpr int kIsUserVerifiableTimeoutMs = 1000;
 constexpr char kGooglePaymentsRpid[] = "google.com";
 constexpr char kGooglePaymentsRpName[] = "Google Payments";
 
@@ -51,7 +53,10 @@ CreditCardFIDOAuthenticator::CreditCardFIDOAuthenticator(AutofillDriver* driver,
                                                          AutofillClient* client)
     : autofill_driver_(driver),
       autofill_client_(client),
-      payments_client_(client->GetPaymentsClient()) {}
+      payments_client_(client->GetPaymentsClient()),
+      user_is_verifiable_callback_received_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {}
 
@@ -108,6 +113,21 @@ void CreditCardFIDOAuthenticator::IsUserVerifiable(
   } else {
     std::move(callback).Run(false);
   }
+}
+
+bool CreditCardFIDOAuthenticator::IsUserVerifiable() {
+  if (user_is_verifiable_.has_value())
+    return user_is_verifiable_.value();
+
+  IsUserVerifiable(
+      base::BindOnce(&CreditCardFIDOAuthenticator::SetUserIsVerifiable,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  user_is_verifiable_callback_received_.declare_only_used_while_idle();
+  user_is_verifiable_callback_received_.TimedWait(
+      base::TimeDelta::FromMilliseconds(kIsUserVerifiableTimeoutMs));
+
+  return user_is_verifiable_.value_or(false);
 }
 
 bool CreditCardFIDOAuthenticator::IsUserOptedIn() {
@@ -440,6 +460,11 @@ bool CreditCardFIDOAuthenticator::IsValidCreationOptions(
     const base::Value& creation_options) {
   return creation_options.is_dict() &&
          creation_options.FindStringKey("challenge");
+}
+
+void CreditCardFIDOAuthenticator::SetUserIsVerifiable(bool user_is_verifiable) {
+  user_is_verifiable_ = user_is_verifiable;
+  user_is_verifiable_callback_received_.Signal();
 }
 
 }  // namespace autofill

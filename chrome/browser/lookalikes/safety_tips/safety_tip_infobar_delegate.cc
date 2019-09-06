@@ -22,13 +22,15 @@ using safety_tips::SafetyTipInfoBarDelegate;
 namespace safety_tips {
 
 // From safety_tip_ui.h
-void ShowSafetyTipDialog(content::WebContents* web_contents,
-                         security_state::SafetyTipStatus safety_tip_status,
-                         const GURL& url) {
+void ShowSafetyTipDialog(
+    content::WebContents* web_contents,
+    security_state::SafetyTipStatus safety_tip_status,
+    const GURL& url,
+    base::OnceCallback<void(SafetyTipInteraction)> close_callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  auto delegate = std::make_unique<SafetyTipInfoBarDelegate>(safety_tip_status,
-                                                             url, web_contents);
+  auto delegate = std::make_unique<SafetyTipInfoBarDelegate>(
+      safety_tip_status, url, web_contents, std::move(close_callback));
   infobar_service->AddInfoBar(
       SafetyTipInfoBar::CreateInfoBar(std::move(delegate)));
 }
@@ -38,10 +40,16 @@ void ShowSafetyTipDialog(content::WebContents* web_contents,
 SafetyTipInfoBarDelegate::SafetyTipInfoBarDelegate(
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& url,
-    WebContents* web_contents)
+    WebContents* web_contents,
+    base::OnceCallback<void(SafetyTipInteraction)> close_callback)
     : safety_tip_status_(safety_tip_status),
       url_(url),
+      close_callback_(std::move(close_callback)),
       web_contents_(web_contents) {}
+
+SafetyTipInfoBarDelegate::~SafetyTipInfoBarDelegate() {
+  std::move(close_callback_).Run(action_taken_);
+}
 
 base::string16 SafetyTipInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY);
@@ -66,6 +74,7 @@ base::string16 SafetyTipInfoBarDelegate::GetButtonLabel(
 }
 
 bool SafetyTipInfoBarDelegate::Accept() {
+  action_taken_ = SafetyTipInteraction::kLeaveSite;
   LeaveSite(web_contents_);
   return true;
 }
@@ -73,7 +82,9 @@ bool SafetyTipInfoBarDelegate::Accept() {
 bool SafetyTipInfoBarDelegate::Cancel() {
   auto* tab = TabAndroid::FromWebContents(web_contents_);
   if (tab) {
-    safety_tips::ReputationService::Get(tab->GetProfile())->SetUserIgnore(url_);
+    action_taken_ = SafetyTipInteraction::kDismiss;
+    safety_tips::ReputationService::Get(tab->GetProfile())
+        ->SetUserIgnore(web_contents_, url_);
   }
 
   return true;

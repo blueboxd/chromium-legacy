@@ -135,7 +135,7 @@ class OAuthTokenGetterProxyTest : public testing::Test {
 
   std::unique_ptr<TokenCallbackResult> expected_callback_result_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetterProxyTest);
 };

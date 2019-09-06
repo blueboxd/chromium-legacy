@@ -36,6 +36,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
@@ -477,11 +478,11 @@ void ResourceLoader::Start() {
   }
 
   if (request.IsAutomaticUpgrade()) {
-    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
     Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        mojo::MakeRequest(&recorder_ptr));
+        pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
-        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
+        std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kStarted,
                                base::nullopt, request.GetUkmSourceId(),
                                recorder.get(), resource_);
@@ -912,11 +913,11 @@ void ResourceLoader::DidReceiveResponseInternal(
   const ResourceRequest& request = resource_->GetResourceRequest();
 
   if (request.IsAutomaticUpgrade()) {
-    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
     Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        mojo::MakeRequest(&recorder_ptr));
+        pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
-        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
+        std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kResponseReceived,
                                response.HttpStatusCode(),
                                request.GetUkmSourceId(), recorder.get(),
@@ -1185,11 +1186,11 @@ void ResourceLoader::DidFail(const WebURLError& error,
   const ResourceRequest& request = resource_->GetResourceRequest();
 
   if (request.IsAutomaticUpgrade()) {
-    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
     Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        mojo::MakeRequest(&recorder_ptr));
+        pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
-        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
+        std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kFailed,
                                error.reason(), request.GetUkmSourceId(),
                                recorder.get(), resource_);

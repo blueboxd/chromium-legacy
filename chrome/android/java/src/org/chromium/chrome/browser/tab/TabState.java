@@ -318,7 +318,10 @@ public class TabState {
             }
             try {
                 tabState.tabLaunchTypeAtCreation = stream.readInt();
-                if (tabState.tabLaunchTypeAtCreation == -1) tabState.tabLaunchTypeAtCreation = null;
+                if (tabState.tabLaunchTypeAtCreation < 0
+                        || tabState.tabLaunchTypeAtCreation >= TabLaunchType.SIZE) {
+                    tabState.tabLaunchTypeAtCreation = null;
+                }
             } catch (EOFException eof) {
                 tabState.tabLaunchTypeAtCreation = null;
                 Log.w(TAG,

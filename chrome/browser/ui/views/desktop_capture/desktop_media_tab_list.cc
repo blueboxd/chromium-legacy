@@ -157,12 +157,8 @@ const char* DesktopMediaTabList::GetClassName() const {
 }
 
 gfx::Size DesktopMediaTabList::CalculatePreferredSize() const {
-  int rows = model_->RowCount();
-  // Empirical constants! Don't show too many rows at a time if the user has
-  // hundreds of tabs, but don't show too few if there's only one tab because
-  // the UI then looks squished.
-  rows = base::ClampToRange(rows, 4, 10);
-  return gfx::Size(0, rows * child_->GetRowHeight());
+  // The picker should have a fixed height of 10 rows.
+  return gfx::Size(0, child_->GetRowHeight() * 10);
 }
 
 int DesktopMediaTabList::GetHeightForWidth(int width) const {

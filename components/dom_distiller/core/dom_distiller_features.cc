@@ -11,9 +11,14 @@
 
 namespace dom_distiller {
 
-bool IsEnableDomDistillerSet() {
+bool IsDomDistillerEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDomDistiller);
+}
+
+bool ShouldStartDistillabilityService() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDistillabilityService);
 }
 
 }  // namespace dom_distiller

@@ -109,7 +109,7 @@ class ReceiverCallbackTest : public testing::Test {
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 // Tests that the Remote and the Receiver can communicate with each other

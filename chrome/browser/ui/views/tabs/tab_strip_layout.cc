@@ -51,13 +51,13 @@ bool TabSizer::IsAlreadyPreferredWidth() const {
 // use up that width.
 void AllocateExtraSpace(std::vector<gfx::Rect>* bounds,
                         const std::vector<TabWidthConstraints>& tabs,
-                        int width,
+                        base::Optional<int> width,
                         TabSizer tab_sizer) {
   // Don't expand tabs if they are already at their preferred width.
-  if (tab_sizer.IsAlreadyPreferredWidth())
+  if (tab_sizer.IsAlreadyPreferredWidth() || !width.has_value())
     return;
 
-  const int extra_space = width - bounds->back().right();
+  const int extra_space = width.value() - bounds->back().right();
   int allocated_extra_space = 0;
   for (size_t i = 0; i < tabs.size(); i++) {
     const TabWidthConstraints& tab = tabs[i];
@@ -73,7 +73,10 @@ void AllocateExtraSpace(std::vector<gfx::Rect>* bounds,
 TabSizer CalculateSpaceFractionAvailable(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    int width) {
+    base::Optional<int> width) {
+  if (!width.has_value())
+    return TabSizer(LayoutDomain::kInactiveWidthEqualsActiveWidth, 1);
+
   float minimum_width = 0;
   float crossover_width = 0;
   float preferred_width = 0;
@@ -96,13 +99,13 @@ TabSizer CalculateSpaceFractionAvailable(
   if (width < crossover_width) {
     domain = LayoutDomain::kInactiveWidthBelowActiveWidth;
     space_fraction_available =
-        (width - minimum_width) / (crossover_width - minimum_width);
+        (width.value() - minimum_width) / (crossover_width - minimum_width);
   } else {
     domain = LayoutDomain::kInactiveWidthEqualsActiveWidth;
-    space_fraction_available =
-        preferred_width == crossover_width
-            ? 1
-            : (width - crossover_width) / (preferred_width - crossover_width);
+    space_fraction_available = preferred_width == crossover_width
+                                   ? 1
+                                   : (width.value() - crossover_width) /
+                                         (preferred_width - crossover_width);
   }
 
   space_fraction_available =
@@ -113,7 +116,7 @@ TabSizer CalculateSpaceFractionAvailable(
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    int width,
+    base::Optional<int> width,
     base::Optional<TabSizer> override_tab_sizer) {
   if (tabs.empty())
     return std::vector<gfx::Rect>();

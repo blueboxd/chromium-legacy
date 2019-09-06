@@ -150,7 +150,8 @@ class DeviceService : public service_manager::Service {
 #if !defined(OS_ANDROID)
   void BindBatteryMonitorRequest(mojom::BatteryMonitorRequest request);
   void BindHidManagerRequest(mojom::HidManagerRequest request);
-  void BindNFCProviderRequest(mojom::NFCProviderRequest request);
+  void BindNFCProviderReceiver(
+      mojo::PendingReceiver<mojom::NFCProvider> receiver);
   void BindVibrationManagerRequest(mojom::VibrationManagerRequest request);
 #endif
 
@@ -162,8 +163,9 @@ class DeviceService : public service_manager::Service {
 
   void BindPowerMonitorRequest(mojom::PowerMonitorRequest request);
 
-  void BindPublicIpAddressGeolocationProviderRequest(
-      mojom::PublicIpAddressGeolocationProviderRequest request);
+  void BindPublicIpAddressGeolocationProviderReceiver(
+      mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>
+          receiver);
 
   void BindScreenOrientationListenerRequest(
       mojom::ScreenOrientationListenerRequest request);
@@ -175,10 +177,11 @@ class DeviceService : public service_manager::Service {
   void BindWakeLockProviderReceiver(
       mojo::PendingReceiver<mojom::WakeLockProvider> receiver);
 
-  void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
+  void BindUsbDeviceManagerReceiver(
+      mojo::PendingReceiver<mojom::UsbDeviceManager> receiver);
 
-  void BindUsbDeviceManagerTestRequest(
-      mojom::UsbDeviceManagerTestRequest request);
+  void BindUsbDeviceManagerTestReceiver(
+      mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver);
 
   service_manager::ServiceBinding service_binding_;
   std::unique_ptr<PowerMonitorMessageBroadcaster>

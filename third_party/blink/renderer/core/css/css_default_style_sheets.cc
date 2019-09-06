@@ -231,6 +231,8 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     default_style_->AddRulesFromSheet(MediaControlsStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(MediaControlsStyleSheet(),
                                             PrintEval());
+    default_forced_color_style_->AddRulesFromSheet(MediaControlsStyleSheet(),
+                                                   ForcedColorsEval());
     changed_default_style = true;
   }
 

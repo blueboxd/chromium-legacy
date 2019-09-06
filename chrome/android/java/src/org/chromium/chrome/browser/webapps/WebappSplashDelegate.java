@@ -83,36 +83,36 @@ public class WebappSplashDelegate implements SplashDelegate {
         splashScreen.setBackgroundColor(backgroundColor);
 
         if (mWebappInfo.isForWebApk()) {
+            WebApkInfo webApkInfo = (WebApkInfo) mWebappInfo;
             initializeWebApkInfoSplashLayout(splashScreen, backgroundColor,
-                    ((WebApkInfo) mWebappInfo).splashIcon().bitmap());
+                    webApkInfo.splashIcon().bitmap(), webApkInfo.isSplashIconMaskable());
             return splashScreen;
         }
 
         WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
         if (storage == null) {
-            initializeWebApkInfoSplashLayout(splashScreen, backgroundColor, null);
+            initializeWebApkInfoSplashLayout(splashScreen, backgroundColor, null, false);
             return splashScreen;
         }
 
         storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
             @Override
             public void onDataRetrieved(Bitmap splashImage) {
-                initializeWebApkInfoSplashLayout(splashScreen, backgroundColor, splashImage);
+                initializeWebApkInfoSplashLayout(splashScreen, backgroundColor, splashImage, false);
             }
         });
         return splashScreen;
     }
 
-    private void initializeWebApkInfoSplashLayout(
-            ViewGroup splashScreen, int backgroundColor, Bitmap splashImage) {
+    private void initializeWebApkInfoSplashLayout(ViewGroup splashScreen, int backgroundColor,
+            Bitmap splashImage, boolean isSplashIconMaskable) {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
 
         Bitmap selectedIcon = splashImage;
         boolean selectedIconGenerated = false;
-        // TODO(crbug.com/977173): assign selectedIconAdaptive to correct value
-        boolean selectedIconAdaptive = false;
+        boolean selectedIconAdaptive = isSplashIconMaskable;
         if (selectedIcon == null) {
             selectedIcon = mWebappInfo.icon().bitmap();
             selectedIconGenerated = mWebappInfo.isIconGenerated();

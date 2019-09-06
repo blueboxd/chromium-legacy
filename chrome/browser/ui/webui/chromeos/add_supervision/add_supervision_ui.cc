@@ -11,11 +11,11 @@
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/confirm_signout_dialog.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -44,9 +44,7 @@ std::string& GetDialogId() {
 // enabled for their account.  Returns a boolean indicating whether the
 // ConfirmSignoutDialog is being shown.
 bool MaybeShowConfirmSignoutDialog() {
-  SupervisedUserService* service = SupervisedUserServiceFactory::GetForProfile(
-      ProfileManager::GetPrimaryUserProfile());
-  if (service->signout_required_after_supervision_enabled()) {
+  if (EnrollmentCompleted()) {
     ConfirmSignoutDialog::Show();
     return true;
   }
@@ -98,6 +96,10 @@ void AddSupervisionDialog::Show(gfx::NativeView parent) {
 
   current_instance->ShowSystemDialogForBrowserContext(
       ProfileManager::GetPrimaryUserProfile(), parent);
+
+  // Record UMA metric that user has initiated the Add Supervision process.
+  AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
+      AddSupervisionMetricsRecorder::EnrollmentState::kInitiated);
 }
 
 // static
@@ -124,13 +126,22 @@ bool AddSupervisionDialog::OnDialogCloseRequested() {
 
 void AddSupervisionDialog::OnCloseContents(content::WebContents* source,
                                            bool* out_close_dialog) {
-  // This code gets called by a different path that OnDialogCloseRequested(),
+  // This code gets called by a different path than OnDialogCloseRequested(),
   // and actually masks the call to OnDialogCloseRequested() the first time the
   // user clicks on the [x].  Because the first [x] click comes here, we need to
   // show the confirmation dialog here and signal the caller to possibly close
   // the dialog.  Subsequent clicks on [x] during the lifetime of the dialog
-  // will result in calls to OnDialogCloseRequested().
+  // will result in direct calls to OnDialogCloseRequested(), skipping this
+  // method.
   *out_close_dialog = OnDialogCloseRequested();
+  // If |out_close_dialog|, then we are before the point of no return prior to
+  // completing enrollment, and that's the only time we want to record kClosed.
+  if (*out_close_dialog) {
+    // Record UMA metric that user has closed the Add Supervision dialog.
+    AddSupervisionMetricsRecorder::GetInstance()
+        ->RecordAddSupervisionEnrollment(
+            AddSupervisionMetricsRecorder::EnrollmentState::kClosed);
+  }
 }
 
 AddSupervisionDialog::AddSupervisionDialog()

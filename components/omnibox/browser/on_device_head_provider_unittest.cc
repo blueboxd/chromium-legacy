@@ -107,6 +107,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
   input.set_want_asynchronous_matches(true);
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(true));
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
 
   provider_->Start(input, false);
   if (!provider_->done())

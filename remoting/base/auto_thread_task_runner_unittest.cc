@@ -23,7 +23,7 @@ namespace remoting {
 
 TEST(AutoThreadTaskRunnerTest, StartAndStop) {
   // Create a task runner.
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
       task_environment.GetMainThreadTaskRunner(), run_loop.QuitClosure());

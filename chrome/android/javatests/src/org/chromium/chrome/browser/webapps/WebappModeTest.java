@@ -24,7 +24,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -302,7 +301,7 @@ public class WebappModeTest {
             public boolean isSatisfied() {
                 return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
             }
-        }, ScalableTimeout.scaleTimeout(5000), CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         Assert.assertTrue(storage.hasBeenLaunched());
     }

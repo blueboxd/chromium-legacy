@@ -66,7 +66,8 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
 
   // WebWidgetClient implementation.
   void ScheduleAnimation() override;
-  bool RequestPointerLock(blink::WebLocalFrame* requester_frame) override;
+  bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
+                          bool request_unajusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void SetToolTipText(const blink::WebString& text,

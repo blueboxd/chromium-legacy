@@ -7,12 +7,20 @@
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "components/security_state/core/security_state.h"
-#include "content/public/browser/web_contents.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace safety_tips {
 
-// Invoke action when 'leave site' button is clicked. Navigates to a safe URL,
-// replacing the current page in the process.
+// Records a histogram for a user's interaction with a Safety Tip in the given
+// |web_contents|.
+void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
+                                         SafetyTipInteraction interaction);
+
+// Invoke action when 'leave site' button is clicked, and records a histogram.
+// Navigates to a safe URL, replacing the current page in the process.
 void LeaveSite(content::WebContents* web_contents);
 
 // Get the title and description string IDs needed to describe the applicable

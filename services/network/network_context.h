@@ -24,7 +24,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/cert/cert_verifier.h"
@@ -110,7 +110,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       base::OnceCallback<void(NetworkContext* network_context)>;
 
   NetworkContext(NetworkService* network_service,
-                 mojom::NetworkContextRequest request,
+                 mojo::PendingReceiver<mojom::NetworkContext> receiver,
                  mojom::NetworkContextParamsPtr params,
                  OnConnectionCloseCallback on_connection_close_callback =
                      OnConnectionCloseCallback());
@@ -119,7 +119,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // URLRequestContext that is not owned by the NetworkContext.
   // TODO(mmenke):  Remove this constructor when the network service ships.
   NetworkContext(NetworkService* network_service,
-                 mojom::NetworkContextRequest request,
+                 mojo::PendingReceiver<mojom::NetworkContext> receiver,
                  net::URLRequestContext* url_request_context,
                  const std::vector<std::string>& cors_exempt_header_list);
 
@@ -485,7 +485,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       app_status_listener_;
 #endif
 
-  mojo::Binding<mojom::NetworkContext> binding_;
+  mojo::Receiver<mojom::NetworkContext> receiver_;
 
   std::unique_ptr<CookieManager> cookie_manager_;
 

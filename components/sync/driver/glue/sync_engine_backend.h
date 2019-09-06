@@ -197,6 +197,8 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // be run on; the host's |registrar_->sync_thread()|.
   void StartSavingChanges();
 
+  void LoadAndConnectNigoriController();
+
   // Name used for debugging.
   const std::string name_;
 

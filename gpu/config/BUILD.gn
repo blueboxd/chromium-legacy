@@ -97,8 +97,8 @@ jumbo_source_set("config_sources") {
   sources = [
     "dx_diag_node.cc",
     "dx_diag_node.h",
-    "gpu_blacklist.cc",
-    "gpu_blacklist.h",
+    "gpu_blocklist.cc",
+    "gpu_blocklist.h",
     "gpu_control_list.cc",
     "gpu_control_list.h",
     "gpu_crash_keys.cc",

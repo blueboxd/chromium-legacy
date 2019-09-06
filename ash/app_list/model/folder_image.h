@@ -12,6 +12,7 @@
 #include "ash/app_list/model/app_list_item_list_observer.h"
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/app_list/model/app_list_model_export.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/observer_list.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -28,7 +29,7 @@ class AppListItemList;
 class APP_LIST_MODEL_EXPORT FolderImageObserver {
  public:
   // Called when the folder icon has changed.
-  virtual void OnFolderImageUpdated() {}
+  virtual void OnFolderImageUpdated(ash::AppListConfigType config_type) {}
 
  protected:
   virtual ~FolderImageObserver() {}
@@ -44,7 +45,7 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // and animated when opening and closing a folder.
   static const size_t kNumFolderTopItems;
 
-  explicit FolderImage(AppListItemList* item_list);
+  FolderImage(const AppListConfig* app_list_config, AppListItemList* item_list);
   ~FolderImage() override;
 
   // Generates the folder's icon from the icons of the items in the item list,
@@ -83,7 +84,7 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   void RemoveObserver(FolderImageObserver* observer);
 
   // AppListItemObserver overrides:
-  void ItemIconChanged() override;
+  void ItemIconChanged(ash::AppListConfigType config_type) override;
 
   // AppListItemListObserver overrides:
   void OnListItemAdded(size_t index, AppListItem* item) override;
@@ -97,6 +98,9 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // OnFolderImageUpdated. Does not refresh the |top_items_| list, so should
   // only be called if the |item_list_| has not been changed (see UpdateIcon).
   void RedrawIconAndNotify();
+
+  // The app list config for which this folder image is created.
+  const AppListConfig* app_list_config_;
 
   // The unclipped icon image. This will be clipped in AppListItemView before
   // being shown in apps grid.

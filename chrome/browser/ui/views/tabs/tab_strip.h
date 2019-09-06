@@ -267,14 +267,12 @@ class TabStrip : public views::AccessiblePaneView,
   SkColor GetTabSeparatorColor() const override;
   SkColor GetTabBackgroundColor(
       TabActive active,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override;
+      BrowserNonClientFrameView::ActiveState active_state) const override;
   SkColor GetTabForegroundColor(TabActive active,
                                 SkColor background_color) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override;
+      BrowserNonClientFrameView::ActiveState active_state) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
@@ -606,13 +604,11 @@ class TabStrip : public views::AccessiblePaneView,
   // Ideal bounds of the new tab button.
   gfx::Rect new_tab_button_ideal_bounds_;
 
-  // If this value is nonnegative, it is used as the width to lay out tabs
-  // (instead of tab_area_width()). Most of the time this will be -1, but while
-  // we're handling closing a tab via the mouse, we'll set this to the edge of
-  // the last tab before closing, so that if we are closing the last tab and
-  // need to resize immediately, we'll resize only back to this width, thus
-  // once again placing the last tab under the mouse cursor.
-  int available_width_for_tabs_ = -1;
+  // If this value is defined, it is used as the width to lay out tabs
+  // (instead of GetTabAreaWidth()). It is defined when closing tabs with the
+  // mouse, and is used to control which tab will end up under the cursor
+  // after the close animation completes.
+  base::Optional<int> override_available_width_for_tabs_;
 
   // The background offset used by inactive tabs to match the frame image.
   int background_offset_ = 0;

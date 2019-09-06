@@ -74,7 +74,6 @@ extern const base::Feature kDownloadTabManagementModule;
 extern const base::Feature kDrawVerticallyEdgeToEdge;
 extern const base::Feature kEphemeralTab;
 extern const base::Feature kExploreSites;
-extern const base::Feature kForegroundNotificationManager;
 extern const base::Feature kHandleMediaIntents;
 extern const base::Feature kHomePageButtonForceEnabled;
 extern const base::Feature kHomepageTile;

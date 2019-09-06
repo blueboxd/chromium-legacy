@@ -4602,10 +4602,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Save your passwords?
       </message>
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_B" desc="The title shown in the password manager onboarding dialog.">
-        Access your passwords everywhere
+        Store once. Use everywhere
       </message>
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_C" desc="The title shown in the password manager onboarding dialog.">
-        Securely remember your passwords
+        Never worry about your passwords
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
+        Save passwords securely in your Google Account, and you'll never have to type them again
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_B" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
+        Access your passwords whenever you're signed in to your Google Account
       </message>
 
       <!-- Begin of Sync Promo strings for Desktop Identity Consistency. -->

@@ -123,8 +123,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                    net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
   void SetSSLKeyLogFile(base::File file) override;
-  void CreateNetworkContext(mojom::NetworkContextRequest request,
-                            mojom::NetworkContextParamsPtr params) override;
+  void CreateNetworkContext(
+      mojo::PendingReceiver<mojom::NetworkContext> receiver,
+      mojom::NetworkContextParamsPtr params) override;
   void ConfigureStubHostResolver(
       bool insecure_dns_client_enabled,
       net::DnsConfig::SecureDnsMode secure_dns_mode,

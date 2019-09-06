@@ -125,7 +125,7 @@ class GlRendererTest : public testing::Test {
     return on_desktop_frame_processed_call_count_;
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<GlRenderer> renderer_;
   FakeGlRendererDelegate delegate_;
 

@@ -88,7 +88,6 @@ void LayoutManagerBase::SetChildViewIgnoredByLayout(View* child_view,
   DCHECK(it != child_infos_.end());
   if (it->second.ignored == ignored)
     return;
-  it->second.ignored = ignored;
 
   base::AutoReset<bool> setter(&suppress_invalidate_, true);
   PropagateChildViewIgnoredByLayout(child_view, ignored);
@@ -104,7 +103,8 @@ bool LayoutManagerBase::IsChildViewIgnoredByLayout(
 
 LayoutManagerBase::LayoutManagerBase() = default;
 
-bool LayoutManagerBase::IsChildIncludedInLayout(const View* child) const {
+bool LayoutManagerBase::IsChildIncludedInLayout(const View* child,
+                                                bool include_hidden) const {
   const auto it = child_infos_.find(child);
 
   // During callbacks when a child is removed we can get in a state where a view
@@ -113,7 +113,7 @@ bool LayoutManagerBase::IsChildIncludedInLayout(const View* child) const {
   if (it == child_infos_.end())
     return false;
 
-  return !it->second.ignored && it->second.can_be_visible;
+  return !it->second.ignored && (include_hidden || it->second.can_be_visible);
 }
 
 void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {
@@ -266,11 +266,14 @@ LayoutManagerBase* LayoutManagerBase::GetRootLayoutManager() {
 
 bool LayoutManagerBase::PropagateChildViewIgnoredByLayout(View* child_view,
                                                           bool ignored) {
-  bool result = OnChildViewIgnoredByLayout(child_view, ignored);
+  child_infos_[child_view].ignored = ignored;
+
+  bool result = false;
   for (auto& owned_layout : owned_layouts_) {
     result |=
         owned_layout->PropagateChildViewIgnoredByLayout(child_view, ignored);
   }
+  result |= OnChildViewIgnoredByLayout(child_view, ignored);
   return result;
 }
 

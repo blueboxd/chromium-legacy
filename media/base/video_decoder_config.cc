@@ -183,6 +183,10 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
   return s.str();
 }
 
+std::string VideoDecoderConfig::GetHumanReadableCodecName() const {
+  return GetCodecName(codec());
+}
+
 double VideoDecoderConfig::GetPixelAspectRatio() const {
   return ::media::GetPixelAspectRatio(visible_rect_, natural_size_);
 }

@@ -112,7 +112,8 @@ class PageInfoUI {
     PageInfo::SiteIdentityStatus identity_status;
     // Site's Safe Browsing status.
     PageInfo::SafeBrowsingStatus safe_browsing_status;
-    // Site's safety tip status.
+    // Site's safety tip status. Only set if the feature is enabled to show the
+    // Safety Tip UI.
     security_state::SafetyTipStatus safety_tip_status;
     // Textual description of the site's identity status that is displayed to
     // the user.

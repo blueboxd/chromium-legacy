@@ -103,6 +103,7 @@
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/credential_leak_controller_android.h"
@@ -115,6 +116,7 @@
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/passwords/onboarding_dialog_view.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
+#include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/base/ui_base_features.h"
 #else
@@ -159,6 +161,21 @@ void AddToWidgetInputEventObservers(
   widget_host->AddInputEventObserver(observer);
 }
 #endif
+
+#if defined(OS_ANDROID)
+void HideSavePasswordInfobar(content::WebContents* web_contents) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() ==
+        SavePasswordInfoBarDelegate::SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE) {
+      infobar_service->RemoveInfoBar(infobar);
+      break;
+    }
+  }
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -501,6 +518,7 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin) {
 #if defined(OS_ANDROID)
+  HideSavePasswordInfobar(web_contents());
   (new CredentialLeakControllerAndroid(
        leak_type, origin, web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();

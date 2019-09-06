@@ -385,6 +385,12 @@ PageInfo::~PageInfo() {
           kPageInfoTimePrefix, security_level_),
       base::TimeTicks::Now() - start_time_,
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
+  base::UmaHistogramCustomTimes(security_state::GetSafetyTipHistogramName(
+                                    kPageInfoTimePrefix, safety_tip_status_),
+                                base::TimeTicks::Now() - start_time_,
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromHours(1), 100);
+
   if (did_perform_action_) {
     base::UmaHistogramCustomTimes(
         security_state::GetSecurityLevelHistogramName(
@@ -392,10 +398,22 @@ PageInfo::~PageInfo() {
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
+    base::UmaHistogramCustomTimes(
+        security_state::GetSafetyTipHistogramName(kPageInfoTimeActionPrefix,
+                                                  safety_tip_status_),
+        base::TimeTicks::Now() - start_time_,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+        100);
   } else {
     base::UmaHistogramCustomTimes(
         security_state::GetSecurityLevelHistogramName(
             kPageInfoTimeNoActionPrefix, security_level_),
+        base::TimeTicks::Now() - start_time_,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+        100);
+    base::UmaHistogramCustomTimes(
+        security_state::GetSafetyTipHistogramName(kPageInfoTimeNoActionPrefix,
+                                                  safety_tip_status_),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
@@ -414,6 +432,11 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
     did_perform_action_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
+
+  base::UmaHistogramEnumeration(
+      security_state::GetSafetyTipHistogramName(
+          "Security.SafetyTips.PageInfo.Action", safety_tip_status_),
+      action, PAGE_INFO_COUNT);
 
   std::string histogram_name;
   if (site_url_.SchemeIsCryptographic()) {
@@ -754,6 +777,7 @@ void PageInfo::ComputeUIInputs(
 #endif
   }
 
+  safety_tip_status_ = visible_security_state.safety_tip_status;
   if (visible_security_state.safety_tip_status !=
           security_state::SafetyTipStatus::kNone &&
       visible_security_state.safety_tip_status !=
@@ -761,7 +785,6 @@ void PageInfo::ComputeUIInputs(
       base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
     site_details_message_ = l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
-    safety_tip_status_ = visible_security_state.safety_tip_status;
   }
 
   // Site Connection
@@ -972,7 +995,9 @@ void PageInfo::PresentSiteIdentity() {
   info.connection_status_description = UTF16ToUTF8(site_connection_details_);
   info.identity_status = site_identity_status_;
   info.safe_browsing_status = safe_browsing_status_;
-  info.safety_tip_status = safety_tip_status_;
+  if (base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
+    info.safety_tip_status = safety_tip_status_;
+  }
   info.identity_status_description = UTF16ToUTF8(site_details_message_);
   info.certificate = certificate_;
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;

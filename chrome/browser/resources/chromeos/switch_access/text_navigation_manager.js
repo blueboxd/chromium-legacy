@@ -120,7 +120,7 @@ class TextNavigationManager {
    */
   moveUpOneLine() {
     if (this.currentlySelecting_)
-      this.setupDynamicSelection_(false /* resetCursor */);
+      this.setupDynamicSelection_(true /* resetCursor */);
     this.navigationManager_.simulateKeyPress(SAConstants.KeyCode.UP_ARROW, {});
   }
 
@@ -132,7 +132,7 @@ class TextNavigationManager {
    */
   moveDownOneLine() {
     if (this.currentlySelecting_)
-      this.setupDynamicSelection_(false /* resetCursor */);
+      this.setupDynamicSelection_(true /* resetCursor */);
     this.navigationManager_.simulateKeyPress(
         SAConstants.KeyCode.DOWN_ARROW, {});
   }

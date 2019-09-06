@@ -86,7 +86,7 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) override;
   void GetNetworkContext(
-      network::mojom::NetworkContextRequest request) override;
+      mojo::PendingReceiver<network::mojom::NetworkContext> receiver) override;
   void CreateAudioStream(mojom::AudioStreamCreatorClientPtr client,
                          const media::AudioParameters& params,
                          uint32_t total_segments) override;

@@ -23,7 +23,7 @@ namespace {
 
 class DataViewTest : public testing::Test {
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 struct DataViewHolder {

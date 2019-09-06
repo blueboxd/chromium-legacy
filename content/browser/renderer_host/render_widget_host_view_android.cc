@@ -1724,7 +1724,7 @@ RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
       delegate);
 }
 
-bool RenderWidgetHostViewAndroid::LockMouse() {
+bool RenderWidgetHostViewAndroid::LockMouse(bool request_unadjusted_movement) {
   NOTIMPLEMENTED();
   return false;
 }

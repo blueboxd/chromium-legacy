@@ -59,10 +59,10 @@ void SharedClipboardUiController::DoUpdateApps(UpdateAppsCallback callback) {
   std::move(callback).Run(std::vector<App>());
 }
 
-// No left click dialog
+// Error message dialog.
 SharingDialog* SharedClipboardUiController::DoShowDialog(
     BrowserWindow* window) {
-  return nullptr;
+  return window->ShowSharingDialog(web_contents(), this);
 }
 
 void SharedClipboardUiController::OnDeviceChosen(

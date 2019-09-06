@@ -79,7 +79,7 @@ class ArcPowerBridge::WakeLockRequestor {
                           provider.BindNewPipeAndPassReceiver());
       provider->GetWakeLockWithoutContext(
           type_, device::mojom::WakeLockReason::kOther, "ARC",
-          mojo::MakeRequest(&wake_lock_));
+          wake_lock_.BindNewPipeAndPassReceiver());
     }
 
     wake_lock_->RequestWakeLock();
@@ -115,7 +115,7 @@ class ArcPowerBridge::WakeLockRequestor {
   int num_android_requests_ = 0;
 
   // Lazily initialized in response to first request.
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockRequestor);
 };

@@ -5,7 +5,7 @@
 #ifndef GPU_IPC_COMMON_GPU_FEATURE_INFO_MOJOM_TRAITS_H_
 #define GPU_IPC_COMMON_GPU_FEATURE_INFO_MOJOM_TRAITS_H_
 
-#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"

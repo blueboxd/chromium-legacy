@@ -1644,6 +1644,12 @@ void RenderFrameImpl::CreateFrame(
     auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
         render_view->GetWidget(), web_frame);
     render_view->AttachWebFrameWidget(web_frame_widget);
+    // We thaw the main frame RenderWidget at the same time we would create the
+    // RenderWidget if the RenderFrame owned it instead of having the
+    // RenderWidget live for eternity on the RenderView (after setting up the
+    // WebFrameWidget since that would be part of creating the RenderWidget).
+    render_widget->SetIsFrozen(false);
+
     // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
     // an empty ScreenInfo, but the WebView has already been created and
     // initialized by RenderViewImpl, so this is surely redundant? It will be
@@ -1653,15 +1659,6 @@ void RenderFrameImpl::CreateFrame(
     // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
     // yet because this frame is provisional and not attached to the Page yet.
     // We will tell WebViewImpl about it once it is swapped in.
-
-    // It may be questionable, since we create un-frozen RenderWidgets at this
-    // point for subframes, but we don't un-freeze the main frame's RenderWidget
-    // here, instead deferring until the non-provisional frame is swapped in.
-    // But we do need to start the creating compositor resources in parallel to
-    // the navigation being done with the provisional frame, so we inform the
-    // frozen RenderWidget to get prepared. We must abort this if we are no
-    // longer planning to un-freeze the RenderWidget (ie in FrameDetached).
-    render_widget->WarmupCompositor();
 
     render_frame->render_widget_ = render_widget;
     DCHECK(!render_frame->owned_render_widget_);
@@ -2437,15 +2434,6 @@ void RenderFrameImpl::OnSwapOut(
   CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
       this, proxy_routing_id, replicated_frame_state.scope);
-
-  // Swap out and stop sending any IPC messages that are not ACKs.
-  if (is_main_frame_) {
-    // The RenderWidget isn't actually closed here because we might need to use
-    // it again. It can't be destroyed and recreated later as it is part of
-    // the |render_view_|, which must be kept alive. So instead freeze the
-    // widget.
-    render_view_->GetWidget()->SetIsFrozen(true);
-  }
 
   RenderViewImpl* render_view = render_view_;
   bool is_main_frame = is_main_frame_;
@@ -4529,24 +4517,18 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   // Clean up the associated RenderWidget for the frame, if there is one.
   GetLocalRootRenderWidget()->UnregisterRenderFrame(this);
   if (is_main_frame_) {
+    DCHECK(!owned_render_widget_);
     // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
     // closed/destroyed since it is part of the RenderView. So instead it is
     // swapped out, which we would be in the middle of here. So instead of
-    // closing the RenderWidget we only drop the WebFrameWidget in order to also
-    // drop its reference on the WebLocalFrameImpl for this detaching frame.
+    // closing the RenderWidget we mark it frozen and drop the WebFrameWidget in
+    // order to also drop its reference on the WebLocalFrameImpl for this
+    // detaching frame.
+    render_widget_->SetIsFrozen(true);
     render_view_->DetachWebFrameWidget();
-    // In the main frame case, we WarmupCompositor() when setting up the
-    // WebFrameWidget, because we can't unfreeze the RenderWidget until
-    // navigation completes. If that navigation aborts then we detach the
-    // provisional main frame, and drop the WebFrameWidget. Since we then no
-    // longer expect to use this RenderWidget immediately, we drop any resources
-    // that were being prepared. This is a no-op if the RenderWidget was already
-    // unfrozen and not in a warming up state.
-    render_widget_->AbortWarmupCompositor();
-    DCHECK(!owned_render_widget_);
   } else if (render_widget_) {
-    // This closes/deletes the RenderWidget if this frame was a local root.
     DCHECK(owned_render_widget_);
+    // This closes/deletes the RenderWidget if this frame was a local root.
     render_widget_->CloseForFrame(std::move(owned_render_widget_));
   }
 
@@ -6390,11 +6372,10 @@ bool RenderFrameImpl::SwapIn() {
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
-    if (render_view_->GetWidget()->is_frozen()) {
-      // TODO(crbug.com/419087): The RenderWidget should be newly created here,
-      // then we won't have to do this.
-      render_view_->GetWidget()->SetIsFrozen(false);
-    }
+
+    // TODO(danakj): This was added in 02dffc89d823832ac8 due to the zoom factor
+    // not being scaled by DSF when the frame was provisional. We should
+    // properly scale the zoom factor all along.
     render_view_->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
 
     // The WebFrame being swapped in here has now been attached to the Page as

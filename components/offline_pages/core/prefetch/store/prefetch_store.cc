@@ -54,16 +54,9 @@ PrefetchStore::GetSchemaInitializationFunction() {
 void PrefetchStore::OnOpenStart(base::TimeTicks last_closing_time) {
   TRACE_EVENT_ASYNC_BEGIN1("offline_pages", "Prefetch Store", this, "is reopen",
                            !last_closing_time.is_null());
-  if (!last_closing_time.is_null()) {
-    ReportStoreEvent(OfflinePagesStoreEvent::kReopened);
-    UMA_HISTOGRAM_CUSTOM_TIMES("OfflinePages.PrefetchStore.TimeFromCloseToOpen",
-                               base::TimeTicks::Now() - last_closing_time,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromMinutes(10),
-                               50 /* buckets */);
-  } else {
-    ReportStoreEvent(OfflinePagesStoreEvent::kOpenedFirstTime);
-  }
+  ReportStoreEvent(last_closing_time.is_null()
+                       ? OfflinePagesStoreEvent::kOpenedFirstTime
+                       : OfflinePagesStoreEvent::kReopened);
 }
 
 void PrefetchStore::OnOpenDone(bool success) {

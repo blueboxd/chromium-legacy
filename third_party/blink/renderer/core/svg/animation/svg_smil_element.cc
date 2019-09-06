@@ -1141,7 +1141,8 @@ void SVGSMILElement::Progress(double elapsed) {
   // on the same frame. So we check if the interval has passed, and
   // that it's not the same interval as it was last time.
   bool new_begin_time =
-      (interval_.begin != previous_interval_begin_ && interval_.end <= elapsed);
+      (!previous_interval_begin_.IsUnresolved() &&
+       interval_.begin != previous_interval_begin_ && interval_.end <= elapsed);
 
   if (new_begin_time) {
     previous_interval_begin_ = interval_.begin;
@@ -1149,6 +1150,7 @@ void SVGSMILElement::Progress(double elapsed) {
   }
 
   if (new_interval) {
+    previous_interval_begin_ = interval_.begin;
     interval_ = *new_interval;
     interval_has_changed_ = true;
   }

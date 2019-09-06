@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">बोली रोकें</translation>
 <translation id="4373197658375206385">कोई पिछला आइटम नहीं जो एक लिंक नहीं है.</translation>
 <translation id="4376316291247992553">ग्राफिक को ब्रेल के रूप में देखें</translation>
+<translation id="437809255587011096">टेक्स्ट स्टाइल बताएं</translation>
 <translation id="4378308539633073595">आगे की ओर स्क्रोल करें</translation>
 <translation id="4384583879834880242">सवाल और जवाब</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -1121,6 +1122,7 @@
 <translation id="8503360654911991865">मार्गदर्शक विवरण का स्तर घटाएं</translation>
 <translation id="8504695234784218301">व्याकरण गड़बड़ी खत्म</translation>
 <translation id="8520472399088452386">स्पिन बटन</translation>
+<translation id="8534394844575788431">फ़ॉर्मैट करना</translation>
 <translation id="8538744478902126321">वर्तमान सेल के पंक्ति शीर्षलेख पर कोई अनुमान लगाएं</translation>
 <translation id="8540054775867439484">शीर्ष पर लपेटा गया</translation>
 <translation id="8542271685829952264">सभी ChromeVox निर्देश और शॉर्टकट एक्सप्लोर करने के लिए, Search + Period दबाएं, फिर मेन्यू पर नेविगेट करने के लिए तीर के निशान वाले बटन का इस्तेमाल करें और किसी निर्देश को चालू करने के लिए Enter का इस्तेमाल करें. Search+o फिर t दबाकर यहां वापस लौटें.</translation>
@@ -1200,6 +1202,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">टैब</translation>
 <translation id="9151211641321628915">वर्तमान स्थिति का संक्षिप्त विवरण प्रदर्शित करता है</translation>
+<translation id="9151249085738989067">भाषा के आधार पर अपने आप ChromeVox की आवाज़ बदलने की सुविधा</translation>
 <translation id="9153606228985488238">पिच <ph name="PERCENT" /> प्रतिशत</translation>
 <translation id="9160096769946561184">वर्तमान स्‍तंभ के अंत में जाएं</translation>
 <translation id="9173115498289768110">वॉल्यूम <ph name="PERCENT" /> प्रतिशत</translation>

@@ -80,8 +80,9 @@ void HttpCacheLookupManager::OnPush(
   // LookupTransaction.
 
   int rv = lookup->StartLookup(
-      http_cache_, base::Bind(&HttpCacheLookupManager::OnLookupComplete,
-                              weak_factory_.GetWeakPtr(), pushed_url),
+      http_cache_,
+      base::BindOnce(&HttpCacheLookupManager::OnLookupComplete,
+                     weak_factory_.GetWeakPtr(), pushed_url),
       session_net_log);
 
   if (rv == ERR_IO_PENDING) {

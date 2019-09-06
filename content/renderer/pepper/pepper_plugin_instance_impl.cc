@@ -2139,7 +2139,7 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
             ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
       lock_mouse_callback_->Run(PP_ERROR_NO_USER_GESTURE);
     } else {
-      if (!LockMouse())
+      if (!LockMouse(/*request_unadjusted_movement=*/false))
         lock_mouse_callback_->Run(PP_ERROR_FAILED);
     }
   }
@@ -2767,7 +2767,7 @@ int32_t PepperPluginInstanceImpl::LockMouse(
   // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
   // we wait and call LockMouse() in UpdateFlashFullscreenState().
   if (!FlashIsFullscreenOrPending() || flash_fullscreen_) {
-    if (!LockMouse())
+    if (!LockMouse(false))
       return PP_ERROR_FAILED;
   }
 
@@ -3276,10 +3276,11 @@ bool PepperPluginInstanceImpl::IsMouseLocked() {
       GetOrCreateLockTargetAdapter());
 }
 
-bool PepperPluginInstanceImpl::LockMouse() {
+bool PepperPluginInstanceImpl::LockMouse(bool request_unadjusted_movement) {
   WebLocalFrame* requester_frame = container_->GetDocument().GetFrame();
   return GetMouseLockDispatcher()->LockMouse(GetOrCreateLockTargetAdapter(),
-                                             requester_frame);
+                                             requester_frame,
+                                             request_unadjusted_movement);
 }
 
 MouseLockDispatcher::LockTarget*

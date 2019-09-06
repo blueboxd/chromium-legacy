@@ -149,12 +149,13 @@ class CORE_EXPORT CSSMathExpressionNode
 class CORE_EXPORT CSSMathExpressionNumericLiteral final
     : public CSSMathExpressionNode {
  public:
-  static CSSMathExpressionNumericLiteral* Create(CSSNumericLiteralValue* value,
-                                                 bool is_integer = false);
+  static CSSMathExpressionNumericLiteral* Create(
+      const CSSNumericLiteralValue* value,
+      bool is_integer = false);
   static CSSMathExpressionNumericLiteral*
   Create(double value, CSSPrimitiveValue::UnitType type, bool is_integer);
 
-  CSSMathExpressionNumericLiteral(CSSNumericLiteralValue* value,
+  CSSMathExpressionNumericLiteral(const CSSNumericLiteralValue* value,
                                   bool is_integer);
 
   bool IsNumericLiteral() const final { return true; }
@@ -181,7 +182,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
 #endif
 
  private:
-  Member<CSSNumericLiteralValue> value_;
+  Member<const CSSNumericLiteralValue> value_;
 };
 
 template <>
@@ -194,16 +195,16 @@ struct DowncastTraits<CSSMathExpressionNumericLiteral> {
 class CORE_EXPORT CSSMathExpressionBinaryOperation final
     : public CSSMathExpressionNode {
  public:
-  static CSSMathExpressionNode* Create(CSSMathExpressionNode* left_side,
-                                       CSSMathExpressionNode* right_side,
+  static CSSMathExpressionNode* Create(const CSSMathExpressionNode* left_side,
+                                       const CSSMathExpressionNode* right_side,
                                        CSSMathOperator op);
   static CSSMathExpressionNode* CreateSimplified(
-      CSSMathExpressionNode* left_side,
-      CSSMathExpressionNode* right_side,
+      const CSSMathExpressionNode* left_side,
+      const CSSMathExpressionNode* right_side,
       CSSMathOperator op);
 
-  CSSMathExpressionBinaryOperation(CSSMathExpressionNode* left_side,
-                                   CSSMathExpressionNode* right_side,
+  CSSMathExpressionBinaryOperation(const CSSMathExpressionNode* left_side,
+                                   const CSSMathExpressionNode* right_side,
                                    CSSMathOperator op,
                                    CalculationCategory category);
 
@@ -237,9 +238,9 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
 #endif
 
  private:
-  static CSSMathExpressionNode* GetNumberSide(
-      CSSMathExpressionNode* left_side,
-      CSSMathExpressionNode* right_side);
+  static const CSSMathExpressionNode* GetNumberSide(
+      const CSSMathExpressionNode* left_side,
+      const CSSMathExpressionNode* right_side);
 
   static String BuildCSSText(const String& left_expression,
                              const String& right_expression,
@@ -253,8 +254,8 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
                                  double right_value,
                                  CSSMathOperator op);
 
-  const Member<CSSMathExpressionNode> left_side_;
-  const Member<CSSMathExpressionNode> right_side_;
+  const Member<const CSSMathExpressionNode> left_side_;
+  const Member<const CSSMathExpressionNode> right_side_;
   const CSSMathOperator operator_;
 };
 
@@ -267,7 +268,7 @@ struct DowncastTraits<CSSMathExpressionBinaryOperation> {
 
 class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
  public:
-  using Operands = HeapVector<Member<CSSMathExpressionNode>>;
+  using Operands = HeapVector<Member<const CSSMathExpressionNode>>;
 
   static CSSMathExpressionVariadicOperation* Create(Operands&& operands,
                                                     CSSMathOperator op);
@@ -305,8 +306,9 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
  private:
   // Helper for iterating from the 2nd to the last operands
-  // TODO: Is this Oilpan-safe?
-  base::span<const Member<CSSMathExpressionNode>> SecondToLastOperands() const {
+  // TODO(crbug.com/825895): Is this Oilpan-safe?
+  base::span<const Member<const CSSMathExpressionNode>> SecondToLastOperands()
+      const {
     return base::make_span(std::next(operands_.begin()), operands_.end());
   }
 

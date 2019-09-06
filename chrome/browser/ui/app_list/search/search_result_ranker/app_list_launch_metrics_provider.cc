@@ -290,6 +290,7 @@ void AppListLaunchMetricsProvider::CreateLaunchEvent(
   event->set_hour(now.hour);
   event->set_search_query_length(launch_info.query.size());
   event->set_launch_type(launch_info.launch_type);
+  event->set_search_provider_type(launch_info.search_provider_type);
 
   // Hashed data.
   event->set_hashed_target(HashWithSecret(launch_info.target, secret_.value()));

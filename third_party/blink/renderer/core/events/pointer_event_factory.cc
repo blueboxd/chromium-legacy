@@ -97,6 +97,7 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
+      !web_pointer_event.is_raw_movement_event &&
       (web_pointer_event.GetType() == WebInputEvent::kPointerMove ||
        web_pointer_event.GetType() == WebInputEvent::kPointerRawUpdate)) {
     // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when

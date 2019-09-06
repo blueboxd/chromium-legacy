@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/popup_touch_handle_drawable.h"
 
-#include "android_webview/native_jni/PopupTouchHandleDrawable_jni.h"
+#include "android_webview/browser_jni_headers/PopupTouchHandleDrawable_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

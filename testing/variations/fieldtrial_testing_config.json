@@ -1684,14 +1684,14 @@
             ]
         }
     ],
-    "D3D11VideoDecoderWin": [
+    "D3D11VideoDecoder": [
         {
             "platforms": [
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "D3D11VideoDecoderEnabled",
+                    "name": "V1Enabled",
                     "enable_features": [
                         "D3D11VideoDecoder"
                     ]
@@ -3038,25 +3038,6 @@
             ]
         }
     ],
-    "JankTrackingSweepLine": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "JankTrackingSweepLine"
-                    ]
-                }
-            ]
-        }
-    ],
     "KeyboardAccessoryAddressIPH": [
         {
             "platforms": [
@@ -3883,12 +3864,16 @@
             "experiments": [
                 {
                     "name": "DesktopExperiments",
+                    "params": {
+                        "OmniboxMaxURLMatches": "7",
+                        "UIMaxAutocompleteMatches": "8"
+                    },
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxLocalEntitySuggestions",
+                        "OmniboxMaxURLMatches",
                         "OmniboxRichEntitySuggestions",
-                        "OmniboxTailSuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QueryInOmnibox"
                     ]
@@ -5275,26 +5260,6 @@
             ]
         }
     ],
-    "SendTabToSelfShowSendingUI": [
-        {
-            "platforms": [
-                "android",
-                "ios",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SendTabToSelfShowSendingUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "ServiceManagerForBackgroundPrefetch": [
         {
             "platforms": [
@@ -5305,97 +5270,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ServiceManagerForBackgroundPrefetch"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerAggressiveCodeCache": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190510",
-                    "params": {
-                        "sw_cache_strategy": "idletask"
-                    },
-                    "enable_features": [
-                        "ServiceWorkerAggressiveCodeCache"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerForegroundPriority": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerForegroundPriority"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerForegroundPriorityAndroid": [
-        {
-            "platforms": [
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerForegroundPriority"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerIsolateInForeground": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerIsolateInForeground"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerIsolateInForegroundAndroid": [
-        {
-            "platforms": [
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerIsolateInForeground"
                     ]
                 }
             ]

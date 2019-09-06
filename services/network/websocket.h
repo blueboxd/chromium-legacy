@@ -94,7 +94,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   static const void* const kUserDataKey;
 
  private:
-  struct DataFrame;
   class WebSocketEventHandler;
 
   // This class is used to set the WebSocket as user data on a URLRequest. This
@@ -144,7 +143,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // Datapipe functions to receive.
   void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
   void SendPendingDataFrames();
-  void SendDataFrame(DataFrame*);
+  void SendDataFrame(base::span<const char>* data_span);
 
   // |factory_| owns |this|.
   WebSocketFactory* const factory_;
@@ -179,7 +178,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // Datapipe fields to receive.
   mojo::ScopedDataPipeProducerHandle writable_;
   mojo::SimpleWatcher writable_watcher_;
-  base::queue<DataFrame> pending_data_frames_;
+  base::queue<base::span<const char>> pending_data_frames_;
   bool wait_for_writable_ = false;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};

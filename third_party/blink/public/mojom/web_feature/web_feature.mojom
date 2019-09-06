@@ -2399,6 +2399,16 @@ enum WebFeature {
   kV8FileSystemDirectoryHandle_GetSystemDirectory_Method = 3016,
   kNotificationShowTrigger = 3017,
   kWebSocketStreamConstructor = 3018,
+  kDOMStorageRead = 3019,
+  kDOMStorageWrite = 3020,
+  kCacheStorageRead = 3021,
+  kCacheStorageWrite = 3022,
+  kIndexedDBRead = 3023,
+  kIndexedDBWrite = 3024,
+  kDeprecatedFileSystemRead = 3025,
+  kDeprecatedFileSystemWrite = 3026,
+  kPointerLockUnadjustedMovement = 3027,
+  kCreateObjectBlob = 3028,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

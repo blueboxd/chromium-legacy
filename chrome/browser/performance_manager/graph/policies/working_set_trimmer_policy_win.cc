@@ -5,8 +5,8 @@
 #include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy_win.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace performance_manager {
 namespace policies {
@@ -16,7 +16,7 @@ WorkingSetTrimmerPolicyWin::~WorkingSetTrimmerPolicyWin() = default;
 
 // static
 bool WorkingSetTrimmerPolicyWin::PlatformSupportsWorkingSetTrim() {
-  bool enabled = base::FeatureList::IsEnabled(::features::kEmptyWorkingSet);
+  bool enabled = base::FeatureList::IsEnabled(features::kEmptyWorkingSet);
   bool supported = mechanism::WorkingSetTrimmer::GetInstance()
                        ->PlatformSupportsWorkingSetTrim();
 

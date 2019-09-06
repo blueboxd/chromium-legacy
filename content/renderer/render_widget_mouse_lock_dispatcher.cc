@@ -21,11 +21,13 @@ RenderWidgetMouseLockDispatcher::RenderWidgetMouseLockDispatcher(
 RenderWidgetMouseLockDispatcher::~RenderWidgetMouseLockDispatcher() {}
 
 void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
-    blink::WebLocalFrame* requester_frame) {
+    blink::WebLocalFrame* requester_frame,
+    bool request_unadjusted_movement) {
   bool user_gesture =
       blink::WebUserGestureIndicator::IsProcessingUserGesture(requester_frame);
-  render_widget_->Send(new WidgetHostMsg_LockMouse(render_widget_->routing_id(),
-                                                   user_gesture, false));
+  render_widget_->Send(
+      new WidgetHostMsg_LockMouse(render_widget_->routing_id(), user_gesture,
+                                  false, request_unadjusted_movement));
 }
 
 void RenderWidgetMouseLockDispatcher::SendUnlockMouseRequest() {

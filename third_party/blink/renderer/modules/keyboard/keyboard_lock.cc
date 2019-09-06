@@ -100,8 +100,9 @@ bool KeyboardLock::EnsureServiceConnected() {
       return false;
     }
     // See https://bit.ly/2S0zRAS for task types.
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-        &service_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    frame->GetInterfaceProvider().GetInterface(
+        service_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     DCHECK(service_);
   }
 

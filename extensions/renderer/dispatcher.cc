@@ -202,6 +202,15 @@ base::LazyInstance<WorkerScriptContextSet>::DestructorAtExit
 
 }  // namespace
 
+Dispatcher::PendingServiceWorker::PendingServiceWorker(
+    blink::WebServiceWorkerContextProxy* context_proxy)
+    : task_runner(base::ThreadTaskRunnerHandle::Get()),
+      context_proxy(context_proxy) {
+  DCHECK(context_proxy);
+}
+
+Dispatcher::PendingServiceWorker::~PendingServiceWorker() = default;
+
 // Note that we can't use Blink public APIs in the constructor becase Blink
 // is not initialized at the point we create Dispatcher.
 Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
@@ -351,6 +360,34 @@ void Dispatcher::DidCreateScriptContext(
   }
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
+}
+
+void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
+    blink::WebServiceWorkerContextProxy* context_proxy,
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
+  if (!script_url.SchemeIs(kExtensionScheme))
+    return;
+
+  // If the extension is already loaded we don't have to suspend the service
+  // worker. The service worker will continue in
+  // Dispatcher::WillEvaluateServiceWorkerOnWorkerThread().
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
+  if (extension)
+    return;
+
+  // Suspend the service worker until loaded message of the extension comes. The
+  // service worker will be resumed in Dispatcher::OnLoaded().
+  context_proxy->PauseEvaluation();
+
+  std::string extension_id =
+      RendererExtensionRegistry::Get()->GetExtensionOrAppIDByURL(script_url);
+  {
+    base::AutoLock lock(service_workers_paused_for_on_loaded_message_lock_);
+    service_workers_paused_for_on_loaded_message_.emplace(
+        extension_id, std::make_unique<PendingServiceWorker>(context_proxy));
+  }
 }
 
 void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
@@ -505,7 +542,6 @@ void Dispatcher::WillReleaseScriptContext(
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
 }
 
-// static
 void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
@@ -520,7 +556,6 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
                                                  service_worker_version_id);
 }
 
-// static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,
@@ -547,6 +582,13 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     g_worker_script_context_set.Get().Remove(v8_context, script_url);
     WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
     worker_thread_util::SetWorkerContextProxy(nullptr);
+  }
+
+  std::string extension_id =
+      RendererExtensionRegistry::Get()->GetExtensionOrAppIDByURL(script_url);
+  {
+    base::AutoLock lock(service_workers_paused_for_on_loaded_message_lock_);
+    service_workers_paused_for_on_loaded_message_.erase(extension_id);
   }
 }
 
@@ -916,6 +958,12 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
       NULL);  // All render frames.
 }
 
+void ResumeEvaluationOnWorkerThread(
+    blink::WebServiceWorkerContextProxy* context_proxy) {
+  DCHECK(context_proxy);
+  context_proxy->ResumeEvaluation();
+}
+
 void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
   for (const auto& param : loaded_extensions) {
@@ -952,6 +1000,23 @@ void Dispatcher::OnLoaded(
     }
 
     ExtensionsRendererClient::Get()->OnExtensionLoaded(*extension);
+
+    // Resume service worker if it is suspended.
+    {
+      base::AutoLock lock(service_workers_paused_for_on_loaded_message_lock_);
+      auto it =
+          service_workers_paused_for_on_loaded_message_.find(extension->id());
+      if (it != service_workers_paused_for_on_loaded_message_.end()) {
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+            std::move(it->second->task_runner);
+        blink::WebServiceWorkerContextProxy* context_proxy =
+            it->second->context_proxy;
+        service_workers_paused_for_on_loaded_message_.erase(it);
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ResumeEvaluationOnWorkerThread, context_proxy));
+      }
+    }
   }
 
   // Update the available bindings for all contexts. These may have changed if

@@ -14,11 +14,14 @@ using LaunchInfo = AppListLaunchRecorder::LaunchInfo;
 
 AppListLaunchRecorder::LaunchInfo::LaunchInfo(
     metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type,
+    metrics::ChromeOSAppListLaunchEventProto::SearchProviderType
+        search_provider_type,
     const std::string& target,
     const std::string& query,
     const std::string& domain,
     const std::string& app)
     : launch_type(launch_type),
+      search_provider_type(search_provider_type),
       target(target),
       query(query),
       domain(domain),

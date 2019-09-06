@@ -27,7 +27,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/config/gpu_blacklist.h"
+#include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -288,7 +288,7 @@ std::unique_ptr<base::ListValue> GetProblemsImpl(GpuFeatureInfoType type) {
 
   auto problem_list = std::make_unique<base::ListValue>();
   if (!gpu_feature_info.applied_gpu_blacklist_entries.empty()) {
-    std::unique_ptr<gpu::GpuBlacklist> blacklist(gpu::GpuBlacklist::Create());
+    std::unique_ptr<gpu::GpuBlocklist> blacklist(gpu::GpuBlocklist::Create());
     blacklist->GetReasons(problem_list.get(), "disabledFeatures",
                           gpu_feature_info.applied_gpu_blacklist_entries);
   }

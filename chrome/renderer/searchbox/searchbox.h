@@ -189,6 +189,10 @@ class SearchBox : public content::RenderFrameObserver,
   // Confirms applied theme changes.
   void ConfirmThemeChanges();
 
+  // Queries the autocomplete backend for realbox results for |input| as a
+  // search term. Handled by |QueryAutocompleteResult|.
+  void QueryAutocomplete(const std::string& input);
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
@@ -215,6 +219,10 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
+
+  // Asynchronous callback for autocomplete query results. Sends to renderer.
+  void QueryAutocompleteResult(
+      std::vector<chrome::mojom::AutocompleteMatchPtr> matches);
 
   // The connection to the EmbeddedSearch service in the browser process.
   chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;

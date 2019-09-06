@@ -32,6 +32,26 @@ interface EmbeddedSearchConnector {
           associated EmbeddedSearchClient client);
 };
 
+// See components/omnibox/browser/autocomplete_match.h.
+struct ACMatchClassification {
+  uint32 offset;
+  int32 style;
+};
+
+struct AutocompleteMatch {
+  bool allowed_to_be_default_match;
+  mojo_base.mojom.String16 contents;
+  array<ACMatchClassification> contents_class;
+  mojo_base.mojom.String16 description;
+  array<ACMatchClassification> description_class;
+  string destination_url;
+  mojo_base.mojom.String16 inline_autocompletion;
+  mojo_base.mojom.String16 fill_into_edit;
+  bool is_search_type;  // Result of AutocompleteMatch::IsSearchType().
+  string type;  // Result of AutocompleteMatchType::ToString().
+  bool swap_contents_and_description;
+};
+
 // Browser interface to support embedded search. Render frames connect to this
 // interface to query browser data, such as the most visited pages.
 // See http://dev.chromium.org/embeddedsearch
@@ -142,6 +162,9 @@ interface EmbeddedSearch {
 
   // Confirms applied theme changes.
   ConfirmThemeChanges();
+
+  // Gets autocomplete matches from the browser.
+  QueryAutocomplete(string input) => (array<AutocompleteMatch> matches);
 };
 
 [Native]

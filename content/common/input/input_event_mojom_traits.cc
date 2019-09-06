@@ -31,8 +31,8 @@ content::mojom::PointerDataPtr PointerDataFromPointerProperties(
       pointer.id, pointer.force, pointer.tilt_x, pointer.tilt_y,
       pointer.tangential_pressure, pointer.twist, pointer.button,
       pointer.pointer_type, pointer.movement_x, pointer.movement_y,
-      pointer.PositionInWidget(), pointer.PositionInScreen(),
-      std::move(mouse_data));
+      pointer.is_raw_movement_event, pointer.PositionInWidget(),
+      pointer.PositionInScreen(), std::move(mouse_data));
 }
 
 void PointerPropertiesFromPointerData(
@@ -48,6 +48,8 @@ void PointerPropertiesFromPointerData(
   pointer_properties->pointer_type = pointer_data->pointer_type;
   pointer_properties->movement_x = pointer_data->movement_x;
   pointer_properties->movement_y = pointer_data->movement_y;
+  pointer_properties->is_raw_movement_event =
+      pointer_data->is_raw_movement_event;
 }
 
 void TouchPointPropertiesFromPointerData(

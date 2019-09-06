@@ -134,9 +134,6 @@
 #include "services/audio/service.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
-#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -1416,7 +1413,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_WIN)
   if (!parsed_command_line_.HasSwitch(
           switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
-    // The default is to delay the secondary GPU process for 15 seconds.
+    // The default is to delay the secondary GPU process for 120 seconds.
     bool delayed = !parsed_command_line_.HasSwitch(
         switches::kNoDelayForDX12VulkanInfoCollection);
     GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion(
@@ -1524,13 +1521,6 @@ void BrowserMainLoop::InitializeMojo() {
   // Ensure that any NavigableContentsViews constructed in the browser process
   // know they're running in the same process as the service.
   content::NavigableContentsView::SetClientRunningInServiceProcess();
-
-  // Registers the browser process as a memory-instrumentation client, so
-  // that data for the browser process will be available in memory dumps.
-  memory_instrumentation::ClientProcessImpl::Config config(
-      GetSystemConnector(), resource_coordinator::mojom::kServiceName,
-      memory_instrumentation::mojom::ProcessType::BROWSER);
-  memory_instrumentation::ClientProcessImpl::CreateInstance(config);
 
   // Start startup tracing through TracingController's interface. TraceLog has
   // been enabled in content_main_runner where threads are not available. Now We

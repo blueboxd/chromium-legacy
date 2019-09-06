@@ -509,9 +509,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual bool CreatesAnonymousWrapper() const { return false; }
   //////////////////////////////////////////
 
-  // Sets the parent of this object but doesn't add it as a child of the parent.
-  void SetDangerousOneWayParent(LayoutObject*);
-
   UniqueObjectId UniqueId() const { return fragment_.UniqueId(); }
 
   inline bool ShouldApplyPaintContainment(const ComputedStyle& style) const {
@@ -1536,8 +1533,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Do not use unless strictly necessary.
   void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<const ComputedStyle>,
                                           ApplyStyleChanges);
-
-  void SetStyleWithWritingModeOfParent(scoped_refptr<ComputedStyle>);
 
   void ClearBaseComputedStyle();
 

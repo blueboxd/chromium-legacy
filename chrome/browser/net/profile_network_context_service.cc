@@ -35,6 +35,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -278,6 +279,12 @@ void ProfileNetworkContextService::RegisterProfilePrefs(
 #endif
 }
 
+// static
+void ProfileNetworkContextService::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
+}
+
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
   if (!quic_allowed_.IsManaged())
     return;
@@ -501,6 +508,15 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
     network_context_params->transport_security_persister_path = path;
   }
+  const base::ListValue* hsts_policy_bypass_list =
+      g_browser_process->local_state()->GetList(prefs::kHSTSPolicyBypassList);
+  for (const auto& value : *hsts_policy_bypass_list) {
+    std::string string_value;
+    if (!value.GetAsString(&string_value)) {
+      continue;
+    }
+    network_context_params->hsts_policy_bypass_list.push_back(string_value);
+  }
 
   // NOTE(mmenke): Keep these protocol handlers and
   // ProfileIOData::SetUpJobFactoryDefaultsForBuilder in sync with
@@ -569,6 +585,9 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->use_builtin_cert_verifier =
       using_builtin_cert_verifier_;
 
+  bool profile_supports_policy_certs = false;
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+    profile_supports_policy_certs = true;
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
     const user_manager::User* user =
@@ -580,15 +599,17 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     if (user && !user->username_hash().empty()) {
       network_context_params->username_hash = user->username_hash();
       network_context_params->nss_path = profile_->GetPath();
-      if (policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
-              profile_)) {
-        const policy::PolicyCertService* policy_cert_service =
-            policy::PolicyCertServiceFactory::GetForProfile(profile_);
-        network_context_params->initial_additional_certificates =
-            GetAdditionalCertificates(
-                policy_cert_service, GetPartitionPath(relative_partition_path));
-      }
+      profile_supports_policy_certs = true;
     }
+  }
+  if (profile_supports_policy_certs &&
+      policy::PolicyCertServiceFactory::CreateAndStartObservingForProfile(
+          profile_)) {
+    const policy::PolicyCertService* policy_cert_service =
+        policy::PolicyCertServiceFactory::GetForProfile(profile_);
+    network_context_params->initial_additional_certificates =
+        GetAdditionalCertificates(policy_cert_service,
+                                  GetPartitionPath(relative_partition_path));
   }
 #endif
 

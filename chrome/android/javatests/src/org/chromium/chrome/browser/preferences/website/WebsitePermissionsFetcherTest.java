@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -167,7 +165,7 @@ public class WebsitePermissionsFetcherTest {
             WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
             fetcher.fetchAllPreferences(waiter);
         });
-        waiter.waitForCallback(0, 1, scaleTimeout(1000), TimeUnit.MILLISECONDS);
+        waiter.waitForCallback(0, 1, 1000L, TimeUnit.MILLISECONDS);
     }
 
     class FakeWebsitePreferenceBridge extends WebsitePreferenceBridge {

@@ -12,8 +12,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_address.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/public/dns_protocol.h"
@@ -22,6 +24,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -79,7 +82,7 @@ struct PoolEvent {
   unsigned server_index;
 };
 
-class DnsSessionTest : public testing::Test {
+class DnsSessionTest : public TestWithTaskEnvironment {
  public:
   void OnSocketAllocated(unsigned server_index);
   void OnSocketFreed(unsigned server_index);
@@ -294,6 +297,46 @@ TEST_F(DnsSessionTest, DohServerAvailability) {
   session_->SetProbeSuccess(1, false /* success */);
   EXPECT_FALSE(session_->HasAvailableDohServer());
   EXPECT_EQ(session_->NumAvailableDohServers(), 0u);
+}
+
+class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
+ public:
+  void OnDNSChanged() override { ++dns_changed_calls_; }
+
+  void OnInitialDNSConfigRead() override { ++dns_changed_calls_; }
+
+  int dns_changed_calls() const { return dns_changed_calls_; }
+
+ private:
+  int dns_changed_calls_ = 0;
+};
+
+TEST_F(DnsSessionTest, DohServerAvailabilityNotification) {
+  test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  TestDnsObserver config_observer;
+  NetworkChangeNotifier::AddDNSObserver(&config_observer);
+  Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
+
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(0, config_observer.dns_changed_calls());
+
+  // Expect notification on first available DoH server.
+  session_->SetProbeSuccess(0, true /* success */);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(1, config_observer.dns_changed_calls());
+
+  // No notifications as additional servers are available or unavailable.
+  session_->SetProbeSuccess(1, true /* success */);
+  session_->SetProbeSuccess(0, false /* success */);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(1, config_observer.dns_changed_calls());
+
+  // Expect notification on last server unavailable.
+  session_->SetProbeSuccess(1, false /* success */);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(2, config_observer.dns_changed_calls());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&config_observer);
 }
 
 TEST_F(DnsSessionTest, DohProbeConsecutiveFailures) {

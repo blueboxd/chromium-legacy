@@ -17,7 +17,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1524282610922162960">Compartir una pestaña de Chromium</translation>
 <translation id="1668054258064581266">Después de eliminar tu cuenta de Chromium, es posible que tengas que volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Chromium en cualquier ordenador.</translation>
-<translation id="1705503634486268204">Chromium puede ayudarte a recordar tus contraseñas para que no tengas que hacerlo tú.</translation>
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="1766096484055239003">Tu administrador pide que reinicies Chromium para aplicar una actualización</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
@@ -31,7 +30,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2008474315282236005">Se eliminará un elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Tu administrador pide que reinicies Chromium para aplicar esta actualización</translation>
 <translation id="2119636228670142020">Información de &amp;Chromium OS</translation>
-<translation id="2178765360243863853">Deberías reiniciar Chromium ahora</translation>
 <translation id="2241627712206172106">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chromium a su gusto.</translation>
 <translation id="2265088490657775772">descarga Chromium en tu iPhone</translation>
 <translation id="2347108572062610441">Esta extensión ha cambiado la página que se muestra al iniciar Chromium.</translation>
@@ -143,8 +141,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="6096348254544841612">Personaliza y controla Chromium. Hay una actualización disponible.</translation>
 <translation id="6120345080069858279">Chromium guardará esta contraseña en tu cuenta de Google para que no tengas que recordarla.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> es peligroso, por lo que Chromium lo ha bloqueado.</translation>
-<translation id="6173098285107411678">Si no aparece ningún ajuste en esta página, mira en la <ph name="LINK_BEGIN" />
-    configuración del navegador Chromium<ph name="LINK_END" /></translation>
 <translation id="6212496753309875659">Este ordenador ya cuenta con una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium se reiniciará ahora}=1{Chromium se reiniciará dentro de 1 segundo}other{Chromium se reiniciará dentro de # segundos}}</translation>
 <translation id="6248213926982192922">Establecer Chromium como navegador predeterminado</translation>

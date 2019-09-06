@@ -32,6 +32,12 @@ struct ObservationCompletion {
 
   // Optional, and ignored from the renderer.
   ukm::SourceId source_id;
+
+  // Mostly for gmock matchers.
+  bool operator==(const ObservationCompletion& rhs) const {
+    return target_value == rhs.target_value && weight == rhs.weight &&
+           source_id == rhs.source_id;
+  }
 };
 
 // Client for a single learning task.  Intended to be the primary API for client

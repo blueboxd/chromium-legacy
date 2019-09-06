@@ -66,6 +66,16 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_search_field/cr_search_field.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_BEHAVIOR_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_search_field/cr_search_field_behavior.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_SHARED_STYLE_CSS_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/shared_style_css.m.js"
          use_base_dir="false"

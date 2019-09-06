@@ -13,7 +13,7 @@
 #include "media/base/limits.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -35,17 +35,17 @@ constexpr viz::FrameSinkId kInitialFrameSinkId = viz::FrameSinkId(1, 1);
 // Mock for the FrameSinkVideoCapturer running in the VIZ process.
 class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
  public:
-  MockFrameSinkVideoCapturer() : binding_(this) {}
+  MockFrameSinkVideoCapturer() {}
 
-  bool is_bound() const { return binding_.is_bound(); }
+  bool is_bound() const { return receiver_.is_bound(); }
 
   void Bind(viz::mojom::FrameSinkVideoCapturerRequest request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
+    DCHECK(!receiver_.is_bound());
+    receiver_.Bind(std::move(request));
   }
 
   void Reset() {
-    binding_.Close();
+    receiver_.reset();
     consumer_.reset();
   }
 
@@ -90,7 +90,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   }
   MOCK_METHOD1(MockStart, void(viz::mojom::FrameSinkVideoConsumer* consumer));
   void Stop() final {
-    binding_.Close();
+    receiver_.reset();
     consumer_.reset();
     MockStop();
   }
@@ -117,7 +117,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
   viz::FrameSinkId frame_sink_id_;
   viz::mojom::FrameSinkVideoConsumerPtr consumer_;
 
-  mojo::Binding<viz::mojom::FrameSinkVideoCapturer> binding_;
+  mojo::Receiver<viz::mojom::FrameSinkVideoCapturer> receiver_{this};
 };
 
 // Represents the FrameSinkVideoConsumerFrameCallbacks instance in the VIZ
@@ -125,17 +125,18 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
 class MockFrameSinkVideoConsumerFrameCallbacks
     : public viz::mojom::FrameSinkVideoConsumerFrameCallbacks {
  public:
-  MockFrameSinkVideoConsumerFrameCallbacks() : binding_(this) {}
+  MockFrameSinkVideoConsumerFrameCallbacks() {}
 
   void Bind(viz::mojom::FrameSinkVideoConsumerFrameCallbacksRequest request) {
-    binding_.Bind(std::move(request));
+    receiver_.Bind(std::move(request));
   }
 
   MOCK_METHOD0(Done, void());
   MOCK_METHOD1(ProvideFeedback, void(double utilization));
 
  private:
-  mojo::Binding<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> binding_;
+  mojo::Receiver<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> receiver_{
+      this};
 };
 
 // Mock for the classes like TracingHandler that receive frames from

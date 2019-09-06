@@ -219,11 +219,24 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         int distributor = getDistributor(bundle, webApkPackageName);
 
         int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
+        int primaryMaskableIconId =
+                IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.MASKABLE_ICON_ID, 0);
+
         boolean isPrimaryIconMaskable =
-                IntentUtils.safeGetBoolean(bundle, WebApkMetaDataKeys.IS_ICON_MASKABLE, false);
+                primaryMaskableIconId != 0 && ShortcutHelper.doesAndroidSupportMaskableIcons();
 
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         int splashIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SPLASH_ID, 0);
+
+        int isSplashIconMaskableBooleanId = IntentUtils.safeGetInt(
+                bundle, WebApkMetaDataKeys.IS_SPLASH_ICON_MASKABLE_BOOLEAN_ID, 0);
+        boolean isSplashIconMaskable = false;
+        if (isSplashIconMaskableBooleanId != 0) {
+            try {
+                isSplashIconMaskable = res.getBoolean(isSplashIconMaskableBooleanId);
+            } catch (Resources.NotFoundException e) {
+            }
+        }
 
         Pair<String, ShareTarget> shareTargetActivityNameAndData =
                 extractFirstShareTarget(webApkPackageName);
@@ -234,12 +247,14 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
                 (canUseSplashFromContentProvider && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                         && hasContentProviderForSplash(webApkPackageName));
 
-        return create(url, scope, new WebappIcon(webApkPackageName, primaryIconId),
+        return create(url, scope,
+                new WebappIcon(webApkPackageName,
+                        isPrimaryIconMaskable ? primaryMaskableIconId : primaryIconId),
                 new WebappIcon(webApkPackageName, badgeIconId),
                 new WebappIcon(webApkPackageName, splashIconId), name, shortName, displayMode,
                 orientation, source, themeColor, backgroundColor, defaultBackgroundColor,
-                isPrimaryIconMaskable, webApkPackageName, shellApkVersion, manifestUrl,
-                manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
+                isPrimaryIconMaskable, isSplashIconMaskable, webApkPackageName, shellApkVersion,
+                manifestUrl, manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
                 shareTargetActivityName, forceNavigation, isSplashProvidedByWebApk, shareData,
                 apkVersion);
     }
@@ -261,6 +276,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
      * @param defaultBackgroundColor   The background color to use if the Web Manifest does not
      *                                 provide a background color.
      * @param isPrimaryIconMaskable    Is the primary icon maskable.
+     * @param isSplashIconMaskable     Is the splash icon maskable.
      * @param webApkPackageName        The package of the WebAPK.
      * @param shellApkVersion          Version of the code in //chrome/android/webapk/shell_apk.
      * @param manifestUrl              URL of the Web Manifest.
@@ -285,8 +301,8 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
             WebappIcon badgeIcon, WebappIcon splashIcon, String name, String shortName,
             @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
             long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
-            String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, @WebApkDistributor int distributor,
+            boolean isSplashIconMaskable, String webApkPackageName, int shellApkVersion,
+            String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             String shareTargetActivityName, boolean forceNavigation,
             boolean isSplashProvidedByWebApk, ShareData shareData, int webApkVersionCode) {
@@ -328,7 +344,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
                         defaultBackgroundColor, false /* isIconGenerated */, isPrimaryIconMaskable,
                         forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, badgeIcon, splashIcon,
-                shellApkVersion, manifestUrl, manifestStartUrl, distributor,
+                isSplashIconMaskable, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
                 iconUrlToMurmur2HashMap, shareTarget, shareTargetActivityName,
                 isSplashProvidedByWebApk, shareData, webApkVersionCode);
         return new WebApkIntentDataProvider(webappExtras, webApkExtras);

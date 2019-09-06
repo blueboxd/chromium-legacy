@@ -192,7 +192,7 @@ interface NetworkService {
   SetSSLKeyLogFile(mojo_base.mojom.File file);
 
   // Creates a new network context with the given parameters.
-  CreateNetworkContext(NetworkContext& context,
+  CreateNetworkContext(pending_receiver<NetworkContext> context,
                        NetworkContextParams params);
 
   // Configures whether the built-in stub host resolver is used in preference

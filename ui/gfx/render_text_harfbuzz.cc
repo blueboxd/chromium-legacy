@@ -22,6 +22,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1923,6 +1924,30 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     out_run_list->Add(std::move(run));
   }
 
+  // Add trace event to track incorrect usage of fallback fonts.
+  // TODO(https://crbug.com/995789): Remove the following code when the issue
+  // is fixed.
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("fonts", &tracing_enabled);
+  if (tracing_enabled) {
+    std::string logging_str;
+    for (const auto& iter : *out_commonized_run_map) {
+      const internal::TextRunHarfBuzz::FontParams& font_params = iter.first;
+      for (const auto* run : iter.second) {
+        base::i18n::UTF16CharIterator text_iter(
+            text.c_str() + run->range.start(), run->range.length());
+        const UChar32 first_char = text_iter.get();
+        const UBlockCode first_block = ublock_getCode(first_char);
+        const char* script_name = uscript_getShortName(font_params.script);
+        base::StringAppendF(&logging_str, "block=%d script=%s\n",
+                            static_cast<int>(first_block),
+                            script_name ? script_name : "");
+      }
+    }
+    TRACE_EVENT_INSTANT1("fonts", "RenderTextHarfBuzz::ItemizeTextToRuns::Runs",
+                         TRACE_EVENT_SCOPE_THREAD, "runs", logging_str);
+  }
+
   // Undo the temporarily applied composition underlines and selection colors.
   UndoCompositionAndSelectionStyles();
 }
@@ -2063,9 +2088,10 @@ void RenderTextHarfBuzz::ShapeRuns(
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
     if (runs.empty()) {
-      TRACE_EVENT_INSTANT1("ui", "RenderTextHarfBuzz::FallbackFont",
+      TRACE_EVENT_INSTANT2("ui", "RenderTextHarfBuzz::FallbackFont",
                            TRACE_EVENT_SCOPE_THREAD, "font_name",
-                           TRACE_STR_COPY(font_name.c_str()));
+                           TRACE_STR_COPY(font_name.c_str()),
+                           "primary_font_name", primary_font.GetFontName());
       RecordShapeRunsFallback(ShapeRunFallback::FALLBACKS);
       return;
     }

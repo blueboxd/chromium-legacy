@@ -38,6 +38,9 @@ struct CONTENT_EXPORT FrameVisualProperties {
 
   gfx::Size local_frame_size;
 
+  // The size of the compositor viewport, to match the sub-frame's surface.
+  gfx::Rect compositor_viewport;
+
   uint32_t capture_sequence_number = 0u;
 
   // This represents the page zoom level for a WebContents.

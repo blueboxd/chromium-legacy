@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevUI DFM Loader Interstitial</title>
+  <title>DevUI DFM Loader</title>
   <link rel="stylesheet" href="dev_ui_loader.css">
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/promise_resolver.js"></script>
@@ -11,8 +11,12 @@
 </head>
 <body>
 <div id="failure-message" hidden>
-  <p>Failed to install Developer UI for Chrome (internet connection needed).</p>
-  <p>Please reload page to retry.</p>
+  <h1 class="heading">Something went wrong</h1>
+  <p class="list-header">Try:</p>
+  <ul class="suggestions-list">
+    <li>Reloading this page</li>
+    <li>Checking your internet connection</li>
+  </ul>
 </div>
 </body>
 </html>

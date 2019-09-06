@@ -42,9 +42,7 @@ bool TestAppBannerManagerDesktop::WaitForInstallableCheck() {
     installable_quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
-  bool installable = *installable_;
-  installable_.reset();
-  return installable;
+  return *installable_;
 }
 
 void TestAppBannerManagerDesktop::OnDidGetManifest(
@@ -65,6 +63,7 @@ void TestAppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(
 
 void TestAppBannerManagerDesktop::ResetCurrentPageData() {
   AppBannerManagerDesktop::ResetCurrentPageData();
+  installable_.reset();
   if (tear_down_quit_closure_)
     std::move(tear_down_quit_closure_).Run();
 }

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
+#include "content/public/browser/content_browser_client.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -49,7 +50,6 @@ class WebRequestProxyingURLLoaderFactory
         int32_t network_service_request_id,
         uint32_t options,
         const network::ResourceRequest& request,
-        bool is_download,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
         network::mojom::URLLoaderRequest loader_request,
         network::mojom::URLLoaderClientPtr client);
@@ -122,7 +122,6 @@ class WebRequestProxyingURLLoaderFactory
     WebRequestProxyingURLLoaderFactory* const factory_;
     network::ResourceRequest request_;
     const base::Optional<url::Origin> original_initiator_;
-    const bool is_download_;
     const uint64_t request_id_;
     const int32_t network_service_request_id_;
     const int32_t routing_id_;
@@ -187,28 +186,28 @@ class WebRequestProxyingURLLoaderFactory
   WebRequestProxyingURLLoaderFactory(
       content::BrowserContext* browser_context,
       int render_process_id,
-      bool is_download,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
           header_client_receiver,
-      WebRequestAPI::ProxySet* proxies);
+      WebRequestAPI::ProxySet* proxies,
+      content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type);
 
   ~WebRequestProxyingURLLoaderFactory() override;
 
   static void StartProxying(
       content::BrowserContext* browser_context,
       int render_process_id,
-      bool is_download,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
           header_client_receiver,
-      WebRequestAPI::ProxySet* proxies);
+      WebRequestAPI::ProxySet* proxies,
+      content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
@@ -234,6 +233,14 @@ class WebRequestProxyingURLLoaderFactory
       int32_t request_id,
       WebRequestAPI::AuthRequestCallback callback) override;
 
+  content::ContentBrowserClient::URLLoaderFactoryType loader_factory_type()
+      const {
+    return loader_factory_type_;
+  }
+
+  bool IsForServiceWorkerScript() const;
+  bool IsForDownload() const;
+
  private:
   void OnTargetFactoryError();
   void OnProxyBindingError();
@@ -242,7 +249,6 @@ class WebRequestProxyingURLLoaderFactory
 
   content::BrowserContext* const browser_context_;
   const int render_process_id_;
-  const bool is_download_;
   scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
@@ -251,6 +257,9 @@ class WebRequestProxyingURLLoaderFactory
       url_loader_header_client_receiver_{this};
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
+
+  const content::ContentBrowserClient::URLLoaderFactoryType
+      loader_factory_type_;
 
   // Mapping from our own internally generated request ID to an
   // InProgressRequest instance.

@@ -39,8 +39,9 @@ async_test((t) => {
     document.body.appendChild(cloned);
 
     t.step(() => {
-      assert_true(container.displayLock.locked, "original locked");
-      assert_false(cloned.displayLock.locked, "cloned copy locked");
+      assert_equals(container.renderSubtree, cloned.renderSubtree);
+      assert_true(container.displayLock.locked, "original is locked");
+      assert_true(cloned.displayLock.locked, "cloned copy is locked");
       t.done();
     });
   }

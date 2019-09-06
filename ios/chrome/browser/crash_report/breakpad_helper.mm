@@ -46,6 +46,7 @@ NSString* const kCrashedInBackground = @"crashed_in_background";
 NSString* const kFreeDiskInKB = @"free_disk_in_kb";
 NSString* const kFreeMemoryInKB = @"free_memory_in_kb";
 NSString* const kMemoryWarningInProgress = @"memory_warning_in_progress";
+NSString* const kHangReport = @"hang-report";
 NSString* const kMemoryWarningCount = @"memory_warning_count";
 NSString* const kUptimeAtRestoreInMs = @"uptime_at_restore_in_ms";
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
@@ -275,6 +276,13 @@ void SetMemoryWarningInProgress(bool value) {
     AddReportParameter(kMemoryWarningInProgress, @"yes", true);
   else
     RemoveReportParameter(kMemoryWarningInProgress);
+}
+
+void SetHangReport(bool value) {
+  if (value)
+    AddReportParameter(kHangReport, @"yes", true);
+  else
+    RemoveReportParameter(kHangReport);
 }
 
 void SetCurrentFreeMemoryInKB(int value) {

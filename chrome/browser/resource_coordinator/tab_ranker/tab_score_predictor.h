@@ -23,6 +23,10 @@ namespace tfnative_model {
 struct FixedAllocations;
 }  // namespace tfnative_model
 
+namespace pairwise_model {
+struct FixedAllocations;
+}  // namespace pairwise_model
+
 struct TabFeatures;
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -39,7 +43,12 @@ enum class TabRankerResult {
 // are scored based on how likely they are to be reactivated.
 class TabScorePredictor {
  public:
-  enum ScorerType { kMRUScorer = 0, kMLScorer = 1, kMaxValue = kMLScorer };
+  enum ScorerType {
+    kMRUScorer = 0,
+    kMLScorer = 1,
+    KPairwiseScorer = 2,
+    kMaxValue = KPairwiseScorer
+  };
   TabScorePredictor();
   ~TabScorePredictor();
 
@@ -66,13 +75,17 @@ class TabScorePredictor {
   TabRankerResult ScoreTabWithMLScorer(const TabFeatures& tab, float* score);
   TabRankerResult PredictWithPreprocess(assist_ranker::RankerExample* example,
                                         float* score);
+  TabRankerResult ScoreTabsWithPairwiseScorer(const TabFeatures& tab1,
+                                              const TabFeatures& tab2,
+                                              float* score);
 
   std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
       preprocessor_config_;
 
   // Fixed-size working memory provided to the inferencing function. Lazy
   // initialized once so it isn't reallocated for every inference.
-  std::unique_ptr<tfnative_model::FixedAllocations> model_alloc_;
+  std::unique_ptr<tfnative_model::FixedAllocations> tfnative_alloc_;
+  std::unique_ptr<pairwise_model::FixedAllocations> pairwise_alloc_;
 
   const float discard_count_penalty_ = 0.0f;
   const float mru_scorer_penalty_ = 1.0f;

@@ -18,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +31,7 @@
 
 class ProfileAttributesStorage;
 class ProfileInfoCache;
+class ProfileManagerObserver;
 
 class ProfileManager : public content::NotificationObserver,
                        public Profile::Delegate {
@@ -85,6 +87,9 @@ class ProfileManager : public content::NotificationObserver,
   // browser is started normally or is restarted after crash. On other
   // platforms, this returns the default profile.
   static Profile* CreateInitialProfile();
+
+  void AddObserver(ProfileManagerObserver* observer);
+  void RemoveObserver(ProfileManagerObserver* observer);
 
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
@@ -444,6 +449,8 @@ class ProfileManager : public content::NotificationObserver,
 
   // Controls whether to initialize some services. Only disabled for testing.
   bool do_final_services_init_ = true;
+
+  base::ObserverList<ProfileManagerObserver> observers_;
 
   // TODO(chrome/browser/profiles/OWNERS): Usage of this in profile_manager.cc
   // should likely be turned into DCHECK_CURRENTLY_ON(BrowserThread::UI) for

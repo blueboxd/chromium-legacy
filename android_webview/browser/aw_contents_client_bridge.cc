@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "android_webview/browser_jni_headers/AwContentsClientBridge_jni.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/grit/components_strings.h"
-#include "android_webview/native_jni/AwContentsClientBridge_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"

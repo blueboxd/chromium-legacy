@@ -301,7 +301,7 @@ TEST_F(CertNetFetcherImplTest, HttpStatusCode) {
     GURL url = test_server_.GetURL("/404.html");
     std::unique_ptr<CertNetFetcher::Request> request =
         StartRequest(fetcher(), url);
-    VerifyFailure(ERR_FAILED, request.get());
+    VerifyFailure(ERR_HTTP_RESPONSE_CODE_FAILURE, request.get());
   }
 
   // Response was HTTP status 500.
@@ -309,7 +309,7 @@ TEST_F(CertNetFetcherImplTest, HttpStatusCode) {
     GURL url = test_server_.GetURL("/500.html");
     std::unique_ptr<CertNetFetcher::Request> request =
         StartRequest(fetcher(), url);
-    VerifyFailure(ERR_FAILED, request.get());
+    VerifyFailure(ERR_HTTP_RESPONSE_CODE_FAILURE, request.get());
   }
 }
 

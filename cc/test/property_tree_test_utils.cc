@@ -156,6 +156,45 @@ void SetScrollOffsetInternal(LayerType* layer,
                                                        scroll_offset);
 }
 
+ElementId OverscrollElasticityElementId() {
+  // It is unlikely to conflict with other element ids from layer ids.
+  return LayerIdToElementIdForTesting(200000);
+}
+
+// TODO(wangxianzhu): Viewport properties can exist without layers, but for now
+// it's more convenient to create properties based on layers.
+template <typename LayerType>
+void SetupViewportProperties(LayerType* root,
+                             LayerType* page_scale_layer,
+                             LayerType* inner_viewport_container_layer,
+                             LayerType* inner_viewport_scroll_layer,
+                             LayerType* outer_viewport_container_layer,
+                             LayerType* outer_viewport_scroll_layer) {
+  CopyProperties(root, inner_viewport_container_layer);
+
+  CopyProperties(inner_viewport_container_layer, page_scale_layer);
+  auto& elasticity_transform = CreateTransformNode(page_scale_layer);
+  elasticity_transform.element_id = OverscrollElasticityElementId();
+  GetPropertyTrees(root)
+      ->element_id_to_transform_node_index[elasticity_transform.element_id] =
+      elasticity_transform.id;
+  CreateTransformNode(page_scale_layer).in_subtree_of_page_scale_layer = true;
+  CopyProperties(page_scale_layer, inner_viewport_scroll_layer);
+
+  CreateTransformNode(inner_viewport_scroll_layer);
+  auto& inner_scroll_node = CreateScrollNode(inner_viewport_scroll_layer);
+  inner_scroll_node.scrolls_inner_viewport = true;
+  inner_scroll_node.max_scroll_offset_affected_by_page_scale = true;
+
+  CopyProperties(inner_viewport_scroll_layer, outer_viewport_container_layer);
+
+  CopyProperties(outer_viewport_container_layer, outer_viewport_scroll_layer);
+  CreateTransformNode(outer_viewport_scroll_layer);
+  CreateScrollNode(outer_viewport_scroll_layer).scrolls_outer_viewport = true;
+  // TODO(wangxianzhu): Create other property nodes when they are needed by
+  // tests newly converted to layer list mode.
+}
+
 }  // anonymous namespace
 
 void SetupRootProperties(Layer* root) {
@@ -219,89 +258,129 @@ void SetScrollOffset(Layer* layer, const gfx::ScrollOffset& scroll_offset) {
 }
 
 void SetScrollOffset(LayerImpl* layer, const gfx::ScrollOffset& scroll_offset) {
-  layer->SetCurrentScrollOffset(scroll_offset);
+  if (layer->IsActive())
+    layer->SetCurrentScrollOffset(scroll_offset);
   SetScrollOffsetInternal(layer, scroll_offset);
 }
 
 void SetupViewport(Layer* root,
-                   scoped_refptr<Layer> outer_scroll_layer,
-                   const gfx::Size& outer_bounds) {
+                   scoped_refptr<Layer> outer_viewport_scroll_layer,
+                   const gfx::Size& outer_viewport_size) {
   DCHECK(root);
+  bool is_using_layer_lists = root->layer_tree_host()->IsUsingLayerLists();
   scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
-  scoped_refptr<Layer> overscroll_elasticity_layer = Layer::Create();
+  scoped_refptr<Layer> overscroll_elasticity_layer;
+  if (!is_using_layer_lists)
+    overscroll_elasticity_layer = Layer::Create();
+  scoped_refptr<Layer> page_scale_layer = Layer::Create();
   scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
   scoped_refptr<Layer> outer_viewport_container_layer = Layer::Create();
-  scoped_refptr<Layer> page_scale_layer = Layer::Create();
-
-  inner_viewport_scroll_layer->SetElementId(
-      LayerIdToElementIdForTesting(inner_viewport_scroll_layer->id()));
-  outer_scroll_layer->SetElementId(
-      LayerIdToElementIdForTesting(outer_scroll_layer->id()));
-  overscroll_elasticity_layer->SetElementId(
-      LayerIdToElementIdForTesting(overscroll_elasticity_layer->id()));
 
   inner_viewport_container_layer->SetBounds(root->bounds());
+  inner_viewport_scroll_layer->SetBounds(outer_viewport_size);
   inner_viewport_scroll_layer->SetScrollable(root->bounds());
   inner_viewport_scroll_layer->SetHitTestable(true);
-  inner_viewport_scroll_layer->SetBounds(outer_bounds);
-  outer_viewport_container_layer->SetBounds(outer_bounds);
-  outer_scroll_layer->SetScrollable(outer_bounds);
-  outer_scroll_layer->SetHitTestable(true);
+  outer_viewport_container_layer->SetBounds(outer_viewport_size);
+  outer_viewport_scroll_layer->SetScrollable(outer_viewport_size);
+  outer_viewport_scroll_layer->SetHitTestable(true);
 
   root->AddChild(inner_viewport_container_layer);
   if (root->layer_tree_host()->IsUsingLayerLists()) {
-    root->AddChild(overscroll_elasticity_layer);
     root->AddChild(page_scale_layer);
     root->AddChild(inner_viewport_scroll_layer);
     root->AddChild(outer_viewport_container_layer);
-    root->AddChild(outer_scroll_layer);
-
-    CopyProperties(root, inner_viewport_container_layer.get());
-    CopyProperties(inner_viewport_container_layer.get(),
-                   overscroll_elasticity_layer.get());
-    CreateTransformNode(overscroll_elasticity_layer.get());
-    CopyProperties(overscroll_elasticity_layer.get(), page_scale_layer.get());
-    CreateTransformNode(page_scale_layer.get()).in_subtree_of_page_scale_layer =
-        true;
-    CopyProperties(page_scale_layer.get(), inner_viewport_scroll_layer.get());
-    CreateTransformNode(inner_viewport_scroll_layer.get());
-    CreateScrollNode(inner_viewport_scroll_layer.get());
-    CopyProperties(inner_viewport_scroll_layer.get(),
-                   outer_viewport_container_layer.get());
-    CopyProperties(outer_viewport_container_layer.get(),
-                   outer_scroll_layer.get());
-    CreateTransformNode(outer_scroll_layer.get());
-    CreateScrollNode(outer_scroll_layer.get());
-    // TODO(wangxianzhu): Create other property nodes when they are needed by
-    // tests newly converted to layer list mode.
+    root->AddChild(outer_viewport_scroll_layer);
   } else {
     inner_viewport_container_layer->AddChild(overscroll_elasticity_layer);
     overscroll_elasticity_layer->AddChild(page_scale_layer);
     page_scale_layer->AddChild(inner_viewport_scroll_layer);
     inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
-    outer_viewport_container_layer->AddChild(outer_scroll_layer);
+    outer_viewport_container_layer->AddChild(outer_viewport_scroll_layer);
     root->layer_tree_host()->property_trees()->needs_rebuild = true;
   }
 
+  root->layer_tree_host()->SetElementIdsForTesting();
   ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
-      overscroll_elasticity_layer->element_id();
+      is_using_layer_lists ? OverscrollElasticityElementId()
+                           : overscroll_elasticity_layer->element_id();
   viewport_layers.page_scale = page_scale_layer;
   viewport_layers.inner_viewport_container = inner_viewport_container_layer;
   viewport_layers.outer_viewport_container = outer_viewport_container_layer;
   viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;
-  viewport_layers.outer_viewport_scroll = outer_scroll_layer;
+  viewport_layers.outer_viewport_scroll = outer_viewport_scroll_layer;
   root->layer_tree_host()->RegisterViewportLayers(viewport_layers);
+
+  if (root->layer_tree_host()->IsUsingLayerLists()) {
+    SetupViewportProperties(
+        root, page_scale_layer.get(), inner_viewport_container_layer.get(),
+        inner_viewport_scroll_layer.get(), outer_viewport_container_layer.get(),
+        outer_viewport_scroll_layer.get());
+  }
 }
 
 void SetupViewport(Layer* root,
-                   const gfx::Size& outer_bounds,
-                   const gfx::Size& scroll_bounds) {
+                   const gfx::Size& outer_viewport_size,
+                   const gfx::Size& content_size) {
   scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
-  outer_viewport_scroll_layer->SetBounds(scroll_bounds);
+  outer_viewport_scroll_layer->SetBounds(content_size);
   outer_viewport_scroll_layer->SetIsDrawable(true);
   outer_viewport_scroll_layer->SetHitTestable(true);
-  SetupViewport(root, outer_viewport_scroll_layer, outer_bounds);
+  SetupViewport(root, outer_viewport_scroll_layer, outer_viewport_size);
+}
+
+void SetupViewport(LayerImpl* root,
+                   const gfx::Size& outer_viewport_size,
+                   const gfx::Size& content_size) {
+  DCHECK(root);
+  LayerTreeImpl* layer_tree_impl = root->layer_tree_impl();
+  DCHECK(layer_tree_impl->settings().use_layer_lists);
+
+  std::unique_ptr<LayerImpl> inner_viewport_container_layer =
+      LayerImpl::Create(layer_tree_impl, 10000);
+  std::unique_ptr<LayerImpl> page_scale_layer =
+      LayerImpl::Create(layer_tree_impl, 10001);
+  std::unique_ptr<LayerImpl> inner_viewport_scroll_layer =
+      LayerImpl::Create(layer_tree_impl, 10002);
+  std::unique_ptr<LayerImpl> outer_viewport_container_layer =
+      LayerImpl::Create(layer_tree_impl, 10003);
+  std::unique_ptr<LayerImpl> outer_viewport_scroll_layer =
+      LayerImpl::Create(layer_tree_impl, 10004);
+
+  inner_viewport_container_layer->SetBounds(root->bounds());
+  inner_viewport_container_layer->SetMasksToBounds(true);
+  inner_viewport_scroll_layer->SetBounds(outer_viewport_size);
+  inner_viewport_scroll_layer->SetScrollable(root->bounds());
+  inner_viewport_scroll_layer->SetHitTestable(true);
+  outer_viewport_container_layer->SetBounds(outer_viewport_size);
+  outer_viewport_container_layer->SetMasksToBounds(true);
+  outer_viewport_scroll_layer->SetBounds(content_size);
+  outer_viewport_scroll_layer->SetDrawsContent(true);
+  outer_viewport_scroll_layer->SetScrollable(outer_viewport_size);
+  outer_viewport_scroll_layer->SetHitTestable(true);
+
+  LayerTreeImpl::ViewportLayerIds viewport_ids;
+  viewport_ids.page_scale = page_scale_layer->id();
+  viewport_ids.overscroll_elasticity_element_id =
+      OverscrollElasticityElementId();
+  viewport_ids.inner_viewport_container = inner_viewport_container_layer->id();
+  viewport_ids.inner_viewport_scroll = inner_viewport_scroll_layer->id();
+  viewport_ids.outer_viewport_container = outer_viewport_container_layer->id();
+  viewport_ids.outer_viewport_scroll = outer_viewport_scroll_layer->id();
+  layer_tree_impl->SetViewportLayersFromIds(viewport_ids);
+
+  root->test_properties()->AddChild(std::move(inner_viewport_container_layer));
+  root->test_properties()->AddChild(std::move(page_scale_layer));
+  root->test_properties()->AddChild(std::move(inner_viewport_scroll_layer));
+  root->test_properties()->AddChild(std::move(outer_viewport_container_layer));
+  root->test_properties()->AddChild(std::move(outer_viewport_scroll_layer));
+  layer_tree_impl->SetElementIdsForTesting();
+
+  SetupViewportProperties(root, layer_tree_impl->PageScaleLayer(),
+                          layer_tree_impl->InnerViewportContainerLayer(),
+                          layer_tree_impl->InnerViewportScrollLayer(),
+                          layer_tree_impl->OuterViewportContainerLayer(),
+                          layer_tree_impl->OuterViewportScrollLayer());
 }
 
 }  // namespace cc

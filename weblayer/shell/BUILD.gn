@@ -144,7 +144,20 @@ group("resources") {
   ]
 }
 
-repack("pak") {
+repack("shell_pak") {
+  testonly = true
+
+  sources = [
+    "$root_gen_dir/weblayer/shell/weblayer_shell_resources.pak",
+  ]
+
+  deps = [
+    ":resources",
+  ]
+  output = "$root_out_dir/weblayer_shell.pak"
+}
+
+repack("support_pak") {
   testonly = true
 
   sources = [
@@ -160,11 +173,9 @@ repack("pak") {
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-    "$root_gen_dir/weblayer/shell/weblayer_shell_resources.pak",
   ]
 
   deps = [
-    ":resources",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",
@@ -182,7 +193,22 @@ repack("pak") {
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
   }
-  output = "$root_out_dir/weblayer_shell.pak"
+  output = "$root_out_dir/weblayer_support.pak"
+}
+
+repack("pak") {
+  testonly = true
+
+  sources = [
+    "$root_out_dir/weblayer_shell.pak",
+    "$root_out_dir/weblayer_support.pak",
+  ]
+
+  deps = [
+    ":shell_pak",
+    ":support_pak",
+  ]
+  output = "$root_out_dir/weblayer.pak"
 }
 
 if (is_android) {
@@ -190,6 +216,12 @@ if (is_android) {
     testonly = true
     deps = [
       "//weblayer/shell/android:weblayer_shell_apk",
+    ]
+  }
+  group("weblayer_support") {
+    testonly = true
+    deps = [
+      "//weblayer/shell/android:weblayer_support_apk",
     ]
   }
 } else {

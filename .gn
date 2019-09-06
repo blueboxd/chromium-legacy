@@ -323,8 +323,7 @@ check_targets = [
   #"//third_party/*",  # May not ever want this.
   "//third_party:freetype_harfbuzz",
   "//third_party/Python-Markdown/*",
-
-  # "//third_party/SPIRV-Tools/*",  # 30ish errors
+  "//third_party/SPIRV-Tools/*",
   "//third_party/abseil-cpp/*",
   "//third_party/accessibility-audit/*",
   "//third_party/accessibility_test_framework/*",
@@ -560,8 +559,7 @@ check_targets = [
   "//third_party/sqlite4java/*",
   "//third_party/stp/*",
   "//third_party/sudden_motion_sensor/*",
-
-  # "//third_party/swiftshader/*",  # 1 error
+  "//third_party/swiftshader/*",
   "//third_party/swig/*",
   "//third_party/tcmalloc/*",
   "//third_party/test_fonts/*",

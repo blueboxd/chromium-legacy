@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -166,7 +167,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Tracking variables and associated wake locks for media playback.
   ActiveMediaPlayerMap active_audio_players_;
   ActiveMediaPlayerMap active_video_players_;
-  device::mojom::WakeLockPtr audio_wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> audio_wake_lock_;
   base::Optional<MediaPlayerId> fullscreen_player_;
   base::Optional<bool> picture_in_picture_allowed_in_fullscreen_;
   bool has_audio_wake_lock_for_testing_ = false;

@@ -21,11 +21,6 @@ ozone_platform_deps = ozone_external_platform_deps
 # Extra dependencies to pull into ozone_unittests for built platforms.
 ozone_platform_test_deps = ozone_external_platform_test_deps
 
-if (ozone_platform_magma) {
-  ozone_platforms += [ "magma" ]
-  ozone_platform_deps += [ "platform/magma" ]
-}
-
 if (ozone_platform_windows) {
   ozone_platforms += [ "windows" ]
   ozone_platform_deps += [ "platform/windows" ]

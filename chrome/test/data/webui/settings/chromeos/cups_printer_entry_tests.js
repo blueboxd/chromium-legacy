@@ -20,6 +20,38 @@ function verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm) {
   }
 }
 
+/**
+ * Helper function to verify that printers are hidden accordingly if they do not
+ * match the search query. Also checks if the no search results section is shown
+ * when appropriate.
+ * @param {!Element} printerEntryListTestElement
+ * @param {string} searchTerm
+ * @param {number} expectedNumVisiblePrinters
+ */
+function verifySearchQueryResults(
+    printerEntryListTestElement, searchTerm, expectedNumVisiblePrinters) {
+  printerEntryListTestElement.searchTerm = searchTerm;
+
+  Polymer.dom.flush();
+
+  let printerListEntries = Array.from(
+      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
+          'settings-cups-printers-entry'));
+  let hiddenEntries = Array.from(
+      printerEntryListTestElement.$.printerEntryList.querySelectorAll(
+          'settings-cups-printers-entry[hidden]'));
+
+  assertEquals(
+      expectedNumVisiblePrinters,
+      printerListEntries.length - hiddenEntries.length);
+  verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm);
+  if (expectedNumVisiblePrinters) {
+    assertTrue(printerEntryListTestElement.$$('#no-search-results').hidden);
+  } else {
+    assertFalse(printerEntryListTestElement.$$('#no-search-results').hidden);
+  }
+}
+
 suite('CupsPrintersEntry', function() {
   /** A printer list entry created before each test. */
   let printerEntryTestElement = null;
@@ -197,34 +229,19 @@ suite('CupsPrinterEntryList', function() {
     assertEquals(3, printerListEntries.length);
 
     let searchTerm = 'google';
-
     // Set the search term and filter out the printers. Filtering "google"
     // should result in one visible entry and two hidden entries.
-    printerEntryListTestElement.searchTerm = searchTerm;
-
-    Polymer.dom.flush();
-
-    let hiddenEntries = Array.from(
-        printerEntryListTestElement.$.printerEntryList.querySelectorAll(
-            'settings-cups-printers-entry[hidden]'));
-
-    assertEquals(1, printerListEntries.length - hiddenEntries.length);
-    verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm);
+    verifySearchQueryResults(
+        printerEntryListTestElement, searchTerm,
+        1 /* expectedNumVisiblePrinters */);
 
     // Change the search term and assert that entries are filtered correctly.
     // Filtering "test" should result in two visible entries and one hidden
     // entry.
     searchTerm = 'test';
-    printerEntryListTestElement.searchTerm = searchTerm;
-
-    Polymer.dom.flush();
-
-    hiddenEntries = Array.from(
-        printerEntryListTestElement.$.printerEntryList.querySelectorAll(
-            'settings-cups-printers-entry[hidden]'));
-
-    assertEquals(2, printerListEntries.length - hiddenEntries.length);
-    verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm);
+    verifySearchQueryResults(
+        printerEntryListTestElement, searchTerm,
+        2 /* expectedNumVisiblePrinters */);
 
     // Add more printers and assert that they are correctly filtered.
     printerEntryListTestElement.push(
@@ -236,11 +253,40 @@ suite('CupsPrinterEntryList', function() {
 
     Polymer.dom.flush();
 
-    hiddenEntries =
-        Array.from(printerEntryListTestElement.shadowRoot.querySelectorAll(
-            'settings-cups-printers-entry[hidden]'));
+    verifySearchQueryResults(
+        printerEntryListTestElement, searchTerm,
+        3 /* expectedNumVisiblePrinters */);
+  });
 
-    assertEquals(3, printerListEntries.length - hiddenEntries.length);
-    verifyFilteredPrinters(printerListEntries, hiddenEntries, searchTerm);
+  test('NoSearchFound', function() {
+    printerEntryListTestElement.push(
+        'printers',
+        createPrinterListEntry('test1', '123', '1', PrinterType.SAVED));
+    printerEntryListTestElement.push(
+        'printers',
+        createPrinterListEntry('google', '123', '2', PrinterType.SAVED));
+
+    Polymer.dom.flush();
+
+    let searchTerm = 'google';
+
+    // Set the search term and filter out the printers. Filtering "google"
+    // should result in one visible entry and two hidden entries.
+    verifySearchQueryResults(
+        printerEntryListTestElement, searchTerm,
+        1 /* expectedNumVisiblePrinters */);
+
+    // Change search term to something that has no matches.
+    searchTerm = 'noSearchFound';
+    verifySearchQueryResults(
+        printerEntryListTestElement, searchTerm,
+        0 /* expectedNumVisiblePrinters */);
+
+    // Change search term back to "google" and verify that the No search found
+    // message is no longer there.
+    searchTerm = 'google';
+    verifySearchQueryResults(
+        printerEntryListTestElement, searchTerm,
+        1 /* expectedNumVisiblePrinters */);
   });
 });

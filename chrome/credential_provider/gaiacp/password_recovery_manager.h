@@ -18,8 +18,13 @@ namespace credential_provider {
 // a given user and to retrieve this encrypted password.
 class PasswordRecoveryManager {
  public:
-  // Default timeout when trying to make requests to the EMM escrow service.
-  static const base::TimeDelta kDefaultEscrowServiceRequestTimeout;
+  // Default timeout when trying to make requests to the EMM escrow service to
+  // retrieve encryption key.
+  static const base::TimeDelta kDefaultEscrowServiceEncryptionKeyRequestTimeout;
+
+  // Default timeout when trying to make requests to the EMM escrow service to
+  // retrieve decryption key.
+  static const base::TimeDelta kDefaultEscrowServiceDecryptionKeyRequestTimeout;
 
   static PasswordRecoveryManager* Get();
 
@@ -47,11 +52,14 @@ class PasswordRecoveryManager {
   // Returns the storage used for the instance pointer.
   static PasswordRecoveryManager** GetInstanceStorage();
 
-  explicit PasswordRecoveryManager(base::TimeDelta request_timeout);
+  explicit PasswordRecoveryManager(
+      base::TimeDelta encryption_key_request_timeout,
+      base::TimeDelta decryption_key_request_timeout);
   virtual ~PasswordRecoveryManager();
 
   void SetRequestTimeoutForTesting(base::TimeDelta request_timeout) {
-    request_timeout_ = request_timeout;
+    encryption_key_request_timeout_ = request_timeout;
+    decryption_key_request_timeout_ = request_timeout;
   }
   std::string MakeGenerateKeyPairResponseForTesting(
       const std::string& public_key,
@@ -60,8 +68,8 @@ class PasswordRecoveryManager {
       const std::string& private_key);
 
  private:
-
-  base::TimeDelta request_timeout_;
+  base::TimeDelta encryption_key_request_timeout_;
+  base::TimeDelta decryption_key_request_timeout_;
 };
 
 }  // namespace credential_provider

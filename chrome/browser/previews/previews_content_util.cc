@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -29,6 +30,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -356,6 +358,26 @@ void UpdatePreviewsUserDataAndRecordCoinFlipResult(
     previews::PreviewsUserData* previews_user_data,
     previews::CoinFlipHoldbackResult result) {
   DCHECK_NE(result, previews::CoinFlipHoldbackResult::kNotSet);
+
+  // Log a coin flip holdback to the interventions-internals page.
+  if (result == previews::CoinFlipHoldbackResult::kHoldback) {
+    auto* previews_service =
+        navigation_handle && navigation_handle->GetWebContents()
+            ? PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
+                  navigation_handle->GetWebContents()->GetBrowserContext()))
+            : nullptr;
+    if (previews_service && previews_service->previews_ui_service()) {
+      PreviewsEligibilityReason reason =
+          PreviewsEligibilityReason::COINFLIP_HOLDBACK;
+      PreviewsType type =
+          previews_user_data->PreHoldbackCommittedPreviewsType();
+      std::vector<PreviewsEligibilityReason> passed_reasons;
+      previews_service->previews_ui_service()->LogPreviewDecisionMade(
+          reason, navigation_handle->GetURL(),
+          base::DefaultClock::GetInstance()->Now(), type,
+          std::move(passed_reasons), previews_user_data->page_id());
+    }
+  }
 
   // We only want to record the coin flip once per navigation when set, so if it
   // is already set then we're done.

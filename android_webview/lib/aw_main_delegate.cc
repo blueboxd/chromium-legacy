@@ -207,6 +207,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // clear on how user can remove persistent media licenses from UI.
     features.DisableIfNotSet(media::kMediaDrmPersistentLicense);
 
+    // WebView does not support Picture-in-Picture yet.
+    features.DisableIfNotSet(media::kPictureInPictureAPI);
+
     features.DisableIfNotSet(
         autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 

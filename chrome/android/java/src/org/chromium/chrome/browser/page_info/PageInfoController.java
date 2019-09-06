@@ -24,7 +24,6 @@ import android.view.Window;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -229,25 +228,15 @@ public class PageInfoController
 
         initPreviewUiParams(viewParams);
 
-        if (isShowingOfflinePage()) {
-            boolean isConnected = OfflinePageUtils.isConnected();
-            RecordHistogram.recordBooleanHistogram(
-                    "OfflinePages.WebsiteSettings.OpenOnlineButtonVisible", isConnected);
-            if (isConnected) {
-                viewParams.openOnlineButtonClickCallback = () -> {
-                    runAfterDismiss(() -> {
-                        // Attempt to reload to an online version of the viewed offline web page.
-                        // This attempt might fail if the user is offline, in which case an offline
-                        // copy will be reloaded.
-                        RecordHistogram.recordBooleanHistogram(
-                                "OfflinePages.WebsiteSettings.ConnectedWhenOpenOnlineButtonClicked",
-                                OfflinePageUtils.isConnected());
-                        OfflinePageUtils.reload(mTab);
-                    });
-                };
-            } else {
-                viewParams.openOnlineButtonShown = false;
-            }
+        if (isShowingOfflinePage() && OfflinePageUtils.isConnected()) {
+            viewParams.openOnlineButtonClickCallback = () -> {
+                runAfterDismiss(() -> {
+                    // Attempt to reload to an online version of the viewed offline web page.
+                    // This attempt might fail if the user is offline, in which case an offline
+                    // copy will be reloaded.
+                    OfflinePageUtils.reload(mTab);
+                });
+            };
         } else {
             viewParams.openOnlineButtonShown = false;
         }

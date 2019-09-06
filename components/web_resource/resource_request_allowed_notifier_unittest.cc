@@ -119,8 +119,8 @@ class ResourceRequestAllowedNotifierTest
   }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   TestRequestAllowedNotifier resource_request_allowed_notifier_;
   TestingPrefServiceSimple prefs_;
   TestEulaAcceptedNotifier* eula_notifier_;  // Weak, owned by RRAN.

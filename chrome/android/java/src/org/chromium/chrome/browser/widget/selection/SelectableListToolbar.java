@@ -694,6 +694,28 @@ public class SelectableListToolbar<E>
         updateStatusBarColor(color);
     }
 
+    /**
+     * Returns whether the toolbar should be using dark icons (light icons are only used when in
+     * selection mode).
+     */
+    protected boolean useDarkIcons() {
+        return !mIsSelectionEnabled;
+    }
+
+    /**
+     * Returns the color state list to use when dark icons are showing (when not in selection mode).
+     */
+    protected ColorStateList getDarkIconColorStateList() {
+        return mDarkIconColorList;
+    }
+
+    /**
+     * Returns the color state list to use when light icons are showing (when in selection mode).
+     */
+    protected ColorStateList getLightIconColorStateList() {
+        return mLightIconColorList;
+    }
+
     private void updateStatusBarColor(int color) {
         if (!mUpdateStatusBarColor) return;
 

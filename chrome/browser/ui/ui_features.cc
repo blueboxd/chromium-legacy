@@ -69,11 +69,10 @@ const base::Feature kTabOutlinesInLowContrastThemes{
 const base::Feature kWebFooterExperiment{"WebFooterExperiment",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-// Enables a web-based toolbar. See https://crbug.com/989131
+// Enables a web-based toolbar. See https://crbug.com/989131. Note this feature
+// only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 constexpr base::Feature kEnableDbusAndX11StatusIcons{

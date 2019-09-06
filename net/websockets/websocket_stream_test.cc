@@ -837,7 +837,8 @@ TEST_P(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
   ASSERT_THAT(rv, IsOk());
   ASSERT_EQ(1U, frames.size());
   ASSERT_EQ(5U, frames[0]->header.payload_length);
-  EXPECT_EQ("Hello", std::string(frames[0]->data->data(), 5));
+  EXPECT_EQ(std::string("Hello"),
+            std::string(frames[0]->data, frames[0]->header.payload_length));
 }
 
 // Unknown extension in the response is rejected

@@ -40,8 +40,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -622,7 +621,8 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+  mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+      wake_lock_.BindNewPipeAndPassReceiver();
 
   // Service manager connection might be not initialized in some testing
   // contexts.
@@ -638,7 +638,7 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther,
-      "Encryption migration is in progress...", std::move(request));
+      "Encryption migration is in progress...", std::move(receiver));
   return wake_lock_.get();
 }
 

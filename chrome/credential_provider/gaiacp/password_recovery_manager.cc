@@ -40,7 +40,11 @@
 namespace credential_provider {
 
 const base::TimeDelta
-    PasswordRecoveryManager::kDefaultEscrowServiceRequestTimeout =
+    PasswordRecoveryManager::kDefaultEscrowServiceEncryptionKeyRequestTimeout =
+        base::TimeDelta::FromMilliseconds(12000);
+
+const base::TimeDelta
+    PasswordRecoveryManager::kDefaultEscrowServiceDecryptionKeyRequestTimeout =
         base::TimeDelta::FromMilliseconds(3000);
 
 namespace {
@@ -629,15 +633,19 @@ PasswordRecoveryManager* PasswordRecoveryManager::Get() {
 
 // static
 PasswordRecoveryManager** PasswordRecoveryManager::GetInstanceStorage() {
-  static PasswordRecoveryManager instance(kDefaultEscrowServiceRequestTimeout);
+  static PasswordRecoveryManager instance(
+      kDefaultEscrowServiceEncryptionKeyRequestTimeout,
+      kDefaultEscrowServiceDecryptionKeyRequestTimeout);
   static PasswordRecoveryManager* instance_storage = &instance;
 
   return &instance_storage;
 }
 
 PasswordRecoveryManager::PasswordRecoveryManager(
-    base::TimeDelta request_timeout)
-    : request_timeout_(request_timeout) {}
+    base::TimeDelta encryption_key_timeout,
+    base::TimeDelta decryption_key_timeout)
+    : encryption_key_request_timeout_(encryption_key_timeout),
+      decryption_key_request_timeout_(decryption_key_timeout) {}
 
 PasswordRecoveryManager::~PasswordRecoveryManager() = default;
 
@@ -688,7 +696,8 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
 
   base::Optional<base::Value> encrypted_dict;
   hr = EncryptUserPasswordUsingEscrowService(access_token, device_id, password,
-                                             request_timeout_, &encrypted_dict);
+                                             encryption_key_request_timeout_,
+                                             &encrypted_dict);
   if (SUCCEEDED(hr)) {
     std::string lsa_value;
     if (base::JSONWriter::Write(encrypted_dict.value(), &lsa_value)) {
@@ -748,8 +757,9 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
   SecurelyClearBuffer(password_lsa_data, sizeof(password_lsa_data));
 
   base::string16 decrypted_password;
-  hr = DecryptUserPasswordUsingEscrowService(
-      access_token, encrypted_dict, request_timeout_, &decrypted_password);
+  hr = DecryptUserPasswordUsingEscrowService(access_token, encrypted_dict,
+                                             decryption_key_request_timeout_,
+                                             &decrypted_password);
 
   if (encrypted_dict) {
     SecurelyClearDictionaryValueWithKey(

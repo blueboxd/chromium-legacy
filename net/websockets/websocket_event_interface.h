@@ -13,6 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"  // for WARN_UNUSED_RESULT
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
@@ -26,7 +27,6 @@ class AuthChallengeInfo;
 class AuthCredentials;
 class IPEndPoint;
 class HttpResponseHeaders;
-class IOBuffer;
 class SSLInfo;
 class URLRequest;
 struct WebSocketHandshakeRequestInfo;
@@ -50,10 +50,12 @@ class NET_EXPORT WebSocketEventInterface {
 
   // Called when a data frame has been received from the remote host and needs
   // to be forwarded to the renderer process.
+  // |payload| stays valid as long as both
+  // - the associated WebSocketChannel is valid.
+  // - no further ReadFrames() is called on the associated WebSocketChannel.
   virtual void OnDataFrame(bool fin,
                            WebSocketMessageType type,
-                           scoped_refptr<IOBuffer> buffer,
-                           size_t buffer_size) = 0;
+                           base::span<const char> payload) = 0;
 
   // Returns true if data pipe is full and waiting the renderer process read
   // out. The network service should not read more from network until that.

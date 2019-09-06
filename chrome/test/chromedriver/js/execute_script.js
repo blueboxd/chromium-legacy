@@ -11,9 +11,10 @@
 * @param {!Array<*>} args Arguments to be passed to the script.
 */
 function executeScript(script, args) {
-  const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
   try {
-    return Promise.resolve(new AsyncFunction(script).apply(null, args));
+    // Convert script (as a string) into an async function.
+    const f = (new Function('return async function(){' + script + '}'))();
+    return Promise.resolve(f.apply(null, args));
   } catch (e) {
     return Promise.reject(e);
   }

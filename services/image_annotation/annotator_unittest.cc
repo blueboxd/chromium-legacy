@@ -757,8 +757,9 @@ TEST(AnnotatorTest, HttpError) {
   EXPECT_THAT(annotations, IsEmpty());
 
   // Metrics about the HTTP request failure should have been logged.
-  histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
-                                      net::Error::ERR_FAILED, 1);
+  histogram_tester.ExpectUniqueSample(
+      metrics_internal::kServerNetError,
+      net::Error::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
   histogram_tester.ExpectUniqueSample(metrics_internal::kServerHttpResponseCode,
                                       net::HTTP_INTERNAL_SERVER_ERROR, 1);
   histogram_tester.ExpectUniqueSample(metrics_internal::kClientResult,

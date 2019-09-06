@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">読み上げの停止</translation>
 <translation id="4373197658375206385">リンクでない前の項目はありません。</translation>
 <translation id="4376316291247992553">画像を点字パターンで表示します</translation>
+<translation id="437809255587011096">テキストのスタイル設定を読み上げる</translation>
 <translation id="4378308539633073595">前方スクロール</translation>
 <translation id="4384583879834880242">Q＆A</translation>
 <translation id="4391478986194775161">コンテンツ情報</translation>
@@ -1121,6 +1122,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8503360654911991865">一度に移動する単位を大きくする</translation>
 <translation id="8504695234784218301">文法ミスの末尾</translation>
 <translation id="8520472399088452386">スピンボタン</translation>
+<translation id="8534394844575788431">書式設定</translation>
 <translation id="8538744478902126321">現在のセルの行見出しを推測</translation>
 <translation id="8540054775867439484">先頭に戻ります</translation>
 <translation id="8542271685829952264">ChromeVox のコマンドとショートカットの一覧を表示するには、検索+ピリオド（.）キーを押します。矢印キーを使ってメニュー項目間を移動し、Enter キーを押してコマンドを実行します。この画面に戻るには、検索+o キーを押して t キーを押します。</translation>
@@ -1200,6 +1202,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="9149560530563164529">セクション</translation>
 <translation id="9150735707954472829">タブ</translation>
 <translation id="9151211641321628915">現在位置の簡単な説明を読み上げます</translation>
+<translation id="9151249085738989067">言語に基づいて ChromeVox の音声を自動的に切り替える</translation>
 <translation id="9153606228985488238">ピッチ <ph name="PERCENT" /> パーセント</translation>
 <translation id="9160096769946561184">現在の列の末尾に移動</translation>
 <translation id="9173115498289768110">音量 <ph name="PERCENT" /> パーセント</translation>

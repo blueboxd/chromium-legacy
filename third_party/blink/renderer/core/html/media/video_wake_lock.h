@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_VIDEO_WAKE_LOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_VIDEO_WAKE_LOCK_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
@@ -78,7 +79,7 @@ class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
   // `video_element_` owns |this|.
   Member<HTMLVideoElement> video_element_;
 
-  device::mojom::blink::WakeLockPtr wake_lock_service_;
+  mojo::Remote<device::mojom::blink::WakeLock> wake_lock_service_;
 
   bool playing_ = false;
   bool active_ = false;

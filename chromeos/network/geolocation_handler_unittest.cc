@@ -22,7 +22,8 @@ namespace chromeos {
 class GeolocationHandlerTest : public testing::Test {
  public:
   GeolocationHandlerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
   ~GeolocationHandlerTest() override = default;
 
@@ -88,7 +89,7 @@ class GeolocationHandlerTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<GeolocationHandler> geolocation_handler_;
   ShillManagerClient::TestInterface* manager_test_ = nullptr;
   WifiAccessPointVector wifi_access_points_;

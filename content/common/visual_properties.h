@@ -37,10 +37,10 @@ struct CONTENT_EXPORT VisualProperties {
   // The size for the widget in DIPs.
   gfx::Size new_size;
 
-  // The size of compositor's viewport in pixels. Note that this may differ
-  // from a ScaleToCeiledSize of |new_size| due to Android's keyboard or due
-  // to rounding particulars.
-  gfx::Size compositor_viewport_pixel_size;
+  // The rect of compositor's viewport in pixels. Note that this may differ in
+  // size from a ScaleToCeiledSize of |new_size| due to Android's keyboard or
+  // due to rounding particulars.
+  gfx::Rect compositor_viewport_pixel_rect;
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar (always false on platforms where URL-bar hiding isn't supported).

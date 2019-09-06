@@ -43,9 +43,10 @@ class ReputationService : public KeyedService {
   // if the url is not flagged).
   void GetReputationStatus(const GURL& url, ReputationCheckCallback callback);
 
-  // Tells the service that the user has explicitly ignored the warning.
+  // Tells the service that the user has explicitly ignored the warning, and
+  // records a histogram.
   // Exposed in subsequent results from GetReputationStatus.
-  void SetUserIgnore(const GURL& url);
+  void SetUserIgnore(content::WebContents* web_contents, const GURL& url);
 
  private:
   // Returns whether the warning should be shown on the given URL. This is

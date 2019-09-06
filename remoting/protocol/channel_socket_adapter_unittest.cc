@@ -55,8 +55,8 @@ class TransportChannelSocketAdapterTest : public testing::Test {
   std::unique_ptr<TransportChannelSocketAdapter> target_;
   net::CompletionRepeatingCallback callback_;
   int callback_result_;
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 };
 
 // Verify that Read() returns net::ERR_IO_PENDING.

@@ -66,6 +66,22 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
                                             bool is_animating) = 0;
   };
 
+  // Describes how a view which is appearing or disappearing during an animation
+  // behaves. Child views which are removed from the parent view always simply
+  // disappear; use one of the Fade methods below to cause a view to fade out.
+  //
+  // TODO(dfried): break this out into layout_types and make a view class
+  // property so that it can be set separately on each child view.
+  enum class FadeInOutMode {
+    // Default behavior: a view fading in or out is hidden during the animation.
+    kHide,
+    // A view fading in or out shrinks to or from nothing.
+    kScaleFromZero,
+    // A view fading in or out appears or disappears when it hits its minimum
+    // size, and scales the rest of the way in or out.
+    kScaleFromMinimum,
+  };
+
   // Call QueueDelayedAction() to queue up an action to be performed when the
   // current animation ends.
   using DelayedAction = base::OnceCallback<void()>;
@@ -82,6 +98,12 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
 
   gfx::Tween::Type tween_type() const { return tween_type_; }
   AnimatingLayoutManager& SetTweenType(gfx::Tween::Type tween_type);
+
+  views::LayoutOrientation orientation() const { return orientation_; }
+  AnimatingLayoutManager& SetOrientation(views::LayoutOrientation orientation);
+
+  FadeInOutMode default_fade_mode() const { return default_fade_mode_; }
+  AnimatingLayoutManager& SetDefaultFadeMode(FadeInOutMode default_fade_mode);
 
   bool is_animating() const { return is_animating_; }
 
@@ -100,6 +122,16 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // Clears any previous layout, stops any animation, and re-loads the proposed
   // layout from the embedded layout manager.
   void ResetLayout();
+
+  // Causes the specified child view to fade out and become hidden. Alternative
+  // to directly hiding the view (which will have the same effect, but could
+  // cause visual flicker if the view paints before it can re-layout.
+  void FadeOut(views::View* child_view);
+
+  // Causes the specified child view to fade in and become visible. Alternative
+  // to directly showing the view (which will have the same effect, but could
+  // cause visual flicker if the view paints before it can re-layout.
+  void FadeIn(views::View* child_view);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -140,6 +172,7 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   void OnLayoutChanged() override;
 
  private:
+  struct LayoutFadeInfo;
   class AnimationDelegate;
   friend class AnimationDelegate;
 
@@ -162,6 +195,14 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // Runs all delayed actions. See QueueDelayedAction() for more information.
   void RunDelayedActions();
 
+  // Updates the current layout to |percent| interpolated between the starting
+  // and target layouts.
+  void UpdateCurrentLayout(double percent);
+
+  // Updates information about which views are fading in or out during the
+  // current animation.
+  void CalculateFadeInfos();
+
   // Whether or not to animate the bounds of the host view when the preferred
   // size of the layout changes. If false, the size will have to be set
   // explicitly by the host view's owner. Bounds animation is done by changing
@@ -174,6 +215,12 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
 
   // The motion curve of the animation to perform.
   gfx::Tween::Type tween_type_ = gfx::Tween::EASE_IN_OUT;
+
+  // The layout orientation, used for side and scale fades.
+  views::LayoutOrientation orientation_ = views::LayoutOrientation::kHorizontal;
+
+  // The default fade mode.
+  FadeInOutMode default_fade_mode_ = FadeInOutMode::kHide;
 
   // Used to determine when to fire animation events.
   bool is_animating_ = false;
@@ -194,6 +241,9 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // The desired layout being animated to. When the animation is complete,
   // |current_layout_| will match |target_layout_|.
   ProposedLayout target_layout_;
+
+  // Stores information about elements fading in or out of the layout.
+  std::vector<LayoutFadeInfo> fade_infos_;
 
   std::unique_ptr<AnimationDelegate> animation_delegate_;
   base::ObserverList<Observer, true> observers_;

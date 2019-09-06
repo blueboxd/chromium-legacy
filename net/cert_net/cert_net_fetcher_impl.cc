@@ -536,8 +536,7 @@ void Job::OnResponseStarted(URLRequest* request, int net_error) {
   }
 
   if (request->GetResponseCode() != 200) {
-    // TODO(eroman): Use a more specific error code.
-    FailRequest(ERR_FAILED);
+    FailRequest(ERR_HTTP_RESPONSE_CODE_FAILURE);
     return;
   }
 

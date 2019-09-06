@@ -69,7 +69,7 @@ void GetFontFamilyString(ClosedCaptionStyle closed_caption_style,
       *css_font_variant = "small-caps";
       break;
     case ClosedCaptionStyle_Default:
-      *css_font_family = std::string();
+      *css_font_family = "";
       break;
   }
 }
@@ -93,7 +93,7 @@ std::string GetEdgeEffectString(ClosedCaptionEdgeEffect edge_effect) {
     case ClosedCaptionEdgeEffect_DropShadow:
       return "3px 3px 3px 2px black";
     case ClosedCaptionEdgeEffect_Default:
-      return std::string();
+      return "";
   }
 }
 
@@ -110,7 +110,7 @@ std::string GetCaptionSizeString(ClosedCaptionSize caption_size) {
     case ClosedCaptionSize_TwoHundredPercent:
       return "200%";
     case ClosedCaptionSize_Default:
-      return std::string();
+      return "";
   }
 }
 
@@ -133,8 +133,9 @@ std::string GetCssColor(ClosedCaptionColor caption_color) {
     case ClosedCaptionColor_Cyan:
       return "cyan";
     case ClosedCaptionColor_White:
-    case ClosedCaptionColor_Default:
       return "white";
+    case ClosedCaptionColor_Default:
+      return "";
   }
 }
 

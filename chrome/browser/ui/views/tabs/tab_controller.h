@@ -141,8 +141,7 @@ class TabController {
   // |active_state| of the window.
   virtual SkColor GetTabBackgroundColor(
       TabActive active,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const = 0;
+      BrowserNonClientFrameView::ActiveState active_state) const = 0;
 
   // Returns the tab foreground color of the the text based on the |tab_state|,
   // the activation state of the window, and the current |background_color|.
@@ -152,8 +151,7 @@ class TabController {
   // Returns the background tab image resource ID if the image has been
   // customized, directly or indirectly, by the theme.
   virtual base::Optional<int> GetCustomBackgroundId(
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const = 0;
+      BrowserNonClientFrameView::ActiveState active_state) const = 0;
 
   // If the given tab is animating to its target destination, this returns the
   // target bounds. If the tab isn't moving this will return the current bounds

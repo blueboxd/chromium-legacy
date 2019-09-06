@@ -34,6 +34,7 @@ Polymer({
     passwordPromptText: {
       type: String,
       notify: true,
+      value: '',
     },
 
     /**

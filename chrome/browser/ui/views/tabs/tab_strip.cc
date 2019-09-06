@@ -1281,7 +1281,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       // Note: This is safe even if we're in the midst of mouse-based tab
       // closure--we won't expand the tabstrip back to the full window
       // width--because PrepareForCloseAt() will have set
-      // |available_width_for_tabs_| already.
+      // |override_available_width_for_tabs_| already.
       UpdateIdealBounds();
       AnimateToIdealBounds();
     } else if (!layout_helper_->IsAnimating()) {
@@ -2060,7 +2060,7 @@ void TabStrip::StartInsertTabAnimation(int model_index, TabPinned pinned) {
 }
 
 void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
-  if (bounds_animator_.IsAnimating() ||
+  if (bounds_animator_.IsAnimating() || touch_layout_ ||
       !base::FeatureList::IsEnabled(features::kNewTabstripAnimation)) {
     StartFallbackRemoveTabAnimation(model_index, was_active);
     return;
@@ -2069,39 +2069,14 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
   // The tab formerly at |model_index| has already been removed from the model,
   // so |model_count| won't include it.
   const int model_count = GetModelCount();
+
   // If |in_tab_close_| is true then we want to animate the remaining tabs
   // (if there are any) differently in order to ensure that a useful tab will
   // end up under the cursor.
   if (in_tab_close_ && model_count > 0) {
-    if (model_index < model_count) {
-      // The user closed a tab other than the last tab. Override the standard
-      // tab width so that each tab remains the same size during the animation.
-      // This ensures that the next tab to the right will fall under the mouse.
-      // TODO(958173): Implement this case of tab removal animation.
-      // It should also work to override the layout interpolation factor, i.e.
-      // the TabSizer computed in the first layout phase. That might be simpler
-      // to reason about than overriding standard tab size (or harder, who
-      // knows).
-      const int available_width = (available_width_for_tabs_ < 0)
-                                      ? GetTabAreaWidth()
-                                      : available_width_for_tabs_;
-      layout_helper_->EnterTabClosingMode(available_width);
-    }
-    if (model_index == model_count) {
-      // The user closed the last tab. Override the width available for tabs so
-      // that tabs take up the same total amount of space during the animation.
-      // This ensures that the previous tab to the left will fall under the
-      // mouse (excepting the case where tabs reach standard size).
-      // TODO(958173): Implement this case of tab removal animation. For now,
-      // fall back to the old system.
-      // In addition to moving animation responsibilities back, we must also
-      // move tab closing mode back by setting |available_width_for_tabs_|.
-      UpdateIdealBounds();
-      available_width_for_tabs_ = ideal_bounds(model_count).right();
-      layout_helper_->ExitTabClosingMode();
-      StartFallbackRemoveTabAnimation(model_index, was_active);
-      return;
-    }
+    const int available_width =
+        override_available_width_for_tabs_.value_or(GetTabAreaWidth());
+    layout_helper_->EnterTabClosingMode(available_width);
   } else {
     layout_helper_->ExitTabClosingMode();
   }
@@ -2128,8 +2103,8 @@ void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
   const int tab_overlap = TabStyle::GetTabOverlap();
   if (in_tab_close_ && model_count > 0 && model_index != model_count) {
     // The user closed a tab other than the last tab. Set
-    // available_width_for_tabs_ so that as the user closes tabs with the mouse
-    // a tab continues to fall under the mouse.
+    // override_available_width_for_tabs_ so that as the user closes tabs with
+    // the mouse a tab continues to fall under the mouse.
     int next_active_index = controller_->GetActiveIndex();
     DCHECK(IsValidModelIndex(next_active_index));
     if (model_index <= next_active_index) {
@@ -2153,7 +2128,7 @@ void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
       size_delta = next_active_tab->width();
     }
 
-    available_width_for_tabs_ =
+    override_available_width_for_tabs_ =
         ideal_bounds(model_count).right() - size_delta + tab_overlap;
   }
 
@@ -2236,9 +2211,9 @@ void TabStrip::AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior) {
         layout_helper_->CompleteAnimations();
         break;
     }
-    // Leave tab closing mode now so that |bounds_animator| can use
+    // Take over tab closing mode now so that |bounds_animator| can use
     // |layout_helper_| to calculate ideal bounds without interference.
-    layout_helper_->ExitTabClosingMode();
+    override_available_width_for_tabs_ = layout_helper_->ExitTabClosingMode();
   }
 
   for (int i = 0; i < tab_count(); ++i) {
@@ -2276,7 +2251,7 @@ void TabStrip::AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior) {
 
 void TabStrip::ExitTabClosingMode() {
   in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
+  override_available_width_for_tabs_.reset();
   layout_helper_->ExitTabClosingMode();
 }
 
@@ -2334,9 +2309,8 @@ void TabStrip::LayoutToCurrentBounds() {
     bounds_animator_.StopAnimatingView(new_tab_button_);
     new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   } else {
-    const int available_width = (available_width_for_tabs_ < 0)
-                                    ? GetTabAreaWidth()
-                                    : available_width_for_tabs_;
+    const int available_width =
+        override_available_width_for_tabs_.value_or(GetTabAreaWidth());
     int trailing_x = layout_helper_->LayoutTabs(available_width);
 
     gfx::Rect new_tab_button_current_bounds = new_tab_button_ideal_bounds_;
@@ -2549,13 +2523,15 @@ void TabStrip::UpdateContrastRatioValues() {
   if (!controller_)
     return;
 
-  const SkColor inactive_bg = GetTabBackgroundColor(TabActive::kInactive);
+  const SkColor inactive_bg = GetTabBackgroundColor(
+      TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent);
   const auto get_blend = [inactive_bg](SkColor target, float contrast) {
     return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
                                             contrast);
   };
 
-  const SkColor active_bg = GetTabBackgroundColor(TabActive::kActive);
+  const SkColor active_bg = GetTabBackgroundColor(
+      TabActive::kActive, BrowserNonClientFrameView::kUseCurrent);
   const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
     return get_blend(active_bg, contrast).alpha / 255.0f;
   };
@@ -2755,9 +2731,8 @@ void TabStrip::UpdateIdealBounds() {
     return;  // Should only happen during creation/destruction, ignore.
 
   if (!touch_layout_) {
-    const int available_width = (available_width_for_tabs_ < 0)
-                                    ? GetTabAreaWidth()
-                                    : available_width_for_tabs_;
+    const int available_width =
+        override_available_width_for_tabs_.value_or(GetTabAreaWidth());
     layout_helper_->UpdateIdealBounds(available_width);
   }
 

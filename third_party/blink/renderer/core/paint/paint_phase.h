@@ -29,17 +29,22 @@
 
 namespace blink {
 
-// The painting of a layer occurs in 4 phases, Each involves a recursive
+// The painting of a layer occurs in 5 phases, Each involves a recursive
 // descent into the layer's layout objects in painting order:
 //  1. Background phase: backgrounds and borders of all blocks are painted.
 //     Inlines are not painted at all. Touch-action hit test rects are also
 //     painted during this phase (see: paint/README.md#hit-test-painting).
-//  2. Float phase: floating objects are painted above block backgrounds but
+//  2. ForcedColorsModeBackplate phase: a readability backplate is painted
+//     behind all inline text, split by paragraph. This phase should only paint
+//     content when in forced colors mode to ensure readability for text above
+//     images.
+//  3. Float phase: floating objects are painted above block backgrounds but
 //     entirely below inline content that can overlap them.
-//  3. Foreground phase: all inlines are fully painted. Atomic inline elements
-//     will get all 4 phases invoked on them during this phase, as if they were
-//     stacking contexts (see ObjectPainter::paintAllPhasesAtomically()).
-//  4. Outline phase: outlines are painted over the foreground.
+//  4. Foreground phase: all inlines are fully painted. Atomic inline elements
+//     will get all 4 non-backplate phases invoked on them during this phase,
+//     as if they were stacking contexts (see
+//     ObjectPainter::paintAllPhasesAtomically()).
+//  5. Outline phase: outlines are painted over the foreground.
 
 enum class PaintPhase {
   // Background phase
@@ -59,6 +64,10 @@ enum class PaintPhase {
   // paintInfo.forDescendants() which converts kDescendantBlockBackgroundsOnly
   // to kBlockBackground.
   kDescendantBlockBackgroundsOnly,
+
+  // ForcedColorsModeBackplate phase - used to ensure readability in forced
+  // colors mode.
+  kForcedColorsModeBackplate,
 
   // Float phase
   kFloat,

@@ -17,9 +17,16 @@
 
 namespace cc {
 
-const char* const FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
-    "CompositorAnimation", "MainThreadAnimation", "PinchZoom", "RAF",
-    "TouchScroll",         "WheelScroll",         ""};
+constexpr const char* FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
+    [FrameSequenceTrackerType::kCompositorAnimation] = "CompositorAnimation",
+    [FrameSequenceTrackerType::kMainThreadAnimation] = "MainThreadAnimation",
+    [FrameSequenceTrackerType::kPinchZoom] = "PinchZoom",
+    [FrameSequenceTrackerType::kRAF] = "RAF",
+    [FrameSequenceTrackerType::kTouchScroll] = "TouchScroll",
+    [FrameSequenceTrackerType::kVideo] = "Video",
+    [FrameSequenceTrackerType::kWheelScroll] = "WheelScroll",
+    [FrameSequenceTrackerType::kMaxType] = "",
+};
 
 namespace {
 
@@ -40,6 +47,25 @@ int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
   return thread_type == ThreadType::kMain
              ? static_cast<int>(type)
              : static_cast<int>(type + kBuiltinSequenceNum);
+}
+
+std::string GetCheckerboardingHistogramName(FrameSequenceTrackerType type) {
+  return base::StrCat(
+      {"Graphics.Smoothness.Checkerboarding.",
+       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type]});
+}
+
+std::string GetThroughputHistogramName(FrameSequenceTrackerType type,
+                                       const char* thread_name) {
+  return base::StrCat(
+      {"Graphics.Smoothness.Throughput.", thread_name, ".",
+       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type]});
+}
+
+std::string GetFrameSequenceLengthHistogramName(FrameSequenceTrackerType type) {
+  return base::StrCat(
+      {"Graphics.Smoothness.FrameSequenceLength.",
+       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type]});
 }
 
 }  // namespace
@@ -189,17 +215,14 @@ FrameSequenceTracker::~FrameSequenceTracker() {
 
   // Report the checkerboarding metrics.
   if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric) {
-    const std::string checkerboarding_name =
-        base::StrCat({"Graphics.Smoothness.Checkerboarding.",
-                      kFrameSequenceTrackerTypeNames[type_]});
     const int checkerboarding_percent =
         static_cast<int>(100 * checkerboarding_.frames_checkerboarded /
                          impl_throughput_.frames_expected);
     STATIC_HISTOGRAM_POINTER_GROUP(
-        checkerboarding_name, type_, FrameSequenceTrackerType::kMaxType,
-        Add(checkerboarding_percent),
+        GetCheckerboardingHistogramName(type_), type_,
+        FrameSequenceTrackerType::kMaxType, Add(checkerboarding_percent),
         base::LinearHistogram::FactoryGet(
-            checkerboarding_name, 1, 100, 101,
+            GetCheckerboardingHistogramName(type_), 1, 100, 101,
             base::HistogramBase::kUmaTargetedHistogramFlag));
   }
 }
@@ -442,28 +465,24 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
     const ThroughputData& data) {
   DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
 
-  const std::string sequence_length_name = base::StrCat(
-      {"Graphics.Smoothness.FrameSequenceLength.",
-       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[sequence_type]});
   STATIC_HISTOGRAM_POINTER_GROUP(
-      sequence_length_name, sequence_type, FrameSequenceTrackerType::kMaxType,
-      Add(data.frames_expected),
+      GetFrameSequenceLengthHistogramName(sequence_type), sequence_type,
+      FrameSequenceTrackerType::kMaxType, Add(data.frames_expected),
       base::Histogram::FactoryGet(
-          sequence_length_name, 1, 1000, 50,
+          GetFrameSequenceLengthHistogramName(sequence_type), 1, 1000, 50,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 
   if (data.frames_expected < kMinFramesForThroughputMetric)
     return;
 
-  const std::string name = base::StrCat(
-      {"Graphics.Smoothness.Throughput.", thread_name, ".",
-       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[sequence_type]});
   const int percent =
       static_cast<int>(100 * data.frames_produced / data.frames_expected);
   STATIC_HISTOGRAM_POINTER_GROUP(
-      name, metric_index, kMaximumHistogramIndex, Add(percent),
+      GetThroughputHistogramName(sequence_type, thread_name), metric_index,
+      kMaximumHistogramIndex, Add(percent),
       base::LinearHistogram::FactoryGet(
-          name, 1, 100, 101, base::HistogramBase::kUmaTargetedHistogramFlag));
+          GetThroughputHistogramName(sequence_type, thread_name), 1, 100, 101,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 FrameSequenceTracker::CheckerboardingData::CheckerboardingData() = default;

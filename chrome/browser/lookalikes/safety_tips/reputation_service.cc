@@ -13,6 +13,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -178,7 +179,10 @@ void ReputationService::GetReputationStatus(const GURL& url,
                                       service->GetLatestEngagedSites());
 }
 
-void ReputationService::SetUserIgnore(const GURL& url) {
+void ReputationService::SetUserIgnore(content::WebContents* web_contents,
+                                      const GURL& url) {
+  RecordSafetyTipInteractionHistogram(web_contents,
+                                      SafetyTipInteraction::kDismiss);
   warning_dismissed_origins_.insert(url::Origin::Create(url));
 }
 

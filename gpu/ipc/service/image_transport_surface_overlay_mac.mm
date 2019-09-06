@@ -117,7 +117,10 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
   // Do a GL fence for flush to apply back-pressure before drawing.
-  ApplyBackpressure();
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Gpu.Mac.Backpressure");
+    ApplyBackpressure();
+  }
 
   // Update the CALayer tree in the GPU process.
   base::TimeTicks before_transaction_time = base::TimeTicks::Now();

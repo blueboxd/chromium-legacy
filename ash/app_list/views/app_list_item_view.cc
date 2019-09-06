@@ -270,7 +270,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   AddChildView(title_);
   AddChildView(progress_bar_);
 
-  SetIcon(item->icon());
+  SetIcon(item->GetIcon(GetAppListConfig().type()));
   SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),
               base::UTF8ToUTF16(item->name()));
   SetItemIsInstalling(item->is_installing());
@@ -919,9 +919,13 @@ gfx::Rect AppListItemView::GetProgressBarBoundsForTargetViewBounds(
   return progress_bar_bounds;
 }
 
-void AppListItemView::ItemIconChanged() {
+void AppListItemView::ItemIconChanged(ash::AppListConfigType config_type) {
+  if (config_type != ash::AppListConfigType::kShared &&
+      config_type != GetAppListConfig().type()) {
+    return;
+  }
   DCHECK(item_weak_);
-  SetIcon(item_weak_->icon());
+  SetIcon(item_weak_->GetIcon(GetAppListConfig().type()));
 }
 
 void AppListItemView::ItemNameChanged() {

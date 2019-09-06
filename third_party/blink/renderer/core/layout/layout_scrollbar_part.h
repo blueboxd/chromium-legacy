@@ -74,9 +74,6 @@ class LayoutScrollbarPart final : public LayoutBlock {
   }
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
 
-  // Must call setStyleWithWritingModeOfParent() instead.
-  void SetStyle(scoped_refptr<ComputedStyle>) = delete;
-
  protected:
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;

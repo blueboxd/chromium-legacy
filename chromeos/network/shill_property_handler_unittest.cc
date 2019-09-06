@@ -159,7 +159,8 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
 class ShillPropertyHandlerTest : public testing::Test {
  public:
   ShillPropertyHandlerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         manager_test_(NULL),
         device_test_(NULL),
         service_test_(NULL),
@@ -275,7 +276,7 @@ class ShillPropertyHandlerTest : public testing::Test {
     AddService(shill::kTypeCellular, "stub_cellular1", shill::kStateIdle);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<TestListener> listener_;
   std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
   ShillManagerClient::TestInterface* manager_test_;

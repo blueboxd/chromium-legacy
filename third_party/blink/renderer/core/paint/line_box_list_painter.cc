@@ -97,13 +97,6 @@ bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
   DCHECK(!ShouldPaintSelfOutline(paint_info.phase) &&
          !ShouldPaintDescendantOutlines(paint_info.phase));
 
-  // Only paint during the foreground/selection phases.
-  if (paint_info.phase != PaintPhase::kForeground &&
-      paint_info.phase != PaintPhase::kSelection &&
-      paint_info.phase != PaintPhase::kTextClip &&
-      paint_info.phase != PaintPhase::kMask)
-    return false;
-
   // The only way an inline could paint like this is if it has a layer.
   DCHECK(layout_object.IsLayoutBlock() ||
          (layout_object.IsLayoutInline() && layout_object.HasLayer()));
@@ -127,6 +120,13 @@ bool LineBoxListPainter::ShouldPaint(const LayoutBoxModelObject& layout_object,
 void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
                                const PaintInfo& paint_info,
                                const PhysicalOffset& paint_offset) const {
+  // Only paint during the foreground/selection phases.
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip &&
+      paint_info.phase != PaintPhase::kMask)
+    return;
+
   if (!ShouldPaint(layout_object, paint_info, paint_offset))
     return;
 
@@ -161,7 +161,8 @@ void LineBoxListPainter::PaintBackplate(
     const LayoutBoxModelObject& layout_object,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {
-  if (!ShouldPaint(layout_object, paint_info, paint_offset))
+  if (paint_info.phase != PaintPhase::kForcedColorsModeBackplate ||
+      !ShouldPaint(layout_object, paint_info, paint_offset))
     return;
 
   // Only paint backplates behind text when forced-color-adjust is auto.

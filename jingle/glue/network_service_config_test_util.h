@@ -58,7 +58,8 @@ class NetworkServiceConfigTestUtil {
       base::WeakPtr<NetworkServiceConfigTestUtil> instance,
       network::mojom::ProxyResolvingSocketFactoryRequest request);
   void CreateNetworkContextOnNetworkRunner(
-      network::mojom::NetworkContextRequest network_context_request,
+      mojo::PendingReceiver<network::mojom::NetworkContext>
+          network_context_receiver,
       base::WaitableEvent* notify);
   void DeleteNetworkContextOnNetworkRunner(base::WaitableEvent* notify);
 

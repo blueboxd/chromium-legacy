@@ -107,9 +107,7 @@ void PrintJob::StartConversionToNativeFormat(
   const PrintSettings& settings = document()->settings();
   if (settings.printer_is_textonly()) {
     StartPdfToTextConversion(print_data, page_size);
-  } else if ((settings.printer_is_ps2() || settings.printer_is_ps3()) &&
-             !base::FeatureList::IsEnabled(
-                 features::kDisablePostScriptPrinting)) {
+  } else if (settings.printer_is_ps2() || settings.printer_is_ps3()) {
     StartPdfToPostScriptConversion(print_data, content_area, physical_offsets,
                                    settings.printer_is_ps2());
   } else {

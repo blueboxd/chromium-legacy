@@ -4,8 +4,12 @@
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace {
@@ -17,7 +21,21 @@ const char kSafeUrl[] = "chrome://newtab";
 
 namespace safety_tips {
 
+void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
+                                         SafetyTipInteraction interaction) {
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  DCHECK(helper);
+  base::UmaHistogramEnumeration(
+      security_state::GetSafetyTipHistogramName(
+          "Security.SafetyTips.Interaction",
+          helper->GetVisibleSecurityState()->safety_tip_status),
+      interaction);
+}
+
 void LeaveSite(content::WebContents* web_contents) {
+  RecordSafetyTipInteractionHistogram(web_contents,
+                                      SafetyTipInteraction::kLeaveSite);
   content::OpenURLParams params(
       GURL(kSafeUrl), content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initiated */);

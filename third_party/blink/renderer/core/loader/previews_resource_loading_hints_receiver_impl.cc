@@ -14,9 +14,10 @@ namespace blink {
 
 PreviewsResourceLoadingHintsReceiverImpl::
     PreviewsResourceLoadingHintsReceiverImpl(
-        mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request,
+        mojo::PendingReceiver<
+            mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver,
         Document* document)
-    : binding_(this, std::move(request)), document_(document) {
+    : receiver_(this, std::move(receiver)), document_(document) {
   DCHECK(!base::FeatureList::IsEnabled(
       blink::features::kSendPreviewsLoadingHintsBeforeCommit));
 }

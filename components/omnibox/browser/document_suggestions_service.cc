@@ -31,13 +31,15 @@ namespace {
 
 // Builds a document search request body. Inputs that affect the request are:
 //   |query|: Current omnibox query text, passed as an argument.
-// The format of the request JSON is:
+//   |locale|: Current browser locale as BCP-47, obtained inside the function.
+// The format of the request is:
 //     {
 //       query: "|query|",
 //       start: 0,
 //       pageSize: 10,
 //       requestOptions: {
 //            searchApplicationId: "searchapplications/chrome",
+//            languageCode: "|locale|",
 //       }
 //     }
 std::string BuildDocumentSuggestionRequest(const base::string16& query) {
@@ -51,6 +53,8 @@ std::string BuildDocumentSuggestionRequest(const base::string16& query) {
   base::Value request_options(base::Value::Type::DICTIONARY);
   request_options.SetKey("searchApplicationId",
                          base::Value("searchapplications/chrome"));
+  request_options.SetKey("languageCode",
+                         base::Value(base::i18n::GetConfiguredLocale()));
   root.SetKey("requestOptions", std::move(request_options));
 
   std::string result;

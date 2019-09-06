@@ -103,6 +103,11 @@ class NativeFileSystemPermissionContext {
       int frame_id,
       base::OnceCallback<void(SafeBrowsingResult)> callback) = 0;
 
+  // Returns whether the given |origin| is allowed to ask for write access.
+  // This is used to block save file dialogs from being shown
+  // if an origin isn't allowed to ask for write access.
+  virtual bool CanRequestWritePermission(const url::Origin& origin) = 0;
+
  protected:
   virtual ~NativeFileSystemPermissionContext() = default;
 };

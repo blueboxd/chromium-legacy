@@ -171,6 +171,21 @@ bool PostTaskAndReplyWithResult(const Location& from_here,
                std::move(reply), Owned(result)));
 }
 
+// Temporary wrapper for PostTaskAndReplyWithResult.
+// TODO(crbug.com/968047): Update all call sites and remove.
+template <template <typename> class CallbackType,
+          typename TaskReturnType,
+          typename ReplyArgType,
+          typename = EnableIfIsBaseCallback<CallbackType>>
+bool PostTaskWithTraitsAndReplyWithResult(
+    const Location& from_here,
+    const TaskTraits& traits,
+    CallbackType<TaskReturnType()> task,
+    CallbackType<void(ReplyArgType)> reply) {
+  return PostTaskAndReplyWithResult(from_here, traits, std::move(task),
+                                    std::move(reply));
+}
+
 // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
 // using |traits|. Tasks may run in any order and in parallel.
 BASE_EXPORT scoped_refptr<TaskRunner> CreateTaskRunner(
@@ -230,6 +245,38 @@ BASE_EXPORT scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode =
         SingleThreadTaskRunnerThreadMode::SHARED);
+#endif  // defined(OS_WIN)
+
+// Temporary wrappers for the task posting APIs while we remove the "WithTraits"
+// suffix.
+// TODO(crbug.com/968047): Update all call sites and remove.
+BASE_EXPORT bool PostTaskWithTraits(const Location& from_here,
+                                    const TaskTraits& traits,
+                                    OnceClosure task);
+BASE_EXPORT bool PostDelayedTaskWithTraits(const Location& from_here,
+                                           const TaskTraits& traits,
+                                           OnceClosure task,
+                                           TimeDelta delay);
+BASE_EXPORT bool PostTaskWithTraitsAndReply(const Location& from_here,
+                                            const TaskTraits& traits,
+                                            OnceClosure task,
+                                            OnceClosure reply);
+BASE_EXPORT scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
+    const TaskTraits& traits);
+BASE_EXPORT scoped_refptr<SequencedTaskRunner>
+CreateSequencedTaskRunnerWithTraits(const TaskTraits& traits);
+BASE_EXPORT scoped_refptr<UpdateableSequencedTaskRunner>
+CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits);
+BASE_EXPORT scoped_refptr<SingleThreadTaskRunner>
+CreateSingleThreadTaskRunnerWithTraits(
+    const TaskTraits& traits,
+    SingleThreadTaskRunnerThreadMode thread_mode =
+        SingleThreadTaskRunnerThreadMode::SHARED);
+#if defined(OS_WIN)
+BASE_EXPORT scoped_refptr<SingleThreadTaskRunner>
+CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits,
+                                 SingleThreadTaskRunnerThreadMode thread_mode =
+                                     SingleThreadTaskRunnerThreadMode::SHARED);
 #endif  // defined(OS_WIN)
 
 }  // namespace base

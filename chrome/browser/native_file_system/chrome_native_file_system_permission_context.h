@@ -66,7 +66,6 @@ class ChromeNativeFileSystemPermissionContext
 
     WritePermissionGrantImpl(
         scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
-        ContentSettingsType content_settings_guard_type,
         const url::Origin& origin,
         const Key& key,
         bool is_directory);
@@ -115,7 +114,6 @@ class ChromeNativeFileSystemPermissionContext
     SEQUENCE_CHECKER(sequence_checker_);
 
     scoped_refptr<ChromeNativeFileSystemPermissionContext> const context_;
-    const ContentSettingsType write_guard_content_setting_type_;
     const url::Origin origin_;
     const Key key_;
     const bool is_directory_;
@@ -135,7 +133,7 @@ class ChromeNativeFileSystemPermissionContext
                          int process_id,
                          int frame_id) override;
 
-  bool CanRequestWritePermission(WritePermissionGrantImpl* grant);
+  bool CanRequestWritePermission(const url::Origin& origin) override;
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,

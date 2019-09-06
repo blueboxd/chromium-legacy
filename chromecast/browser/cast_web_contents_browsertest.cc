@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorHttp4XX) {
     EXPECT_CALL(mock_cast_wc_observer_,
                 OnPageStopped(CheckPageState(cast_web_contents_.get(),
                                              CastWebContents::PageState::ERROR),
-                              net::ERR_FAILED))
+                              net::ERR_HTTP_RESPONSE_CODE_FAILURE))
         .WillOnce(InvokeWithoutArgs(quit_closure));
   }
 

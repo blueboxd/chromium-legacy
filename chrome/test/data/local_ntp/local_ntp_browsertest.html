@@ -23,6 +23,7 @@
   <script src="custom_backgrounds_browsertest.js" charset="utf-8"></script>
   <script src="customize_menu_browsertest.js" charset="utf-8"></script>
   <script src="local_ntp_browsertest.js" charset="utf-8"></script>
+  <script src="realbox_browsertest.js" charset="utf-8"></script>
   <template id="local-ntp-template">
     <div id="custom-bg"></div>
     <div id="custom-bg-preview"></div>
@@ -57,11 +58,24 @@
 
       <div id="fakebox-container">
         <div id="fakebox">
+          <div class="search-icon"></div>
           <div id="fakebox-text"></div>
           <input id="fakebox-input" autocomplete="off" tabindex="-1" type="url"
               aria-hidden="true">
           <div id="fakebox-cursor"></div>
-          <button id="fakebox-microphone" hidden></button>
+          <button id="fakebox-microphone" class="microphone-icon" hidden>
+          </button>
+        </div>
+      </div>
+
+      <div id="realbox-container">
+        <div id="realbox-input-wrapper">
+          <div class="search-icon"></div>
+          <input id="realbox" type="search" autocomplete="off"
+              spellcheck="false" autofocus>
+          <button id="realbox-microphone" class="microphone-icon" hidden>
+          </button>
+          <div id="realbox-matches"></div>
         </div>
       </div>
 

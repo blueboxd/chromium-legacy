@@ -147,7 +147,7 @@ class VideoFramePumpTest : public testing::Test {
                            std::unique_ptr<VideoEncoder> encoder);
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> encode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;

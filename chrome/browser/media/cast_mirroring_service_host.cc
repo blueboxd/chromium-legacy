@@ -263,13 +263,13 @@ void CastMirroringServiceHost::GetVideoCaptureHost(
 }
 
 void CastMirroringServiceHost::GetNetworkContext(
-    network::mojom::NetworkContextRequest request) {
+    mojo::PendingReceiver<network::mojom::NetworkContext> receiver) {
   network::mojom::NetworkContextParamsPtr network_context_params =
       g_browser_process->system_network_context_manager()
           ->CreateDefaultNetworkContextParams();
   network_context_params->context_name = "mirroring";
   content::GetNetworkService()->CreateNetworkContext(
-      std::move(request), std::move(network_context_params));
+      std::move(receiver), std::move(network_context_params));
 }
 
 void CastMirroringServiceHost::CreateAudioStream(

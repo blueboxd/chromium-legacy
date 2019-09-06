@@ -21,7 +21,7 @@ class WakeLockServiceImpl final
   void GetWakeLock(device::mojom::WakeLockType,
                    device::mojom::WakeLockReason,
                    const std::string&,
-                   device::mojom::WakeLockRequest) final;
+                   mojo::PendingReceiver<device::mojom::WakeLock>) final;
 
  private:
   WakeLockServiceImpl(RenderFrameHost*,

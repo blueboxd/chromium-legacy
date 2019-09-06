@@ -845,14 +845,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             mOverviewModeObserver = new EmptyOverviewModeObserver() {
                 @Override
                 public void onOverviewModeStartedShowing(boolean showToolbar) {
-                    if (getAssistStatusHandler() != null)
+                    if (getAssistStatusHandler() != null) {
                         getAssistStatusHandler().updateAssistState();
+                    }
                 }
 
                 @Override
                 public void onOverviewModeFinishedHiding() {
-                    if (getAssistStatusHandler() != null)
+                    if (getAssistStatusHandler() != null) {
                         getAssistStatusHandler().updateAssistState();
+                    }
                 }
             };
             mOverviewModeController.addOverviewModeObserver(mOverviewModeObserver);
@@ -1291,7 +1293,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                     "MobileStartup.LoadedHomepageOnColdStart", startupHomepageIsNtp);
         }
 
-        getTabCreator(false).launchUrl(url, TabLaunchType.FROM_CHROME_UI);
+        getTabCreator(false).launchUrl(url, TabLaunchType.FROM_STARTUP);
 
         // If we didn't call setInitialOverviewState() in startWithNative() because
         // mPendingInitialTabCreation was true then do so now.

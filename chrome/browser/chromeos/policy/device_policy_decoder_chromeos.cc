@@ -794,16 +794,6 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                           policies);
     }
   }
-
-  if (policy.has_device_webusb_allow_devices_for_urls()) {
-    const em::DeviceWebUsbAllowDevicesForUrlsProto& container(
-        policy.device_webusb_allow_devices_for_urls());
-    if (container.has_device_webusb_allow_devices_for_urls()) {
-      SetJsonDevicePolicy(key::kDeviceWebUsbAllowDevicesForUrls,
-                          container.device_webusb_allow_devices_for_urls(),
-                          policies);
-    }
-  }
 }
 
 void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,

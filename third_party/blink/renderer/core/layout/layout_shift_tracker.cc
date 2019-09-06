@@ -127,9 +127,12 @@ void LayoutShiftTracker::ObjectShifted(
     const LayoutObject& source,
     const PropertyTreeState& property_tree_state,
     FloatRect old_rect,
-    FloatRect new_rect) {
+    FloatRect new_rect,
+    FloatSize paint_offset_delta) {
   if (old_rect.IsEmpty() || new_rect.IsEmpty())
     return;
+
+  old_rect.Move(paint_offset_delta);
 
   if (EqualWithinMovementThreshold(LogicalStart(old_rect, source),
                                    LogicalStart(new_rect, source), source))
@@ -230,27 +233,13 @@ void LayoutShiftTracker::NotifyObjectPrePaint(
     const LayoutObject& object,
     const PropertyTreeState& property_tree_state,
     const IntRect& old_visual_rect,
-    const IntRect& new_visual_rect) {
+    const IntRect& new_visual_rect,
+    FloatSize paint_offset_delta) {
   if (!IsActive())
     return;
 
   ObjectShifted(object, property_tree_state, FloatRect(old_visual_rect),
-                FloatRect(new_visual_rect));
-}
-
-void LayoutShiftTracker::NotifyCompositedLayerMoved(
-    const LayoutObject& layout_object,
-    FloatRect old_layer_rect,
-    FloatRect new_layer_rect) {
-  if (!IsActive())
-    return;
-
-  // Make sure we can access a transform node.
-  if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
-    return;
-
-  ObjectShifted(layout_object, PropertyTreeStateFor(layout_object),
-                old_layer_rect, new_layer_rect);
+                FloatRect(new_visual_rect), paint_offset_delta);
 }
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {

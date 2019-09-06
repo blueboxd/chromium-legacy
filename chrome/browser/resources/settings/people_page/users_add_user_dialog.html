@@ -10,8 +10,11 @@
 <dom-module id="settings-users-add-user-dialog">
   <template>
     <style include="settings-shared">
+      cr-dialog::part(dialog) {
+        width: 320px;
+      }
+
       cr-input {
-        width: var(--settings-input-max-width);
         --cr-input-error-display: none;
       }
     </style>

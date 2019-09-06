@@ -56,6 +56,9 @@ class SimpleURLLoaderStreamConsumer;
 //
 // Each SimpleURLLoader can only be used for a single request.
 //
+// By default SimpleURLLoader will not return the response body for non-2xx
+// HTTP codes. See SetAllowHttpErrorResults() for details.
+//
 // TODO(mmenke): Support the following:
 // * Maybe some sort of retry backoff or delay?  ServiceURLLoaderContext enables
 // throttling for its URLFetchers.  Could additionally/alternatively support
@@ -260,16 +263,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // before the request is started.
   //
   // When false, if a non-2xx result is received (Other than a redirect), the
-  // request will fail with net::FAILED without waiting to read the response
-  // body, though headers will be accessible through response_info().
+  // request will fail with net::ERR_HTTP_RESPONSE_CODE_FAILURE without waiting
+  // to read the response body, though headers will be accessible through
+  // response_info().
   //
   // When true, non-2xx responses are treated no differently than other
   // responses, so their response body is returned just as with any other
-  // response code, and when they complete, net_error() will return net::OK, if
+  // response code, and when they complete, NetError() will return net::OK, if
   // no other problem occurs.
   //
   // Defaults to false.
-  // TODO(mmenke): Consider adding a new error code for this.
   virtual void SetAllowHttpErrorResults(bool allow_http_error_results) = 0;
 
   // Attaches the specified string as the upload body. Depending on the length

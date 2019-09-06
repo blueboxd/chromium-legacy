@@ -77,6 +77,9 @@ enum class DecisionFailureReason : int32_t {
   // This tab is sharing its BrowsingInstance with another tab, and so could
   // want to communicate with it.
   LIVE_STATE_SHARING_BROWSING_INSTANCE,
+  // The tab is opted out of the intervention as it's currently connected to a
+  // bluetooth device.
+  LIVE_STATE_USING_BLUETOOTH,
   // This must remain last.
   MAX,
 };

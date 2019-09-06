@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "android_webview/browser/input_stream.h"
+#include "android_webview/browser_jni_headers/AndroidProtocolHandler_jni.h"
 #include "android_webview/common/url_constants.h"
-#include "android_webview/native_jni/AndroidProtocolHandler_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"

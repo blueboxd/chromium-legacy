@@ -69,9 +69,9 @@ void WakeLockProvider::GetWakeLockWithoutContext(
     mojom::WakeLockType type,
     mojom::WakeLockReason reason,
     const std::string& description,
-    mojom::WakeLockRequest request) {
+    mojo::PendingReceiver<mojom::WakeLock> receiver) {
   std::unique_ptr<WakeLock> wake_lock =
-      std::make_unique<WakeLock>(std::move(request), type, reason, description,
+      std::make_unique<WakeLock>(std::move(receiver), type, reason, description,
                                  WakeLockContext::WakeLockInvalidContextId,
                                  native_view_getter_, file_task_runner_, this);
   GetWakeLockDataPerType(type).wake_locks[wake_lock.get()] =

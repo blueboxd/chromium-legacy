@@ -10,6 +10,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
+#include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
 namespace media {
 
@@ -88,6 +89,15 @@ CdmPromise::Exception ToCdmPromiseException(fuchsia::media::drm::Error error) {
       return CdmPromise::Exception::INVALID_STATE_ERROR;
     case fuchsia::media::drm::Error::QUOTA_EXCEEDED:
       return CdmPromise::Exception::QUOTA_EXCEEDED_ERROR;
+
+    case fuchsia::media::drm::Error::NOT_PROVISIONED:
+      // FuchsiaCdmManager is supposed to provision CDM.
+      NOTREACHED();
+      return CdmPromise::Exception::INVALID_STATE_ERROR;
+
+    case fuchsia::media::drm::Error::INTERNAL:
+      DLOG(ERROR) << "CDM failed due to an internal error.";
+      return CdmPromise::Exception::INVALID_STATE_ERROR;
   }
 }
 
@@ -212,7 +222,9 @@ FuchsiaCdm::SessionCallbacks& FuchsiaCdm::SessionCallbacks::operator=(
 
 FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
                        SessionCallbacks callbacks)
-    : cdm_(std::move(cdm)), session_callbacks_(std::move(callbacks)) {
+    : cdm_(std::move(cdm)),
+      session_callbacks_(std::move(callbacks)),
+      decryptor_(new FuchsiaDecryptor(cdm_.get())) {
   DCHECK(cdm_);
   cdm_.set_error_handler([](zx_status_t status) {
     // Error will be handled in CdmSession::OnSessionError.
@@ -387,8 +399,8 @@ std::unique_ptr<CallbackRegistration> FuchsiaCdm::RegisterEventCB(
 }
 
 Decryptor* FuchsiaCdm::GetDecryptor() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(decryptor_);
+  return decryptor_.get();
 }
 
 int FuchsiaCdm::GetCdmId() const {

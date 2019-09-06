@@ -543,6 +543,9 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             mojom::PolicyValueType::kBool)},
        {mojom::FeaturePolicyFeature::kWebVr,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
+                            mojom::PolicyValueType::kBool)},
+       {mojom::FeaturePolicyFeature::kWebXr,
+        FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
                             mojom::PolicyValueType::kBool)}});
   return *default_feature_list;
 }

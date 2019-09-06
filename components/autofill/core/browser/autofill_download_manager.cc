@@ -180,9 +180,10 @@ void LogHttpResponseData(AutofillDownloadManager::RequestType request_type,
                          int response_code,
                          int net_error,
                          base::TimeDelta request_duration) {
-  int response_or_error_code =
-      (net_error == net::OK || net_error == net::ERR_FAILED) ? response_code
-                                                             : net_error;
+  int response_or_error_code = net_error;
+  if (net_error == net::OK || net_error == net::ERR_HTTP_RESPONSE_CODE_FAILURE)
+    response_or_error_code = response_code;
+
   switch (request_type) {
     case AutofillDownloadManager::REQUEST_QUERY:
       base::UmaHistogramSparse("Autofill.Query.HttpResponseOrErrorCode",
@@ -981,9 +982,7 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
   url_loaders_.erase(it);
 
   CHECK(request_data.form_signatures.size());
-  // net:ERR_FAILED is not an HTTP response code, but if none is available, the
-  // UMA logging can accept this as a generic fallback as well.
-  int response_code = net::ERR_FAILED;
+  int response_code = -1;  // Invalid response code.
   if (simple_loader->ResponseInfo() && simple_loader->ResponseInfo()->headers) {
     response_code = simple_loader->ResponseInfo()->headers->response_code();
   }
@@ -1006,8 +1005,10 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
         (response_body != nullptr) ? *response_body : "";
     DVLOG(1) << "AutofillDownloadManager: "
              << RequestTypeToString(request_data.request_type)
-             << " request has failed with response code " << response_code
-             << " and error message from the server " << error_message;
+             << " request has failed with net error "
+             << simple_loader->NetError() << " and HTTP response code "
+             << response_code << " and error message from the server "
+             << error_message;
 
     observer_->OnServerRequestError(request_data.form_signatures[0],
                                     request_data.request_type, response_code);

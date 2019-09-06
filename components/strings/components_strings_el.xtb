@@ -1022,7 +1022,6 @@
 <translation id="6406765186087300643">C0 (Φάκελος)</translation>
 <translation id="6410264514553301377">Εισαγάγετε την ημερομηνία λήξης και τον κωδικό CVC για την κάρτα <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Το Chromium μπορεί να σας βοηθήσει να προστατεύσετε τον Λογαριασμό σας Google και να αλλάξετε τον κωδικό πρόσβασής σας.</translation>
-<translation id="6417515091412812850">Δεν είναι δυνατόν να ελεγχθεί αν το πιστοποιητικό έχει ακυρωθεί.</translation>
 <translation id="6431585503458005759">Να μην αποθηκευτεί</translation>
 <translation id="6433490469411711332">Επεξεργασία στοιχείων επαφής</translation>
 <translation id="6433595998831338502">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> απέρριψε τη σύνδεση.</translation>
@@ -1424,7 +1423,6 @@
 <translation id="8571890674111243710">Μετάφραση σελίδας σε <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Προσθ. τηλεφ.
 </translation>
-<translation id="859285277496340001">Αυτό το πιστοποιητικό δεν καθορίζει κάποιο μηχανισμό για να ελέγχεται εάν έχει ανακληθεί.</translation>
 <translation id="860043288473659153">Όνομα κατόχου κάρτας</translation>
 <translation id="861775596732816396">Μέγεθος 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>

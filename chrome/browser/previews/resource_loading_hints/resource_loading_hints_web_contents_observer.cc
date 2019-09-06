@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/features.h"
@@ -108,14 +109,15 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
 
   bool is_redirect = previews_user_data->is_redirect();
 
-  blink::mojom::PreviewsResourceLoadingHintsReceiverPtr hints_receiver_ptr;
+  mojo::Remote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+      hints_receiver;
 
   if (!base::FeatureList::IsEnabled(
           blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
     // Hints should be sent only after the renderer frame has committed.
     DCHECK(navigation_handle->HasCommitted());
     web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-        &hints_receiver_ptr);
+        hints_receiver.BindNewPipeAndPassReceiver());
   }
   blink::mojom::PreviewsResourceLoadingHintsPtr hints_ptr =
       blink::mojom::PreviewsResourceLoadingHints::New();
@@ -142,13 +144,11 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
 
   if (!base::FeatureList::IsEnabled(
           blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    hints_receiver_ptr->SetResourceLoadingHints(std::move(hints_ptr));
+    hints_receiver->SetResourceLoadingHints(std::move(hints_ptr));
   } else {
-    blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedPtr
-        hints_receiver_associated_ptr =
-            GetResourceLoadingHintsReceiver(navigation_handle);
-    hints_receiver_associated_ptr->SetResourceLoadingHints(
-        std::move(hints_ptr));
+    auto hints_receiver_associated =
+        GetResourceLoadingHintsReceiver(navigation_handle);
+    hints_receiver_associated->SetResourceLoadingHints(std::move(hints_ptr));
   }
 }
 
@@ -166,10 +166,10 @@ const std::vector<std::string> ResourceLoadingHintsWebContentsObserver::
       document_gurl);
 }
 
-blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedPtr
+mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
 ResourceLoadingHintsWebContentsObserver::GetResourceLoadingHintsReceiver(
     content::NavigationHandle* navigation_handle) {
-  blink::mojom::PreviewsResourceLoadingHintsReceiverAssociatedPtr
+  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
       loading_hints_agent;
 
   if (navigation_handle->GetRenderFrameHost()

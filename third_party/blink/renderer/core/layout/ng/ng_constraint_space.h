@@ -240,12 +240,12 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Return the borders which should be used for a table-cell.
   NGBoxStrut TableCellBorders() const {
-    return HasRareData() ? rare_data_->table_cell_borders : NGBoxStrut();
+    return HasRareData() ? rare_data_->TableCellBorders() : NGBoxStrut();
   }
 
   // Return the "intrinsic" padding for a table-cell.
   NGBoxStrut TableCellIntrinsicPadding() const {
-    return HasRareData() ? rare_data_->table_cell_intrinsic_padding
+    return HasRareData() ? rare_data_->TableCellIntrinsicPadding()
                          : NGBoxStrut();
   }
 
@@ -362,7 +362,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   NGMarginStrut MarginStrut() const {
-    return HasRareData() ? rare_data_->margin_strut : NGMarginStrut();
+    return HasRareData() ? rare_data_->MarginStrut() : NGMarginStrut();
   }
 
   // The BfcOffset is where the MarginStrut is placed within the block
@@ -399,14 +399,14 @@ class CORE_EXPORT NGConstraintSpace final {
   // This value should be propagated to child layouts if the current layout
   // hasn't resolved its BFC offset yet.
   base::Optional<LayoutUnit> ForcedBfcBlockOffset() const {
-    return HasRareData() ? rare_data_->forced_bfc_block_offset : base::nullopt;
+    return HasRareData() ? rare_data_->ForcedBfcBlockOffset() : base::nullopt;
   }
 
   // If present, this is a hint as to where place any adjoining objects. This
   // isn't necessarily the final position, just where they ended up in a
   // previous layout pass.
   base::Optional<LayoutUnit> OptimisticBfcBlockOffset() const {
-    return HasRareData() ? rare_data_->optimistic_bfc_block_offset
+    return HasRareData() ? rare_data_->OptimisticBfcBlockOffset()
                          : base::nullopt;
   }
 
@@ -430,7 +430,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   SerializedScriptValue* CustomLayoutData() const {
-    return HasRareData() ? rare_data_->custom_layout_data.get() : nullptr;
+    return HasRareData() ? rare_data_->CustomLayoutData() : nullptr;
   }
 
   // Returns the types of preceding adjoining objects.
@@ -453,10 +453,10 @@ class CORE_EXPORT NGConstraintSpace final {
   bool HasFloats() const { return !ExclusionSpace().IsEmpty(); }
 
   bool HasClearanceOffset() const {
-    return HasRareData() && rare_data_->clearance_offset != LayoutUnit::Min();
+    return HasRareData() && rare_data_->ClearanceOffset() != LayoutUnit::Min();
   }
   LayoutUnit ClearanceOffset() const {
-    return HasRareData() ? rare_data_->clearance_offset : LayoutUnit::Min();
+    return HasRareData() ? rare_data_->ClearanceOffset() : LayoutUnit::Min();
   }
 
   const NGBaselineRequestList BaselineRequests() const {
@@ -557,57 +557,269 @@ class CORE_EXPORT NGConstraintSpace final {
    public:
     explicit RareData(const NGBfcOffset bfc_offset)
         : bfc_offset(bfc_offset),
+          data_union_type(static_cast<unsigned>(kNone)),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
           is_inside_balanced_columns(false),
           is_in_column_bfc(false) {}
-    RareData(const RareData&) = default;
-    ~RareData() = default;
+    RareData(const RareData& other)
+        : percentage_resolution_size(other.percentage_resolution_size),
+          replaced_percentage_resolution_block_size(
+              other.replaced_percentage_resolution_block_size),
+          bfc_offset(other.bfc_offset),
+          fragmentainer_block_size(other.fragmentainer_block_size),
+          fragmentainer_space_at_bfc_start(
+              other.fragmentainer_space_at_bfc_start),
+          data_union_type(other.data_union_type),
+          block_direction_fragmentation_type(
+              other.block_direction_fragmentation_type),
+          is_inside_balanced_columns(other.is_inside_balanced_columns),
+          is_in_column_bfc(other.is_in_column_bfc) {
+      switch (data_union_type) {
+        case kNone:
+          break;
+        case kBlockData:
+          new (&block_data_) BlockData(other.block_data_);
+          break;
+        case kTableCellData:
+          new (&table_cell_data_) TableCellData(other.table_cell_data_);
+          break;
+        case kCustomData:
+          new (&custom_data_) CustomData(other.custom_data_);
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+    ~RareData() {
+      switch (data_union_type) {
+        case kNone:
+          break;
+        case kBlockData:
+          block_data_.~BlockData();
+          break;
+        case kTableCellData:
+          table_cell_data_.~TableCellData();
+          break;
+        case kCustomData:
+          custom_data_.~CustomData();
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+
+    // |RareData| unions different types of data which are mutually exclusive.
+    // They fall into the following categories:
+    enum DataUnionType {
+      kNone,
+      kBlockData,      // An inflow block which doesn't establish a new FC.
+      kTableCellData,  // A table-cell (display: table-cell).
+      kCustomData      // A custom layout (display: layout(foo)).
+    };
 
     LogicalSize percentage_resolution_size;
     LayoutUnit replaced_percentage_resolution_block_size;
-
     NGBfcOffset bfc_offset;
-    NGMarginStrut margin_strut;
-
-    base::Optional<LayoutUnit> optimistic_bfc_block_offset;
-    base::Optional<LayoutUnit> forced_bfc_block_offset;
-    LayoutUnit clearance_offset = LayoutUnit::Min();
-
-    NGBoxStrut table_cell_borders;
-    NGBoxStrut table_cell_intrinsic_padding;
-
-    scoped_refptr<SerializedScriptValue> custom_layout_data;
 
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
     LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
 
+    unsigned data_union_type : 2;
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
 
     bool MaySkipLayout(const RareData& other) const {
-      return table_cell_borders == other.table_cell_borders &&
-             table_cell_intrinsic_padding ==
-                 other.table_cell_intrinsic_padding &&
-             fragmentainer_block_size == other.fragmentainer_block_size &&
-             fragmentainer_space_at_bfc_start ==
-                 other.fragmentainer_space_at_bfc_start &&
-             block_direction_fragmentation_type ==
-                 other.block_direction_fragmentation_type &&
-             is_inside_balanced_columns == other.is_inside_balanced_columns &&
-             is_in_column_bfc == other.is_in_column_bfc;
+      if (fragmentainer_block_size != other.fragmentainer_block_size ||
+          fragmentainer_space_at_bfc_start !=
+              other.fragmentainer_space_at_bfc_start ||
+          data_union_type != other.data_union_type ||
+          block_direction_fragmentation_type !=
+              other.block_direction_fragmentation_type ||
+          is_inside_balanced_columns != other.is_inside_balanced_columns ||
+          is_in_column_bfc != other.is_in_column_bfc)
+        return false;
+
+      if (data_union_type == kNone)
+        return true;
+
+      if (data_union_type == kBlockData)
+        return true;
+
+      if (data_union_type == kTableCellData)
+        return table_cell_data_.MaySkipLayout(other.table_cell_data_);
+
+      DCHECK_EQ(data_union_type, kCustomData);
+      return custom_data_.MaySkipLayout(other.custom_data_);
     }
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
-      return table_cell_borders == NGBoxStrut() &&
-             table_cell_intrinsic_padding == NGBoxStrut() &&
-             fragmentainer_block_size == kIndefiniteSize &&
-             fragmentainer_space_at_bfc_start == kIndefiniteSize &&
-             block_direction_fragmentation_type == kFragmentNone &&
-             !is_inside_balanced_columns && !is_in_column_bfc;
+      if (fragmentainer_block_size != kIndefiniteSize ||
+          fragmentainer_space_at_bfc_start != kIndefiniteSize ||
+          block_direction_fragmentation_type != kFragmentNone ||
+          is_inside_balanced_columns || is_in_column_bfc)
+        return false;
+
+      if (data_union_type == kNone)
+        return true;
+
+      if (data_union_type == kBlockData)
+        return true;
+
+      if (data_union_type == kTableCellData)
+        return table_cell_data_.IsInitialForMaySkipLayout();
+
+      DCHECK_EQ(data_union_type, kCustomData);
+      return custom_data_.IsInitialForMaySkipLayout();
     }
+
+    NGMarginStrut MarginStrut() const {
+      return data_union_type == kBlockData ? block_data_.margin_strut
+                                           : NGMarginStrut();
+    }
+
+    void SetMarginStrut(const NGMarginStrut& margin_strut) {
+      EnsureBlockData()->margin_strut = margin_strut;
+    }
+
+    base::Optional<LayoutUnit> OptimisticBfcBlockOffset() const {
+      return data_union_type == kBlockData
+                 ? block_data_.optimistic_bfc_block_offset
+                 : base::nullopt;
+    }
+
+    void SetOptimisticBfcBlockOffset(LayoutUnit optimistic_bfc_block_offset) {
+      EnsureBlockData()->optimistic_bfc_block_offset =
+          optimistic_bfc_block_offset;
+    }
+
+    base::Optional<LayoutUnit> ForcedBfcBlockOffset() const {
+      return data_union_type == kBlockData ? block_data_.forced_bfc_block_offset
+                                           : base::nullopt;
+    }
+
+    void SetForcedBfcBlockOffset(LayoutUnit forced_bfc_block_offset) {
+      EnsureBlockData()->forced_bfc_block_offset = forced_bfc_block_offset;
+    }
+
+    LayoutUnit ClearanceOffset() const {
+      return data_union_type == kBlockData ? block_data_.clearance_offset
+                                           : LayoutUnit::Min();
+    }
+
+    void SetClearanceOffset(LayoutUnit clearance_offset) {
+      EnsureBlockData()->clearance_offset = clearance_offset;
+    }
+
+    NGBoxStrut TableCellBorders() const {
+      return data_union_type == kTableCellData
+                 ? table_cell_data_.table_cell_borders
+                 : NGBoxStrut();
+    }
+
+    void SetTableCellBorders(const NGBoxStrut& table_cell_borders) {
+      EnsureTableCellData()->table_cell_borders = table_cell_borders;
+    }
+
+    NGBoxStrut TableCellIntrinsicPadding() const {
+      return data_union_type == kTableCellData
+                 ? NGBoxStrut(
+                       LayoutUnit(), LayoutUnit(),
+                       table_cell_data_
+                           .table_cell_intrinsic_padding_block_start,
+                       table_cell_data_.table_cell_intrinsic_padding_block_end)
+                 : NGBoxStrut();
+    }
+
+    void SetTableCellIntrinsicPadding(
+        const NGBoxStrut& table_cell_intrinsic_padding) {
+      EnsureTableCellData()->table_cell_intrinsic_padding_block_start =
+          table_cell_intrinsic_padding.block_start;
+      EnsureTableCellData()->table_cell_intrinsic_padding_block_end =
+          table_cell_intrinsic_padding.block_end;
+    }
+
+    SerializedScriptValue* CustomLayoutData() const {
+      return data_union_type == kCustomData ? custom_data_.data.get() : nullptr;
+    }
+
+    void SetCustomLayoutData(
+        scoped_refptr<SerializedScriptValue> custom_layout_data) {
+      EnsureCustomData()->data = std::move(custom_layout_data);
+    }
+
+   private:
+    struct BlockData {
+      NGMarginStrut margin_strut;
+      base::Optional<LayoutUnit> optimistic_bfc_block_offset;
+      base::Optional<LayoutUnit> forced_bfc_block_offset;
+      LayoutUnit clearance_offset = LayoutUnit::Min();
+    };
+
+    BlockData* EnsureBlockData() {
+      DCHECK(data_union_type == kNone || data_union_type == kBlockData);
+      if (data_union_type != kBlockData) {
+        data_union_type = kBlockData;
+        new (&block_data_) BlockData();
+      }
+      return &block_data_;
+    }
+
+    struct TableCellData {
+      NGBoxStrut table_cell_borders;
+      LayoutUnit table_cell_intrinsic_padding_block_start;
+      LayoutUnit table_cell_intrinsic_padding_block_end;
+
+      bool MaySkipLayout(const TableCellData& other) const {
+        return table_cell_borders == other.table_cell_borders &&
+               table_cell_intrinsic_padding_block_start ==
+                   other.table_cell_intrinsic_padding_block_start &&
+               table_cell_intrinsic_padding_block_end ==
+                   other.table_cell_intrinsic_padding_block_end;
+      }
+
+      bool IsInitialForMaySkipLayout() const {
+        return table_cell_borders == NGBoxStrut() &&
+               table_cell_intrinsic_padding_block_start == LayoutUnit() &&
+               table_cell_intrinsic_padding_block_end == LayoutUnit();
+      }
+    };
+
+    TableCellData* EnsureTableCellData() {
+      DCHECK(data_union_type == kNone || data_union_type == kTableCellData);
+      if (data_union_type != kTableCellData) {
+        data_union_type = kTableCellData;
+        new (&table_cell_data_) TableCellData();
+      }
+      return &table_cell_data_;
+    }
+
+    struct CustomData {
+      scoped_refptr<SerializedScriptValue> data;
+
+      bool MaySkipLayout(const CustomData& other) const {
+        return data == other.data;
+      }
+
+      bool IsInitialForMaySkipLayout() const { return !data; }
+    };
+
+    CustomData* EnsureCustomData() {
+      DCHECK(data_union_type == kNone || data_union_type == kCustomData);
+      if (data_union_type != kCustomData) {
+        data_union_type = kCustomData;
+        new (&custom_data_) CustomData();
+      }
+      return &custom_data_;
+    }
+
+    union {
+      BlockData block_data_;
+      TableCellData table_cell_data_;
+      CustomData custom_data_;
+    };
   };
 
   // This struct simply allows us easily copy, compare, and initialize all the

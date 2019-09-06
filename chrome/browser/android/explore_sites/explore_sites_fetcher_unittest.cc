@@ -161,7 +161,7 @@ ExploreSitesRequestStatus ExploreSitesFetcherTest::RunFetcherWithHttpError(
   EXPECT_TRUE(data_received.empty());
 
   histograms()->ExpectUniqueSample("ExploreSites.FetcherNetErrorCode",
-                                   -net::ERR_FAILED, 1);
+                                   -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
   histograms()->ExpectUniqueSample("ExploreSites.FetcherHttpResponseCode",
                                    http_error, 1);
 

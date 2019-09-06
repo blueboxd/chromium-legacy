@@ -19,11 +19,12 @@ class CC_EXPORT ScrollbarController {
   explicit ScrollbarController(LayerTreeHostImpl*);
   virtual ~ScrollbarController();
 
-  InputHandlerPointerResult HandleMouseDown(
+  InputHandlerPointerResult HandlePointerDown(
       const gfx::PointF position_in_widget);
   InputHandlerPointerResult HandleMouseMove(
       const gfx::PointF position_in_widget);
-  InputHandlerPointerResult HandleMouseUp(const gfx::PointF position_in_widget);
+  InputHandlerPointerResult HandlePointerUp(
+      const gfx::PointF position_in_widget);
 
   // "velocity" here is calculated based on the initial scroll delta (See
   // InitialDeltaToAutoscrollVelocity). This value carries a "sign" which is

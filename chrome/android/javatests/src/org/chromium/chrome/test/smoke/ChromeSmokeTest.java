@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
@@ -32,7 +31,7 @@ public class ChromeSmokeTest {
     private static final String DATA_URL = "data:,Hello";
     private static final String ACTIVITY_NAME = "org.chromium.chrome.browser.ChromeTabbedActivity";
 
-    public final long mTimeout = ScalableTimeout.scaleTimeout(20000L);
+    public static final long TIMEOUT_MS = 20000L;
     public static final long UI_CHECK_INTERVAL = 1000L;
     private String mPackageName;
 
@@ -57,6 +56,6 @@ public class ChromeSmokeTest {
 
         CriteriaHelper.pollInstrumentationThread(() -> {
             return locatorChrome.locateOne(device) != null;
-        }, mPackageName + " should have loaded", mTimeout, UI_CHECK_INTERVAL);
+        }, mPackageName + " should have loaded", TIMEOUT_MS, UI_CHECK_INTERVAL);
     }
 }

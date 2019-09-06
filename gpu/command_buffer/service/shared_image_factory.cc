@@ -476,4 +476,9 @@ SharedImageRepresentationFactory::ProduceDawn(const Mailbox& mailbox,
   return manager_->ProduceDawn(mailbox, tracker_.get(), device);
 }
 
+std::unique_ptr<SharedImageRepresentationOverlay>
+SharedImageRepresentationFactory::ProduceOverlay(const gpu::Mailbox& mailbox) {
+  return manager_->ProduceOverlay(mailbox, tracker_.get());
+}
+
 }  // namespace gpu

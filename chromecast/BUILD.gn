@@ -572,7 +572,9 @@ foreach(locale, cast_locales) {
       deps += [ "//chromecast/internal/castui:cast_ui_app_strings" ]
 
       if (enable_chromecast_webui) {
-        sources += [ "$root_gen_dir/chromecast/internal/castui/ui_localized_${locale}.pak" ]
+        sources += [
+          "$root_gen_dir/chromecast/internal/castui/ui_localized_${locale}.pak",
+        ]
         deps += [ "//chromecast/internal/castui:cast_ui_localized" ]
       }
     }

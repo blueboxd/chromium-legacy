@@ -166,10 +166,8 @@ const double kHideBadgeViewThreshold = 0.1;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (IsInfobarUIRebootEnabled()) {
-    DCHECK(self.badgeView) << "The badge view must be set at this point";
-    self.locationBarSteadyView.badgeView = self.badgeView;
-  }
+  DCHECK(self.badgeView) << "The badge view must be set at this point";
+  self.locationBarSteadyView.badgeView = self.badgeView;
 
   [_locationBarSteadyView.locationButton
              addTarget:self
@@ -206,11 +204,9 @@ const double kHideBadgeViewThreshold = 0.1;
   CGFloat alphaValue = fmax((progress - 0.85) / 0.15, 0);
   CGFloat scaleValue = 0.79 + 0.21 * progress;
   self.locationBarSteadyView.trailingButton.alpha = alphaValue;
-  if (IsInfobarUIRebootEnabled()) {
-    BOOL badgeViewShouldCollapse = progress <= kHideBadgeViewThreshold;
-    [self.locationBarSteadyView
-        setFullScreenCollapsedMode:badgeViewShouldCollapse];
-  }
+  BOOL badgeViewShouldCollapse = progress <= kHideBadgeViewThreshold;
+  [self.locationBarSteadyView
+      setFullScreenCollapsedMode:badgeViewShouldCollapse];
   self.locationBarSteadyView.transform =
       CGAffineTransformMakeScale(scaleValue, scaleValue);
 }
@@ -293,15 +289,11 @@ const double kHideBadgeViewThreshold = 0.1;
 }
 
 - (void)hideSteadyViewBadgeView {
-  if (IsInfobarUIRebootEnabled()) {
-    [self.locationBarSteadyView displayBadgeView:NO animated:NO];
-  }
+  [self.locationBarSteadyView displayBadgeView:NO animated:NO];
 }
 
 - (void)showSteadyViewBadgeView {
-  if (IsInfobarUIRebootEnabled()) {
-    [self.locationBarSteadyView displayBadgeView:YES animated:NO];
-  }
+  [self.locationBarSteadyView displayBadgeView:YES animated:NO];
 }
 
 - (void)setEditViewFaded:(BOOL)hidden {

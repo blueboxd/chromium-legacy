@@ -128,6 +128,12 @@ declare_args() {
 
   # By default only the binaries in official builds get build IDs.
   force_local_build_id = false
+
+  # Initialize all local variables with a pattern. This flag will fill uninitialized
+  # floating-point types (and 32-bit pointers) with 0xFF and the rest with 0xAA.
+  # This allows to make behavior of uninitialized memory bugs consistent, easier to
+  # recognize when debugging and often just to crash immediately.
+  init_stack_vars = false
 }
 
 declare_args() {
@@ -2469,5 +2475,13 @@ if (is_win || is_android || is_chromeos) {
         chrome_orderfile_path,
       ]
     }
+  }
+}
+
+# Initialize all variables on the stack if needed.
+config("default_init_stack_vars") {
+  cflags = []
+  if (init_stack_vars && is_clang && !is_nacl && !using_sanitizer) {
+    cflags += [ "-ftrivial-auto-var-init=pattern" ]
   }
 }

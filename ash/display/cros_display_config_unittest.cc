@@ -486,59 +486,67 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesBoundsOrigin) {
 }
 
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesDisplayZoomFactor) {
-  UpdateDisplay("1200x600, 1600x1000#1600x1000");
-  display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+  static std::string configs[] = {
+      "1200x600, 1600x1000#1600x1000",  // landscape
+      "600x1200, 1000x1600#1000x1600",  // portrait
+  };
+  for (auto config : configs) {
+    SCOPED_TRACE(config);
+    UpdateDisplay(config);
+    display::DisplayIdList display_id_list =
+        display_manager()->GetCurrentDisplayIdList();
 
-  const float zoom_factor_1 = 1.23f;
-  const float zoom_factor_2 = 2.34f;
+    const float zoom_factor_1 = 1.23f;
+    const float zoom_factor_2 = 2.34f;
 
-  display_manager()->UpdateZoomFactor(display_id_list[0], zoom_factor_2);
-  display_manager()->UpdateZoomFactor(display_id_list[1], zoom_factor_1);
+    display_manager()->UpdateZoomFactor(display_id_list[0], zoom_factor_2);
+    display_manager()->UpdateZoomFactor(display_id_list[1], zoom_factor_1);
 
-  EXPECT_EQ(
-      zoom_factor_2,
-      display_manager()->GetDisplayInfo(display_id_list[0]).zoom_factor());
-  EXPECT_EQ(
-      zoom_factor_1,
-      display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
+    EXPECT_EQ(
+        zoom_factor_2,
+        display_manager()->GetDisplayInfo(display_id_list[0]).zoom_factor());
+    EXPECT_EQ(
+        zoom_factor_1,
+        display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
 
-  // Set zoom factor for display 0, should not affect display 1.
-  auto properties = mojom::DisplayConfigProperties::New();
-  properties->display_zoom_factor = zoom_factor_1;
-  mojom::DisplayConfigResult result = SetDisplayProperties(
-      base::NumberToString(display_id_list[0]), std::move(properties));
-  EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ(
-      zoom_factor_1,
-      display_manager()->GetDisplayInfo(display_id_list[0]).zoom_factor());
-  EXPECT_EQ(
-      zoom_factor_1,
-      display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
+    // Set zoom factor for display 0, should not affect display 1.
+    auto properties = mojom::DisplayConfigProperties::New();
+    properties->display_zoom_factor = zoom_factor_1;
+    mojom::DisplayConfigResult result = SetDisplayProperties(
+        base::NumberToString(display_id_list[0]), std::move(properties));
+    EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
+    EXPECT_EQ(
+        zoom_factor_1,
+        display_manager()->GetDisplayInfo(display_id_list[0]).zoom_factor());
+    EXPECT_EQ(
+        zoom_factor_1,
+        display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
 
-  // Set zoom factor for display 1.
-  properties = mojom::DisplayConfigProperties::New();
-  properties->display_zoom_factor = zoom_factor_2;
-  result = SetDisplayProperties(base::NumberToString(display_id_list[1]),
-                                std::move(properties));
-  EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
-  EXPECT_EQ(
-      zoom_factor_1,
-      display_manager()->GetDisplayInfo(display_id_list[0]).zoom_factor());
-  EXPECT_EQ(
-      zoom_factor_2,
-      display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
+    // Set zoom factor for display 1.
+    properties = mojom::DisplayConfigProperties::New();
+    properties->display_zoom_factor = zoom_factor_2;
+    result = SetDisplayProperties(base::NumberToString(display_id_list[1]),
+                                  std::move(properties));
+    EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
+    EXPECT_EQ(
+        zoom_factor_1,
+        display_manager()->GetDisplayInfo(display_id_list[0]).zoom_factor());
+    EXPECT_EQ(
+        zoom_factor_2,
+        display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
 
-  // Invalid zoom factor should fail.
-  const float invalid_zoom_factor = 0.01f;
-  properties = mojom::DisplayConfigProperties::New();
-  properties->display_zoom_factor = invalid_zoom_factor;
-  result = SetDisplayProperties(base::NumberToString(display_id_list[1]),
-                                std::move(properties));
-  EXPECT_EQ(mojom::DisplayConfigResult::kPropertyValueOutOfRangeError, result);
-  EXPECT_EQ(
-      zoom_factor_2,
-      display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
+    // Invalid zoom factor should fail.
+    const float invalid_zoom_factor = 0.01f;
+    properties = mojom::DisplayConfigProperties::New();
+    properties->display_zoom_factor = invalid_zoom_factor;
+    result = SetDisplayProperties(base::NumberToString(display_id_list[1]),
+                                  std::move(properties));
+    EXPECT_EQ(mojom::DisplayConfigResult::kPropertyValueOutOfRangeError,
+              result);
+    EXPECT_EQ(
+        zoom_factor_2,
+        display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
+  }
 }
 
 TEST_F(CrosDisplayConfigTest, SetDisplayMode) {

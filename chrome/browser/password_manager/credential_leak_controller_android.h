@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -53,6 +54,10 @@ class CredentialLeakControllerAndroid {
 
   // The title of the dialog displaying the leak warning.
   base::string16 GetTitle() const;
+
+  // Returns the range that bold text should span in the description. Varies
+  // by leak type.
+  gfx::Range GetDescriptionBoldRange() const;
 
   // Checks whether the dialog should show the option to check passwords.
   bool ShouldCheckPasswords() const;

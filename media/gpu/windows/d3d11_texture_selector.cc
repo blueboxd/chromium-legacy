@@ -10,6 +10,7 @@
 #include "media/base/media_switches.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/direct_composition_surface_win.h"
 
 namespace media {
 
@@ -46,8 +47,8 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const VideoDecoderConfig& config) {
-  bool supports_nv12_decode_swap_chain = base::FeatureList::IsEnabled(
-      features::kDirectCompositionUseNV12DecodeSwapChain);
+  bool supports_nv12_decode_swap_chain =
+      gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
   bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds);
 
   DXGI_FORMAT input_dxgi_format = DXGI_FORMAT_NV12;

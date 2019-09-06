@@ -109,6 +109,7 @@
 <translation id="1791662854739702043">설치됨</translation>
 <translation id="1792959175193046959">언제든지 기본 다운로드 위치 변경 가능</translation>
 <translation id="1807246157184219062">밝게</translation>
+<translation id="1810845389119482123">초기 동기화 설정이 완료되지 않음</translation>
 <translation id="1821253160463689938">페이지를 방문하지 않더라도 쿠키를 사용하여 환경설정 저장</translation>
 <translation id="1829244130665387512">페이지에서 찾기</translation>
 <translation id="1853692000353488670">새 시크릿 탭</translation>
@@ -328,6 +329,7 @@
 <translation id="3443221991560634068">현재 페이지 새로고침</translation>
 <translation id="3445014427084483498">방금 전</translation>
 <translation id="3478363558367712427">검색엔진을 선택할 수 있습니다.</translation>
+<translation id="3479552764303398839">나중에</translation>
 <translation id="3492207499832628349">새 시크릿 탭</translation>
 <translation id="3493531032208478708">추천 콘텐츠 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3513704683820682405">증강 현실</translation>
@@ -412,6 +414,7 @@
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> 사용됨</translation>
 <translation id="4181841719683918333">언어</translation>
+<translation id="4183868528246477015">Google 렌즈로 검색 <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4198423547019359126">사용할 수 있는 다운로드 위치가 없음</translation>
 <translation id="4209895695669353772">Google에서 추천하는 맞춤 콘텐츠를 보려면 동기화를 사용 설정하세요.</translation>
@@ -474,6 +477,7 @@
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 홈 화면에 추가됨</translation>
 <translation id="4684427112815847243">모두 동기화</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}}</translation>
+<translation id="4696983787092045100">기기로 SMS 전송</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" />에서 오프라인으로 보기</translation>
 <translation id="4698413471314543145">Chrome 실행에 필요한 중요한 기능이 없습니다. Chrome 설치가 제대로 완료되지 않았거나 사용 중인 Android 버전과 호환되지 않습니다.</translation>
 <translation id="4699172675775169585">캐시된 이미지 또는 파일</translation>
@@ -529,12 +533,15 @@
 <translation id="5011311129201317034"><ph name="SITE" />에서 연결하려고 함</translation>
 <translation id="5013696553129441713">새로운 추천 콘텐츠 없음</translation>
 <translation id="5016205925109358554">Serif</translation>
+<translation id="5033865233969348410">이 사이트에서는 VR 사용자에 대해 다음 내용을 학습할 수 있습니다.
+  -  키와 같은 신체적 특징
+
+VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보 보호</translation>
 <translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
 <translation id="5063480226653192405">사용</translation>
 <translation id="5087580092889165836">카드 추가</translation>
-<translation id="5098406615395468004">내 앱에 추가</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="510275257476243843">1시간 남음</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
@@ -575,6 +582,7 @@
 <translation id="5363230136052241468">새 탭 페이지를 로드하려면 홈 버튼을 탭하세요.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{열려 있는 탭 <ph name="OPEN_TABS_ONE" />개, 탭 간에 전환하려면 탭하세요.}other{열려 있는 탭 <ph name="OPEN_TABS_MANY" />개, 탭 간에 전환하려면 탭하세요.}}</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(외 1개)}other{(외 #개)}}</translation>
 <translation id="5400569084694353794">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
 <translation id="5403592356182871684">이름</translation>
 <translation id="5403644198645076998">특정 사이트만 허용</translation>
@@ -604,6 +612,11 @@
 <translation id="5527082711130173040">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK1" />권한을 업데이트<ph name="END_LINK1" />하세요. 또한 <ph name="BEGIN_LINK2" />이 기기에서도 위치 정보 액세스 권한이 사용 중지<ph name="END_LINK2" />되어 있습니다.</translation>
 <translation id="5527111080432883924">사이트에서 클립보드의 텍스트 및 이미지에 액세스하도록 허용하기 전에 확인(권장)</translation>
 <translation id="5530766185686772672">시크릿 탭 닫기</translation>
+<translation id="5534334044554683961">이 사이트에서는 VR 사용자에 대해 다음 내용을 학습할 수 있습니다.
+  -   키와 같은 신체적 특징
+  -   공간의 레이아웃
+
+VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="5534640966246046842">사이트 복사됨</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5561549206367097665">네트워크 대기 중…</translation>
@@ -893,6 +906,7 @@
 <translation id="7665369617277396874">계정 추가</translation>
 <translation id="766587987807204883">기사가 여기 표시되며 오프라인 상태에서도 읽을 수 있습니다.</translation>
 <translation id="7682724950699840886">다음 방법을 시도해 보세요. 기기 저장용량이 충분한지 확인하고 다시 내보내 봅니다.</translation>
+<translation id="7685301384041462804">VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" />에서 이메일 만들기</translation>
 <translation id="7704317875155739195">검색어 및 URL 자동 완성</translation>
 <translation id="7725024127233776428">북마크한 페이지가 여기에 표시됩니다.</translation>
@@ -923,6 +937,7 @@
 <translation id="7886917304091689118">Chrome에서 실행 중</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{파일 다운로드 중}other{파일 #개 다운로드 중}}</translation>
 <translation id="7929962904089429003">메뉴 열기</translation>
+<translation id="7930681627240672853">비밀번호 보안 확인</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7963646190083259054">공급업체:</translation>
@@ -1070,6 +1085,7 @@
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
+<translation id="9029323097866369874"><ph name="DOMAIN" />에서 VR로 들어가도록 허용하시겠습니까?</translation>
 <translation id="9040142327097499898">알림이 허용되었습니다. 이 기기에서 위치가 사용 중지되었습니다.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{동영상 #개}other{동영상 #개}}</translation>
 <translation id="9050666287014529139">암호</translation>

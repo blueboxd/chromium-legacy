@@ -6413,9 +6413,25 @@ class AlwaysFailSocketFactory : public MockClientSocketFactory {
   }
 };
 
+class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
+ public:
+  void OnDNSChanged() override { ++dns_changed_calls_; }
+
+  void OnInitialDNSConfigRead() override { ++dns_changed_calls_; }
+
+  int dns_changed_calls() const { return dns_changed_calls_; }
+
+ private:
+  int dns_changed_calls_ = 0;
+};
+
 // Built-in client and config overrides not available on iOS.
 #if !defined(OS_IOS)
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
+  test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  TestDnsObserver config_observer;
+  NetworkChangeNotifier::AddDNSObserver(&config_observer);
+
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
   auto client = DnsClient::CreateClientForTesting(
@@ -6462,6 +6478,8 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   // This test is expected to test overriding all fields.
   EXPECT_TRUE(overrides.OverridesEverything());
 
+  EXPECT_EQ(0, config_observer.dns_changed_calls());
+
   resolver_->SetDnsConfigOverrides(overrides);
 
   const DnsConfig* overridden_config = client_ptr->GetEffectiveConfig();
@@ -6481,6 +6499,11 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   EXPECT_TRUE(overridden_config->allow_dns_over_https_upgrade);
   EXPECT_EQ(disabled_upgrade_providers,
             overridden_config->disabled_upgrade_providers);
+
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(1, config_observer.dns_changed_calls());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&config_observer);
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -6613,6 +6636,98 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
   EXPECT_THAT(client_ptr->GetEffectiveConfig(),
               testing::Pointee(original_config));
+}
+
+TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NoChange) {
+  test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  TestDnsObserver config_observer;
+  NetworkChangeNotifier::AddDNSObserver(&config_observer);
+
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  DnsConfig original_config = CreateValidDnsConfig();
+  ChangeDnsConfig(original_config);
+
+  // Confirm pre-override state.
+  ASSERT_EQ(original_config, *client_ptr->GetEffectiveConfig());
+
+  DnsConfigOverrides overrides;
+  overrides.nameservers = original_config.nameservers;
+
+  EXPECT_EQ(0, config_observer.dns_changed_calls());
+
+  resolver_->SetDnsConfigOverrides(overrides);
+  EXPECT_THAT(client_ptr->GetEffectiveConfig(),
+              testing::Pointee(original_config));
+
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+  EXPECT_EQ(0,
+            config_observer.dns_changed_calls());  // No expected notification
+
+  NetworkChangeNotifier::RemoveDNSObserver(&config_observer);
+}
+
+// No effect or notifications expected using partial overrides without a base
+// system config.
+TEST_F(HostResolverManagerDnsTest, NoBaseConfig_PartialOverrides) {
+  test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  TestDnsObserver config_observer;
+  NetworkChangeNotifier::AddDNSObserver(&config_observer);
+
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  client_ptr->SetSystemConfig(base::nullopt);
+
+  DnsConfigOverrides overrides;
+  overrides.nameservers.emplace({CreateExpected("192.168.0.3", 193)});
+  resolver_->SetDnsConfigOverrides(overrides);
+  base::RunLoop().RunUntilIdle();  // Potential notifications are async.
+
+  EXPECT_FALSE(client_ptr->GetEffectiveConfig());
+  EXPECT_EQ(0, config_observer.dns_changed_calls());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&config_observer);
+}
+
+TEST_F(HostResolverManagerDnsTest, NoBaseConfig_OverridesEverything) {
+  test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  TestDnsObserver config_observer;
+  NetworkChangeNotifier::AddDNSObserver(&config_observer);
+
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
+  client_ptr->SetSystemConfig(base::nullopt);
+
+  DnsConfigOverrides overrides =
+      DnsConfigOverrides::CreateOverridingEverythingWithDefaults();
+  const std::vector<IPEndPoint> nameservers = {
+      CreateExpected("192.168.0.4", 194)};
+  overrides.nameservers = nameservers;
+  resolver_->SetDnsConfigOverrides(overrides);
+  base::RunLoop().RunUntilIdle();  // Notifications are async.
+
+  DnsConfig expected;
+  expected.nameservers = nameservers;
+
+  EXPECT_THAT(client_ptr->GetEffectiveConfig(), testing::Pointee(expected));
+  EXPECT_EQ(1, config_observer.dns_changed_calls());
+
+  NetworkChangeNotifier::RemoveDNSObserver(&config_observer);
 }
 
 TEST_F(HostResolverManagerDnsTest, DohMapping) {

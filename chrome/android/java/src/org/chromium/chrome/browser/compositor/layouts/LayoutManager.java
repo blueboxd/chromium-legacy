@@ -154,8 +154,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             // Open the new tab
             if (type == TabLaunchType.FROM_RESTORE || type == TabLaunchType.FROM_REPARENTING
                     || type == TabLaunchType.FROM_EXTERNAL_APP
-                    || type == TabLaunchType.FROM_LAUNCHER_SHORTCUT)
+                    || type == TabLaunchType.FROM_LAUNCHER_SHORTCUT
+                    || type == TabLaunchType.FROM_STARTUP) {
                 return;
+            }
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }

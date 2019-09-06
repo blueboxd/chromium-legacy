@@ -35,9 +35,9 @@ class TabActivityWatcher : public BrowserListObserver,
   // Uses the Tab Ranker model to predict a score for the tab, where a higher
   // value indicates a higher likelihood of being reactivated.
   // Returns the score if the tab could be scored.
+  // This is only used in chrome://discards and unit tests.
   base::Optional<float> CalculateReactivationScore(
-      content::WebContents* web_contents,
-      bool log_this_query = false);
+      content::WebContents* web_contents);
 
   // Log TabFeatures for oldest n tabs.
   void LogOldestNTabFeatures();

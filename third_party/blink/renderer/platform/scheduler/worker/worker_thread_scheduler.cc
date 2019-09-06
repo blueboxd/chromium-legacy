@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -106,11 +107,10 @@ WorkerThreadScheduler::WorkerThreadScheduler(
                                   : FrameStatus::kNone),
       ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId) {
   if (base::SequencedTaskRunnerHandle::IsSet()) {
-    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
     Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-        mojo::MakeRequest(&recorder_ptr));
-    ukm_recorder_ =
-        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
+        recorder.InitWithNewPipeAndPassReceiver());
+    ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }
 
   if (proxy && proxy->parent_frame_type())

@@ -149,4 +149,7 @@ void LogClickToCallUKM(content::WebContents* web_contents,
                        bool has_apps,
                        SharingClickToCallSelection selection);
 
+// Records the size of the selected text in Shared Clipboard.
+void LogSharedClipboardSelectedTextSize(int text_size);
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

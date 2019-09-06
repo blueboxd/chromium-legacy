@@ -188,7 +188,7 @@ class ClientSessionTest : public testing::Test {
   int curr_display_;
 
   // Message loop that will process all ClientSession tasks.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // AutoThreadTaskRunner on which |client_session_| will be run.
   scoped_refptr<AutoThreadTaskRunner> task_runner_;

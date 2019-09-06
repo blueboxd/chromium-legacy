@@ -16,7 +16,7 @@ package metrics;
 // and then hashed. For privacy reasons this process is designed to be one-way,
 // so that the server cannot easily recover the original values.
 //
-// Next tag: 9
+// Next tag: 10
 message ChromeOSAppListLaunchEventProto {
   // A per-user, per-client ID that is used only for app list launch event
   // logging.
@@ -60,4 +60,17 @@ message ChromeOSAppListLaunchEventProto {
   // Hash of the app ID of the most-recently-opened app when this launch
   // occurred. This can be an app ID of a Chrome app, Arc++ app, or PWA.
   optional fixed64 hashed_app = 8;
+
+  // Which search provider produced the launched item.
+  enum SearchProviderType {
+    // No result type specified.
+    PROVIDER_UNSPECIFIED = 0;
+    // Recent queries from the Omnibox provider.
+    OMNIBOX = 1;
+    // Zero-state files provider.
+    ZERO_STATE_FILE = 2;
+    // Drive QuickAccess provider.
+    DRIVE_QUICK_ACCESS = 3;
+  }
+  optional SearchProviderType search_provider_type = 9;
 }

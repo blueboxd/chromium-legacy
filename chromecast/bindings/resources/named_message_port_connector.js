@@ -13,6 +13,12 @@ if (!cast.__platform__)
 // Creates named HTML5 MessagePorts that are connected to native code.
 cast.__platform__.PortConnector = new class {
   constructor() {
+    this.controlPort_ = null;
+
+    // A map of ports waiting to be published to the controlPort_, keyed by
+    // string IDs.
+    this.pendingPorts_ = {};
+
     this.listener = this.onMessageEvent.bind(this);
     window.addEventListener(
         'message',
@@ -65,10 +71,4 @@ cast.__platform__.PortConnector = new class {
     // No need to receive more onmessage events.
     window.removeEventListener('message', this.listener);
   }
-
-  controlPort_ = null;
-
-  // A map of ports waiting to be published to the controlPort_, keyed by
-  // string IDs.
-  pendingPorts_ = {};
 }();

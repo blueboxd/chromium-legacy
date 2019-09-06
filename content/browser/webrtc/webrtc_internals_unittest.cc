@@ -16,7 +16,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -55,14 +56,15 @@ class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
 
 class MockWakeLock : public device::mojom::WakeLock {
  public:
-  explicit MockWakeLock(device::mojom::WakeLockRequest request)
-      : binding_(this, std::move(request)), has_wakelock_(false) {}
+  explicit MockWakeLock(mojo::PendingReceiver<device::mojom::WakeLock> receiver)
+      : receiver_(this, std::move(receiver)), has_wakelock_(false) {}
   ~MockWakeLock() override {}
 
   // Implement device::mojom::WakeLock:
   void RequestWakeLock() override { has_wakelock_ = true; }
   void CancelWakeLock() override { has_wakelock_ = false; }
-  void AddClient(device::mojom::WakeLockRequest request) override {}
+  void AddClient(
+      mojo::PendingReceiver<device::mojom::WakeLock> receiver) override {}
   void ChangeType(device::mojom::WakeLockType type,
                   ChangeTypeCallback callback) override {}
   void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override {}
@@ -73,7 +75,7 @@ class MockWakeLock : public device::mojom::WakeLock {
   }
 
  private:
-  mojo::Binding<device::mojom::WakeLock> binding_;
+  mojo::Receiver<device::mojom::WakeLock> receiver_;
   bool has_wakelock_;
 };
 
@@ -106,7 +108,7 @@ class WebRTCInternalsForTest : public WebRTCInternals {
  public:
   WebRTCInternalsForTest()
       : WebRTCInternals(1, true),
-        mock_wake_lock_(mojo::MakeRequest(&wake_lock_)) {}
+        mock_wake_lock_(wake_lock_.BindNewPipeAndPassReceiver()) {}
 
   ~WebRTCInternalsForTest() override {}
 

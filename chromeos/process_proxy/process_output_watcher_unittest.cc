@@ -193,7 +193,7 @@ class ProcessOutputWatcherTest : public testing::Test {
 
  private:
   base::Closure test_case_done_callback_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::Thread> output_watch_thread_;
   bool output_watch_thread_started_;
   bool failed_;

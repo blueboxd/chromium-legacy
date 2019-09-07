@@ -13,6 +13,7 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
 
@@ -39,7 +40,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       PepperPluginInstanceImpl* plugin,
       const blink::WebURL& local_main_frame_url,
       const ScreenInfo& screen_info,
-      mojom::WidgetRequest widget_request);
+      mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   // pepper::FullscreenContainer API.
   void ScrollRect(int dx, int dy, const blink::WebRect& rect) override;
@@ -58,11 +59,12 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   }
 
  protected:
-  RenderWidgetFullscreenPepper(int32_t routing_id,
-                               CompositorDependencies* compositor_deps,
-                               PepperPluginInstanceImpl* plugin,
-                               const ScreenInfo& screen_info,
-                               mojom::WidgetRequest widget_request);
+  RenderWidgetFullscreenPepper(
+      int32_t routing_id,
+      CompositorDependencies* compositor_deps,
+      PepperPluginInstanceImpl* plugin,
+      const ScreenInfo& screen_info,
+      mojo::PendingReceiver<mojom::Widget> widget_receiver);
   ~RenderWidgetFullscreenPepper() override;
 
   // RenderWidget API.

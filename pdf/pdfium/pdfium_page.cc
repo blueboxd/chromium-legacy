@@ -432,6 +432,18 @@ pp::FloatRect PDFiumPage::GetCharBounds(int char_index) {
   return GetFloatCharRectInPixels(page, text_page, char_index);
 }
 
+PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,
+                                                  LinkTarget* target) {
+  if (!available_ || link_index < 0)
+    return NONSELECTABLE_AREA;
+  CalculateLinks();
+  if (link_index >= static_cast<int>(links_.size()))
+    return NONSELECTABLE_AREA;
+  target->url = links_[link_index].url;
+  DCHECK(!target->url.empty());
+  return WEBLINK_AREA;
+}
+
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
                                           PageOrientation orientation,
                                           int* char_index,

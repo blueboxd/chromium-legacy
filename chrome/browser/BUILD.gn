@@ -2540,6 +2540,7 @@ jumbo_split_static_library("browser") {
       "android/location_settings_impl.h",
       "android/logo_bridge.cc",
       "android/logo_bridge.h",
+      "android/media/media_capture_devices_dispatcher_android.cc",
       "android/metrics/android_profile_session_durations_service.cc",
       "android/metrics/android_profile_session_durations_service.h",
       "android/metrics/android_profile_session_durations_service_factory.cc",

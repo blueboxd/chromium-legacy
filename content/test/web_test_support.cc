@@ -36,6 +36,7 @@
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -96,10 +97,10 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     blink::WebDisplayMode display_mode,
     bool swapped_out,
     bool never_visible,
-    mojom::WidgetRequest widget_request) {
+    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return std::make_unique<test_runner::WebWidgetTestProxy>(
       routing_id, compositor_deps, screen_info, display_mode, swapped_out,
-      /*hidden=*/true, never_visible, std::move(widget_request));
+      /*hidden=*/true, never_visible, std::move(widget_receiver));
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {

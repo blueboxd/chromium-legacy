@@ -13,6 +13,8 @@
 #include "content/browser/media/media_devices_util.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
@@ -41,14 +43,14 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
     salt_and_origin_callback_ = std::move(callback);
   }
   void SetMediaStreamDeviceObserverForTesting(
-      blink::mojom::MediaStreamDeviceObserverPtr observer) {
-    media_stream_device_observer_ = std::move(observer);
+      mojo::PendingRemote<blink::mojom::MediaStreamDeviceObserver> observer) {
+    media_stream_device_observer_.Bind(std::move(observer));
   }
 
  private:
   friend class MockMediaStreamDispatcherHost;
 
-  const blink::mojom::MediaStreamDeviceObserverPtr&
+  const mojo::Remote<blink::mojom::MediaStreamDeviceObserver>&
   GetMediaStreamDeviceObserver();
   void OnMediaStreamDeviceObserverConnectionError();
   void CancelAllRequests();
@@ -100,7 +102,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   const int render_frame_id_;
   const int requester_id_;
   MediaStreamManager* media_stream_manager_;
-  blink::mojom::MediaStreamDeviceObserverPtr media_stream_device_observer_;
+  mojo::Remote<blink::mojom::MediaStreamDeviceObserver>
+      media_stream_device_observer_;
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
   base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_{this};

@@ -151,6 +151,14 @@ void FinishStaticNode(ui::AXNodeData** static_text_node,
   *static_text_node = nullptr;
 }
 
+void ConnectPreviousAndNextOnLine(ui::AXNodeData* previous_on_line_node,
+                                  ui::AXNodeData* next_on_line_node) {
+  previous_on_line_node->AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                         next_on_line_node->id);
+  next_on_line_node->AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                     previous_on_line_node->id);
+}
+
 bool BreakParagraph(
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
     uint32_t text_run_index,
@@ -429,11 +437,8 @@ void PdfAccessibilityTree::AddPageContent(
           inline_text_box_node->relative_bounds.bounds);
 
       if (previous_on_line_node) {
-        previous_on_line_node->AddIntAttribute(
-            ax::mojom::IntAttribute::kNextOnLineId, inline_text_box_node->id);
-        inline_text_box_node->AddIntAttribute(
-            ax::mojom::IntAttribute::kPreviousOnLineId,
-            previous_on_line_node->id);
+        ConnectPreviousAndNextOnLine(previous_on_line_node,
+                                     inline_text_box_node);
       } else {
         line_helper.StartNewLine(text_run_index);
       }
@@ -451,23 +456,15 @@ void PdfAccessibilityTree::AddPageContent(
     }
 
     if (text_run_index == text_runs.size() - 1) {
-      if (static_text_node) {
-        static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                             static_text);
-      }
+      FinishStaticNode(&static_text_node, &static_text);
       break;
     }
 
     if (!previous_on_line_node) {
       if (BreakParagraph(text_runs, text_run_index,
                          paragraph_spacing_threshold)) {
-        if (static_text_node) {
-          static_text_node->AddStringAttribute(
-              ax::mojom::StringAttribute::kName, static_text);
-        }
+        FinishStaticNode(&static_text_node, &static_text);
         para_node = nullptr;
-        static_text_node = nullptr;
-        static_text.clear();
       }
     }
   }
@@ -774,12 +771,8 @@ void PdfAccessibilityTree::AddTextToLinkNode(
     *char_index += text_run.len;
 
     if (*previous_on_line_node) {
-      (*previous_on_line_node)
-          ->AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
-                            inline_text_box_node->id);
-      inline_text_box_node->AddIntAttribute(
-          ax::mojom::IntAttribute::kPreviousOnLineId,
-          (*previous_on_line_node)->id);
+      ConnectPreviousAndNextOnLine(*previous_on_line_node,
+                                   inline_text_box_node);
     } else {
       line_helper.StartNewLine(text_run_index);
     }

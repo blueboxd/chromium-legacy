@@ -79,6 +79,11 @@ class PDFiumPage {
     base::Optional<float> y_in_pixels;
   };
 
+  // Given a |link_index|, returns the type of underlying area and the link
+  // target. |target| must be valid. Returns NONSELECTABLE_AREA if
+  // |link_index| is invalid.
+  Area GetLinkTargetAtIndex(int link_index, LinkTarget* target);
+
   // Returns the (x, y) position of a destination in page coordinates.
   base::Optional<gfx::PointF> GetPageXYTarget(FPDF_DEST destination);
 

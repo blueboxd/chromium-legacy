@@ -566,9 +566,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = blob_handle->uuid();
   blob->size = blob_handle->size();
-  mojo::PendingReceiver<blink::mojom::Blob> receiver =
-      mojo::MakeRequest(&blob->blob);
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
+  storage::BlobImpl::Create(std::move(blob_handle),
+                            blob->blob.InitWithNewPipeAndPassReceiver());
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
@@ -607,9 +606,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
                                   storage::BlobStatus::ERR_OUT_OF_MEMORY);
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = kBrokenUUID;
-  mojo::PendingReceiver<blink::mojom::Blob> receiver =
-      mojo::MakeRequest(&blob->blob);
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
+  storage::BlobImpl::Create(std::move(blob_handle),
+                            blob->blob.InitWithNewPipeAndPassReceiver());
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.

@@ -5,6 +5,7 @@
 #include "storage/browser/blob/blob_url_store_impl.h"
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -132,14 +133,15 @@ void BlobURLStoreImpl::Revoke(const GURL& url) {
 
 void BlobURLStoreImpl::Resolve(const GURL& url, ResolveCallback callback) {
   if (!context_) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
-  blink::mojom::BlobPtr blob;
+  mojo::PendingRemote<blink::mojom::Blob> blob;
   std::unique_ptr<BlobDataHandle> blob_handle =
       context_->GetBlobDataFromPublicURL(url);
   if (blob_handle)
-    BlobImpl::Create(std::move(blob_handle), MakeRequest(&blob));
+    BlobImpl::Create(std::move(blob_handle),
+                     blob.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(std::move(blob));
 }
 

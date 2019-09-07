@@ -13,7 +13,8 @@ class MockWebContentsCloseHandlerDelegate
     : public WebContentsCloseHandlerDelegate {
  public:
   MockWebContentsCloseHandlerDelegate()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         got_clone_(false),
         got_destroy_(false) {}
   ~MockWebContentsCloseHandlerDelegate() override {}
@@ -33,7 +34,7 @@ class MockWebContentsCloseHandlerDelegate
   void DestroyClonedLayer() override { got_destroy_ = true; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   bool got_clone_;
   bool got_destroy_;
 

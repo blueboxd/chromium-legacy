@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
+#include "third_party/blink/renderer/platform/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

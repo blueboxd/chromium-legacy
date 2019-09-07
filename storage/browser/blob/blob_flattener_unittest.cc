@@ -117,7 +117,7 @@ class BlobFlattenerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<TestSimpleTaskRunner> file_runner_ = new TestSimpleTaskRunner();
 
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   std::unique_ptr<BlobStorageContext> context_;
 };
 

@@ -7708,8 +7708,9 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
 #endif
 }
 
-void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
-  GetLocalRootRenderWidget()->SetWidgetBinding(std::move(request));
+void RenderFrameImpl::BindWidget(
+    mojo::PendingReceiver<mojom::Widget> receiver) {
+  GetLocalRootRenderWidget()->SetWidgetReceiver(std::move(receiver));
 }
 
 blink::WebComputedAXTree* RenderFrameImpl::GetOrCreateWebComputedAXTree() {

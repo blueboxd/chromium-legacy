@@ -212,8 +212,8 @@ class PopularSitesTest : public ::testing::Test {
   const TestPopularSite kYouTube;
   const TestPopularSite kChromium;
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;

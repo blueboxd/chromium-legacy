@@ -482,7 +482,9 @@ jumbo_static_library("test_support") {
       "../public/test/fake_pepper_plugin_instance.cc",
       "../public/test/fake_pepper_plugin_instance.h",
       "../public/test/ppapi_test_utils.cc",
+      "../public/test/ppapi_test_utils.h",
       "ppapi_unittest.cc",
+      "ppapi_unittest.h",
     ]
     deps += [
       "//content/ppapi_plugin",

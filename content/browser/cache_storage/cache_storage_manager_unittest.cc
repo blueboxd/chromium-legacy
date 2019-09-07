@@ -2341,10 +2341,9 @@ TEST_P(CacheStorageManagerTestP, SlowPutCompletesWithoutExternalRef) {
   // Provide a fake blob implementation that delays completion.  This will
   // allow us to pause the writing operation so we can drop the external
   // reference.
-  auto blob_request = mojo::MakeRequest(&blob->blob);
   base::RunLoop blob_loop;
-  DelayedBlob delayed_blob(std::move(blob_request), body_data,
-                           blob_loop.QuitClosure());
+  DelayedBlob delayed_blob(blob->blob.InitWithNewPipeAndPassReceiver(),
+                           body_data, blob_loop.QuitClosure());
 
   // Begin the operation to write the blob into the cache.
   base::RunLoop cache_loop;

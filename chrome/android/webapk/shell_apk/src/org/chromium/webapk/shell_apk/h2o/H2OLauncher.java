@@ -62,9 +62,18 @@ public class H2OLauncher {
                 Intent.FLAG_ACTIVITY_NO_ANIMATION, true /* expectResult */);
     }
 
-    /** Launches the given component, passing extras from the given intent. */
+    /**
+     * Launches the given component, passing extras from the given intent.
+     *
+     * @param context
+     * @param intentToCopy Intent whose extras should be copied.
+     * @param selectedShareTargetActivity Class name of the share activity that the user selected.
+     * @param launchTimeMs Timestamp of when WebAPK's initial activity was launched. -1 if the time
+     *                     is unknown.
+     * @param launchComponent Component to launch.
+     */
     public static void copyIntentExtrasAndLaunch(Context context, Intent intentToCopy,
-            String selectedShareTargetActivity, ComponentName launchComponent) {
+            String selectedShareTargetActivity, long launchTimeMs, ComponentName launchComponent) {
         Intent intent = new Intent(Intent.ACTION_VIEW, intentToCopy.getData());
         intent.setComponent(launchComponent);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -78,6 +87,10 @@ public class H2OLauncher {
         if (selectedShareTargetActivity != null) {
             intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
                     selectedShareTargetActivity);
+        }
+
+        if (launchTimeMs != -1) {
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, launchTimeMs);
         }
 
         context.startActivity(intent);

@@ -46,9 +46,8 @@ constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
 
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
 
   base::FilePath data_dir;
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
@@ -179,9 +178,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<ContextProviderImpl> provider_;
   fuchsia::web::ContextProviderPtr provider_ptr_;
   fidl::BindingSet<fuchsia::web::ContextProvider> bindings_;

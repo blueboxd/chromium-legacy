@@ -111,12 +111,14 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
       rfh_factory_(new TestRenderFrameHostFactory()),
       rwhi_factory_(new TestRenderWidgetHostFactory()) {
-  // A MessageLoop is needed for Mojo bindings to graphics services. Some
-  // tests have their own, so this only creates one when none exists. This
-  // means tests must ensure any MessageLoop they make is created before
-  // the RenderViewHostTestEnabler.
-  if (!base::MessageLoopCurrent::Get())
-    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
+  // A TaskEnvironment is needed on the main thread for Mojo bindings to
+  // graphics services. Some tests have their own, so this only creates one
+  // (single-threaded) when none exists. This means tests must ensure any
+  // TaskEnvironment they make is created before the RenderViewHostTestEnabler.
+  if (!base::MessageLoopCurrent::Get()) {
+    task_environment_ =
+        std::make_unique<base::test::SingleThreadTaskEnvironment>();
+  }
 #if !defined(OS_ANDROID)
   ImageTransportFactory::SetFactory(
       std::make_unique<TestImageTransportFactory>());

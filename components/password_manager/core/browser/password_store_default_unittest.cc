@@ -97,15 +97,14 @@ class PasswordStoreDefaultTestDelegate {
 
   base::FilePath test_login_db_file_path() const;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{base::test::TaskEnvironment::MainThreadType::UI};
   base::ScopedTempDir temp_dir_;
   scoped_refptr<PasswordStoreDefault> store_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefaultTestDelegate);
 };
 
-PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
-    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
+PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate() {
   OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(std::make_unique<LoginDatabase>(
@@ -113,8 +112,7 @@ PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
 }
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
-    std::unique_ptr<LoginDatabase> database)
-    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
+    std::unique_ptr<LoginDatabase> database) {
   OSCryptMocker::SetUp();
   SetupTempDir();
   store_ = CreateInitializedStore(std::move(database));

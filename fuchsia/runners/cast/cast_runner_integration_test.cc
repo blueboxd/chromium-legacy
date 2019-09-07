@@ -250,9 +250,8 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
 
   // Returns fake Cast application information to the CastRunner.

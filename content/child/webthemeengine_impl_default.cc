@@ -132,6 +132,8 @@ static void GetNativeThemeExtraParams(
   switch (part) {
     case WebThemeEngine::kPartScrollbarHorizontalTrack:
     case WebThemeEngine::kPartScrollbarVerticalTrack:
+      native_theme_extra_params->scrollbar_track.is_upper =
+          extra_params->scrollbar_track.is_back;
       native_theme_extra_params->scrollbar_track.track_x =
           extra_params->scrollbar_track.track_x;
       native_theme_extra_params->scrollbar_track.track_y =

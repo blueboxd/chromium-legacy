@@ -150,7 +150,7 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
 
   std::unique_ptr<WilcoDtcSupportdWebRequestService> web_request_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 }  // namespace

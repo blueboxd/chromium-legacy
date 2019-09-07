@@ -87,9 +87,8 @@ class WebRunnerSmokeTest : public testing::Test {
   bool test_html_requested_ = false;
   bool test_image_requested_ = false;
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   sys::OutgoingDirectory outgoing_directory_;
   std::unique_ptr<base::fuchsia::ServiceProviderImpl> service_provider_;

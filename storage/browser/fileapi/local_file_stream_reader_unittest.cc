@@ -105,8 +105,8 @@ class LocalFileStreamReaderTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   base::Thread file_thread_;
   base::ScopedTempDir dir_;
   base::Time test_file_modification_time_;

@@ -189,4 +189,41 @@ TEST_F(AccessibilityTest, TestScrollIntoViewActionHandling) {
   EXPECT_EQ(kExpectedPoint, client.GetScrollRequestPoints());
 }
 
+// This class is required to just override the NavigateTo
+// functionality for testing in a specific way. It will
+// keep the TestClient class clean for extension by others.
+class NavigationEnabledTestClient : public TestClient {
+ public:
+  NavigationEnabledTestClient() = default;
+  ~NavigationEnabledTestClient() override = default;
+
+  void NavigateTo(const std::string& url,
+                  WindowOpenDisposition disposition) override {
+    url_ = url;
+    disposition_ = disposition;
+  }
+
+  const std::string& url() const { return url_; }
+  WindowOpenDisposition disposition() const { return disposition_; }
+
+ private:
+  std::string url_;
+  WindowOpenDisposition disposition_;
+};
+
+TEST_F(AccessibilityTest, TestLinkDefaultActionHandling) {
+  NavigationEnabledTestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("weblinks.pdf"));
+  ASSERT_TRUE(engine);
+
+  PP_PdfAccessibilityActionData action_data;
+  action_data.action = PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION;
+  action_data.page_index = 0;
+  action_data.link_index = 0;
+  engine->HandleAccessibilityAction(action_data);
+  EXPECT_EQ("http://yahoo.com", client.url());
+  EXPECT_EQ(WindowOpenDisposition::CURRENT_TAB, client.disposition());
+}
+
 }  // namespace chrome_pdf

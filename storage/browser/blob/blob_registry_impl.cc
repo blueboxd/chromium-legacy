@@ -633,8 +633,10 @@ void BlobRegistryImpl::StreamingBlobDone(
   if (result) {
     DCHECK_EQ(BlobStatus::DONE, result->GetBlobStatus());
     blob = blink::mojom::SerializedBlob::New(
-        result->uuid(), result->content_type(), result->size(), nullptr);
-    BlobImpl::Create(std::move(result), MakeRequest(&blob->blob));
+        result->uuid(), result->content_type(), result->size(),
+        mojo::NullRemote());
+    BlobImpl::Create(std::move(result),
+                     blob->blob.InitWithNewPipeAndPassReceiver());
   }
   std::move(callback).Run(std::move(blob));
 }

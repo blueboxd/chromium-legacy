@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -56,7 +55,6 @@ public class SplashActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final long activityStartTimeMs = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
 
         showSplashScreen();
@@ -74,7 +72,7 @@ public class SplashActivity extends Activity {
         }
 
         mPendingLaunch = true;
-        selectHostBrowser(activityStartTimeMs);
+        selectHostBrowser();
     }
 
     @Override
@@ -97,7 +95,7 @@ public class SplashActivity extends Activity {
 
         mPendingLaunch = true;
 
-        selectHostBrowser(-1);
+        selectHostBrowser();
     }
 
     @Override
@@ -129,7 +127,7 @@ public class SplashActivity extends Activity {
         super.onDestroy();
     }
 
-    private void selectHostBrowser(final long activityStartTimeMs) {
+    private void selectHostBrowser() {
         new LaunchHostBrowserSelector(this).selectHostBrowser(
                 new LaunchHostBrowserSelector.Callback() {
                     @Override
@@ -142,7 +140,7 @@ public class SplashActivity extends Activity {
                         HostBrowserLauncherParams params =
                                 HostBrowserLauncherParams.createForIntent(SplashActivity.this,
                                         getIntent(), hostBrowserPackageName, dialogShown,
-                                        activityStartTimeMs);
+                                        -1 /* launchTimeMs */);
                         onHostBrowserSelected(params);
                     }
                 });

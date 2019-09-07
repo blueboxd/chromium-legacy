@@ -49,7 +49,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
@@ -164,7 +165,7 @@ class CONTENT_EXPORT RenderWidget
                bool is_undead,
                bool hidden,
                bool never_visible,
-               mojom::WidgetRequest widget_request);
+               mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   ~RenderWidget() override;
 
@@ -181,14 +182,14 @@ class CONTENT_EXPORT RenderWidget
 
   // Convenience type for creation method taken by InstallCreateForFrameHook().
   // The method signature matches the RenderWidget constructor.
-  using CreateRenderWidgetFunction =
-      std::unique_ptr<RenderWidget> (*)(int32_t,
-                                        CompositorDependencies*,
-                                        const ScreenInfo&,
-                                        blink::WebDisplayMode display_mode,
-                                        bool is_undead,
-                                        bool never_visible,
-                                        mojom::WidgetRequest widget_request);
+  using CreateRenderWidgetFunction = std::unique_ptr<RenderWidget> (*)(
+      int32_t,
+      CompositorDependencies*,
+      const ScreenInfo&,
+      blink::WebDisplayMode display_mode,
+      bool is_undead,
+      bool never_visible,
+      mojo::PendingReceiver<mojom::Widget> widget_receiver);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
   static void InstallCreateForFrameHook(
@@ -210,13 +211,14 @@ class CONTENT_EXPORT RenderWidget
   // A RenderWidget popup is owned by the browser process. The object will be
   // destroyed by the WidgetMsg_Close message. The object can request its own
   // destruction via ClosePopupWidgetSoon().
-  static RenderWidget* CreateForPopup(int32_t widget_routing_id,
-                                      CompositorDependencies* compositor_deps,
-                                      const ScreenInfo& screen_info,
-                                      blink::WebDisplayMode display_mode,
-                                      bool hidden,
-                                      bool never_visible,
-                                      mojom::WidgetRequest widget_request);
+  static RenderWidget* CreateForPopup(
+      int32_t widget_routing_id,
+      CompositorDependencies* compositor_deps,
+      const ScreenInfo& screen_info,
+      blink::WebDisplayMode display_mode,
+      bool hidden,
+      bool never_visible,
+      mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. This method increments the reference
@@ -668,7 +670,7 @@ class CONTENT_EXPORT RenderWidget
   // composition info (when in monitor mode).
   void OnRequestCompositionUpdates(bool immediate_request,
                                    bool monitor_updates);
-  void SetWidgetBinding(mojom::WidgetRequest request);
+  void SetWidgetReceiver(mojo::PendingReceiver<mojom::Widget> receiver);
 
   void SetMouseCapture(bool capture);
 
@@ -1181,7 +1183,7 @@ class CONTENT_EXPORT RenderWidget
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
-  mojo::Binding<mojom::Widget> widget_binding_;
+  mojo::Receiver<mojom::Widget> widget_receiver_;
 
   gfx::Rect compositor_visible_rect_;
 

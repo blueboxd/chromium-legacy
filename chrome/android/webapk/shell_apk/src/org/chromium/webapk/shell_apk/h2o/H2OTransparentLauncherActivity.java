@@ -39,7 +39,7 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
             // new activity stack.
             Context appContext = getApplicationContext();
             H2OLauncher.copyIntentExtrasAndLaunch(appContext, getIntent(),
-                    params.getSelectedShareTargetActivityClassName(),
+                    params.getSelectedShareTargetActivityClassName(), params.getLaunchTimeMs(),
                     new ComponentName(appContext, SplashActivity.class));
             return;
         }
@@ -76,7 +76,8 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
         }
 
         H2OLauncher.copyIntentExtrasAndLaunch(getApplicationContext(), getIntent(),
-                params.getSelectedShareTargetActivityClassName(), relaunchComponent);
+                params.getSelectedShareTargetActivityClassName(), -1 /* launchTimeMs */,
+                relaunchComponent);
         return true;
     }
 }

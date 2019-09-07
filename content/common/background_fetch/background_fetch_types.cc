@@ -4,16 +4,18 @@
 
 #include "content/common/background_fetch/background_fetch_types.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
+
 namespace {
 
 blink::mojom::SerializedBlobPtr CloneSerializedBlob(
     const blink::mojom::SerializedBlobPtr& blob) {
   if (blob.is_null())
     return nullptr;
-  blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-  blob_ptr->Clone(mojo::MakeRequest(&blob->blob));
-  return blink::mojom::SerializedBlob::New(
-      blob->uuid, blob->content_type, blob->size, blob_ptr.PassInterface());
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
+  blob_remote->Clone(blob->blob.InitWithNewPipeAndPassReceiver());
+  return blink::mojom::SerializedBlob::New(blob->uuid, blob->content_type,
+                                           blob->size, blob_remote.Unbind());
 }
 
 }  // namespace

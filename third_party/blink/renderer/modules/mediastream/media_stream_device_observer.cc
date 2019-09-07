@@ -49,7 +49,7 @@ MediaStreamDeviceObserver::MediaStreamDeviceObserver(WebLocalFrame* frame) {
   static_cast<LocalFrame*>(WebFrame::ToCoreFrame(*frame))
       ->GetInterfaceRegistry()
       ->AddInterface(WTF::BindRepeating(
-          &MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest,
+          &MediaStreamDeviceObserver::BindMediaStreamDeviceObserverReceiver,
           WTF::Unretained(this)));
 }
 
@@ -133,7 +133,7 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
   }
 }
 
-void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest(
+void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverReceiver(
     mojo::PendingReceiver<mojom::blink::MediaStreamDeviceObserver> receiver) {
   receiver_.Bind(std::move(receiver));
 }

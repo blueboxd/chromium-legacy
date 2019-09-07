@@ -23,11 +23,11 @@ void FakeBlobURLStore::Revoke(const KURL& url) {
 void FakeBlobURLStore::Resolve(const KURL& url, ResolveCallback callback) {
   auto it = registrations.find(url);
   if (it == registrations.end()) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
-  mojom::blink::BlobPtr blob;
-  it->value->Clone(MakeRequest(&blob));
+  mojo::PendingRemote<mojom::blink::Blob> blob;
+  it->value->Clone(blob.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(std::move(blob));
 }
 

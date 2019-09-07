@@ -103,7 +103,7 @@ struct DataElementFilesystemURL {
 // A reference to a slice of another blob.
 struct DataElementBlob {
   // The blob being referenced.
-  blink.mojom.Blob blob;
+  pending_remote<blink.mojom.Blob> blob;
   // Offset to the beginning of the slice.
   uint64 offset;
   // Length of the slice.

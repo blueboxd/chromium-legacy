@@ -253,12 +253,14 @@ void ScrollBarViews::Layout() {
                             size.height());
   }
 
+  // All that matters here is updating the thumb X or Y coordinate (for vertical
+  // or horizontal scrollbars, respectively); the rest of the bounds will be
+  // overwritten by ScrollBar::Update() shortly.
   GetThumb()->SetBoundsRect(GetTrackBounds());
 }
 
 void ScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetTrackBounds();
-
   if (bounds.IsEmpty())
     return;
 
@@ -267,8 +269,28 @@ void ScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   params_.scrollbar_track.track_width = bounds.width();
   params_.scrollbar_track.track_height = bounds.height();
   params_.scrollbar_track.classic_state = 0;
+  const BaseScrollBarThumb* thumb = GetThumb();
 
-  GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, bounds, params_);
+  params_.scrollbar_track.is_upper = true;
+  gfx::Rect upper_bounds = bounds;
+  if (IsHorizontal())
+    upper_bounds.set_width(thumb->x() - upper_bounds.x());
+  else
+    upper_bounds.set_height(thumb->y() - upper_bounds.y());
+  if (!upper_bounds.IsEmpty()) {
+    GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, upper_bounds,
+                            params_);
+  }
+
+  params_.scrollbar_track.is_upper = false;
+  if (IsHorizontal())
+    bounds.Inset(thumb->bounds().right() - bounds.x(), 0, 0, 0);
+  else
+    bounds.Inset(0, thumb->bounds().bottom() - bounds.y(), 0, 0);
+  if (!bounds.IsEmpty()) {
+    GetNativeTheme()->Paint(canvas->sk_canvas(), part_, state_, bounds,
+                            params_);
+  }
 }
 
 gfx::Size ScrollBarViews::CalculatePreferredSize() const {

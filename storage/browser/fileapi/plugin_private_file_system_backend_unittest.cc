@@ -69,7 +69,7 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
   const base::FilePath& base_path() const { return backend()->base_path(); }
 
   base::ScopedTempDir data_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> context_;
 };
 

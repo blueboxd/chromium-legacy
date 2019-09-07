@@ -22,6 +22,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.media.MediaCaptureDevicesDispatcherAndroid;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -81,6 +82,11 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
             webContents.suspendAllMediaPlayers();
             webContents.setAudioMuted(true);
             WebContentsAccessibility.fromWebContents(webContents).setObscuredByAnotherView(true);
+            if (MediaCaptureDevicesDispatcherAndroid.isCapturingAudio(webContents)
+                    || MediaCaptureDevicesDispatcherAndroid.isCapturingVideo(webContents)
+                    || MediaCaptureDevicesDispatcherAndroid.isCapturingScreen(webContents)) {
+                MediaCaptureDevicesDispatcherAndroid.notifyStopped(webContents);
+            }
         }
 
         InfoBarContainer infoBarContainer = InfoBarContainer.get(mTab);

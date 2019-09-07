@@ -81,7 +81,7 @@ class GamepadServiceTest : public testing::Test {
   void SetUp() override;
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   device::MockGamepadDataFetcher* fetcher_;
   GamepadService* service_;
   std::unique_ptr<ConnectionListener> connection_listener_;

@@ -66,7 +66,7 @@ class AttestationFlowTest : public testing::Test {
     run_loop_->Run();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop* run_loop_;
 };
 

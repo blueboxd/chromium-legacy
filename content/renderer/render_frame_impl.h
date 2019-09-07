@@ -65,6 +65,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -1338,7 +1339,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void SendUpdateFaviconURL();
 
-  void BindWidget(mojom::WidgetRequest request);
+  void BindWidget(mojo::PendingReceiver<mojom::Widget> receiver);
 
   void ShowDeferredContextMenu(const ContextMenuParams& params);
 

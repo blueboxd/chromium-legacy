@@ -52,8 +52,7 @@ class MemoryWarningHelperTest : public PlatformTest {
   void RunMessageLoop() { run_loop_.Run(); }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;

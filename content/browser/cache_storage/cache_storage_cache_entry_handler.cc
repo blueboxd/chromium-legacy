@@ -397,13 +397,14 @@ CacheStorageCacheEntryHandler::CreateBlobWithSideData(
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     FinalizeBlobOnIOThread(blob_context_, std::move(blob_entry),
                            disk_cache_index, side_data_disk_cache_index,
-                           blob->uuid, MakeRequest(&blob->blob));
+                           blob->uuid,
+                           blob->blob.InitWithNewPipeAndPassReceiver());
   } else {
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&FinalizeBlobOnIOThread, blob_context_,
                                   std::move(blob_entry), disk_cache_index,
                                   side_data_disk_cache_index, blob->uuid,
-                                  MakeRequest(&blob->blob)));
+                                  blob->blob.InitWithNewPipeAndPassReceiver()));
   }
 
   return blob;

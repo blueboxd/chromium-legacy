@@ -488,7 +488,7 @@ class PasswordManagerTest : public testing::Test {
   }
 
   const GURL test_url_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;

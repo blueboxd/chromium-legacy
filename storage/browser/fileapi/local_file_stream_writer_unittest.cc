@@ -73,8 +73,8 @@ class LocalFileStreamWriterTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   base::Thread file_thread_;
   base::ScopedTempDir temp_dir_;
 };

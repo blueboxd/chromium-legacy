@@ -223,7 +223,7 @@ struct ParamTraits<blink::mojom::SerializedBlobPtr> {
     WriteParam(m, p->uuid);
     WriteParam(m, p->content_type);
     WriteParam(m, p->size);
-    WriteParam(m, p->blob.PassHandle().release());
+    WriteParam(m, p->blob.PassPipe().release());
   }
 
   static bool Read(const base::Pickle* m,

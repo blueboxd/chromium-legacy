@@ -872,7 +872,7 @@ class BackgroundFetchDataManagerTest
     blob->size = blob_handle->size();
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*blob_handle),
-        MakeRequest(&blob->blob));
+        blob->blob.InitWithNewPipeAndPassReceiver());
     return blob;
   }
 

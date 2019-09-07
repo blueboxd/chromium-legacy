@@ -2563,6 +2563,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
     "java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",
     "java/src/org/chromium/chrome/browser/login/ChromeHttpAuthHandler.java",
+    "java/src/org/chromium/chrome/browser/media/MediaCaptureDevicesDispatcherAndroid.java",
     "java/src/org/chromium/chrome/browser/media/PictureInPictureActivity.java",
     "java/src/org/chromium/chrome/browser/media/remote/RecordCastAction.java",
     "java/src/org/chromium/chrome/browser/metrics/BackgroundTaskMemoryMetricsEmitter.java",

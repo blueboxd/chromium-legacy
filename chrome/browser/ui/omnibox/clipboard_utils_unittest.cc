@@ -24,7 +24,8 @@ namespace {
 class ClipboardUtilsTest : public PlatformTest {
  public:
   ClipboardUtilsTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -38,7 +39,7 @@ class ClipboardUtilsTest : public PlatformTest {
 
  private:
   // Windows requires a message loop for clipboard access.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(ClipboardUtilsTest, GetClipboardText) {

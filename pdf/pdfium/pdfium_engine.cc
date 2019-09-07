@@ -1195,6 +1195,41 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   return true;
 }
 
+bool PDFiumEngine::NavigateToLinkDestination(
+    PDFiumPage::Area area,
+    const PDFiumPage::LinkTarget& target,
+    WindowOpenDisposition disposition) {
+  if (area == PDFiumPage::WEBLINK_AREA) {
+    client_->NavigateTo(target.url, disposition);
+    SetInFormTextArea(false);
+    return true;
+  }
+  if (area == PDFiumPage::DOCLINK_AREA) {
+    if (!PageIndexInBounds(target.page))
+      return true;
+
+    if (disposition == WindowOpenDisposition::CURRENT_TAB) {
+      pp::Rect page_rect(GetPageScreenRect(target.page));
+      int y = position_.y() + page_rect.y();
+      if (target.y_in_pixels)
+        y += target.y_in_pixels.value() * current_zoom_;
+
+      client_->ScrollToY(y, /*compensate_for_toolbar=*/true);
+    } else {
+      std::string parameters = base::StringPrintf("#page=%d", target.page + 1);
+      if (target.y_in_pixels) {
+        parameters += base::StringPrintf(
+            "&zoom=100,0,%d", static_cast<int>(target.y_in_pixels.value()));
+      }
+
+      client_->NavigateTo(parameters, disposition);
+    }
+    SetInFormTextArea(false);
+    return true;
+  }
+  return false;
+}
+
 bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
       event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
@@ -1227,36 +1262,8 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     WindowOpenDisposition disposition = ui::DispositionFromClick(
         middle_button, alt_key, ctrl_key, meta_key, shift_key);
 
-    if (area == PDFiumPage::WEBLINK_AREA) {
-      client_->NavigateTo(target.url, disposition);
-      SetInFormTextArea(false);
+    if (NavigateToLinkDestination(area, target, disposition))
       return true;
-    }
-    if (area == PDFiumPage::DOCLINK_AREA) {
-      if (!PageIndexInBounds(target.page))
-        return true;
-
-      if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-        pp::Rect page_rect(GetPageScreenRect(target.page));
-        int y = position_.y() + page_rect.y();
-        if (target.y_in_pixels)
-          y += target.y_in_pixels.value() * current_zoom_;
-
-        client_->ScrollToY(y, /*compensate_for_toolbar=*/true);
-      } else {
-        std::string parameters =
-            base::StringPrintf("#page=%d", target.page + 1);
-        if (target.y_in_pixels) {
-          parameters += base::StringPrintf(
-              "&zoom=100,0,%d", static_cast<int>(target.y_in_pixels.value()));
-        }
-
-        client_->NavigateTo(parameters, disposition);
-      }
-      SetInFormTextArea(false);
-
-      return true;
-    }
   }
 
   if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
@@ -1984,9 +1991,16 @@ void PDFiumEngine::HandleAccessibilityAction(
       pp::Rect target_point_screen = GetScreenRect(target_rect);
       client_->ScrollBy(target_point_screen.point());
     } break;
-    // TODO(https://crbug.com/981448): Handle default action case.
-    case PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION:
-      break;
+    case PP_PdfAccessibilityAction::PP_PDF_DO_DEFAULT_ACTION: {
+      if (PageIndexInBounds(action_data.page_index)) {
+        PDFiumPage::LinkTarget target;
+        PDFiumPage::Area area =
+            pages_[action_data.page_index]->GetLinkTargetAtIndex(
+                action_data.link_index, &target);
+        NavigateToLinkDestination(area, target,
+                                  WindowOpenDisposition::CURRENT_TAB);
+      }
+    } break;
     default:
       NOTREACHED();
       break;

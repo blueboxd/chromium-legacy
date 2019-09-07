@@ -39,7 +39,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/symmetric_key.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/test_completion_callback.h"
@@ -501,7 +501,7 @@ class CacheStorageCacheTest : public testing::Test {
     blob->uuid = blob_handle_->uuid();
     blob->size = expected_blob_data_.size();
     // Use cloned blob pointer for all responses with blob body.
-    blob_ptr_->Clone(mojo::MakeRequest(&blob->blob));
+    blob_ptr_->Clone(blob->blob.InitWithNewPipeAndPassReceiver());
 
     blink::mojom::FetchAPIResponsePtr response = CreateNoBodyResponse();
     response->url_list = {kBodyUrl};
@@ -545,7 +545,7 @@ class CacheStorageCacheTest : public testing::Test {
     response->side_data_blob->size = side_data_blob_handle->size();
     storage::BlobImpl::Create(
         std::make_unique<storage::BlobDataHandle>(*side_data_blob_handle),
-        MakeRequest(&response->side_data_blob->blob));
+        response->side_data_blob->blob.InitWithNewPipeAndPassReceiver());
   }
 
   blink::mojom::FetchAPIRequestPtr CopyFetchRequest(
@@ -2232,8 +2232,9 @@ TEST_P(CacheStorageCacheTestP, UnfinishedPutsShouldNotBeReusable) {
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = "mock blob";
   blob->size = 100;
-  mojo::MakeStrongBinding(std::make_unique<SlowBlob>(run_loop.QuitClosure()),
-                          MakeRequest(&blob->blob));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<SlowBlob>(run_loop.QuitClosure()),
+      blob->blob.InitWithNewPipeAndPassReceiver());
   blink::mojom::FetchAPIResponsePtr response = CreateNoBodyResponse();
   response->url_list = {kBodyUrl};
   response->blob = std::move(blob);

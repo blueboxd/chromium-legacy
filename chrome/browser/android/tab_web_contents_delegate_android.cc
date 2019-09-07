@@ -25,7 +25,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -588,50 +587,6 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
       ->AsHungRendererInfoBarDelegate()
       ->OnRendererResponsive();
   infobar_service->RemoveInfoBar(hung_renderer_infobar);
-}
-
-jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingAudio(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingAudio(web_contents);
-}
-
-jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingVideo(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingVideo(web_contents);
-}
-
-jboolean JNI_TabWebContentsDelegateAndroid_IsCapturingScreen(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  return indicator->IsCapturingDesktop(web_contents);
-}
-
-void JNI_TabWebContentsDelegateAndroid_NotifyStopped(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  indicator->NotifyStopped(web_contents);
 }
 
 void JNI_TabWebContentsDelegateAndroid_ShowFramebustBlockInfoBar(

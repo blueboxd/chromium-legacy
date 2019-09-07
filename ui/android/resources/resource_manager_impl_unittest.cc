@@ -113,7 +113,7 @@ class ResourceManagerTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   WindowAndroid* window_android_;
 
  protected:

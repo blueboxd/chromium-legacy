@@ -108,8 +108,7 @@ class StartSyncFlareMock {
 
 class PasswordStoreTest : public testing::Test {
  protected:
-  PasswordStoreTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+  PasswordStoreTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -135,7 +134,7 @@ class PasswordStoreTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{base::test::TaskEnvironment::MainThreadType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };

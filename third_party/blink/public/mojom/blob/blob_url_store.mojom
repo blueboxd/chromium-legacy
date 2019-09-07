@@ -22,7 +22,7 @@ interface BlobURLStore {
   Revoke(url.mojom.Url url);
 
   // Resolves a public Blob URL.
-  Resolve(url.mojom.Url url) => (blink.mojom.Blob? blob);
+  Resolve(url.mojom.Url url) => (pending_remote<blink.mojom.Blob>? blob);
 
   // Resolves a public Blob URL to a URLLoaderFactory that can only load the
   // specified URL. The reason the API is shaped like this rather than just

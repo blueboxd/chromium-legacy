@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
@@ -25,16 +26,16 @@ namespace content {
 
 namespace {
 
-void BindMediaStreamDeviceObserverRequest(
+void BindMediaStreamDeviceObserverReceiver(
     int render_process_id,
     int render_frame_id,
-    blink::mojom::MediaStreamDeviceObserverRequest request) {
+    mojo::PendingReceiver<blink::mojom::MediaStreamDeviceObserver> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
   if (render_frame_host)
-    render_frame_host->GetRemoteInterfaces()->GetInterface(std::move(request));
+    render_frame_host->GetRemoteInterfaces()->GetInterface(std::move(receiver));
 }
 
 }  // namespace
@@ -89,23 +90,22 @@ void MediaStreamDispatcherHost::OnDeviceChanged(
                                                   new_device);
 }
 
-const blink::mojom::MediaStreamDeviceObserverPtr&
+const mojo::Remote<blink::mojom::MediaStreamDeviceObserver>&
 MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (media_stream_device_observer_)
     return media_stream_device_observer_;
 
-  blink::mojom::MediaStreamDeviceObserverPtr observer;
-  auto dispatcher_request = mojo::MakeRequest(&observer);
-  observer.set_connection_error_handler(base::BindOnce(
+  auto dispatcher_receiver =
+      media_stream_device_observer_.BindNewPipeAndPassReceiver();
+  media_stream_device_observer_.set_disconnect_handler(base::BindOnce(
       &MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError,
       weak_factory_.GetWeakPtr()));
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&BindMediaStreamDeviceObserverRequest, render_process_id_,
-                     render_frame_id_, std::move(dispatcher_request)));
-  media_stream_device_observer_ = std::move(observer);
+      base::BindOnce(&BindMediaStreamDeviceObserverReceiver, render_process_id_,
+                     render_frame_id_, std::move(dispatcher_receiver)));
   return media_stream_device_observer_;
 }
 

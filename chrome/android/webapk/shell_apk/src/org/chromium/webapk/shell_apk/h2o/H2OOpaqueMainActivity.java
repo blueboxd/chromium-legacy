@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 
 /**
  * Launches {@link SplashActivity}. SplashActivity does not handle android.intent.action.MAIN
@@ -30,11 +31,12 @@ public class H2OOpaqueMainActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        final long launchTimeMs = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
         Context appContext = getApplicationContext();
         overridePendingTransition(0, 0);
-        H2OLauncher.copyIntentExtrasAndLaunch(
-                appContext, getIntent(), null, new ComponentName(appContext, SplashActivity.class));
+        H2OLauncher.copyIntentExtrasAndLaunch(appContext, getIntent(), null, launchTimeMs,
+                new ComponentName(appContext, SplashActivity.class));
         finish();
     }
 }

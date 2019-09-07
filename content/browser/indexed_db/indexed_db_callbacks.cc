@@ -130,7 +130,7 @@ IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
     uuid_ = base::GenerateGUID();
   }
   (*blob_or_file_info)->uuid = uuid_;
-  receiver_ = mojo::MakeRequest(&(*blob_or_file_info)->blob);
+  receiver_ = (*blob_or_file_info)->blob.InitWithNewPipeAndPassReceiver();
 }
 IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
     IndexedDBValueBlob&& other) = default;

@@ -72,9 +72,9 @@ struct ExpectedElement {
   static ExpectedElement Blob(const String& uuid,
                               uint64_t offset,
                               uint64_t length) {
-    return ExpectedElement{
-        DataElement::NewBlob(DataElementBlob::New(nullptr, offset, length)),
-        uuid};
+    return ExpectedElement{DataElement::NewBlob(DataElementBlob::New(
+                               mojo::NullRemote(), offset, length)),
+                           uuid};
   }
 };
 

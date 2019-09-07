@@ -4,6 +4,8 @@
 
 #include "third_party/blink/public/common/messaging/cloneable_message.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/messaging/cloneable_message.mojom.h"
 
@@ -22,17 +24,17 @@ CloneableMessage CloneableMessage::ShallowClone() const {
     // NOTE: We dubiously exercise dual ownership of the blob's pipe handle here
     // so that we can temporarily bind and send a message over the pipe without
     // mutating the state of this CloneableMessage.
-    mojo::ScopedMessagePipeHandle handle(blob->blob.handle().get());
-    mojom::BlobPtr blob_proxy(
-        mojom::BlobPtrInfo(std::move(handle), blob->blob.version()));
-    mojom::BlobPtrInfo blob_clone_info;
-    blob_proxy->Clone(MakeRequest(&blob_clone_info));
+    mojo::ScopedMessagePipeHandle handle(blob->blob.Pipe().get());
+    mojo::Remote<mojom::Blob> blob_proxy(mojo::PendingRemote<mojom::Blob>(
+        std::move(handle), blob->blob.version()));
+    mojo::PendingRemote<mojom::Blob> blob_clone_remote;
+    blob_proxy->Clone(blob_clone_remote.InitWithNewPipeAndPassReceiver());
     clone.blobs.push_back(
         mojom::SerializedBlob::New(blob->uuid, blob->content_type, blob->size,
-                                   std::move(blob_clone_info)));
+                                   std::move(blob_clone_remote)));
 
     // Not leaked - still owned by |blob->blob|.
-    ignore_result(blob_proxy.PassInterface().PassHandle().release());
+    ignore_result(blob_proxy.Unbind().PassPipe().release());
   }
   return clone;
 }

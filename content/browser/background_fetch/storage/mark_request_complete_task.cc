@@ -45,7 +45,7 @@ blink::mojom::SerializedBlobPtr MakeBlob(
   blob->size = response_blob_handle->size();
 
   storage::BlobImpl::Create(std::move(response_blob_handle),
-                            MakeRequest(&blob->blob));
+                            blob->blob.InitWithNewPipeAndPassReceiver());
   return blob;
 }
 

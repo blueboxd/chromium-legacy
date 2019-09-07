@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/http/http_util.h"
@@ -167,9 +168,9 @@ class FakeControllerServiceWorker
     blob_body_ = blink::mojom::SerializedBlob::New();
     blob_body_->uuid = "dummy-blob-uuid";
     blob_body_->size = body.size();
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<FakeBlob>(std::move(metadata), std::move(body)),
-        mojo::MakeRequest(&blob_body_->blob));
+        blob_body_->blob.InitWithNewPipeAndPassReceiver());
   }
 
   // Tells this controller to respond to fetch events with a 206 partial
@@ -278,8 +279,9 @@ class FakeControllerServiceWorker
         auto blob = blink::mojom::SerializedBlob::New();
         blob->uuid = "dummy-blob-uuid";
         blob->size = size;
-        mojo::MakeStrongBinding(std::make_unique<FakeBlob>(base::nullopt, body),
-                                mojo::MakeRequest(&blob->blob));
+        mojo::MakeSelfOwnedReceiver(
+            std::make_unique<FakeBlob>(base::nullopt, body),
+            blob->blob.InitWithNewPipeAndPassReceiver());
 
         // Respond with a 206 response.
         auto response = OkResponse(std::move(blob), response_source_);

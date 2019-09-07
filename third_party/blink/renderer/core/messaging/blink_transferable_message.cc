@@ -64,8 +64,8 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
         BlobDataHandle::Create(
             String::FromUTF8(blob->uuid), String::FromUTF8(blob->content_type),
             blob->size,
-            mojom::blink::BlobPtrInfo(blob->blob.PassHandle(),
-                                      mojom::Blob::Version_)));
+            mojo::PendingRemote<mojom::blink::Blob>(blob->blob.PassPipe(),
+                                                    mojom::Blob::Version_)));
   }
   result.sender_stack_trace_id = v8_inspector::V8StackTraceId(
       static_cast<uintptr_t>(message.stack_trace_id),

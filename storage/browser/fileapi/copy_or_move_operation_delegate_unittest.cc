@@ -736,8 +736,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -794,8 +794,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -848,8 +848,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);

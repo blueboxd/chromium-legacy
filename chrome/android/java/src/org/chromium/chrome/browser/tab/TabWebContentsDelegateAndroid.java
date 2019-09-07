@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
-import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
@@ -132,10 +131,9 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     @Override
     public void navigationStateChanged(int flags) {
         if ((flags & InvalidateTypes.TAB) != 0) {
-            int mediaType = MediaCaptureNotificationService.getMediaType(
-                    isCapturingAudio(), isCapturingVideo(), isCapturingScreen());
             MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    mTab.getApplicationContext(), mTab.getId(), mediaType, mTab.getUrl());
+                    mTab.getApplicationContext(), mTab.getId(), mTab.getWebContents(),
+                    mTab.getUrl());
         }
         if ((flags & InvalidateTypes.TITLE) != 0) {
             // Update cached title then notify observers.
@@ -219,36 +217,6 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     }
 
     /**
-     * @return Whether audio is being captured.
-     */
-    private boolean isCapturingAudio() {
-        return !mTab.isClosing() && nativeIsCapturingAudio(mTab.getWebContents());
-    }
-
-    /**
-     * @return Whether video is being captured.
-     */
-    private boolean isCapturingVideo() {
-        return !mTab.isClosing() && nativeIsCapturingVideo(mTab.getWebContents());
-    }
-
-    /**
-     * @return Whether screen is being captured.
-     */
-    private boolean isCapturingScreen() {
-        return !mTab.isClosing() && nativeIsCapturingScreen(mTab.getWebContents());
-    }
-
-    /**
-     * When STOP button in the media capture notification is clicked, pass the event to native
-     * to stop the media capture.
-     */
-    public static void notifyStopped(int tabId) {
-        final Tab tab = TabWindowManager.getInstance().getTabById(tabId);
-        if (tab != null) nativeNotifyStopped(tab.getWebContents());
-    }
-
-    /**
      * Sets the overlay mode.
      * Overlay mode means that we are currently using AndroidOverlays to display video, and
      * that the compositor's surface should support alpha and not be marked as opaque.
@@ -310,9 +278,5 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
 
     private static native void nativeOnRendererUnresponsive(WebContents webContents);
     private static native void nativeOnRendererResponsive(WebContents webContents);
-    private static native boolean nativeIsCapturingAudio(WebContents webContents);
-    private static native boolean nativeIsCapturingVideo(WebContents webContents);
-    private static native boolean nativeIsCapturingScreen(WebContents webContents);
-    private static native void nativeNotifyStopped(WebContents webContents);
     private static native void nativeShowFramebustBlockInfoBar(WebContents webContents, String url);
 }

@@ -484,12 +484,9 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   frames.push_back(quic::QuicFrame(&ack));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicConnectionCloseFrame close;
-  close.quic_error_code = quic_error;
-  close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-  }
+  quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
+                                       quic_error_details,
+                                       /*transport_close_frame_type=*/0);
 
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
@@ -524,13 +521,8 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   frames.push_back(quic::QuicFrame(&ack));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicConnectionCloseFrame close;
-  close.quic_error_code = quic_error;
-  close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-    close.transport_close_frame_type = frame_type;
-  }
+  quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
+                                       quic_error_details, frame_type);
 
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
@@ -546,12 +538,9 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
     const std::string& quic_error_details) {
   InitializeHeader(num, include_version);
 
-  quic::QuicConnectionCloseFrame close;
-  close.quic_error_code = quic_error;
-  close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
-  if (version_.transport_version == quic::QUIC_VERSION_99) {
-    close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
-  }
+  quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
+                                       quic_error_details,
+                                       /*transport_close_frame_type=*/0);
 
   return MakePacket(header_, quic::QuicFrame(&close));
 }

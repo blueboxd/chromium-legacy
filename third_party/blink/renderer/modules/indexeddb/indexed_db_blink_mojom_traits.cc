@@ -244,10 +244,10 @@ bool StructTraits<blink::mojom::IDBValueDataView,
                                    blink::FilePathToWebString(info->file->path),
                                    info->file->name, info->mime_type,
                                    info->file->last_modified.ToDoubleT(),
-                                   info->size, info->blob.PassHandle());
+                                   info->size, info->blob.PassPipe());
     } else {
       value_blob_info.emplace_back(info->uuid, info->mime_type, info->size,
-                                   info->blob.PassHandle());
+                                   info->blob.PassPipe());
     }
   }
 

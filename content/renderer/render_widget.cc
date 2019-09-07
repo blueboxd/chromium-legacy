@@ -423,14 +423,14 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     bool is_undead,
     bool never_visible) {
   if (g_create_render_widget_for_frame) {
-    return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
-                                            screen_info, display_mode,
-                                            is_undead, never_visible, nullptr);
+    return g_create_render_widget_for_frame(
+        widget_routing_id, compositor_deps, screen_info, display_mode,
+        is_undead, never_visible, mojo::NullReceiver());
   }
 
   return std::make_unique<RenderWidget>(
       widget_routing_id, compositor_deps, screen_info, display_mode, is_undead,
-      /*hidden=*/true, never_visible, nullptr);
+      /*hidden=*/true, never_visible, mojo::NullReceiver());
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
@@ -440,10 +440,10 @@ RenderWidget* RenderWidget::CreateForPopup(
     blink::WebDisplayMode display_mode,
     bool hidden,
     bool never_visible,
-    mojom::WidgetRequest widget_request) {
+    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return new RenderWidget(widget_routing_id, compositor_deps, screen_info,
                           display_mode, /*is_undead=*/false, hidden,
-                          never_visible, std::move(widget_request));
+                          never_visible, std::move(widget_receiver));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
@@ -453,7 +453,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                            bool is_undead,
                            bool hidden,
                            bool never_visible,
-                           mojom::WidgetRequest widget_request)
+                           mojo::PendingReceiver<mojom::Widget> widget_receiver)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       is_hidden_(hidden),
@@ -463,7 +463,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
       screen_info_(screen_info),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
-      widget_binding_(this, std::move(widget_request)) {
+      widget_receiver_(this, std::move(widget_receiver)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
 
@@ -3714,11 +3714,12 @@ void RenderWidget::SetupWidgetInputHandler(
                                               std::move(host));
 }
 
-void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {
-  // Close the old binding if there was one.
+void RenderWidget::SetWidgetReceiver(
+    mojo::PendingReceiver<mojom::Widget> recevier) {
+  // Close the old receiver if there was one.
   // A RenderWidgetHost should not need more than one channel.
-  widget_binding_.Close();
-  widget_binding_.Bind(std::move(request));
+  widget_receiver_.reset();
+  widget_receiver_.Bind(std::move(recevier));
 }
 
 void RenderWidget::SetMouseCapture(bool capture) {

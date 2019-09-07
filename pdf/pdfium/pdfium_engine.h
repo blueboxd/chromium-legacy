@@ -516,6 +516,12 @@ class PDFiumEngine : public PDFEngine,
   // Set if the document has any local edits.
   void SetEditMode(bool edit_mode);
 
+  // Navigates to a link destination depending on the type of destination.
+  // Returns false if |area| is not a link.
+  bool NavigateToLinkDestination(PDFiumPage::Area area,
+                                 const PDFiumPage::LinkTarget& target,
+                                 WindowOpenDisposition disposition);
+
   // IFSDK_PAUSE callbacks
   static FPDF_BOOL Pause_NeedToPauseNow(IFSDK_PAUSE* param);
 

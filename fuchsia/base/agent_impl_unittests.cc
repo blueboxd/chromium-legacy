@@ -100,9 +100,8 @@ class AgentImplTest : public ::testing::Test {
     return nullptr;
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   sys::OutgoingDirectory services_;
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient> services_client_;
 

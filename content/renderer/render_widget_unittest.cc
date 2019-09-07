@@ -187,7 +187,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      false,
                      false,
                      false,
-                     nullptr),
+                     mojo::NullReceiver()),
         always_overscroll_(false) {
     InitForPopup(base::NullCallback(), &mock_page_popup_);
 
@@ -456,7 +456,7 @@ class PopupRenderWidget : public RenderWidget {
                      false,
                      false,
                      false,
-                     nullptr) {
+                     mojo::NullReceiver()) {
     InitForPopup(RenderWidget::ShowCallback(), &stub_page_popup_);
   }
   ~PopupRenderWidget() override { DCHECK(shutdown_); }

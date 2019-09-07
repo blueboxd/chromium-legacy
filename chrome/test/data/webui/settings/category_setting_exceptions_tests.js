@@ -97,4 +97,78 @@ suite('CategorySettingExceptions', function() {
       }
     });
   });
+
+  test(
+      'all lists are read-only if the default policy is set by policy',
+      function() {
+        PolymerTest.clearBody();
+        const policyPref = test_util.createSiteSettingsPrefs(
+            [
+              test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.COOKIES,
+                  test_util.createDefaultContentSetting({
+                    setting: settings.ContentSetting.ALLOW,
+                    source: settings.SiteSettingSource.POLICY
+                  })),
+            ],
+            []);
+        browserProxy.reset();
+        browserProxy.setPrefs(policyPref);
+
+        // Creates a new category-setting-exceptions element to that it is
+        // initialized with the right value.
+        testElement = document.createElement('category-setting-exceptions');
+        testElement.category = settings.ContentSettingsTypes.COOKIES;
+        document.body.appendChild(testElement);
+
+        const initializationTest =
+            browserProxy.whenCalled('getDefaultValueForContentType')
+                .then(function() {
+                  // Flush the container to ensure that the container is
+                  // populated.
+                  Polymer.dom.flush();
+
+                  assertTrue(testElement.getReadOnlyList_());
+                  assertTrue(testElement.defaultManaged_);
+
+                  // Make sure that the Allow and Session Only site lists are
+                  // hidden.
+                  const siteListElements =
+                      testElement.shadowRoot.querySelectorAll('site-list');
+                  siteListElements.forEach(element => {
+                    assertTrue(!!element.readOnlyList);
+                  });
+                });
+
+        const dummyPref = test_util.createSiteSettingsPrefs(
+            [
+              test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.COOKIES,
+                  test_util.createDefaultContentSetting({
+                    setting: settings.ContentSetting.ALLOW,
+                  })),
+            ],
+            []);
+        browserProxy.setPrefs(dummyPref);
+
+        const updateTest =
+            browserProxy.whenCalled('getDefaultValueForContentType')
+                .then(function() {
+                  // Flush the container to ensure that the container is
+                  // populated.
+                  Polymer.dom.flush();
+
+                  assertFalse(testElement.getReadOnlyList_());
+                  assertFalse(testElement.defaultManaged_);
+
+                  // Make sure that the Allow and Session Only site lists are
+                  // hidden.
+                  const siteListElements =
+                      testElement.shadowRoot.querySelectorAll('site-list');
+                  siteListElements.forEach(element => {
+                    assertTrue(!element.readOnlyList);
+                  });
+                });
+        return Promise.all([initializationTest, updateTest]);
+      });
 });

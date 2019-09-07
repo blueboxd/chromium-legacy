@@ -77,7 +77,7 @@ public class ChosenObjectInfo implements Serializable {
      */
     public void revoke() {
         if (!mIsManaged) {
-            WebsitePreferenceBridge.nativeRevokeObjectPermission(
+            WebsitePreferenceBridgeJni.get().revokeObjectPermission(
                     mContentSettingsType, mOrigin, mEmbedder, mObject);
         }
     }

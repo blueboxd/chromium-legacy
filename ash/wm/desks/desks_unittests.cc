@@ -9,6 +9,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/style/ash_color_provider.h"
@@ -29,6 +30,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -40,6 +42,7 @@
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/compositor_extra/shadow.h"
@@ -1644,6 +1647,71 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   EXPECT_TRUE(WindowState::Get(win3.get())->IsSnapped());
   EXPECT_TRUE(WindowState::Get(win4.get())->IsSnapped());
   EXPECT_FALSE(overview_controller->InOverviewSession());
+}
+
+TEST_F(
+    TabletModeDesksTest,
+    SnappedStateRetainedOnSwitchingDesksWithOverviewFullOfUnsnappableWindows) {
+  auto* desks_controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          Shell::GetPrimaryRootWindow());
+  const gfx::Size big(work_area.width() * 2 / 3, work_area.height() * 2 / 3);
+  const gfx::Size small(250, 100);
+  std::unique_ptr<aura::Window> win1 = CreateTestWindow(gfx::Rect(small));
+  aura::test::TestWindowDelegate win2_delegate;
+  win2_delegate.set_minimum_size(big);
+  std::unique_ptr<aura::Window> win2(CreateTestWindowInShellWithDelegate(
+      &win2_delegate, /*id=*/-1, gfx::Rect(big)));
+  aura::test::TestWindowDelegate win3_delegate;
+  win3_delegate.set_minimum_size(big);
+  std::unique_ptr<aura::Window> win3(CreateTestWindowInShellWithDelegate(
+      &win3_delegate, /*id=*/-1, gfx::Rect(big)));
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->StartOverview());
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
+  EXPECT_EQ(win1.get(), split_view_controller->left_window());
+  EXPECT_FALSE(CanSnapInSplitview(win2.get()));
+  EXPECT_FALSE(CanSnapInSplitview(win3.get()));
+
+  // Switch to |desk_2| using its |mini_view|. Split view and overview should
+  // end, but |win1| should retain its snapped state.
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  auto* desks_bar_view = overview_grid->desks_bar_view();
+  auto* mini_view = desks_bar_view->mini_views()[1].get();
+  Desk* desk_2 = desks_controller->desks()[1].get();
+  EXPECT_EQ(desk_2, mini_view->desk());
+  {
+    DeskSwitchAnimationWaiter waiter;
+    ClickOnMiniView(mini_view, GetEventGenerator());
+    waiter.Wait();
+  }
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+
+  // Switch back to |desk_1| and verify that split view is arranged as before.
+  EXPECT_TRUE(overview_controller->StartOverview());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  desks_bar_view = overview_grid->desks_bar_view();
+  mini_view = desks_bar_view->mini_views()[0].get();
+  Desk* desk_1 = desks_controller->desks()[0].get();
+  EXPECT_EQ(desk_1, mini_view->desk());
+  {
+    DeskSwitchAnimationWaiter waiter;
+    ClickOnMiniView(mini_view, GetEventGenerator());
+    waiter.Wait();
+  }
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
+  EXPECT_EQ(win1.get(), split_view_controller->left_window());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
 TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {

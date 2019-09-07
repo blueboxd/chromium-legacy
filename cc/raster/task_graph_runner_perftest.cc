@@ -14,7 +14,7 @@
 #include "cc/base/completion_event.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace cc {
 namespace {
@@ -79,12 +79,9 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     CancelTasks(tasks);
     CancelTasks(top_level_tasks);
 
-    perf_test::PrintResult("build_task_graph",
-                           TestModifierString(),
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("build_task_graph" + TestModifierString(),
+                       timer_.LapsPerSecond());
   }
 
   void RunScheduleTasksTest(const std::string& test_name,
@@ -118,12 +115,9 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     CollectCompletedTasks(&completed_tasks);
 
-    perf_test::PrintResult("schedule_tasks",
-                           TestModifierString(),
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("schedule_tasks" + TestModifierString(),
+                       timer_.LapsPerSecond());
   }
 
   void RunScheduleAlternateTasksTest(const std::string& test_name,
@@ -168,12 +162,9 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     CollectCompletedTasks(&completed_tasks);
 
-    perf_test::PrintResult("schedule_alternate_tasks",
-                           TestModifierString(),
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("schedule_alternate_tasks" + TestModifierString(),
+                       timer_.LapsPerSecond());
   }
 
   void RunScheduleAndExecuteTasksTest(const std::string& test_name,
@@ -208,12 +199,9 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("execute_tasks",
-                           TestModifierString(),
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("execute_tasks" + TestModifierString(),
+                       timer_.LapsPerSecond());
   }
 
  private:
@@ -267,6 +255,19 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               completed_tasks);
     return completed_tasks->size();
+  }
+
+  perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+    perf_test::PerfResultReporter reporter("", story_name);
+    reporter.RegisterImportantMetric("build_task_graph" + TestModifierString(),
+                                     "runs/s");
+    reporter.RegisterImportantMetric("schedule_tasks" + TestModifierString(),
+                                     "runs/s");
+    reporter.RegisterImportantMetric(
+        "schedule_alternate_tasks" + TestModifierString(), "runs/s");
+    reporter.RegisterImportantMetric("execute_tasks" + TestModifierString(),
+                                     "runs/s");
+    return reporter;
   }
 
   // Test uses SynchronousTaskGraphRunner, as this implementation introduces

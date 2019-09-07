@@ -15,10 +15,8 @@
 namespace headless {
 
 HeadlessWindowTreeHost::HeadlessWindowTreeHost(
-    const gfx::Rect& bounds,
-    ui::ExternalBeginFrameClient* external_begin_frame_client)
-    : bounds_(bounds) {
-  CreateCompositor(viz::FrameSinkId(), false, external_begin_frame_client);
+    bool use_external_begin_frame_control) {
+  CreateCompositor(viz::FrameSinkId(), false, use_external_begin_frame_control);
   OnAcceleratedWidgetAvailable();
 
   focus_client_.reset(new HeadlessFocusClient());

@@ -46,10 +46,6 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     Observe(shell()->web_contents());
   }
 
-  void DidCommitAndDrawCompositorFrame() override {
-    paint_occurred_during_last_loop_ = true;
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("allow-pre-commit-input");
@@ -57,14 +53,18 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
   void WaitTillPageIsIdle(base::TimeDelta continuous_paint_timeout) {
     base::TimeTicks finished_load_time = base::TimeTicks::Now();
-    bool page_is_loading = false;
-    do {
-      paint_occurred_during_last_loop_ = false;
-      base::RunLoop heart_beat;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, heart_beat.QuitClosure(), base::TimeDelta::FromSeconds(3));
-      heart_beat.Run();
-      page_is_loading =
+    while (true) {
+      content::RenderFrameSubmissionObserver frame_submission_observer(
+          web_contents());
+      // Runs a loop for 3 seconds to see if the renderer is idle.
+      {
+        base::RunLoop heart_beat;
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, heart_beat.QuitClosure(),
+            base::TimeDelta::FromSeconds(3));
+        heart_beat.Run();
+      }
+      bool page_is_loading =
           web_contents()->IsWaitingForResponse() || web_contents()->IsLoading();
       if (page_is_loading) {
         finished_load_time = base::TimeTicks::Now();
@@ -76,8 +76,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
         // blinking caret or a persistent animation is making Chrome paint at
         // regular intervals. Exit.
         break;
+      } else if (frame_submission_observer.render_frame_count() == 0) {
+        // If the renderer has stopped submitting frames for 3 seconds then
+        // we're done.
+        break;
       }
-    } while (page_is_loading || paint_occurred_during_last_loop_);
+    }
   }
 
   void RunStrictElementCheck(const Selector& selector, bool result) {
@@ -461,7 +465,6 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
-  bool paint_occurred_during_last_loop_ = false;
   ClientSettings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);

@@ -10,6 +10,7 @@
 
 #include "base/no_destructor.h"
 #include "chrome/services/cups_proxy/cups_proxy_service_delegate.h"
+#include "chrome/services/cups_proxy/proxy_manager.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -47,7 +48,9 @@ void CupsProxyService::BindToCupsProxyDaemon(
 
   // Bind our end of pipe to our |proxy_manager_|. The daemon should
   // bind its end to a remote<CupsProxier>;
-  // TODO(crbug.com/945409): Add handler & connection error handler.
+  proxy_manager_ = ProxyManager::Create(
+      mojo::PendingReceiver<mojom::CupsProxier>(std::move(pipe)),
+      std::move(delegate));
 
   // Send the file descriptor for the other end of |platform_channel| to the
   // CupsProxyDaemon over D-Bus.

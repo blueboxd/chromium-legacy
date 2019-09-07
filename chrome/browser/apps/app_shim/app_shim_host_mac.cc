@@ -16,7 +16,6 @@
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "ui/base/ui_base_features.h"
 
 AppShimHost::AppShimHost(AppShimHost::Client* client,
                          const std::string& app_id,
@@ -127,7 +126,7 @@ void AppShimHost::OnBootstrapConnected(
   bootstrap_->OnConnectedToHost(std::move(app_shim_request_));
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  host_binding_.Bind(bootstrap_->GetLaunchAppShimHostRequest());
+  host_binding_.Bind(bootstrap_->GetAppShimHostRequest());
   host_binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
 }

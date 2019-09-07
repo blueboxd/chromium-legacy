@@ -5117,12 +5117,6 @@ void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
   }
 }
 
-void WebContentsImpl::DidCommitAndDrawCompositorFrame(
-    RenderViewHostImpl* source) {
-  for (auto& observer : observers_)
-    observer.DidCommitAndDrawCompositorFrame();
-}
-
 bool WebContentsImpl::IsPortal() const {
   return portal();
 }

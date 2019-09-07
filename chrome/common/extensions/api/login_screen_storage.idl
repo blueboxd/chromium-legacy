@@ -24,7 +24,10 @@ namespace loginScreenStorage {
 
     // Retrieves persistent data that was previously stored using
     // $(ref:storePersistentData) for the caller's extension ID.
-    static void retrievePersistentData(RetrieveCallback callback);
+    // |ownerId|: ID of the extension that saved the data that the caller is
+    // trying to retrieve.
+    static void retrievePersistentData(DOMString ownerId,
+                                       RetrieveCallback callback);
 
     // Stores credentials for later access from the user session. This method
     // will fail if called while a user session is active.

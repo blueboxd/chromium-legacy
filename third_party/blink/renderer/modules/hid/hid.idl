@@ -16,12 +16,14 @@
     // Retrieves information about all available HID subsystem devices.
     [
         CallWith=ScriptState,
+        RaisesException,
         MeasureAs=HidGetDevices
     ] Promise<sequence<HIDDevice>> getDevices();
 
     // Requests permission from the user to use a device.
     [
         CallWith=ScriptState,
+        RaisesException,
         MeasureAs=HidRequestDevice
     ] Promise<sequence<HIDDevice>> requestDevice(
         HIDDeviceRequestOptions options);

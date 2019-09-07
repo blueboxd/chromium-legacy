@@ -334,7 +334,7 @@ TEST_F(ChromeRuntimeAPIDelegateTest, RequestUpdateCheck) {
 class ExtensionLoadWaiter : public ExtensionRegistryObserver {
  public:
   explicit ExtensionLoadWaiter(content::BrowserContext* context)
-      : context_(context), extension_registry_observer_(this) {
+      : context_(context) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(context_));
   }
 
@@ -366,7 +366,7 @@ class ExtensionLoadWaiter : public ExtensionRegistryObserver {
   base::RunLoop run_loop_;
   content::BrowserContext* context_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionLoadWaiter);
 };

@@ -38,7 +38,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
@@ -73,8 +72,7 @@ ExtensionActionRunner::ExtensionActionRunner(content::WebContents* web_contents)
       browser_context_(web_contents->GetBrowserContext()),
       was_used_on_page_(false),
       ignore_active_tab_granted_(false),
-      test_observer_(nullptr),
-      extension_registry_observer_(this) {
+      test_observer_(nullptr) {
   CHECK(web_contents);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }

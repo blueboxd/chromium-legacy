@@ -219,7 +219,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void RenderWidgetDidInit() override;
   void RenderWidgetDidClose() override;
   void RenderWidgetDidFirstVisuallyNonEmptyPaint() override;
-  void RenderWidgetDidCommitAndDrawCompositorFrame() override;
   void RenderWidgetGotFocus() override;
   void RenderWidgetLostFocus() override;
   void RenderWidgetDidForwardMouseEvent(

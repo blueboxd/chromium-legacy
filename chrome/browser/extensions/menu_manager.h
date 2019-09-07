@@ -25,6 +25,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ui/gfx/image/image.h"
@@ -38,7 +39,6 @@ struct ContextMenuParams;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 class StateStore;
 
 // Represents a menu item added by an extension.
@@ -408,7 +408,7 @@ class MenuManager : public content::NotificationObserver,
 
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   ExtensionIconManager icon_manager_;
 

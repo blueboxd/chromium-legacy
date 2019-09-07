@@ -41,8 +41,10 @@ class Serial final : public EventTargetWithInlineData,
   // Web-exposed interfaces
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
-  ScriptPromise getPorts(ScriptState*);
-  ScriptPromise requestPort(ScriptState*, const SerialPortRequestOptions*);
+  ScriptPromise getPorts(ScriptState*, ExceptionState&);
+  ScriptPromise requestPort(ScriptState*,
+                            const SerialPortRequestOptions*,
+                            ExceptionState&);
 
   void GetPort(
       const base::UnguessableToken& token,

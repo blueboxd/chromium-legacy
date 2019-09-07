@@ -164,7 +164,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
                 VoidDBusMethodCallback callback,
                 MountError mount_error);
 
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<Observer> observer_list_;
   int unmount_call_count_ = 0;
   std::string last_unmount_device_path_;
   UnmountOptions last_unmount_options_ = UNMOUNT_OPTIONS_NONE;

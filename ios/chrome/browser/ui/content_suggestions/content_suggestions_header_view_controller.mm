@@ -11,7 +11,6 @@
 #include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
@@ -226,8 +225,7 @@ using base::UserMetricsAction;
 
     // Identity disc needs to be added after the Google logo/doodle since it
     // needs to respond to user taps first.
-    if (IsIdentityDiscFeatureEnabled())
-      [self addIdentityDisc];
+    [self addIdentityDisc];
 
     // -headerForView is regularly called before self.headerView has been added
     // to the view hierarchy, so there's no simple way to get the correct

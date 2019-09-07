@@ -290,7 +290,19 @@ bool BrowserAccessibilityAndroid::IsEditableText() const {
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
-  return GetData().GetRestriction() != ax::mojom::Restriction::kDisabled;
+  switch (GetData().GetRestriction()) {
+    case ax::mojom::Restriction::kNone:
+      return true;
+    case ax::mojom::Restriction::kReadOnly:
+    case ax::mojom::Restriction::kDisabled:
+      // On Android, both Disabled and ReadOnly are treated the same.
+      // For both of them, we set AccessibilityNodeInfo.IsEnabled to false
+      // and we don't expose certain actions like SET_VALUE and PASTE.
+      return false;
+  }
+
+  NOTREACHED();
+  return true;
 }
 
 bool BrowserAccessibilityAndroid::IsExpanded() const {

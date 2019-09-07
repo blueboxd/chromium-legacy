@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {welcome.BookmarkProxy} */
-class TestBookmarkProxy extends TestBrowserProxy {
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+/** @implements {BookmarkProxy} */
+export class TestBookmarkProxy extends TestBrowserProxy {
   constructor() {
     super([
       'addBookmark',

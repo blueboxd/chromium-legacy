@@ -13,10 +13,12 @@
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_thread_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/renderer/chromeos_delayed_callback_group.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace content {
@@ -114,7 +116,8 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
                           const std::string& group_name) override;
 
   void OnRendererConfigurationAssociatedRequest(
-      chrome::mojom::RendererConfigurationAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<chrome::mojom::RendererConfiguration>
+          receiver);
 
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
@@ -122,8 +125,8 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
 
-  mojo::AssociatedBindingSet<chrome::mojom::RendererConfiguration>
-      renderer_configuration_bindings_;
+  mojo::AssociatedReceiverSet<chrome::mojom::RendererConfiguration>
+      renderer_configuration_receivers_;
 
 #if defined(OS_CHROMEOS)
   // Only set if the Chrome OS merge session was running when the renderer

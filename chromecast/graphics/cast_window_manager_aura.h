@@ -20,10 +20,6 @@ class ScreenPositionClient;
 }  // namespace client
 }  // namespace aura
 
-namespace ui {
-class ExternalBeginFrameClient;
-}  // namespace ui
-
 namespace chromecast {
 
 class CastTouchEventGate;
@@ -36,10 +32,9 @@ class SideSwipeDetector;
 // An aura::WindowTreeHost that correctly converts input events.
 class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
  public:
-  CastWindowTreeHost(
-      bool enable_input,
-      ui::PlatformWindowInitProperties properties,
-      ui::ExternalBeginFrameClient* external_begin_frame_client = nullptr);
+  CastWindowTreeHost(bool enable_input,
+                     ui::PlatformWindowInitProperties properties,
+                     bool use_external_frame_control = false);
   ~CastWindowTreeHost() override;
 
   // aura::WindowTreeHostPlatform implementation:

@@ -290,7 +290,7 @@ class DownloadItemTest : public testing::Test {
     }
 
     item->Start(std::move(download_file), base::DoNothing(), *create_info_,
-                nullptr);
+                URLLoaderFactoryProvider::GetNullPtr());
     task_environment_.RunUntilIdle();
 
     // So that we don't have a function writing to a stack variable
@@ -576,7 +576,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _));
   item->Start(std::move(download_file), base::DoNothing(), *create_info(),
-              nullptr);
+              URLLoaderFactoryProvider::GetNullPtr());
 
   item->Pause();
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
@@ -822,7 +822,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
     // Copied key parts of DoIntermediateRename & CallDownloadItemStart
     // to allow for holding onto the request handle.
     item->Start(std::move(mock_download_file), base::DoNothing(),
-                *create_info(), nullptr);
+                *create_info(), URLLoaderFactoryProvider::GetNullPtr());
     task_environment_.RunUntilIdle();
 
     base::FilePath target_path(kDummyTargetPath);
@@ -1154,7 +1154,7 @@ TEST_F(DownloadItemTest, Start) {
   EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _));
   item->Start(std::move(download_file), base::DoNothing(), *create_info(),
-              nullptr);
+              URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
   CleanupItem(item, mock_download_file, DownloadItem::IN_PROGRESS);
@@ -1180,7 +1180,7 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
   item->Start(
       std::move(file),
       base::Bind(&DownloadItemTest::CancelRequest, base::Unretained(this)),
-      *create_info(), nullptr);
+      *create_info(), URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
   download_target_callback.Run(base::FilePath(kDummyTargetPath),
@@ -1217,7 +1217,7 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
       .WillOnce(SaveArg<1>(&download_target_callback));
   item->Start(std::move(null_download_file), base::DoNothing(), *create_info(),
-              nullptr);
+              URLLoaderFactoryProvider::GetNullPtr());
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   task_environment_.RunUntilIdle();
 
@@ -2313,7 +2313,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
   item_->Start(
       std::move(file_),
       base::Bind(&DownloadItemTest::CancelRequest, base::Unretained(this)),
-      *create_info(), nullptr);
+      *create_info(), URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
   base::WeakPtr<DownloadDestinationObserver> destination_observer =
@@ -2362,7 +2362,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
   item_->Start(
       std::move(file_),
       base::Bind(&DownloadItemTest::CancelRequest, base::Unretained(this)),
-      *create_info(), nullptr);
+      *create_info(), URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
   base::WeakPtr<DownloadDestinationObserver> destination_observer =
@@ -2425,7 +2425,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
 
-  item_->Start(std::move(file_), base::DoNothing(), *create_info(), nullptr);
+  item_->Start(std::move(file_), base::DoNothing(), *create_info(),
+               URLLoaderFactoryProvider::GetNullPtr());
   task_environment_.RunUntilIdle();
 
   base::WeakPtr<DownloadDestinationObserver> destination_observer =

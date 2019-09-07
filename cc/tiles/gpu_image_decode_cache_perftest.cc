@@ -12,7 +12,7 @@
 #include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace cc {
@@ -87,6 +87,14 @@ class GpuImageDecodeCachePerfTest
     }
   }
 
+  perf_test::PerfResultReporter SetUpReporter(
+      const std::string& metric_suffix) {
+    perf_test::PerfResultReporter reporter("gpu_image_decode_cache",
+                                           ParamName());
+    reporter.RegisterImportantMetric(metric_suffix, "runs/s");
+    return reporter;
+  }
+
   base::LapTimer timer_;
   scoped_refptr<viz::TestInProcessContextProvider> context_provider_;
   GpuImageDecodeCache cache_;
@@ -115,9 +123,9 @@ TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("gpu_image_decode_cache_decode_with_color_conversion",
-                         ParamName(), "result", timer_.LapsPerSecond(),
-                         "runs/s", true);
+  perf_test::PerfResultReporter reporter =
+      SetUpReporter("_with_color_conversion");
+  reporter.AddResult("_with_color_conversion", timer_.LapsPerSecond());
 }
 
 using GpuImageDecodeCachePerfTestNoSw = GpuImageDecodeCachePerfTest;
@@ -157,8 +165,8 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("gpu_image_decode_cache_decode_with_mips", ParamName(),
-                         "result", timer_.LapsPerSecond(), "runs/s", true);
+  perf_test::PerfResultReporter reporter = SetUpReporter("_with_mips");
+  reporter.AddResult("_with_mips", timer_.LapsPerSecond());
 }
 
 TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
@@ -181,9 +189,9 @@ TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("gpu_image_decode_cache_acquire_existing_images",
-                         ParamName(), "result", timer_.LapsPerSecond(),
-                         "runs/s", true);
+  perf_test::PerfResultReporter reporter =
+      SetUpReporter("_acquire_existing_images");
+  reporter.AddResult("_acquire_existing_images", timer_.LapsPerSecond());
 }
 
 }  // namespace

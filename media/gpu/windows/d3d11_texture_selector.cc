@@ -61,6 +61,8 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   } else if (config.profile() == VP9PROFILE_PROFILE2) {
     decoder_guid = D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2;
     input_dxgi_format = DXGI_FORMAT_P010;
+    output_dxgi_format = DXGI_FORMAT_R16_FLOAT;
+    needs_texture_copy = true;
   } else {
     // TODO(tmathmeyer) support other profiles in the future.
     return nullptr;

@@ -204,7 +204,7 @@ class CORE_EXPORT CSSAnimations final {
           name_(name),
           previous_phase_(Timing::kPhaseNone) {}
     bool RequiresIterationEvents(const AnimationEffect&) override;
-    void OnEventCondition(const AnimationEffect&) override;
+    void OnEventCondition(const AnimationEffect&, Timing::Phase) override;
     void Trace(blink::Visitor*) override;
 
    private:
@@ -231,7 +231,7 @@ class CORE_EXPORT CSSAnimations final {
     bool RequiresIterationEvents(const AnimationEffect&) override {
       return false;
     }
-    void OnEventCondition(const AnimationEffect&) override;
+    void OnEventCondition(const AnimationEffect&, Timing::Phase) override;
     void Trace(blink::Visitor*) override;
 
    private:

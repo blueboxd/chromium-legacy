@@ -117,15 +117,10 @@ class PageActivityObserver : public content::WebContentsObserver {
 
  private:
   // PageActivityObserver determines if Chrome stopped painting by checking if
-  // Chrome hasn't painted for a specific amount of time.
-  // kPaintEventCheckInterval defines this amount of time.
+  // the renderer hasn't submitted a compositor frame for a specific amount of
+  // time. kPaintEventCheckInterval defines this amount of time.
   static constexpr base::TimeDelta kPaintEventCheckInterval =
       base::TimeDelta::FromMilliseconds(500);
-
-  // content::WebContentsObserver:
-  void DidCommitAndDrawCompositorFrame() override;
-
-  bool paint_occurred_during_last_loop_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PageActivityObserver);
 };

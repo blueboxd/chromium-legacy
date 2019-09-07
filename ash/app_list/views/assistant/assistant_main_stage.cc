@@ -20,7 +20,6 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
@@ -38,19 +37,6 @@ namespace {
 // Appearance.
 constexpr int kSeparatorThicknessDip = 1;
 constexpr int kSeparatorWidthDip = 64;
-
-// Footer animation.
-constexpr int kFooterAnimationTranslationDip = 22;
-constexpr base::TimeDelta kFooterAnimationTranslationDelay =
-    base::TimeDelta::FromMilliseconds(66);
-constexpr base::TimeDelta kFooterAnimationTranslationDuration =
-    base::TimeDelta::FromMilliseconds(416);
-constexpr base::TimeDelta kFooterAnimationFadeInDelay =
-    base::TimeDelta::FromMilliseconds(149);
-constexpr base::TimeDelta kFooterAnimationFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kFooterAnimationFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(100);
 
 // Footer entry animation.
 constexpr base::TimeDelta kFooterEntryAnimationFadeInDelay =
@@ -111,15 +97,7 @@ bool IsLayerVisible(views::View* view) {
 // AssistantMainStage ----------------------------------------------------------
 
 AssistantMainStage::AssistantMainStage(ash::AssistantViewDelegate* delegate)
-    : delegate_(delegate),
-      footer_animation_observer_(
-          std::make_unique<ui::CallbackLayerAnimationObserver>(
-              /*animation_started_callback=*/base::BindRepeating(
-                  &AssistantMainStage::OnFooterAnimationStarted,
-                  base::Unretained(this)),
-              /*animation_ended_callback=*/base::BindRepeating(
-                  &AssistantMainStage::OnFooterAnimationEnded,
-                  base::Unretained(this)))) {
+    : delegate_(delegate) {
   InitLayout();
 
   // The view hierarchy will be destructed before AssistantController in Shell,
@@ -327,7 +305,6 @@ void AssistantMainStage::OnPendingQueryChanged(
     const ash::AssistantQuery& query) {
   // Update the view.
   query_view_->SetQuery(query);
-  UpdateFooter(/*visible=*/false);
 
   if (!IsLayerVisible(greeting_label_))
     return;
@@ -357,12 +334,6 @@ void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
   // reseting the query here will have no visible effect. If the interaction was
   // cancelled, we set the query here to restore the previously committed query.
   query_view_->SetQuery(delegate_->GetInteractionModel()->committed_query());
-
-  // If the query was committed, we wait for |OnResponseChanged()| to update the
-  // footer. If the interaction was cancelled, we restore the previous
-  // suggestion chips.
-  if (!due_to_commit)
-    UpdateFooter(/*visible=*/true);
 }
 
 void AssistantMainStage::OnResponseChanged(
@@ -387,8 +358,6 @@ void AssistantMainStage::OnResponseChanged(
   progress_indicator_->layer()->GetAnimator()->StartAnimation(
       CreateLayerAnimationSequence(ash::assistant::util::CreateOpacityElement(
           0.f, kDividerAnimationFadeOutDuration)));
-
-  UpdateFooter(/*visible=*/true);
 }
 
 void AssistantMainStage::OnUiVisibilityChanged(
@@ -471,77 +440,6 @@ void AssistantMainStage::MaybeHideGreetingLabel() {
   greeting_label_->layer()->GetAnimator()->StartAnimation(
       CreateLayerAnimationSequence(
           CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
-}
-
-void AssistantMainStage::UpdateFooter(bool visible) {
-  using ash::assistant::util::CreateLayerAnimationSequence;
-  using ash::assistant::util::CreateOpacityElement;
-  using ash::assistant::util::CreateTransformElement;
-  using ash::assistant::util::StartLayerAnimationSequence;
-  using ash::assistant::util::StartLayerAnimationSequencesTogether;
-
-  if (visible == IsLayerVisible(footer_))
-    return;
-
-  // Reset visibility to enable animation.
-  footer_->SetVisible(true);
-
-  if (visible) {
-    // The footer will animate up into position so we need to set an initial
-    // offset transformation from which to animate.
-    gfx::Transform transform;
-    transform.Translate(0, kFooterAnimationTranslationDip);
-    footer_->layer()->SetTransform(transform);
-
-    // Animate the entry of the footer.
-    StartLayerAnimationSequencesTogether(
-        footer_->layer()->GetAnimator(),
-        {// Animate the translation with delay.
-         CreateLayerAnimationSequence(
-             ui::LayerAnimationElement::CreatePauseElement(
-                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
-                 kFooterAnimationTranslationDelay),
-             CreateTransformElement(gfx::Transform(),
-                                    kFooterAnimationTranslationDuration,
-                                    gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
-         // Animate the fade in with delay.
-         CreateLayerAnimationSequence(
-             ui::LayerAnimationElement::CreatePauseElement(
-                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                 kFooterAnimationFadeInDelay),
-             CreateOpacityElement(1.f, kFooterAnimationFadeInDuration))},
-        // Observer animation start/end events.
-        footer_animation_observer_.get());
-  } else {
-    // Animate the exit of the footer.
-    StartLayerAnimationSequence(
-        footer_->layer()->GetAnimator(),
-        // Animate fade out.
-        CreateLayerAnimationSequence(
-            CreateOpacityElement(0.f, kFooterAnimationFadeOutDuration)),
-        // Observe animation start/end events.
-        footer_animation_observer_.get());
-  }
-
-  // Set the observer to active so that we'll receive start/end events.
-  footer_animation_observer_->SetActive();
-}
-
-void AssistantMainStage::OnFooterAnimationStarted(
-    const ui::CallbackLayerAnimationObserver& observer) {
-  // The footer should not process events while animating.
-  footer_->set_can_process_events_within_subtree(/*can_process=*/false);
-}
-
-bool AssistantMainStage::OnFooterAnimationEnded(
-    const ui::CallbackLayerAnimationObserver& observer) {
-  // The footer should only process events when visible.
-  const bool visible = IsLayerVisible(footer_);
-  footer_->set_can_process_events_within_subtree(visible);
-  footer_->SetVisible(visible);
-
-  // Return false so that the observer does not destroy itself.
-  return false;
 }
 
 }  // namespace app_list

@@ -2704,9 +2704,9 @@ TEST_F(OverflowBubbleViewTest, CheckFadingBehaviorOfOverflowBubbleView) {
   // overflow bubble is correct.  Note that the last visible index should be
   // |base_index| + |max_accommodated_shelf_num| - 2, because one place is
   // occupied by the arrow button.
-  EXPECT_EQ(base_index, bubble_view->GetFirstVisibleIndexForTest());
+  EXPECT_EQ(base_index, bubble_view->GetFirstVisibleIndex());
   EXPECT_EQ(base_index + max_accommodated_shelf_num - 2,
-            bubble_view->GetLastVisibleIndexForTest());
+            bubble_view->GetLastVisibleIndex());
 
   // Scroll the overflow bubble by half of |fading_zone_|.
   bubble_view->ScrollByXOffset(fading_zone_ / 2, false);
@@ -2715,20 +2715,20 @@ TEST_F(OverflowBubbleViewTest, CheckFadingBehaviorOfOverflowBubbleView) {
   // Verifies that the first visible index increases by 1 because the left arrow
   // button shows. The app short referred by the first visible index has the
   // correct opacity.
-  EXPECT_EQ(base_index + 1, bubble_view->GetFirstVisibleIndexForTest());
+  EXPECT_EQ(base_index + 1, bubble_view->GetFirstVisibleIndex());
   views::View* leftmost_view =
-      shelf_view_model->view_at(bubble_view->GetFirstVisibleIndexForTest());
+      shelf_view_model->view_at(bubble_view->GetFirstVisibleIndex());
   EXPECT_EQ(0.5f, leftmost_view->layer()->opacity());
 
   // Verifies that the last visible index is expected. Note that we need to
   // check the opacity of the app shortcut whose index is |last_visible_index| +
   // 1. See OverflowBubbleView::UpdateOpacityOfEdgeIcons for more details.
   EXPECT_EQ(base_index + max_accommodated_shelf_num - 2,
-            bubble_view->GetLastVisibleIndexForTest());
-  ASSERT_LT(bubble_view->GetLastVisibleIndexForTest() + 1,
+            bubble_view->GetLastVisibleIndex());
+  ASSERT_LT(bubble_view->GetLastVisibleIndex() + 1,
             shelf_view_model->view_size());
   views::View* rightmost_view =
-      shelf_view_model->view_at(bubble_view->GetLastVisibleIndexForTest() + 1);
+      shelf_view_model->view_at(bubble_view->GetLastVisibleIndex() + 1);
   EXPECT_EQ(0.f, rightmost_view->layer()->opacity());
 }
 

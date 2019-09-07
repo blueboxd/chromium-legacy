@@ -18,6 +18,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using content::RenderFrameHost;
@@ -79,7 +80,7 @@ void NavigationCorrectionTabObserver::OnEnabledChanged() {
 void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
     RenderFrameHost* render_frame_host) {
   GURL google_base_url(UIThreadSearchTermsData().GoogleBaseURLValue());
-  chrome::mojom::NavigationCorrectorAssociatedPtr client;
+  mojo::AssociatedRemote<chrome::mojom::NavigationCorrector> client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetNavigationCorrectionInfo(
       GetNavigationCorrectionURL(),

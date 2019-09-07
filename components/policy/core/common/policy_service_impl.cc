@@ -150,6 +150,24 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
   }
 }
 
+void PolicyServiceImpl::AddProviderUpdateObserver(
+    ProviderUpdateObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  provider_update_observers_.AddObserver(observer);
+}
+
+void PolicyServiceImpl::RemoveProviderUpdateObserver(
+    ProviderUpdateObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  provider_update_observers_.RemoveObserver(observer);
+}
+
+bool PolicyServiceImpl::HasProvider(
+    ConfigurationPolicyProvider* provider) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return base::Contains(providers_, provider);
+}
+
 const PolicyMap& PolicyServiceImpl::GetPolicies(
     const PolicyNamespace& ns) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -185,9 +203,18 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   }
 }
 
+void PolicyServiceImpl::SetInitializationThrottled(
+    bool initialization_throttled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialization_throttled != initialization_throttled_);
+  initialization_throttled_ = initialization_throttled;
+  CheckInitializationComplete();
+}
+
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
   DCHECK_EQ(1, std::count(providers_.begin(), providers_.end(), provider));
   refresh_pending_.erase(provider);
+  provider_update_pending_.insert(provider);
 
   // Note: a policy change may trigger further policy changes in some providers.
   // For example, disabling SigninAllowed would cause the CloudPolicyManager to
@@ -213,6 +240,18 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     for (auto& observer : *iterator->second)
       observer.OnPolicyUpdated(ns, previous, current);
   }
+}
+
+void PolicyServiceImpl::NotifyProviderUpdatesPropagated() {
+  if (provider_update_pending_.empty())
+    return;
+
+  for (auto& provider_update_observer : provider_update_observers_) {
+    for (ConfigurationPolicyProvider* provider : provider_update_pending_) {
+      provider_update_observer.OnProviderUpdatePropagated(provider);
+    }
+  }
+  provider_update_pending_.clear();
 }
 
 void PolicyServiceImpl::MergeAndTriggerUpdates() {
@@ -310,10 +349,14 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 
   CheckInitializationComplete();
   CheckRefreshComplete();
+  NotifyProviderUpdatesPropagated();
 }
 
 void PolicyServiceImpl::CheckInitializationComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (initialization_throttled_)
+    return;
 
   // Check if all the providers just became initialized for each domain; if so,
   // notify that domain's observers.

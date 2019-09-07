@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -31,11 +33,66 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
+#include "components/policy/core/common/proxy_policy_provider.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
 namespace policy {
+
+#if defined(OS_CHROMEOS)
+namespace internal {
+
+// This class allows observing a |device_wide_policy_service| for policy updates
+// during which the |source_policy_provider| has already been initialized.
+// It is used to know when propagation of primary user policies proxied to the
+// device-wide PolicyService has finished.
+class ProxiedPoliciesPropagatedWatcher : PolicyService::ProviderUpdateObserver {
+ public:
+  ProxiedPoliciesPropagatedWatcher(
+      PolicyService* device_wide_policy_service,
+      ProxyPolicyProvider* proxy_policy_provider,
+      ConfigurationPolicyProvider* source_policy_provider,
+      base::OnceClosure proxied_policies_propagated_callback)
+      : device_wide_policy_service_(device_wide_policy_service),
+        proxy_policy_provider_(proxy_policy_provider),
+        source_policy_provider_(source_policy_provider),
+        proxied_policies_propagated_callback_(
+            std::move(proxied_policies_propagated_callback)) {
+    device_wide_policy_service->AddProviderUpdateObserver(this);
+  }
+
+  ~ProxiedPoliciesPropagatedWatcher() override {
+    device_wide_policy_service_->RemoveProviderUpdateObserver(this);
+  }
+
+  // PolicyService::Observer:
+  void OnProviderUpdatePropagated(
+      ConfigurationPolicyProvider* provider) override {
+    if (!proxied_policies_propagated_callback_)
+      return;
+    if (provider != proxy_policy_provider_)
+      return;
+
+    if (!source_policy_provider_->IsInitializationComplete(
+            POLICY_DOMAIN_CHROME)) {
+      return;
+    }
+
+    std::move(proxied_policies_propagated_callback_).Run();
+  }
+
+ private:
+  PolicyService* const device_wide_policy_service_;
+  const ProxyPolicyProvider* const proxy_policy_provider_;
+  const ConfigurationPolicyProvider* const source_policy_provider_;
+  base::OnceClosure proxied_policies_propagated_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxiedPoliciesPropagatedWatcher);
+};
+
+}  // namespace internal
+#endif  // defined(OS_CHROMEOS)
 
 ProfilePolicyConnector::ProfilePolicyConnector() {}
 
@@ -120,14 +177,14 @@ void ProfilePolicyConnector::Init(
   policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
 
 #if defined(OS_CHROMEOS)
+  ConfigurationPolicyProvider* user_policy_delegate = nullptr;
   if (is_primary_user_) {
-    if (configuration_policy_provider)
-      browser_policy_connector->SetUserPolicyDelegate(
-          configuration_policy_provider);
-    else if (special_user_policy_provider_)
-      browser_policy_connector->SetUserPolicyDelegate(
-          special_user_policy_provider_.get());
+    user_policy_delegate = configuration_policy_provider
+                               ? configuration_policy_provider
+                               : special_user_policy_provider_.get();
   }
+  if (user_policy_delegate)
+    SetGlobalUserPolicyDelegate(user_policy_delegate);
 #endif
 }
 
@@ -142,14 +199,13 @@ void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
 
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
-  if (is_primary_user_) {
-    BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    connector->SetUserPolicyDelegate(nullptr);
-  }
+  if (is_primary_user_)
+    SetGlobalUserPolicyDelegate(nullptr);
+
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
+
   if (wrapped_platform_policy_provider_)
     wrapped_platform_policy_provider_->Shutdown();
 }
@@ -198,5 +254,49 @@ ProfilePolicyConnector::DeterminePolicyProviderForPolicy(
   }
   return nullptr;
 }
+
+#if defined(OS_CHROMEOS)
+void ProfilePolicyConnector::SetGlobalUserPolicyDelegate(
+    ConfigurationPolicyProvider* user_policy_delegate) {
+  BrowserPolicyConnectorChromeOS* browser_policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  PolicyService* device_wide_policy_service =
+      browser_policy_connector->GetPolicyService();
+  ProxyPolicyProvider* proxy_policy_provider =
+      browser_policy_connector->GetGlobalUserCloudPolicyProvider();
+
+  // The ProxyPolicyProvider may be available from |browser_policy_connector|
+  // but not actually used by the |device_wide_policy_service| in tests (e.g. if
+  // BrowserPolicyConnectorBase::SetPolicyProviderForTesting has been used).
+  if (!device_wide_policy_service->HasProvider(proxy_policy_provider))
+    return;
+
+  if (!user_policy_delegate) {
+    proxy_policy_provider->SetDelegate(nullptr);
+    return;
+  }
+
+  policy_service_->SetInitializationThrottled(true);
+  // base::Unretained is OK for |this| because
+  // |proxied_policies_propagated_watcher_| is guaranteed not to call its
+  // callback after it has been destroyed.
+  proxied_policies_propagated_watcher_ =
+      std::make_unique<internal::ProxiedPoliciesPropagatedWatcher>(
+          device_wide_policy_service, proxy_policy_provider,
+          user_policy_delegate,
+          base::BindOnce(&ProfilePolicyConnector::OnProxiedPoliciesPropagated,
+                         base::Unretained(this)));
+  proxy_policy_provider->SetDelegate(user_policy_delegate);
+}
+
+void ProfilePolicyConnector::OnProxiedPoliciesPropagated() {
+  policy_service_->SetInitializationThrottled(false);
+  // Do not delete |proxied_policies_propagated_watcher_| synchronously, as the
+  // PolicyService it is observing is expected to be iterating its observer
+  // list.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, std::move(proxied_policies_propagated_watcher_));
+}
+#endif
 
 }  // namespace policy

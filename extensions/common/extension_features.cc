@@ -6,10 +6,6 @@
 
 namespace extensions_features {
 
-// Enables new extension updater service.
-const base::Feature kNewExtensionUpdaterService{
-    "NewExtensionUpdaterService", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 const base::Feature kForceWebRequestProxyForTest{
     "ForceWebRequestProxyForTest", base::FEATURE_DISABLED_BY_DEFAULT};

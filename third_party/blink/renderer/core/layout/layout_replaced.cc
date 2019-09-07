@@ -161,7 +161,8 @@ void LayoutReplaced::RecalcVisualOverflow() {
 void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   if (ShouldApplySizeContainment()) {
-    intrinsic_sizing_info.size = FloatSize();
+    intrinsic_sizing_info.size =
+        FloatSize(ContentLogicalSizeForSizeContainment());
     return;
   }
   if (DisplayLockInducesSizeContainment()) {

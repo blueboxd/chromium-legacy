@@ -75,7 +75,6 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/android/window_android.h"
-#include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/ca_layer_params.h"

@@ -930,22 +930,13 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
   EXPECT_FALSE(update_service()->IsBusy());
 }
 
-class UpdateServiceCanUpdateTest : public UpdateServiceTest,
-                                   public ::testing::WithParamInterface<bool> {
+class UpdateServiceCanUpdateTest : public UpdateServiceTest {
  public:
   UpdateServiceCanUpdateTest() {}
   ~UpdateServiceCanUpdateTest() override {}
 
   void SetUp() override {
     UpdateServiceTest::SetUp();
-
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          extensions_features::kNewExtensionUpdaterService);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kNewExtensionUpdaterService);
-    }
 
     store_extension_ =
         ExtensionBuilder("store_extension")
@@ -1010,11 +1001,11 @@ class UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl
   }
 };
 
-TEST_P(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
+TEST_F(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
   // Update service can only update webstore extensions when enabled.
-  EXPECT_EQ(GetParam(), update_service()->CanUpdate(store_extension_->id()));
+  EXPECT_TRUE(update_service()->CanUpdate(store_extension_->id()));
   // ... and extensions with empty update URL.
-  EXPECT_EQ(GetParam(), update_service()->CanUpdate(emptyurl_extension_->id()));
+  EXPECT_TRUE(update_service()->CanUpdate(emptyurl_extension_->id()));
   // It can't update off-store extrensions.
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
   // ... or extensions with empty update URL converted from user script.
@@ -1025,7 +1016,7 @@ TEST_P(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
   EXPECT_FALSE(update_service()->CanUpdate(""));
 }
 
-TEST_P(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
+TEST_F(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
        UpdateService_CanUpdate) {
   // Update service cannot update extensions when the default webstore update
   // url is changed.
@@ -1036,15 +1027,6 @@ TEST_P(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
   EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));
   EXPECT_FALSE(update_service()->CanUpdate(""));
 }
-
-INSTANTIATE_TEST_SUITE_P(CanUpdateTest,
-                         UpdateServiceCanUpdateTest,
-                         ::testing::Bool());
-
-INSTANTIATE_TEST_SUITE_P(
-    CanUpdateTest,
-    UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
-    ::testing::Bool());
 
 }  // namespace
 

@@ -13,34 +13,10 @@
 
 namespace base {
 
-// ScopedSuspendThread --------------------------------------------------------
-
-bool ThreadDelegateAndroid::ScopedSuspendThread::WasSuccessful() const {
-  return false;
-}
-
-// ThreadDelegateAndroid ------------------------------------------------------
-
-std::unique_ptr<ThreadDelegate::ScopedSuspendThread>
-ThreadDelegateAndroid::CreateScopedSuspendThread() {
-  return std::make_unique<ScopedSuspendThread>();
-}
-
-// NO HEAP ALLOCATIONS.
-bool ThreadDelegateAndroid::GetThreadContext(RegisterContext* thread_context) {
-  return false;
-}
-
-// NO HEAP ALLOCATIONS.
 uintptr_t ThreadDelegateAndroid::GetStackBaseAddress() const {
   // It's okay for the stub to return zero here: GetStackBaseAddress() if
   // ScopedSuspendThread fails, which it always will in the stub.
   return 0;
-}
-
-// NO HEAP ALLOCATIONS.
-bool ThreadDelegateAndroid::CanCopyStack(uintptr_t stack_pointer) {
-  return false;
 }
 
 std::vector<uintptr_t*> ThreadDelegateAndroid::GetRegistersToRewrite(

@@ -4,9 +4,14 @@
 
 #include <vector>
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
+#include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
 namespace device {
@@ -23,7 +28,8 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   void UpdateLocation(const mojom::Geoposition& position);
   const mojom::Geoposition& GetGeoposition() const;
 
-  void BindForOverrideService(mojom::GeolocationContextRequest request);
+  void BindForOverrideService(
+      mojo::PendingReceiver<mojom::GeolocationContext> receiver);
 
   // mojom::GeolocationContext implementation:
   void BindGeolocation(
@@ -35,7 +41,7 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   mojom::Geoposition position_;
   mojom::GeopositionPtr override_position_;
   std::vector<std::unique_ptr<FakeGeolocation>> impls_;
-  mojo::BindingSet<mojom::GeolocationContext> context_bindings_;
+  mojo::ReceiverSet<mojom::GeolocationContext> context_receivers_;
 };
 
 class ScopedGeolocationOverrider::FakeGeolocation : public mojom::Geolocation {
@@ -137,8 +143,8 @@ ScopedGeolocationOverrider::FakeGeolocationContext::GetGeoposition() const {
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindForOverrideService(
-    mojom::GeolocationContextRequest request) {
-  context_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::GeolocationContext> receiver) {
+  context_receivers_.Add(this, std::move(receiver));
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindGeolocation(

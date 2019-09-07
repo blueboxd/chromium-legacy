@@ -1,30 +1,18 @@
 # Clang
 
-[Clang](http://clang.llvm.org/) is the main supported compiler when
-building Chromium on all platforms.
+Chromium ships a prebuilt [clang](http://clang.llvm.org) binary.
+It's just upstream clang built at a known-good revision that we
+bump every two weeks or so.
 
-Known [clang bugs and feature
-requests](http://code.google.com/p/chromium/issues/list?q=label:clang).
+This is the only supported compiler for building Chromium.
 
 [TOC]
 
-## Building with clang
+## Using gcc on Linux
 
-This happens by default, with clang binaries being fetched by gclient
-during the `gclient runhooks` phase. To fetch them manually, or build
-a local custom clang, use
-
-    tools/clang/scripts/update.py
-
-Run `gn args` and make sure there is no `is_clang = false` in your args.gn file.
-
-Build: `ninja -C out/gn chrome`
-
-## Reverting to gcc on Linux or MSVC on Windows
-
-There are no bots that test this but `is_clang = false` will revert to
-gcc on Linux and to Visual Studio on Windows. There is no guarantee it
-will work.
+`is_clang = false` will make the build use system gcc on Linux. There are no
+bots that test this and there is no guarantee it will work, but we accept
+patches for this configuration.
 
 ## Mailing List
 
@@ -66,21 +54,13 @@ See [clang_static_analyzer.md](clang_static_analyzer.md).
 
 ## Windows
 
-Since October 2017, clang is the default compiler on Windows. It uses
-MSVC's linker and SDK, so you still need to have Visual Studio with
-C++ support installed.
-
-To use MSVC's compiler (if it still works), use `is_clang = false`.
-
-Current brokenness:
-
-*   To get colored diagnostics, you need to be running
-    [ansicon](https://github.com/adoxa/ansicon/releases).
+clang is the default compiler on Windows. It uses MSVC's SDK, so you still need
+to have Visual Studio with C++ support installed.
 
 ## Using a custom clang binary
 
 Set `clang_base_path` in your args.gn to the llvm build directory containing
-`bin/clang` (i.e. the directory you ran cmake). This [must][1] be an absolute
+`bin/clang` (i.e. the directory you ran cmake). This must be an absolute
 path. You also need to disable chromium's clang plugin.
 
 Here's an example that also disables debug info and enables the component build

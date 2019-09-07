@@ -231,7 +231,6 @@ TEST_F(PasswordGenerationStateTest, GeneratedPasswordAccepted_UpdateUI) {
   EXPECT_EQ(ASCIIToUTF16(""), ui_form->GetPendingCredentials().username_value);
   EXPECT_EQ(CreateGenerated().password_value,
             ui_form->GetPendingCredentials().password_value);
-  EXPECT_THAT(ui_form->GetBlacklistedMatches(), IsEmpty());
   EXPECT_THAT(ui_form->GetInteractionsStats(), IsEmpty());
   EXPECT_FALSE(ui_form->IsBlacklisted());
   histogram_tester.ExpectUniqueSample(

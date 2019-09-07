@@ -83,6 +83,7 @@ class ChromeAutofillClient
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
   void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
+  bool CloseWebauthnOfferDialog() override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(

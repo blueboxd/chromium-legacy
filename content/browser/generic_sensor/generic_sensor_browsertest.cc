@@ -51,7 +51,7 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
     service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
         device::mojom::kServiceName,
         base::BindRepeating(
-            &GenericSensorBrowserTest::BindSensorProviderRequest,
+            &GenericSensorBrowserTest::BindSensorProviderReceiver,
             base::Unretained(this)));
   }
 
@@ -78,7 +78,8 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
-  void BindSensorProviderRequest(device::mojom::SensorProviderRequest request) {
+  void BindSensorProviderReceiver(
+      mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
     if (!sensor_provider_available_)
       return;
 
@@ -87,7 +88,7 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
       fake_sensor_provider_->SetAmbientLightSensorData(50);
     }
 
-    fake_sensor_provider_->Bind(std::move(request));
+    fake_sensor_provider_->Bind(std::move(receiver));
   }
 
   void set_sensor_provider_available(bool sensor_provider_available) {

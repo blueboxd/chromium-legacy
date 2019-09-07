@@ -152,15 +152,8 @@ const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
-// TODO(https://crbug.com/996027): Re-enable this on Windows once Windows 7
-// DWRiteFontLookupTableBuilder stability is fixed.
-#if !defined(OS_WIN)
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.

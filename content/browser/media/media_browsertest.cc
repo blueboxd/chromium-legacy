@@ -181,7 +181,8 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthVP9) {
   PlayVideo("bear-320x180-hi10p-vp9.webm", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
+// Flaky, disabled. https://crbug.com/1001364.
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBear12DepthVP9) {
   PlayVideo("bear-320x180-hi12p-vp9.webm", GetParam());
 }
 #endif
@@ -233,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated270) {
 
 #if !defined(OS_ANDROID)
 // Android devices usually only support baseline, main and high.
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
+// Flaky, disabled. https://crbug.com/1001364.
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearHighBitDepthMp4) {
   PlayVideo("bear-320x180-hi10p.mp4", GetParam());
 }
 

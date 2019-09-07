@@ -32,8 +32,9 @@ void FakeInputServiceLinux::GetDevices(GetDevicesCallback callback) {
   std::move(callback).Run(std::move(devices));
 }
 
-void FakeInputServiceLinux::Bind(mojom::InputDeviceManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeInputServiceLinux::Bind(
+    mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeInputServiceLinux::AddDevice(mojom::InputDeviceInfoPtr info) {

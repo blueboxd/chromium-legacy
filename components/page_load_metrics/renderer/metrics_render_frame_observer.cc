@@ -56,7 +56,7 @@ class MojoPageTimingSender : public PageTimingSender {
  private:
   // Use associated interface to make sure mojo messages are ordered with regard
   // to legacy IPC messages.
-  mojom::PageLoadMetricsAssociatedPtr page_load_metrics_;
+  mojo::AssociatedRemote<mojom::PageLoadMetrics> page_load_metrics_;
 };
 
 }  //  namespace

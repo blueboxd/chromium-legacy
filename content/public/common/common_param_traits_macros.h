@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
+#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/web_preferences.h"
@@ -41,6 +42,9 @@
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+
+IPC_ENUM_TRAITS_MAX_VALUE(content::BrowserControlsState,
+                          content::BROWSER_CONTROLS_STATE_LAST)
 
 IPC_ENUM_TRAITS_VALIDATE(ui::PageTransition,
                          ((value &

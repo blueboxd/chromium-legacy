@@ -30,6 +30,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/guid.h"
 #include "base/macros.h"
@@ -996,7 +997,7 @@ void AppsGridView::Layout() {
 
 void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
                                            bool is_in_drag) {
-  if (!folder_delegate_ && app_list_features::IsBackgroundBlurEnabled()) {
+  if (!folder_delegate_ && ash::features::IsBackgroundBlurEnabled()) {
     if (is_in_drag) {
       layer()->SetMaskLayer(nullptr);
     } else {

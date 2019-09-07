@@ -441,6 +441,12 @@ namespace autotestPrivate {
     // Takes a screenshot and returns the data in base64 encoded PNG format.
     static void takeScreenshot(TakeScreenshotCallback callback);
 
+    // Tasks a screenshot for a display.
+    // |display_id|: the display id of the display.
+    // |callback|: called when the operation has completed.
+    static void takeScreenshotForDisplay(DOMString display_id,
+                                         TakeScreenshotCallback callback);
+
     // Makes a basic request to ML Service, triggering 1. ML Service
     // daemon startup, and 2. the initial D-Bus -> Mojo IPC bootstrap.
     // |callback|: Called when the operation has completed.

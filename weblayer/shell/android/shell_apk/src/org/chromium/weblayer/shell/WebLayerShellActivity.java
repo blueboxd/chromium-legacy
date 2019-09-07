@@ -66,6 +66,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         mUrlView = new EditText(this);
         mUrlView.setSelectAllOnFocus(true);
         mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+        mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
         mUrlView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -109,6 +110,17 @@ public class WebLayerShellActivity extends FragmentActivity {
     }
 
     private void loadUrl(String url) {
-        mBrowserController.getNavigationController().navigate(Uri.parse(url));
+        mBrowserController.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
+    }
+
+    /**
+     * Given an URL, this performs minimal sanitizing to ensure it will be valid.
+     * @param url The url to be sanitized.
+     * @return The sanitized URL.
+     */
+    public static String sanitizeUrl(String url) {
+        if (url == null) return null;
+        if (url.startsWith("www.") || url.indexOf(":") == -1) url = "http://" + url;
+        return url;
     }
 }

@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_id.h"
@@ -25,7 +26,6 @@ namespace extensions {
 FORWARD_DECLARE_TEST(SystemIndicatorApiTest, SystemIndicatorUnloaded);
 
 class ExtensionIndicatorIcon;
-class ExtensionRegistry;
 
 // Keeps track of all the systemIndicator icons created for a given Profile
 // that are currently visible in the UI.  Use SystemIndicatorManagerFactory to
@@ -86,7 +86,7 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   base::ThreadChecker thread_checker_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemIndicatorManager);
 };

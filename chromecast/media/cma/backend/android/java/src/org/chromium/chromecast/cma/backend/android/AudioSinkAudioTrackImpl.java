@@ -132,7 +132,7 @@ class AudioSinkAudioTrackImpl {
     private static final long MAX_TIME_IGNORING_TSTAMPS_NSECS = SEC_IN_NSEC;
 
     // Additional padding for minimum buffer time, determined experimentally.
-    private static final long MIN_BUFFERED_TIME_PADDING_US = ANDROID_AUDIO_PERIOD_SIZE_US;
+    private static final long MIN_BUFFERED_TIME_PADDING_US = 120000;
 
     // Max retries for AudioTrackBuilder
     private static final int MAX_RETRIES_FOR_AUDIO_TRACKS = 1;

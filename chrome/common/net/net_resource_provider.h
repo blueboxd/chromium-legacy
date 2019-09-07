@@ -7,11 +7,7 @@
 
 #include "base/strings/string_piece.h"
 
-namespace chrome_common_net {
-
 // This is called indirectly by the network layer to access resources.
-base::StringPiece NetResourceProvider(int key);
-
-}  // namespace chrome_common_net
+base::StringPiece ChromeNetResourceProvider(int key);
 
 #endif  // CHROME_COMMON_NET_NET_RESOURCE_PROVIDER_H_

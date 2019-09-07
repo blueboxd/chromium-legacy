@@ -34,12 +34,12 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
  public:
   // TODO(qinmin): Remove |url_request_context_getter| once network service is
   // enabled.
-  ParallelDownloadJob(
-      DownloadItem* download_item,
-      CancelRequestCallback cancel_request_callback,
-      const DownloadCreateInfo& create_info,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
-      service_manager::Connector* connector);
+  ParallelDownloadJob(DownloadItem* download_item,
+                      CancelRequestCallback cancel_request_callback,
+                      const DownloadCreateInfo& create_info,
+                      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+                          url_loader_factory_provider,
+                      service_manager::Connector* connector);
   ~ParallelDownloadJob() override;
 
   // DownloadJobImpl implementation.
@@ -120,7 +120,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ParallelDownloadJob
 
   // URLLoaderFactoryProvider to retrieve the URLLoaderFactory and issue
   // parallel requests.
-  base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider_;
+  URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+      url_loader_factory_provider_;
 
   // Connector used for establishing the connection to the ServiceManager.
   service_manager::Connector* connector_;

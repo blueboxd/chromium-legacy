@@ -6,13 +6,15 @@
 #define SERVICES_DEVICE_BLUETOOTH_BLUETOOTH_SYSTEM_FACTORY_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace device {
 
 class BluetoothSystemFactory : public mojom::BluetoothSystemFactory {
  public:
-  static void CreateFactory(mojom::BluetoothSystemFactoryRequest request);
+  static void CreateFactory(
+      mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver);
 
   BluetoothSystemFactory();
   ~BluetoothSystemFactory() override;

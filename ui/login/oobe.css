@@ -6,6 +6,10 @@
  * sign in and lock screens.
  */
 
+:root {
+  --shelf-area-height: 57px;
+}
+
 html,
 body {
   height: 100%;

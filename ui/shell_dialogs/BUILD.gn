@@ -112,3 +112,17 @@ test("shell_dialogs_unittests") {
     deps += [ "//components/remote_cocoa/app_shim" ]
   }
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_select_file_dialog.cc",
+    "fake_select_file_dialog.h",
+  ]
+  public_deps = [
+    ":shell_dialogs",
+  ]
+  deps = [
+    "//base",
+  ]
+}

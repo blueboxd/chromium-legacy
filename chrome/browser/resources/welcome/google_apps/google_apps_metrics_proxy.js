@@ -2,18 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('welcome', function() {
-  class GoogleAppsMetricsProxyImpl extends welcome.ModuleMetricsProxyImpl {
-    constructor() {
-      super(
-          'FirstRun.NewUserExperience.GoogleAppsInteraction',
-          welcome.NuxGoogleAppsInteractions);
-    }
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {ModuleMetricsProxyImpl, NuxGoogleAppsInteractions} from '../shared/module_metrics_proxy.js';
+
+export class GoogleAppsMetricsProxyImpl extends ModuleMetricsProxyImpl {
+  constructor() {
+    super(
+        'FirstRun.NewUserExperience.GoogleAppsInteraction',
+        NuxGoogleAppsInteractions);
   }
+}
 
-  cr.addSingletonGetter(GoogleAppsMetricsProxyImpl);
-
-  return {
-    GoogleAppsMetricsProxyImpl: GoogleAppsMetricsProxyImpl,
-  };
-});
+addSingletonGetter(GoogleAppsMetricsProxyImpl);

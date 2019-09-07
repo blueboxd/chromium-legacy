@@ -15,10 +15,12 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
 #include "third_party/blink/renderer/modules/quota/storage_estimate.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -132,6 +134,11 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
+
+  // The BlinkIDL definition for estimate() already has a [MeasureAs] attribute,
+  // so the kQuotaRead use counter must be explicitly updated.
+  UseCounter::Count(execution_context, WebFeature::kQuotaRead);
+
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
   if (security_origin->IsOpaque()) {

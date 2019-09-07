@@ -8,18 +8,14 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/observer_list_types.h"
 
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
-
 namespace ash {
 
 // A checked observer which receives notification of changes to the PhotoModel
 // in ambient mode.
 class ASH_PUBLIC_EXPORT PhotoModelObserver : public base::CheckedObserver {
  public:
-  // Invoked when the requested image is available to show.
-  virtual void OnImageAvailable(const gfx::ImageSkia& image) = 0;
+  // Invoked when prev/current/next images changed.
+  virtual void OnImagesChanged() = 0;
 
  protected:
   ~PhotoModelObserver() override = default;

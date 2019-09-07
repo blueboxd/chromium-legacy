@@ -25,7 +25,8 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
     virtual void OnUrlDownloadStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         std::unique_ptr<InputStream> input_stream,
-        base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+        URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+            url_loader_factory_provider,
         UrlDownloadHandler* downloader,
         const DownloadUrlParameters::OnStartedCallback& callback) = 0;
 

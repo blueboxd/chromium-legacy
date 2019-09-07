@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_host_observer.h"
 #include "ui/gfx/image/image.h"
 
@@ -185,7 +186,7 @@ class ExtensionActionViewController
   extensions::ExtensionRegistry* extension_registry_;
 
   ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
-      popup_host_observer_;
+      popup_host_observer_{this};
 
   base::WeakPtrFactory<ExtensionActionViewController> weak_factory_{this};
 

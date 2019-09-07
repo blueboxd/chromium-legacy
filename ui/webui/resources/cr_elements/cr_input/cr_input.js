@@ -38,7 +38,10 @@ Polymer({
   is: 'cr-input',
 
   properties: {
-    ariaLabel: String,
+    ariaLabel: {
+      type: String,
+      value: '',
+    },
 
     autofocus: {
       type: Boolean,
@@ -109,6 +112,7 @@ Polymer({
 
     placeholder: {
       type: String,
+      value: null,
       observer: 'placeholderChanged_',
     },
 
@@ -156,11 +160,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    const ariaLabel = this.ariaLabel || this.label || this.placeholder;
-    if (ariaLabel) {
-      this.inputElement.setAttribute('aria-label', ariaLabel);
-    }
-
     // Run this for the first time in attached instead of in disabledChanged_
     // since this.tabindex might not be set yet then.
     if (this.disabled) {
@@ -171,6 +170,15 @@ Polymer({
   /** @return {!HTMLInputElement} */
   get inputElement() {
     return /** @type {!HTMLInputElement} */ (this.$.input);
+  },
+
+  /**
+   * Returns the aria label to be used with the input element.
+   * @return {string}
+   * @private
+   */
+  getAriaLabel_: function(ariaLabel, label, placeholder) {
+    return ariaLabel || label || placeholder;
   },
 
   /** @private */

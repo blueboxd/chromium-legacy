@@ -26,9 +26,13 @@ void FeaturePromoBubbleTimeout::OnMouseEntered() {
 }
 
 void FeaturePromoBubbleTimeout::OnMouseExited() {
-  if (delay_short_.is_zero())
+  if (delay_short_.is_zero() && delay_default_.is_zero())
     return;
-  StartAutoCloseTimer(delay_short_);
+
+  if (delay_short_.is_zero())
+    StartAutoCloseTimer(delay_default_);
+  else
+    StartAutoCloseTimer(delay_short_);
 }
 
 void FeaturePromoBubbleTimeout::StartAutoCloseTimer(

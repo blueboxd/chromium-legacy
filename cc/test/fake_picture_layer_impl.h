@@ -87,14 +87,14 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   size_t CountTilesRequiredForDraw() const;
 
   using PictureLayerImpl::AddTiling;
-  using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;
+  using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::MinimumContentsScale;
   using PictureLayerImpl::SanityCheckTilingState;
   using PictureLayerImpl::UpdateRasterSource;
 
-  using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;
+  using PictureLayerImpl::UpdateIdealScales;
 
   void AddTilingUntilNextDraw(float scale) {
     last_append_quads_tilings_.push_back(
@@ -177,6 +177,22 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   bool use_set_valid_tile_priorities_flag_ = false;
   size_t release_resources_count_ = 0;
   size_t release_tile_resources_count_ = 0;
+};
+
+// An adapter so that FakePictureLayerImpl::CreateWithRasterSource can be used
+// as FakePictureLayerImplWithRasterSource::Create() in some templates.
+class FakePictureLayerImplWithRasterSource : public FakePictureLayerImpl {
+ public:
+  // Create layer from a raster source that covers the entire layer.
+  static std::unique_ptr<FakePictureLayerImplWithRasterSource> Create(
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<RasterSource> raster_source) {
+    return base::WrapUnique(static_cast<FakePictureLayerImplWithRasterSource*>(
+        FakePictureLayerImpl::CreateWithRasterSource(tree_impl, id,
+                                                     std::move(raster_source))
+            .release()));
+  }
 };
 
 }  // namespace cc

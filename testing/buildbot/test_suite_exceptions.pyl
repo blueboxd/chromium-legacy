@@ -334,6 +334,7 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
       # chromium.clang
       'ToTAndroid',
@@ -1630,18 +1631,21 @@
   'vr_android_unittests': {
     'remove_from': [
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
     ],
   },
   'vr_common_unittests': {
     'remove_from': [
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
     ],
   },
   'vr_pixeltests': {
     'remove_from': [
       # chromium.android.fyi
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
       # chromium.fyi
       'VR Linux',
@@ -2047,6 +2051,28 @@
         #TODO(crbug.com/997362): Remove test filters once bug is resolved.
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
+        ],
+      },
+      'Android WebView P (dbg)': {
+        #TODO(crbug.com/1001309): Remove test filters once bug is resolved.
+        'args': [
+          '--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification',
+        ],
+      },
+    },
+  },
+  'webview_instrumentation_test_apk_no_field_trial': {
+    'modifications': {
+      'Android WebView O (dbg)': {
+        #TODO(crbug.com/997362): Remove test filters once bug is resolved.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
+        ],
+      },
+      'Android WebView P (dbg)': {
+        #TODO(crbug.com/1001309): Remove test filters once bug is resolved.
+        'args': [
+          '--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification',
         ],
       },
     },

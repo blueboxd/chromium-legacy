@@ -101,6 +101,26 @@ SkColor TypographyProvider::GetColor(const views::View& view,
     color_id = style == style::STYLE_DISABLED
                    ? ui::NativeTheme::kColorId_TextfieldReadOnlyColor
                    : ui::NativeTheme::kColorId_TextfieldDefaultColor;
+  } else if (context == style::CONTEXT_MENU) {
+    switch (style) {
+      case views::style::STYLE_PRIMARY:
+        color_id = ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+        break;
+      case views::style::STYLE_DISABLED:
+        color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+        break;
+      case views::style::STYLE_SECONDARY:
+        color_id = ui::NativeTheme::kColorId_MenuItemMinorTextColor;
+        break;
+      case views::style::STYLE_SELECTED:
+        color_id = ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
+        break;
+      case views::style::STYLE_HIGHLIGHTED:
+        color_id = ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
+        break;
+    }
+  } else if (context == style::CONTEXT_TOUCH_MENU) {
+    color_id = ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
   } else if (style == style::STYLE_DISABLED) {
     color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
   }

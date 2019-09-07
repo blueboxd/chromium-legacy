@@ -16,6 +16,7 @@
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
@@ -130,6 +131,22 @@ void UpdateAXNodeDataPosition(
     shortcut_items.at(i)->GetViewAccessibility().OverridePosInSet(
         i + 1, number_shortcut_items);
   }
+}
+
+// Returns true if the given |item| should be excluded from the view, since
+// certain shortcuts can be associated with a disabled feature behind a flag.
+bool ShouldExcludeItem(const KeyboardShortcutItem& item) {
+  switch (item.description_message_id) {
+    case IDS_KSV_DESCRIPTION_DESKS_NEW_DESK:
+    case IDS_KSV_DESCRIPTION_DESKS_REMOVE_CURRENT_DESK:
+    case IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_LEFT_DESK:
+    case IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_RIGHT_DESK:
+    case IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_LEFT_DESK:
+    case IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_RIGHT_DESK:
+      return !ash::features::IsVirtualDesksEnabled();
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -356,6 +373,9 @@ void KeyboardShortcutView::InitViews() {
   // clear the cache.
   KeyboardShortcutItemView::ClearKeycodeToString16Cache();
   for (const auto& item : GetKeyboardShortcutItemList()) {
+    if (ShouldExcludeItem(item))
+      continue;
+
     for (auto category : item.categories) {
       shortcut_views_.emplace_back(
           std::make_unique<KeyboardShortcutItemView>(item, category));

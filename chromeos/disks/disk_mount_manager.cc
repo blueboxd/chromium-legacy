@@ -16,6 +16,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -830,7 +831,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   // Mount event change observers.
-  base::ObserverList<DiskMountManager::Observer>::Unchecked observers_;
+  base::ObserverList<DiskMountManager::Observer> observers_;
 
   CrosDisksClient* cros_disks_client_;
 
@@ -855,6 +856,10 @@ class DiskMountManagerImpl : public DiskMountManager,
 };
 
 }  // namespace
+
+DiskMountManager::Observer::~Observer() {
+  DCHECK(!IsInObserverList());
+}
 
 bool DiskMountManager::AddDiskForTest(std::unique_ptr<Disk> disk) {
   return false;

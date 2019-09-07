@@ -42,8 +42,7 @@ SubresourceFilterAgent::SubresourceFilterAgent(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SubresourceFilterAgent>(render_frame),
       ruleset_dealer_(ruleset_dealer),
-      ad_resource_tracker_(std::move(ad_resource_tracker)),
-      binding_(this) {
+      ad_resource_tracker_(std::move(ad_resource_tracker)) {
   DCHECK(ruleset_dealer);
   // |render_frame| can be nullptr in unit tests.
   if (render_frame) {
@@ -129,18 +128,18 @@ void SubresourceFilterAgent::ResetInfoForNextCommit() {
   activation_state_for_next_commit_ = mojom::ActivationState();
 }
 
-const mojom::SubresourceFilterHostAssociatedPtr&
+mojom::SubresourceFilterHost*
 SubresourceFilterAgent::GetSubresourceFilterHost() {
   if (!subresource_filter_host_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
         &subresource_filter_host_);
   }
-  return subresource_filter_host_;
+  return subresource_filter_host_.get();
 }
 
 void SubresourceFilterAgent::OnSubresourceFilterAgentRequest(
-    mojom::SubresourceFilterAgentAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+    mojo::PendingAssociatedReceiver<mojom::SubresourceFilterAgent> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void SubresourceFilterAgent::ActivateForNextCommittedLoad(

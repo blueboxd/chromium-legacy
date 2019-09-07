@@ -258,9 +258,8 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   testing::StrictMock<MockConnectionTypeObserver> observer_;
   testing::StrictMock<MockIPAddressObserver> ip_observer_;
   fuchsia::netstack::NetstackPtr netstack_ptr_;

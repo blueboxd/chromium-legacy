@@ -6,7 +6,6 @@
 
 #include <numeric>
 
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -232,7 +231,7 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
 
 // static
 SkColor UnifiedSystemTrayView::GetBackgroundColor() {
-  if (app_list_features::IsBackgroundBlurEnabled()) {
+  if (features::IsBackgroundBlurEnabled()) {
     return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
         AshColorProvider::BaseLayerType::kTransparentWithBlur,
         kUnifiedMenuBackgroundColorWithBlur);

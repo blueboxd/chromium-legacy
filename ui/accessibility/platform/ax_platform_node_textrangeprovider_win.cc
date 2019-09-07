@@ -458,13 +458,16 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
-
-  AXPlatformNodeDelegate* delegate = GetDelegate(common_ancestor.get());
-  DCHECK(delegate);
-
-  delegate->GetFromNodeID(common_ancestor->anchor_id())
-      ->GetNativeViewAccessible()
-      ->QueryInterface(IID_PPV_ARGS(element));
+  AXPlatformNode* node = GetDelegate(common_ancestor.get())
+                             ->GetFromNodeID(common_ancestor->anchor_id());
+  DCHECK(node);
+  while (ui::IsIgnored(node->GetDelegate()->GetData())) {
+    node = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNode::FromNativeViewAccessible(
+            node->GetDelegate()->GetParent()));
+    DCHECK(node);
+  }
+  node->GetNativeViewAccessible()->QueryInterface(IID_PPV_ARGS(element));
 
   DCHECK(*element);
   return S_OK;
@@ -765,14 +768,19 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
   AXPositionInstance common_ancestor =
       start_->LowestCommonAncestor(*end_.get());
 
-  if (!common_ancestor->GetAnchor()->children().empty()) {
-    AXPlatformNodeDelegate* delegate = GetDelegate(common_ancestor.get());
-    DCHECK(delegate);
-
-    descendants = delegate->GetFromNodeID(common_ancestor->anchor_id())
-                      ->GetDelegate()
-                      ->GetDescendants();
+  AXPlatformNodeDelegate* delegate =
+      GetDelegate(common_ancestor.get())
+          ->GetFromNodeID(common_ancestor->anchor_id())
+          ->GetDelegate();
+  DCHECK(delegate);
+  while (ui::IsIgnored(delegate->GetData())) {
+    auto* node = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNode::FromNativeViewAccessible(delegate->GetParent()));
+    DCHECK(node);
+    delegate = node->GetDelegate();
   }
+  if (delegate->GetChildCount())
+    descendants = delegate->GetDescendants();
 
   SAFEARRAY* safe_array =
       SafeArrayCreateVector(VT_UNKNOWN, 0, descendants.size());

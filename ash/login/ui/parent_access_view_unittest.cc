@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
@@ -671,6 +672,22 @@ TEST_F(ParentAccessViewTest, VirtualKeyboardHidden) {
   EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
 
   DismissWidget();
+}
+
+// Tests that spoken feedback keycombo starts screen reader.
+TEST_F(ParentAccessWidgetTest, SpokenFeedbackKeyCombo) {
+  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_Z),
+                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
 }
 
 }  // namespace ash

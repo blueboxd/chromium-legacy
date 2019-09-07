@@ -40,7 +40,6 @@ struct RootCompositorFrameSinkParams {
   DisplayClient display_client;
 
   associated ExternalBeginFrameController&? external_begin_frame_controller;
-  ExternalBeginFrameControllerClient? external_begin_frame_controller_client;
 };
 
 // The FrameSinkManager interface is a privileged interface that allows the

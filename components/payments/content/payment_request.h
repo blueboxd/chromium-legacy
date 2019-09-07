@@ -125,6 +125,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   content::WebContents* web_contents() { return web_contents_; }
 
   bool skipped_payment_request_ui() { return skipped_payment_request_ui_; }
+  bool is_show_user_gesture() const { return is_show_user_gesture_; }
 
   PaymentRequestSpec* spec() { return spec_.get(); }
   PaymentRequestState* state() { return state_.get(); }

@@ -45,7 +45,6 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/compositor/overscroll/scroll_input_handler.h"
@@ -62,20 +61,19 @@ const char* kDefaultTraceEnvironmentName = "browser";
 
 }  // namespace
 
-Compositor::Compositor(
-    const viz::FrameSinkId& frame_sink_id,
-    ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool enable_pixel_canvas,
-    ui::ExternalBeginFrameClient* external_begin_frame_client,
-    bool force_software_compositor,
-    const char* trace_environment_name)
+Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
+                       ui::ContextFactory* context_factory,
+                       ui::ContextFactoryPrivate* context_factory_private,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                       bool enable_pixel_canvas,
+                       bool use_external_begin_frame_control,
+                       bool force_software_compositor,
+                       const char* trace_environment_name)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
-      external_begin_frame_client_(external_begin_frame_client),
+      use_external_begin_frame_control_(use_external_begin_frame_control),
       force_software_compositor_(force_software_compositor),
       layer_animator_collection_(this),
       is_pixel_canvas_(enable_pixel_canvas),

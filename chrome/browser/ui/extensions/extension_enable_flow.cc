@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 #if !defined(OS_CHROMEOS)
@@ -28,15 +27,9 @@ using extensions::Extension;
 ExtensionEnableFlow::ExtensionEnableFlow(Profile* profile,
                                          const std::string& extension_id,
                                          ExtensionEnableFlowDelegate* delegate)
-    : profile_(profile),
-      extension_id_(extension_id),
-      delegate_(delegate),
-      parent_contents_(NULL),
-      parent_window_(NULL),
-      extension_registry_observer_(this) {}
+    : profile_(profile), extension_id_(extension_id), delegate_(delegate) {}
 
-ExtensionEnableFlow::~ExtensionEnableFlow() {
-}
+ExtensionEnableFlow::~ExtensionEnableFlow() = default;
 
 void ExtensionEnableFlow::StartForWebContents(
     content::WebContents* parent_contents) {

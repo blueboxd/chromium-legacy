@@ -2,77 +2,87 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('set_as_default_test', function() {
-  suite('SetAsDefaultTest', function() {
-    /** @type {NuxSetAsDefaultElement} */
-    let testElement;
+import 'chrome://welcome/set_as_default/nux_set_as_default.js';
 
-    /** @type {welcome.NuxSetAsDefaultProxy} */
-    let testSetAsDefaultProxy;
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {TestNuxSetAsDefaultProxy} from 'chrome://test/welcome/test_nux_set_as_default_proxy.js';
+import {NuxSetAsDefaultProxyImpl} from 'chrome://welcome/set_as_default/nux_set_as_default_proxy.js';
 
-    /** @type {!Promise} */
-    let navigatedPromise;
+suite('SetAsDefaultTest', function() {
+  /** @type {NuxSetAsDefaultElement} */
+  let testElement;
 
-    setup(function() {
-      testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
-      welcome.NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
+  /** @type {NuxSetAsDefaultProxy} */
+  let testSetAsDefaultProxy;
 
-      navigatedPromise = new Promise(resolve => {
-        // Spy on navigational function to make sure it's called.
-        welcome.navigateToNextStep = () => resolve();
+  /** @type {!Promise} */
+  let navigatedPromise;
+
+  setup(function() {
+    testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
+    NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
+
+    PolymerTest.clearBody();
+    const base = document.createElement('base');
+    base.href = 'chrome://welcome/set_as_default/';
+    document.head.appendChild(base);
+    testElement = document.createElement('nux-set-as-default');
+    document.body.appendChild(testElement);
+    let navigateToNextStep;
+    navigatedPromise = new Promise(resolve => {
+      // Spy on navigational function to make sure it's called.
+      navigateToNextStep = () => resolve();
+    });
+    testElement.navigateToNextStep_ = navigateToNextStep;
+    document.head.removeChild(base);
+  });
+
+  teardown(function() {
+    testElement.remove();
+  });
+
+  test('skip', function() {
+    testElement.$['decline-button'].click();
+    return testSetAsDefaultProxy.whenCalled('recordSkip');
+  });
+
+  test(
+      'click set-default button and finishes setting default',
+      async function() {
+        testElement.$$('.action-button').click();
+
+        await Promise.all([
+          testSetAsDefaultProxy.whenCalled('recordBeginSetDefault'),
+          testSetAsDefaultProxy.whenCalled('setAsDefault'),
+        ]);
+
+        const notifyPromise =
+            eventToPromise('default-browser-change', testElement);
+
+        webUIListenerCallback(
+            'browser-default-state-changed', {isDefault: true});
+
+        return Promise.all([
+          notifyPromise,
+          testSetAsDefaultProxy.whenCalled('recordSuccessfullySetDefault'),
+          navigatedPromise
+        ]);
       });
 
-      PolymerTest.clearBody();
-      testElement = document.createElement('nux-set-as-default');
-      document.body.appendChild(testElement);
-    });
+  test('click set-default button but gives up and skip', async function() {
+    testElement.$$('.action-button').click();
 
-    teardown(function() {
-      testElement.remove();
-    });
+    await Promise.all([
+      testSetAsDefaultProxy.whenCalled('recordBeginSetDefault'),
+      testSetAsDefaultProxy.whenCalled('setAsDefault'),
+    ]);
 
-    test('skip', function() {
-      testElement.$['decline-button'].click();
-      return testSetAsDefaultProxy.whenCalled('recordSkip');
-    });
+    testElement.$['decline-button'].click();
 
-    test(
-        'click set-default button and finishes setting default',
-        async function() {
-          testElement.$$('.action-button').click();
-
-          await Promise.all([
-            testSetAsDefaultProxy.whenCalled('recordBeginSetDefault'),
-            testSetAsDefaultProxy.whenCalled('setAsDefault'),
-          ]);
-
-          const notifyPromise =
-              test_util.eventToPromise('default-browser-change', testElement);
-
-          cr.webUIListenerCallback(
-              'browser-default-state-changed', {isDefault: true});
-
-          return Promise.all([
-            notifyPromise,
-            testSetAsDefaultProxy.whenCalled('recordSuccessfullySetDefault'),
-            navigatedPromise
-          ]);
-        });
-
-    test('click set-default button but gives up and skip', async function() {
-      testElement.$$('.action-button').click();
-
-      await Promise.all([
-        testSetAsDefaultProxy.whenCalled('recordBeginSetDefault'),
-        testSetAsDefaultProxy.whenCalled('setAsDefault'),
-      ]);
-
-      testElement.$['decline-button'].click();
-
-      return Promise.all([
-        testSetAsDefaultProxy.whenCalled('recordSkip'),
-        navigatedPromise,
-      ]);
-    });
+    return Promise.all([
+      testSetAsDefaultProxy.whenCalled('recordSkip'),
+      navigatedPromise,
+    ]);
   });
 });

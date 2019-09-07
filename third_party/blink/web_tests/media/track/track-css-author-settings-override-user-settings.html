@@ -29,37 +29,41 @@ function addVideoTo(container) {
 async_test(function(t) {
     var container = document.getElementById("container");
 
-    var video = addVideoTo(container);
-    video.oncanplaythrough = t.step_func_done(function() {
-        var cue = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;
+    // Test a video without user settings applied.
+    var video1 = addVideoTo(container);
+    video1.oncanplaythrough = t.step_func_done(function() {
+        var cue = textTrackCueElementByIndex(video1, 0).firstChild.firstElementChild;
         var cueStyle = getComputedStyle(cue);
         assert_equals(cueStyle.color, "rgb(255, 0, 0)");
         assert_equals(cueStyle.backgroundColor, "rgb(0, 128, 0)");
         assert_equals(cueStyle.textShadow, "rgb(0, 255, 0) 3px 3px 0px");
         assert_equals(cueStyle.fontSize, "20px");
         assert_equals(cueStyle.fontFamily, "arial");
+        testApplyUserSettings();
     });
 
     // Apply user settings and verify that the author settings are retained, when they exist.
-    internals.settings.setTextTrackTextColor("rgb(0, 255, 255)");
-    internals.settings.setTextTrackBackgroundColor("rgb(0, 255, 0)");
-    internals.settings.setTextTrackTextShadow("rgb(255, 0, 0) 2px 2px")
-    internals.settings.setTextTrackTextSize("14px");
-    internals.settings.setTextTrackFontFamily("fantasy");
-    internals.settings.setTextTrackFontStyle("italic");
-    internals.settings.setTextTrackFontVariant("small-caps");
+    function testApplyUserSettings() {
+        internals.settings.setTextTrackTextColor("rgb(0, 255, 255)");
+        internals.settings.setTextTrackBackgroundColor("rgb(0, 255, 0)");
+        internals.settings.setTextTrackTextShadow("rgb(255, 0, 0) 2px 2px")
+        internals.settings.setTextTrackTextSize("14px");
+        internals.settings.setTextTrackFontFamily("fantasy");
+        internals.settings.setTextTrackFontStyle("italic");
+        internals.settings.setTextTrackFontVariant("small-caps");
 
-    video = addVideoTo(container);
-    video.oncanplaythrough = t.step_func_done(function() {
-        var cue = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;
-        var cueStyle = getComputedStyle(cue);
-        assert_equals(cueStyle.color, "rgb(255, 0, 0)");
-        assert_equals(cueStyle.backgroundColor, "rgb(0, 128, 0)");
-        assert_equals(cueStyle.textShadow, "rgb(0, 255, 0) 3px 3px 0px");
-        assert_equals(cueStyle.fontSize, "20px");
-        assert_equals(cueStyle.fontFamily, "arial");
-        assert_equals(cueStyle.fontStyle, "italic");
-        assert_equals(cueStyle.fontVariant, "small-caps");
-    });
+        video2 = addVideoTo(container);
+        video2.oncanplaythrough = t.step_func_done(function() {
+            var cue = textTrackCueElementByIndex(video2, 0).firstChild.firstElementChild;
+            var cueStyle = getComputedStyle(cue);
+            assert_equals(cueStyle.color, "rgb(255, 0, 0)");
+            assert_equals(cueStyle.backgroundColor, "rgb(0, 128, 0)");
+            assert_equals(cueStyle.textShadow, "rgb(0, 255, 0) 3px 3px 0px");
+            assert_equals(cueStyle.fontSize, "20px");
+            assert_equals(cueStyle.fontFamily, "arial");
+            assert_equals(cueStyle.fontStyle, "italic");
+            assert_equals(cueStyle.fontVariant, "small-caps");
+        });
+    }
 });
 </script>

@@ -14,14 +14,14 @@
 
 namespace base {
 
-class ThreadDelegate;
+class StackCopier;
 class Unwinder;
 
-// Cross-platform stack sampler implementation. Delegates to ThreadDelegate for
-// platform-specific implementation.
+// Cross-platform stack sampler implementation. Delegates to StackCopier for the
+// platform-specific stack copying implementation.
 class BASE_EXPORT StackSamplerImpl : public StackSampler {
  public:
-  StackSamplerImpl(std::unique_ptr<ThreadDelegate> delegate,
+  StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
                    std::unique_ptr<Unwinder> native_unwinder,
                    ModuleCache* module_cache,
                    StackSamplerTestDelegate* test_delegate = nullptr);
@@ -43,18 +43,13 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
                                                 Unwinder* aux_unwinder);
 
  private:
-  bool CopyStack(StackBuffer* stack_buffer,
-                 uintptr_t* stack_top,
-                 ProfileBuilder* profile_builder,
-                 RegisterContext* thread_context);
-
   static std::vector<Frame> WalkStack(ModuleCache* module_cache,
                                       RegisterContext* thread_context,
                                       uintptr_t stack_top,
                                       Unwinder* native_unwinder,
                                       Unwinder* aux_unwinder);
 
-  const std::unique_ptr<ThreadDelegate> thread_delegate_;
+  const std::unique_ptr<StackCopier> stack_copier_;
   const std::unique_ptr<Unwinder> native_unwinder_;
   std::unique_ptr<Unwinder> aux_unwinder_;
   ModuleCache* const module_cache_;

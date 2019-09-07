@@ -30,20 +30,8 @@ class ScheduledNotificationManager {
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
   using InitCallback = base::OnceCallback<void(bool)>;
   using ScheduleCallback = base::OnceCallback<void(bool)>;
-
-  // Delegate that receives events from the manager.
-  class Delegate {
-   public:
-    // Displays a notification to the user.
-    virtual void DisplayNotification(
-        std::unique_ptr<NotificationEntry> notification_entry) = 0;
-
-    Delegate() = default;
-    virtual ~Delegate() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
+  using DisplayCallback =
+      base::OnceCallback<void(std::unique_ptr<NotificationEntry>)>;
 
   // Creates the instance.
   static std::unique_ptr<ScheduledNotificationManager> Create(
@@ -53,7 +41,7 @@ class ScheduledNotificationManager {
       const SchedulerConfig& config);
 
   // Initializes the notification store.
-  virtual void Init(Delegate* delegate, InitCallback callback) = 0;
+  virtual void Init(InitCallback callback) = 0;
 
   // Adds a new notification.
   virtual void ScheduleNotification(
@@ -61,8 +49,10 @@ class ScheduledNotificationManager {
       ScheduleCallback callback) = 0;
 
   // Displays a notification, the scheduled notification will be removed from
-  // storage, then Delegate::DisplayNotification() should be invoked.
-  virtual void DisplayNotification(const std::string& guid) = 0;
+  // storage, then the notification entry will be passed to |callback|. If
+  // failed to load the notification, nullptr will be passed to |callback|.
+  virtual void DisplayNotification(const std::string& guid,
+                                   DisplayCallback callback) = 0;
 
   // Gets all scheduled notifications. For each type, notifications are sorted
   // by creation timestamp.

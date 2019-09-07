@@ -2604,6 +2604,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-preserve-default-match-against-async-update",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "omnibox-reverse-answers",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

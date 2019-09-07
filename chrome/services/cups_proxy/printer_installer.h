@@ -31,7 +31,7 @@ using InstallPrinterCallback = base::OnceCallback<void(InstallPrinterResult)>;
 // proxying. This class must be created and accessed from a sequenced context.
 class PrinterInstaller {
  public:
-  explicit PrinterInstaller(base::WeakPtr<CupsProxyServiceDelegate> delegate);
+  explicit PrinterInstaller(CupsProxyServiceDelegate* const delegate);
   ~PrinterInstaller();
 
   // Pre-installs any printers required by |ipp| into the CUPS daemon, as
@@ -42,8 +42,8 @@ class PrinterInstaller {
   void OnInstallPrinter(InstallPrinterCallback cb, bool success);
   void Finish(InstallPrinterCallback cb, InstallPrinterResult res);
 
-  // Service delegate granting access to printing stack dependencies.
-  base::WeakPtr<CupsProxyServiceDelegate> delegate_;
+  // Unowned delegate granting access to printing stack dependencies.
+  CupsProxyServiceDelegate* const delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<PrinterInstaller> weak_factory_{this};

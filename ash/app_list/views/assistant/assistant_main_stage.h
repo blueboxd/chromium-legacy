@@ -22,10 +22,6 @@ class AssistantViewDelegate;
 class UiElementContainerView;
 }  // namespace ash
 
-namespace ui {
-class CallbackLayerAnimationObserver;
-}  // namespace ui
-
 namespace views {
 class Label;
 }  // namespace views
@@ -75,14 +71,6 @@ class APP_LIST_EXPORT AssistantMainStage
 
   void MaybeHideGreetingLabel();
 
-  // Update footer to |visible| with animations.
-  void UpdateFooter(bool visible);
-
-  void OnFooterAnimationStarted(
-      const ui::CallbackLayerAnimationObserver& observer);
-  bool OnFooterAnimationEnded(
-      const ui::CallbackLayerAnimationObserver& observer);
-
   ash::AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   // Owned by view hierarchy.
@@ -92,9 +80,6 @@ class APP_LIST_EXPORT AssistantMainStage
   ash::UiElementContainerView* ui_element_container_;
   views::Label* greeting_label_;
   ash::AssistantFooterView* footer_;
-
-  std::unique_ptr<ui::CallbackLayerAnimationObserver>
-      footer_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainStage);
 };

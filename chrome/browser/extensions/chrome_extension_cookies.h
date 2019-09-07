@@ -126,8 +126,9 @@ class ChromeExtensionCookies
 
   // Cookie config Chrome-side.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-  ScopedObserver<content_settings::CookieSettings, ChromeExtensionCookies>
-      cookie_settings_observer_;
+  ScopedObserver<content_settings::CookieSettings,
+                 content_settings::CookieSettings::Observer>
+      cookie_settings_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionCookies);
 };

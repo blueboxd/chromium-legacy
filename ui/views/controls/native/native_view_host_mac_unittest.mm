@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "testing/gtest_mac.h"
@@ -220,8 +219,7 @@ TEST_F(NativeViewHostMacTest, NativeViewHidden) {
 // Check that we can destroy cleanly even if the native view has already been
 // released.
 TEST_F(NativeViewHostMacTest, NativeViewReleased) {
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
     CreateHost();
     // In practice the native view is a WebContentsViewCocoa which is retained
     // by its superview (a TabContentsContainerView) and by WebContentsViewMac.

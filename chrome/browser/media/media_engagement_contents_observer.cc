@@ -19,6 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 
@@ -32,7 +33,7 @@ namespace {
 
 void SendEngagementLevelToFrame(const url::Origin& origin,
                                 content::RenderFrameHost* render_frame_host) {
-  blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
+  mojo::AssociatedRemote<blink::mojom::AutoplayConfigurationClient> client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->AddAutoplayFlags(origin,
                            blink::mojom::kAutoplayFlagHighMediaEngagement);

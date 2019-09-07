@@ -356,7 +356,7 @@ TEST_F(ExploreSitesFetcherTest, TestHeaders) {
   EXPECT_EQ(kAcceptLanguages, languages);
 
   // The finch header should not be set since the experiment is not on.
-  success = headers.HasHeader("X-Google-Chrome-Experiment-Tag");
+  success = headers.HasHeader("X-Goog-Chrome-Experiment-Tag");
   EXPECT_FALSE(success);
 }
 
@@ -372,7 +372,7 @@ TEST_F(ExploreSitesFetcherTest, TestFinchHeader) {
   std::string header_text;
   bool success;
 
-  success = headers.GetHeader("X-Google-Chrome-Experiment-Tag", &header_text);
+  success = headers.GetHeader("X-Goog-Chrome-Experiment-Tag", &header_text);
   EXPECT_EQ(std::string(kExperimentData), header_text);
 }
 

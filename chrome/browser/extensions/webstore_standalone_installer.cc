@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/scoped_active_install.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"

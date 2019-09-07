@@ -1339,7 +1339,9 @@ Response InspectorDOMAgent::getNodeForLocation(
     int x,
     int y,
     Maybe<bool> optional_include_user_agent_shadow_dom,
+    Maybe<bool> optional_ignore_pointer_events_none,
     int* backend_node_id,
+    String* frame_id,
     Maybe<int>* node_id) {
   bool include_user_agent_shadow_dom =
       optional_include_user_agent_shadow_dom.fromMaybe(false);
@@ -1347,8 +1349,12 @@ Response InspectorDOMAgent::getNodeForLocation(
   PhysicalOffset document_point(
       LayoutUnit(x * inspected_frames_->Root()->PageZoomFactor()),
       LayoutUnit(y * inspected_frames_->Root()->PageZoomFactor()));
-  HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
-                         HitTestRequest::kAllowChildFrameContent);
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kMove | HitTestRequest::kReadOnly |
+      HitTestRequest::kAllowChildFrameContent;
+  if (optional_ignore_pointer_events_none.fromMaybe(false))
+    hit_type |= HitTestRequest::kIgnorePointerEventsNone;
+  HitTestRequest request(hit_type);
   HitTestLocation location(document->View()->DocumentToFrame(document_point));
   HitTestResult result(request, location);
   document->GetFrame()->ContentLayoutObject()->HitTest(location, result);
@@ -1360,6 +1366,8 @@ Response InspectorDOMAgent::getNodeForLocation(
   if (!node)
     return Response::Error("No node found at given location");
   *backend_node_id = IdentifiersFactory::IntIdForNode(node);
+  LocalFrame* frame = node->GetDocument().GetFrame();
+  *frame_id = IdentifiersFactory::FrameId(frame);
   if (enabled_.Get() && document_ &&
       document_node_to_id_map_->Contains(document_)) {
     *node_id = PushNodePathToFrontend(node);

@@ -26,6 +26,7 @@ class GpuFeatureChecker;
 namespace extensions {
 
 class Extension;
+class ScopedActiveInstall;
 
 class WebstorePrivateApi {
  public:

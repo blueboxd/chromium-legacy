@@ -103,8 +103,8 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
      * Returns true if {@code url} matches this WebsiteAddress's origin or host pattern.
      */
     public boolean matches(String url) {
-        return WebsitePreferenceBridge.nativeUrlMatchesContentSettingsPattern(url,
-                mOriginOrHostPattern);
+        return WebsitePreferenceBridgeJni.get().urlMatchesContentSettingsPattern(
+                url, mOriginOrHostPattern);
     }
 
     private String getDomainAndRegistry() {

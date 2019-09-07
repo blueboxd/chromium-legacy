@@ -33,6 +33,9 @@ class MediaSession : public media_session::mojom::MediaSession {
   CONTENT_EXPORT static const base::UnguessableToken& GetSourceId(
       BrowserContext* browser_context);
 
+  CONTENT_EXPORT static WebContents* GetWebContentsFromRequestId(
+      const base::UnguessableToken& request_id);
+
   // Tell the media session a user action has performed.
   virtual void DidReceiveAction(
       media_session::mojom::MediaSessionAction action) = 0;

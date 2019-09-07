@@ -111,7 +111,8 @@ AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
-  TestAXNodeWrapper* parent_wrapper = GetOrCreate(tree_, node_->parent());
+  TestAXNodeWrapper* parent_wrapper =
+      GetOrCreate(tree_, node_->GetUnignoredParent());
   return parent_wrapper ?
       parent_wrapper->ax_platform_node()->GetNativeViewAccessible() :
       nullptr;
@@ -744,13 +745,13 @@ TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(int index) const {
 void TestAXNodeWrapper::Descendants(
     const AXNode* node,
     std::vector<gfx::NativeViewAccessible>* descendants) const {
-  std::vector<AXNode*> child_nodes = node->children();
-  for (AXNode* child : child_nodes) {
+  for (auto it = node->UnignoredChildrenBegin();
+       it != node->UnignoredChildrenEnd(); ++it) {
     descendants->emplace_back(ax_platform_node()
                                   ->GetDelegate()
-                                  ->GetFromNodeID(child->id())
+                                  ->GetFromNodeID(it->id())
                                   ->GetNativeViewAccessible());
-    Descendants(child, descendants);
+    Descendants(it.get(), descendants);
   }
 }
 

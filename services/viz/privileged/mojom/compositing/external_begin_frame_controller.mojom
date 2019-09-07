@@ -6,13 +6,13 @@ module viz.mojom;
 
 import "services/viz/public/mojom/compositing/begin_frame_args.mojom";
 
-// Exposes a way to manually issue BeginFrames to a Display. The client is
-// notified when BeginFrames are needed and completed.
+// Exposes a way to manually issue BeginFrames to a Display.
 interface ExternalBeginFrameController {
-  IssueExternalBeginFrame(BeginFrameArgs args);
-};
-
-interface ExternalBeginFrameControllerClient {
-  OnNeedsBeginFrames(bool needs_begin_frames);
-  OnDisplayDidFinishFrame(BeginFrameAck ack);
+  // Request a frame. The callback is invoked when frame has either been
+  // produced or can not be produced at this time.
+  // If force is set to true, the frame will either begin or fail immediately,
+  // otherwise the frame will be deferred till one of the frame sinks indicates
+  // it's interested in a frame.
+  IssueExternalBeginFrame(BeginFrameArgs args, bool force)
+      => (BeginFrameAck ack);
 };

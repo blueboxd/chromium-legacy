@@ -6,7 +6,6 @@
 
 #include "base/debug/debugger.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_default.h"
@@ -209,10 +208,11 @@ void RunTestsFromIOSApp() {
   static bool ran_hook = false;
   if (!ran_hook) {
     ran_hook = true;
-    mac::ScopedNSAutoreleasePool pool;
-    int exit_status = UIApplicationMain(g_argc, g_argv, nil,
-                                        @"ChromeUnitTestDelegate");
-    exit(exit_status);
+    @autoreleasepool {
+      int exit_status =
+          UIApplicationMain(g_argc, g_argv, nil, @"ChromeUnitTestDelegate");
+      exit(exit_status);
+    }
   }
 }
 

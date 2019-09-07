@@ -32,10 +32,11 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
-using LaunchAppCallback =
-    chrome::mojom::AppShimHostBootstrap::LaunchAppCallback;
+using OnShimConnectedCallback =
+    chrome::mojom::AppShimHostBootstrap::OnShimConnectedCallback;
 
 const char kTestAppMode[] = "test_app";
+const GURL kTestAppUrl("https://example.com");
 
 // A test version of the AppShimController mojo client in chrome_main_app_mode.
 class TestShimClient : public chrome::mojom::AppShim {
@@ -51,8 +52,8 @@ class TestShimClient : public chrome::mojom::AppShim {
   chrome::mojom::AppShimHostRequest GetHostRequest() {
     return std::move(host_request_);
   }
-  LaunchAppCallback GetLaunchAppCallback() {
-    return base::BindOnce(&TestShimClient::LaunchAppDone,
+  OnShimConnectedCallback GetOnShimConnectedCallback() {
+    return base::BindOnce(&TestShimClient::OnShimConnectedDone,
                           base::Unretained(this));
   }
 
@@ -69,8 +70,8 @@ class TestShimClient : public chrome::mojom::AppShim {
   void SetBadgeLabel(const std::string& badge_label) override {}
 
  private:
-  void LaunchAppDone(apps::AppShimLaunchResult result,
-                     chrome::mojom::AppShimRequest app_shim_request) {
+  void OnShimConnectedDone(apps::AppShimLaunchResult result,
+                           chrome::mojom::AppShimRequest app_shim_request) {
     shim_binding_.Bind(std::move(app_shim_request));
   }
 
@@ -158,7 +159,7 @@ void AppShimListenerBrowserTest::TearDownOnMainThread() {
 void AppShimListenerBrowserTest::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   ++launch_count_;
-  binding_.Bind(bootstrap->GetLaunchAppShimHostRequest());
+  binding_.Bind(bootstrap->GetAppShimHostRequest());
   last_launch_type_ = bootstrap->GetLaunchType();
   last_launch_files_ = bootstrap->GetLaunchFiles();
 
@@ -169,11 +170,14 @@ void AppShimListenerBrowserTest::OnShimProcessConnected(
 // Test regular launch, which would ask Chrome to launch the app.
 IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchNormal) {
   test_client_.reset(new TestShimClient());
-  test_client_->host_bootstrap()->LaunchApp(
-      test_client_->GetHostRequest(), browser()->profile()->GetPath(),
-      kTestAppMode, apps::APP_SHIM_LAUNCH_NORMAL, std::vector<base::FilePath>(),
-      test_client_->GetLaunchAppCallback());
-
+  auto app_shim_info = chrome::mojom::AppShimInfo::New();
+  app_shim_info->profile_path = browser()->profile()->GetPath();
+  app_shim_info->app_id = kTestAppMode;
+  app_shim_info->app_url = kTestAppUrl;
+  app_shim_info->launch_type = apps::APP_SHIM_LAUNCH_NORMAL;
+  test_client_->host_bootstrap()->OnShimConnected(
+      test_client_->GetHostRequest(), std::move(app_shim_info),
+      test_client_->GetOnShimConnectedCallback());
   RunAndExitGracefully();
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_NORMAL, last_launch_type_);
   EXPECT_TRUE(last_launch_files_.empty());
@@ -182,10 +186,14 @@ IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchNormal) {
 // Test register-only launch, used when Chrome has already launched the app.
 IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchRegisterOnly) {
   test_client_.reset(new TestShimClient());
-  test_client_->host_bootstrap()->LaunchApp(
-      test_client_->GetHostRequest(), browser()->profile()->GetPath(),
-      kTestAppMode, apps::APP_SHIM_LAUNCH_REGISTER_ONLY,
-      std::vector<base::FilePath>(), test_client_->GetLaunchAppCallback());
+  auto app_shim_info = chrome::mojom::AppShimInfo::New();
+  app_shim_info->profile_path = browser()->profile()->GetPath();
+  app_shim_info->app_id = kTestAppMode;
+  app_shim_info->app_url = kTestAppUrl;
+  app_shim_info->launch_type = apps::APP_SHIM_LAUNCH_REGISTER_ONLY;
+  test_client_->host_bootstrap()->OnShimConnected(
+      test_client_->GetHostRequest(), std::move(app_shim_info),
+      test_client_->GetOnShimConnectedCallback());
 
   RunAndExitGracefully();
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_REGISTER_ONLY, last_launch_type_);

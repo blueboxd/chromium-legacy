@@ -354,12 +354,14 @@ const char* OmniboxMatchCellView::GetClassName() const {
 }
 
 void OmniboxMatchCellView::Layout() {
-  // Update the margins.
+  // Update the margins. Avoid re-creating the border if the insets haven't
+  // changed, because SetBorder invalidates the layout.
   gfx::Insets insets =
       GetMarginInsets(content()->GetLineHeight(),
                       layout_style_ != LayoutStyle::ONE_LINE_SUGGESTION);
-  SetBorder(views::CreateEmptyBorder(insets.top(), insets.left(),
-                                     insets.bottom(), insets.right()));
+  if (insets != GetInsets())
+    SetBorder(views::CreateEmptyBorder(insets));
+
   // Layout children *after* updating the margins.
   views::View::Layout();
 

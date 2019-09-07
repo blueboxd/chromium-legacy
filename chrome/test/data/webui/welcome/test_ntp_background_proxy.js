@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
 /** @implements {NtpBackgroundProxy} */
-class TestNtpBackgroundProxy extends TestBrowserProxy {
+export class TestNtpBackgroundProxy extends TestBrowserProxy {
   constructor() {
     super([
       'clearBackground',
@@ -14,7 +16,7 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
       'setBackground',
     ]);
 
-    /** @private {!Array<!welcome.NtpBackgroundData} */
+    /** @private {!Array<!NtpBackgroundData} */
     this.backgroundsList_ = [];
 
     /** @private {boolean} */
@@ -58,7 +60,7 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
     this.preloadImageSuccess_ = success;
   }
 
-  /** @param {!Array<!welcome.NtpBackgroundData>} backgroundsList */
+  /** @param {!Array<!NtpBackgroundData>} backgroundsList */
   setBackgroundsList(backgroundsList) {
     this.backgroundsList_ = backgroundsList;
   }

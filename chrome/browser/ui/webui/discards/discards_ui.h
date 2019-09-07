@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
+#include "chrome/browser/ui/webui/discards/webui_graph_dump.mojom.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace resource_coordinator {

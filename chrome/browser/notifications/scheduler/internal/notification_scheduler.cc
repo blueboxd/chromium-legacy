@@ -41,7 +41,6 @@ class InitHelper {
   using InitCallback = base::OnceCallback<void(bool)>;
   InitHelper()
       : context_(nullptr),
-        notification_manager_delegate_(nullptr),
         impression_tracker_delegate_(nullptr) {}
 
   ~InitHelper() = default;
@@ -51,14 +50,12 @@ class InitHelper {
   // object should be destroyed along with the |callback|.
   void Init(
       NotificationSchedulerContext* context,
-      ScheduledNotificationManager::Delegate* notification_manager_delegate,
       ImpressionHistoryTracker::Delegate* impression_tracker_delegate,
       InitCallback callback) {
     // TODO(xingliu): Initialize the databases in parallel, we currently
     // initialize one by one to work around a shared db issue. See
     // https://crbug.com/978680.
     context_ = context;
-    notification_manager_delegate_ = notification_manager_delegate;
     impression_tracker_delegate_ = impression_tracker_delegate;
     callback_ = std::move(callback);
 
@@ -76,7 +73,6 @@ class InitHelper {
     }
 
     context_->notification_manager()->Init(
-        notification_manager_delegate_,
         base::BindOnce(&InitHelper::OnNotificationManagerInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -86,7 +82,6 @@ class InitHelper {
   }
 
   NotificationSchedulerContext* context_;
-  ScheduledNotificationManager::Delegate* notification_manager_delegate_;
   ImpressionHistoryTracker::Delegate* impression_tracker_delegate_;
   InitCallback callback_;
 
@@ -96,7 +91,6 @@ class InitHelper {
 
 // Implementation of NotificationScheduler.
 class NotificationSchedulerImpl : public NotificationScheduler,
-                                  public ScheduledNotificationManager::Delegate,
                                   public ImpressionHistoryTracker::Delegate {
  public:
   NotificationSchedulerImpl(
@@ -112,7 +106,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     auto helper = std::make_unique<InitHelper>();
     auto* helper_ptr = helper.get();
     helper_ptr->Init(
-        context_.get(), this, this,
+        context_.get(), this,
         base::BindOnce(&NotificationSchedulerImpl::OnInitialized,
                        weak_ptr_factory_.GetWeakPtr(), std::move(helper),
                        std::move(init_callback)));
@@ -202,8 +196,9 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     ScheduleBackgroundTask();
   }
 
-  // ScheduledNotificationManager::Delegate implementation.
-  void DisplayNotification(std::unique_ptr<NotificationEntry> entry) override {
+  // TODO(xingliu): Tracks each display flow, and call finish callback and
+  // schedule background task after everything is done.
+  void BeforeDisplay(std::unique_ptr<NotificationEntry> entry) {
     if (!entry) {
       DLOG(ERROR) << "Notification entry is null";
       return;
@@ -276,7 +271,9 @@ class NotificationSchedulerImpl : public NotificationScheduler,
         std::move(notifications), std::move(client_states), &results);
 
     for (const auto& guid : results) {
-      context_->notification_manager()->DisplayNotification(guid);
+      context_->notification_manager()->DisplayNotification(
+          guid, base::BindOnce(&NotificationSchedulerImpl::BeforeDisplay,
+                               weak_ptr_factory_.GetWeakPtr()));
     }
     stats::LogBackgroundTaskNotificationShown(results.size());
   }

@@ -72,7 +72,8 @@ class ContextMenuHelperImageRequest : public ImageDecoder::ImageRequest {
 };
 
 void OnRetrieveImageForShare(
-    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
     const base::android::JavaRef<jobject>& jcallback,
     const std::vector<uint8_t>& thumbnail_data,
     const gfx::Size& original_size) {
@@ -80,7 +81,8 @@ void OnRetrieveImageForShare(
 }
 
 void OnRetrieveImageForContextMenu(
-    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
     const base::android::JavaRef<jobject>& jcallback,
     const std::vector<uint8_t>& thumbnail_data,
     const gfx::Size& original_size) {
@@ -225,7 +227,7 @@ void ContextMenuHelper::RetrieveImageInternal(
   if (!render_frame_host)
     return;
 
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
   // Bind the InterfacePtr into the callback so that it's kept alive

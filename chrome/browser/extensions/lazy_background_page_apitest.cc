@@ -66,8 +66,7 @@ namespace {
 // unloaded before listening to the background page notifications.
 class LoadedIncognitoObserver : public ExtensionRegistryObserver {
  public:
-  explicit LoadedIncognitoObserver(Profile* profile)
-      : profile_(profile), extension_registry_observer_(this) {
+  explicit LoadedIncognitoObserver(Profile* profile) : profile_(profile) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   }
 
@@ -88,7 +87,7 @@ class LoadedIncognitoObserver : public ExtensionRegistryObserver {
 
   Profile* profile_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
   std::unique_ptr<LazyBackgroundObserver> original_complete_;
   std::unique_ptr<LazyBackgroundObserver> incognito_complete_;
 };

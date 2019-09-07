@@ -173,10 +173,11 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Attaches a WebFrameWidget that will provide a WebFrameWidget interface to
   // the WebView. Called as part of initialization or when the main frame
-  // RenderWidget is unfrozen, to connect it to the new local main frame.
+  // RenderWidget is becoming not undead, to connect it to the new local main
+  // frame.
   void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
   // Detaches the current WebFrameWidget, disconnecting it from the main frame.
-  // Called when the RenderWidget is being frozen, because the local main
+  // Called when the RenderWidget is becoming undead, because the local main
   // frame is going away.
   void DetachWebFrameWidget();
 
@@ -206,6 +207,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   void NavigateBackForwardSoon(int offset, bool has_user_gesture);
   void DidCommitProvisionalHistoryLoad();
+
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate);
 
   // Registers a watcher to observe changes in the
   // blink::mojom::RendererPreferences.
@@ -274,9 +279,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                                      const std::string& value) override;
   void ClearEditCommands() override;
   const std::string& GetAcceptLanguages() override;
-  void UpdateBrowserControlsState(BrowserControlsState constraints,
-                                  BrowserControlsState current,
-                                  bool animate) override;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif

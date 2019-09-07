@@ -273,13 +273,17 @@ TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
   const int kUncountedOrNotFound = GetParam() ? kUncounted : kNotFound;
   const int kUncountedOrFound = GetParam() ? kUncounted : kFound;
 
+  // When the TextFragmentAnchors feature is on, we'll strip the fragment
+  // directive (i.e. anything after ##) leaving just the element anchor.
+  const int kFoundIfDirectiveStripped = GetParam() ? kFound : kNotFound;
+
   Vector<std::pair<String, int>> test_cases = {
       {"", kUncounted},
       {"#element", kFound},
       {"#doesntExist", kNotFound},
-      {"#element##foo", kNotFound},
+      {"#element##foo", kFoundIfDirectiveStripped},
       {"#doesntexist##foo", kNotFound},
-      {"##element", kNotFound},
+      {"##element", kUncountedOrNotFound},
       {"#element##targetText=doesntexist", kUncountedOrNotFound},
       {"#element##targetText=page", kUncountedOrNotFound},
       {"#targetText=doesntexist", kUncountedOrNotFound},
@@ -356,13 +360,18 @@ TEST_P(TextFragmentRelatedMetricTest, DoubleHashUseCounter) {
   const int kUncounted = 0;
   const int kCounted = 1;
 
+  // When the TextFragmentAnchors feature is on, the fragment directive is
+  // stripped and we won't count it as a double-hash use case. When it's
+  // off, we expect to count it.
+  const int kCountedOnlyIfDisabled = GetParam() ? kUncounted : kCounted;
+
   Vector<std::pair<String, int>> test_cases = {
       {"", kUncounted},
       {"#element", kUncounted},
       {"#doesntExist", kUncounted},
-      {"#element##foo", kCounted},
-      {"#doesntexist##foo", kCounted},
-      {"##element", kCounted},
+      {"#element##foo", kCountedOnlyIfDisabled},
+      {"#doesntexist##foo", kCountedOnlyIfDisabled},
+      {"##element", kCountedOnlyIfDisabled},
       {"#element#", kCounted},
       {"#foo#bar#", kCounted},
       {"#foo%23", kUncounted},

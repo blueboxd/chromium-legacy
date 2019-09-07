@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_SERVICE_IMPL_H_
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
@@ -22,8 +25,9 @@ class CONTENT_EXPORT MediaSessionServiceImpl
  public:
   ~MediaSessionServiceImpl() override;
 
-  static void Create(RenderFrameHost* render_frame_host,
-                     blink::mojom::MediaSessionServiceRequest request);
+  static void Create(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::MediaSessionService> receiver);
   const mojo::Remote<blink::mojom::MediaSessionClient>& GetClient() {
     return client_;
   }
@@ -63,7 +67,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
  private:
   MediaSessionImpl* GetMediaSession();
 
-  void Bind(blink::mojom::MediaSessionServiceRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::MediaSessionService> receiver);
 
   void ClearActions();
 

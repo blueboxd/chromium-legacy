@@ -270,31 +270,33 @@ void AppShimController::CreateChannelAndSendLaunchApp(
       chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
   host_bootstrap_.set_connection_error_with_reason_handler(base::BindOnce(
       &AppShimController::BootstrapChannelError, base::Unretained(this)));
-
-  bool launched_by_chrome = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      app_mode::kLaunchedByChromeProcessId);
-  apps::AppShimLaunchType launch_type =
-      launched_by_chrome ? apps::APP_SHIM_LAUNCH_REGISTER_ONLY
-                         : apps::APP_SHIM_LAUNCH_NORMAL;
-
   [delegate_ setController:this];
 
-  std::vector<base::FilePath> files;
-  [delegate_ getFilesToOpenAtStartup:&files];
+  auto app_shim_info = chrome::mojom::AppShimInfo::New();
+  app_shim_info->profile_path = params_.profile_dir;
+  app_shim_info->app_id = params_.app_id;
+  app_shim_info->app_url = params_.app_url;
+  app_shim_info->launch_type =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          app_mode::kLaunchedByChromeProcessId)
+          ? apps::APP_SHIM_LAUNCH_REGISTER_ONLY
+          : apps::APP_SHIM_LAUNCH_NORMAL;
+  [delegate_ getFilesToOpenAtStartup:&app_shim_info->files];
 
-  host_bootstrap_->LaunchApp(std::move(host_request_), params_.profile_dir,
-                             params_.app_mode_id, launch_type, files,
-                             base::BindOnce(&AppShimController::LaunchAppDone,
-                                            base::Unretained(this)));
+  host_bootstrap_->OnShimConnected(
+      std::move(host_request_), std::move(app_shim_info),
+      base::BindOnce(&AppShimController::OnShimConnectedResponse,
+                     base::Unretained(this)));
 }
 
 void AppShimController::SetUpMenu() {
-  chrome::BuildMainMenu(NSApp, delegate_, params_.app_mode_name, true);
+  chrome::BuildMainMenu(NSApp, delegate_, params_.app_name, true);
 }
 
 void AppShimController::BootstrapChannelError(uint32_t custom_reason,
                                               const std::string& description) {
-  // The bootstrap channel is expected to close after sending LaunchAppDone.
+  // The bootstrap channel is expected to close after sending
+  // OnShimConnectedResponse.
   if (launch_app_done_)
     return;
   LOG(ERROR) << "Channel error custom_reason:" << custom_reason
@@ -309,7 +311,7 @@ void AppShimController::ChannelError(uint32_t custom_reason,
   Close();
 }
 
-void AppShimController::LaunchAppDone(
+void AppShimController::OnShimConnectedResponse(
     apps::AppShimLaunchResult result,
     chrome::mojom::AppShimRequest app_shim_request) {
   if (result != apps::APP_SHIM_LAUNCH_SUCCESS) {

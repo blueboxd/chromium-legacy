@@ -1,43 +1,35 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
+<template>
+  <style include="navi-colors-css">
+    .option {
+      background: var(--cr-card-background-color);
+      border: 1px solid var(--navi-border-color);
+      color: var(--cr-primary-text-color);
+      cursor: pointer;
+      flex-direction: column;
+    }
 
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
-<link rel="import" href="navi_colors_css.html">
+    .option:hover {
+      box-shadow: var(--navi-option-box-shadow);
+    }
 
-<dom-module id="chooser-shared-css">
-  <template>
-    <style include="navi-colors-css">
-      .option {
-        background: var(--cr-card-background-color);
-        border: 1px solid var(--navi-border-color);
-        color: var(--cr-primary-text-color);
-        cursor: pointer;
-        flex-direction: column;
-      }
+    .option-name {
+      font-size: .875rem;
+    }
 
-      .option:hover {
-        box-shadow: var(--navi-option-box-shadow);
-      }
+    .button-bar {
+      display: flex;
+      justify-content: space-between;
+    }
 
-      .option-name {
-        font-size: .875rem;
-      }
+    :host-context([dir=rtl]) iron-icon[icon='cr:chevron-right'] {
+      transform: scaleX(-1);
+    }
 
-      .button-bar {
-        display: flex;
-        justify-content: space-between;
-      }
-
-      :host-context([dir=rtl]) iron-icon[icon='cr:chevron-right'] {
-        transform: scaleX(-1);
-      }
-
-      iron-icon[icon='cr:chevron-right'] {
-        height: 1.25rem;
-        margin-inline-end: -.625rem;
-        margin-inline-start: .375rem;
-        width: 1.25rem;
-      }
-    </style>
-  </template>
-</dom-module>
+    iron-icon[icon='cr:chevron-right'] {
+      height: 1.25rem;
+      margin-inline-end: -.625rem;
+      margin-inline-start: .375rem;
+      width: 1.25rem;
+    }
+  </style>
+</template>

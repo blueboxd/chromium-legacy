@@ -134,7 +134,7 @@ public class PermissionInfoTest {
         // On Android O+ we need to clear notification channels so they don't interfere with the
         // test.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> WebsitePreferenceBridge.nativeResetNotificationsSettingsForTest());
+                () -> WebsitePreferenceBridgeJni.get().resetNotificationsSettingsForTest());
 
         // Resetting the DSE notifications permission should change it to ALLOW.
         boolean incognito = false;
@@ -149,7 +149,7 @@ public class PermissionInfoTest {
         if (!FeatureUtilities.isNoTouchModeEnabled()) {
             // Resetting in incognito should not have the same behavior.
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> WebsitePreferenceBridge.nativeResetNotificationsSettingsForTest());
+                    () -> WebsitePreferenceBridgeJni.get().resetNotificationsSettingsForTest());
             incognito = true;
             setNotifications(DSE_ORIGIN, null, ContentSettingValues.BLOCK, incognito);
             Assert.assertEquals(
@@ -161,7 +161,7 @@ public class PermissionInfoTest {
 
         // // Resetting a different top level origin should not have the same behavior
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> WebsitePreferenceBridge.nativeResetNotificationsSettingsForTest());
+                () -> WebsitePreferenceBridgeJni.get().resetNotificationsSettingsForTest());
         incognito = false;
         setNotifications(OTHER_ORIGIN, null, ContentSettingValues.BLOCK, incognito);
         Assert.assertEquals(

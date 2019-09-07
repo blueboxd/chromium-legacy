@@ -756,8 +756,8 @@ void LayerTreeHostImpl::AnimateInternal() {
   did_animate |= AnimateScrollbars(monotonic_time);
   did_animate |= AnimateBrowserControls(monotonic_time);
 
-    // Animating stuff can change the root scroll offset, so inform the
-    // synchronous input handler.
+  // Animating stuff can change the root scroll offset, so inform the
+  // synchronous input handler.
   UpdateRootLayerStateForSynchronousInputHandler();
   if (did_animate) {
     // If the tree changed, then we want to draw at the end of the current
@@ -765,7 +765,6 @@ void LayerTreeHostImpl::AnimateInternal() {
     SetNeedsRedraw();
   }
 }
-
 
 bool LayerTreeHostImpl::PrepareTiles() {
   if (!tile_priorities_dirty_)
@@ -2844,6 +2843,10 @@ bool LayerTreeHostImpl::HaveRootScrollNode() const {
 
 void LayerTreeHostImpl::SetNeedsCommit() {
   client_->SetNeedsCommitOnImplThread();
+}
+
+LayerImpl* LayerTreeHostImpl::PageScaleLayer() const {
+  return active_tree_->PageScaleLayer();
 }
 
 LayerImpl* LayerTreeHostImpl::InnerViewportContainerLayer() const {

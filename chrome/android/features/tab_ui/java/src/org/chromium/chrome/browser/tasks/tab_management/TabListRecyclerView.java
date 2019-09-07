@@ -175,6 +175,10 @@ class TabListRecyclerView extends RecyclerView {
                 if (mRecyclerViewFooter != null) {
                     mRecyclerViewFooter.setVisibility(VISIBLE);
                 }
+                // TODO(crbug.com/972157): remove this band-aid after we know why GTS is invisible.
+                if (FeatureUtilities.isTabToGtsAnimationEnabled()) {
+                    requestLayout();
+                }
             }
         });
         if (!animate) mFadeInAnimator.end();

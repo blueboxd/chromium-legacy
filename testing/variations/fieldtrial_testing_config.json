@@ -2218,6 +2218,21 @@
             ]
         }
     ],
+    "EnableChromeOSAccountManager": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeOSAccountManager"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableCsrssLockdown": [
         {
             "platforms": [
@@ -2468,7 +2483,8 @@
                 "android_webview",
                 "chromeos",
                 "linux",
-                "mac"
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
@@ -3616,24 +3632,6 @@
                     "name": "NewClearBrowsingDataUI",
                     "enable_features": [
                         "NewClearBrowsingDataUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NewExtensionUpdaterService": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NewExtensionUpdaterService"
                     ]
                 }
             ]

@@ -466,7 +466,7 @@ class DownloadManagerTest : public testing::Test {
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
     item.Start(std::unique_ptr<download::DownloadFile>(), base::DoNothing(),
-               info, nullptr);
+               info, download::URLLoaderFactoryProvider::GetNullPtr());
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 

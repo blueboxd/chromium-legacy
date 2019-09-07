@@ -108,13 +108,19 @@ void LoginPolicyTestBase::SkipToLoginScreen() {
   OobeBaseTest::WaitForSigninScreen();
 }
 
-void LoginPolicyTestBase::LogIn(const std::string& user_id,
-                                const std::string& password,
-                                const std::string& services) {
+void LoginPolicyTestBase::TriggerLogIn(const std::string& user_id,
+                                       const std::string& password,
+                                       const std::string& services) {
   chromeos::LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<chromeos::GaiaScreenHandler>()
       ->ShowSigninScreenForTest(user_id, password, services);
+}
+
+void LoginPolicyTestBase::LogIn(const std::string& user_id,
+                                const std::string& password,
+                                const std::string& services) {
+  TriggerLogIn(user_id, password, services);
   chromeos::test::WaitForPrimaryUserSessionStart();
 }
 

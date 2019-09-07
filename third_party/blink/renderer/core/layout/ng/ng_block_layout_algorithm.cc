@@ -2137,8 +2137,7 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
       return SoftBreak;
     }
   }
-  // TODO(mstensho): There are other break-inside values to consider here.
-  if (child.Style().BreakInside() != EBreakInside::kAvoid)
+  if (!IsAvoidBreakValue(ConstraintSpace(), child.Style().BreakInside()))
     return NoBreak;
 
   // The child broke, and we're not at the start of a fragmentainer, and we're

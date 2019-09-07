@@ -15,7 +15,7 @@
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace cc {
 namespace {
@@ -96,8 +96,9 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tiling_set_raster_queue_construct_and_iterate", "",
-                           test_name, timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_raster_queue_construct_and_iterate",
+                       timer_.LapsPerSecond());
   }
 
   void RunRasterQueueConstructTest(const std::string& test_name,
@@ -118,8 +119,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tiling_set_raster_queue_construct", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_raster_queue_construct", timer_.LapsPerSecond());
   }
 
   void RunEvictionQueueConstructAndIterateTest(const std::string& test_name,
@@ -142,9 +143,9 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tiling_set_eviction_queue_construct_and_iterate",
-                           "", test_name, timer_.LapsPerSecond(), "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_eviction_queue_construct_and_iterate",
+                       timer_.LapsPerSecond());
   }
 
   void RunEvictionQueueConstructTest(const std::string& test_name,
@@ -165,11 +166,21 @@ class PictureLayerImplPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tiling_set_eviction_queue_construct", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_eviction_queue_construct", timer_.LapsPerSecond());
   }
 
  protected:
+  perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+    perf_test::PerfResultReporter reporter("tiling_set", story_name);
+    reporter.RegisterImportantMetric("_raster_queue_construct_and_iterate",
+                                     "runs/s");
+    reporter.RegisterImportantMetric("_raster_queue_construct", "runs/s");
+    reporter.RegisterImportantMetric("_eviction_queue_construct_and_iterate",
+                                     "runs/s");
+    return reporter;
+  }
+
   TestTaskGraphRunner task_graph_runner_;
   FakeImplTaskRunnerProvider task_runner_provider_;
   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;

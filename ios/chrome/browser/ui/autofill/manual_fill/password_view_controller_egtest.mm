@@ -303,6 +303,25 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Tests that the "Use Other Password..." action works.
+- (void)testUseOtherPasswordActionOpens {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Tap the "Manage Passwords..." action.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the use other passwords opened.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsDismissMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the Password View Controller is not present when presenting UI.
 - (void)testPasswordControllerPauses {
   // Bring up the keyboard.

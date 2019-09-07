@@ -855,6 +855,27 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
         false));                              // require_encrypted
   }
 
+  if (base::FeatureList::IsEnabled(kD3D11VideoDecoderVP9Profile2)) {
+    if (max_vp9_profile2_resolutions.first.width()) {
+      // landscape
+      configs.push_back(SupportedVideoDecoderConfig(
+          VP9PROFILE_PROFILE2,                 // profile_min
+          VP9PROFILE_PROFILE2,                 // profile_max
+          min_resolution,                      // coded_size_min
+          max_vp9_profile2_resolutions.first,  // coded_size_max
+          allow_encrypted,                     // allow_encrypted
+          false));                             // require_encrypted
+      // portrait
+      configs.push_back(SupportedVideoDecoderConfig(
+          VP9PROFILE_PROFILE2,                  // profile_min
+          VP9PROFILE_PROFILE2,                  // profile_max
+          min_resolution,                       // coded_size_min
+          max_vp9_profile2_resolutions.second,  // coded_size_max
+          allow_encrypted,                      // allow_encrypted
+          false));                              // require_encrypted
+    }
+  }
+
   // TODO(liberato): Should we separate out h264, vp9, and encrypted?
   UMA_HISTOGRAM_ENUMERATION(uma_name, NotSupportedReason::kVideoIsSupported);
 

@@ -10,7 +10,7 @@
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace cc {
 namespace {
@@ -78,8 +78,10 @@ class SoftwareImageDecodeCachePerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("software_image_decode_cache_fromdrawimage", "",
-                           "result", timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter("software_image_decode_cache",
+                                           "fromdrawimage");
+    reporter.RegisterImportantMetric("", "runs/s");
+    reporter.AddResult("", timer_.LapsPerSecond());
   }
 
  private:

@@ -47,10 +47,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   int64_t length() const { return length_; }
 
   // Send network request to ask for a download.
-  void SendRequest(
-      std::unique_ptr<DownloadUrlParameters> params,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
-      service_manager::Connector* connector);
+  void SendRequest(std::unique_ptr<DownloadUrlParameters> params,
+                   URLLoaderFactoryProvider* url_loader_factory_provider,
+                   service_manager::Connector* connector);
 
   // Download operations.
   void Pause();
@@ -62,7 +61,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> create_info,
       std::unique_ptr<InputStream> input_stream,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+          url_loader_factory_provider,
       UrlDownloadHandler* downloader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;

@@ -1,43 +1,26 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
+<style include="animations action-link-style splash-pages-shared-css">
+  onboarding-background {
+    --animation-delay: 275ms;
+  }
 
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="landing_view_proxy.html">
-<link rel="import" href="navigation_behavior.html">
-<link rel="import" href="shared/action_link_style_css.html">
-<link rel="import" href="shared/i18n_setup.html">
-<link rel="import" href="shared/onboarding_background.html">
-<link rel="import" href="shared/splash_pages_shared_css.html">
-<link rel="import" href="welcome_browser_proxy.html">
+  h1 {
+    outline: none;
+  }
 
-<dom-module id="landing-view">
-  <template>
-    <style include="animations action-link-style splash-pages-shared-css">
-      onboarding-background {
-        --animation-delay: 275ms;
-      }
-
-      h1 {
-        outline: none;
-      }
-
-      .action-button,
-      .action-link {
-        --animation-delay: 150ms;
-      }
-    </style>
-    <div id="container">
-      <onboarding-background class="fade-in"></onboarding-background>
-      <h2 class="fade-in">$i18n{landingDescription}</h2>
-      <h1 class="fade-in" tabindex="-1">$i18n{landingTitle}</h1>
-      <cr-button class="action-button fade-in" on-click="onNewUserClick_">
-        $i18n{landingNewUser}
-      </cr-button>
-      <button class="action-link fade-in" on-click="onExistingUserClick_">
-        <span hidden$="[[!signinAllowed_]]">$i18n{landingExistingUser}</span>
-        <span hidden$="[[signinAllowed_]]">$i18n{skip}</span>
-      </button>
-    </div>
-  </template>
-  <script src="landing_view.js"></script>
-</dom-module>
+  .action-button,
+  .action-link {
+    --animation-delay: 150ms;
+  }
+</style>
+<div id="container">
+  <onboarding-background class="fade-in"></onboarding-background>
+  <h2 class="fade-in">$i18n{landingDescription}</h2>
+  <h1 class="fade-in" tabindex="-1">$i18n{landingTitle}</h1>
+  <cr-button class="action-button fade-in" on-click="onNewUserClick_">
+    $i18n{landingNewUser}
+  </cr-button>
+  <button class="action-link fade-in" on-click="onExistingUserClick_">
+    <span hidden$="[[!signinAllowed_]]">$i18n{landingExistingUser}</span>
+    <span hidden$="[[signinAllowed_]]">$i18n{skip}</span>
+  </button>
+</div>

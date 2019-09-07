@@ -7,6 +7,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
+GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
 
 /**
@@ -46,7 +47,7 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
 
 // TODO(https://crbug.com/862573): Re-enable when no longer failing when
 // is_chrome_branded is true.
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 GEN('#define MAYBE_DialogWithDice DISABLED_DialogWithDice');
 GEN('#else');
 GEN('#define MAYBE_DialogWithDice');

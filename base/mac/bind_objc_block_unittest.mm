@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -108,8 +107,7 @@ TEST(BindObjcBlockTest, TestSixArguments) {
 TEST(BindObjcBlockTest, TestBlockMoveable) {
   base::OnceClosure c;
   __block BOOL invoked_block = NO;
-  {
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
+  @autoreleasepool {
     c = base::BindOnce(base::RetainBlock(^(std::unique_ptr<BOOL> v) {
                          invoked_block = *v;
                        }),
@@ -139,8 +137,7 @@ TEST(BindObjcBlockTest, TestBlockDeallocation) {
 
 TEST(BindObjcBlockTest, TestBlockReleased) {
   base::WeakNSObject<NSObject> weak_nsobject;
-  {
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
+  @autoreleasepool {
     NSObject* nsobject = [[[NSObject alloc] init] autorelease];
     weak_nsobject.reset(nsobject);
 

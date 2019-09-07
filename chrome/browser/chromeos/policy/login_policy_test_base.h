@@ -44,7 +44,13 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
   Profile* GetProfileForActiveUser();
 
   void SkipToLoginScreen();
-  // Should match ShowSigninScreenForTest method in SigninScreenHandler.
+
+  // Triggers the login, but does not wait for a user session to start.
+  void TriggerLogIn(const std::string& user_id,
+                    const std::string& password,
+                    const std::string& services);
+
+  // Triggers the login and waits for a user session to start.
   void LogIn(const std::string& user_id,
              const std::string& password,
              const std::string& services);

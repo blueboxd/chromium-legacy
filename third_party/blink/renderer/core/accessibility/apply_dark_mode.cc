@@ -80,39 +80,60 @@ int GetBackgroundBrightnessThreshold(const Settings& frame_settings) {
              : frame_settings.GetDarkModeBackgroundBrightnessThreshold();
 }
 
+// A static wrapper to hold DarkModeSettings after initial creation.
+//
+// These settings are fixed after the browser launches, so they only need to be
+// constructed once for the "enabled" state and once for the "disabled" state.
+// Caching these values instead of re-calculating them should improve page load
+// performance.
+const DarkModeSettings& GetCachedEnabledSettings(
+    const Settings& frame_settings) {
+  static const DarkModeSettings* settings =
+      new DarkModeSettings([](const Settings& frame_settings) {
+        DarkModeSettings settings;
+        settings.mode = GetMode(frame_settings);
+        settings.image_policy = GetImagePolicy(frame_settings);
+        settings.text_brightness_threshold =
+            GetTextBrightnessThreshold(frame_settings);
+        settings.background_brightness_threshold =
+            GetBackgroundBrightnessThreshold(frame_settings);
+
+        settings.grayscale = frame_settings.GetDarkModeGrayscale();
+        settings.contrast = frame_settings.GetDarkModeContrast();
+        settings.image_grayscale_percent =
+            frame_settings.GetDarkModeImageGrayscale();
+        return settings;
+      }(frame_settings));
+  return *settings;
+}
+
+// In theory it should be sufficient for the disabled settings to set mode to
+// kOff (or to just return the default struct) without also setting
+// image_policy. However, this causes images to be inverted unexpectedly in
+// some cases (such as when toggling between the site's light and dark theme
+// on arstechnica.com).
+//
+// TODO(gilmanmh): Investigate unexpected image inversion behavior when
+// image_policy not set to kFilterNone.
+const DarkModeSettings& GetCachedDisabledSettings() {
+  static const DarkModeSettings* settings = new DarkModeSettings([]() {
+    DarkModeSettings settings;
+    settings.mode = DarkMode::kOff;
+    settings.image_policy = DarkModeImagePolicy::kFilterNone;
+    return settings;
+  }());
+  return *settings;
+}
+
 }  // namespace
 
 DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
                                        const LayoutView& root) {
-  DarkModeSettings dark_mode_settings;
-
-  if (!ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
-                                       root)) {
-    // In theory it should be sufficient to set mode to
-    // kOff (or to just return the default struct) without also setting
-    // image_policy. However, this causes images to be inverted unexpectedly in
-    // some cases (such as when toggling between the site's light and dark theme
-    // on arstechnica.com).
-    //
-    // TODO(gilmanmh): Investigate unexpected image inversion behavior when
-    // image_policy not set to kFilterNone.
-    dark_mode_settings.mode = DarkMode::kOff;
-    dark_mode_settings.image_policy = DarkModeImagePolicy::kFilterNone;
-    return dark_mode_settings;
+  if (ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
+                                      root)) {
+    return GetCachedEnabledSettings(frame_settings);
   }
-
-  dark_mode_settings.mode = GetMode(frame_settings);
-  dark_mode_settings.image_policy = GetImagePolicy(frame_settings);
-  dark_mode_settings.text_brightness_threshold =
-      GetTextBrightnessThreshold(frame_settings);
-  dark_mode_settings.background_brightness_threshold =
-      GetBackgroundBrightnessThreshold(frame_settings);
-
-  dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
-  dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
-  dark_mode_settings.image_grayscale_percent =
-      frame_settings.GetDarkModeImageGrayscale();
-  return dark_mode_settings;
+  return GetCachedDisabledSettings();
 }
 
 bool ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,

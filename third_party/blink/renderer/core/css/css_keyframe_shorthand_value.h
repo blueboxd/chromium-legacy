@@ -36,17 +36,24 @@ class CSSKeyframeShorthandValue : public CSSValue {
  public:
   // Assumes that all property/value pairs that are present in the input set are
   // longhands for the same shorthand property/value pair.
-  CSSKeyframeShorthandValue(ImmutableCSSPropertyValueSet*);
+  CSSKeyframeShorthandValue(CSSPropertyID shorthand,
+                            ImmutableCSSPropertyValueSet*);
 
   String CustomCSSText() const;
 
   bool Equals(const CSSKeyframeShorthandValue& other) const {
-    return properties_ == other.properties_;
+    return shorthand_ == other.shorthand_ && properties_ == other.properties_;
   }
 
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
+  // The shorthand property that these longhands belonged to.
+  // Note that a single longhand property may belong to multiple shorthands
+  // (e.g., border-left-style belongs to border-style and border) so we keep
+  // this value instead of trying to calculate the common shorthand given the
+  // longhands.
+  CSSPropertyID shorthand_;
   Member<ImmutableCSSPropertyValueSet> properties_;
 };
 

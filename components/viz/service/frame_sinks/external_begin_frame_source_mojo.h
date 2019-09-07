@@ -21,33 +21,34 @@ namespace viz {
 // completion.
 class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
     : public mojom::ExternalBeginFrameController,
-      public ExternalBeginFrameSourceClient,
       public DisplayObserver,
-      public ExternalBeginFrameSource {
+      public ExternalBeginFrameSource,
+      public ExternalBeginFrameSourceClient {
  public:
   ExternalBeginFrameSourceMojo(
       mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
-      mojom::ExternalBeginFrameControllerClientPtr client,
       uint32_t restart_id);
   ~ExternalBeginFrameSourceMojo() override;
 
   // mojom::ExternalBeginFrameController implementation.
-  void IssueExternalBeginFrame(const BeginFrameArgs& args) override;
+  void IssueExternalBeginFrame(
+      const BeginFrameArgs& args,
+      bool force,
+      base::OnceCallback<void(const BeginFrameAck&)> callback) override;
 
   void SetDisplay(Display* display);
 
  private:
   // ExternalBeginFrameSourceClient implementation.
-  void OnNeedsBeginFrames(bool needs_begin_frames) override;
+  void OnNeedsBeginFrames(bool needs_begin_frames) override {}
 
-  // DisplayObserver implementation.
+  // DisplayObserver overrides.
   void OnDisplayDidFinishFrame(const BeginFrameAck& ack) override;
   void OnDisplayDestroyed() override;
 
+  base::OnceCallback<void(const BeginFrameAck& ack)> pending_frame_callback_;
   mojo::AssociatedBinding<mojom::ExternalBeginFrameController> binding_;
-  mojom::ExternalBeginFrameControllerClientPtr client_;
 
-  bool needs_begin_frames_ = false;
   Display* display_ = nullptr;
 };
 

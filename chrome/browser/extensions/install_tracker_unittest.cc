@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/active_install_data.h"
+#include "chrome/browser/extensions/scoped_active_install.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"

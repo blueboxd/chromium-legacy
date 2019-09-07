@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridgeJni;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -118,7 +118,7 @@ public class PreferencesTest {
             // first and ensure that location permission is NOT granted.
             String keyword3 = pref.getKeywordFromIndexForTesting(3);
             String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+            WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
                     url, url, ContentSettingValues.BLOCK, false);
             keyword3 = pref.setValueForTesting("3");
             Assert.assertEquals(keyword3,
@@ -135,11 +135,11 @@ public class PreferencesTest {
             // setting to allow for search engine 3 before changing to search engine 2.
             // Otherwise the block setting will cause the content setting for search engine 2
             // to be reset when we switch to it.
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+            WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
                     url, url, ContentSettingValues.ALLOW, false);
             keyword2 = pref.getKeywordFromIndexForTesting(2);
             url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+            WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
                     url, url, ContentSettingValues.ALLOW, false);
             keyword2 = pref.setValueForTesting("2");
             Assert.assertEquals(keyword2,

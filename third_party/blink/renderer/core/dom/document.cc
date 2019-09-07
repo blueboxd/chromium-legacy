@@ -255,6 +255,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -4535,9 +4536,32 @@ KURL Document::urlForBinding() const {
 }
 
 void Document::SetURL(const KURL& url) {
-  const KURL& new_url = url.IsEmpty() ? BlankURL() : url;
+  KURL new_url = url.IsEmpty() ? BlankURL() : url;
   if (new_url == url_)
     return;
+
+  // If text fragment identifiers are enabled, we strip the fragment directive
+  // from the URL fragment.
+  // E.g. "#id##targetText=a" --> "#id"
+  if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(this)) {
+    // Add a hash to the beginning of the fragment as it is part of parsing the
+    // ## fragment directive prefix but is not included in FragmentIdentifier().
+    String fragment = "#" + new_url.FragmentIdentifier();
+    wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+    if (start_pos != kNotFound) {
+      fragment_directive_ =
+          fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
+      if (start_pos == 0) {
+        // Remove the URL fragment if it is entirely a fragment directive.
+        new_url.RemoveFragmentIdentifier();
+      } else {
+        // The stripped fragment starts at position 1 and has length start_pos-1
+        // due to the added hash.
+        String stripped_fragment = fragment.Substring(1, start_pos - 1);
+        new_url.SetFragmentIdentifier(stripped_fragment);
+      }
+    }
+  }
 
   url_ = new_url;
   access_entry_from_url_ = nullptr;

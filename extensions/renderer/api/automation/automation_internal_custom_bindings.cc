@@ -200,7 +200,7 @@ class NodeIDWrapper : public base::RefCountedThreadSafe<NodeIDWrapper> {
     if (!tree_wrapper)
       return;
 
-    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    ui::AXNode* node = tree_wrapper->GetUnignoredNodeFromId(node_id);
     if (!node)
       return;
 
@@ -256,7 +256,7 @@ class NodeIDPlusAttributeWrapper
     if (!tree_wrapper)
       return;
 
-    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    ui::AXNode* node = tree_wrapper->GetUnignoredNodeFromId(node_id);
     if (!node)
       return;
 
@@ -314,7 +314,7 @@ class NodeIDPlusRangeWrapper
     if (!tree_wrapper)
       return;
 
-    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    ui::AXNode* node = tree_wrapper->GetUnignoredNodeFromId(node_id);
     if (!node)
       return;
 
@@ -366,7 +366,7 @@ class NodeIDPlusStringBoolWrapper
     if (!tree_wrapper)
       return;
 
-    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    ui::AXNode* node = tree_wrapper->GetUnignoredNodeFromId(node_id);
     if (!node)
       return;
 
@@ -422,7 +422,7 @@ class NodeIDPlusDimensionsWrapper
     if (!tree_wrapper)
       return;
 
-    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    ui::AXNode* node = tree_wrapper->GetUnignoredNodeFromId(node_id);
     if (!node)
       return;
 

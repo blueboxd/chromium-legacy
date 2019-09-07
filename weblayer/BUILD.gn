@@ -135,6 +135,8 @@ jumbo_static_library("weblayer_lib") {
       "//weblayer/browser/java:jni",
     ]
     sources += [
+      "app/jni_onload.cc",
+      "app/jni_onload.h",
       "browser/browser_observer_proxy.cc",
       "browser/browser_observer_proxy.h",
     ]
@@ -160,7 +162,7 @@ jumbo_static_library("weblayer_lib") {
 if (is_android) {
   shared_library("libweblayer") {
     sources = [
-      "app/jni_onload.cc",
+      "app/entry_point.cc",
     ]
     deps = [
       ":weblayer_lib",

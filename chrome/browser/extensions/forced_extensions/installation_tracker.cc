@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
 
@@ -30,7 +29,6 @@ InstallationTracker::InstallationTracker(
       profile_(profile),
       pref_service_(profile->GetPrefs()),
       start_time_(base::Time::Now()),
-      observer_(this),
       timer_(std::move(timer)) {
   observer_.Add(registry_);
   pref_change_registrar_.Init(pref_service_);

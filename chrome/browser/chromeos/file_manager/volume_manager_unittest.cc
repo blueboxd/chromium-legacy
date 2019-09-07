@@ -225,6 +225,12 @@ class VolumeManagerTest : public testing::Test {
           &user_, profile_.get());
     }
 
+    ~ProfileEnvironment() {
+      // In production, KeyedServices have Shutdown() called before destruction.
+      volume_manager_->Shutdown();
+      drive_integration_service_->Shutdown();
+    }
+
     Profile* profile() const { return profile_.get(); }
     VolumeManager* volume_manager() const { return volume_manager_.get(); }
 

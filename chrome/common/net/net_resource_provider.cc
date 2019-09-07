@@ -55,9 +55,7 @@ struct LazyDirectoryListerCacher {
 
 }  // namespace
 
-namespace chrome_common_net {
-
-base::StringPiece NetResourceProvider(int key) {
+base::StringPiece ChromeNetResourceProvider(int key) {
   static base::NoDestructor<LazyDirectoryListerCacher> lazy_dir_lister;
 
   if (IDR_DIR_HEADER_HTML == key)
@@ -65,5 +63,3 @@ base::StringPiece NetResourceProvider(int key) {
 
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResource(key);
 }
-
-}  // namespace chrome_common_net

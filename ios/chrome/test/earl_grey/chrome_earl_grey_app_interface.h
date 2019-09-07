@@ -154,6 +154,16 @@
 // Returns the current WebState's VisibleURL.
 + (NSString*)webStateVisibleURL;
 
+// Purges cached web view pages in the current web state, so the next time back
+// navigation will not use a cached page. Browsers don't have to use a fresh
+// version for back/forward navigation for HTTP pages and may serve a version
+// from the cache even if the Cache-Control response header says otherwise.
++ (void)purgeCachedWebViewPages;
+
+// Returns YES if the current WebState's navigation manager is currently
+// restoring session state.
++ (BOOL)isRestoreSessionInProgress;
+
 #pragma mark - Sync Utilities (EG2)
 
 // Clears the autofill profile for the given |GUID|.

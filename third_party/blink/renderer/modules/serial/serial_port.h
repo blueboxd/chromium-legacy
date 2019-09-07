@@ -40,11 +40,15 @@ class SerialPort final : public ScriptWrappable,
   ~SerialPort() override;
 
   // Web-exposed functions
-  ScriptPromise open(ScriptState*, const SerialOptions* options);
+  ScriptPromise open(ScriptState*,
+                     const SerialOptions* options,
+                     ExceptionState&);
   ReadableStream* readable(ScriptState*, ExceptionState&);
   WritableStream* writable(ScriptState*, ExceptionState&);
-  ScriptPromise getSignals(ScriptState*);
-  ScriptPromise setSignals(ScriptState*, const SerialOutputSignals*);
+  ScriptPromise getSignals(ScriptState*, ExceptionState&);
+  ScriptPromise setSignals(ScriptState*,
+                           const SerialOutputSignals*,
+                           ExceptionState&);
   void close();
 
   const base::UnguessableToken& token() const { return info_->token; }

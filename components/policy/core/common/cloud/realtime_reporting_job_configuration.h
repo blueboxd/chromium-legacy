@@ -24,7 +24,7 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
  public:
   // Keys used in report dictionary.
   static const char kContextKey[];
-  static const char kEventKey[];
+  static const char kEventListKey[];
 
   // Keys used in request payload dictionary.  Public for testing.
   static const char kBrowserIdKey[];
@@ -41,15 +41,21 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
                                   const base::Value&)>
       Callback;
 
+  // Combines the info given in |events| that corresponds to Event proto, and
+  // info given in |context| that corresponds to the Device, Browser and Profile
+  // proto, to a UploadEventsRequest proto defined in
+  // google3/google/internal/chrome/reporting/v1/chromereporting.proto.
+  static base::Value BuildReport(base::Value events, base::Value context);
+
   RealtimeReportingJobConfiguration(CloudPolicyClient* client,
                                     std::unique_ptr<DMAuth> auth_data,
                                     Callback callback);
 
   ~RealtimeReportingJobConfiguration() override;
 
-  // Add a new report to the payload.  A report is a dictionary that contains
-  // two keys: "event" and "context".  The first key is a dictionary defined by
-  // the Event message described at
+  // Add a new report to the payload.  A report is a dictionary that
+  // contains two keys: "events" and "context".  The first key is a list of
+  // dictionaries, where dictionary is defined by the Event message described at
   // google/internal/chrome/reporting/v1/chromereporting.proto.
   //
   // The second is context information about this instance of chrome that

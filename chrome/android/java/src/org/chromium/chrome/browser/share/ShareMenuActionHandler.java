@@ -156,28 +156,32 @@ public class ShareMenuActionHandler {
             tabObserver.onActionPerformedAfterScreenshot(
                     ScreenshotTabObserver.SCREENSHOT_ACTION_SHARE);
         }
-        if (OfflinePageUtils.maybeShareOfflinePage(
-                    activity, currentTab, (ShareParams p) -> mDelegate.share(p))) {
-            return;
-        }
 
-        if (shouldFetchCanonicalUrl(currentTab)) {
-            WebContents webContents = currentTab.getWebContents();
-            String title = currentTab.getTitle();
-            String visibleUrl = currentTab.getUrl();
-            webContents.getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
-                @Override
-                public void onResult(String result) {
-                    logCanonicalUrlResult(visibleUrl, result);
+        OfflinePageUtils.maybeShareOfflinePage(activity, currentTab, (ShareParams p) -> {
+            if (p != null) {
+                mDelegate.share(p);
+            } else {
+                // Could not share as an offline page.
+                if (shouldFetchCanonicalUrl(currentTab)) {
+                    WebContents webContents = currentTab.getWebContents();
+                    String title = currentTab.getTitle();
+                    String visibleUrl = currentTab.getUrl();
+                    webContents.getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
+                        @Override
+                        public void onResult(String result) {
+                            logCanonicalUrlResult(visibleUrl, result);
 
-                    triggerShareWithCanonicalUrlResolved(activity, webContents, title, visibleUrl,
-                            result, shareDirectly, isIncognito);
+                            triggerShareWithCanonicalUrlResolved(activity, webContents, title,
+                                    visibleUrl, result, shareDirectly, isIncognito);
+                        }
+                    });
+                } else {
+                    triggerShareWithCanonicalUrlResolved(activity, currentTab.getWebContents(),
+                            currentTab.getTitle(), currentTab.getUrl(), null, shareDirectly,
+                            isIncognito);
                 }
-            });
-        } else {
-            triggerShareWithCanonicalUrlResolved(activity, currentTab.getWebContents(),
-                    currentTab.getTitle(), currentTab.getUrl(), null, shareDirectly, isIncognito);
-        }
+            }
+        });
     }
 
     private void triggerShareWithCanonicalUrlResolved(final Activity mainActivity,

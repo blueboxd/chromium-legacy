@@ -44,7 +44,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   void Trace(Visitor* visitor) override;
 
   // idl implementation.
-  ScriptPromise activate(ScriptState*, PortalActivateOptions*);
+  ScriptPromise activate(ScriptState*, PortalActivateOptions*, ExceptionState&);
   void postMessage(ScriptState* script_state,
                    const ScriptValue& message,
                    const String& target_origin,

@@ -420,7 +420,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
 }
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)
-    : browser_context_(context), extension_registry_observer_(this) {
+    : browser_context_(context) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
   EventRouter* event_router = EventRouter::Get(browser_context_);

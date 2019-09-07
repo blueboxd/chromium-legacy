@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/dom_action_types.h"
@@ -38,7 +39,6 @@ class PrefRegistrySyncable;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 class ExtensionSystem;
 
 // A utility for tracing interesting activity for each extension.
@@ -217,7 +217,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // added or removed, enabled_ may change.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   // The number of active consumers of the activity log.
   // TODO(kelvinjiang): eliminate this flag if possible and use has_listeners_

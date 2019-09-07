@@ -68,7 +68,7 @@ void Scheduler::OnTaskCompleted(TaskQueue* task_queue, Task*) {
 }
 
 TaskQueue* Scheduler::getTaskQueue(AtomicString priority) {
-  return GetTaskQueue(TaskQueue::WebSchedulingPriorityFromString(priority));
+  return GetTaskQueue(WebSchedulingPriorityFromString(priority));
 }
 
 TaskQueue* Scheduler::GetTaskQueue(WebSchedulingPriority priority) {

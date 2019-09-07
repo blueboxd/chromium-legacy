@@ -71,11 +71,13 @@
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64',
-      'android-oreo-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
+
+      'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
     },
 
     'chromium.android.fyi': {
       'Memory Infra Tester': 'android_release_thumb_bot',
+      'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_resource_whitelisting',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
       'android-bfcache-rel': 'android_release_bot_minimal_symbols',
     },
@@ -390,6 +392,7 @@
       'Android FYI 64 Vk Release (Pixel 2)': 'gpu_tests_android_vulkan_release_trybot_arm64',
       'Android FYI 32 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_release_trybot',
       'Android FYI 64 dEQP Vk Release (Pixel 2)': 'deqp_android_vulkan_release_trybot_arm64',
+      'Android FYI SkiaRenderer GL (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI SkiaRenderer Vulkan (Pixel 2)': 'gpu_tests_android_release_trybot',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
@@ -644,8 +647,9 @@
       'android-kitkat-arm-coverage-rel': 'android_release_trybot_java_coverage',
       'android-kitkat-arm-rel': 'android_release_trybot',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
+      'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
-      'android-oreo-arm64-rel': 'android_release_trybot_arm64_webview_google',
+      'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-fyi-rel': 'android_release_trybot_x86',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
@@ -672,6 +676,7 @@
       'gpu-fyi-try-android-l-nexus-6-32': 'gpu_tests_android_release_trybot',
       'gpu-fyi-try-android-m-nexus-5x-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-m-nexus-5x-deqp-64': 'deqp_android_release_trybot_arm64',
+      'gpu-fyi-try-android-m-nexus-5x-skgl-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-m-nexus-6p-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-m-nexus-9-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-n-nvidia-shield-tv-64': 'gpu_tests_android_release_trybot_arm64',
@@ -1101,6 +1106,11 @@
       'strip_debug_info',
     ],
 
+    'android_release_bot_minimal_symbols_x86_resource_whitelisting': [
+      'android', 'release_bot', 'minimal_symbols', 'x86',
+      'resource_whitelisting',
+    ],
+
     'android_release_thumb_bot': [
       'android', 'release_bot', 'arm_thumb',
     ],
@@ -1124,6 +1134,10 @@
 
     'android_release_trybot_x86': [
       'android', 'release_trybot', 'strip_debug_info', 'x86',
+    ],
+
+    'android_release_trybot_x86_resource_whitelisting': [
+      'android', 'release_trybot', 'x86', 'resource_whitelisting',
     ],
 
     'android_webview_google_debug_static_bot': [

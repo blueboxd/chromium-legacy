@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_storage/login_screen_storage_api.h"
 
+#include "base/strings/strcat.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/login_screen_storage.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -82,10 +83,11 @@ void LoginScreenStorageStorePersistentDataFunction::StoreDataForExtensions(
   if (extension_ids.empty())
     return;
 
-  std::string extension_id = extension_ids.back();
+  std::string receiver_id = extension_ids.back();
   extension_ids.pop_back();
   chromeos::SessionManagerClient::Get()->LoginScreenStorageStore(
-      kPersistentDataKeyPrefix + extension_id, metadata, data,
+      kPersistentDataKeyPrefix + extension_id() + "_" + receiver_id, metadata,
+      data,
       base::BindOnce(
           &LoginScreenStorageStorePersistentDataFunction::OnDataStored, this,
           std::move(extension_ids), metadata, data));
@@ -98,8 +100,13 @@ LoginScreenStorageRetrievePersistentDataFunction::
 
 ExtensionFunction::ResponseAction
 LoginScreenStorageRetrievePersistentDataFunction::Run() {
+  std::unique_ptr<login_screen_storage::RetrievePersistentData::Params> params =
+      login_screen_storage::RetrievePersistentData::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
   chromeos::SessionManagerClient::Get()->LoginScreenStorageRetrieve(
-      kPersistentDataKeyPrefix + extension_id(),
+      base::StrCat(
+          {kPersistentDataKeyPrefix, params->owner_id, "_", extension_id()}),
       base::BindOnce(
           &LoginScreenStorageRetrievePersistentDataFunction::OnDataRetrieved,
           this));

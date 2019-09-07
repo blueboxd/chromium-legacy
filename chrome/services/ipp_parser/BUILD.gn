@@ -17,7 +17,6 @@ source_set("ipp_parser") {
   deps = [
     "//base",
     "//chrome:strings",
-    "//chrome/services/cups_proxy/public/cpp",
     "//mojo/public/cpp/bindings",
     "//net",
   ]
@@ -32,7 +31,10 @@ source_set("ipp_parser") {
   if (enable_service) {
     configs += [ "//printing:cups" ]
     sources += [ "ipp_parser.cc" ]
-    deps += [ "//chrome/services/ipp_parser/public/cpp" ]
+    deps += [
+      "//chrome/services/cups_proxy/public/cpp",
+      "//chrome/services/ipp_parser/public/cpp",
+    ]
   } else {
     sources += [ "fake_ipp_parser.cc" ]
   }

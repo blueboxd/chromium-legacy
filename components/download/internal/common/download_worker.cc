@@ -49,7 +49,7 @@ class CompletedInputStream : public InputStream {
 void CreateUrlDownloadHandler(
     std::unique_ptr<DownloadUrlParameters> params,
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider* url_loader_factory_provider,
     const URLSecurityPolicy& url_security_policy,
     std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
@@ -83,15 +83,17 @@ DownloadWorker::~DownloadWorker() = default;
 
 void DownloadWorker::SendRequest(
     std::unique_ptr<DownloadUrlParameters> params,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider* url_loader_factory_provider,
     service_manager::Connector* connector) {
   GetIOTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateUrlDownloadHandler, std::move(params),
-                     weak_factory_.GetWeakPtr(), url_loader_factory_provider,
-                     base::BindRepeating(&IsURLSafe),
-                     connector ? connector->Clone() : nullptr,
-                     base::ThreadTaskRunnerHandle::Get()));
+      FROM_HERE, base::BindOnce(&CreateUrlDownloadHandler, std::move(params),
+                                weak_factory_.GetWeakPtr(),
+                                // This is safe because URLLoaderFactoryProvider
+                                // deleter is called on the same task sequence.
+                                base::Unretained(url_loader_factory_provider),
+                                base::BindRepeating(&IsURLSafe),
+                                connector ? connector->Clone() : nullptr,
+                                base::ThreadTaskRunnerHandle::Get()));
 }
 
 void DownloadWorker::Pause() {
@@ -110,7 +112,8 @@ void DownloadWorker::Cancel(bool user_cancel) {
 void DownloadWorker::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> create_info,
     std::unique_ptr<InputStream> input_stream,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+        url_loader_factory_provider,
     UrlDownloadHandler* downloader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.

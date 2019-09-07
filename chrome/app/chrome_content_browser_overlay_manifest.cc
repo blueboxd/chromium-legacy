@@ -71,8 +71,8 @@
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-#include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"  // nogncheck
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
+#include "chrome/browser/ui/webui/discards/webui_graph_dump.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

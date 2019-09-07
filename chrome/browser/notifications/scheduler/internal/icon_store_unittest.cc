@@ -57,7 +57,7 @@ class IconStoreTest : public testing::Test {
   }
 
   void InitDb() {
-    store()->Init(base::DoNothing());
+    store()->InitAndLoadKeys(base::DoNothing());
     db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   }
 
@@ -144,13 +144,21 @@ class IconStoreTest : public testing::Test {
 };
 
 TEST_F(IconStoreTest, Init) {
-  store()->Init(base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
+  store()->InitAndLoadKeys(
+      base::BindOnce([](bool success, IconStore::LoadedIconKeys keys) {
+        EXPECT_TRUE(success);
+        EXPECT_NE(keys, nullptr);
+      }));
   db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(IconStoreTest, InitFailed) {
-  store()->Init(base::BindOnce([](bool success) { EXPECT_FALSE(success); }));
+  store()->InitAndLoadKeys(base::BindOnce(
+      [](bool success, std::unique_ptr<std::vector<std::string>> keys) {
+        EXPECT_FALSE(success);
+        EXPECT_EQ(keys, nullptr);
+      }));
   db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kCorrupt);
   base::RunLoop().RunUntilIdle();
 }

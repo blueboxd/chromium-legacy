@@ -96,6 +96,7 @@
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/frame/web_footer_experiment_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
+#include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -3089,8 +3090,17 @@ void BrowserView::ShowEmojiPanel() {
 }
 
 void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {
-  if (iph_feature == InProductHelpFeature::kReopenTab)
-    reopen_tab_promo_controller_.ShowPromo();
+  switch (iph_feature) {
+    case InProductHelpFeature::kIncognitoWindow:
+      break;
+    case InProductHelpFeature::kReopenTab:
+      reopen_tab_promo_controller_.ShowPromo();
+      break;
+    case InProductHelpFeature::kGlobalMediaControls:
+      if (toolbar_ && toolbar_->media_button())
+        toolbar_->media_button()->ShowPromo();
+      break;
+  }
 }
 
 bool BrowserView::DoCutCopyPasteForWebContents(

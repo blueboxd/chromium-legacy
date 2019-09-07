@@ -89,6 +89,10 @@ class AppMenuIconController : public GlobalErrorObserver,
       bool touch_ui,
       base::Optional<SkColor> promo_highlight_color = base::nullopt) const;
 
+  // Gets the color to be used for the app menu's icon. |promo_highlight_color|,
+  // if provided, overrides the basic color when the icon's Severity is NONE.
+  SkColor GetIconColor(base::Optional<SkColor> promo_highlight_color) const;
+
  private:
   // GlobalErrorObserver:
   void OnGlobalErrorsChanged() override;

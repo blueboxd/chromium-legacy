@@ -73,16 +73,15 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   if (user != user_manager::UserManager::Get()->GetPrimaryUser())
     return nullptr;
 
-  // Guest sessions don't get user policy, so there's no reason for them to have
-  // a UserNetworkConfigurationUpdater.
-  if (user->GetType() == user_manager::USER_TYPE_GUEST)
-    return nullptr;
-
-  ProfilePolicyConnector* profile_connector =
-      profile->GetProfilePolicyConnector();
-
+  // Note that sessions which don't have policy (e.g. guest sessions) still
+  // expect to have UserNetworkConfigurationUpdater, because
+  // ManagedNetworkConfigurationHandler requires a (possibly empty) policy to be
+  // set for all user sessions.
+  // TODO(https://crbug.com/1001490): Evaluate if this is can be solved in a
+  // more elegant way.
   return UserNetworkConfigurationUpdater::CreateForUserPolicy(
-             profile, *user, profile_connector->policy_service(),
+             profile, *user,
+             profile->GetProfilePolicyConnector()->policy_service(),
              chromeos::NetworkHandler::Get()
                  ->managed_network_configuration_handler())
       .release();

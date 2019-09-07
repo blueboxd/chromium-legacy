@@ -67,7 +67,7 @@ public class MockResourcesForLayout extends MockResources {
         mFloats.put(org.chromium.chrome.R.dimen.overlay_panel_bar_height, 56.f);
         mFloats.put(org.chromium.chrome.R.dimen.control_container_height, 56.f);
         mFloats.put(org.chromium.chrome.R.dimen.contextual_search_bar_banner_padding, 12.f);
-        mFloats.put(org.chromium.chrome.R.dimen.contextual_search_end_buttons_width, 48.f);
+        mFloats.put(org.chromium.chrome.R.dimen.contextual_search_padded_button_width, 48.f);
         mFloats.put(org.chromium.chrome.R.dimen.overlay_panel_end_buttons_width, 94.f);
         mFloats.put(org.chromium.chrome.R.dimen.toolbar_height_no_shadow, 56.f);
         mIntegers.put(R.color.modern_grey_100, 0xFFF1F3F4);

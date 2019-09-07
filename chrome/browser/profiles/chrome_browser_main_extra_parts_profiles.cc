@@ -272,13 +272,15 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::AccountManagerMigratorFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::CupsPrintersManagerFactory::GetInstance();
-  chromeos::CupsProxyServiceManagerFactory::GetInstance();
   chromeos::SyncedPrintersManagerFactory::GetInstance();
   chromeos::smb_client::SmbServiceFactory::GetInstance();
   crostini::CrostiniRegistryServiceFactory::GetInstance();
   extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
   TetherServiceFactory::GetInstance();
+#if defined(USE_CUPS)
+  chromeos::CupsProxyServiceManagerFactory::GetInstance();
+#endif
 #endif
   FaviconServiceFactory::GetInstance();
   HistoryUiFaviconRequestHandlerFactory::GetInstance();

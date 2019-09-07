@@ -39,14 +39,16 @@ class IconStore {
   using LoadedIconsMap = std::map<std::string /*icons_uuid*/, IconBundle>;
   using IconTypeUuidMap = std::map<IconType, std::string>;
   using IconTypeBundleMap = std::map<IconType, IconBundle>;
+  using LoadedIconKeys = std::unique_ptr<std::vector<std::string>>;
 
-  using InitCallback = base::OnceCallback<void(bool)>;
+  using InitAndLoadKeysCallback =
+      base::OnceCallback<void(bool, LoadedIconKeys)>;
   using LoadIconsCallback = base::OnceCallback<void(bool, LoadedIconsMap)>;
   using AddCallback = base::OnceCallback<void(IconTypeUuidMap, bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
 
-  // Initializes the storage.
-  virtual void Init(InitCallback callback) = 0;
+  // Initializes the storage, and load all keys.
+  virtual void InitAndLoadKeys(InitAndLoadKeysCallback callback) = 0;
 
   // Loads multiple icons.
   virtual void LoadIcons(const std::vector<std::string>& keys,
@@ -76,7 +78,7 @@ class IconProtoDbStore : public IconStore {
 
  private:
   // IconStore implementation.
-  void Init(InitCallback callback) override;
+  void InitAndLoadKeys(InitAndLoadKeysCallback callback) override;
   void LoadIcons(const std::vector<std::string>& keys,
                  LoadIconsCallback callback) override;
   void AddIcons(IconTypeBundleMap icons, AddCallback callback) override;
@@ -84,10 +86,15 @@ class IconProtoDbStore : public IconStore {
                    UpdateCallback callback) override;
 
   // Called when the proto database is initialized.
-  void OnDbInitialized(InitCallback callback,
+  void OnDbInitialized(InitAndLoadKeysCallback callback,
                        leveldb_proto::Enums::InitStatus status);
 
-  // Called when the icon is retrieved from the database.
+  // Called when the icon keys are retrieved from the database.
+  void OnIconKeysLoaded(InitAndLoadKeysCallback callback,
+                        bool success,
+                        LoadedIconKeys icon_keys);
+
+  // Called when the icons are retrieved from the database.
   void OnIconEntriesLoaded(
       LoadIconsCallback callback,
       bool success,

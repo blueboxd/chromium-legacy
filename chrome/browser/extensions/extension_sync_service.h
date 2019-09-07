@@ -17,7 +17,9 @@
 #include "chrome/browser/extensions/sync_bundle.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/syncable_service.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
@@ -132,9 +134,10 @@ class ExtensionSyncService : public syncer::SyncableService,
   Profile* profile_;
 
   ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver> registry_observer_;
-  ScopedObserver<extensions::ExtensionPrefs,
-                 extensions::ExtensionPrefsObserver> prefs_observer_;
+                 extensions::ExtensionRegistryObserver>
+      registry_observer_{this};
+  ScopedObserver<extensions::ExtensionPrefs, extensions::ExtensionPrefsObserver>
+      prefs_observer_{this};
 
   // When this is set to true, any incoming updates (from the observers as well
   // as from explicit SyncExtensionChangeIfNeeded calls) are ignored. This is

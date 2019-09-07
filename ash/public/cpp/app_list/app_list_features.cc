@@ -13,8 +13,6 @@ namespace app_list_features {
 
 const base::Feature kEnableAnswerCard{"EnableAnswerCard",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearch{
     "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppDataSearch{"EnableAppDataSearch",
@@ -53,10 +51,6 @@ bool IsAnswerCardEnabled() {
   // Do not show answer card if the embedded Assistant UI is enabled.
   return base::FeatureList::IsEnabled(kEnableAnswerCard) &&
          !IsEmbeddedAssistantUIEnabled();
-}
-
-bool IsBackgroundBlurEnabled() {
-  return base::FeatureList::IsEnabled(kEnableBackgroundBlur);
 }
 
 bool IsPlayStoreAppSearchEnabled() {

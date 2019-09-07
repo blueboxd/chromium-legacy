@@ -57,6 +57,8 @@ bool TerminateOnCrossProcessNavigation(const std::string& method) {
 const char kMethod[] = "method";
 const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
 const char kSessionId[] = "sessionId";
+
+// Clients match against this error message verbatim (http://crbug.com/1001678).
 const char kTargetClosedMessage[] = "Inspected target navigated or closed";
 }  // namespace
 

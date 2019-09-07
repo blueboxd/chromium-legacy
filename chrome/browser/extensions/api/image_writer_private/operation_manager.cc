@@ -23,7 +23,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 
 #if defined(OS_CHROMEOS)
@@ -38,7 +37,7 @@ namespace image_writer {
 using content::BrowserThread;
 
 OperationManager::OperationManager(content::BrowserContext* context)
-    : browser_context_(context), extension_registry_observer_(this) {
+    : browser_context_(context) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   registrar_.Add(this,

@@ -9,6 +9,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using content::BrowserThread;
@@ -48,7 +49,7 @@ void MixedContentSettingsTabHelper::RenderFrameCreated(
   if (!is_running_insecure_content_allowed_)
     return;
 
-  chrome::mojom::ContentSettingsRendererAssociatedPtr renderer;
+  mojo::AssociatedRemote<chrome::mojom::ContentSettingsRenderer> renderer;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
   renderer->SetAllowRunningInsecureContent();
 }

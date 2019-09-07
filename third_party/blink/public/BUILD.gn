@@ -135,7 +135,6 @@ source_set("blink_headers") {
     "platform/media/webmediaplayer_delegate.h",
     "platform/modules/indexeddb/web_idb_database_exception.h",
     "platform/modules/media_capabilities/web_audio_configuration.h",
-    "platform/modules/media_capabilities/web_media_capabilities_decoding_info.h",
     "platform/modules/media_capabilities/web_media_capabilities_info.h",
     "platform/modules/media_capabilities/web_media_capabilities_key_system_configuration.h",
     "platform/modules/media_capabilities/web_media_configuration.h",

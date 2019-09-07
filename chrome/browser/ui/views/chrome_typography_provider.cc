@@ -187,6 +187,10 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   const ui::NativeTheme* native_theme = view.GetNativeTheme();
   DCHECK(native_theme);
   if (ShouldIgnoreHarmonySpec(*native_theme)) {
+    if (context == views::style::CONTEXT_MENU ||
+        context == views::style::CONTEXT_TOUCH_MENU) {
+      return TypographyProvider::GetColor(view, context, style);
+    }
     return GetHarmonyTextColorForNonStandardNativeTheme(context, style,
                                                         *native_theme);
   }
@@ -217,9 +221,10 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
       return SK_ColorWHITE;
     case views::style::STYLE_DISABLED:
-      return native_theme->ShouldUseDarkColors()
-                 ? gfx::kGoogleGrey800
-                 : SkColorSetRGB(0x9e, 0x9e, 0x9e);
+      if (!native_theme->ShouldUseDarkColors())
+        return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+      return context == views::style::CONTEXT_MENU ? gfx::kGoogleGrey600
+                                                   : gfx::kGoogleGrey800;
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
     case views::style::STYLE_SECONDARY:

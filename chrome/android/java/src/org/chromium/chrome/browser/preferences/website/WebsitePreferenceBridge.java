@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
@@ -35,23 +37,23 @@ public class WebsitePreferenceBridge {
         // of a supervised account or by enterprise policy.
         if (type == PermissionInfo.Type.CAMERA) {
             boolean managedOnly = !PrefServiceBridge.getInstance().isCameraUserModifiable();
-            nativeGetCameraOrigins(list, managedOnly);
+            WebsitePreferenceBridgeJni.get().getCameraOrigins(list, managedOnly);
         } else if (type == PermissionInfo.Type.CLIPBOARD) {
-            nativeGetClipboardOrigins(list);
+            WebsitePreferenceBridgeJni.get().getClipboardOrigins(list);
         } else if (type == PermissionInfo.Type.GEOLOCATION) {
             boolean managedOnly = !PrefServiceBridge.getInstance().isAllowLocationUserModifiable();
-            nativeGetGeolocationOrigins(list, managedOnly);
+            WebsitePreferenceBridgeJni.get().getGeolocationOrigins(list, managedOnly);
         } else if (type == PermissionInfo.Type.MICROPHONE) {
             boolean managedOnly = !PrefServiceBridge.getInstance().isMicUserModifiable();
-            nativeGetMicrophoneOrigins(list, managedOnly);
+            WebsitePreferenceBridgeJni.get().getMicrophoneOrigins(list, managedOnly);
         } else if (type == PermissionInfo.Type.MIDI) {
-            nativeGetMidiOrigins(list);
+            WebsitePreferenceBridgeJni.get().getMidiOrigins(list);
         } else if (type == PermissionInfo.Type.NOTIFICATION) {
-            nativeGetNotificationOrigins(list);
+            WebsitePreferenceBridgeJni.get().getNotificationOrigins(list);
         } else if (type == PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER) {
-            nativeGetProtectedMediaIdentifierOrigins(list);
+            WebsitePreferenceBridgeJni.get().getProtectedMediaIdentifierOrigins(list);
         } else if (type == PermissionInfo.Type.SENSORS) {
-            nativeGetSensorsOrigins(list);
+            WebsitePreferenceBridgeJni.get().getSensorsOrigins(list);
         } else {
             assert false;
         }
@@ -162,11 +164,11 @@ public class WebsitePreferenceBridge {
     }
 
     public void fetchLocalStorageInfo(Callback<HashMap> callback, boolean fetchImportant) {
-        nativeFetchLocalStorageInfo(callback, fetchImportant);
+        WebsitePreferenceBridgeJni.get().fetchLocalStorageInfo(callback, fetchImportant);
     }
 
     public void fetchStorageInfo(Callback<ArrayList> callback) {
-        nativeFetchStorageInfo(callback);
+        WebsitePreferenceBridgeJni.get().fetchStorageInfo(callback);
     }
 
     /**
@@ -179,7 +181,7 @@ public class WebsitePreferenceBridge {
     public List<ChosenObjectInfo> getChosenObjectInfo(
             @ContentSettingsType int contentSettingsType) {
         ArrayList<ChosenObjectInfo> list = new ArrayList<ChosenObjectInfo>();
-        nativeGetChosenObjects(contentSettingsType, list);
+        WebsitePreferenceBridgeJni.get().getChosenObjects(contentSettingsType, list);
         return list;
     }
 
@@ -200,7 +202,8 @@ public class WebsitePreferenceBridge {
      */
     public static boolean isPermissionControlledByDSE(
             @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito) {
-        return nativeIsPermissionControlledByDSE(contentSettingsType, origin, isIncognito);
+        return WebsitePreferenceBridgeJni.get().isPermissionControlledByDSE(
+                contentSettingsType, origin, isIncognito);
     }
 
     /**
@@ -208,69 +211,58 @@ public class WebsitePreferenceBridge {
      * unless they are explicitly allowed via a permission.
      */
     public static boolean getAdBlockingActivated(String origin) {
-        return nativeGetAdBlockingActivated(origin);
+        return WebsitePreferenceBridgeJni.get().getAdBlockingActivated(origin);
     }
 
-    private static native void nativeGetCameraOrigins(Object list, boolean managedOnly);
-    private static native void nativeGetClipboardOrigins(Object list);
-    private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
-    private static native void nativeGetMicrophoneOrigins(Object list, boolean managedOnly);
-    private static native void nativeGetMidiOrigins(Object list);
-    private static native void nativeGetNotificationOrigins(Object list);
-    private static native void nativeGetProtectedMediaIdentifierOrigins(Object list);
-    private static native void nativeGetSensorsOrigins(Object list);
-
-    static native int nativeGetCameraSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-    static native int nativeGetClipboardSettingForOrigin(
-            String origin, boolean isIncognito);
-    static native int nativeGetGeolocationSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-    static native int nativeGetMicrophoneSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-    static native int nativeGetMidiSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-    static native int nativeGetNotificationSettingForOrigin(
-            String origin, boolean isIncognito);
-    static native int nativeGetProtectedMediaIdentifierSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-    static native int nativeGetSensorsSettingForOrigin(
-            String origin, String embedder, boolean isIncognito);
-
-    static native void nativeSetCameraSettingForOrigin(
-            String origin, int value, boolean isIncognito);
-    static native void nativeSetClipboardSettingForOrigin(
-            String origin, int value, boolean isIncognito);
-    public static native void nativeSetGeolocationSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
-    static native void nativeSetMicrophoneSettingForOrigin(
-            String origin, int value, boolean isIncognito);
-    static native void nativeSetMidiSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
-    static native void nativeSetNotificationSettingForOrigin(
-            String origin, int value, boolean isIncognito);
-    static native void nativeReportNotificationRevokedForOrigin(
-            String origin, int newSettingValue, boolean isIncognito);
-    static native void nativeSetProtectedMediaIdentifierSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
-    static native void nativeSetSensorsSettingForOrigin(
-            String origin, String embedder, int value, boolean isIncognito);
-
-    static native void nativeClearBannerData(String origin);
-    static native void nativeClearMediaLicenses(String origin);
-    static native void nativeClearCookieData(String path);
-    static native void nativeClearLocalStorageData(String path, Object callback);
-    static native void nativeClearStorageData(String origin, int type, Object callback);
-    static native void nativeGetChosenObjects(@ContentSettingsType int type, Object list);
-    static native void nativeResetNotificationsSettingsForTest();
-    static native void nativeRevokeObjectPermission(
-            @ContentSettingsType int type, String origin, String embedder, String object);
-    static native boolean nativeIsContentSettingsPatternValid(String pattern);
-    static native boolean nativeUrlMatchesContentSettingsPattern(String url, String pattern);
-    private static native void nativeFetchStorageInfo(Object callback);
-    private static native void nativeFetchLocalStorageInfo(
-            Object callback, boolean includeImportant);
-    private static native boolean nativeIsPermissionControlledByDSE(
-            @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito);
-    private static native boolean nativeGetAdBlockingActivated(String origin);
+    @VisibleForTesting
+    @NativeMethods
+    public interface Natives {
+        void getCameraOrigins(Object list, boolean managedOnly);
+        void getClipboardOrigins(Object list);
+        void getGeolocationOrigins(Object list, boolean managedOnly);
+        void getMicrophoneOrigins(Object list, boolean managedOnly);
+        void getMidiOrigins(Object list);
+        void getNotificationOrigins(Object list);
+        void getProtectedMediaIdentifierOrigins(Object list);
+        void getSensorsOrigins(Object list);
+        int getCameraSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        int getClipboardSettingForOrigin(String origin, boolean isIncognito);
+        int getGeolocationSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        int getMicrophoneSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        int getMidiSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        int getNotificationSettingForOrigin(String origin, boolean isIncognito);
+        int getProtectedMediaIdentifierSettingForOrigin(
+                String origin, String embedder, boolean isIncognito);
+        int getSensorsSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        void setCameraSettingForOrigin(String origin, int value, boolean isIncognito);
+        void setClipboardSettingForOrigin(String origin, int value, boolean isIncognito);
+        void setGeolocationSettingForOrigin(
+                String origin, String embedder, int value, boolean isIncognito);
+        void setMicrophoneSettingForOrigin(String origin, int value, boolean isIncognito);
+        void setMidiSettingForOrigin(
+                String origin, String embedder, int value, boolean isIncognito);
+        void setNotificationSettingForOrigin(String origin, int value, boolean isIncognito);
+        void reportNotificationRevokedForOrigin(
+                String origin, int newSettingValue, boolean isIncognito);
+        void setProtectedMediaIdentifierSettingForOrigin(
+                String origin, String embedder, int value, boolean isIncognito);
+        void setSensorsSettingForOrigin(
+                String origin, String embedder, int value, boolean isIncognito);
+        void clearBannerData(String origin);
+        void clearMediaLicenses(String origin);
+        void clearCookieData(String path);
+        void clearLocalStorageData(String path, Object callback);
+        void clearStorageData(String origin, int type, Object callback);
+        void getChosenObjects(@ContentSettingsType int type, Object list);
+        void resetNotificationsSettingsForTest();
+        void revokeObjectPermission(
+                @ContentSettingsType int type, String origin, String embedder, String object);
+        boolean isContentSettingsPatternValid(String pattern);
+        boolean urlMatchesContentSettingsPattern(String url, String pattern);
+        void fetchStorageInfo(Object callback);
+        void fetchLocalStorageInfo(Object callback, boolean includeImportant);
+        boolean isPermissionControlledByDSE(
+                @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito);
+        boolean getAdBlockingActivated(String origin);
+    }
 }

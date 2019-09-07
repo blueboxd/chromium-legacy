@@ -139,6 +139,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
+  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
   // Gets the real View that owns our shallowest virtual ancestor,, if any.
   View* GetOwnerView() const;

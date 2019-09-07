@@ -8,7 +8,8 @@
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "ui/views/widget/widget_observer.h"
 
-class BrowserView;
+class MediaToolbarButtonView;
+class Profile;
 
 // Handles display of the global media controls in-product help promo, including
 // showing the promo bubble and highlighting the appropriate app menu items.
@@ -16,7 +17,8 @@ class BrowserView;
 // finished.
 class GlobalMediaControlsPromoController : public views::WidgetObserver {
  public:
-  explicit GlobalMediaControlsPromoController(BrowserView* browser_view);
+  GlobalMediaControlsPromoController(MediaToolbarButtonView* owner,
+                                     Profile* profile);
   ~GlobalMediaControlsPromoController() override = default;
 
   // Shows the IPH promo. Should only be called once.
@@ -42,7 +44,8 @@ class GlobalMediaControlsPromoController : public views::WidgetObserver {
   // was closed.
   void FinishPromo();
 
-  BrowserView* const browser_view_;
+  MediaToolbarButtonView* const owner_;
+  Profile* const profile_;
   FeaturePromoBubbleView* promo_bubble_ = nullptr;
 
   // Whether we are showing the promo.

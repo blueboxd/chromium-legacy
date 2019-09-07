@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom.h"
@@ -49,12 +50,12 @@ void RetryForHistogramBucketUntilCountReached(
 // Replaces the platform specific implementation of BatteryMonitor.
 class MockBatteryMonitor : public device::mojom::BatteryMonitor {
  public:
-  MockBatteryMonitor() : binding_(this) {}
+  MockBatteryMonitor() = default;
   ~MockBatteryMonitor() override = default;
 
-  void Bind(device::mojom::BatteryMonitorRequest request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
+  void Bind(mojo::PendingReceiver<device::mojom::BatteryMonitor> receiver) {
+    DCHECK(!receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
   }
 
   void DidChange(const device::mojom::BatteryStatus& battery_status) {
@@ -65,13 +66,13 @@ class MockBatteryMonitor : public device::mojom::BatteryMonitor {
       ReportStatus();
   }
 
-  void CloseBinding() { binding_.Close(); }
+  void CloseReceiver() { receiver_.reset(); }
 
  private:
   // mojom::BatteryMonitor methods:
   void QueryNextStatus(QueryNextStatusCallback callback) override {
     if (!callback_.is_null()) {
-      binding_.Close();
+      receiver_.reset();
       return;
     }
     callback_ = std::move(callback);
@@ -88,7 +89,7 @@ class MockBatteryMonitor : public device::mojom::BatteryMonitor {
   QueryNextStatusCallback callback_;
   device::mojom::BatteryStatus status_;
   bool status_to_report_ = false;
-  mojo::Binding<device::mojom::BatteryMonitor> binding_;
+  mojo::Receiver<device::mojom::BatteryMonitor> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockBatteryMonitor);
 };

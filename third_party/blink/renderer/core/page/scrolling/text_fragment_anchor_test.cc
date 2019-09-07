@@ -1143,7 +1143,7 @@ TEST_F(TextFragmentAnchorTest, DoubleHashSyntax) {
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
-  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#");
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html");
 }
 
 // Test that the ##targetText fragment directive is scrolled into view and is
@@ -1183,8 +1183,8 @@ TEST_F(TextFragmentAnchorTest, DoubleHashWithElementFragment) {
       << LayoutViewport()->GetScrollOffset().ToString();
 }
 
-// If the fragment has a double hash, but the double hash isn't followed by a
-// valid targetText syntax, it should be interpreted as an element ID.
+// A double-hash should be interpreted as a fragment directive and should be
+// stripped from the URL, even if it is not a targetText.
 TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
   SimRequest request("https://example.com/test.html#element##id", "text/html");
   LoadURL("https://example.com/test.html#element##id");
@@ -1210,7 +1210,7 @@ TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
 
   RunAsyncMatchingTasks();
 
-  Element& div = *GetDocument().getElementById("element##id");
+  Element& div = *GetDocument().getElementById("element");
 
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
       << "Should have scrolled <div> into view but didn't, scroll offset: "

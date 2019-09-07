@@ -26,7 +26,8 @@ struct WhitelistEntry {
 
 const char* const kScopedBlockingCallAllowedArgs[] = {"file_name",
                                                       "function_name", nullptr};
-const char* const kFallbackFontAllowedArgs[] = {"font_name", nullptr};
+const char* const kFallbackFontAllowedArgs[] = {"font_name",
+                                                "primary_font_name", nullptr};
 const char* const kGetFallbackFontsAllowedArgs[] = {"script", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
@@ -57,6 +58,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"fonts", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
     {"fonts", "QueryLinkedFontsFromRegistry", nullptr},
+    {"fonts", "RenderTextHarfBuzz::ItemizeTextToRuns::Runs", nullptr},
     {"GPU", "*", kGPUAllowedArgs},
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},

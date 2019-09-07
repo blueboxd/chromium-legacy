@@ -10,7 +10,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -42,20 +41,13 @@ void TabBrowserControlsState::UpdateState(
 
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
-  chrome::mojom::ChromeRenderFrameAssociatedPtr renderer;
-  web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &renderer);
-  renderer->UpdateBrowserControlsState(constraints_state, current_state,
-                                       animate);
+  web_contents->GetMainFrame()->UpdateBrowserControlsState(
+      constraints_state, current_state, animate);
 
   if (web_contents->ShowingInterstitialPage()) {
-    chrome::mojom::ChromeRenderFrameAssociatedPtr interstitial_renderer;
     web_contents->GetInterstitialPage()
         ->GetMainFrame()
-        ->GetRemoteAssociatedInterfaces()
-        ->GetInterface(&interstitial_renderer);
-    interstitial_renderer->UpdateBrowserControlsState(constraints_state,
-                                                      current_state, animate);
+        ->UpdateBrowserControlsState(constraints_state, current_state, animate);
   }
 }
 

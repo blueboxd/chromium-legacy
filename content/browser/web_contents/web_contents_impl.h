@@ -698,7 +698,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsSpatialNavigationDisabled() const override;
   RenderFrameHost* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
-  void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) override;
   bool IsPortal() const override;
 
   // NavigatorDelegate ---------------------------------------------------------

@@ -344,7 +344,7 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
 
   GURL osdd_url = frame->GetDocument().OpenSearchDescriptionURL();
   if (!osdd_url.is_empty()) {
-    chrome::mojom::OpenSearchDescriptionDocumentHandlerAssociatedPtr
+    mojo::AssociatedRemote<chrome::mojom::OpenSearchDescriptionDocumentHandler>
         osdd_handler;
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
         &osdd_handler);
@@ -369,7 +369,8 @@ void ChromeRenderFrameObserver::DidCreateNewDocument() {
 
   // Connect to Mojo service on browser to notify it of the page's archive
   // properties.
-  offline_pages::mojom::MhtmlPageNotifierAssociatedPtr mhtml_notifier;
+  mojo::AssociatedRemote<offline_pages::mojom::MhtmlPageNotifier>
+      mhtml_notifier;
   render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &mhtml_notifier);
   DCHECK(mhtml_notifier);
@@ -502,22 +503,13 @@ void ChromeRenderFrameObserver::OnDestruct() {
 }
 
 void ChromeRenderFrameObserver::OnRenderFrameObserverRequest(
-    chrome::mojom::ChromeRenderFrameAssociatedRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::ChromeRenderFrame>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ChromeRenderFrameObserver::SetWindowFeatures(
     blink::mojom::WindowFeaturesPtr window_features) {
   render_frame()->GetRenderView()->GetWebView()->SetWindowFeatures(
       content::ConvertMojoWindowFeaturesToWebWindowFeatures(*window_features));
-}
-
-void ChromeRenderFrameObserver::UpdateBrowserControlsState(
-    content::BrowserControlsState constraints,
-    content::BrowserControlsState current,
-    bool animate) {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  render_frame()->GetRenderView()->UpdateBrowserControlsState(constraints,
-                                                              current, animate);
-#endif
 }

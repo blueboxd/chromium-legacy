@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
+#include "components/download/public/common/url_loader_factory_provider.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -236,7 +237,10 @@ void ResourceDownloader::OnResponseStarted(
           &UrlDownloadHandler::Delegate::OnUrlDownloadStarted, delegate_,
           std::move(download_create_info),
           std::make_unique<StreamHandleInputStream>(std::move(stream_handle)),
-          weak_ptr_factory_.GetWeakPtr(), this, callback_));
+          URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr(
+              new URLLoaderFactoryProvider(url_loader_factory_),
+              base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get())),
+          this, callback_));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
@@ -261,11 +265,6 @@ void ResourceDownloader::OnUploadProgress(uint64_t bytes_uploaded) {
 
   delegate_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(upload_callback_, bytes_uploaded));
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-ResourceDownloader::GetURLLoaderFactory() {
-  return url_loader_factory_;
 }
 
 void ResourceDownloader::CancelRequest() {

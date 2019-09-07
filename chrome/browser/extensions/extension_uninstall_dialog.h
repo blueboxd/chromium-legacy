@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "ui/gfx/image/image_skia.h"
@@ -172,7 +173,7 @@ class ExtensionUninstallDialog
 
   UninstallReason uninstall_reason_ = UNINSTALL_REASON_FOR_TESTING;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_{this};
 
   base::ThreadChecker thread_checker_;
 

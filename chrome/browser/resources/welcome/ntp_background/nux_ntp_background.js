@@ -2,28 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/cr.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../shared/animations_css.js';
+import '../shared/chooser_shared_css.js';
+import '../shared/step_indicator.js';
+import '../strings.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {navigateTo, navigateToNextStep, NavigationBehavior, Routes} from '../navigation_behavior.js';
+import {ModuleMetricsManager} from '../shared/module_metrics_proxy.js';
+import {stepIndicatorModel} from '../shared/nux_types.js';
+
+import {NtpBackgroundMetricsProxyImpl} from './ntp_background_metrics_proxy.js';
+import {NtpBackgroundData, NtpBackgroundProxy, NtpBackgroundProxyImpl} from './ntp_background_proxy.js';
+
 const KEYBOARD_FOCUSED_CLASS = 'keyboard-focused';
 
 Polymer({
   is: 'nux-ntp-background',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
     I18nBehavior,
-    welcome.NavigationBehavior,
+    NavigationBehavior,
   ],
 
   properties: {
-    /** @type {welcome.stepIndicatorModel} */
+    /** @type {stepIndicatorModel} */
     indicatorModel: Object,
 
-    /** @private {?welcome.NtpBackgroundData} */
+    /** @private {?NtpBackgroundData} */
     selectedBackground_: {
       observer: 'onSelectedBackgroundChange_',
       type: Object,
     },
   },
 
-  /** @private {?Array<!welcome.NtpBackgroundData>} */
+  /** @private {?Array<!NtpBackgroundData>} */
   backgrounds_: null,
 
   /** @private */
@@ -32,17 +55,17 @@ Polymer({
   /** @private {boolean} */
   imageIsLoading_: false,
 
-  /** @private {?welcome.ModuleMetricsManager} */
+  /** @private {?ModuleMetricsManager} */
   metricsManager_: null,
 
-  /** @private {?welcome.NtpBackgroundProxy} */
+  /** @private {?NtpBackgroundProxy} */
   ntpBackgroundProxy_: null,
 
   /** @override */
   ready: function() {
-    this.ntpBackgroundProxy_ = welcome.NtpBackgroundProxyImpl.getInstance();
-    this.metricsManager_ = new welcome.ModuleMetricsManager(
-        welcome.NtpBackgroundMetricsProxyImpl.getInstance());
+    this.ntpBackgroundProxy_ = NtpBackgroundProxyImpl.getInstance();
+    this.metricsManager_ =
+        new ModuleMetricsManager(NtpBackgroundMetricsProxyImpl.getInstance());
   },
 
   onRouteEnter: function() {
@@ -98,7 +121,7 @@ Polymer({
   },
 
   /**
-   * @param {!welcome.NtpBackgroundData} background
+   * @param {!NtpBackgroundData} background
    * @private
    */
   isSelectedBackground_: function(background) {
@@ -144,7 +167,7 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item: !welcome.NtpBackgroundData}}} e
+   * @param {!{model: !{item: !NtpBackgroundData}}} e
    * @private
    */
   onBackgroundClick_: function(e) {
@@ -217,14 +240,14 @@ Polymer({
       this.ntpBackgroundProxy_.clearBackground();
     }
     this.metricsManager_.recordGetStarted();
-    welcome.navigateToNextStep();
+    navigateToNextStep();
   },
 
   /** @private */
   onSkipClicked_: function() {
     this.finalized_ = true;
     this.metricsManager_.recordNoThanks();
-    welcome.navigateToNextStep();
+    navigateToNextStep();
 
     if (this.hasValidSelectedBackground_()) {
       this.fire('iron-announce', {text: this.i18n('ntpBackgroundReset')});

@@ -97,6 +97,45 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
   }
 }
 
+void SetMouseEventAttributes(MouseEventInit* initializer,
+                             Node* target_node,
+                             const AtomicString& mouse_event_type,
+                             const WebMouseEvent& mouse_event,
+                             const String& canvas_region_id,
+                             const FloatPoint* last_position,
+                             EventTarget* related_target,
+                             int click_count) {
+  bool is_mouse_enter_or_leave =
+      mouse_event_type == event_type_names::kMouseenter ||
+      mouse_event_type == event_type_names::kMouseleave;
+
+  initializer->setBubbles(!is_mouse_enter_or_leave);
+  initializer->setCancelable(!is_mouse_enter_or_leave);
+  MouseEvent::SetCoordinatesFromWebPointerProperties(
+      mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
+      initializer);
+  UpdateMouseMovementXY(mouse_event, last_position,
+                        target_node->GetDocument().domWindow(), initializer);
+  initializer->setButton(static_cast<int16_t>(mouse_event.button));
+  initializer->setButtons(
+      MouseEvent::WebInputEventModifiersToButtons(mouse_event.GetModifiers()));
+  initializer->setView(target_node->GetDocument().domWindow());
+  initializer->setComposed(true);
+  initializer->setDetail(click_count);
+  initializer->setRegion(canvas_region_id);
+  initializer->setRelatedTarget(related_target);
+  UIEventWithKeyState::SetFromWebInputEventModifiers(
+      initializer,
+      static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
+  initializer->setSourceCapabilities(
+      target_node->GetDocument().domWindow()
+          ? target_node->GetDocument()
+                .domWindow()
+                ->GetInputDeviceCapabilities()
+                ->FiresTouchEvents(mouse_event.FromTouch())
+          : nullptr);
+}
+
 // The amount of time to wait before sending a fake mouse event triggered
 // during a scroll.
 constexpr base::TimeDelta kFakeMouseMoveIntervalDuringScroll =
@@ -249,7 +288,20 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     const String& canvas_region_id,
     const FloatPoint* last_position,
     EventTarget* related_target,
-    bool check_for_listener) {
+    bool check_for_listener,
+    const PointerId& pointer_id,
+    const String& pointer_type) {
+  DCHECK(mouse_event_type == event_type_names::kMouseup ||
+         mouse_event_type == event_type_names::kMousedown ||
+         mouse_event_type == event_type_names::kMousemove ||
+         mouse_event_type == event_type_names::kMouseout ||
+         mouse_event_type == event_type_names::kMouseover ||
+         mouse_event_type == event_type_names::kMouseleave ||
+         mouse_event_type == event_type_names::kMouseenter ||
+         mouse_event_type == event_type_names::kContextmenu ||
+         mouse_event_type == event_type_names::kClick ||
+         mouse_event_type == event_type_names::kAuxclick);
+
   if (target && target->ToNode() &&
       (!check_for_listener || target->HasEventListeners(mouse_event_type))) {
     Node* target_node = target->ToNode();
@@ -257,47 +309,42 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     if (mouse_event_type == event_type_names::kMouseup ||
         mouse_event_type == event_type_names::kMousedown ||
         mouse_event_type == event_type_names::kClick ||
-        mouse_event_type == event_type_names::kAuxclick ||
-        mouse_event_type == event_type_names::kDblclick) {
+        mouse_event_type == event_type_names::kAuxclick) {
       click_count = click_count_;
     }
-    bool is_mouse_enter_or_leave =
-        mouse_event_type == event_type_names::kMouseenter ||
-        mouse_event_type == event_type_names::kMouseleave;
-    MouseEventInit* initializer = MouseEventInit::Create();
-    initializer->setBubbles(!is_mouse_enter_or_leave);
-    initializer->setCancelable(!is_mouse_enter_or_leave);
-    MouseEvent::SetCoordinatesFromWebPointerProperties(
-        mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
-        initializer);
-    UpdateMouseMovementXY(mouse_event, last_position,
-                          target_node->GetDocument().domWindow(), initializer);
-    initializer->setButton(static_cast<int16_t>(mouse_event.button));
-    initializer->setButtons(MouseEvent::WebInputEventModifiersToButtons(
-        mouse_event.GetModifiers()));
-    initializer->setView(target_node->GetDocument().domWindow());
-    initializer->setComposed(true);
-    initializer->setDetail(click_count);
-    initializer->setRegion(canvas_region_id);
-    initializer->setRelatedTarget(related_target);
-    UIEventWithKeyState::SetFromWebInputEventModifiers(
-        initializer,
-        static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
-    initializer->setSourceCapabilities(
-        target_node->GetDocument().domWindow()
-            ? target_node->GetDocument()
-                  .domWindow()
-                  ->GetInputDeviceCapabilities()
-                  ->FiresTouchEvents(mouse_event.FromTouch())
-            : nullptr);
 
-    MouseEvent* event = MouseEvent::Create(
-        mouse_event_type, initializer, mouse_event.TimeStamp(),
-        mouse_event.FromTouch() ? MouseEvent::kFromTouch
-                                : MouseEvent::kRealOrIndistinguishable,
-        mouse_event.menu_source_type);
+    DispatchEventResult dispatch_result;
 
-    DispatchEventResult dispatch_result = target->DispatchEvent(*event);
+    if (RuntimeEnabledFeatures::ClickPointerEventEnabled() &&
+        (mouse_event_type == event_type_names::kContextmenu ||
+         mouse_event_type == event_type_names::kClick ||
+         mouse_event_type == event_type_names::kAuxclick)) {
+      PointerEventInit* initializer = PointerEventInit::Create();
+      SetMouseEventAttributes(initializer, target_node, mouse_event_type,
+                              mouse_event, canvas_region_id, last_position,
+                              related_target, click_count);
+      initializer->setPointerId(pointer_id);
+      initializer->setPointerType(pointer_type);
+      PointerEvent* event = PointerEvent::Create(
+          mouse_event_type, initializer, mouse_event.TimeStamp(),
+          mouse_event.FromTouch() ? MouseEvent::kFromTouch
+                                  : MouseEvent::kRealOrIndistinguishable,
+          mouse_event.menu_source_type);
+      dispatch_result = target->DispatchEvent(*event);
+    } else {
+      MouseEventInit* initializer = MouseEventInit::Create();
+      SetMouseEventAttributes(initializer, target_node, mouse_event_type,
+                              mouse_event, canvas_region_id, last_position,
+                              related_target, click_count);
+      MouseEvent* event = MouseEvent::Create(
+          mouse_event_type, initializer, mouse_event.TimeStamp(),
+          mouse_event.FromTouch() ? MouseEvent::kFromTouch
+                                  : MouseEvent::kRealOrIndistinguishable,
+          mouse_event.menu_source_type);
+
+      dispatch_result = target->DispatchEvent(*event);
+    }
+
     return event_handling_util::ToWebInputEventResult(dispatch_result);
   }
   return WebInputEventResult::kNotHandled;
@@ -316,7 +363,9 @@ WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
 WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     Element* mouse_release_target,
     const WebMouseEvent& mouse_event,
-    const String& canvas_region_id) {
+    const String& canvas_region_id,
+    const PointerId& pointer_id,
+    const String& pointer_type) {
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event = false;
@@ -383,7 +432,8 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
         (mouse_event.button == WebPointerProperties::Button::kLeft)
             ? event_type_names::kClick
             : event_type_names::kAuxclick,
-        mouse_event, canvas_region_id, nullptr, nullptr);
+        mouse_event, canvas_region_id, nullptr, nullptr, false, pointer_id,
+        pointer_type);
   }
 
   return WebInputEventResult::kNotHandled;

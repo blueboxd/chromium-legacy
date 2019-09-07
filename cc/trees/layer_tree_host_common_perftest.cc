@@ -23,7 +23,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/test/paths.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace cc {
 namespace {
@@ -58,19 +58,22 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
     content_layer_client_.set_bounds(viewport);
   }
 
-  void SetTestName(const std::string& name) { test_name_ = name; }
+  void SetUpReporter(const std::string& story_name) {
+    reporter_ = std::make_unique<perf_test::PerfResultReporter>(
+        "calc_draw_props_time", story_name);
+    reporter_->RegisterImportantMetric("", "us");
+  }
 
   void AfterTest() override {
-    CHECK(!test_name_.empty()) << "Must SetTestName() before TearDown().";
-    perf_test::PrintResult("calc_draw_props_time", "", test_name_,
-                           timer_.TimePerLap().InMicrosecondsF(), "us", true);
+    CHECK(reporter_) << "Must SetUpReporter() before TearDown().";
+    reporter_->AddResult("", timer_.TimePerLap().InMicrosecondsF());
   }
 
  protected:
   FakeContentLayerClient content_layer_client_;
   base::LapTimer timer_;
-  std::string test_name_;
   std::string json_;
+  std::unique_ptr<perf_test::PerfResultReporter> reporter_;
 };
 
 class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
@@ -115,25 +118,25 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
 };
 
 TEST_F(CalcDrawPropsTest, TenTen) {
-  SetTestName("10_10");
+  SetUpReporter("10_10");
   ReadTestFile("10_10_layer_tree");
   RunCalcDrawProps();
 }
 
 TEST_F(CalcDrawPropsTest, HeavyPage) {
-  SetTestName("heavy_page");
+  SetUpReporter("heavy_page");
   ReadTestFile("heavy_layer_tree");
   RunCalcDrawProps();
 }
 
 TEST_F(CalcDrawPropsTest, TouchRegionLight) {
-  SetTestName("touch_region_light");
+  SetUpReporter("touch_region_light");
   ReadTestFile("touch_region_light");
   RunCalcDrawProps();
 }
 
 TEST_F(CalcDrawPropsTest, TouchRegionHeavy) {
-  SetTestName("touch_region_heavy");
+  SetUpReporter("touch_region_heavy");
   ReadTestFile("touch_region_heavy");
   RunCalcDrawProps();
 }

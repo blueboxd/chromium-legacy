@@ -401,6 +401,13 @@ api::autotest_private::WindowStateType ToWindowStateType(
   }
 }
 
+std::string GetPngDataAsString(scoped_refptr<base::RefCountedMemory> png_data) {
+  // Base64 encode the result so we can return it as a string.
+  std::string base64Png(png_data->front(),
+                        png_data->front() + png_data->size());
+  base::Base64Encode(base64Png, &base64Png);
+  return base64Png;
+}
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1396,17 +1403,60 @@ void AutotestPrivateTakeScreenshotFunction::ScreenshotTaken(
     std::unique_ptr<ui::ScreenshotGrabber> grabber,
     ui::ScreenshotResult screenshot_result,
     scoped_refptr<base::RefCountedMemory> png_data) {
-  if (screenshot_result == ui::ScreenshotResult::SUCCESS) {
-    // Base64 encode the result so we can return it as a string.
-    std::string base64Png(png_data->front(),
-                          png_data->front() + png_data->size());
-    base::Base64Encode(base64Png, &base64Png);
-    Respond(OneArgument(std::make_unique<base::Value>(std::move(base64Png))));
-  } else {
-    Respond(Error(base::StrCat(
+  if (screenshot_result != ui::ScreenshotResult::SUCCESS) {
+    return Respond(Error(base::StrCat(
         {"Error taking screenshot ",
          base::NumberToString(static_cast<int>(screenshot_result))})));
   }
+  Respond(
+      OneArgument(std::make_unique<base::Value>(GetPngDataAsString(png_data))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateTakeScreenshotForDisplayFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateTakeScreenshotForDisplayFunction::
+    ~AutotestPrivateTakeScreenshotForDisplayFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateTakeScreenshotForDisplayFunction::Run() {
+  std::unique_ptr<api::autotest_private::TakeScreenshotForDisplay::Params>
+      params(api::autotest_private::TakeScreenshotForDisplay::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateTakeScreenshotForDisplayFunction "
+           << params->display_id;
+  int64_t target_display_id;
+  base::StringToInt64(params->display_id, &target_display_id);
+  auto grabber = std::make_unique<ui::ScreenshotGrabber>();
+
+  for (auto* const window : ash::Shell::GetAllRootWindows()) {
+    const int64_t display_id =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+    if (display_id == target_display_id) {
+      grabber->TakeScreenshot(
+          window, window->bounds(),
+          base::BindOnce(
+              &AutotestPrivateTakeScreenshotForDisplayFunction::ScreenshotTaken,
+              this, base::Passed(&grabber)));
+      return RespondLater();
+    }
+  }
+  return RespondNow(Error(base::StrCat(
+      {"Error taking screenshot for display ", params->display_id})));
+}
+
+void AutotestPrivateTakeScreenshotForDisplayFunction::ScreenshotTaken(
+    std::unique_ptr<ui::ScreenshotGrabber> grabber,
+    ui::ScreenshotResult screenshot_result,
+    scoped_refptr<base::RefCountedMemory> png_data) {
+  if (screenshot_result != ui::ScreenshotResult::SUCCESS) {
+    return Respond(Error(base::StrCat(
+        {"Error taking screenshot ",
+         base::NumberToString(static_cast<int>(screenshot_result))})));
+  }
+  Respond(
+      OneArgument(std::make_unique<base::Value>(GetPngDataAsString(png_data))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

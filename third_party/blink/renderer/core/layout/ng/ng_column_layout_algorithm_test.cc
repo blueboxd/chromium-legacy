@@ -798,6 +798,70 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoid) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidColumn) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:10px; height:50px;"></div>
+        <div style="break-inside:avoid-column; width:20px; height:70px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:10x50
+      offset:110,0 size:100x70
+        offset:0,0 size:20x70
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidPage) {
+  // break-inside:avoid-page has no effect, unless we're breaking into pages.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:10px; height:50px;"></div>
+        <div style="break-inside:avoid-page; width:20px; height:70px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:10x50
+        offset:0,50 size:20x50
+      offset:110,0 size:100x20
+        offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidTallBlock) {
   // The block that has break-inside:avoid is too tall to fit in one
   // fragmentainer. So a break is unavoidable. Let's check that:

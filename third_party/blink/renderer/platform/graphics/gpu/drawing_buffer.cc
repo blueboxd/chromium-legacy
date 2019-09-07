@@ -557,9 +557,10 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
     // to transferToImageBitmap are made back-to-back, or when the context gets
     // lost. We intentionally leave the transparent black image in legacy color
     // space.
-    sk_sp<SkSurface> surface =
-        SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
-    return StaticBitmapImage::Create(surface->makeImageSnapshot());
+    SkBitmap black_bitmap;
+    black_bitmap.allocN32Pixels(size_.Width(), size_.Height());
+    black_bitmap.eraseARGB(0, 255, 255, 255);
+    return StaticBitmapImage::Create(SkImage::MakeFromBitmap(black_bitmap));
   }
 
   DCHECK_EQ(size_.Width(), transferable_resource.size.width());

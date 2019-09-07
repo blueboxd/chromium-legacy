@@ -65,10 +65,12 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       const login_manager::LoginScreenStorageMetadata& metadata,
       const std::string& data,
       LoginScreenStorageStoreCallback callback) override;
-
   void LoginScreenStorageRetrieve(
       const std::string& key,
       LoginScreenStorageRetrieveCallback callback) override;
+  void LoginScreenStorageListKeys(
+      LoginScreenStorageListKeysCallback callback) override;
+  void LoginScreenStorageDelete(const std::string& key) override;
 
   void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) override;

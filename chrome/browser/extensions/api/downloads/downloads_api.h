@@ -20,15 +20,12 @@
 #include "components/download/public/common/download_path_reservation_tracker.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/warning_set.h"
 
 class DownloadFileIconExtractor;
 class DownloadOpenPrompt;
-
-namespace extensions {
-class ExtensionRegistry;
-}
 
 // Functions in the chrome.downloads namespace facilitate
 // controlling downloads from extensions. See the full API doc at
@@ -395,7 +392,7 @@ class ExtensionDownloadsEventRouter
   // Listen to extension unloaded notifications.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };

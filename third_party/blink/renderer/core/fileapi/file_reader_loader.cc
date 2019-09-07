@@ -344,9 +344,10 @@ void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
                                   file_reader_loader_read_errors_histogram,
                                   ("Storage.Blob.FileReaderLoader.ReadError"));
+  file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
+
   if (status != net::OK) {
     net_error_ = status;
-    file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
     Failed(status == net::ERR_FILE_NOT_FOUND ? FileErrorCode::kNotFoundErr
                                              : FileErrorCode::kNotReadableErr,
            FailureType::kBackendReadError);

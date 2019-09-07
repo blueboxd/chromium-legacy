@@ -31,6 +31,12 @@ extern const char kReopenTabConditionsMet[];
 // The user reopened a previously closed tab.
 extern const char kTabReopened[];
 
+// A tab with playing media was sent to the background.
+extern const char kMediaBackgrounded[];
+
+// The user opened the Global Media Controls dialog.
+extern const char kGlobalMediaControlsOpened[];
+
 // All the events declared below are the string names of deferred onboarding
 // events for the Focus Mode feature.
 

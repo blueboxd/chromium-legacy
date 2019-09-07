@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('welcome');
-
 /**
  * @typedef {{
  *   id: number,
@@ -12,7 +10,7 @@ cr.exportPath('welcome');
  *   url: string,
  * }}
  */
-welcome.BookmarkListItem;
+export let BookmarkListItem;
 
 /**
  * @typedef {{
@@ -20,7 +18,7 @@ welcome.BookmarkListItem;
  *   active: number,
  * }}
  */
-welcome.stepIndicatorModel;
+export let stepIndicatorModel;
 
 /**
  * TODO(hcarmona): somehow reuse from
@@ -32,4 +30,4 @@ welcome.stepIndicatorModel;
  *   isUnknownError: boolean,
  * }};
  */
-welcome.DefaultBrowserInfo;
+export let DefaultBrowserInfo;

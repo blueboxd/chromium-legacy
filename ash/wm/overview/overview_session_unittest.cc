@@ -2794,12 +2794,12 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
     return Shell::Get()->split_view_controller();
   }
 
+ protected:
   void GenerateScrollSequence(const gfx::Point& start, const gfx::Point& end) {
     GetEventGenerator()->GestureScrollSequence(
         start, end, base::TimeDelta::FromMilliseconds(100), 1000);
   }
 
- protected:
   void DispatchLongPress(OverviewItem* item) {
     ui::TouchEvent long_press(
         ui::ET_GESTURE_LONG_PRESS,
@@ -2974,7 +2974,7 @@ TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
 
 // Test that scrolling occurs if started on top of a window using the window's
 // center-point as a start.
-TEST_F(OverviewSessionNewLayoutTest, CheckScrollingOnWindowItems) {
+TEST_F(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -2986,6 +2986,26 @@ TEST_F(OverviewSessionNewLayoutTest, CheckScrollingOnWindowItems) {
 
   GenerateScrollSequence(topleft_window_center, gfx::Point(-500, 50));
   EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
+}
+
+// Tests that a vertical scroll sequence will close the window it is scrolled
+// on.
+TEST_F(OverviewSessionNewLayoutTest, VerticalScrollingOnOverviewItem) {
+  constexpr int kNumWidgets = 8;
+  std::vector<std::unique_ptr<views::Widget>> widgets(kNumWidgets);
+  for (int i = kNumWidgets - 1; i >= 0; --i)
+    widgets[i] = CreateTestWidget();
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* leftmost_window =
+      GetOverviewItemForWindow(widgets[0]->GetNativeWindow());
+  const gfx::Point topleft_window_center =
+      gfx::ToRoundedPoint(leftmost_window->target_bounds().CenterPoint());
+  const gfx::Point end_point = topleft_window_center - gfx::Vector2d(0, 300);
+
+  GenerateScrollSequence(topleft_window_center, end_point);
+  EXPECT_TRUE(widgets[0]->IsClosed());
 }
 
 // Test that scrolling occurs if we hit the associated keyboard shortcut.

@@ -28,9 +28,8 @@
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace cc {
 namespace {
@@ -65,6 +64,18 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     SetupPendingTree(std::move(pending_raster_source), tile_size, Region());
   }
 
+  perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
+    perf_test::PerfResultReporter reporter("tile_manager", story_name);
+    reporter.RegisterImportantMetric("_raster_tile_queue_construct", "runs/s");
+    reporter.RegisterImportantMetric("_raster_tile_queue_construct_and_iterate",
+                                     "runs/s");
+    reporter.RegisterImportantMetric("_eviction_tile_queue_construct",
+                                     "runs/s");
+    reporter.RegisterImportantMetric(
+        "_eviction_tile_queue_construct_and_iterate", "runs/s");
+    return reporter;
+  }
+
   void RunRasterQueueConstructTest(const std::string& test_name,
                                    int layer_count) {
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
@@ -85,12 +96,8 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tile_manager_raster_tile_queue_construct",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_raster_tile_queue_construct", timer_.LapsPerSecond());
   }
 
   void RunRasterQueueConstructAndIterateTest(const std::string& test_name,
@@ -120,13 +127,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult(
-        "tile_manager_raster_tile_queue_construct_and_iterate",
-        "",
-        test_name,
-        timer_.LapsPerSecond(),
-        "runs/s",
-        true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_raster_tile_queue_construct_and_iterate",
+                       timer_.LapsPerSecond());
   }
 
   void RunEvictionQueueConstructTest(const std::string& test_name,
@@ -153,12 +156,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tile_manager_eviction_tile_queue_construct",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_eviction_tile_queue_construct",
+                       timer_.LapsPerSecond());
   }
 
   void RunEvictionQueueConstructAndIterateTest(const std::string& test_name,
@@ -193,13 +193,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult(
-        "tile_manager_eviction_tile_queue_construct_and_iterate",
-        "",
-        test_name,
-        timer_.LapsPerSecond(),
-        "runs/s",
-        true);
+    perf_test::PerfResultReporter reporter = SetUpReporter(test_name);
+    reporter.AddResult("_eviction_tile_queue_construct_and_iterate",
+                       timer_.LapsPerSecond());
   }
 
   std::vector<FakePictureLayerImpl*> CreateLayers(int layer_count,
@@ -285,8 +281,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("prepare_tiles", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PerfResultReporter reporter("prepare_tiles", test_name);
+    reporter.RegisterImportantMetric("", "runs/s");
+    reporter.AddResult("", timer_.LapsPerSecond());
   }
 
   TileManager* tile_manager() { return host_impl()->tile_manager(); }

@@ -81,7 +81,7 @@ void SoundContentSettingObserver::ReadyToCommitNavigation(
     return;
   }
 
-  blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
+  mojo::AssociatedRemote<blink::mojom::AutoplayConfigurationClient> client;
   navigation_handle->GetRenderFrameHost()
       ->GetRemoteAssociatedInterfaces()
       ->GetInterface(&client);

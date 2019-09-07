@@ -264,6 +264,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   }
 
   display_handle_->Show(this);
+
+  state_->set_is_show_user_gesture(is_show_user_gesture_);
   state_->AreRequestedMethodsSupported(
       base::BindOnce(&PaymentRequest::AreRequestedMethodsSupportedCallback,
                      weak_ptr_factory_.GetWeakPtr()));

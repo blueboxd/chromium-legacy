@@ -81,6 +81,14 @@
       },
     },
 
+    'android_modern_smoke_tests': {
+      'chrome_modern_public_smoke_test': {},
+    },
+
+    'android_monochrome_smoke_tests': {
+      'monochrome_public_smoke_test': {},
+    },
+
     'android_oreo_standard_gtests': {
       'chrome_public_test_apk': {
         'swarming': {
@@ -4115,10 +4123,10 @@
     'gpu_win_specific_gtests': {
       'gl_tests_passthrough': {
         'test': 'gl_tests',
-        'desktop_args': [
+        'args': [
           '--use-gpu-in-tests',
           '--use-cmd-decoder=passthrough',
-        ]
+        ],
       },
       'video_decode_accelerator_d3d11_unittest': {
         'args': [
@@ -4572,6 +4580,7 @@
           '--build-revision=${got_revision}',
           '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
           '--browser-ui-tests-verify-pixels',
+          '--test-launcher-jobs=1',
           '--enable-pixel-output-in-tests',
         ],
         'experiment_percentage': 100,
@@ -4903,11 +4912,12 @@
     },
 
     'webview_bot_instrumentation_test_apk_no_field_trial_gtest': {
-      'webview_instrumentation_test_apk': {
+      'webview_instrumentation_test_apk_no_field_trial': {
         'args': ['--disable-field-trials'],
         'swarming': {
           'shards': 12,
         },
+        'test': 'webview_instrumentation_test_apk',
       },
     },
 
@@ -5082,25 +5092,48 @@
   ##############################################################################
 
   'compound_suites': {
-    'android_oreo_gtests': [
+    'android_lollipop_marshmallow_gtests': [
+      'android_modern_smoke_tests',
+      'android_smoke_tests',
+      'android_specific_chromium_gtests',  # Already includes gl_gtests.
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'linux_flavor_specific_chromium_gtests',
+      'vr_platform_specific_chromium_gtests',
+      'network_service_android_gtests',
+    ],
+
+    'android_nougat_gtests': [
       'android_ddready_vr_gtests',
+      'android_monochrome_smoke_tests',
+      'android_smoke_tests',
+    ],
+
+    'android_oreo_gtests': [
       'android_ar_gtests',
+      'android_ddready_vr_gtests',
+      'android_monochrome_smoke_tests',
       'android_oreo_standard_gtests',
+      'android_smoke_tests',
       'android_vega_vr_gtests',
     ],
 
-    'android_oreo_rel_gtests': [
-      'system_webview_shell_instrumentation_tests',
-      'webview_cts_tests_gtest',
-      'webview_ui_instrumentation_tests',
-    ],
-
     'android_pie_gtests': [
-      'android_ddready_vr_gtests',
       'android_ar_gtests',
+      'android_ddready_vr_gtests',
+      'android_monochrome_smoke_tests',
+      'android_smoke_tests',
       'chromium_tracing_gtests',
       # No standard tests due to capacity, no Vega tests since it's currently
       # O only.
+    ],
+
+    'android_pie_rel_gtests': [
+      'android_monochrome_smoke_tests',
+      'android_smoke_tests',
+      'system_webview_shell_instrumentation_tests',
+      'webview_cts_tests_gtest',
+      'webview_ui_instrumentation_tests',
     ],
 
     'bfcache_android_gtests': [

@@ -35,6 +35,7 @@
 .cipd
 .clang-coverage
 .classpath
+.code-coverage
 .cproject
 .gdb_history
 .gdbinit

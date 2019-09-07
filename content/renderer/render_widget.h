@@ -139,10 +139,14 @@ struct VisualProperties;
 // Because the main frame RenderWidget is used to implement RenderViewImpl
 // (deprecated) it has a shared lifetime. But the RenderViewImpl may have
 // a proxy main frame which does not use a RenderWidget. Thus a RenderWidget
-// can be frozen, during the time in which we wish we could delete it but we
+// can be undead, during the time in which we wish we could delete it but we
 // can't, and it should be (relatively.. it's a work in progress) unused during
-// that time. This does not apply to subframes, whose lifetimes are not tied to
-// the RenderViewImpl.
+// that time. Once a provisional frame exists however, until it is swapped in,
+// RenderWidget remains undead as it should not exist from the point of view of
+// the frame tree or the RenderView, but it does get used then by the
+// provisional frame while still being undead. This concept does not apply to
+// RenderWidgets of subframes, whose lifetimes are not tied to the
+// RenderViewImpl.
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
@@ -157,7 +161,7 @@ class CONTENT_EXPORT RenderWidget
                CompositorDependencies* compositor_deps,
                const ScreenInfo& screen_info,
                blink::WebDisplayMode display_mode,
-               bool is_frozen,
+               bool is_undead,
                bool hidden,
                bool never_visible,
                mojom::WidgetRequest widget_request);
@@ -182,7 +186,7 @@ class CONTENT_EXPORT RenderWidget
                                         CompositorDependencies*,
                                         const ScreenInfo&,
                                         blink::WebDisplayMode display_mode,
-                                        bool is_frozen,
+                                        bool is_undead,
                                         bool never_visible,
                                         mojom::WidgetRequest widget_request);
   // Overrides the implementation of CreateForFrame() function below. Used by
@@ -198,7 +202,7 @@ class CONTENT_EXPORT RenderWidget
       CompositorDependencies* compositor_deps,
       const ScreenInfo& screen_info,
       blink::WebDisplayMode display_mode,
-      bool is_frozen,
+      bool is_undead,
       bool never_visible);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
@@ -210,7 +214,6 @@ class CONTENT_EXPORT RenderWidget
                                       CompositorDependencies* compositor_deps,
                                       const ScreenInfo& screen_info,
                                       blink::WebDisplayMode display_mode,
-                                      bool is_frozen,
                                       bool hidden,
                                       bool never_visible,
                                       mojom::WidgetRequest widget_request);
@@ -288,21 +291,21 @@ class CONTENT_EXPORT RenderWidget
   ScreenInfo screen_info() const { return screen_info_; }
   void set_screen_info(const ScreenInfo& info) { screen_info_ = info; }
 
-  // Sets whether this RenderWidget should be moved into or out of a frozen
+  // Sets whether this RenderWidget should be moved into or out of an undead
   // state. This state is used for the RenderWidget attached to a RenderViewImpl
   // for its main frame, when there is no local main frame present.
   // In this case, the RenderWidget can't be deleted currently but should
   // otherwise act as if it is dead. Only whitelisted new IPC messages will be
   // sent, and it does no compositing. The process is free to exit when there
-  // are no other unfrozen (thawed) RenderWidgets.
-  void SetIsFrozen(bool is_frozen);
+  // are no other non-undead RenderWidgets.
+  void SetIsUndead(bool is_undead);
 
-  // A main frame RenderWidget is frozen instead of being deleted. Then when a
-  // provisional frame is created, the RenderWidget is recycled and attached to
-  // it. Code that wants to prevent using the RenderWidget once it has been
-  // frozen would race with a new provisional frame attaching it, so should
-  // check for both states via this method instead.
-  bool IsFrozenOrProvisional() { return is_frozen_ || IsForProvisionalFrame(); }
+  // A main frame RenderWidget is made undead instead of being deleted. Then
+  // when a provisional frame is created, the RenderWidget is recycled and
+  // attached to it. Code that wants to prevent using the RenderWidget once it
+  // has been made undead would race with a new provisional frame attaching it,
+  // so should check for both states via this method instead.
+  bool IsUndeadOrProvisional() { return is_undead_ || IsForProvisionalFrame(); }
 
   // This is true once a Close IPC has been received. The actual action of
   // closing must be done on another stack frame, in case the IPC receipt
@@ -1007,7 +1010,7 @@ class CONTENT_EXPORT RenderWidget
   // True if it is known that the host is in the process of being shut down.
   bool host_will_close_this_ = false;
 
-  // A RenderWidget is frozen if it is the RenderWidget attached to the
+  // A RenderWidget is undead if it is the RenderWidget attached to the
   // RenderViewImpl for its main frame, but there is a proxy main frame in
   // RenderViewImpl's frame tree. Since proxy frames do not have content they
   // do not need a RenderWidget.
@@ -1016,8 +1019,12 @@ class CONTENT_EXPORT RenderWidget
   // unlike the main frame RenderWidget (for now).
   // TODO(419087): In this case the RenderWidget should not exist at all as
   // it has nothing to display, but since we can't destroy it without destroying
-  // the RenderViewImpl, we freeze it instead.
-  bool is_frozen_;
+  // the RenderViewImpl, we mark it as undead instead.
+  // TODO(419087): RenderWidgets attached to a provisional main frame are
+  // undead, but are also semi-active, they are valid and can be used and
+  // receive IPCs etc, even though they have not been swapped in. We should
+  // consider a tri-state here instead.
+  bool is_undead_;
 
   // In web tests, synchronous resizing mode may be used. Normally each widget's
   // size is controlled by IPC from the browser. In synchronous resize mode the

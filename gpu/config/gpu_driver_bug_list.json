@@ -3034,7 +3034,7 @@
     },
     {
       "id": 285,
-      "cr_bugs": [914976],
+      "cr_bugs": [914976, 1000113],
       "description": "Context flush ordering doesn't seem to work on AMD",
       "vendor_id": "0x1002",
       "os": {
@@ -3042,6 +3042,15 @@
       },
       "features": [
         "use_virtualized_gl_contexts"
+      ],
+      "exceptions": [
+        {
+          "driver_vendor": "Mesa",
+          "driver_version": {
+            "op": ">=",
+            "value": "19.0"
+          }
+        }
       ]
     },
     {

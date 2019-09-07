@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/common/extensions/command.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
@@ -30,7 +31,6 @@ class PrefRegistrySyncable;
 }
 
 namespace extensions {
-class ExtensionRegistry;
 
 // This service keeps track of preferences related to extension commands
 // (assigning initial keybindings on install and removing them on deletion
@@ -263,7 +263,7 @@ class CommandService : public BrowserContextKeyedAPI,
   Profile* profile_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   base::ObserverList<Observer>::Unchecked observers_;
 

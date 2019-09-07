@@ -347,7 +347,7 @@ crbug.com/856601 [ Linux ] external/wpt/BackgroundSync/idlharness.https.any.work
 crbug.com/856601 [ Linux ] external/wpt/fetch/api/idlharness.any.serviceworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/BackgroundSync/idlharness.https.any.html [ Pass Timeout ]
 
-# Sheriff 2009-09-05
+# Sheriff 2019-09-05
 crbug.com/856601 [ Linux ] external/wpt/fetch/api/idlharness.any.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/fetch/api/idlharness.any.sharedworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
@@ -358,5 +358,8 @@ crbug.com/856601 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/idlharness.
 crbug.com/856601 [ Linux ] virtual/blink-cors/external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.sharedworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.worker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/idlharness.any.worker.html [ Pass Timeout ]
+
+# Sheriff 2019-09-06
+crbug.com/856601 [ Linux ] external/wpt/idle-detection/idlharness.https.any.html [ Pass Timeout ]
 
 # Note to sheriffs: Timeouts about "idlharness" or "interfaces" are usually crbug.com/856601.

@@ -224,6 +224,17 @@ if (!is_android && !is_chromeos) {
   grit("welcome_resources") {
     source = "welcome/welcome_resources.grd"
 
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    deps = [
+      "//chrome/browser/resources/welcome:polymer3_elements",
+    ]
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
     defines = chrome_grit_defines
     outputs = [
       "grit/welcome_resources.h",

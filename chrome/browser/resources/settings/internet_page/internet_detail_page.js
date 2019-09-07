@@ -518,10 +518,11 @@ Polymer({
       this.close();
       return;
     }
-    this.managedProperties_ = OncMojo.getDefaultManagedProperties(
+    const managedProperties = OncMojo.getDefaultManagedProperties(
         networkState.type, networkState.guid, networkState.name);
-    this.managedProperties_.connectable = networkState.connectable;
-    this.managedProperties_.connectionState = networkState.connectionState;
+    managedProperties.connectable = networkState.connectable;
+    managedProperties.connectionState = networkState.connectionState;
+    this.managedProperties_ = managedProperties;
 
     this.propertiesReceived_ = true;
     this.outOfRange_ = false;

@@ -61,42 +61,57 @@ constexpr CGFloat kAnimationOutDuration = 0.1;
 - (void)presentAnimated:(BOOL)animated {
   DCHECK(!self.animator) << "Presenting again is not supported.";
   __weak __typeof(self) weakSelf = self;
-  self.animator = [[UIViewPropertyAnimator alloc]
-      initWithDuration:animated ? kAnimationInDuration : 0
-                 curve:UIViewAnimationCurveEaseOut
-            animations:^{
-              weakSelf.containerView.alpha = 1.0;
-              weakSelf.containerView.transform = CGAffineTransformIdentity;
-            }];
-  [self.animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+  auto animation = ^{
+    weakSelf.containerView.alpha = 1.0;
+    weakSelf.containerView.transform = CGAffineTransformIdentity;
+  };
+  auto completion = ^void(UIViewAnimatingPosition) {
     [weakSelf.presentedViewController
         didMoveToParentViewController:weakSelf.baseViewController];
     [weakSelf.delegate containedPresenterDidPresent:weakSelf];
-  }];
-  [self.animator startAnimation];
+  };
+
+  if (animated) {
+    self.animator = [[UIViewPropertyAnimator alloc]
+        initWithDuration:animated ? kAnimationInDuration : 0
+                   curve:UIViewAnimationCurveEaseOut
+              animations:animation];
+    [self.animator addCompletion:completion];
+    [self.animator startAnimation];
+  } else {
+    animation();
+    completion(UIViewAnimatingPositionEnd);
+  }
 }
 
 - (void)dismissAnimated:(BOOL)animated {
-  if (self.animator.state == UIViewAnimatingStateActive) {
+  if (self.animator.state == UIViewAnimatingStateActive)
     [self.animator stopAnimation:YES];
-  }
 
   [self.presentedViewController willMoveToParentViewController:nil];
 
   __weak __typeof(self) weakSelf = self;
-  UIViewPropertyAnimator* dismissAnimator = [[UIViewPropertyAnimator alloc]
-      initWithDuration:animated ? kAnimationOutDuration : 0
-                 curve:UIViewAnimationCurveEaseOut
-            animations:^{
-              weakSelf.containerView.alpha = 0.0;
-            }];
-  [dismissAnimator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+  auto animation = ^{
+    weakSelf.containerView.alpha = 0.0;
+  };
+  auto completion = ^void(UIViewAnimatingPosition) {
     [weakSelf.presentedViewController.view removeFromSuperview];
     [weakSelf.presentedViewController removeFromParentViewController];
     [weakSelf.containerView removeFromSuperview];
     [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
-  }];
-  [dismissAnimator startAnimation];
+  };
+
+  if (animated) {
+    UIViewPropertyAnimator* dismissAnimator = [[UIViewPropertyAnimator alloc]
+        initWithDuration:animated ? kAnimationOutDuration : 0
+                   curve:UIViewAnimationCurveEaseOut
+              animations:animation];
+    [dismissAnimator addCompletion:completion];
+    [dismissAnimator startAnimation];
+  } else {
+    animation();
+    completion(UIViewAnimatingPositionEnd);
+  }
 }
 
 @end

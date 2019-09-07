@@ -190,17 +190,20 @@ class LocalDeviceInstrumentationTestRun(
 
         steps.append(use_webview_provider)
 
-      def install_helper(apk, permissions):
+      def install_helper(apk, modules=None, permissions=None):
+
         @instrumentation_tracing.no_tracing
-        @trace_event.traced("apk_path")
-        def install_helper_internal(d, apk_path=apk.path):
+        @trace_event.traced
+        def install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          d.Install(apk, permissions=permissions)
+          d.Install(apk, modules=modules, permissions=permissions)
+
         return install_helper_internal
 
       def incremental_install_helper(apk, json_path, permissions):
-        @trace_event.traced("apk_path")
-        def incremental_install_helper_internal(d, apk_path=apk.path):
+
+        @trace_event.traced
+        def incremental_install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
           installer.Install(d, json_path, apk=apk, permissions=permissions)
         return incremental_install_helper_internal
@@ -214,8 +217,9 @@ class LocalDeviceInstrumentationTestRun(
                                apk_under_test_incremental_install_json,
                            permissions))
         else:
-          steps.append(install_helper(self._test_instance.apk_under_test,
-                                      permissions))
+          steps.append(
+              install_helper(self._test_instance.apk_under_test,
+                             self._test_instance.modules, permissions))
 
       permissions = self._test_instance.test_apk.GetPermissions()
       if self._test_instance.test_apk_incremental_install_json:
@@ -225,11 +229,12 @@ class LocalDeviceInstrumentationTestRun(
                              test_apk_incremental_install_json,
                          permissions))
       else:
-        steps.append(install_helper(self._test_instance.test_apk,
-                                    permissions))
+        steps.append(
+            install_helper(
+                self._test_instance.test_apk, permissions=permissions))
 
-      steps.extend(install_helper(apk, None)
-                   for apk in self._test_instance.additional_apks)
+      steps.extend(
+          install_helper(apk) for apk in self._test_instance.additional_apks)
 
       @trace_event.traced
       def set_debug_app(dev):

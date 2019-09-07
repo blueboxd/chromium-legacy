@@ -172,6 +172,12 @@ gfx::ImageSkia AppMenuIconController::GetIconImage(
                                         promo_highlight_color));
 }
 
+SkColor AppMenuIconController::GetIconColor(
+    base::Optional<SkColor> promo_highlight_color) const {
+  return GetIconColorForSeverity(delegate_, GetTypeAndSeverity().severity,
+                                 promo_highlight_color);
+}
+
 void AppMenuIconController::OnGlobalErrorsChanged() {
   UpdateDelegate();
 }

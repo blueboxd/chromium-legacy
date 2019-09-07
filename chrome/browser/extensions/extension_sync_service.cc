@@ -27,8 +27,6 @@
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "extensions/browser/app_sorting.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -108,8 +106,6 @@ struct ExtensionSyncService::PendingUpdate {
 
 ExtensionSyncService::ExtensionSyncService(Profile* profile)
     : profile_(profile),
-      registry_observer_(this),
-      prefs_observer_(this),
       ignore_updates_(false),
       flare_(sync_start_util::GetFlareForSyncableService(profile->GetPath())) {
   registry_observer_.Add(ExtensionRegistry::Get(profile_));

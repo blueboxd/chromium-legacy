@@ -1948,6 +1948,7 @@ crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Failure ]
 crbug.com/996474 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Pass Failure ]
+crbug.com/998080 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-012.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-015.html [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
@@ -3227,6 +3228,7 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-under
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
@@ -6336,3 +6338,6 @@ crbug.com/1000768 [ Linux ] external/wpt/storage/idlharness.https.any.html [ Pas
 
 # Partial fix to avoid a regression on eval(string) with Trusted Types enabled in Chrome 77.
 crbug.com/992424 external/wpt/trusted-types/block-eval.tentative.html [ Failure ]
+
+# Sheriff 2019-09-06
+crbug.com/998399 [ Linux ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass Timeout ]

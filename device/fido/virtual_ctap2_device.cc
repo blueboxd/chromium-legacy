@@ -791,6 +791,11 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
         cbor::Value(
             request.cred_protect->first == CredProtect::kUVRequired ? 3 : 2));
   }
+
+  if (config_.add_extra_extension) {
+    extensions_map.emplace(cbor::Value("unsolicited"), cbor::Value(42));
+  }
+
   if (!extensions_map.empty()) {
     extensions = cbor::Value(std::move(extensions_map));
   }
@@ -983,6 +988,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
+  base::Optional<cbor::Value> extensions;
+  cbor::Value::MapValue extensions_map;
+  if (config_.add_extra_extension) {
+    extensions_map.emplace(cbor::Value("unsolicited"), cbor::Value(42));
+  }
+  if (!extensions_map.empty()) {
+    extensions = cbor::Value(std::move(extensions_map));
+  }
+
   // This implementation does not sort credentials by creation time as the spec
   // requires.
 
@@ -1005,7 +1019,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
 
     auto authenticator_data = ConstructAuthenticatorData(
         rp_id_hash, user_verified, registration.second->counter,
-        std::move(opt_attested_cred_data), base::nullopt);
+        std::move(opt_attested_cred_data),
+        extensions ? base::make_optional(extensions->Clone()) : base::nullopt);
     auto signature_buffer =
         ConstructSignatureBuffer(authenticator_data, client_data_hash);
 

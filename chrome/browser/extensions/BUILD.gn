@@ -661,6 +661,8 @@ jumbo_static_library("extensions") {
     "policy_handlers.h",
     "proxy_overridden_bubble_delegate.cc",
     "proxy_overridden_bubble_delegate.h",
+    "scoped_active_install.cc",
+    "scoped_active_install.h",
     "scripting_permissions_modifier.cc",
     "scripting_permissions_modifier.h",
     "settings_api_bubble_delegate.cc",

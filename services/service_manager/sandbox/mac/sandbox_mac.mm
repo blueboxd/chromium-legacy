@@ -26,7 +26,6 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_port_rendezvous.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -83,56 +82,57 @@ const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
 void SandboxMac::Warmup(SandboxType sandbox_type) {
   DCHECK_EQ(sandbox_type, SANDBOX_TYPE_GPU);
 
-  base::mac::ScopedNSAutoreleasePool scoped_pool;
+  @autoreleasepool {
+    {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
+      base::ScopedCFTypeRef<CGColorSpaceRef> rgb_colorspace(
+          CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
 
-  {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
-    base::ScopedCFTypeRef<CGColorSpaceRef> rgb_colorspace(
-        CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
+      // Allocate a 1x1 image.
+      char data[4];
+      base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
+          data, 1, 1, 8, 1 * 4, rgb_colorspace,
+          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
 
-    // Allocate a 1x1 image.
-    char data[4];
-    base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
-        data, 1, 1, 8, 1 * 4, rgb_colorspace,
-        kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+      // Load in the color profiles we'll need (as a side effect).
+      ignore_result(base::mac::GetSRGBColorSpace());
+      ignore_result(base::mac::GetSystemColorSpace());
 
-    // Load in the color profiles we'll need (as a side effect).
-    ignore_result(base::mac::GetSRGBColorSpace());
-    ignore_result(base::mac::GetSystemColorSpace());
+      // CGColorSpaceCreateSystemDefaultCMYK - 10.6
+      base::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
+          CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
+    }
 
-    // CGColorSpaceCreateSystemDefaultCMYK - 10.6
-    base::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
-        CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
-  }
+    {  // localtime() - 10.5.6
+      time_t tv = {0};
+      localtime(&tv);
+    }
 
-  {  // localtime() - 10.5.6
-    time_t tv = {0};
-    localtime(&tv);
-  }
+    {  // Gestalt() tries to read
+       // /System/Library/CoreServices/SystemVersion.plist
+      // on 10.5.6
+      int32_t tmp;
+      base::SysInfo::OperatingSystemVersionNumbers(&tmp, &tmp, &tmp);
+    }
 
-  {  // Gestalt() tries to read /System/Library/CoreServices/SystemVersion.plist
-    // on 10.5.6
-    int32_t tmp;
-    base::SysInfo::OperatingSystemVersionNumbers(&tmp, &tmp, &tmp);
-  }
+    {  // CGImageSourceGetStatus() - 10.6
+       // Create a png with just enough data to get everything warmed up...
+      char png_header[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+      NSData* data = [NSData dataWithBytes:png_header
+                                    length:base::size(png_header)];
+      base::ScopedCFTypeRef<CGImageSourceRef> img(
+          CGImageSourceCreateWithData((CFDataRef)data, NULL));
+      CGImageSourceGetStatus(img);
+    }
 
-  {  // CGImageSourceGetStatus() - 10.6
-     // Create a png with just enough data to get everything warmed up...
-    char png_header[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
-    NSData* data = [NSData dataWithBytes:png_header
-                                  length:base::size(png_header)];
-    base::ScopedCFTypeRef<CGImageSourceRef> img(
-        CGImageSourceCreateWithData((CFDataRef)data, NULL));
-    CGImageSourceGetStatus(img);
-  }
+    {
+      // Allow access to /dev/urandom.
+      base::GetUrandomFD();
+    }
 
-  {
-    // Allow access to /dev/urandom.
-    base::GetUrandomFD();
-  }
-
-  {  // IOSurfaceLookup() - 10.7
-    // Needed by zero-copy texture update framework - crbug.com/323338
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(0));
+    {  // IOSurfaceLookup() - 10.7
+      // Needed by zero-copy texture update framework - crbug.com/323338
+      base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(0));
+    }
   }
 }
 

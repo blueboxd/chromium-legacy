@@ -32,10 +32,10 @@ MediaSessionServiceImpl::~MediaSessionServiceImpl() {
 // static
 void MediaSessionServiceImpl::Create(
     RenderFrameHost* render_frame_host,
-    blink::mojom::MediaSessionServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::MediaSessionService> receiver) {
   MediaSessionServiceImpl* impl =
       new MediaSessionServiceImpl(render_frame_host);
-  impl->Bind(std::move(request));
+  impl->Bind(std::move(receiver));
 }
 
 RenderFrameHost* MediaSessionServiceImpl::GetRenderFrameHost() {
@@ -137,9 +137,9 @@ MediaSessionImpl* MediaSessionServiceImpl::GetMediaSession() {
 }
 
 void MediaSessionServiceImpl::Bind(
-    blink::mojom::MediaSessionServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::MediaSessionService> receiver) {
   receiver_.reset(new mojo::Receiver<blink::mojom::MediaSessionService>(
-      this, std::move(request)));
+      this, std::move(receiver)));
 }
 
 }  // namespace content

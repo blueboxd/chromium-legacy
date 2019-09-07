@@ -55,10 +55,6 @@ class PasswordFormManagerForUI {
   // form.
   virtual PasswordFormMetricsRecorder* GetMetricsRecorder() = 0;
 
-  // Returns the blacklisted matches for the current page.
-  virtual base::span<const autofill::PasswordForm* const>
-  GetBlacklistedMatches() const = 0;
-
   // Statistics for recent password bubble usage.
   virtual base::span<const InteractionsStats> GetInteractionsStats() const = 0;
 

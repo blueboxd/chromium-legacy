@@ -20,8 +20,6 @@ viz_static_library("test_support") {
     "fake_delay_based_time_source.h",
     "fake_display_client.cc",
     "fake_display_client.h",
-    "fake_external_begin_frame_controller_client.cc",
-    "fake_external_begin_frame_controller_client.h",
     "fake_external_begin_frame_source.cc",
     "fake_external_begin_frame_source.h",
     "fake_host_frame_sink_client.cc",

@@ -1603,6 +1603,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool NeedsLayoutTreeRebuild() const;
 
+  String GetFragmentDirective() const { return fragment_directive_; }
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2109,6 +2111,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementMap>>
       element_explicitly_set_attr_element_map_;
+
+  String fragment_directive_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

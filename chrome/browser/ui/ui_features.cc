@@ -24,6 +24,11 @@ const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables showing text next to the 3-dot menu when an update is available.
+// See https://crbug.com/1001731
+const base::Feature kUseTextForUpdateButton{"UseTextForUpdateButton",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables updated tabstrip animations, required for a scrollable tabstrip.
 // https://crbug.com/958173
 const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",

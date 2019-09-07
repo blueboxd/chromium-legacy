@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
@@ -35,7 +36,6 @@ class Profile;
 namespace extensions {
 class Extension;
 class ExtensionPrefs;
-class ExtensionRegistry;
 
 // The ErrorConsole is a central object to which all extension errors are
 // reported. This includes errors detected in extensions core, as well as
@@ -200,7 +200,7 @@ class ErrorConsole : public KeyedService,
   PrefChangeRegistrar pref_registrar_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ErrorConsole);
 };

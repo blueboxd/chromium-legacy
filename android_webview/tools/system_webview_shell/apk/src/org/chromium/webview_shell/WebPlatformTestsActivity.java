@@ -5,8 +5,10 @@
 package org.chromium.webview_shell;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
@@ -14,9 +16,11 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -30,6 +34,8 @@ import org.chromium.base.VisibleForTesting;
  *                         children, which is not supported for now.
  */
 public class WebPlatformTestsActivity extends Activity {
+    private static final String TAG = "WPTActivity";
+
     /**
      * A callback for testing.
      */
@@ -41,11 +47,11 @@ public class WebPlatformTestsActivity extends Activity {
         void onChildLayoutInvisible();
     }
 
+    private LayoutInflater mLayoutInflater;
+    private RelativeLayout mRootLayout;
     private WebView mWebView;
     private WebView mChildWebView;
-    private RelativeLayout mChildLayout;
-    private RelativeLayout mBrowserLayout;
-    private Button mChildCloseButton;
+    private LinearLayout mChildLayout;
     private TextView mChildTitleText;
     private TestCallback mTestCallback;
 
@@ -54,7 +60,8 @@ public class WebPlatformTestsActivity extends Activity {
         public boolean onCreateWindow(
                 WebView webView, boolean isDialog, boolean isUserGesture, Message resultMsg) {
             removeAndDestroyChildWebView();
-            // Now create a new WebView
+            // Note that WebView is not inflated but created programmatically
+            // such that it can be destroyed separately.
             mChildWebView = new WebView(WebPlatformTestsActivity.this);
             WebSettings settings = mChildWebView.getSettings();
             setUpWebSettings(settings);
@@ -73,14 +80,15 @@ public class WebPlatformTestsActivity extends Activity {
                 }
             });
             // Add the new WebView to the layout
-            mChildWebView.setLayoutParams(new RelativeLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            mChildWebView.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT));
             // Tell the transport about the new view
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
             transport.setWebView(mChildWebView);
             resultMsg.sendToTarget();
 
-            mBrowserLayout.addView(mChildWebView);
+            mChildLayout.addView(mChildWebView);
             // Make the child webview's layout visible
             mChildLayout.setVisibility(View.VISIBLE);
             if (mTestCallback != null) mTestCallback.onChildLayoutVisible();
@@ -102,31 +110,45 @@ public class WebPlatformTestsActivity extends Activity {
         mChildWebView = null;
     }
 
+    private String getUrlFromIntent() {
+        if (getIntent() == null) return null;
+        return getIntent().getDataString();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WebView.setWebContentsDebuggingEnabled(true);
+        mLayoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         setContentView(R.layout.activity_web_platform_tests);
-        setUpWidgets();
-        // This is equivalent to Chrome's WPT setup.
-        setUpWebView("about:blank");
+        mRootLayout = findViewById(R.id.rootLayout);
+        mWebView = findViewById(R.id.webview);
+        mChildLayout = createChildLayout();
+
+        String url = getUrlFromIntent();
+        if (url == null) {
+            // This is equivalent to Chrome's WPT setup.
+            setUpMainWebView("about:blank");
+        } else {
+            Log.w(TAG,
+                    "Handling a non-empty intent. This should only be used for testing. URL: "
+                            + url);
+            setUpMainWebView(url);
+        }
     }
 
-    private void setUpWidgets() {
-        mBrowserLayout = findViewById(R.id.mainBrowserLayout);
-        mChildLayout = findViewById(R.id.childLayout);
-        mChildTitleText = findViewById(R.id.childTitleText);
-        mChildCloseButton = findViewById(R.id.childCloseButton);
-        mChildCloseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                switch (view.getId()) {
-                    case R.id.childCloseButton:
-                        closeChild();
-                        break;
-                }
-            }
-        });
+    private LinearLayout createChildLayout() {
+        // Provide parent such that MATCH_PARENT layout params can work. Ignore the return value
+        // which is mRootLayout.
+        mLayoutInflater.inflate(R.layout.activity_web_platform_tests_child, mRootLayout);
+        // Choose what has just been added.
+        LinearLayout childLayout =
+                (LinearLayout) mRootLayout.getChildAt(mRootLayout.getChildCount() - 1);
+
+        mChildTitleText = childLayout.findViewById(R.id.childTitleText);
+        Button childCloseButton = childLayout.findViewById(R.id.childCloseButton);
+        childCloseButton.setOnClickListener((View v) -> { closeChild(); });
+        return childLayout;
     }
 
     private void setUpWebSettings(WebSettings settings) {
@@ -136,12 +158,9 @@ public class WebPlatformTestsActivity extends Activity {
         settings.setSupportMultipleWindows(true);
     }
 
-    private void setUpWebView(String url) {
-        mWebView = findViewById(R.id.webview);
+    private void setUpMainWebView(String url) {
         setUpWebSettings(mWebView.getSettings());
-
         mWebView.setWebChromeClient(new MultiWindowWebChromeClient());
-
         mWebView.loadUrl(url);
     }
 

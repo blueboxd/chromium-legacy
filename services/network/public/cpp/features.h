@@ -47,6 +47,8 @@ extern const base::Feature kPrefetchMainResourceNetworkIsolationKey;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kDnsOverHttpsUpgrade;
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kMdnsResponderGeneratedNameListing;
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<std::string>
     kDnsOverHttpsUpgradeDisabledProvidersParam;
 COMPONENT_EXPORT(NETWORK_CPP)

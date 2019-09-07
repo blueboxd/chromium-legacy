@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 
 namespace user_manager {
@@ -17,6 +18,11 @@ class User;
 }
 
 namespace policy {
+#if defined(OS_CHROMEOS)
+namespace internal {
+class ProxiedPoliciesPropagatedWatcher;
+}
+#endif  // defined(OS_CHROMEOS)
 
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
@@ -74,6 +80,24 @@ class ProfilePolicyConnector final {
       const char* policy_key) const;
 
 #if defined(OS_CHROMEOS)
+  // On Chrome OS, primary Profile user policies are forwarded to the
+  // device-global PolicyService[1] using a ProxyPolicyProvider. This function
+  // sets up that forwarding, using |user_policy_delegate| as the policy source.
+  // It also delays signaling that |policy_service_| is initialized until the
+  // policies provided by |user_policy_delegate| have propagated to the
+  // device-wide PolicyService[1]. This is done so that code that runs early on
+  // Profile initialization can rely on the device-wide PolicyService[1] and
+  // local state Preferences[2] respecting the proxied primary user policies.
+  //
+  // [1] i.e. g_browser_process->policy_service()
+  // [2] i.e. g_browser_process->local_state()
+  void SetGlobalUserPolicyDelegate(
+      ConfigurationPolicyProvider* user_policy_delegate);
+
+  // Called when primary user policies that are proxied to the device-wide
+  // PolicyService have propagated.
+  void OnProxiedPoliciesPropagated();
+
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this
   // connector belongs to the first signed-in Profile, and in that case that
@@ -82,6 +106,15 @@ class ProfilePolicyConnector final {
   bool is_primary_user_ = false;
 
   std::unique_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
+
+  // If the user associated with the Profile for this ProfilePolicyConnector is
+  // the primary user, the user policies will be proxied into the device-wide
+  // PolicyService. This object allows calling a callback when that is finished
+  // so it is possible to delay signaling that |policy_service_| is initialized
+  // until the policies have been reflected in the device-wide PolicyService.
+  std::unique_ptr<internal::ProxiedPoliciesPropagatedWatcher>
+      proxied_policies_propagated_watcher_;
+
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ConfigurationPolicyProvider>

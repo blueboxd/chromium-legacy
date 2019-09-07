@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -171,6 +172,16 @@ void CreditCardFIDOAuthenticator::MakeCredential(
     PublicKeyCredentialCreationOptionsPtr creation_options) {
   autofill_driver_->ConnectToAuthenticator(
       authenticator_.BindNewPipeAndPassReceiver());
+#if !defined(OS_ANDROID)
+  // On desktop, close the WebAuthn offer dialog and get ready to show the OS
+  // level authentication dialog. If dialog is already closed, then the offer
+  // was declined during the fetching challenge process, and thus returned
+  // early.
+  if (!autofill_client_->CloseWebauthnOfferDialog()) {
+    current_flow_ = NONE_FLOW;
+    return;
+  }
+#endif
   authenticator_->MakeCredential(
       std::move(creation_options),
       base::BindOnce(&CreditCardFIDOAuthenticator::OnDidMakeCredential,
@@ -253,8 +264,12 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
 
 void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
     bool did_accept) {
-  // TODO(crbug.com/): Register and start fetching authentication challenge if
-  // |did_accept|, otherwise cancel any ongoing request.
+  if (did_accept) {
+    Register();
+  } else {
+    payments_client_->CancelRequest();
+    current_flow_ = NONE_FLOW;
+  }
 }
 
 void CreditCardFIDOAuthenticator::OnFullCardRequestSucceeded(

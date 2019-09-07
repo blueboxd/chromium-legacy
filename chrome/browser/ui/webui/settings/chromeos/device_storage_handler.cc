@@ -102,6 +102,7 @@ StorageHandler::StorageHandler(Profile* profile,
 }
 
 StorageHandler::~StorageHandler() {
+  DiskMountManager::GetInstance()->RemoveObserver(this);
   arc::ArcServiceManager::Get()
       ->arc_bridge_service()
       ->storage_manager()

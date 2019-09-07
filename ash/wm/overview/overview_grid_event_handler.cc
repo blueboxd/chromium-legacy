@@ -60,6 +60,7 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START: {
       if (!ShouldUseTabletModeGridLayout())
         return;
+
       HandleFlingScroll(event);
       event->SetHandled();
       break;
@@ -67,6 +68,7 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       if (!ShouldUseTabletModeGridLayout())
         return;
+
       EndFling();
       grid_->StartScroll();
       event->SetHandled();

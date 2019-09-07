@@ -994,6 +994,9 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
     } else {
       did_send_initial_test_configuration_ = true;
       GetWebTestControlPtr(frame)->SetTestConfiguration(std::move(params));
+      // Tests should always start with the browser controls hidden.
+      frame->UpdateBrowserControlsState(BROWSER_CONTROLS_STATE_BOTH,
+                                        BROWSER_CONTROLS_STATE_HIDDEN, false);
     }
   }
 

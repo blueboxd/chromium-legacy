@@ -13,33 +13,16 @@ namespace base {
 // Platform- and thread-specific implementation in support of stack sampling on
 // Android.
 //
-// TODO(charliea): Implement this class.
-// See: https://crbug.com/988574
+// TODO(https://crbug.com/988579): Implement this class.
 class BASE_EXPORT ThreadDelegateAndroid : public ThreadDelegate {
  public:
-  class ScopedSuspendThread : public ThreadDelegate::ScopedSuspendThread {
-   public:
-    ScopedSuspendThread() = default;
-    ~ScopedSuspendThread() override = default;
-
-    ScopedSuspendThread(const ScopedSuspendThread&) = delete;
-    ScopedSuspendThread& operator=(const ScopedSuspendThread&) = delete;
-
-    bool WasSuccessful() const override;
-  };
-
   ThreadDelegateAndroid() = default;
-  ~ThreadDelegateAndroid() override = default;
 
   ThreadDelegateAndroid(const ThreadDelegateAndroid&) = delete;
   ThreadDelegateAndroid& operator=(const ThreadDelegateAndroid&) = delete;
 
   // ThreadDelegate
-  std::unique_ptr<ThreadDelegate::ScopedSuspendThread>
-  CreateScopedSuspendThread() override;
-  bool GetThreadContext(RegisterContext* thread_context) override;
   uintptr_t GetStackBaseAddress() const override;
-  bool CanCopyStack(uintptr_t stack_pointer) override;
   std::vector<uintptr_t*> GetRegistersToRewrite(
       RegisterContext* thread_context) override;
 };

@@ -2900,6 +2900,40 @@ TEST_F(AuthenticatorImplTest, GetAssertionWithLargeAllowList) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, NoUnexpectedAuthenticatorExtensions) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.add_extra_extension = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  // Check that extra authenticator extensions are rejected when creating a
+  // credential.
+  TestMakeCredentialCallback create_callback;
+  authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
+                                create_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  create_callback.WaitForCallback();
+  EXPECT_EQ(create_callback.status(), AuthenticatorStatus::NOT_ALLOWED_ERROR);
+
+  // Extensions should also be rejected when getting an assertion.
+  PublicKeyCredentialRequestOptionsPtr assertion_options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      assertion_options->allow_credentials.back().id(), kTestRelyingPartyId));
+  TestGetAssertionCallback assertion_callback;
+  authenticator->GetAssertion(std::move(assertion_options),
+                              assertion_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  assertion_callback.WaitForCallback();
+  EXPECT_EQ(assertion_callback.status(),
+            AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
 class UVAuthenticatorImplTest : public AuthenticatorImplTest {
  public:
   UVAuthenticatorImplTest() = default;

@@ -1,10 +1,11 @@
 specific_include_rules = {
-  # TODO(siggi): Move WebUIGraphDumpImpl into this directory and kill these
-  #     include rules.
-  "discards_ui.h": [
-    "+chrome/browser/performance_manager/webui_graph_dump.mojom.h",
+  # Tests need to include the graph implementation.
+  "webui_graph_dump_impl_unittest\.cc": [
+    "+chrome/browser/performance_manager/graph",
+    "+chrome/browser/performance_manager/performance_manager_clock.h",
   ],
-  "discards_ui.cc": [
-    "+chrome/browser/performance_manager/webui_graph_dump_impl.h",
+  # Until CallOnGraph is in the public interface, the impl needs GraphImpl
+  "webui_graph_dump_impl\.cc": [
+    "+chrome/browser/performance_manager/graph",
   ],
 }

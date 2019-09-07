@@ -23,6 +23,7 @@ namespace blink {
 
 namespace {
 
+const char kContextGone[] = "Script context has shut down.";
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"serial\" is disallowed by feature policy.";
 const char kNoPortSelected[] = "No port selected by the user.";
@@ -52,21 +53,20 @@ void Serial::ContextDestroyed(ExecutionContext*) {
     entry.value->ContextDestroyed();
 }
 
-ScriptPromise Serial::getPorts(ScriptState* script_state) {
+ScriptPromise Serial::getPorts(ScriptState* script_state,
+                               ExceptionState& exception_state) {
   auto* context = GetExecutionContext();
   if (!context) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kContextGone);
+    return ScriptPromise();
   }
 
   if (!context->GetSecurityContext().IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kSerial,
           ReportOptions::kReportOnFailure)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
-                                           kFeaturePolicyBlocked));
+    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -80,29 +80,26 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
 }
 
 ScriptPromise Serial::requestPort(ScriptState* script_state,
-                                  const SerialPortRequestOptions* options) {
+                                  const SerialPortRequestOptions* options,
+                                  ExceptionState& exception_state) {
   auto* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kContextGone);
+    return ScriptPromise();
   }
 
   if (!frame->GetDocument()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kSerial,
           ReportOptions::kReportOnFailure)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
-                                           kFeaturePolicyBlocked));
+    exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+    return ScriptPromise();
   }
 
   if (!LocalFrame::HasTransientUserActivation(frame)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kSecurityError,
-            "Must be handling a user gesture to show a permission request."));
+    exception_state.ThrowSecurityError(
+        "Must be handling a user gesture to show a permission request.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

@@ -85,6 +85,8 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override {}
 
+  MOCK_CONST_METHOD0(request_id, const base::UnguessableToken&());
+
   void ResolveRequest(bool result) {
     if (!async_mode_)
       return;

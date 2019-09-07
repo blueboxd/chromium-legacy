@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
@@ -59,8 +58,7 @@ ExtensionActionViewController::ExtensionActionViewController(
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
       icon_factory_(browser->profile(), extension, extension_action, this),
       extension_registry_(
-          extensions::ExtensionRegistry::Get(browser_->profile())),
-      popup_host_observer_(this) {
+          extensions::ExtensionRegistry::Get(browser_->profile())) {
   DCHECK(extensions_container);
   DCHECK(extension_action);
   DCHECK(extension);

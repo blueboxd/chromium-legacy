@@ -128,8 +128,9 @@ void PrerenderDispatcher::PrerenderStop(int prerender_id) {
 }
 
 void PrerenderDispatcher::OnPrerenderDispatcherRequest(
-    chrome::mojom::PrerenderDispatcherAssociatedRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::PrerenderDispatcher>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void PrerenderDispatcher::RegisterMojoInterfaces(

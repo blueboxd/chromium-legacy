@@ -42,21 +42,21 @@ enum XRVisibilityState {
 
   [RaisesException] void updateRenderState(optional XRRenderStateInit init);
 
-  [CallWith=ScriptState] Promise<XRReferenceSpace> requestReferenceSpace(XRReferenceSpaceType type);
+  [CallWith=ScriptState, RaisesException] Promise<XRReferenceSpace> requestReferenceSpace(XRReferenceSpaceType type);
 
   long requestAnimationFrame(XRFrameRequestCallback callback);
   void cancelAnimationFrame(long handle);
 
-  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, RaisesException] Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
 
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
   [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldTrackingState worldTrackingState;
   [RuntimeEnabled=WebXRPlaneDetection, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
 
   [RuntimeEnabled=WebXRAnchors] readonly attribute XRAnchorSet trackedAnchors;
-  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
+  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
 
-  [CallWith=ScriptState, Measure] Promise<void> end();
+  [CallWith=ScriptState, Measure, RaisesException] Promise<void> end();
 
-  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState, RaisesException] Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
 };

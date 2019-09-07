@@ -65,9 +65,6 @@ class MODULES_EXPORT TaskQueue : public ScriptWrappable,
 
   void Trace(Visitor*) override;
 
-  static AtomicString WebSchedulingPriorityToString(WebSchedulingPriority);
-  static WebSchedulingPriority WebSchedulingPriorityFromString(AtomicString);
-
  private:
   void RunTaskCallback(Task*);
   void ScheduleTask(Task*, base::TimeDelta delay);

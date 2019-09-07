@@ -107,7 +107,6 @@ static_library("common") {
     "attrition_experiments.h",
     "auto_start_linux.cc",
     "auto_start_linux.h",
-    "browser_controls_state_param_traits.h",
     "child_process_logging.h",
     "child_process_logging_win.cc",
     "chrome_content_client.cc",

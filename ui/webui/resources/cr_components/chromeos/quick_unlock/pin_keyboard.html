@@ -195,7 +195,7 @@
     <div id="root" on-contextmenu="onContextMenu_" on-tap="onRootTap_">
       <div id="pinInputDiv">
         <cr-input id="pinInput" type="password" value="{{value}}"
-            is-input-rtl$="[[isInputRtl_(value)]]"
+            is-input-rtl$="[[isInputRtl_(value)]]" aria-label="[[ariaLabel]]"
             has-content$="[[hasInput_(value)]]" invalid="[[hasError]]"
             placeholder="[[getInputPlaceholder_(enablePassword,
                 enablePlaceholder)]]"

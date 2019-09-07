@@ -59,18 +59,8 @@ const base::Feature kFreezeUserAgent{"FreezeUserAgent",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable a new CSS property called backdrop-filter.
-const base::Feature kCSSBackdropFilter {
-  "CSSBackdropFilter",
-#if defined(OS_ANDROID)
-      // There are two bugs in the backdrop-filter feature for Android Webview
-      // only (crbug.com/990535 and crbug.com/991869). Because there is no
-      // compile-time flag for Webview, this disables all of Android, and the
-      // feature will be re-enabled for non-Webview Android by Finch.
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",

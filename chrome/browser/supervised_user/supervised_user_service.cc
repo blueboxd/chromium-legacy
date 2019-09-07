@@ -316,6 +316,11 @@ base::string16 SupervisedUserService::GetExtensionsLockedMessage() const {
                                     base::UTF8ToUTF16(GetCustodianName()));
 }
 
+bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
+  return base::FeatureList::IsEnabled(
+      supervised_users::kSupervisedUserIframeFilter);
+}
+
 #if !defined(OS_ANDROID)
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
   IdentityManagerFactory::GetForProfile(profile_)

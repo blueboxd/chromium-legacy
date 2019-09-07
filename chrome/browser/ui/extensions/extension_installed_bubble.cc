@@ -47,20 +47,20 @@ class ExtensionInstalledBubbleObserver
   explicit ExtensionInstalledBubbleObserver(
       std::unique_ptr<ExtensionInstalledBubble> bubble)
       : bubble_(std::move(bubble)),
-        extension_registry_observer_(this),
-        browser_list_observer_(this),
         animation_wait_retries_(0) {
     // |extension| has been initialized but not loaded at this point. We need to
     // wait on showing the Bubble until the EXTENSION_LOADED gets fired.
     extension_registry_observer_.Add(
         extensions::ExtensionRegistry::Get(bubble_->browser()->profile()));
-    browser_list_observer_.Add(BrowserList::GetInstance());
+    BrowserList::AddObserver(this);
   }
 
   void Run() { OnExtensionLoaded(nullptr, bubble_->extension()); }
 
  private:
-  ~ExtensionInstalledBubbleObserver() override {}
+  ~ExtensionInstalledBubbleObserver() override {
+    BrowserList::RemoveObserver(this);
+  }
 
   // BrowserListObserver:
   void OnBrowserClosing(Browser* browser) override {
@@ -133,9 +133,7 @@ class ExtensionInstalledBubbleObserver
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
-
-  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
+      extension_registry_observer_{this};
 
   // The number of times to retry showing the bubble if the bubble_->browser()
   // action toolbar is animating.

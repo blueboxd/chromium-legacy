@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionAction;
@@ -20,7 +21,6 @@ class Profile;
 namespace extensions {
 
 class Extension;
-class ExtensionRegistry;
 
 // Owns the ExtensionActions associated with each extension.  These actions live
 // while an extension is loaded and are destroyed on unload.
@@ -51,7 +51,7 @@ class ExtensionActionManager : public KeyedService,
 
   // Listen to extension unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   // Keyed by Extension ID.  These maps are populated lazily when their
   // ExtensionAction is first requested, and the entries are removed when the

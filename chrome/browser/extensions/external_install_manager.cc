@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature_channel.h"
@@ -64,8 +63,7 @@ ExternalInstallManager::ExternalInstallManager(
     : browser_context_(browser_context),
       is_first_run_(is_first_run),
       extension_prefs_(ExtensionPrefs::Get(browser_context_)),
-      currently_visible_install_alert_(nullptr),
-      extension_registry_observer_(this) {
+      currently_visible_install_alert_(nullptr) {
   DCHECK(browser_context_);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(browser_context_);

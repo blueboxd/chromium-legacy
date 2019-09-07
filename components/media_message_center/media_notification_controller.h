@@ -34,6 +34,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationController {
   // Returns a task runner that the MediaNotificationItem should use.
   // It typically returns null except in tests.
   virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const = 0;
+
+  // Notifies the MediaNotificationController that a media button was pressed on
+  // the MediaNotificationView.
+  virtual void LogMediaSessionActionButtonPressed(const std::string& id) = 0;
 };
 
 }  // namespace media_message_center

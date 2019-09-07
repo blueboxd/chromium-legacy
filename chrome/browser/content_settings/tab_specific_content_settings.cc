@@ -47,6 +47,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_constants.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -735,7 +736,8 @@ void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
     content::RenderFrameHost* render_frame_host) {
   // We want to tell the renderer-side code to ignore content settings for this
   // page.
-  chrome::mojom::ContentSettingsRendererAssociatedPtr content_settings_renderer;
+  mojo::AssociatedRemote<chrome::mojom::ContentSettingsRenderer>
+      content_settings_renderer;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &content_settings_renderer);
   content_settings_renderer->SetAsInterstitial();

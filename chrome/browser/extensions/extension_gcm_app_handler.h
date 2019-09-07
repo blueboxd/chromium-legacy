@@ -17,6 +17,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
@@ -34,7 +35,6 @@ class InstanceIDDriver;
 
 namespace extensions {
 
-class ExtensionRegistry;
 class GcmJsEventRouter;
 
 // Defines the interface to provide handling logic for a given app.
@@ -99,7 +99,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
 
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   std::unique_ptr<extensions::GcmJsEventRouter> js_event_router_;
 

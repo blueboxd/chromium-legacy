@@ -210,7 +210,7 @@ void DeviceService::OnStart() {
 
 #if defined(OS_CHROMEOS)
   registry_.AddInterface<mojom::BluetoothSystemFactory>(
-      base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryRequest,
+      base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryReceiver,
                           base::Unretained(this)));
   registry_.AddInterface<mojom::MtpManager>(base::BindRepeating(
       &DeviceService::BindMtpManagerRequest, base::Unretained(this)));
@@ -254,9 +254,9 @@ void DeviceService::BindVibrationManagerRequest(
 #endif
 
 #if defined(OS_CHROMEOS)
-void DeviceService::BindBluetoothSystemFactoryRequest(
-    mojom::BluetoothSystemFactoryRequest request) {
-  BluetoothSystemFactory::CreateFactory(std::move(request));
+void DeviceService::BindBluetoothSystemFactoryReceiver(
+    mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver) {
+  BluetoothSystemFactory::CreateFactory(std::move(receiver));
 }
 
 void DeviceService::BindMtpManagerRequest(mojom::MtpManagerRequest request) {

@@ -50,6 +50,7 @@ class FastTransitionObserver;
 class GnubbyNotification;
 class IdleActionWarningObserver;
 class LoginScreenExtensionsLifetimeManager;
+class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
@@ -181,6 +182,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
   std::unique_ptr<LoginScreenExtensionsLifetimeManager>
       login_screen_extensions_lifetime_manager_;
+  std::unique_ptr<LoginScreenExtensionsStorageCleaner>
+      login_screen_extensions_storage_cleaner_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
 

@@ -218,10 +218,6 @@ const char kFullscreenViewportAdjustmentExperimentDescription[] =
     "The different ways in which the web view's viewport is updated for scroll "
     "events.  The default option updates the web view's frame.";
 
-const char kIdentityDiscName[] = "Identity Disc";
-const char kIdentityDiscDescription[] =
-    "Enables Identity Disc, profile avatar icon button in toolbar.";
-
 const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =
     "When enabled the page can always be scaled, regardless of author intent.";

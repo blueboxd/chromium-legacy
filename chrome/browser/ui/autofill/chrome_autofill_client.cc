@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -83,6 +82,8 @@
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -270,8 +271,22 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
 void ChromeAutofillClient::ShowWebauthnOfferDialog(
     WebauthnOfferDialogCallback callback) {
 #if !defined(OS_ANDROID)
-  ShowWebauthnOfferDialogView(web_contents(), callback);
+  autofill::WebauthnOfferDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  autofill::WebauthnOfferDialogControllerImpl::FromWebContents(web_contents())
+      ->ShowOfferDialog(std::move(callback));
 #endif
+}
+
+bool ChromeAutofillClient::CloseWebauthnOfferDialog() {
+#if !defined(OS_ANDROID)
+  WebauthnOfferDialogControllerImpl* controller =
+      autofill::WebauthnOfferDialogControllerImpl::FromWebContents(
+          web_contents());
+  if (controller)
+    return controller->CloseDialog();
+#endif
+  return false;
 }
 
 void ChromeAutofillClient::ConfirmSaveAutofillProfile(

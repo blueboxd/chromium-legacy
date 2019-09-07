@@ -11,7 +11,7 @@
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier.h"
-#include "base/profiler/thread_delegate.h"
+#include "base/profiler/suspendable_thread_delegate.h"
 #include "base/profiler/unwinder.h"
 
 // IMPORTANT NOTE: Some functions within this implementation are invoked while
@@ -23,12 +23,11 @@
 
 namespace base {
 
-StackSamplerImpl::StackSamplerImpl(
-    std::unique_ptr<ThreadDelegate> thread_delegate,
-    std::unique_ptr<Unwinder> native_unwinder,
-    ModuleCache* module_cache,
-    StackSamplerTestDelegate* test_delegate)
-    : thread_delegate_(std::move(thread_delegate)),
+StackSamplerImpl::StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
+                                   std::unique_ptr<Unwinder> native_unwinder,
+                                   ModuleCache* module_cache,
+                                   StackSamplerTestDelegate* test_delegate)
+    : stack_copier_(std::move(stack_copier)),
       native_unwinder_(std::move(native_unwinder)),
       module_cache_(module_cache),
       test_delegate_(test_delegate) {}
@@ -46,8 +45,8 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
 
   RegisterContext thread_context;
   uintptr_t stack_top;
-  bool success =
-      CopyStack(stack_buffer, &stack_top, profile_builder, &thread_context);
+  bool success = stack_copier_->CopyStack(stack_buffer, &stack_top,
+                                          profile_builder, &thread_context);
   if (!success)
     return;
 
@@ -68,66 +67,6 @@ std::vector<Frame> StackSamplerImpl::WalkStackForTesting(
     Unwinder* aux_unwinder) {
   return WalkStack(module_cache, thread_context, stack_top, native_unwinder,
                    aux_unwinder);
-}
-
-// Suspends the thread, copies its stack, top address of the stack copy, and
-// register context, records the current metadata, then resumes the thread.
-// Returns true on success, and returns the copied state via the params. NO HEAP
-// ALLOCATIONS within the ScopedSuspendThread scope.
-bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
-                                 uintptr_t* stack_top,
-                                 ProfileBuilder* profile_builder,
-                                 RegisterContext* thread_context) {
-  const uintptr_t top = thread_delegate_->GetStackBaseAddress();
-  uintptr_t bottom = 0;
-  const uint8_t* stack_copy_bottom = nullptr;
-  {
-    // The MetadataProvider must be created before the ScopedSuspendThread
-    // because it acquires a lock in its constructor that might otherwise be
-    // held by the target thread, resulting in deadlock.
-    std::unique_ptr<base::ProfileBuilder::MetadataProvider> get_metadata_items =
-        base::GetSampleMetadataRecorder()->CreateMetadataProvider();
-
-    // Allocation of the ScopedSuspendThread object itself is OK since it
-    // necessarily occurs before the thread is suspended by the object.
-    std::unique_ptr<ThreadDelegate::ScopedSuspendThread> suspend_thread =
-        thread_delegate_->CreateScopedSuspendThread();
-
-    if (!suspend_thread->WasSuccessful())
-      return false;
-
-    if (!thread_delegate_->GetThreadContext(thread_context))
-      return false;
-
-    bottom = RegisterContextStackPointer(thread_context);
-
-    // The StackBuffer allocation is expected to be at least as large as the
-    // largest stack region allocation on the platform, but check just in case
-    // it isn't *and* the actual stack itself exceeds the buffer allocation
-    // size.
-    if ((top - bottom) > stack_buffer->size())
-      return false;
-
-    if (!thread_delegate_->CanCopyStack(bottom))
-      return false;
-
-    profile_builder->RecordMetadata(get_metadata_items.get());
-
-    stack_copy_bottom = StackCopier::CopyStackContentsAndRewritePointers(
-        reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
-        StackBuffer::kPlatformStackAlignment, stack_buffer->buffer());
-  }
-
-  *stack_top = reinterpret_cast<uintptr_t>(stack_copy_bottom) + (top - bottom);
-
-  for (uintptr_t* reg :
-       thread_delegate_->GetRegistersToRewrite(thread_context)) {
-    *reg = StackCopier::RewritePointerIfInOriginalStack(
-        reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
-        stack_copy_bottom, *reg);
-  }
-
-  return true;
 }
 
 // static

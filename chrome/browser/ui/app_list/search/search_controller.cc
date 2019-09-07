@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
@@ -173,8 +174,17 @@ void SearchController::OnSearchResultsDisplayed(
     const base::string16& trimmed_query,
     const ash::SearchResultIdWithPositionIndices& results,
     int launched_index) {
-  if (trimmed_query.empty())
+  if (trimmed_query.empty()) {
     mixer_->GetNonAppSearchResultRanker()->ZeroStateResultsDisplayed(results);
+
+    // Extract result types for logging.
+    std::vector<RankingItemType> result_types;
+    for (const auto& result : results) {
+      result_types.push_back(
+          RankingItemTypeFromSearchResult(*FindSearchResult(result.id)));
+    }
+    LogZeroStateResultsListMetrics(result_types, launched_index);
+  }
 }
 
 ChromeSearchResult* SearchController::GetResultByTitleForTest(

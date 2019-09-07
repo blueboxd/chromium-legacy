@@ -156,8 +156,8 @@ class DeviceService : public service_manager::Service {
 #endif
 
 #if defined(OS_CHROMEOS)
-  void BindBluetoothSystemFactoryRequest(
-      mojom::BluetoothSystemFactoryRequest request);
+  void BindBluetoothSystemFactoryReceiver(
+      mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver);
   void BindMtpManagerRequest(mojom::MtpManagerRequest request);
 #endif
 

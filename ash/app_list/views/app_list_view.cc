@@ -22,6 +22,7 @@
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
@@ -554,7 +555,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_model_(delegate->GetSearchModel()),
-      is_background_blur_enabled_(app_list_features::IsBackgroundBlurEnabled()),
+      is_background_blur_enabled_(ash::features::IsBackgroundBlurEnabled()),
       bounds_animation_observer_(
           std::make_unique<BoundsAnimationObserver>(this)),
       state_animation_metrics_reporter_(

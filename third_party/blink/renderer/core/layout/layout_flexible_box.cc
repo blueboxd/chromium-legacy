@@ -945,6 +945,10 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
 
     ConstructAndAppendFlexItem(&flex_algorithm, *child, layout_type);
   }
+  // Because we set the override containing block logical height to -1 in
+  // ConstructAndAppendFlexItem, any value we may have cached for definiteness
+  // is incorrect; just reset it here.
+  has_definite_height_ = SizeDefiniteness::kUnknown;
 
   LayoutUnit cross_axis_offset = FlowAwareContentInsetBefore();
   LayoutUnit logical_width = LogicalWidth();
@@ -1187,9 +1191,19 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
     UpdateBlockChildDirtyBitsBeforeLayout(layout_type == kForceLayout, child);
     if (child.NeedsLayout() || layout_type == kForceLayout ||
         !intrinsic_size_along_main_axis_.Contains(&child)) {
+      // Don't resolve percentages in children. This is especially important
+      // for the min-height calculation, where we want percentages to be
+      // treated as auto. For flex-basis itself, this is not a problem because
+      // by definition we have an indefinite flex basis here and thus
+      // percentages should not resolve.
+      if (IsHorizontalWritingMode() == child.IsHorizontalWritingMode())
+        child.SetOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
+      else
+        child.SetOverrideContainingBlockContentLogicalWidth(LayoutUnit(-1));
       child.ClearOverrideSize();
       child.ForceLayout();
       CacheChildMainSize(child);
+      child.ClearOverrideContainingBlockContentSize();
     }
   }
 

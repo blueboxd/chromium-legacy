@@ -32,7 +32,6 @@ extern const base::Feature kOmniboxPedalSuggestions;
 extern const base::Feature kOmniboxSuggestionTransparencyOptions;
 extern const base::Feature kOmniboxUICuesForSearchHistoryMatches;
 extern const base::Feature kOmniboxAlternateMatchDescriptionSeparator;
-extern const base::Feature kOmniboxPreserveDefaultMatchScore;
 extern const base::Feature kEnableClipboardProviderTextSuggestions;
 extern const base::Feature kEnableClipboardProviderImageSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
@@ -49,6 +48,11 @@ extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 extern const base::Feature kOmniboxDisableInstantExtendedLimit;
 extern const base::Feature kOmniboxSearchEngineLogo;
+
+// Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
+// TODO(tommycli): There are more flags above that belong in this category.
+extern const base::Feature kOmniboxPreserveDefaultMatchScore;
+extern const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;

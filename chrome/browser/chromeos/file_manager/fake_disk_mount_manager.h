@@ -113,7 +113,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
                               const chromeos::disks::Disk* disk);
 
  private:
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer> observers_;
   base::queue<base::OnceClosure> pending_unmount_callbacks_;
 
   DiskMap disks_;

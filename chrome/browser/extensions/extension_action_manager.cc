@@ -10,7 +10,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/browser/extension_icon_image.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
@@ -60,7 +59,7 @@ ExtensionActionManagerFactory::GetInstance() {
 }  // namespace
 
 ExtensionActionManager::ExtensionActionManager(Profile* profile)
-    : profile_(profile), extension_registry_observer_(this) {
+    : profile_(profile) {
   CHECK_EQ(profile, profile->GetOriginalProfile())
       << "Don't instantiate this with an incognito profile.";
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));

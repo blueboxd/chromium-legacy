@@ -23,7 +23,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -62,8 +61,7 @@ ErrorConsole::ErrorConsole(Profile* profile)
     : enabled_(false),
       default_mask_(kDefaultMask),
       profile_(profile),
-      prefs_(nullptr),
-      registry_observer_(this) {
+      prefs_(nullptr) {
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionsUIDeveloperMode,
                       base::Bind(&ErrorConsole::OnPrefChanged,

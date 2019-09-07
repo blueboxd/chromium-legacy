@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('welcome', function() {
-  class NtpBackgroundMetricsProxyImpl extends welcome.ModuleMetricsProxyImpl {
-    constructor() {
-      super(
-          'FirstRun.NewUserExperience.NtpBackgroundInteraction',
-          welcome.NuxNtpBackgroundInteractions);
-    }
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {ModuleMetricsProxyImpl, NuxNtpBackgroundInteractions} from '../shared/module_metrics_proxy.js';
 
-    getInteractions() {
-      return this.interactions_;
-    }
+export class NtpBackgroundMetricsProxyImpl extends ModuleMetricsProxyImpl {
+  constructor() {
+    super(
+        'FirstRun.NewUserExperience.NtpBackgroundInteraction',
+        NuxNtpBackgroundInteractions);
   }
 
-  cr.addSingletonGetter(NtpBackgroundMetricsProxyImpl);
+  getInteractions() {
+    return this.interactions_;
+  }
+}
 
-  return {
-    NtpBackgroundMetricsProxyImpl: NtpBackgroundMetricsProxyImpl,
-  };
-});
+addSingletonGetter(NtpBackgroundMetricsProxyImpl);

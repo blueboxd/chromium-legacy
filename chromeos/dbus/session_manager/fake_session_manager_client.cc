@@ -302,6 +302,17 @@ void FakeSessionManagerClient::LoginScreenStorageRetrieve(
                                 base::nullopt /* error */));
 }
 
+void FakeSessionManagerClient::LoginScreenStorageListKeys(
+    LoginScreenStorageListKeysCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::vector<std::string>() /* keys */,
+                     base::nullopt /* error */));
+}
+
+void FakeSessionManagerClient::LoginScreenStorageDelete(
+    const std::string& key) {}
+
 void FakeSessionManagerClient::StartSession(
     const cryptohome::AccountIdentifier& cryptohome_id) {
   DCHECK_EQ(0UL, user_sessions_.count(cryptohome_id.account_id()));

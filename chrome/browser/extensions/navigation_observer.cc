@@ -12,7 +12,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 using content::NavigationController;
@@ -25,8 +24,7 @@ namespace {
 bool g_repeat_prompting = false;
 }
 
-NavigationObserver::NavigationObserver(Profile* profile)
-    : profile_(profile), extension_registry_observer_(this) {
+NavigationObserver::NavigationObserver(Profile* profile) : profile_(profile) {
   RegisterForNotifications();
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }

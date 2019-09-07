@@ -782,6 +782,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
+  DCHECK(!(allow_port_migration_ && go_away_on_path_degrading_));
 
   quic::QuicSpdyClientSessionBase::set_max_allowed_push_id(max_allowed_push_id);
   default_network_ = default_network;

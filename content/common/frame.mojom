@@ -9,6 +9,7 @@ import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
+import "content/public/common/browser_controls_state.mojom";
 import "content/public/common/resource_type.mojom";
 import "content/public/common/resource_load_info.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
@@ -71,6 +72,13 @@ interface Frame {
   ExtractSmartClipData(gfx.mojom.Rect rect)
       => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html,
               gfx.mojom.Rect clip_rect);
+
+  // Notifies the renderer whether hiding/showing the browser controls is
+  // enabled, what the current state should be, and whether or not to
+  // animate to the proper state.
+  UpdateBrowserControlsState(BrowserControlsState constraints,
+                             BrowserControlsState current,
+                             bool animate);
 };
 
 // Implemented by the frame provider and currently must be associated with the

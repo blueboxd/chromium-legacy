@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_creator.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/verifier_formats.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,8 +47,7 @@ ExtensionServiceTestWithInstall::ExtensionServiceTestWithInstall()
       expected_extensions_count_(0),
       override_external_install_prompt_(
           FeatureSwitch::prompt_for_external_extensions(),
-          false),
-      registry_observer_(this) {}
+          false) {}
 
 ExtensionServiceTestWithInstall::~ExtensionServiceTestWithInstall() {}
 

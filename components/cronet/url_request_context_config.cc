@@ -152,6 +152,8 @@ const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
+const char kGoAwayOnPathDegrading[] = "go_away_on_path_degrading";
+
 // "goaway_sessions_on_ip_change" is default on for iOS unless overrided via
 // experimental options explicitly.
 #if defined(OS_IOS)
@@ -419,6 +421,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &goaway_sessions_on_ip_change)) {
         session_params->quic_params.goaway_sessions_on_ip_change =
             goaway_sessions_on_ip_change;
+      }
+
+      bool go_away_on_path_degrading = false;
+      if (quic_args->GetBoolean(kGoAwayOnPathDegrading,
+                                &go_away_on_path_degrading)) {
+        session_params->quic_params.go_away_on_path_degrading =
+            go_away_on_path_degrading;
       }
 
       bool quic_allow_server_migration = false;

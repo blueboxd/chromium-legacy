@@ -10,19 +10,24 @@
 #include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class CSSToLengthConversionData;
+class CSSMathExpressionNode;
+class CSSNumericLiteralValue;
+class CSSValue;
 
 class CORE_EXPORT InterpolableLength final : public InterpolableValue {
  public:
   ~InterpolableLength() final {}
-  InterpolableLength(const CSSLengthArray& length_array)
-      : length_array_(length_array) {}
-  InterpolableLength(CSSLengthArray&& length_array)
-      : length_array_(std::move(length_array)) {}
+
+  InterpolableLength();
+  InterpolableLength(double value, CSSPrimitiveValue::UnitType);
+  explicit InterpolableLength(const CSSNumericLiteralValue& value);
+  explicit InterpolableLength(const CSSMathExpressionNode& expression);
 
   static std::unique_ptr<InterpolableLength> CreatePixels(double pixels);
   static std::unique_ptr<InterpolableLength> CreatePercent(double pixels);
@@ -45,10 +50,9 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
   // expressions.
   const CSSPrimitiveValue* CreateCSSValue(ValueRange range) const;
 
-  bool HasPercentage() const {
-    return length_array_.type_flags.test(
-        CSSPrimitiveValue::kUnitTypePercentage);
-  }
+  // Mix the length with the percentage type, if it's not mixed already
+  void SetHasPercentage();
+  bool HasPercentage() const;
   void SubtractFromOneHundredPercent();
 
   // InterpolableValue:
@@ -57,27 +61,44 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
     NOTREACHED();
     return false;
   }
-  std::unique_ptr<InterpolableValue> Clone() const final {
-    return std::make_unique<InterpolableLength>(length_array_);
-  }
+  std::unique_ptr<InterpolableValue> Clone() const final;
   std::unique_ptr<InterpolableValue> CloneAndZero() const final {
-    return std::make_unique<InterpolableLength>(CSSLengthArray());
+    return std::make_unique<InterpolableLength>();
   }
-  void Scale(double scale) final {
-    for (double& value : length_array_.values) {
-      value *= scale;
-    }
-  }
+  void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
  private:
+  friend class InterpolableLengthTest;
+
   // InterpolableValue:
   void Interpolate(const InterpolableValue& to,
                    const double progress,
                    InterpolableValue& result) const final;
 
-  CSSLengthArray length_array_;
+  bool IsNumericLiteral() const { return type_ == Type::kNumericLiteral; }
+  bool IsExpression() const { return type_ == Type::kExpression; }
+
+  bool IsZeroLength() const {
+    return IsNumericLiteral() && CSSPrimitiveValue::IsLength(unit_type_) &&
+           single_value_ == 0;
+  }
+
+  void SetNumericLiteral(double value, CSSPrimitiveValue::UnitType unit_type);
+  void SetNumericLiteral(const CSSNumericLiteralValue& value);
+  void SetExpression(const CSSMathExpressionNode& expression);
+  const CSSMathExpressionNode& AsExpression() const;
+
+  enum class Type { kNumericLiteral, kExpression };
+  Type type_;
+
+  // Set when |type_| is |kNumericLiteral|.
+  double single_value_;
+  CSSPrimitiveValue::UnitType unit_type_;
+
+  // Non-null when |type_| is |kExpression|.
+  Persistent<const CSSMathExpressionNode> expression_;
 };
 
 template <>

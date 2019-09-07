@@ -14,6 +14,9 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -27,6 +30,16 @@ class WebGPUDecoderTest : public ::testing::Test {
   WebGPUDecoderTest() {}
 
   void SetUp() override {
+    // Shared image factories for some backends take a dependency on GL.
+    // Failure to create a test context with a surface and making it current
+    // will result in a "NoContext" context being current that asserts on all
+    // GL calls.
+    gl::init::InitializeGLNoExtensionsOneOff();
+    gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
+                                            gl::GLContextAttribs());
+    gl_context_->MakeCurrent(gl_surface_.get());
+
     command_buffer_service_.reset(new FakeCommandBufferServiceBase());
     decoder_.reset(WebGPUDecoder::Create(nullptr, command_buffer_service_.get(),
                                          &shared_image_manager_, nullptr,
@@ -45,6 +58,10 @@ class WebGPUDecoderTest : public ::testing::Test {
   void TearDown() override {
     factory_->DestroyAllSharedImages(true);
     factory_.reset();
+
+    gl_surface_.reset();
+    gl_context_.reset();
+    gl::init::ShutdownGL(false);
   }
 
   bool WebGPUSupported() const { return decoder_ != nullptr; }
@@ -75,7 +92,8 @@ class WebGPUDecoderTest : public ::testing::Test {
   gles2::TraceOutputter outputter_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<SharedImageFactory> factory_;
-  scoped_refptr<gles2::ContextGroup> group_;
+  scoped_refptr<gl::GLSurface> gl_surface_;
+  scoped_refptr<gl::GLContext> gl_context_;
 };
 
 TEST_F(WebGPUDecoderTest, DawnCommands) {

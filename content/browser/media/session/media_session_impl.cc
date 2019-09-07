@@ -186,6 +186,20 @@ const base::UnguessableToken& MediaSession::GetSourceId(
 }
 
 // static
+WebContents* MediaSession::GetWebContentsFromRequestId(
+    const base::UnguessableToken& request_id) {
+  DCHECK_NE(base::UnguessableToken::Null(), request_id);
+  for (WebContentsImpl* web_contents : WebContentsImpl::GetAllWebContents()) {
+    MediaSessionImpl* session = MediaSessionImpl::FromWebContents(web_contents);
+    if (!session)
+      continue;
+    if (session->GetRequestId() == request_id)
+      return web_contents;
+  }
+  return nullptr;
+}
+
+// static
 MediaSessionImpl* MediaSessionImpl::Get(WebContents* web_contents) {
   MediaSessionImpl* session = FromWebContents(web_contents);
   if (!session) {
@@ -1261,6 +1275,10 @@ bool MediaSessionImpl::ShouldRouteAction(
 const base::UnguessableToken& MediaSessionImpl::GetSourceId() const {
   return MediaSessionData::GetOrCreate(web_contents()->GetBrowserContext())
       ->source_id();
+}
+
+const base::UnguessableToken& MediaSessionImpl::GetRequestId() const {
+  return delegate_->request_id();
 }
 
 void MediaSessionImpl::RebuildAndNotifyActionsChanged() {

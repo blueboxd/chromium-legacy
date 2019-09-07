@@ -10,6 +10,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
+#include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
 namespace media {
 
@@ -221,7 +222,9 @@ FuchsiaCdm::SessionCallbacks& FuchsiaCdm::SessionCallbacks::operator=(
 
 FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
                        SessionCallbacks callbacks)
-    : cdm_(std::move(cdm)), session_callbacks_(std::move(callbacks)) {
+    : cdm_(std::move(cdm)),
+      session_callbacks_(std::move(callbacks)),
+      decryptor_(new FuchsiaDecryptor(cdm_.get())) {
   DCHECK(cdm_);
   cdm_.set_error_handler([](zx_status_t status) {
     // Error will be handled in CdmSession::OnSessionError.
@@ -396,8 +399,8 @@ std::unique_ptr<CallbackRegistration> FuchsiaCdm::RegisterEventCB(
 }
 
 Decryptor* FuchsiaCdm::GetDecryptor() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(decryptor_);
+  return decryptor_.get();
 }
 
 int FuchsiaCdm::GetCdmId() const {

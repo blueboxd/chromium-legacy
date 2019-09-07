@@ -48,8 +48,7 @@ class NotificationSchedulerTest : public testing::Test {
         client_(nullptr),
         task_coordinator_(nullptr),
         display_agent_(nullptr),
-        display_decider_(nullptr),
-        notification_manager_delegate_(nullptr) {}
+        display_decider_(nullptr) {}
   ~NotificationSchedulerTest() override = default;
 
   void SetUp() override {
@@ -92,11 +91,9 @@ class NotificationSchedulerTest : public testing::Test {
           std::move(callback).Run(true);
         }));
 
-    EXPECT_CALL(*notification_manager(), Init(_, _))
+    EXPECT_CALL(*notification_manager(), Init(_))
         .WillOnce(
-            Invoke([&](ScheduledNotificationManager::Delegate* delegate,
-                       ScheduledNotificationManager::InitCallback callback) {
-              notification_manager_delegate_ = delegate;
+            Invoke([&](ScheduledNotificationManager::InitCallback callback) {
               std::move(callback).Run(true);
             }));
 
@@ -130,10 +127,6 @@ class NotificationSchedulerTest : public testing::Test {
 
   test::MockDisplayDecider* display_decider() { return display_decider_; }
 
-  ScheduledNotificationManager::Delegate* notification_manager_delegate() {
-    return notification_manager_delegate_;
-  }
-
  private:
   base::test::TaskEnvironment task_environment_;
   NotificationSchedulerClientRegistrar* registrar_;
@@ -144,7 +137,6 @@ class NotificationSchedulerTest : public testing::Test {
   test::MockDisplayAgent* display_agent_;
   test::MockDisplayDecider* display_decider_;
 
-  ScheduledNotificationManager::Delegate* notification_manager_delegate_;
 
   std::unique_ptr<NotificationScheduler> notification_scheduler_;
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerTest);
@@ -164,7 +156,7 @@ TEST_F(NotificationSchedulerTest, InitImpressionTrackerFailed) {
         std::move(callback).Run(false);
       }));
 
-  EXPECT_CALL(*notification_manager(), Init(_, _)).Times(0);
+  EXPECT_CALL(*notification_manager(), Init(_)).Times(0);
 
   base::RunLoop run_loop;
   scheduler()->Init(
@@ -184,9 +176,8 @@ TEST_F(NotificationSchedulerTest, InitScheduledNotificationManagerFailed) {
         std::move(callback).Run(true);
       }));
 
-  EXPECT_CALL(*notification_manager(), Init(_, _))
-      .WillOnce(Invoke([](ScheduledNotificationManager::Delegate* delegate,
-                          ScheduledNotificationManager::InitCallback callback) {
+  EXPECT_CALL(*notification_manager(), Init(_))
+      .WillOnce(Invoke([](ScheduledNotificationManager::InitCallback callback) {
         // Scheduled notification manager failed to load.
         std::move(callback).Run(false);
       }));
@@ -278,7 +269,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNothing) {
       .WillOnce(SetArgPointee<2>(result));
 
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
-  EXPECT_CALL(*notification_manager(), DisplayNotification(_)).Times(0);
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _)).Times(0);
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
 
   scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
@@ -310,10 +301,12 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
   DisplayDecider::Results result({kGuid});
   EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
       .WillOnce(SetArgPointee<2>(result));
-  EXPECT_CALL(*notification_manager(), DisplayNotification(_))
-      .WillOnce(InvokeWithoutArgs([&]() {
-        notification_manager_delegate()->DisplayNotification(std::move(entry));
-      }));
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
+      .WillOnce(
+          Invoke([&](const std::string& guid,
+                     ScheduledNotificationManager::DisplayCallback callback) {
+            std::move(callback).Run(std::move(entry));
+          }));
 
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))
       .WillOnce(Invoke(
@@ -342,10 +335,12 @@ TEST_F(NotificationSchedulerTest, ClientDropNotification) {
   DisplayDecider::Results result({kGuid});
   EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
       .WillOnce(SetArgPointee<2>(result));
-  EXPECT_CALL(*notification_manager(), DisplayNotification(_))
-      .WillOnce(InvokeWithoutArgs([&]() {
-        notification_manager_delegate()->DisplayNotification(std::move(entry));
-      }));
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
+      .WillOnce(
+          Invoke([&](const std::string& guid,
+                     ScheduledNotificationManager::DisplayCallback callback) {
+            std::move(callback).Run(std::move(entry));
+          }));
 
   // The client drops the notification data before showing the notification.
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))

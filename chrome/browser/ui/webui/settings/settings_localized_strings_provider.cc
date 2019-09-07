@@ -3236,8 +3236,6 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_SUBPAGE_DESCRIPTION},
       {"securityKeysBioEnrollmentTouch",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_TOUCH},
-      {"securityKeysPINTooShort",
-       IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT},
       {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
       {"securityKeysCredentialWebsite",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE},

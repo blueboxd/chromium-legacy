@@ -1561,17 +1561,33 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // ignored item, |window_position| remains where the item was as to then
   // reposition the other window's bounds in place of that item.
 
+  // This function may be called as the result of closing an overview item. If
+  // the closed item is the last item in the list, adjust |scroll_offset_| so
+  // that the grid is right aligned.
+  float right_most = 0.f;
+  for (const auto& window : window_list_) {
+    if (window->animating_to_close() || ignored_items.contains(window.get()))
+      continue;
+    right_most = std::max(right_most, window->target_bounds().right());
+  }
+  if (right_most != 0.f && right_most < total_bounds.right())
+    scroll_offset_ = -(right_most - scroll_offset_ - total_bounds.right());
+
+  // Map which contains up to |kTabletLayoutRow| entries with information on the
+  // last items right bound per row. Used so we can place the next item directly
+  // next to the last item. The key is the y-value of the row, and the value is
+  // the rightmost x-value.
+  base::flat_map<float, float> right_edge_map;
+
   // Since the number of rows is limited, windows are laid out column-wise so
   // that the most recently used windows are displayed first.
   const int height = total_bounds.height() / kTabletLayoutRow;
   int window_position = 0;
   std::vector<gfx::RectF> rects;
-
-  int i = 0;
-  for (const auto& window : window_list_) {
-    if (window->animating_to_close() || ignored_items.contains(window.get())) {
+  for (size_t i = 0; i < window_list_.size(); ++i) {
+    OverviewItem* item = window_list_[i].get();
+    if (item->animating_to_close() || ignored_items.contains(item)) {
       rects.push_back(gfx::RectF());
-      ++i;
       continue;
     }
 
@@ -1579,29 +1595,23 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
     // original height will be shrunk to fit into |height|, minus the margin and
     // overview header.
     const float ratio = float{height - kHeaderHeightDp - kOverviewMargin} /
-                        window->GetWindow()->bounds().height();
+                        item->GetWindow()->bounds().height();
     const int width =
-        window->GetWindow()->bounds().width() * ratio + kOverviewMargin;
+        item->GetWindow()->bounds().width() * ratio + kOverviewMargin;
     const int y =
         height * (window_position % kTabletLayoutRow) + total_bounds.y();
 
-    // TODO(sammiequon): Remove this loop and cache the values of the last
-    // bounds for each row.
-    // Search for closest window in the same row to the
-    // left of where the current window would be placed and set the current
-    // window's |x| value to the right of the other window.
-    int x = total_bounds.x() + scroll_offset_;
-    for (int j = i - 1; j >= 0; --j) {
-      if (rects[j].y() == y) {
-        x = rects[j].right();
-        break;
-      }
-    }
+    // Use the right bounds of the item next to in the row as the x position, if
+    // that item exists.
+    const int x = right_edge_map.contains(y)
+                      ? right_edge_map[y]
+                      : total_bounds.x() + scroll_offset_;
+    right_edge_map[y] = x + width;
+    DCHECK_LE(int{right_edge_map.size()}, kTabletLayoutRow);
 
     const gfx::RectF bounds(x, y, width, height);
     rects.push_back(bounds);
     ++window_position;
-    ++i;
   }
 
   return rects;

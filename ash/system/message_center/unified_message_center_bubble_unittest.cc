@@ -49,7 +49,7 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
   }
 
   UnifiedMessageCenterBubble* GetMessageCenterBubble() {
-    return GetPrimaryUnifiedSystemTray()->message_center_bubble_for_test();
+    return GetPrimaryUnifiedSystemTray()->message_center_bubble();
   }
 
   UnifiedSystemTrayBubble* GetSystemTrayBubble() {

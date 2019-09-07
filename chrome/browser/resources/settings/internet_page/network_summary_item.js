@@ -133,7 +133,12 @@ Polymer({
     const name =
         networkState ? OncMojo.getNetworkStateDisplayName(networkState) : '';
     if (OncMojo.connectionStateIsConnected(connectionState)) {
-      return name;
+      // Ethernet networks always have the display name 'Ethernet' so we use the
+      // state text 'Connected' to avoid repeating the label in the sublabel.
+      // See http://crbug.com/989907 for details.
+      return networkState.type == mojom.NetworkType.kEthernet ?
+          CrOncStrings.networkListItemConnected :
+          name;
     }
     if (connectionState == mojom.ConnectionStateType.kConnecting) {
       return name ?

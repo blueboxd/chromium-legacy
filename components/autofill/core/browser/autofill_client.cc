@@ -23,4 +23,8 @@ LogManager* AutofillClient::GetLogManager() const {
   return nullptr;
 }
 
+bool AutofillClient::CloseWebauthnOfferDialog() {
+  return false;
+}
+
 }  // namespace autofill

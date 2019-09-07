@@ -99,10 +99,11 @@ cr.define('safe_browsing', function() {
 
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
 
-    // Allow tabs to be navigated to by anchor.
-    showTab(window.location.hash.substr(1));
+    // Allow tabs to be navigated to by fragment. The fragment with be of the
+    // format "#tab-<tab id>"
+    showTab(window.location.hash.substr(5));
     window.onhashchange = function () {
-      showTab(window.location.hash.substr(1));
+      showTab(window.location.hash.substr(5));
     };
 
     // When the tab updates, update the anchor
@@ -110,7 +111,7 @@ cr.define('safe_browsing', function() {
       var tabbox = $('tabbox');
       var tabs = tabbox.querySelector('tabs').children;
       var selectedTab = tabs[tabbox.selectedIndex];
-      window.location.hash = selectedTab.id;
+      window.location.hash = 'tab-' + selectedTab.id;
     }, true);
   }
 
@@ -207,8 +208,8 @@ cr.define('safe_browsing', function() {
     var row = $('pg-ping-list').insertRow();
     row.className = 'content';
     row.id = 'pg-ping-list-' + token;
-    row.insertCell();
-    row.insertCell();
+    row.insertCell().className = 'content';
+    row.insertCell().className = 'content';
   }
 
   function addPGPing(result) {

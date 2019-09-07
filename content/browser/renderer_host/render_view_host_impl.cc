@@ -787,10 +787,6 @@ void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
   delegate_->DidFirstVisuallyNonEmptyPaint(this);
 }
 
-void RenderViewHostImpl::RenderWidgetDidCommitAndDrawCompositorFrame() {
-  delegate_->DidCommitAndDrawCompositorFrame(this);
-}
-
 bool RenderViewHostImpl::SuddenTerminationAllowed() const {
   return sudden_termination_allowed_;
 }

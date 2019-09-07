@@ -414,6 +414,12 @@ def AddInstrumentationTestOptions(parser):
       '--apk-under-test',
       help='Path or name of the apk under test.')
   parser.add_argument(
+      '--module',
+      action='append',
+      dest='modules',
+      help='Specify Android App Bundle modules to install in addition to the '
+      'base module.')
+  parser.add_argument(
       '--coverage-dir',
       type=os.path.realpath,
       help='Directory in which to place all generated '

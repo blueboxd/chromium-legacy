@@ -9,7 +9,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -397,7 +396,6 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   // identityDiscView may not be set if feature is not enabled.
   if (!self.identityDiscView)
     return;
-  DCHECK(IsIdentityDiscFeatureEnabled());
   if ((self.traitCollection.verticalSizeClass !=
        previousTraitCollection.verticalSizeClass) ||
       (self.traitCollection.horizontalSizeClass !=

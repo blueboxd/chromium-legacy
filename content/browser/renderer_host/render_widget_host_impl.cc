@@ -645,8 +645,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnForceRedrawComplete)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_DidCommitAndDrawCompositorFrame,
-                        OnCommitAndDrawCompositorFrame)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_IntrinsicSizingInfoChanged,
@@ -1844,11 +1842,6 @@ void RenderWidgetHostImpl::OnForceRedrawComplete(int snapshot_id) {
 void RenderWidgetHostImpl::OnFirstVisuallyNonEmptyPaint() {
   if (owner_delegate_)
     owner_delegate_->RenderWidgetDidFirstVisuallyNonEmptyPaint();
-}
-
-void RenderWidgetHostImpl::OnCommitAndDrawCompositorFrame() {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidCommitAndDrawCompositorFrame();
 }
 
 void RenderWidgetHostImpl::RendererExited() {

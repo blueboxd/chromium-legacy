@@ -56,7 +56,8 @@ class MockAnimationEffectOwner
 
 class TestAnimationEffectEventDelegate : public AnimationEffect::EventDelegate {
  public:
-  void OnEventCondition(const AnimationEffect& animation_node) override {
+  void OnEventCondition(const AnimationEffect& animation_node,
+                        Timing::Phase current_phase) override {
     event_triggered_ = true;
   }
   bool RequiresIterationEvents(const AnimationEffect& animation_node) override {

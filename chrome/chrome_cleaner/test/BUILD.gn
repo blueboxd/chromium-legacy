@@ -213,6 +213,7 @@ source_set("integration_test_sources") {
 
   sources = [
     "cleaner_test.cc",
+    "generate_test_uws_test.cc",
     "secure_dll_loading_test.cc",
   ]
 
@@ -239,6 +240,7 @@ source_set("integration_test_sources") {
     ":empty_dll",
     "//chrome/chrome_cleaner/executables:chrome_cleanup_tool",
     "//chrome/chrome_cleaner/executables:software_reporter_tool",
+    "//chrome/chrome_cleaner/tools:generate_test_uws",
   ]
 }
 

@@ -15,6 +15,7 @@
 #include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class GURL;
@@ -110,7 +111,7 @@ class UserScriptListener : public content::NotificationObserver,
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   content::NotificationRegistrar registrar_;
 

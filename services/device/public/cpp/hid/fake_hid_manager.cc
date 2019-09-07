@@ -94,8 +94,8 @@ void FakeHidConnection::SendFeatureReport(uint8_t report_id,
 FakeHidManager::FakeHidManager() {}
 FakeHidManager::~FakeHidManager() = default;
 
-void FakeHidManager::Bind(mojom::HidManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeHidManager::Bind(mojo::PendingReceiver<mojom::HidManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 // mojom::HidManager implementation:

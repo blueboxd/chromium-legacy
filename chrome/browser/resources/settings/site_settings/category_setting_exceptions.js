@@ -10,6 +10,8 @@
 Polymer({
   is: 'category-setting-exceptions',
 
+  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+
   properties: {
 
     /**
@@ -28,6 +30,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * True if the default value is managed by a policy.
+     * @private
+     */
+    defaultManaged_: Boolean,
 
     /**
      * The heading text for the blocked exception list.
@@ -54,9 +62,15 @@ Polymer({
     },
   },
 
+  observers: [
+    'updateDefaultManaged_(category)',
+  ],
+
   /** @override */
   ready: function() {
     this.ContentSetting = settings.ContentSetting;
+    this.addWebUIListener(
+        'contentSettingCategoryChanged', this.updateDefaultManaged_.bind(this));
   },
 
   /**
@@ -69,4 +83,32 @@ Polymer({
     return this.category !=
         settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
   },
+
+  /**
+   * Updates whether or not the default value is managed by a policy.
+   * @private
+   */
+  updateDefaultManaged_: function() {
+    if (this.category === undefined) {
+      return;
+    }
+
+    this.browserProxy.getDefaultValueForContentType(this.category)
+      .then(update => {
+        this.defaultManaged_ =
+          update.source === settings.SiteSettingSource.POLICY;
+      });
+  },
+
+  /**
+   * Returns true if this list is explicitly marked as readonly by a consumer
+   * of this component or if the default value for these exceptions are managed
+   * by a policy. User should not be able to set exceptions to managed default
+   * values.
+   * @return {boolean}
+   * @private
+   */
+  getReadOnlyList_: function() {
+    return this.readOnlyList || this.defaultManaged_;
+  }
 });

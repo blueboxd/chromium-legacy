@@ -800,10 +800,6 @@ void BlinkTestRunner::OnSetTestConfiguration(
                         WebSize(local_params->initial_size.width(),
                                 local_params->initial_size.height()));
 
-  // Tests should always start with the browser controls hidden.
-  render_view()->UpdateBrowserControlsState(
-      BROWSER_CONTROLS_STATE_BOTH, BROWSER_CONTROLS_STATE_HIDDEN, false);
-
   WebTestRenderThreadObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()

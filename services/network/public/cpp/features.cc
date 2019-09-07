@@ -120,6 +120,13 @@ const base::Feature kDnsOverHttpsUpgrade {
 #endif
 };
 
+// If this feature is enabled, the mDNS responder service responds to queries
+// for TXT records associated with
+// "Generated-Names._mdns_name_generator._udp.local" with a list of generated
+// mDNS names (random UUIDs) in the TXT record data.
+const base::Feature kMdnsResponderGeneratedNameListing{
+    "MdnsResponderGeneratedNameListing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Provides a mechanism to disable DoH upgrades for some subset of the hardcoded
 // upgrade mapping. Separate multiple provider ids with commas. See the
 // mapping in net/dns/dns_util.cc for provider ids.

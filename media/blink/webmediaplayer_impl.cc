@@ -2008,7 +2008,11 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
 
 void WebMediaPlayerImpl::OnProgress() {
   DVLOG(4) << __func__;
-  if (highest_ready_state_ < ReadyState::kReadyStateHaveMetadata) {
+
+  // See IsPrerollAttemptNeeded() for more details. We can't use that method
+  // here since it considers |preroll_attempt_start_time_| and for OnProgress()
+  // events we must make the attempt -- since there may not be another event.
+  if (highest_ready_state_ < ReadyState::kReadyStateHaveFutureData) {
     // Reset the preroll attempt clock.
     preroll_attempt_pending_ = true;
     preroll_attempt_start_time_ = base::TimeTicks();

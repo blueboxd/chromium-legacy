@@ -54,6 +54,9 @@ android_apk("weblayer_shell_apk") {
   min_sdk_version = 21
   target_sdk_version = 28
   android_manifest_dep = ":weblayer_shell_manifest"
+
+  # Add a native lib so the ABI is compatible with the implementation APK.
+  native_lib_placeholders = [ "libdummy.so" ]
 }
 
 weblayer_support_manifest =
@@ -105,6 +108,12 @@ android_apk("weblayer_support_apk") {
   min_sdk_version = 21
   target_sdk_version = 28
   android_manifest_dep = ":weblayer_support_manifest"
+
+  native_lib_version_rule = "//build/util:chrome_version_json"
+  _native_lib_file =
+      rebase_path("$root_gen_dir/CHROME_VERSION.json", root_build_dir)
+  native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
+
   shared_libraries = [ "//weblayer:libweblayer" ]
 }
 

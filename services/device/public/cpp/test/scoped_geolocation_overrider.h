@@ -6,12 +6,7 @@
 #define SERVICES_DEVICE_PUBLIC_CPP_TEST_SCOPED_GEOLOCATION_OVERRIDER_H_
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "services/device/public/mojom/geolocation.mojom.h"
-#include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace device {
 

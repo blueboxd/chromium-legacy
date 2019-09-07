@@ -1334,6 +1334,9 @@ Status ExecutePerformActions(Session* session,
           GetOptionalInt(action, "duration", &duration);
           tick_duration = std::max(tick_duration, duration);
         } else {
+          bool async_dispatch_event = false;
+          GetOptionalBool(action, "asyncDispatch", &async_dispatch_event);
+
           if (type == "key") {
             std::list<KeyEvent> dispatch_key_events;
             KeyEventBuilder builder;
@@ -1353,8 +1356,8 @@ Status ExecutePerformActions(Session* session,
                 session->sticky_modifiers &= ~KeyToKeyModifiers(event.key);
               }
 
-              Status status =
-                  web_view->DispatchKeyEvents(dispatch_key_events, true);
+              Status status = web_view->DispatchKeyEvents(dispatch_key_events,
+                                                          async_dispatch_event);
               if (status.IsError())
                 return status;
             }
@@ -1446,7 +1449,8 @@ Status ExecutePerformActions(Session* session,
               }
               dispatch_mouse_events.push_back(event);
               Status status = web_view->DispatchMouseEvents(
-                  dispatch_mouse_events, session->GetCurrentFrameId(), true);
+                  dispatch_mouse_events, session->GetCurrentFrameId(),
+                  async_dispatch_event);
               if (status.IsError())
                 return status;
             } else if (pointer_type == "touch") {
@@ -1463,7 +1467,8 @@ Status ExecutePerformActions(Session* session,
                 action_input_states[j]->SetInteger("pressed", 0);
               }
               if (has_touch_start[id]) {
-                Status status = web_view->DispatchTouchEvent(event, true);
+                Status status =
+                    web_view->DispatchTouchEvent(event, async_dispatch_event);
                 if (status.IsError())
                   return status;
               }

@@ -56,7 +56,6 @@
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/reading_list/features.h"
-#include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -528,9 +527,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"lock-bottom-toolbar", flag_descriptions::kLockBottomToolbarName,
      flag_descriptions::kLockBottomToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(fullscreen::features::kLockBottomToolbar)},
-    {"identity-disc", flag_descriptions::kIdentityDiscName,
-     flag_descriptions::kIdentityDiscDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIdentityDisc)},
     {"toolbar-new-tab-button", flag_descriptions::kToolbarNewTabButtonName,
      flag_descriptions::kToolbarNewTabButtonDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kToolbarNewTabButton)},

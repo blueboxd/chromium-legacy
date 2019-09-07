@@ -82,17 +82,43 @@ void AmbientController::RefreshImage() {
   if (!PhotoController::Get())
     return;
 
-  PhotoController::Get()->GetNextImage(base::BindOnce(
-      &AmbientController::OnPhotoDownloaded, weak_factory_.GetWeakPtr()));
+  if (model_.ShouldFetchImmediately()) {
+    // TODO(b/140032139): Defer downloading image if it is animating.
+    constexpr base::TimeDelta kAnimationDuration =
+        base::TimeDelta::FromMilliseconds(250);
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AmbientController::GetNextImage,
+                       weak_factory_.GetWeakPtr()),
+        kAnimationDuration);
+  } else {
+    model_.ShowNextImage();
+    ScheduleRefreshImage();
+  }
+}
 
-  constexpr base::TimeDelta kTimeOut = base::TimeDelta::FromMilliseconds(1000);
+void AmbientController::ScheduleRefreshImage() {
+  base::TimeDelta refresh_interval;
+  if (!model_.ShouldFetchImmediately()) {
+    // TODO(b/139953713): Change to a correct time interval.
+    refresh_interval = base::TimeDelta::FromSeconds(5);
+  }
+
   refresh_timer_.Start(
-      FROM_HERE, kTimeOut,
+      FROM_HERE, refresh_interval,
       base::BindOnce(&AmbientController::RefreshImage, base::Unretained(this)));
 }
 
+void AmbientController::GetNextImage() {
+  PhotoController::Get()->GetNextImage(base::BindOnce(
+      &AmbientController::OnPhotoDownloaded, weak_factory_.GetWeakPtr()));
+}
+
 void AmbientController::OnPhotoDownloaded(const gfx::ImageSkia& image) {
-  model_.AddNextImage(image);
+  if (!image.isNull())
+    model_.AddNextImage(image);
+
+  ScheduleRefreshImage();
 }
 
 AmbientContainerView* AmbientController::GetAmbientContainerViewForTesting() {

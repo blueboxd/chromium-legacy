@@ -55,7 +55,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_file_task_runner.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension.h"
@@ -286,7 +285,6 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      std::unique_ptr<Approval> approval,
                                      InstallSource source)
     : content::WebContentsObserver(web_contents),
-      extension_registry_observer_(this),
       profile_(profile),
       delegate_(delegate),
       id_(id),

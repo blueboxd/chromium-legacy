@@ -147,17 +147,17 @@ public class WebsitePermissionsFetcherTest {
         // Set lots of permissions values.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             for (String url : PERMISSION_URLS) {
-                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
                         url, url, ContentSettingValues.BLOCK, false);
-                WebsitePreferenceBridge.nativeSetMidiSettingForOrigin(
+                WebsitePreferenceBridgeJni.get().setMidiSettingForOrigin(
                         url, url, ContentSettingValues.ALLOW, false);
-                WebsitePreferenceBridge.nativeSetProtectedMediaIdentifierSettingForOrigin(
+                WebsitePreferenceBridgeJni.get().setProtectedMediaIdentifierSettingForOrigin(
                         url, url, ContentSettingValues.BLOCK, false);
-                WebsitePreferenceBridge.nativeSetNotificationSettingForOrigin(
+                WebsitePreferenceBridgeJni.get().setNotificationSettingForOrigin(
                         url, ContentSettingValues.ALLOW, false);
-                WebsitePreferenceBridge.nativeSetMicrophoneSettingForOrigin(
+                WebsitePreferenceBridgeJni.get().setMicrophoneSettingForOrigin(
                         url, ContentSettingValues.ALLOW, false);
-                WebsitePreferenceBridge.nativeSetCameraSettingForOrigin(
+                WebsitePreferenceBridgeJni.get().setCameraSettingForOrigin(
                         url, ContentSettingValues.BLOCK, false);
             }
 
@@ -418,10 +418,11 @@ public class WebsitePermissionsFetcherTest {
             boolean containsGoogleOriginPermission = false;
             boolean containsChromiumOriginPermission = false;
             for (Website site : siteArray) {
-                if (site.compareByAddressTo(expectedGoogleWebsite) == 0)
+                if (site.compareByAddressTo(expectedGoogleWebsite) == 0) {
                     containsGoogleOriginPermission = true;
-                else if (site.compareByAddressTo(expectedChromiumWebsite) == 0)
+                } else if (site.compareByAddressTo(expectedChromiumWebsite) == 0) {
                     containsChromiumOriginPermission = true;
+                }
 
                 Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.GEOLOCATION));
             }
@@ -444,12 +445,13 @@ public class WebsitePermissionsFetcherTest {
             boolean containsChromiumOriginPermission = false;
             boolean containsExampleOriginPermission = false;
             for (Website site : siteArray) {
-                if (site.compareByAddressTo(expectedGoogleWebsite) == 0)
+                if (site.compareByAddressTo(expectedGoogleWebsite) == 0) {
                     containsGoogleOriginPermission = true;
-                else if (site.compareByAddressTo(expectedChromiumWebsite) == 0)
+                } else if (site.compareByAddressTo(expectedChromiumWebsite) == 0) {
                     containsChromiumOriginPermission = true;
-                else if (site.compareByAddressTo(expectedExampleWebsite) == 0)
+                } else if (site.compareByAddressTo(expectedExampleWebsite) == 0) {
                     containsExampleOriginPermission = true;
+                }
 
                 Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.GEOLOCATION));
             }

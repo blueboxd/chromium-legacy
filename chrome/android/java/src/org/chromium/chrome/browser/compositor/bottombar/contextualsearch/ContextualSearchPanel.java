@@ -94,13 +94,9 @@ public class ContextualSearchPanel extends OverlayPanel {
                 ApiCompatibilityUtils
                         .getDrawable(mContext.getResources(), R.drawable.modern_toolbar_shadow)
                         .getIntrinsicHeight();
-        // We may have 1 or 2 buttons depending on old/new layout.
-        int endButtonsWidthDimension =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                ? R.dimen.contextual_search_end_buttons_width
-                : R.dimen.contextual_search_padded_button_width;
-        mEndButtonWidthDp =
-                mPxToDp * mContext.getResources().getDimensionPixelSize(endButtonsWidthDimension);
+        mEndButtonWidthDp = mContext.getResources().getDimensionPixelSize(
+                                    R.dimen.contextual_search_padded_button_width)
+                * mPxToDp;
     }
 
     @Override
@@ -282,6 +278,8 @@ public class ContextualSearchPanel extends OverlayPanel {
                             || ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
                                     && isCoordinateInsideOpenTabButton(x))) {
                 mManagementDelegate.promoteToTab();
+            } else {
+                peekPanel(StateChangeReason.UNKNOWN);
             }
         }
     }
@@ -350,6 +348,32 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (canDisplayContentInPanel()) {
             getOverlayPanelContent().showContent();
         }
+    }
+
+    @Override
+    public float getOpenTabIconX() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            return super.getOpenTabIconX();
+        } else {
+            if (LocalizationUtils.isLayoutRtl()) {
+                return getOffsetX() + getBarMarginSide();
+            } else {
+                return getOffsetX() + getWidth() - getBarMarginSide() - getCloseIconDimension();
+            }
+        }
+    }
+
+    @Override
+    protected boolean isCoordinateInsideCloseButton(float x) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) return false;
+
+        return super.isCoordinateInsideCloseButton(x);
+    }
+
+    @Override
+    protected boolean isCoordinateInsideOpenTabButton(float x) {
+        return getOpenTabIconX() - getButtonPaddingDps() <= x
+                && x <= getOpenTabIconX() + getOpenTabIconDimension() + getButtonPaddingDps();
     }
 
     @Override
@@ -628,6 +652,11 @@ public class ContextualSearchPanel extends OverlayPanel {
         int right = left + (int) (getWidth() / mPxToDp);
 
         return new Rect(left, top, right, bottom);
+    }
+
+    /** @return The padding used for each side of the button in the Bar. */
+    public float getButtonPaddingDps() {
+        return mButtonPaddingDps;
     }
 
     // ============================================================================================

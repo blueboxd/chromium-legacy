@@ -42,30 +42,54 @@
                file="images/background_svgs/yellow_semicircle.svg"
                compress="gzip"
                type="BINDATA" />
+
+      <!-- Generated Polymer 3 elements -->
+      <include name="IDR_WELCOME_APP_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/welcome_app.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" preprocess="true"/>
+      <include name="IDR_GOOGLE_APPS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/google_apps/nux_google_apps.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" preprocess="true"/>
+      <include name="IDR_SET_AS_DEFAULT_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/set_as_default/nux_set_as_default.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" preprocess="true"/>
+      <include name="IDR_WELCOME_LANDING_VIEW_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/landing_view.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SIGNIN_VIEW_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/signin_view.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_NTP_BACKGROUND_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/ntp_background/nux_ntp_background.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SHARED_STEP_INDICATOR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/step_indicator.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SHARED_ONBOARDING_BACKGROUND_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/onboarding_background.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+
+
+      <!-- Generated style files -->
+      <include name="IDR_WELCOME_SHARED_ANIMATIONS_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/animations_css.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SHARED_CHOOSER_SHARED_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/chooser_shared_css.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SHARED_NAVI_COLORS_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/navi_colors_css.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SHARED_ACTION_LINK_STYLE_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/action_link_style_css.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
+      <include name="IDR_WELCOME_SHARED_SPLASH_PAGES_SHARED_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/welcome/shared/splash_pages_shared_css.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"/>
     </includes>
     <structures>
-      <structure name="IDR_WELCOME_LANDING_VIEW_HTML"
-                 file="landing_view.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_LANDING_VIEW_JS"
-                 file="landing_view.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_LANDING_VIEW_PROXY_HTML"
-                 file="landing_view_proxy.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
       <structure name="IDR_WELCOME_LANDING_VIEW_PROXY_JS"
                  file="landing_view_proxy.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_NAVIGATION_BEHAVIOR_HTML"
-                 file="navigation_behavior.html"
                  type="chrome_html"
                  compress="gzip"
                  preprocess="true"/>
@@ -74,100 +98,23 @@
                  type="chrome_html"
                  compress="gzip"
                  preprocess="true"/>
-      <structure name="IDR_WELCOME_SHARED_ACTION_LINK_STYLE_JS"
-                 file="shared/action_link_style.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_ACTION_LINK_STYLE_CSS_HTML"
-                 file="shared/action_link_style_css.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_ANIMATIONS_CSS"
-                 file="shared/animations_css.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_BOOKMARK_PROXY_HTML"
-                 file="shared/bookmark_proxy.html"
-                 compress="gzip"
-                 type="chrome_html" />
       <structure name="IDR_WELCOME_SHARED_BOOKMARK_PROXY_JS"
                  file="shared/bookmark_proxy.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_CHOOSER_SHARED_CSS"
-                 file="shared/chooser_shared_css.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_I18N_SETUP_HTML"
-                 file="shared/i18n_setup.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_MODULE_METRICS_PROXY_HTML"
-                 file="shared/module_metrics_proxy.html"
                  compress="gzip"
                  type="chrome_html" />
       <structure name="IDR_WELCOME_SHARED_MODULE_METRICS_PROXY_JS"
                  file="shared/module_metrics_proxy.js"
                  compress="gzip"
                  type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_NAVI_COLORS_CSS"
-                 file="shared/navi_colors_css.html"
+      <structure name="IDR_WELCOME_SHARED_NUX_TYPES_JS"
+                 file="shared/nux_types.js"
                  compress="gzip"
                  type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_ONBOARDING_BACKGROUND_HTML"
-                 file="shared/onboarding_background.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_ONBOARDING_BACKGROUND_JS"
-                 file="shared/onboarding_background.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_STEP_INDICATOR_HTML"
-                 file="shared/step_indicator.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_STEP_INDICATOR_JS"
-                 file="shared/step_indicator.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SHARED_SPLASH_PAGES_SHARED_CSS"
-                 file="shared/splash_pages_shared_css.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_WELCOME_SIGNIN_VIEW_HTML"
-                 file="signin_view.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_SIGNIN_VIEW_JS"
-                 file="signin_view.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_SIGNIN_VIEW_PROXY_HTML"
-                 file="signin_view_proxy.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
       <structure name="IDR_WELCOME_SIGNIN_VIEW_PROXY_JS"
                  file="signin_view_proxy.js"
                  type="chrome_html"
                  compress="gzip"
                  preprocess="true"/>
-      <structure name="IDR_WELCOME_APP_HTML"
-                 file="welcome_app.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_APP_JS"
-                 file="welcome_app.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_BROWSER_PROXY_HTML"
-                 file="welcome_browser_proxy.html"
-                 compress="gzip"
-                 type="chrome_html"/>
       <structure name="IDR_WELCOME_BROWSER_PROXY_JS"
                  file="welcome_browser_proxy.js"
                  compress="gzip"
@@ -189,42 +136,8 @@
                  preprocess="true"/>
 
        <!-- Google apps-->
-      <structure name="IDR_GOOGLE_APPS_HTML"
-                 file="google_apps/nux_google_apps.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_GOOGLE_APPS_JS"
-                 file="google_apps/nux_google_apps.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_GOOGLE_APP_PROXY_HTML"
-                 file="google_apps/google_app_proxy.html"
-                 compress="gzip"
-                 type="chrome_html" />
       <structure name="IDR_GOOGLE_APP_PROXY_JS"
                  file="google_apps/google_app_proxy.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_SET_AS_DEFAULT_HTML"
-                 file="set_as_default/nux_set_as_default.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_SET_AS_DEFAULT_JS"
-                 file="set_as_default/nux_set_as_default.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_SET_AS_DEFAULT_PROXY_HTML"
-                 file="set_as_default/nux_set_as_default_proxy.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_SET_AS_DEFAULT_PROXY_JS"
-                 file="set_as_default/nux_set_as_default_proxy.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_GOOGLE_APPS_METRICS_PROXY_HTML"
-                 file="google_apps/google_apps_metrics_proxy.html"
                  compress="gzip"
                  type="chrome_html" />
       <structure name="IDR_GOOGLE_APPS_METRICS_PROXY_JS"
@@ -232,25 +145,15 @@
                  compress="gzip"
                  type="chrome_html" />
 
+      <!-- Set as default-->
+      <structure name="IDR_SET_AS_DEFAULT_PROXY_JS"
+                 file="set_as_default/nux_set_as_default_proxy.js"
+                 compress="gzip"
+                 type="chrome_html" />
+
       <!-- NTP background-->
-      <structure name="IDR_NTP_BACKGROUND_HTML"
-                 file="ntp_background/nux_ntp_background.html"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_NTP_BACKGROUND_JS"
-                 file="ntp_background/nux_ntp_background.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_NTP_BACKGROUND_PROXY_HTML"
-                 file="ntp_background/ntp_background_proxy.html"
-                 compress="gzip"
-                 type="chrome_html" />
       <structure name="IDR_NTP_BACKGROUND_PROXY_JS"
                  file="ntp_background/ntp_background_proxy.js"
-                 compress="gzip"
-                 type="chrome_html" />
-      <structure name="IDR_NTP_BACKGROUND_METRICS_PROXY_HTML"
-                 file="ntp_background/ntp_background_metrics_proxy.html"
                  compress="gzip"
                  type="chrome_html" />
       <structure name="IDR_NTP_BACKGROUND_METRICS_PROXY_JS"

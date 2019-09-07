@@ -12,6 +12,7 @@ GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "chromeos/constants/chromeos_switches.h"');
 GEN('#endif  // defined(OS_CHROMEOS)');
 
+GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
@@ -239,7 +240,7 @@ TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
   mocha.run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
   settings_about_page.registerOfficialBuildTests();
   mocha.run();
@@ -888,7 +889,7 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)');
+GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 /**
  * @constructor
@@ -938,7 +939,7 @@ TEST_F('CrSettingsIncompatibleApplicationsPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
+GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 /**
  * @constructor
@@ -1132,7 +1133,7 @@ TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
   mocha.grep('PersonalizationOptionsTests_AllBuilds').run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
   mocha.grep('PersonalizationOptionsTests_OfficialBuild').run();
 });
@@ -1845,7 +1846,7 @@ TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
   mocha.grep(assert(languages_page_tests.TestNames.SpellcheckOfficialBuild))
       .run();
@@ -2071,7 +2072,7 @@ TEST_F('CrControlledRadioButtonTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
 
 function CrSettingsMetricsReportingTest() {}
 
@@ -2093,7 +2094,7 @@ TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
+GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
 
 GEN('#if defined(OS_CHROMEOS)');
 

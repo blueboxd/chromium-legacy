@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -147,11 +146,10 @@ WebContentsDestroyed() {
 //
 
 DeclarativeContentIsBookmarkedConditionTracker::
-DeclarativeContentIsBookmarkedConditionTracker(content::BrowserContext* context,
-                                               Delegate* delegate)
-    : delegate_(delegate),
-      extensive_bookmark_changes_in_progress_(0),
-      scoped_bookmarks_observer_(this) {
+    DeclarativeContentIsBookmarkedConditionTracker(
+        content::BrowserContext* context,
+        Delegate* delegate)
+    : delegate_(delegate), extensive_bookmark_changes_in_progress_(0) {
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(context);
   // Can be null during unit test execution.

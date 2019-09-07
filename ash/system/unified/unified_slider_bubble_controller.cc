@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -186,7 +186,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
-  if (app_list_features::IsBackgroundBlurEnabled()) {
+  if (features::IsBackgroundBlurEnabled()) {
     bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }

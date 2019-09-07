@@ -5,7 +5,11 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_FEATURES_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_FEATURES_H_
 
+#include "base/feature_list.h"
+
 namespace dom_distiller {
+
+extern const base::Feature kReaderMode;
 
 // Returns true when flag enable-dom-distiller is set or enabled from Finch.
 bool IsDomDistillerEnabled();

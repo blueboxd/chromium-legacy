@@ -344,6 +344,7 @@ mojom("interfaces") {
   ]
 
   sources = [
+    "browser_controls_state.mojom",
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
     "resource_load_info.mojom",

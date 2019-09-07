@@ -4,25 +4,18 @@
 
 package org.chromium.chrome.browser.omnibox.geo;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import android.content.Context;
 import android.location.Location;
 import android.os.SystemClock;
 
-import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordHistogramJni;
-import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowUrlUtilities;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowWebsitePreferenceBridge;
-import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
-import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.test.util.browser.Features;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,20 +27,29 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordHistogramJni;
+import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowUrlUtilities;
+import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
+import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridgeJni;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.test.util.browser.Features;
+
 import java.util.Arrays;
 import java.util.HashSet;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
 
 /**
  * Robolectric tests for {@link GeolocationHeader}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = {ShadowUrlUtilities.class, ShadowWebsitePreferenceBridge.class})
+@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 public class GeolocationHeaderUnitTest {
     private static final String SEARCH_URL = "https://www.google.com/search?q=potatoes";
 
@@ -103,17 +105,27 @@ public class GeolocationHeaderUnitTest {
     RecordHistogram.Natives mRecordHistogramMock;
 
     @Mock
+    WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeMock;
+
+    @Mock
     private Tab mTab;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mRecordHistogramMock);
+        mocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeMock);
         GeolocationTracker.setLocationAgeForTesting(null);
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LocationSource.HIGH_ACCURACY);
         GeolocationHeader.setAppPermissionGrantedForTesting(true);
         when(mTab.isIncognito()).thenReturn(false);
+        when(mWebsitePreferenceBridgeMock.getGeolocationSettingForOrigin(
+                     anyString(), anyString(), anyBoolean()))
+                .thenReturn(ContentSettingValues.ALLOW);
+        when(mWebsitePreferenceBridgeMock.isPermissionControlledByDSE(
+                     anyInt(), anyString(), anyBoolean()))
+                .thenReturn(true);
         sRefreshVisibleNetworksRequests = 0;
         sRefreshLastKnownLocation = 0;
     }
@@ -304,24 +316,6 @@ public class GeolocationHeaderUnitTest {
         @Implementation
         public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
             // Noop.
-        }
-    }
-
-    /**
-     * Shadow for WebsitePreferenceBridge
-     */
-    @Implements(WebsitePreferenceBridge.class)
-    public static class ShadowWebsitePreferenceBridge {
-        @Implementation
-        public static boolean isPermissionControlledByDSE(
-                @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito) {
-            return true;
-        }
-
-        @Implementation
-        public static @ContentSettingValues int nativeGetGeolocationSettingForOrigin(
-                String origin, String embedder, boolean isIncognito) {
-            return ContentSettingValues.ALLOW;
         }
     }
 

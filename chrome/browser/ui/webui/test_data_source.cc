@@ -48,7 +48,9 @@ std::string TestDataSource::GetMimeType(const std::string& path) {
     return "text/html";
   }
   // The test data source currently only serves HTML and JS.
-  CHECK(base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII));
+  CHECK(base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
+      << "Tried to read file with unexpected type from test data source: "
+      << path;
   return "application/javascript";
 }
 

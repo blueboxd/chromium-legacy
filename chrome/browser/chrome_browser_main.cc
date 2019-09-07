@@ -1629,9 +1629,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // BUILDFLAG(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
   // Configure modules that need access to resources.
-  net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-  media::SetLocalizedStringProvider(
-      chrome_common_media::LocalizedStringProvider);
+  net::NetModule::SetResourceProvider(ChromeNetResourceProvider);
+  media::SetLocalizedStringProvider(ChromeMediaLocalizedStringProvider);
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global IntranetRedirectDetector instance, which will promptly go to

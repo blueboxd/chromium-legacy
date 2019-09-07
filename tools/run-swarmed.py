@@ -4,18 +4,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs a Fuchsia gtest-based test on Swarming, optionally many times,
-collecting the output of the runs into a directory. Useful for flake checking,
-and faster than using trybots by avoiding repeated bot_update, compile, archive,
-etc. and allowing greater parallelism.
+"""Runs a gtest-based test on Swarming, optionally many times, collecting the
+output of the runs into a directory. Useful for flake checking, and faster than
+using trybots by avoiding repeated bot_update, compile, archive, etc. and
+allowing greater parallelism.
 
 To use, run in a new shell (it blocks until all Swarming jobs complete):
 
-  tools/run-swarmed.py -t content_unittests --out-dir=out/fuch
+  tools/run-swarmed.py out/rel base_unittests
 
 The logs of the runs will be stored in results/ (or specify a results directory
 with --results=some_dir). You can then do something like `grep -L SUCCESS
 results/*` to find the tests that failed or otherwise process the log files.
+
+See //docs/workflow/debugging-with-swarming.md for more details.
 """
 
 import argparse
@@ -49,16 +51,14 @@ def _Spawn(args):
       '-d', 'pool', args.pool,
       '-s', isolated_hash,
       '--dump-json', json_file,
+      '-d', 'os', args.swarming_os,
   ]
   if args.target_os == 'fuchsia':
     trigger_args += [
-      '-d', 'os', 'Linux',
       '-d', 'kvm', '1',
       '-d', 'gpu', 'none',
       '-d', 'cpu', args.arch,
     ]
-  elif args.target_os == 'win':
-    trigger_args += [ '-d', 'os', 'Windows' ]
   elif args.target_os == 'android':
     # The canonical version numbers are stored in the infra repository here:
     # build/scripts/slave/recipe_modules/swarming/api.py
@@ -74,7 +74,6 @@ def _Spawn(args):
         '.swarming_module:infra/tools/luci/vpython/${platform}:' +
         vpython_version)
     trigger_args += [
-        '-d', 'os', 'Android',
         '-d', 'device_os', args.device_os,
         '--cipd-package', cpython_pkg,
         '--cipd-package', vpython_native_pkg,
@@ -92,7 +91,7 @@ def _Spawn(args):
     trigger_args.append('--gtest_filter=' + args.gtest_filter)
   elif args.target_os == 'fuchsia':
     filter_file = \
-        'testing/buildbot/filters/fuchsia.' + args.test_name + '.filter'
+        'testing/buildbot/filters/fuchsia.' + args.target_name + '.filter'
     if os.path.isfile(filter_file):
       trigger_args.append('--test-launcher-filter-file=../../' + filter_file)
   with open(os.devnull, 'w') as nul:
@@ -123,11 +122,8 @@ def _Collect(spawn_result):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-C', '--out-dir', default='out/fuch',
-                      help='Build directory.')
+  parser.add_argument('--swarming-os', help='OS specifier for Swarming.')
   parser.add_argument('--target-os', default='detect', help='gn target_os')
-  parser.add_argument('--test-name', '-t', required=True,
-                      help='Name of test to run.')
   parser.add_argument('--arch', '-a', default='detect',
                       help='CPU architecture of the test binary.')
   parser.add_argument('--copies', '-n', type=int, default=1,
@@ -141,6 +137,8 @@ def main():
   parser.add_argument('--gtest_filter',
                       help='Use the given gtest_filter, rather than the '
                            'default filter file, if any.')
+  parser.add_argument('out_dir', type=str, help='Build directory.')
+  parser.add_argument('target_name', type=str, help='Name of target to run.')
 
   args = parser.parse_args()
 
@@ -158,17 +156,26 @@ def main():
       args.target_os = { 'darwin': 'mac', 'linux2': 'linux', 'win32': 'win' }[
                            sys.platform]
 
+  if args.swarming_os is None:
+    args.swarming_os = {
+      'mac': 'Mac',
+      'win': 'Windows',
+      'linux': 'Linux',
+      'android': 'Android',
+      'fuchsia': 'Linux'
+    }[args.target_os]
+
   # Determine the CPU architecture of the test binary, if not specified.
   if args.arch == 'detect' and args.target_os == 'fuchsia':
     executable_info = subprocess.check_output(
-        ['file', os.path.join(args.out_dir, args.test_name)])
+        ['file', os.path.join(args.out_dir, args.target_name)])
     if 'ARM aarch64' in executable_info:
       args.arch = 'arm64',
     else:
       args.arch = 'x86-64'
 
   subprocess.check_call(
-      ['tools/mb/mb.py', 'isolate', '//' + args.out_dir, args.test_name])
+      ['tools/mb/mb.py', 'isolate', '//' + args.out_dir, args.target_name])
 
   print 'If you get authentication errors, follow:'
   print '  https://www.chromium.org/developers/testing/isolated-testing/for-swes#TOC-Login-on-the-services'
@@ -177,8 +184,8 @@ def main():
   archive_output = subprocess.check_output(
       ['tools/swarming_client/isolate.py', 'archive',
        '-I', 'https://isolateserver.appspot.com',
-       '-i', os.path.join(args.out_dir, args.test_name + '.isolate'),
-       '-s', os.path.join(args.out_dir, args.test_name + '.isolated')])
+       '-i', os.path.join(args.out_dir, args.target_name + '.isolate'),
+       '-s', os.path.join(args.out_dir, args.target_name + '.isolated')])
   isolated_hash = archive_output.split()[0]
 
   if os.path.isdir(args.results):

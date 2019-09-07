@@ -140,8 +140,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   const autofill::PasswordForm& GetPendingCredentials() const override;
   metrics_util::CredentialSourceType GetCredentialSource() override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
-  base::span<const autofill::PasswordForm* const> GetBlacklistedMatches()
-      const override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;
 

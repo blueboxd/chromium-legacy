@@ -277,19 +277,14 @@ bool IppValidator::ValidateIppData(const std::vector<uint8_t>& ipp_data) {
                     pdf_magic_bytes.begin());
 }
 
-IppValidator::IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {}
+IppValidator::IppValidator(CupsProxyServiceDelegate* const delegate)
+    : delegate_(delegate) {}
 
 IppValidator::~IppValidator() = default;
 
 base::Optional<IppRequest> IppValidator::ValidateIppRequest(
     ipp_parser::mojom::IppRequestPtr to_validate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!delegate_) {
-    // TODO(crbug/495409): Add fatal error option to bring down service.
-    return base::nullopt;
-  }
-
   // Build ipp message.
   // Note: Moving ipp here, to_validate->ipp no longer valid below.
   printing::ScopedIppPtr ipp =

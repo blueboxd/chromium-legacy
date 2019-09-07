@@ -1019,6 +1019,7 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="metrics.PredictedType"/>
+        <index fields="metrics.PredictedType,metrics.PredictionSource"/>
         <statistics>
           <enumeration/>
         </statistics>
@@ -1055,6 +1056,8 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="metrics.ActualType"/>
+        <index fields="metrics.ActualType,metrics.PredictionSource"/>
+        <index fields="metrics.PredictionSource"/>
         <statistics>
           <enumeration/>
         </statistics>

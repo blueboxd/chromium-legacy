@@ -40,6 +40,19 @@ base::LazyInstance<AwMetricsServiceClient>::Leaky g_lazy_instance_;
 
 namespace {
 
+// IMPORTANT: DO NOT CHANGE sample rates without first ensuring the Chrome
+// Metrics team has the appropriate backend bandwidth and storage.
+
+// Sample at 2%, based on storage concerns. We sample at a different rate than
+// Chrome because we have more metrics "clients" (each app on the device counts
+// as a separate client).
+const double kStableSampledInRate = 0.02;
+
+// Sample non-stable channels also at 2%. We intend to raise this to 99% in the
+// future (for consistency with Chrome and to exercise the out-of-sample code
+// path).
+const double kBetaDevCanarySampledInRate = 0.02;
+
 // Callbacks for metrics::MetricsStateManager::Create. Store/LoadClientInfo
 // allow Windows Chrome to back up ClientInfo. They're no-ops for WebView.
 
@@ -50,16 +63,25 @@ std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
   return client_info;
 }
 
-// WebView metrics are sampled at 2%, based on the client ID. Since including
-// app package names in WebView's metrics, as a matter of policy, the sample
-// rate must not exceed 10%. Sampling is hard-coded (rather than controlled via
-// variations, as in Chrome) because:
+// WebView metrics are sampled at (possibly) different rates depending on
+// channel, based on the client ID. Sampling is hard-coded (rather than
+// controlled via variations, as in Chrome) because:
 // - WebView is slow to download the variations seed and propagate it to each
 //   app, so we'd miss metrics from the first few runs of each app.
 // - WebView uses the low-entropy source for all studies, so there would be
 //   crosstalk between the metrics sampling study and all other studies.
 bool IsInSample(const std::string& client_id) {
   DCHECK(!client_id.empty());
+
+  double sampled_in_rate = kBetaDevCanarySampledInRate;
+
+  // Down-sample unknown channel as a precaution in case it ends up being
+  // shipped to Stable users.
+  version_info::Channel channel = version_info::android::GetChannel();
+  if (channel == version_info::Channel::STABLE ||
+      channel == version_info::Channel::UNKNOWN) {
+    sampled_in_rate = kStableSampledInRate;
+  }
 
   // client_id comes from base::GenerateGUID(), so its value is random/uniform,
   // except for a few bit positions with fixed values, and some hyphens. Rather
@@ -68,8 +90,13 @@ bool IsInSample(const std::string& client_id) {
   uint32_t hash = base::PersistentHash(client_id);
 
   // Since hashing is ~uniform, the chance that the value falls in the bottom
-  // 2% (1/50th) of possible values is 2%.
-  return hash < UINT32_MAX / 50u;
+  // X% of possible values is X%. UINT32_MAX fits within the range of integers
+  // that can be expressed precisely by a 64-bit double. Casting back to a
+  // uint32_t means the effective sample rate is within a 1/UINT32_MAX error
+  // margin.
+  uint32_t sampled_in_threshold =
+      static_cast<uint32_t>(static_cast<double>(UINT32_MAX) * sampled_in_rate);
+  return hash < sampled_in_threshold;
 }
 
 std::unique_ptr<metrics::MetricsService> CreateMetricsService(

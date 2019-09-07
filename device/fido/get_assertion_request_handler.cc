@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
@@ -148,6 +149,16 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   // The authenticatorData on an GetAssertionResponse must not have
   // attestedCredentialData set.
   if (response.auth_data().attested_data().has_value()) {
+    return false;
+  }
+
+  // No extensions are supported when getting assertions therefore no extensions
+  // are permitted in the response.
+  const base::Optional<cbor::Value>& extensions =
+      response.auth_data().extensions();
+  if (extensions) {
+    FIDO_LOG(ERROR) << "assertion response invalid due to extensions block: "
+                    << cbor::DiagnosticWriter::Write(*extensions);
     return false;
   }
 

@@ -86,7 +86,7 @@ void CoreTabHelper::UpdateContentRestrictions(int content_restrictions) {
 void CoreTabHelper::SearchByImageInNewTab(
     content::RenderFrameHost* render_frame_host,
     const GURL& src_url) {
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
   // Bind the InterfacePtr into the callback so that it's kept alive until
@@ -233,7 +233,8 @@ void CoreTabHelper::NavigationEntriesDeleted() {
 // Handles the image thumbnail for the context node, composes a image search
 // request based on the received thumbnail and opens the request in a new tab.
 void CoreTabHelper::DoSearchByImageInNewTab(
-    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
     const GURL& src_url,
     const std::vector<uint8_t>& thumbnail_data,
     const gfx::Size& original_size) {

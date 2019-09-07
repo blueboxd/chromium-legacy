@@ -181,10 +181,16 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   void DoTestLaunch(apps::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) {
     chrome::mojom::AppShimHostPtr host_ptr;
-    LaunchApp(mojo::MakeRequest(&host_ptr), profile_path_, app_id_, launch_type,
-              files,
-              base::BindOnce(&TestingAppShimHostBootstrap::DoTestLaunchDone,
-                             launch_result_));
+    auto app_shim_info = chrome::mojom::AppShimInfo::New();
+    app_shim_info->profile_path = profile_path_;
+    app_shim_info->app_id = app_id_;
+    app_shim_info->app_url = GURL("https://example.com");
+    app_shim_info->launch_type = launch_type;
+    app_shim_info->files = files;
+    OnShimConnected(
+        mojo::MakeRequest(&host_ptr), std::move(app_shim_info),
+        base::BindOnce(&TestingAppShimHostBootstrap::DoTestLaunchDone,
+                       launch_result_));
   }
 
   static void DoTestLaunchDone(

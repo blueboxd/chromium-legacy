@@ -1437,17 +1437,26 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   CloudPolicyClient::StatusCallback callback =
       base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
                  base::Unretained(&callback_observer_));
-  base::Value report(base::Value::Type::DICTIONARY);
-  report.SetStringPath("context.gaiaEmail", "name@gmail.com");
-  report.SetStringPath("context.userAgent", "User-Agent");
-  report.SetStringPath("context.profileName", "Profile 1");
-  report.SetStringPath("context.profilePath", "C:\\User Data\\Profile 1");
-  report.SetStringPath("event.time", "2019-05-22T13:01:45Z");
-  report.SetStringPath("event.foo.prop1", "value1");
-  report.SetStringPath("event.foo.prop2", "value2");
-  report.SetStringPath("event.foo.prop3", "value3");
 
-  client_->UploadRealtimeReport(std::move(report), callback);
+  base::Value context(base::Value::Type::DICTIONARY);
+  context.SetStringPath("gaiaEmail", "name@gmail.com");
+  context.SetStringPath("userAgent", "User-Agent");
+  context.SetStringPath("profileName", "Profile 1");
+  context.SetStringPath("profilePath", "C:\\User Data\\Profile 1");
+
+  base::Value event;
+  event.SetStringPath("time", "2019-05-22T13:01:45Z");
+  event.SetStringPath("foo.prop1", "value1");
+  event.SetStringPath("foo.prop2", "value2");
+  event.SetStringPath("foo.prop3", "value3");
+
+  base::Value event_list(base::Value::Type::LIST);
+  event_list.GetList().push_back(std::move(event));
+
+  client_->UploadRealtimeReport(
+      std::move(policy::RealtimeReportingJobConfiguration::BuildReport(
+          std::move(event_list), std::move(context))),
+      callback);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,

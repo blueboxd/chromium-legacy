@@ -1187,8 +1187,6 @@ jumbo_split_static_library("browser") {
     "performance_manager/web_contents_proxy.cc",
     "performance_manager/web_contents_proxy_impl.cc",
     "performance_manager/web_contents_proxy_impl.h",
-    "performance_manager/webui_graph_dump_impl.cc",
-    "performance_manager/webui_graph_dump_impl.h",
     "performance_monitor/metric_evaluator_helper_win.cc",
     "performance_monitor/metric_evaluator_helper_win.h",
     "performance_monitor/process_metrics_history.cc",
@@ -1483,6 +1481,8 @@ jumbo_split_static_library("browser") {
     "profiles/renderer_updater.h",
     "profiles/renderer_updater_factory.cc",
     "profiles/renderer_updater_factory.h",
+    "profiles/reporting_util.cc",
+    "profiles/reporting_util.h",
     "profiles/sql_init_error_message_ids.cc",
     "profiles/sql_init_error_message_ids.h",
     "profiles/storage_partition_descriptor.h",
@@ -1953,7 +1953,6 @@ jumbo_split_static_library("browser") {
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/notifications",
-    "//chrome/browser/performance_manager:mojo_bindings",
     "//chrome/browser/performance_manager:site_data_proto",
     "//chrome/browser/profiling_host",
     "//chrome/browser/push_messaging:budget_proto",
@@ -3199,6 +3198,8 @@ jumbo_split_static_library("browser") {
       "media_galleries/win/portable_device_map_service.h",
       "media_galleries/win/snapshot_file_details.cc",
       "media_galleries/win/snapshot_file_details.h",
+      "memory/enterprise_memory_limit_evaluator.cc",
+      "memory/enterprise_memory_limit_evaluator.h",
       "memory/memory_pressure_monitor.cc",
       "memory/memory_pressure_monitor.h",
       "memory/memory_pressure_monitor_utils.cc",
@@ -3719,8 +3720,6 @@ jumbo_split_static_library("browser") {
     deps += [
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
-      "//chrome/services/cups_proxy",
-      "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/components/account_manager",
       "//chromeos/components/sync_wifi",
       "//chromeos/services/assistant/public:feature_flags",
@@ -5170,6 +5169,12 @@ jumbo_split_static_library("browser") {
 
   if (use_cups) {
     configs += [ "//printing:cups" ]
+    if (is_chromeos) {
+      deps += [
+        "//chrome/services/cups_proxy",
+        "//chrome/services/cups_proxy/public/mojom",
+      ]
+    }
   }
 
   if (use_nss_certs) {
@@ -5315,7 +5320,6 @@ grit("resources") {
     ":chrome_internal_resources_gen",
     "//chrome/browser/engagement:mojo_bindings_js",
     "//chrome/browser/media:mojo_bindings_js",
-    "//chrome/browser/performance_manager:mojo_bindings_js",
     "//chrome/browser/resources/safety_tips:make_safety_tips_protobuf",
     "//chrome/browser/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",

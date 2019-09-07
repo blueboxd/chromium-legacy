@@ -5,22 +5,33 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_URL_LOADER_FACTORY_PROVIDER_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_URL_LOADER_FACTORY_PROVIDER_H_
 
+#include "base/sequenced_task_runner.h"
 #include "components/download/public/common/download_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace download {
 
-// Interface for providing a SharedURLLoaderFactory on IO thread that can be
-// used to create parallel download requests.
+// Class for wrapping a SharedURLLoaderFactory that can be passed across thread
+// so that it can be used later on IO thread to retrieve the factory to create
+// parallel download requests.
 class COMPONENTS_DOWNLOAD_EXPORT URLLoaderFactoryProvider {
  public:
-  URLLoaderFactoryProvider();
+  using URLLoaderFactoryProviderPtr =
+      std::unique_ptr<URLLoaderFactoryProvider, base::OnTaskRunnerDeleter>;
+
+  explicit URLLoaderFactoryProvider(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~URLLoaderFactoryProvider();
 
   // Called on the io thread to get the URL loader.
-  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
+  // Helper method to get an null ptr.
+  static URLLoaderFactoryProviderPtr GetNullPtr();
 
  private:
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryProvider);
 };
 

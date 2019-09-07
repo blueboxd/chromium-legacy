@@ -5,6 +5,10 @@
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help_factory.h"
+#include "chrome/browser/ui/views/feature_promos/global_media_controls_promo_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -16,10 +20,15 @@
 
 MediaToolbarButtonView::MediaToolbarButtonView(
     const base::UnguessableToken& source_id,
-    service_manager::Connector* connector)
+    service_manager::Connector* connector,
+    const Browser* browser)
     : ToolbarButton(this),
       connector_(connector),
-      controller_(source_id, connector_, this) {
+      controller_(source_id, connector_, this),
+      browser_(browser) {
+  in_product_help_ = GlobalMediaControlsInProductHelpFactory::GetForProfile(
+      browser_->profile());
+
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   SetTooltipText(
@@ -35,10 +44,12 @@ MediaToolbarButtonView::~MediaToolbarButtonView() = default;
 
 void MediaToolbarButtonView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
-  if (MediaDialogView::IsShowing())
+  if (MediaDialogView::IsShowing()) {
     MediaDialogView::HideDialog();
-  else
+  } else {
     MediaDialogView::ShowDialog(this, &controller_, connector_);
+    InformIPHOfDialogShown();
+  }
 }
 
 void MediaToolbarButtonView::Show() {
@@ -49,14 +60,17 @@ void MediaToolbarButtonView::Show() {
 void MediaToolbarButtonView::Hide() {
   SetVisible(false);
   PreferredSizeChanged();
+  InformIPHOfButtonDisabledorHidden();
 }
 
 void MediaToolbarButtonView::Enable() {
   SetEnabled(true);
+  InformIPHOfButtonEnabled();
 }
 
 void MediaToolbarButtonView::Disable() {
   SetEnabled(false);
+  InformIPHOfButtonDisabledorHidden();
 }
 
 void MediaToolbarButtonView::UpdateIcon() {
@@ -77,4 +91,36 @@ void MediaToolbarButtonView::UpdateIcon() {
            gfx::CreateVectorIcon(icon, dip_size, normal_color));
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(icon, dip_size, disabled_color));
+}
+
+void MediaToolbarButtonView::ShowPromo() {
+  GetPromoController().ShowPromo();
+}
+
+GlobalMediaControlsPromoController&
+MediaToolbarButtonView::GetPromoController() {
+  if (!promo_controller_) {
+    promo_controller_ = std::make_unique<GlobalMediaControlsPromoController>(
+        this, browser_->profile());
+  }
+  return *promo_controller_;
+}
+
+void MediaToolbarButtonView::InformIPHOfDialogShown() {
+  if (in_product_help_)
+    in_product_help_->GlobalMediaControlsOpened();
+
+  GetPromoController().OnMediaDialogOpened();
+}
+
+void MediaToolbarButtonView::InformIPHOfButtonEnabled() {
+  if (in_product_help_)
+    in_product_help_->ToolbarIconEnabled();
+}
+
+void MediaToolbarButtonView::InformIPHOfButtonDisabledorHidden() {
+  if (in_product_help_)
+    in_product_help_->ToolbarIconDisabled();
+
+  GetPromoController().OnMediaToolbarButtonDisabledOrHidden();
 }

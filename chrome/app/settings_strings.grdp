@@ -5205,9 +5205,6 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_PIN" desc="A label shown above a text box where the user is expected to enter a new PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
     PIN
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT" desc="A validation error shown beneath a text box where the user is expected to enter a PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people.">
-    PIN must be at least 4 characters
-  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT_SMALL" desc="A validation error shown beneath a text box where the user is expected to enter a PIN for a security key. PINs, in this context, are short, often numeric codes that are often used with, for example, ATM cards. Security keys are external devices used to authenticate people. This message has limited horizontal space.">
     Too short
   </message>

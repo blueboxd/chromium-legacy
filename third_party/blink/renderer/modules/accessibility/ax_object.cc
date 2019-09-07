@@ -1605,8 +1605,7 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (Node* node = GetNode()) {
     auto* element = DynamicTo<Element>(node);
     if (element && node->isConnected()) {
-      scoped_refptr<ComputedStyle> style =
-          document->EnsureStyleResolver().StyleForElement(element);
+      const ComputedStyle* style = element->EnsureComputedStyle();
       return style->Display() == EDisplay::kNone ||
              style->Visibility() != EVisibility::kVisible;
     }

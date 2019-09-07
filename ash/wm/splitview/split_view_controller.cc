@@ -1061,8 +1061,12 @@ void SplitViewController::OnOverviewModeEnding(
     }
   }
 
-  // Arriving here we know there is no window in the window grid can be snapped,
-  // in this case end the splitview mode and show cannot snap toast.
+  // The overview grid has at least one window, but has none that can be snapped
+  // in split view. If overview is ending because of switching between virtual
+  // desks, then there is no need to do anything here. Otherwise, end split view
+  // and show the cannot snap toast.
+  if (DesksController::Get()->AreDesksBeingModified())
+    return;
   EndSplitView();
   ShowAppCannotSnapToast();
 }

@@ -221,7 +221,12 @@
   },
   "storage": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "extension_types": [
+      "extension",
+      "legacy_packaged_app",
+      "platform_app",
+      "login_screen_extension"
+    ],
     "min_manifest_version": 2
   },
   "system_indicator": [

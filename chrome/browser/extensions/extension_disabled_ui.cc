@@ -127,7 +127,9 @@ class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
   content::NotificationRegistrar registrar_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDisabledGlobalError);
 };
 
 // TODO(yoz): create error at startup for disabled extensions.
@@ -140,8 +142,7 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
       extension_(extension),
       is_remote_install_(is_remote_install),
       icon_(icon),
-      user_response_(IGNORED),
-      registry_observer_(this) {
+      user_response_(IGNORED) {
   if (icon_.IsEmpty()) {
     icon_ = gfx::Image(gfx::ImageSkiaOperations::CreateResizedImage(
         extension_->is_app() ? util::GetDefaultAppIcon()

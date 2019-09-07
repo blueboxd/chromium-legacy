@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 
 /**
@@ -41,10 +42,14 @@ public class PasswordEditingBridge {
      */
     public void destroy() {
         if (mNativePasswordEditingBridge != 0) {
-            nativeDestroy(mNativePasswordEditingBridge);
+            PasswordEditingBridgeJni.get().destroy(
+                    mNativePasswordEditingBridge, PasswordEditingBridge.this);
             mNativePasswordEditingBridge = 0;
         }
     }
 
-    private native void nativeDestroy(long nativePasswordEditingBridge);
+    @NativeMethods
+    interface Natives {
+        void destroy(long nativePasswordEditingBridge, PasswordEditingBridge caller);
+    }
 }

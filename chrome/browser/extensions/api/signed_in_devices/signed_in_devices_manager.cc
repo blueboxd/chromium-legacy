@@ -19,7 +19,6 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 using syncer::DeviceInfo;
@@ -93,13 +92,9 @@ SignedInDevicesManager::GetFactoryInstance() {
   return g_signed_in_devices_manager_factory.Pointer();
 }
 
-SignedInDevicesManager::SignedInDevicesManager()
-    : profile_(NULL), extension_registry_observer_(this) {
-}
-
+SignedInDevicesManager::SignedInDevicesManager() = default;
 SignedInDevicesManager::SignedInDevicesManager(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)),
-      extension_registry_observer_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   EventRouter* router = EventRouter::Get(profile_);
   if (router) {
     router->RegisterObserver(

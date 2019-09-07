@@ -252,4 +252,46 @@ suite('TabList', () => {
     assertEquals(tabElementsBeforeMove[1], tabElementsAfterMove[0]);
     assertEquals(tabElementsBeforeMove[2], tabElementsAfterMove[1]);
   });
+
+  test('activating a tab off-screen scrolls to it', async () => {
+    const scrollPadding = 32;
+
+    // Mock the width of each tab element
+    const tabElements = getUnpinnedTabs();
+    tabElements.forEach((tabElement) => {
+      tabElement.style.width = '200px';
+    });
+
+    // Mock the scrolling parent such that it cannot fit only 1 tab at a time
+    const fakeScroller = {
+      offsetWidth: 300,
+      scrollLeft: 0,
+    };
+    tabList.scrollingParent_ = fakeScroller;
+
+    // The 2nd tab should be off-screen to the right, so activating it should
+    // scroll so that the element's right edge is aligned with the screen's
+    // right edge
+    callbackRouter.onActivated.dispatchEvent({
+      tabId: currentWindow.tabs[1].id,
+      windowId: currentWindow.id,
+    });
+    let activeTab = getUnpinnedTabs()[1];
+    await tabList.animationPromises;
+    assertEquals(
+        fakeScroller.scrollLeft,
+        activeTab.offsetLeft + activeTab.offsetWidth -
+            fakeScroller.offsetWidth + scrollPadding);
+
+    // The 1st tab should be now off-screen to the left, so activating it should
+    // scroll so that the element's left edge is aligned with the screen's
+    // left edge
+    callbackRouter.onActivated.dispatchEvent({
+      tabId: currentWindow.tabs[0].id,
+      windowId: currentWindow.id,
+    });
+    activeTab = getUnpinnedTabs()[0];
+    await tabList.animationPromises;
+    assertEquals(fakeScroller.scrollLeft, activeTab.offsetLeft - scrollPadding);
+  });
 });

@@ -156,6 +156,7 @@ js2gtest("browser_tests_js_webui") {
   }
   deps = [
     ":modulize",
+    "//build:branding_buildflags",
     "//chrome/browser/ui",
     "//skia",
   ]

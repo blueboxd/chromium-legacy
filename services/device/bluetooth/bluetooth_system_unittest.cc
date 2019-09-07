@@ -22,6 +22,7 @@
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-test-utils.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
@@ -649,7 +650,8 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
 
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
-    connector()->BindInterface(mojom::kServiceName, &system_factory_);
+    connector()->Connect(mojom::kServiceName,
+                         system_factory_.BindNewPipeAndPassReceiver());
 
     auto test_bluetooth_adapter_client =
         std::make_unique<TestBluetoothAdapterClient>();
@@ -761,7 +763,7 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
   using ScanStateVector = std::vector<mojom::BluetoothSystem::ScanState>;
   ScanStateVector on_scan_state_changed_states_;
 
-  mojom::BluetoothSystemFactoryPtr system_factory_;
+  mojo::Remote<mojom::BluetoothSystemFactory> system_factory_;
 
   TestBluetoothAdapterClient* test_bluetooth_adapter_client_;
   TestBluetoothDeviceClient* test_bluetooth_device_client_;

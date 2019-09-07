@@ -1932,6 +1932,45 @@ TEST(LoginDatabaseFailureTest, Init_NoCrashOnFailedRollback) {
   EXPECT_FALSE(db.Init());
 }
 
+// If the database version is from the future, it shouldn't be downgraded.
+TEST(LoginDatabaseFutureLoginDatabase, ShouldNotDowngradeDatabaseVersion) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath database_path = temp_dir.GetPath().AppendASCII("test.db");
+
+  const int kDBFutureVersion = kCurrentVersionNumber + 1000;
+
+  {
+    // Open a database with the current version.
+    LoginDatabase db(database_path, IsAccountStore(false));
+    EXPECT_TRUE(db.Init());
+  }
+  {
+    // Overwrite the current version to be |kDBFutureVersion|
+    sql::Database connection;
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(connection.Open(database_path));
+    // Set the DB version to be coming from the future.
+    ASSERT_TRUE(meta_table.Init(&connection, kDBFutureVersion,
+                                kCompatibleVersionNumber));
+    meta_table.SetVersionNumber(kDBFutureVersion);
+  }
+  {
+    // Open the database again.
+    LoginDatabase db(database_path, IsAccountStore(false));
+    EXPECT_TRUE(db.Init());
+  }
+  {
+    // The DB version should remain the same.
+    sql::Database connection;
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(connection.Open(database_path));
+    ASSERT_TRUE(meta_table.Init(&connection, kDBFutureVersion,
+                                kCompatibleVersionNumber));
+    EXPECT_EQ(kDBFutureVersion, meta_table.GetVersionNumber());
+  }
+}
+
 // Test the migration from GetParam() version to kCurrentVersionNumber.
 class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
  protected:

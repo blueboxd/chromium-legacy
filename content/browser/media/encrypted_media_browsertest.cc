@@ -271,7 +271,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm");
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
+// Flaky, disabled. https://crbug.com/1001364.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       DISABLED_Playback_VideoOnly_MP4_VP9Profile2) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
@@ -286,7 +288,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1) {
   TestSimplePlayback("bear-av1-cenc.webm");
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1_10bit) {
+// Flaky, disabled. https://crbug.com/1001364.
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       DISABLED_Playback_VideoOnly_WebM_AV1_10bit) {
   TestSimplePlayback("bear-av1-320x180-10bit-cenc.webm");
 }
 

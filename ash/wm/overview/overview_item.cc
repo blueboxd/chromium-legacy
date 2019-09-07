@@ -815,12 +815,6 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
     ui::GestureEvent* event) {
   const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      if (IsDragItem())
-        HandleDragEvent(location);
-      else
-        overview_grid()->grid_event_handler()->OnGestureEvent(event);
-      break;
     case ui::ET_SCROLL_FLING_START:
       if (IsDragItem()) {
         HandleFlingStartEvent(location, event->details().velocity_x(),
@@ -828,6 +822,20 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
       } else {
         overview_grid()->grid_event_handler()->OnGestureEvent(event);
       }
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (std::abs(event->details().scroll_y_hint()) >
+          std::abs(event->details().scroll_x_hint())) {
+        HandlePressEvent(location, /*from_touch_gesture=*/true);
+      } else {
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (IsDragItem())
+        HandleDragEvent(location);
+      else
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
       break;
     case ui::ET_GESTURE_SCROLL_END:
       if (IsDragItem())
@@ -837,6 +845,7 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       HandlePressEvent(location, /*from_touch_gesture=*/true);
+      HandleLongPressEvent(location);
       break;
     case ui::ET_GESTURE_TAP:
       overview_session_->SelectWindow(this);
@@ -915,9 +924,7 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
 void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
   if (window != GetWindow())
     return;
-  // TODO(flackr): Maybe add the new title to a vector of titles so that we
-  // can filter any of the titles the window had while in the overview
-  // session.
+
   caption_container_view_->SetTitle(window->GetTitle());
 }
 

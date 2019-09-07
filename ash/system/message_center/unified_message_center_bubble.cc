@@ -55,9 +55,9 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
 }
 
 UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
-  tray_->tray_event_filter()->RemoveBubble(this);
-  tray_->bubble()->unified_view()->RemoveObserver(this);
   if (bubble_widget_) {
+    tray_->tray_event_filter()->RemoveBubble(this);
+    tray_->bubble()->unified_view()->RemoveObserver(this);
     CHECK(message_center_view_);
     message_center_view_->RemoveObserver(this);
 
@@ -112,6 +112,8 @@ void UnifiedMessageCenterBubble::OnViewPreferredSizeChanged(
 
 void UnifiedMessageCenterBubble::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
+  tray_->tray_event_filter()->RemoveBubble(this);
+  tray_->bubble()->unified_view()->RemoveObserver(this);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
 }

@@ -422,6 +422,11 @@ ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {
   return unignored_selection;
 }
 
+ui::AXNode* AutomationAXTreeWrapper::GetUnignoredNodeFromId(int32_t id) {
+  ui::AXNode* node = tree_.GetFromId(id);
+  return (node && !node->IsIgnored()) ? node : nullptr;
+}
+
 // static
 std::map<ui::AXTreeID, AutomationAXTreeWrapper*>&
 AutomationAXTreeWrapper::GetChildTreeIDReverseMap() {

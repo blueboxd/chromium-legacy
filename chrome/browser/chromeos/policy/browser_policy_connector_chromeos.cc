@@ -391,9 +391,9 @@ MarketSegment BrowserPolicyConnectorChromeOS::GetEnterpriseMarketSegment()
   return MarketSegment::UNKNOWN;
 }
 
-void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
-    ConfigurationPolicyProvider* user_policy_provider) {
-  global_user_cloud_policy_provider_->SetDelegate(user_policy_provider);
+ProxyPolicyProvider*
+BrowserPolicyConnectorChromeOS::GetGlobalUserCloudPolicyProvider() {
+  return global_user_cloud_policy_provider_;
 }
 
 void BrowserPolicyConnectorChromeOS::SetDeviceCloudPolicyInitializerForTesting(

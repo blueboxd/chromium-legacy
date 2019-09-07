@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
 import org.chromium.components.content_capture.ContentCaptureController;
@@ -415,7 +414,6 @@ public class AwContentCaptureTest {
     @Test
     @LargeTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/963073")
     public void testSingleFrame() throws Throwable {
         final String response = "<html><head></head><body>"
                 + "<div id='place_holder'>"
@@ -477,7 +475,6 @@ public class AwContentCaptureTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/963073")
     public void testChangeContent() throws Throwable {
         final String response = "<html><head></head><body>"
                 + "<div id='editable_id'>Hello</div>"
@@ -506,7 +503,6 @@ public class AwContentCaptureTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/963073")
     public void testRemoveSession() throws Throwable {
         final String response = "<html><head></head><body>"
                 + "<div id='editable_id'>Hello</div>"
@@ -547,7 +543,6 @@ public class AwContentCaptureTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @DisabledTest(message = "crbug.com/963073")
     public void testRemoveIframe() throws Throwable {
         final String subFrame = "<html><head></head><body>"
                 + "<div id='editable_id'>Hello</div>"

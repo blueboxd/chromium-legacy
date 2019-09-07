@@ -42,6 +42,26 @@ class QuotaSettingsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(QuotaSettingsTest);
 };
 
+TEST_F(QuotaSettingsTest, Default) {
+  MockQuotaDiskInfoHelper disk_info_helper;
+  ON_CALL(disk_info_helper, AmountOfTotalDiskSpace(_))
+      .WillByDefault(::testing::Return(2000));
+
+  bool callback_executed = false;
+  GetNominalDynamicSettings(
+      profile_path(), false, &disk_info_helper,
+      base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
+        callback_executed = true;
+        ASSERT_NE(settings, base::nullopt);
+        // 1600 = 2000 * default PoolSizeRatio (0.8)
+        EXPECT_EQ(settings->pool_size, 1600);
+        // 1200 = 1600 * default PerHostRatio (.75)
+        EXPECT_EQ(settings->per_host_quota, 1200);
+      }));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_executed);
+}
+
 TEST_F(QuotaSettingsTest, ExpandedTempPool) {
   MockQuotaDiskInfoHelper disk_info_helper;
   ON_CALL(disk_info_helper, AmountOfTotalDiskSpace(_))

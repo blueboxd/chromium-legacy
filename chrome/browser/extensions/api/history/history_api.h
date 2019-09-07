@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/history.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
@@ -22,10 +23,6 @@ class Profile;
 
 namespace base {
 class ListValue;
-}
-
-namespace history {
-class HistoryService;
 }
 
 namespace extensions {
@@ -55,7 +52,7 @@ class HistoryEventRouter : public history::HistoryServiceObserver {
 
   Profile* profile_;
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HistoryEventRouter);
 };

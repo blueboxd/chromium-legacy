@@ -197,7 +197,7 @@ SavePackageFilePicker::SavePackageFilePicker(
       save_types_.push_back(content::SAVE_PAGE_TYPE_AS_ONLY_HTML);
     }
 
-    if (ShouldSaveAsMHTML()) {
+    if (can_save_as_complete_) {
       AddSingleFileFileTypeInfo(&file_type_info);
       save_types_.push_back(content::SAVE_PAGE_TYPE_AS_MHTML);
     }

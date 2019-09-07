@@ -356,11 +356,12 @@ class SerialApiTest : public ExtensionApiTest {
   void FailEnumeratorRequest() { fail_enumerator_request_ = true; }
 
  protected:
-  void BindSerialPortManager(device::mojom::SerialPortManagerRequest request) {
+  void BindSerialPortManager(
+      mojo::PendingReceiver<device::mojom::SerialPortManager> receiver) {
     if (fail_enumerator_request_)
       return;
 
-    port_manager_->Bind(std::move(request));
+    port_manager_->Bind(std::move(receiver));
   }
 
   bool fail_enumerator_request_ = false;

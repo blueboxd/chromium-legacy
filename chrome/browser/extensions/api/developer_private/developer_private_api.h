@@ -30,8 +30,11 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/warning_service.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -45,8 +48,6 @@ namespace extensions {
 class EventRouter;
 class ExtensionError;
 class ExtensionInfoGenerator;
-class ExtensionRegistry;
-class ProcessManager;
 
 namespace api {
 
@@ -144,20 +145,21 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       std::vector<api::developer_private::ExtensionInfo> infos);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
-  ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
+      extension_registry_observer_{this};
+  ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_{
+      this};
   ScopedObserver<ProcessManager, ProcessManagerObserver>
-      process_manager_observer_;
+      process_manager_observer_{this};
   ScopedObserver<AppWindowRegistry, AppWindowRegistry::Observer>
-      app_window_registry_observer_;
+      app_window_registry_observer_{this};
   ScopedObserver<WarningService, WarningService::Observer>
-      warning_service_observer_;
+      warning_service_observer_{this};
   ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver>
-      extension_prefs_observer_;
+      extension_prefs_observer_{this};
   ScopedObserver<ExtensionManagement, ExtensionManagement::Observer>
-      extension_management_observer_;
+      extension_management_observer_{this};
   ScopedObserver<CommandService, CommandService::Observer>
-      command_service_observer_;
+      command_service_observer_{this};
 
   Profile* profile_;
 
@@ -464,9 +466,9 @@ class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction,
   base::FilePath reloading_extension_path_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
   ScopedObserver<LoadErrorReporter, LoadErrorReporter::Observer>
-      error_reporter_observer_;
+      error_reporter_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateReloadFunction);
 };

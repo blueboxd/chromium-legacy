@@ -98,11 +98,13 @@ class XRSession final
       XRWorldTrackingStateInit* world_tracking_state_init,
       ExceptionState& exception_state);
   ScriptPromise requestReferenceSpace(ScriptState* script_state,
-                                      const String& type);
+                                      const String& type,
+                                      ExceptionState&);
 
   ScriptPromise createAnchor(ScriptState* script_state,
                              XRRigidTransform* initial_pose,
-                             XRSpace* space);
+                             XRSpace* space,
+                             ExceptionState&);
 
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);
@@ -110,14 +112,16 @@ class XRSession final
   XRInputSourceArray* inputSources() const;
 
   ScriptPromise requestHitTestSource(ScriptState* script_state,
-                                     XRHitTestOptionsInit* options);
+                                     XRHitTestOptionsInit* options,
+                                     ExceptionState&);
 
   ScriptPromise requestHitTest(ScriptState* script_state,
                                XRRay* ray,
-                               XRSpace* space);
+                               XRSpace* space,
+                               ExceptionState&);
 
   // Called by JavaScript to manually end the session.
-  ScriptPromise end(ScriptState* script_state);
+  ScriptPromise end(ScriptState* script_state, ExceptionState&);
 
   bool ended() const { return ended_; }
 

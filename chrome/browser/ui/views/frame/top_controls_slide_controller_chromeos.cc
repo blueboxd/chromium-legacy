@@ -11,7 +11,6 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_controller.h"
@@ -27,7 +26,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_controls_state.h"
 #include "extensions/common/constants.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -113,19 +111,13 @@ void UpdateBrowserControlsStateShown(content::WebContents* web_contents,
   if (!main_frame)
     return;
 
-  chrome::mojom::ChromeRenderFrameAssociatedPtr renderer;
-  main_frame->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
-
-  if (!renderer)
-    return;
-
   const content::BrowserControlsState constraints_state =
       GetBrowserControlsStateConstraints(web_contents);
 
   const content::BrowserControlsState current_state =
       content::BROWSER_CONTROLS_STATE_SHOWN;
-  renderer->UpdateBrowserControlsState(constraints_state, current_state,
-                                       animate);
+  main_frame->UpdateBrowserControlsState(constraints_state, current_state,
+                                         animate);
 }
 
 // Triggers a visual properties synchrnoization event on |contents|' main

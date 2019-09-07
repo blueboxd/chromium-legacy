@@ -27,7 +27,7 @@ struct IppRequest;
 // sequenced context.
 class IppValidator {
  public:
-  explicit IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate);
+  explicit IppValidator(CupsProxyServiceDelegate* const delegate);
   ~IppValidator();
 
   // Validates each of |to_validate|'s fields and returns a POD representation
@@ -49,8 +49,8 @@ class IppValidator {
 
   bool ValidateIppData(const std::vector<uint8_t>& ipp_data);
 
-  // Delegate providing necessary Profile dependencies.
-  base::WeakPtr<CupsProxyServiceDelegate> delegate_;
+  // Unowned delegate providing necessary Profile dependencies.
+  CupsProxyServiceDelegate* const delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

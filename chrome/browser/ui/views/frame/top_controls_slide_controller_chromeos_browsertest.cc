@@ -1164,32 +1164,6 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
                                TopChromeShownState::kFullyHidden);
 }
 
-// Waits for a compositor frame to be drawn and committed on the given
-// web_contents.
-class CompositorFrameWaiter : content::WebContentsObserver {
- public:
-  explicit CompositorFrameWaiter(content::WebContents* contents)
-      : WebContentsObserver(contents) {}
-  ~CompositorFrameWaiter() override = default;
-
-  void Wait() {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  // content::WebContentsObserver:
-  void DidCommitAndDrawCompositorFrame() override {
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorFrameWaiter);
-};
-
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
@@ -1220,9 +1194,10 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestToggleChromeVox) {
 
   // Now disable Chromevox, and expect it's now possible to hide top-chrome with
   // gesture scrolling.
-  CompositorFrameWaiter compositor_frame_waiter(active_contents);
+  content::RenderFrameSubmissionObserver compositor_frame_waiter(
+      active_contents);
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(false);
-  compositor_frame_waiter.Wait();
+  compositor_frame_waiter.WaitForAnyFrameSubmission();
   content::WaitForResizeComplete(active_contents);
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());

@@ -46,6 +46,13 @@ std::unique_ptr<LayerImpl> LayerImplTestProperties::RemoveChild(
   return layer;
 }
 
+void LayerImplTestProperties::RemoveAllChildren() {
+  auto children_to_be_removed = std::move(children);
+  for (auto* child : children_to_be_removed)
+    owning_layer->layer_tree_impl()->RemoveLayer(child->id());
+  owning_layer->layer_tree_impl()->BuildLayerListForTesting();
+}
+
 void LayerImplTestProperties::SetMaskLayer(std::unique_ptr<LayerImpl> mask) {
   if (mask_layer)
     owning_layer->layer_tree_impl()->RemoveLayer(mask_layer->id());

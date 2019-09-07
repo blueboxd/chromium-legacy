@@ -19,7 +19,6 @@
 
 namespace ui {
 enum class DomCode;
-class ExternalBeginFrameClient;
 class KeyboardHook;
 struct PlatformWindowInitProperties;
 }  // namespace ui
@@ -36,7 +35,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
       ui::PlatformWindowInitProperties properties,
       std::unique_ptr<Window> = nullptr,
       const char* trace_environment_name = nullptr,
-      ui::ExternalBeginFrameClient* external_begin_frame_client = nullptr);
+      bool use_external_begin_frame_control = false);
   ~WindowTreeHostPlatform() override;
 
   // WindowTreeHost:

@@ -1,28 +1,9 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
-# Expect a document to be deleted after being navigated away. It isn't deleted,
-# because the BackForwardCache was used.
--ChromeRenderProcessHostTest.ProcessOverflow
--ChromeRenderProcessHostTest.ProcessPerTab
--ChromeRenderProcessHostTestWithCommandLine.ProcessOverflowCommandLine
-
 # Rely on an unload handler to run. It doesn't run.
 -CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_OnDemandMojoPipe
 -CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_PreestablishedPipe
 -IsolatedAppTest.IsolatedAppProcessModel
-
-# Terminating renderer for bad IPC message, reason 205
-# RFH_ERROR_PROCESS_NON_ERROR_COMMIT
-# https://crbug.com/999850
--CaptivePortalBrowserTest.GoBackToTimeout
--DNSErrorPageTest.DNSError_DoSearch
--DNSErrorPageTest.DNSError_GoBack2
--DNSErrorPageTest.DNSError_GoBack2AndForward
--DNSErrorPageTest.DNSError_GoBack2Forward2
-
-# A navigation holding a RenderFrameHost to be restored is canceled. The
-# RenderFrameHost is deleted unexpectedly: Check failed: !is_active().
--IsolatedAppTest.CrossProcessClientRedirect
 
 # No focused view.
 -PaymentRequestShippingAddressEditorTest.FocusFirstInvalidField_NotName
@@ -30,18 +11,12 @@
 # Test are using a custom NavigateToURL function waiting for the old
 # RenderFrameHost to be deleted. This won't happen.
 -ProcessManagementTest.ExtensionProcessBalancing
--ProcessManagerBrowserTest.HostedAppFilesAccess
 -ProcessManagerBrowserTest.NoBackgroundPage
 
 # Test goes back and forth in between a "preview" page and a "normal" page.
 # When going back to the first page, it expected to be loaded as a "normal" page,
 # but it isn't reloaded at all with the BackForwardCache.
 -PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/*
-
-# An extension is non-idle because its option page is opened. When it is
-# navigated to about:blank, it should become idle again. This doesn't happen
-# with the BackForwardCache, because the old page is still there.
--ExtensionCrxInstallerTest.InstallDelayedUntilNextUpdate
 
 # Very flaky. Can't reproduce locally, it always succeed.
 -SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest.MaxConnectionsPerProxy

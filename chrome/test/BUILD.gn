@@ -719,6 +719,7 @@ if (!is_android) {
       "//ui/compositor:test_support",
       "//ui/native_theme:test_support",
       "//ui/resources",
+      "//ui/shell_dialogs:test_support",
       "//ui/web_dialogs:test_support",
       "//v8",
     ]
@@ -1942,6 +1943,16 @@ if (!is_android) {
           [ "//chrome/browser/internal/resources/signin/test_accounts.json" ]
     }
 
+    # For pixel tests. Because this links to a CIPD
+    # dependency, which is a symlink on Unix platforms, refer to the
+    # actual executable rather than the whole directory; copying the
+    # whole directory doesn't work, at least with "mb.py zip".
+    if (is_win) {
+      data += [ "//tools/skia_goldctl/goldctl.exe" ]
+    } else {
+      data += [ "//tools/skia_goldctl/goldctl" ]
+    }
+
     if (is_chromeos) {
       assert(enable_app_list)
       sources += [
@@ -3080,7 +3091,6 @@ test("unit_tests") {
     "../browser/performance_manager/persistence/site_data/unittest_utils.h",
     "../browser/performance_manager/render_process_host_proxy_unittest.cc",
     "../browser/performance_manager/web_contents_proxy_unittest.cc",
-    "../browser/performance_manager/webui_graph_dump_impl_unittest.cc",
     "../browser/performance_monitor/metric_evaluator_helper_win_unittest.cc",
     "../browser/performance_monitor/system_monitor_unittest.cc",
     "../browser/permissions/chooser_context_base_mock_permission_observer.cc",
@@ -3341,6 +3351,7 @@ test("unit_tests") {
       "../browser/ui/thumbnails/thumbnail_utils_unittest.cc",
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
       "../browser/ui/webui/devtools_ui_data_source_unittest.cc",
+      "../browser/ui/webui/discards/webui_graph_dump_impl_unittest.cc",
       "../browser/ui/webui/favicon_source_unittest.cc",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
@@ -3674,6 +3685,7 @@ test("unit_tests") {
       "../browser/media_galleries/media_galleries_preferences_unittest.cc",
       "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
       "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
+      "../browser/memory/enterprise_memory_limit_evaluator_unittest.cc",
       "../browser/memory/memory_pressure_monitor_utils_unittest.cc",
       "../browser/memory/memory_pressure_monitor_win_unittest.cc",
       "../browser/memory/swap_thrashing_monitor_delegate_win_unittest.cc",
@@ -3790,6 +3802,7 @@ test("unit_tests") {
       "../browser/ui/global_media_controls/media_toolbar_button_controller_unittest.cc",
       "../browser/ui/hid/hid_chooser_controller_unittest.cc",
       "../browser/ui/in_product_help/active_tab_tracker_unittest.cc",
+      "../browser/ui/in_product_help/global_media_controls_in_product_help_unittest.cc",
       "../browser/ui/in_product_help/reopen_tab_in_product_help_trigger_unittest.cc",
       "../browser/ui/in_product_help/reopen_tab_in_product_help_unittest.cc",
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
@@ -4760,12 +4773,14 @@ test("unit_tests") {
   if (is_chromeos) {
     deps += [
       "//chrome/browser/chromeos:unit_tests",
-      "//chrome/services/cups_proxy:unit_tests",
       "//chromeos/ime:gencode",
     ]
     data_deps += [ "//testing/buildbot/filters:chromeos_filters" ]
     sources -=
         [ "../browser/policy/cloud/user_policy_signin_service_unittest.cc" ]
+    if (use_cups) {
+      deps += [ "//chrome/services/cups_proxy:unit_tests" ]
+    }
   }
   if (use_x11) {
     deps += [ "//ui/events/devices" ]
@@ -5088,6 +5103,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_search_result_ranker_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/frecency_store_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/histogram_util_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/ranking_item_util_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/recurrence_predictor_unittest.cc",

@@ -41,6 +41,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/common/widget.mojom.h"
+#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
@@ -524,6 +525,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
   void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
 
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(

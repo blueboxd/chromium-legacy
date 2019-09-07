@@ -177,11 +177,6 @@ extern const char kFindInPageiFrameDescription[];
 extern const char kFullscreenViewportAdjustmentExperimentName[];
 extern const char kFullscreenViewportAdjustmentExperimentDescription[];
 
-// Title and description for the flag to display current user identity on
-// New Tab Page.
-extern const char kIdentityDiscName[];
-extern const char kIdentityDiscDescription[];
-
 // Title and description for the flag to ignore viewport scale limits.
 extern const char kIgnoresViewportScaleLimitsName[];
 extern const char kIgnoresViewportScaleLimitsDescription[];

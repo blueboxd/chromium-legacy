@@ -140,7 +140,7 @@ class FidoCableDeviceTest : public Test {
         adapter_.get(), BluetoothTestBase::kTestDeviceAddress1);
     connection_ = connection.get();
     device_ = std::make_unique<FidoCableDevice>(std::move(connection));
-    device_->SetEncryptionData(kTestSessionKey, kTestEncryptionNonce);
+    device_->SetV1EncryptionData(kTestSessionKey, kTestEncryptionNonce);
     connection_->read_callback() = device_->GetReadCallbackForTesting();
   }
 

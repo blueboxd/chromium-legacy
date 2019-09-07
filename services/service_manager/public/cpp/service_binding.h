@@ -118,7 +118,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   template <typename Interface>
   using TypedBinderWithInfoForTesting =
       base::RepeatingCallback<void(const BindSourceInfo&,
-                                   mojo::InterfaceRequest<Interface>)>;
+                                   mojo::PendingReceiver<Interface>)>;
   template <typename Interface>
   static void OverrideInterfaceBinderForTesting(
       const std::string& service_name,
@@ -129,13 +129,13 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
             [](const TypedBinderWithInfoForTesting<Interface>& binder,
                const BindSourceInfo& info, mojo::ScopedMessagePipeHandle pipe) {
               binder.Run(info,
-                         mojo::InterfaceRequest<Interface>(std::move(pipe)));
+                         mojo::PendingReceiver<Interface>(std::move(pipe)));
             },
             binder));
   }
   template <typename Interface>
   using TypedBinderForTesting =
-      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>;
+      base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>;
   template <typename Interface>
   static void OverrideInterfaceBinderForTesting(
       const std::string& service_name,
@@ -144,8 +144,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
         service_name, base::BindRepeating(
                           [](const TypedBinderForTesting<Interface>& binder,
                              const BindSourceInfo& info,
-                             mojo::InterfaceRequest<Interface> request) {
-                            binder.Run(std::move(request));
+                             mojo::PendingReceiver<Interface> receiver) {
+                            binder.Run(std::move(receiver));
                           },
                           binder));
   }

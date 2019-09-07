@@ -10,7 +10,6 @@
 #include "components/download/public/common/download_response_handler.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
-#include "components/download/public/common/url_loader_factory_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_status_flags.h"
@@ -26,8 +25,7 @@ namespace download {
 // Class for handing the download of a url. Lives on IO thread.
 class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
     : public UrlDownloadHandler,
-      public DownloadResponseHandler::Delegate,
-      public URLLoaderFactoryProvider {
+      public DownloadResponseHandler::Delegate {
  public:
   // Called to start a download, must be called on IO thread.
   static std::unique_ptr<ResourceDownloader> BeginDownload(
@@ -89,9 +87,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   void OnResponseCompleted() override;
   bool CanRequestURL(const GURL& url) override;
   void OnUploadProgress(uint64_t bytes_uploaded) override;
-
-  // URLLoaderFactoryProvider implementation.
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
   // Helper method to start the network request.

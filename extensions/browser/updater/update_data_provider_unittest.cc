@@ -184,7 +184,7 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
 
   ASSERT_EQ(1UL, data.size());
   EXPECT_EQ("0.0.0.0", data[0]->version.GetString());
-  EXPECT_EQ("webstore", data[0]->install_source);
+  EXPECT_EQ("reinstall", data[0]->install_source);
   EXPECT_EQ("external", data[0]->install_location);
   EXPECT_NE(nullptr, data[0]->installer.get());
   EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
@@ -428,7 +428,7 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   EXPECT_NE(nullptr, data[0]->installer.get());
   EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
   EXPECT_EQ(initial_version, data[1]->version.GetString());
-  EXPECT_EQ("sideload", data[1]->install_source);
+  EXPECT_EQ("reinstall", data[1]->install_source);
   EXPECT_EQ("policy", data[1]->install_location);
   EXPECT_NE(nullptr, data[1]->installer.get());
   EXPECT_EQ(0UL, data[1]->disabled_reasons.size());

@@ -104,6 +104,9 @@ declare_args() {
   clang_use_default_sample_profile = build_with_chromium && is_official_build &&
                                      (is_android || is_desktop_linux)
 
+  # Emit debug information for profiling wile building with clang.
+  clang_emit_debug_info_for_profiling = false
+
   # Turn this on to have the compiler output extra timing information.
   compiler_timing = false
 
@@ -1512,26 +1515,22 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/995200): Clean up and enable.
           "-Wno-xor-used-as-pow",
+
+          # TODO(https://crbug.com/999871): Decide if we want to clean up the
+          # codebase or just disable this.  Doesn't seem super useful, but
+          # also fires in only 4 files.
+          "-Wno-c99-designator",
+
+          # This is a side effect of -Wc99-designator; easier to clean up.
+          "-Wno-reorder-init-list",
+
+          # TODO(https://crbug.com/999886): Clean up, enable.
+          "-Wno-final-dtor-non-final-class",
         ]
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/999871): Decide if we want to clean up the
-            # codebase or just disable this.  Doesn't seem super useful, but
-            # also fires in only 4 files.
-            "-Wno-c99-designator",
-
-            # This is a side effect of -Wc99-designator; easier to clean up.
-            "-Wno-reorder-init-list",
-
-            # TODO(https://crbug.com/999886): Clean up, enable.
-            "-Wno-final-dtor-non-final-class",
-          ]
-        }
       }
     }
   }
@@ -2185,10 +2184,18 @@ config("afdo_optimize_size") {
 # config to allow AFDO to be disabled per-target.
 config("afdo") {
   if (is_clang) {
+    cflags = []
+    if (clang_emit_debug_info_for_profiling) {
+      # Add the following flags to generate debug info for profiling.
+      cflags += [
+        "-fdebug-info-for-profiling",
+        "-gline-tables-only",
+      ]
+    }
     if (_clang_sample_profile != "") {
       rebased_clang_sample_profile =
           rebase_path(_clang_sample_profile, root_build_dir)
-      cflags = [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
+      cflags += [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
       inputs = [
         _clang_sample_profile,
       ]

@@ -31,6 +31,7 @@ struct CC_EXPORT LayerImplTestProperties {
 
   void AddChild(std::unique_ptr<LayerImpl> child);
   std::unique_ptr<LayerImpl> RemoveChild(LayerImpl* child);
+  void RemoveAllChildren();
   void SetMaskLayer(std::unique_ptr<LayerImpl> mask);
 
   LayerImpl* owning_layer;

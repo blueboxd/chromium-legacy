@@ -119,7 +119,8 @@ bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {
 }
 
 void UnifiedSystemTray::UiDelegate::HideMessageCenter() {
-  owner_->HideBubbleInternal();
+  if (!features::IsUnifiedMessageCenterRefactorEnabled())
+    owner_->HideBubbleInternal();
 }
 
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
@@ -173,6 +174,13 @@ bool UnifiedSystemTray::IsBubbleShown() const {
 
 bool UnifiedSystemTray::IsSliderBubbleShown() const {
   return slider_bubble_controller_->IsBubbleShown();
+}
+
+bool UnifiedSystemTray::IsMessageCenterBubbleShown() const {
+  if (message_center_bubble_)
+    return !!message_center_bubble_->GetBubbleWidget();
+
+  return false;
 }
 
 bool UnifiedSystemTray::IsBubbleActive() const {
@@ -275,8 +283,11 @@ void UnifiedSystemTray::ShowBubble(bool show_by_click) {
 }
 
 void UnifiedSystemTray::CloseBubble() {
-  // HideBubbleInternal will be called from UiDelegate.
+  // HideMessageCenterBubbleInternal will be called from UiDelegate.
   ui_delegate_->ui_controller()->HideMessageCenterBubble();
+
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    HideBubbleInternal();
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {

@@ -60,12 +60,12 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
-#include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/shell_dialogs/fake_select_file_dialog.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -76,6 +76,7 @@ using content::WebContents;
 using download::DownloadItem;
 using testing::ContainsRegex;
 using testing::HasSubstr;
+using ui::FakeSelectFileDialog;
 
 namespace {
 
@@ -609,15 +610,15 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
   // Save the page before completion.
   base::FilePath full_file_name, dir;
   GetDestinationPaths("b", &full_file_name, &dir);
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+
+  base::RunLoop run_loop;
   content::SavePackageFinishedObserver observer(
       content::BrowserContext::GetDownloadManager(incognito->profile()),
-      loop_runner->QuitClosure());
+      run_loop.QuitClosure());
   ASSERT_TRUE(GetCurrentTab(incognito)->SavePage(
       full_file_name, dir, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
 
-  loop_runner->Run();
+  run_loop.Run();
   ASSERT_TRUE(VerifySavePackageExpectations(incognito, url));
 
   // We can't check more than this because SavePackage is racing with
@@ -642,15 +643,14 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
       history::DownloadState::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+  base::RunLoop run_loop;
   content::SavePackageFinishedObserver observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
+      run_loop.QuitClosure());
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(
       full_file_name, dir, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
 
-  loop_runner->Run();
+  run_loop.Run();
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
 
@@ -709,13 +709,12 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   SavePackageFilePicker::SetShouldPromptUser(false);
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+  base::RunLoop run_loop;
   content::SavePackageFinishedObserver observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
+      run_loop.QuitClosure());
   chrome::SavePage(browser());
-  loop_runner->Run();
+  run_loop.Run();
 
   EXPECT_TRUE(base::PathExists(full_file_name));
 
@@ -735,39 +734,50 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SecurityLevelHistogram) {
                                       security_state::NONE, 1);
 }
 
-class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
- public:
-  SavePageAsMHTMLBrowserTest() {}
-  ~SavePageAsMHTMLBrowserTest() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kSavePageAsMHTML);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SavePageAsMHTMLBrowserTest);
-};
-
-SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
-}
-
-IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
+// Tests that a page can be saved as MHTML.
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageAsMHTML) {
   static const int64_t kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
   base::FilePath full_file_name = download_dir.AppendASCII(std::string(
       "Test page for saving page feature.mhtml"));
-  SavePackageFilePicker::SetShouldPromptUser(false);
+
+  SavePackageFilePicker::SetShouldPromptUser(true);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, -1,
       history::DownloadState::COMPLETE));
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
-  content::SavePackageFinishedObserver observer(
-      content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
-  chrome::SavePage(browser());
-  loop_runner->Run();
+
+  FakeSelectFileDialog::Factory* select_file_dialog_factory =
+      FakeSelectFileDialog::RegisterFactory();
+  // Save page and run until the fake select file dialog opens.
+  {
+    base::RunLoop run_loop;
+    select_file_dialog_factory->SetOpenCallback(run_loop.QuitClosure());
+    chrome::SavePage(browser());
+    run_loop.Run();
+  }
+
+// On ChromeOS, the default should be MHTML.
+#if defined(OS_CHROMEOS)
+  ASSERT_EQ("mhtml",
+            select_file_dialog_factory->GetLastDialog()->default_extension());
+#else
+  ASSERT_EQ("html",
+            select_file_dialog_factory->GetLastDialog()->default_extension());
+#endif
+
+  // Save the file as MHTML. Run until save completes.
+  ASSERT_TRUE(select_file_dialog_factory->GetLastDialog()->CallFileSelected(
+      full_file_name, "mhtml"));
+  {
+    base::RunLoop run_loop;
+    content::SavePackageFinishedObserver observer(
+        content::BrowserContext::GetDownloadManager(browser()->profile()),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   ASSERT_TRUE(VerifySavePackageExpectations(browser(), url));
   persisted.WaitForPersisted();
 
@@ -787,13 +797,12 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
   SavePackageFilePicker::SetShouldPromptUser(false);
   GURL url("data:text/plain,foo");
   ui_test_utils::NavigateToURL(browser(), url);
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+  base::RunLoop run_loop;
   content::SavePackageFinishedObserver observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
-      loop_runner->QuitClosure());
+      run_loop.QuitClosure());
   chrome::SavePage(browser());
-  loop_runner->Run();
+  run_loop.Run();
   base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
   base::FilePath filename = download_dir.AppendASCII("dataurl.txt");

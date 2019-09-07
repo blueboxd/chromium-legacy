@@ -274,11 +274,8 @@ public class OfflinePageUtilsTest {
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            boolean shared = OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+            OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), shareCallback);
-            // Attempt to share a public page should pass the initial checks and return true,
-            // which means the callback will be called.
-            Assert.assertTrue(shared);
         });
 
         // Wait for share callback to get called.
@@ -299,10 +296,8 @@ public class OfflinePageUtilsTest {
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            boolean shared = OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
+            OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
                     mActivityTestRule.getActivity().getActivityTab(), shareCallback);
-            // The attempt to share a temporary page should share a content URL.
-            Assert.assertTrue(shared);
         });
         // Wait for share callback to get called.
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

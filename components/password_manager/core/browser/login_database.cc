@@ -737,7 +737,6 @@ bool LoginDatabase::Init() {
 
   int current_version = meta_table_.GetVersionNumber();
   bool migration_success = FixVersionIfNeeded(&db_, &current_version);
-  DCHECK_LE(current_version, kCurrentVersionNumber);
 
   // If the file on disk is an older database version, bring it up to date.
   if (migration_success && current_version < kCurrentVersionNumber) {
@@ -748,8 +747,13 @@ bool LoginDatabase::Init() {
     migration_success = stats_table_.MigrateToVersion(16);
   }
   if (migration_success) {
-    meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
-    meta_table_.SetVersionNumber(kCurrentVersionNumber);
+    // |migration_success| could be true when no logins have been actually
+    // migrated. We should protect against downgrading the database version in
+    // such case. Update the database version only if a migration took place.
+    if (current_version < kCurrentVersionNumber) {
+      meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
+      meta_table_.SetVersionNumber(kCurrentVersionNumber);
+    }
   } else {
     LogDatabaseInitError(MIGRATION_ERROR);
     LOG(ERROR) << "Unable to migrate database from "

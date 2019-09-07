@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
-#include "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -600,10 +599,6 @@ const char kNTPHelpURL[] =
 // Fetches and update user's avatar on NTP, or use default avatar if user is
 // not signed in.
 - (void)updateAccountImage {
-  // Early return here to avoid doing all that work to fetch an image that
-  // won't be used.
-  if (!IsIdentityDiscFeatureEnabled())
-    return;
   UIImage* image;
   // Fetches user's identity from Authentication Service.
   ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();

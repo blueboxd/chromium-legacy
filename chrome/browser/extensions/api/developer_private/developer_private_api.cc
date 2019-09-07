@@ -358,16 +358,7 @@ DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
 }
 
 DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
-    : extension_registry_observer_(this),
-      error_console_observer_(this),
-      process_manager_observer_(this),
-      app_window_registry_observer_(this),
-      warning_service_observer_(this),
-      extension_prefs_observer_(this),
-      extension_management_observer_(this),
-      command_service_observer_(this),
-      profile_(profile),
-      event_router_(EventRouter::Get(profile_)) {
+    : profile_(profile), event_router_(EventRouter::Get(profile_)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   error_console_observer_.Add(ErrorConsole::Get(profile));
   process_manager_observer_.Add(ProcessManager::Get(profile));
@@ -955,9 +946,8 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-DeveloperPrivateReloadFunction::DeveloperPrivateReloadFunction()
-    : registry_observer_(this), error_reporter_observer_(this) {}
-DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
+DeveloperPrivateReloadFunction::DeveloperPrivateReloadFunction() = default;
+DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() = default;
 
 ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   std::unique_ptr<Reload::Params> params(Reload::Params::Create(*args_));

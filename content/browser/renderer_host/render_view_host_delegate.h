@@ -194,10 +194,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The RenderView finished the first visually non-empty paint.
   virtual void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {}
 
-  // The RenderView has issued a draw command, signaling the it
-  // has been visually updated.
-  virtual void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) {}
-
   // Returns true if the render view is rendering a portal.
   virtual bool IsPortal() const;
 

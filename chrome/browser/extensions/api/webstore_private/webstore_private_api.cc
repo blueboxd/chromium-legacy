@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/scoped_active_install.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"

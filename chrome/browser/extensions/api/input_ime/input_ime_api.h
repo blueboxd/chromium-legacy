@@ -218,7 +218,7 @@ class InputImeAPI : public BrowserContextKeyedAPI,
 
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   content::NotificationRegistrar registrar_;
 

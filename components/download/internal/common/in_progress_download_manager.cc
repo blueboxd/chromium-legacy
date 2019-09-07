@@ -219,11 +219,12 @@ InProgressDownloadManager::~InProgressDownloadManager() = default;
 void InProgressDownloadManager::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
     std::unique_ptr<InputStream> input_stream,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+        url_loader_factory_provider,
     UrlDownloadHandler* downloader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   StartDownload(std::move(download_create_info), std::move(input_stream),
-                url_loader_factory_provider,
+                std::move(url_loader_factory_provider),
                 base::BindOnce(&InProgressDownloadManager::CancelUrlDownload,
                                weak_factory_.GetWeakPtr(), downloader),
                 callback);
@@ -437,7 +438,8 @@ void InProgressDownloadManager::RemoveInProgressDownload(
 void InProgressDownloadManager::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<InputStream> stream,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+        url_loader_factory_provider,
     DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK(info);
@@ -477,7 +479,7 @@ void InProgressDownloadManager::StartDownload(
         std::move(info), on_started,
         base::BindOnce(&InProgressDownloadManager::StartDownloadWithItem,
                        weak_factory_.GetWeakPtr(), std::move(stream),
-                       url_loader_factory_provider,
+                       std::move(url_loader_factory_provider),
                        std::move(cancel_request_callback)));
   } else {
     std::string guid = info->guid;
@@ -488,7 +490,7 @@ void InProgressDownloadManager::StartDownload(
       in_progress_downloads_.push_back(std::move(download));
     }
     StartDownloadWithItem(
-        std::move(stream), url_loader_factory_provider,
+        std::move(stream), std::move(url_loader_factory_provider),
         std::move(cancel_request_callback), std::move(info),
         static_cast<DownloadItemImpl*>(GetDownloadByGuid(guid)), false);
   }
@@ -496,7 +498,8 @@ void InProgressDownloadManager::StartDownload(
 
 void InProgressDownloadManager::StartDownloadWithItem(
     std::unique_ptr<InputStream> stream,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+        url_loader_factory_provider,
     DownloadJob::CancelRequestCallback cancel_request_callback,
     std::unique_ptr<DownloadCreateInfo> info,
     DownloadItemImpl* download,
@@ -540,7 +543,7 @@ void InProgressDownloadManager::StartDownloadWithItem(
   // resumption attempt.
 
   download->Start(std::move(download_file), std::move(cancel_request_callback),
-                  *info, url_loader_factory_provider);
+                  *info, std::move(url_loader_factory_provider));
 
   if (download_start_observer_)
     download_start_observer_->OnDownloadStarted(download);

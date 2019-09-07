@@ -399,6 +399,21 @@ class AutotestPrivateTakeScreenshotFunction : public ExtensionFunction {
                        scoped_refptr<base::RefCountedMemory> png_data);
 };
 
+class AutotestPrivateTakeScreenshotForDisplayFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshotForDisplay",
+                             AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY)
+
+ private:
+  ~AutotestPrivateTakeScreenshotForDisplayFunction() override;
+  ResponseAction Run() override;
+
+  void ScreenshotTaken(std::unique_ptr<ui::ScreenshotGrabber> grabber,
+                       ui::ScreenshotResult screenshot_result,
+                       scoped_refptr<base::RefCountedMemory> png_data);
+};
+
 class AutotestPrivateGetPrinterListFunction
     : public ExtensionFunction,
       public chromeos::CupsPrintersManager::Observer {

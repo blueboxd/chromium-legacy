@@ -170,6 +170,7 @@ customize.CLASSES = {
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
   COLLECTION_TILE_BG: 'bg-sel-tile-bg',
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
+  HIDDEN_SELECTED: 'hidden-selected',
   IMAGE_DIALOG: 'is-img-sel',
   ON_IMAGE_MENU: 'on-img-menu',
   OPTION: 'bg-option',
@@ -1032,6 +1033,8 @@ customize.richerPicker_selectShortcutType = function(shortcutType) {
 /**
  * Handles hide shortcuts toggle. Apply/remove styling for the toggle and
  * enable/disable the done button.
+ * Note: If the toggle is enabled, the options for shortcut type will appear
+ * "disabled".
  * @param {boolean} areHidden True if the shortcuts are hidden, i.e. the toggle
  *     is on.
  */
@@ -1040,6 +1043,8 @@ customize.richerPicker_toggleShortcutHide = function(areHidden) {
   $(customize.IDS.SHORTCUTS_HIDE)
       .classList.toggle(customize.CLASSES.SELECTED, areHidden);
   $(customize.IDS.SHORTCUTS_HIDE_TOGGLE).checked = areHidden;
+  $(customize.IDS.SHORTCUTS_MENU)
+      .classList.toggle(customize.CLASSES.HIDDEN_SELECTED, areHidden);
 
   customize.selectedOptions.shortcutsAreHidden = areHidden;
 };
@@ -2027,6 +2032,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
           customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED);
     }
     customize.richerPicker_selectShortcutType(clOption);
+    // Selecting a shortcut type will turn off hidden shortcuts.
+    customize.richerPicker_toggleShortcutHide(false);
   };
   clOption.onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
@@ -2053,6 +2060,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
           customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED);
     }
     customize.richerPicker_selectShortcutType(mvOption);
+    // Selecting a shortcut type will turn off hidden shortcuts.
+    customize.richerPicker_toggleShortcutHide(false);
   };
   mvOption.onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {

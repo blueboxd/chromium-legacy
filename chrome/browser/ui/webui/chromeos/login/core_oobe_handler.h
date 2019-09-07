@@ -58,6 +58,7 @@ class CoreOobeView {
   virtual void ReloadEulaContent(const base::DictionaryValue& dictionary) = 0;
   virtual void SetVirtualKeyboardShown(bool shown) = 0;
   virtual void SetClientAreaSize(int width, int height) = 0;
+  virtual void SetShelfHeight(int height) = 0;
   virtual void ShowDeviceResetScreen() = 0;
   virtual void ShowEnableDebuggingScreen() = 0;
   virtual void InitDemoModeDetection() = 0;
@@ -137,6 +138,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ReloadEulaContent(const base::DictionaryValue& dictionary) override;
   void SetVirtualKeyboardShown(bool displayed) override;
   void SetClientAreaSize(int width, int height) override;
+  void SetShelfHeight(int height) override;
   void ShowDeviceResetScreen() override;
   void ShowEnableDebuggingScreen() override;
   void ShowActiveDirectoryPasswordChangeScreen(

@@ -245,11 +245,6 @@ PasswordFormMetricsRecorder* PasswordFormManager::GetMetricsRecorder() {
   return metrics_recorder_.get();
 }
 
-base::span<const autofill::PasswordForm* const>
-PasswordFormManager::GetBlacklistedMatches() const {
-  return base::make_span(blacklisted_matches_);
-}
-
 base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
     const {
   return base::make_span(form_fetcher_->GetInteractionsStats());

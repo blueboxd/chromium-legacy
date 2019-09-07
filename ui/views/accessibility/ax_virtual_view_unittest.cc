@@ -5,6 +5,7 @@
 #include "ui/views/accessibility/ax_virtual_view.h"
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/rect.h"
@@ -14,6 +15,10 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
 
 namespace views {
 namespace test {
@@ -384,6 +389,16 @@ TEST_F(AXVirtualViewTest, Navigation) {
   EXPECT_EQ(nullptr, virtual_child_4->GetPreviousSibling());
   EXPECT_EQ(0, virtual_child_4->GetIndexInParent());
 }
+
+// Test for GetTargetForNativeAccessibilityEvent().
+#if defined(OS_WIN)
+TEST_F(AXVirtualViewTest, GetTargetForEvents) {
+  EXPECT_EQ(button_, virtual_label_->GetOwnerView());
+  EXPECT_NE(nullptr, HWNDForView(virtual_label_->GetOwnerView()));
+  EXPECT_EQ(HWNDForView(button_),
+            virtual_label_->GetTargetForNativeAccessibilityEvent());
+}
+#endif
 
 }  // namespace test
 }  // namespace views

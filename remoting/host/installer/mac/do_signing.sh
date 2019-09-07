@@ -126,13 +126,16 @@ sign() {
   fi
 
   echo Signing "${name}"
+
+  # It may be more natural to define a separate array just for the keychain
+  # args, but there is a bug in older versions of Bash:
+  # Expanding a zero-size array with "set -u" aborts with "unbound variable".
+  local args=(-vv --sign "${id}")
   if [[ -n "${keychain}" ]]; then
-    codesign -vv --sign "${id}" --options runtime \
-        --keychain "${keychain}" "${name}"
-  else
-    codesign -vv --sign "${id}" --options runtime \
-        "${name}"
+      args+=(--keychain "${keychain}")
   fi
+  args+=(--timestamp --options runtime "${name}")
+  codesign "${args[@]}"
   codesign -v "${name}"
 }
 
@@ -153,12 +156,12 @@ sign_installer() {
   local id="${3}"
 
   local package="${input_dir}/${PKG_DIR}/${PKG_FINAL}"
+  local args=(--sign "${id}" --timestamp)
   if [[ -n "${keychain}" ]]; then
-    productsign --sign "${id}" --keychain "${keychain}" \
-        "${package}" "${package}.signed"
-  else
-    productsign --sign "${id}" "${package}" "${package}.signed"
+      args+=(--keychain "${keychain}")
   fi
+  args+=("${package}" "${package}.signed")
+  productsign "${args[@]}"
   mv -f "${package}.signed" "${package}"
 }
 
@@ -327,6 +330,9 @@ main() {
     sign_installer "${input_dir}" "${keychain}" "${productsign_id}"
   fi
   build_dmg "${input_dir}" "${output_dir}"
+  if [[ "${do_sign_binaries}" == 1 ]]; then
+      sign "${output_dir}/${DMG_FILE_NAME}" "${keychain}" "${codesign_id}"
+  fi
 
   cleanup
 }

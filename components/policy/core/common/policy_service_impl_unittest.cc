@@ -356,6 +356,35 @@ TEST_F(PolicyServiceTest, ObserverChangesPolicy) {
   EXPECT_TRUE(observer.observer_invoked());
 }
 
+TEST_F(PolicyServiceTest, HasProvider) {
+  MockConfigurationPolicyProvider other_provider;
+  EXPECT_TRUE(policy_service_->HasProvider(&provider0_));
+  EXPECT_TRUE(policy_service_->HasProvider(&provider1_));
+  EXPECT_TRUE(policy_service_->HasProvider(&provider2_));
+  EXPECT_FALSE(policy_service_->HasProvider(&other_provider));
+}
+
+TEST_F(PolicyServiceTest, NotifyProviderUpdateObserver) {
+  MockPolicyServiceProviderUpdateObserver provider_update_observer;
+  policy_service_->AddProviderUpdateObserver(&provider_update_observer);
+
+  policy0_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(123),
+               nullptr);
+  EXPECT_CALL(provider_update_observer,
+              OnProviderUpdatePropagated(&provider0_));
+  provider0_.UpdateChromePolicy(policy0_);
+  Mock::VerifyAndClearExpectations(&provider_update_observer);
+
+  // No changes, ProviderUpdateObserver still notified.
+  EXPECT_CALL(provider_update_observer,
+              OnProviderUpdatePropagated(&provider0_));
+  provider0_.UpdateChromePolicy(policy0_);
+  Mock::VerifyAndClearExpectations(&provider_update_observer);
+
+  policy_service_->RemoveProviderUpdateObserver(&provider_update_observer);
+}
+
 TEST_F(PolicyServiceTest, Priorities) {
   PolicyMap expected;
   expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

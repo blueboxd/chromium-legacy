@@ -150,7 +150,7 @@ A lot of this logic is wrapped up in `tools/run-swarmed.py`, which you can run
 like this:
 
 ```
-$ tools/run-swarmed.py -t $target --out-dir=$outdir
+$ tools/run-swarmed.py $outdir $target
 ```
 
 See the `--help` option of `run-swarmed.py` for more details about that script.

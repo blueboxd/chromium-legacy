@@ -375,6 +375,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
     if (key_event.type() != ui::ET_KEY_PRESSED)
       return false;
 
+    // Default handling for events with Alt modifier like spoken feedback.
+    if (key_event.IsAltDown())
+      return false;
+
     // AccessCodeInput class responds to limited subset of key press events.
     // All key pressed events not handled below are ignored.
     const ui::KeyboardCode key_code = key_event.key_code();

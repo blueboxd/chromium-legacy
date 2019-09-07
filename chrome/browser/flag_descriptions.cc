@@ -1431,6 +1431,15 @@ const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
     "Google head non personalized search suggestions provided by a compact on "
     "device model";
 
+const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
+    "Omnibox Preserve Default Match Against Async Update";
+const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =
+    "Preserves the default match against change when providers return results "
+    "asynchronously. This prevents the default match from changing after the "
+    "user finishes typing. Without this feature, if the default match is "
+    "updated right when the user presses Enter, the user may go to a "
+    "surprising destination.";
+
 const char kOmniboxUIShowPlaceholderWhenCaretShowingName[] =
     "Omnibox UI Show Placeholder When Caret Showing";
 const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =
@@ -3286,7 +3295,7 @@ const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
 
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
-    "Enables background blur for the Launcher and Shelf.";
+    "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
 
 const char kEnableChromeOsAccountManagerName[] = "Enable Account Manager";
 const char kEnableChromeOsAccountManagerDescription[] =

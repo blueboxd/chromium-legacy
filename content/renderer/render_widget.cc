@@ -420,16 +420,16 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
-    bool is_frozen,
+    bool is_undead,
     bool never_visible) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
                                             screen_info, display_mode,
-                                            is_frozen, never_visible, nullptr);
+                                            is_undead, never_visible, nullptr);
   }
 
   return std::make_unique<RenderWidget>(
-      widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
+      widget_routing_id, compositor_deps, screen_info, display_mode, is_undead,
       /*hidden=*/true, never_visible, nullptr);
 }
 
@@ -438,20 +438,19 @@ RenderWidget* RenderWidget::CreateForPopup(
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
-    bool is_frozen,
     bool hidden,
     bool never_visible,
     mojom::WidgetRequest widget_request) {
   return new RenderWidget(widget_routing_id, compositor_deps, screen_info,
-                          display_mode, is_frozen, hidden, never_visible,
-                          std::move(widget_request));
+                          display_mode, /*is_undead=*/false, hidden,
+                          never_visible, std::move(widget_request));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
                            const ScreenInfo& screen_info,
                            blink::WebDisplayMode display_mode,
-                           bool is_frozen,
+                           bool is_undead,
                            bool hidden,
                            bool never_visible,
                            mojom::WidgetRequest widget_request)
@@ -460,7 +459,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
       display_mode_(display_mode),
-      is_frozen_(is_frozen),
+      is_undead_(is_undead),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
       screen_info_(screen_info),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
@@ -630,12 +629,12 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (handled)
     return true;
 
-  // TODO(https://crbug.com/1000502): Don't process IPC messages on frozen
+  // TODO(https://crbug.com/1000502): Don't process IPC messages on undead
   // RenderWidgets. We would like to eventually remove them altogether, so they
-  // won't be able to process IPC messages. A frozen widget may become
+  // won't be able to process IPC messages. An undead widget may become
   // provisional again, so we must check for that too. Provisional frames don't
   // receive messages until swapped in.
-  if (IsFrozenOrProvisional())
+  if (IsUndeadOrProvisional())
     return false;
 #if defined(OS_MACOSX)
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
@@ -677,18 +676,13 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool RenderWidget::Send(IPC::Message* message) {
+  // Undead RenderWidgets should not be used.
+  CHECK(!is_undead_);
+  // Provisional frames don't send IPCs until they are swapped in/committed.
+  CHECK(!IsForProvisionalFrame());
+
+  // Don't send any messages after the browser has told us to close.
   if (closing_) {
-    delete message;
-    return false;
-  }
-  // TODO(danakj): We believe that we should be able to not block IPC sending.
-  // When there's a provisional main frame using this widget, we should not be
-  // sending messages with the RenderWidget yet. And when the widget is frozen
-  // because there is no local main frame, there should be no code using
-  // RenderWidget and sending messages through it.
-  // We should CHECK() that the RenderWidget is not frozen and that the frame
-  // attached to it is not provisional, instead of dropping messages.
-  if (is_frozen_ || IsForProvisionalFrame()) {
     delete message;
     return false;
   }
@@ -941,10 +935,10 @@ void RenderWidget::OnDisableDeviceEmulation() {
 }
 
 void RenderWidget::OnWasHidden() {
-  // A frozen or provisional main frame widget will never be hidden since that
+  // An undead or provisional main frame widget will never be hidden since that
   // would require it to be shown first. The main frame must be attached to the
   // frame tree before changing visibility.
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
@@ -962,10 +956,10 @@ void RenderWidget::OnWasShown(
     bool was_evicted,
     const base::Optional<content::RecordTabSwitchTimeRequest>&
         record_tab_switch_time_request) {
-  // A frozen or provisional main frame widget will never be hidden since that
+  // An undead or provisional main frame widget will never be hidden since that
   // would require it to be shown first. The main frame must be attached to the
   // frame tree before changing visibility.
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   TRACE_EVENT_WITH_FLOW0("renderer", "RenderWidget::OnWasShown", routing_id(),
@@ -1025,7 +1019,7 @@ bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  if (is_frozen_ || IsForProvisionalFrame())
+  if (IsUndeadOrProvisional())
     return false;
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
@@ -1120,7 +1114,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   if (!GetWebWidget())
     return;
 
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   // We record metrics only when running in multi-threaded mode, not
@@ -1164,9 +1158,9 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::LayerTreeFrameSink.
   DCHECK(!compositor_never_visible_);
-  // Frozen RenderWidgets should not be doing any compositing. However note that
+  // Undead RenderWidgets should not be doing any compositing. However note that
   // widgets for provisional frames do start their compositor.
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
 
   if (is_closing()) {
     // In this case, we drop the request which means the compositor waits
@@ -1218,8 +1212,6 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 
   // Notify subclasses that we initiated the paint operation.
   DidInitiatePaint();
-
-  Send(new WidgetHostMsg_DidCommitAndDrawCompositorFrame(routing_id_));
 }
 
 void RenderWidget::WillCommitCompositorFrame() {
@@ -1316,7 +1308,7 @@ void RenderWidget::UpdateVisualState() {
   if (!GetWebWidget())
     return;
 
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   // We record metrics only when running in multi-threaded mode, not
@@ -1831,10 +1823,10 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info_);
   // If the widget is hidden, delay starting the compositor until the user shows
-  // it. Also if the RenderWidget is frozen, we delay starting the compositor
+  // it. Also if the RenderWidget is undead, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
-  // thawing the RenderWidget.
-  if (!is_hidden_ && !is_frozen_)
+  // reviving the undead RenderWidget.
+  if (!is_hidden_ && !is_undead_)
     StartStopCompositor();
 
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
@@ -1855,11 +1847,12 @@ void RenderWidget::StartStopCompositor() {
     return;
 
   // TODO(danakj): We should start the compositor before becoming shown for
-  // *all* provisional frames not just provisional main frames (as they become
-  // thawed). However we need to also prevent BeginMainFrame from occurring, in
-  // both cases, until the frame is attached at least. And in the case of main
-  // frames, until blink requests them through StopDeferringMainFrameUpdate().
-  if (is_frozen_) {
+  // *all* provisional frames not just provisional main frames (as they come
+  // back from being undead). However we need to also prevent BeginMainFrame
+  // from occurring, in both cases, until the frame is attached at least. And in
+  // the case of main frames, until blink requests them through
+  // StopDeferringMainFrameUpdate().
+  if (is_undead_) {
     layer_tree_view_->SetVisible(false);
     // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
     // but we don't expect to use this RenderWidget again until some possible
@@ -1873,10 +1866,10 @@ void RenderWidget::StartStopCompositor() {
   }
 }
 
-void RenderWidget::SetIsFrozen(bool is_frozen) {
-  DCHECK_NE(is_frozen, is_frozen_);
-  is_frozen_ = is_frozen;
-  // If hidden, then frozen changing doesn't change anything with the
+void RenderWidget::SetIsUndead(bool is_undead) {
+  DCHECK_NE(is_undead, is_undead_);
+  is_undead_ = is_undead;
+  // If hidden, then changing undead state doesn't change anything with the
   // compositor since when hidden the compositor is always stopped.
   if (!is_hidden_)
     StartStopCompositor();
@@ -1885,7 +1878,7 @@ void RenderWidget::SetIsFrozen(bool is_frozen) {
 // static
 void RenderWidget::DoDeferredClose(int widget_routing_id) {
   // DoDeferredClose() was a posted task, which means the RenderWidget may have
-  // become frozen in the meantime. Frozen RenderWidgets do not send messages,
+  // become undead in the meantime. Undead RenderWidgets do not send messages,
   // so break the dependency on RenderWidget here, by making this method static
   // and going to RenderThread directly to send.
   RenderThread::Get()->Send(new WidgetHostMsg_Close(widget_routing_id));
@@ -1992,7 +1985,6 @@ blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   // check for a null WebWidget.
   if (closing_)
     return nullptr;
-
   return static_cast<blink::WebFrameWidget*>(webwidget_internal_);
 }
 
@@ -2217,15 +2209,15 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
   screen_info_ = new_screen_info;
 
-  // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
-  // which is set above.
-  layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
   // Note carefully that the DSF specified in |new_screen_info| is not the
   // DSF used by the compositor during device emulation!
   layer_tree_view_->SetViewportRectAndScale(
       compositor_viewport_pixel_rect,
       GetOriginalScreenInfo().device_scale_factor,
       local_surface_id_allocation_from_parent_);
+  // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
+  // which is set above.
+  layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
   layer_tree_view_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
 
@@ -2528,10 +2520,10 @@ void RenderWidget::OnOrientationChange() {
 }
 
 void RenderWidget::SetHidden(bool hidden) {
-  // A frozen or provisional main frame widget will never be hidden since that
+  // An undead or provisional main frame widget will never be hidden since that
   // would require it to be shown first. The main frame must be attached to the
   // frame tree before changing visibility.
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   if (is_hidden_ == hidden)
@@ -3359,11 +3351,11 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
     return;
   }
 
-  DCHECK(!is_frozen_);
+  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   // The page scale is controlled by the WebView for the local main frame of
-  // the Page. So this is called from blink by for the RenderWidget of that
+  // the Page. So this is called from blink for the RenderWidget of that
   // local main frame. We forward the value on to each child RenderWidget (each
   // of which will be via proxy child frame). These will each in turn forward
   // the message to their child RenderWidgets (through their proxy child

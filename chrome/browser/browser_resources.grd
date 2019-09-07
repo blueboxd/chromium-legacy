@@ -104,7 +104,7 @@
         <include name="IDR_DISCARDS_MOJO_PUBLIC_BASE_PROCESS_ID_MOJOM_LITE_JS" file="${root_gen_dir}\mojo\public\mojom\base\process_id.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML" file="resources\discards\sorted_table_behavior.html" compress="gzip" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\performance_manager\webui_graph_dump.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_DISCARDS_WEBUI_GRAPH_DUMP_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\webui_graph_dump.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
         <include name="IDR_BROWSER_SWITCH_APP_HTML" file="resources\browser_switch\app.html" compress="gzip" allowexternalscript="true" type="BINDATA" />

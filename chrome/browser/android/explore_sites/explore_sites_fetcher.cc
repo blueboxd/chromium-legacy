@@ -166,7 +166,7 @@ void ExploreSitesFetcher::Start() {
           kExploreSitesHeadersExperimentParameterName);
 
   if (!tag.empty()) {
-    resource_request->headers.SetHeader("X-Google-Chrome-Experiment-Tag", tag);
+    resource_request->headers.SetHeader("X-Goog-Chrome-Experiment-Tag", tag);
   }
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),

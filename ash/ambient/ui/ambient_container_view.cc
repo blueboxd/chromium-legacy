@@ -12,7 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -56,7 +56,7 @@ const char* AmbientContainerView::GetClassName() const {
 }
 
 gfx::Size AmbientContainerView::CalculatePreferredSize() const {
-  // TODO(wutao): Handle multiple displays.
+  // TODO(b/139953389): Handle multiple displays.
   return GetWidget()->GetNativeWindow()->GetRootWindow()->bounds().size();
 }
 
@@ -76,7 +76,9 @@ void AmbientContainerView::OnGestureEvent(ui::GestureEvent* event) {
 
 void AmbientContainerView::Init() {
   CreateWidget(this);
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  // TODO(b/139954108): Choose a better dark mode theme color.
+  SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
+
   photo_view_ = new PhotoView(ambient_controller_);
   AddChildView(photo_view_);
 }

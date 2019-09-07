@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 171 tests; 167 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 173 tests; 169 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffect can be constructed with no frames
 PASS easing values are parsed correctly when passed to the KeyframeEffect constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffect constructor in KeyframeEffectOptions
@@ -12,6 +12,8 @@ PASS A KeyframeEffect can be constructed with a one shorthand property two value
 PASS A KeyframeEffect constructed with a one shorthand property two value property-indexed keyframes specification roundtrips
 PASS A KeyframeEffect can be constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification
 PASS A KeyframeEffect constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification roundtrips
+PASS A KeyframeEffect can be constructed with a two property (one shorthand and one of its shorthand components) two value property-indexed keyframes specification
+PASS A KeyframeEffect constructed with a two property (one shorthand and one of its shorthand components) two value property-indexed keyframes specification roundtrips
 PASS A KeyframeEffect can be constructed with a two property two value property-indexed keyframes specification
 PASS A KeyframeEffect constructed with a two property two value property-indexed keyframes specification roundtrips
 PASS A KeyframeEffect can be constructed with a two property property-indexed keyframes specification with different numbers of values

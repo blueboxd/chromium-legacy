@@ -251,7 +251,7 @@ void ToolbarView::Init() {
     const base::UnguessableToken& source_id =
         content::MediaSession::GetSourceId(browser_->profile());
     media_button = std::make_unique<MediaToolbarButtonView>(
-        source_id, content::GetSystemConnector());
+        source_id, content::GetSystemConnector(), browser_);
   }
 
   std::unique_ptr<ToolbarPageActionIconContainerView>

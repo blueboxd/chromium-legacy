@@ -32,7 +32,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/extension.h"
@@ -316,9 +315,7 @@ const char MenuManager::kOnWebviewContextMenus[] =
     "webViewInternal.contextMenus";
 
 MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
-    : extension_registry_observer_(this),
-      browser_context_(context),
-      store_(store) {
+    : browser_context_(context), store_(store) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllSources());

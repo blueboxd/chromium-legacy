@@ -264,6 +264,13 @@ void ContentsView::SetActiveStateInternal(int page_index, bool animate) {
 
   // Start animating to the new page.
   const bool should_animate = animate && !set_active_state_without_animation_;
+  // There's a chance of selecting page during the transition animation. To
+  // reschedule the new animation from the beginning, |pagination_model_| needs
+  // to finish the ongoing animation here.
+  if (should_animate && pagination_model_.has_transition() &&
+      pagination_model_.transition().target_page != page_index) {
+    pagination_model_.FinishAnimation();
+  }
   pagination_model_.SelectPage(page_index, should_animate);
   ActivePageChanged();
 

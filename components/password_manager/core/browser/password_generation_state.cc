@@ -53,7 +53,6 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   const PasswordForm& GetPendingCredentials() const override;
   metrics_util::CredentialSourceType GetCredentialSource() override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
-  base::span<const PasswordForm* const> GetBlacklistedMatches() const override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;
   void Save() override;
@@ -121,11 +120,6 @@ metrics_util::CredentialSourceType PasswordDataForUI::GetCredentialSource() {
 
 PasswordFormMetricsRecorder* PasswordDataForUI::GetMetricsRecorder() {
   return nullptr;
-}
-
-base::span<const PasswordForm* const> PasswordDataForUI::GetBlacklistedMatches()
-    const {
-  return {};
 }
 
 base::span<const InteractionsStats> PasswordDataForUI::GetInteractionsStats()

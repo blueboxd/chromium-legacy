@@ -173,6 +173,21 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
       const std::string& key,
       LoginScreenStorageRetrieveCallback callback) = 0;
 
+  // Used for |LoginScreenStorageListKeys()| method. |keys| argument is the list
+  // of keys currently stored in the login screen storage. In case of error,
+  // |keys| is empty and |error| contains the error message.
+  using LoginScreenStorageListKeysCallback =
+      base::OnceCallback<void(std::vector<std::string> /* keys */,
+                              base::Optional<std::string> /* error */)>;
+
+  // List all keys currently stored in the login screen storage.
+  virtual void LoginScreenStorageListKeys(
+      LoginScreenStorageListKeysCallback callback) = 0;
+
+  // Delete a key and the value associated with it from the login screen
+  // storage.
+  virtual void LoginScreenStorageDelete(const std::string& key) = 0;
+
   // Starts the session for the user.
   virtual void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) = 0;

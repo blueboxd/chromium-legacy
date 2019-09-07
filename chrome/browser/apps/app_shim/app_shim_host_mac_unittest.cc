@@ -30,9 +30,9 @@ class TestingAppShim : public chrome::mojom::AppShim {
  public:
   TestingAppShim() {}
 
-  chrome::mojom::AppShimHostBootstrap::LaunchAppCallback
-  GetLaunchAppCallback() {
-    return base::BindOnce(&TestingAppShim::LaunchAppDone,
+  chrome::mojom::AppShimHostBootstrap::OnShimConnectedCallback
+  GetOnShimConnectedCallback() {
+    return base::BindOnce(&TestingAppShim::OnShimConnectedDone,
                           base::Unretained(this));
   }
   mojo::PendingReceiver<chrome::mojom::AppShimHostBootstrap>
@@ -46,8 +46,8 @@ class TestingAppShim : public chrome::mojom::AppShim {
   }
 
  private:
-  void LaunchAppDone(apps::AppShimLaunchResult result,
-                     chrome::mojom::AppShimRequest app_shim_request) {
+  void OnShimConnectedDone(apps::AppShimLaunchResult result,
+                           chrome::mojom::AppShimRequest app_shim_request) {
     received_launch_done_result_ = true;
     launch_done_result_ = result;
   }
@@ -95,7 +95,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
     return test_weak_factory_.GetWeakPtr();
   }
 
-  using AppShimHostBootstrap::LaunchApp;
+  using AppShimHostBootstrap::OnShimConnected;
 
  private:
   base::WeakPtrFactory<TestingAppShimHostBootstrap> test_weak_factory_;
@@ -104,6 +104,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
 
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestProfileDir[] = "Profile 1";
+const GURL kTestUrl("https://example.com");
 
 class AppShimHostTest : public testing::Test,
                         public AppShimHostBootstrap::Client,
@@ -119,13 +120,17 @@ class AppShimHostTest : public testing::Test,
   AppShimHost* host() { return host_.get(); }
   chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
 
-  void LaunchApp(apps::AppShimLaunchType launch_type) {
+  void DoOnShimConnected(apps::AppShimLaunchType launch_type) {
+    auto app_shim_info = chrome::mojom::AppShimInfo::New();
+    app_shim_info->profile_path = base::FilePath(kTestProfileDir);
+    app_shim_info->app_id = kTestAppId;
+    app_shim_info->app_url = kTestUrl;
+    app_shim_info->launch_type = launch_type;
     // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
     (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapReceiver()))
-        ->LaunchApp(mojo::MakeRequest(&host_ptr_),
-                    base::FilePath(kTestProfileDir), kTestAppId, launch_type,
-                    std::vector<base::FilePath>(),
-                    shim_->GetLaunchAppCallback());
+        ->OnShimConnected(mojo::MakeRequest(&host_ptr_),
+                          std::move(app_shim_info),
+                          shim_->GetOnShimConnectedCallback());
   }
 
   apps::AppShimLaunchResult GetLaunchResult() {
@@ -196,9 +201,9 @@ class AppShimHostTest : public testing::Test,
 
 }  // namespace
 
-TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
+TEST_F(AppShimHostTest, TestOnShimConnectedWithHandler) {
   AppShimHostBootstrap::SetClient(this);
-  LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
+  DoOnShimConnected(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
@@ -220,7 +225,7 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
 
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
   AppShimHostBootstrap::SetClient(this);
-  LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
+  DoOnShimConnected(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
   EXPECT_EQ(1, launch_count_);
@@ -233,7 +238,7 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
 TEST_F(AppShimHostTest, TestFailLaunch) {
   AppShimHostBootstrap::SetClient(this);
   launch_result_ = apps::APP_SHIM_LAUNCH_APP_NOT_FOUND;
-  LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
+  DoOnShimConnected(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND, GetLaunchResult());
   AppShimHostBootstrap::SetClient(nullptr);
 }

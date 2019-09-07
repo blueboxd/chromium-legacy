@@ -2,42 +2,58 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('signin_view_test', function() {
-  suite('SigninViewTest', function() {
+import 'chrome://welcome/signin_view.js';
 
-    /** @type {SigninViewElement} */
-    let testElement;
+import {TestSigninViewProxy} from 'chrome://test/welcome/test_signin_view_proxy.js';
+import {TestWelcomeBrowserProxy} from 'chrome://test/welcome/test_welcome_browser_proxy.js';
+import {SigninViewProxyImpl} from 'chrome://welcome/signin_view_proxy.js';
+import {WelcomeBrowserProxyImpl} from 'chrome://welcome/welcome_browser_proxy.js';
 
-    /** @type {welcome.WelcomeBrowserProxy} */
-    let testWelcomeBrowserProxy;
+suite('SigninViewTest', function() {
+  /** @type {SigninViewElement} */
+  let testElement;
 
-    setup(function() {
-      testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
-      welcome.WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
+  /** @type {WelcomeBrowserProxy} */
+  let testWelcomeBrowserProxy;
 
-      PolymerTest.clearBody();
-      testElement = document.createElement('signin-view');
-      document.body.appendChild(testElement);
-    });
+  setup(function() {
+    testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
+    WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
 
-    teardown(function() {
-      testElement.remove();
-    });
+    // Not used in test, but setting to test proxy anyway, in order to prevent
+    // calls to backend.
+    SigninViewProxyImpl.instance_ = new TestSigninViewProxy();
 
-    test('sign-in button', function() {
-      const signinButton = testElement.$$('cr-button');
-      assertTrue(!!signinButton);
+    PolymerTest.clearBody();
+    // Add <base> so that images in nux-google-apps will be loaded from the
+    // correct data source.
+    const base = document.createElement('base');
+    base.href = 'chrome://welcome/google_apps/';
+    document.head.appendChild(base);
+    testElement = document.createElement('signin-view');
+    document.body.appendChild(testElement);
+    // Remove <base> so that routing happens from a base of chrome://test, to
+    // prevent a security error.
+    document.head.removeChild(base);
+  });
 
-      signinButton.click();
-      return testWelcomeBrowserProxy.whenCalled('handleActivateSignIn')
-          .then(redirectUrl => assertEquals(null, redirectUrl));
-    });
+  teardown(function() {
+    testElement.remove();
+  });
 
-    test('no-thanks button', function() {
-      const noThanksButton = testElement.$$('button');
-      assertTrue(!!noThanksButton);
-      noThanksButton.click();
-      return testWelcomeBrowserProxy.whenCalled('handleUserDecline');
-    });
+  test('sign-in button', function() {
+    const signinButton = testElement.$$('cr-button');
+    assertTrue(!!signinButton);
+
+    signinButton.click();
+    return testWelcomeBrowserProxy.whenCalled('handleActivateSignIn')
+        .then(redirectUrl => assertEquals(null, redirectUrl));
+  });
+
+  test('no-thanks button', function() {
+    const noThanksButton = testElement.$$('button');
+    assertTrue(!!noThanksButton);
+    noThanksButton.click();
+    return testWelcomeBrowserProxy.whenCalled('handleUserDecline');
   });
 });

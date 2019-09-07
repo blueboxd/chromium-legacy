@@ -850,6 +850,15 @@ message CPUTempInfo {
   optional int64 timestamp = 3;
 }
 
+// Contains the Stateful Partition Information for user data storage in the
+// device.
+message StatefulPartitionInfo {
+  // Available space for user data storage in the device in bytes.
+  optional int64 available_space = 1;
+  // Total space for user data storage in the device in bytes.
+  optional int64 total_space = 2;
+}
+
 // Chrome release channel, shared for different reports.
 enum Channel {
   CHANNEL_UNKNOWN = 0;
@@ -1036,6 +1045,9 @@ message DeviceStatusReportRequest {
 
   // Status for various system-wide non-hardware elements.
   optional SystemStatus system_status = 28;
+
+  // Stateful Partition Information for user data.
+  optional StatefulPartitionInfo stateful_partition_info = 29;
 }
 
 message OsUpdateStatus {

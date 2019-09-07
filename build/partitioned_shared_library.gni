@@ -65,10 +65,6 @@ template("partitioned_shared_library") {
       "--link-only",
     ]
 
-    # https://crbug.com/1000665: Force partitions to be aligned. This can be
-    # removed once LLVM rolls in an alignment fix.
-    ldflags += [ "-Wl,-z,separate-code" ]
-
     # This shared library is an intermediate artifact that should not packaged
     # into the final build. Therefore, reset metadata.
     metadata = {

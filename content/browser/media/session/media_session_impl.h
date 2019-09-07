@@ -268,6 +268,9 @@ class MediaSessionImpl : public MediaSession,
   // context together.
   CONTENT_EXPORT const base::UnguessableToken& GetSourceId() const;
 
+  // Returns the Audio Focus request ID associated with this media session.
+  const base::UnguessableToken& GetRequestId() const;
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;

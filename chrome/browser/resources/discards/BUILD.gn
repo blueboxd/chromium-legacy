@@ -50,7 +50,6 @@ js_library("discards_tab") {
 
 js_library("graph_tab") {
   deps = [
-    "//chrome/browser/performance_manager:mojo_bindings_js_library_for_compile",
     "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -59,7 +58,7 @@ js_library("graph_tab") {
 
 js_library("graph_doc") {
   deps = [
-    "//chrome/browser/performance_manager:mojo_bindings_js_library_for_compile",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
   ]
 
   externs_list = [ "../../../../third_party/d3/src/externs.js" ]

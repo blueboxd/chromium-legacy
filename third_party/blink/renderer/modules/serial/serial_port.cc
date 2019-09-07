@@ -81,28 +81,27 @@ SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
 SerialPort::~SerialPort() = default;
 
 ScriptPromise SerialPort::open(ScriptState* script_state,
-                               const SerialOptions* options) {
+                               const SerialOptions* options,
+                               ExceptionState& exception_state) {
   if (open_resolver_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "A call to open() is already in progress."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "A call to open() is already in progress.");
+    return ScriptPromise();
   }
 
   if (port_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
-                                           "The port is already open."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The port is already open.");
+    return ScriptPromise();
   }
 
   auto mojo_options = device::mojom::blink::SerialConnectionOptions::New();
 
   if (options->baudrate() == 0) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
-                          "Requested baud rate must be greater than zero."));
+    exception_state.ThrowTypeError(
+        "Requested baud rate must be greater than zero.");
+    return ScriptPromise();
   }
   mojo_options->bitrate = options->baudrate();
 
@@ -114,10 +113,9 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
       mojo_options->data_bits = device::mojom::blink::SerialDataBits::EIGHT;
       break;
     default:
-      return ScriptPromise::Reject(
-          script_state, V8ThrowException::CreateTypeError(
-                            script_state->GetIsolate(),
-                            "Requested number of data bits must be 7 or 8."));
+      exception_state.ThrowTypeError(
+          "Requested number of data bits must be 7 or 8.");
+      return ScriptPromise();
   }
 
   if (options->parity() == "none") {
@@ -138,30 +136,24 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
       mojo_options->stop_bits = device::mojom::blink::SerialStopBits::TWO;
       break;
     default:
-      return ScriptPromise::Reject(
-          script_state, V8ThrowException::CreateTypeError(
-                            script_state->GetIsolate(),
-                            "Requested number of stop bits must be 1 or 2."));
+      exception_state.ThrowTypeError(
+          "Requested number of stop bits must be 1 or 2.");
+      return ScriptPromise();
   }
 
   if (options->buffersize() == 0) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
-            String::Format(
-                "Requested buffer size (%d bytes) must be greater than zero.",
-                options->buffersize())));
+    exception_state.ThrowTypeError(String::Format(
+        "Requested buffer size (%d bytes) must be greater than zero.",
+        options->buffersize()));
+    return ScriptPromise();
   }
 
   if (options->buffersize() > kMaxBufferSize) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
-            String::Format("Requested buffer size (%d bytes) is greater than "
-                           "the maximum allowed (%d bytes).",
-                           options->buffersize(), kMaxBufferSize)));
+    exception_state.ThrowTypeError(
+        String::Format("Requested buffer size (%d bytes) is greater than "
+                       "the maximum allowed (%d bytes).",
+                       options->buffersize(), kMaxBufferSize));
+    return ScriptPromise();
   }
   buffer_size_ = options->buffersize();
 
@@ -172,20 +164,18 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
   mojo::ScopedDataPipeConsumerHandle readable_pipe;
   mojo::ScopedDataPipeProducerHandle readable_pipe_producer;
   if (!CreateDataPipe(&readable_pipe_producer, &readable_pipe)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kQuotaExceededError,
-                          kResourcesExhaustedReadBuffer));
+    exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
+                                      kResourcesExhaustedReadBuffer);
+    return ScriptPromise();
   }
 
   // Pipe handle pair for the WritableStream.
   mojo::ScopedDataPipeProducerHandle writable_pipe;
   mojo::ScopedDataPipeConsumerHandle writable_pipe_consumer;
   if (!CreateDataPipe(&writable_pipe, &writable_pipe_consumer)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kQuotaExceededError,
-                          kResourcesExhaustedWriteBuffer));
+    exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
+                                      kResourcesExhaustedWriteBuffer);
+    return ScriptPromise();
   }
 
   device::mojom::blink::SerialPortClientPtr client_ptr;
@@ -248,11 +238,12 @@ WritableStream* SerialPort::writable(ScriptState* script_state,
   return writable_;
 }
 
-ScriptPromise SerialPort::getSignals(ScriptState* script_state) {
+ScriptPromise SerialPort::getSignals(ScriptState* script_state,
+                                     ExceptionState& exception_state) {
   if (!port_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError, kPortClosed));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kPortClosed);
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -264,11 +255,12 @@ ScriptPromise SerialPort::getSignals(ScriptState* script_state) {
 }
 
 ScriptPromise SerialPort::setSignals(ScriptState* script_state,
-                                     const SerialOutputSignals* signals) {
+                                     const SerialOutputSignals* signals,
+                                     ExceptionState& exception_state) {
   if (!port_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError, kPortClosed));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kPortClosed);
+    return ScriptPromise();
   }
 
   auto mojo_signals = device::mojom::blink::SerialHostControlSignals::New();

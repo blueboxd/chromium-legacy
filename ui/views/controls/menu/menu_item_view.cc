@@ -40,6 +40,7 @@
 #include "ui/views/controls/menu/menu_separator.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -1131,23 +1132,28 @@ void MenuItemView::PaintMinorIconAndText(
 }
 
 SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
-  ui::NativeTheme::ColorId color_id =
-      minor ? ui::NativeTheme::kColorId_MenuItemMinorTextColor
-            : ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+  style::TextContext context = style::CONTEXT_MENU;
+  style::TextStyle text_style =
+      minor ? text_style = style::STYLE_SECONDARY : style::STYLE_PRIMARY;
+
   if (GetEnabled()) {
     if (render_selection)
-      color_id = ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
+      text_style = style::STYLE_SELECTED;
   } else {
-    color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+    text_style = style::STYLE_DISABLED;
   }
 
-  if (GetMenuController() && GetMenuController()->use_touchable_layout())
-    color_id = ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
+  if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
+    context = style::CONTEXT_TOUCH_MENU;
+    text_style = style::STYLE_PRIMARY;
+  }
 
-  if (type_ == HIGHLIGHTED)
-    color_id = ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
+  if (type_ == HIGHLIGHTED) {
+    context = style::CONTEXT_MENU;
+    text_style = style::STYLE_HIGHLIGHTED;
+  }
 
-  return GetNativeTheme()->GetSystemColor(color_id);
+  return style::GetColor(*this, context, text_style);
 }
 
 void MenuItemView::DestroyAllMenuHosts() {

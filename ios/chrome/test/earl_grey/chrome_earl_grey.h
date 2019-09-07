@@ -282,6 +282,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // not met within a timeout a GREYAssert is induced.
 - (void)waitForWebStateContainingText:(const std::string&)UTF8Text;
 
+// Waits for the current web state to contain |UTF8Text|. If the condition is
+// not met within the given |timeout| a GREYAssert is induced.
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text
+                              timeout:(NSTimeInterval)timeout;
+
 // Waits for there to be no web state containing |UTF8Text|.
 // If the condition is not met within a timeout a GREYAssert is induced.
 - (void)waitForWebStateNotContainingText:(const std::string&)UTF8Text;
@@ -300,6 +305,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns the current web state's VisibleURL.
 - (GURL)webStateVisibleURL;
+
+// Purges cached web view pages, so the next time back navigation will not use
+// a cached page. Browsers don't have to use a fresh version for back/forward
+// navigation for HTTP pages and may serve a version from the cache even if the
+// Cache-Control response header says otherwise.
+- (void)purgeCachedWebViewPages;
 
 #pragma mark - Bookmarks Utilities (EG2)
 

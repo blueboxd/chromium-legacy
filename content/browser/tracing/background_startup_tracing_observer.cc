@@ -66,6 +66,11 @@ void BackgroundStartupTracingObserver::OnScenarioActivated(
     return;
   const BackgroundTracingRule* startup_rule = FindStartupRuleInConfig(*config);
   DCHECK(startup_rule);
+  // TODO(ssid): Investigate when/how this can happen.
+  if (!startup_rule) {
+    return;
+  }
+
   // Post task to avoid reentrancy.
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},

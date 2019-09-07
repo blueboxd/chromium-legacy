@@ -1066,10 +1066,8 @@ const ComputedStyle* SVGElement::EnsureComputedStyle(
     return Element::EnsureComputedStyle(pseudo_element_specifier);
 
   const ComputedStyle* parent_style = nullptr;
-  if (Element* parent = ParentOrShadowHostElement()) {
-    if (LayoutObject* layout_object = parent->GetLayoutObject())
-      parent_style = layout_object->Style();
-  }
+  if (ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this))
+    parent_style = parent->EnsureComputedStyle();
 
   return SvgRareData()->OverrideComputedStyle(this, parent_style);
 }

@@ -15,8 +15,8 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -244,8 +244,7 @@ ShelfLayoutManager::ScopedSuspendVisibilityUpdate::
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
     : shelf_widget_(shelf_widget),
       shelf_(shelf),
-      is_background_blur_enabled_(
-          app_list_features::IsBackgroundBlurEnabled()) {
+      is_background_blur_enabled_(features::IsBackgroundBlurEnabled()) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
 }

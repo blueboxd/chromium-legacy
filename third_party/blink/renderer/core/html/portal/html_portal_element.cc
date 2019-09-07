@@ -194,50 +194,41 @@ BlinkTransferableMessage ActivateDataAsMessage(
 }  // namespace
 
 ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
-                                          PortalActivateOptions* options) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kExecutionContext,
-                                 "HTMLPortalElement", "activate");
-
+                                          PortalActivateOptions* options,
+                                          ExceptionState& exception_state) {
   if (!remote_portal_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The HTMLPortalElement is not associated with a portal context.");
-    resolver->Reject(exception_state);
-    return promise;
+    return ScriptPromise();
   }
   if (is_activating_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "activate() has already been called on this HTMLPortalElement.");
-    resolver->Reject(exception_state);
-    return promise;
+    return ScriptPromise();
   }
   if (DocumentPortals::From(GetDocument()).IsPortalInDocumentActivating()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "activate() has already been called on another "
         "HTMLPortalElement in this document.");
-    resolver->Reject(exception_state);
-    return promise;
+    return ScriptPromise();
   }
   if (GetDocument().GetPage()->InsidePortal()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot activate a portal that is inside another portal.");
-    resolver->Reject(exception_state);
-    return promise;
+    return ScriptPromise();
   }
 
   BlinkTransferableMessage data =
       ActivateDataAsMessage(script_state, options, exception_state);
-  if (exception_state.HadException()) {
-    resolver->Reject(exception_state);
-    return promise;
-  }
+  if (exception_state.HadException())
+    return ScriptPromise();
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // The HTMLPortalElement is bound as a persistent so that it won't get
   // garbage collected while there is a pending callback.

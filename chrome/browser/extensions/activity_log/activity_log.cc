@@ -47,7 +47,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api_activity_monitor.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -560,7 +559,6 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       extension_system_(ExtensionSystem::Get(context)),
       db_enabled_(false),
       testing_mode_(false),
-      extension_registry_observer_(this),
       active_consumers_(0),
       cached_consumer_count_(0),
       has_listeners_(false),

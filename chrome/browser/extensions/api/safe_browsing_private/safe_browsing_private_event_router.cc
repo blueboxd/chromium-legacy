@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/reporting_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -68,30 +69,6 @@ SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     : context_(context) {
   event_router_ = EventRouter::Get(context_);
   InitRealtimeReportingClient();
-}
-
-// TODO(rogerta): once new event types are implemented, will likely want to
-// move this to a more common place.
-base::Value BuildRealtimeReport(Profile* profile, base::Value event) {
-  base::Value context(base::Value::Type::DICTIONARY);
-
-  ProfileAttributesStorage& storage =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  ProfileAttributesEntry* entry = nullptr;
-  if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
-    context.SetStringPath("profile.profileName", entry->GetName());
-    context.SetStringPath("profile.gaiaEmail", entry->GetUserName());
-  }
-
-  context.SetStringPath("profile.profilePath", profile->GetPath().value());
-  context.SetStringPath("browser.userAgent", GetUserAgent());
-
-  base::Value report(base::Value::Type::DICTIONARY);
-  report.SetKey(policy::RealtimeReportingJobConfiguration::kContextKey,
-                std::move(context));
-  report.SetKey(policy::RealtimeReportingJobConfiguration::kEventKey,
-                std::move(event));
-  return report;
 }
 
 SafeBrowsingPrivateEventRouter::~SafeBrowsingPrivateEventRouter() {}
@@ -388,9 +365,13 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(const char* name,
   wrapper.SetStringKey("time", now_str);
   wrapper.SetKey(name, std::move(event));
 
+  base::Value event_list(base::Value::Type::LIST);
+  event_list.GetList().push_back(std::move(wrapper));
+
   client_->UploadRealtimeReport(
-      BuildRealtimeReport(Profile::FromBrowserContext(context_),
-                          std::move(wrapper)),
+      policy::RealtimeReportingJobConfiguration::BuildReport(
+          std::move(event_list),
+          reporting::GetContext(Profile::FromBrowserContext(context_))),
       base::DoNothing());
 }
 

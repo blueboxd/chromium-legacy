@@ -106,8 +106,9 @@ class PowerMonitorTest : public ContentBrowserTest {
         device::mojom::PowerMonitor>(device::mojom::kServiceName);
   }
 
-  void BindPowerMonitor(const service_manager::BindSourceInfo& source_info,
-                        device::mojom::PowerMonitorRequest request) {
+  void BindPowerMonitor(
+      const service_manager::BindSourceInfo& source_info,
+      mojo::PendingReceiver<device::mojom::PowerMonitor> receiver) {
     if (source_info.identity.name() == mojom::kRendererServiceName) {
       // We can receive binding requests for the spare RenderProcessHost - this
       // might happen before the test has provided the
@@ -140,7 +141,7 @@ class PowerMonitorTest : public ContentBrowserTest {
         std::move(gpu_bound_closure_).Run();
     }
 
-    power_monitor_message_broadcaster_.Bind(std::move(request));
+    power_monitor_message_broadcaster_.Bind(std::move(receiver));
   }
 
  protected:

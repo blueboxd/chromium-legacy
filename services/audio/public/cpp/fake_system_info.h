@@ -47,7 +47,7 @@ class FakeSystemInfo : public mojom::SystemInfo {
                           GetInputDeviceInfoCallback callback) override;
 
  private:
-  void Bind(mojom::SystemInfoRequest request);
+  void Bind(mojo::PendingReceiver<mojom::SystemInfo> receiver);
 
   mojo::ReceiverSet<mojom::SystemInfo> receivers_;
   DISALLOW_COPY_AND_ASSIGN(FakeSystemInfo);

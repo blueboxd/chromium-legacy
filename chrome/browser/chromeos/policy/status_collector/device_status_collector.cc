@@ -127,6 +127,9 @@ const char kStorageInfoPath[] = "/var/log/storage_info.txt";
 // data for components.
 const char kGenericDeviceName[] = "generic";
 
+// The location where stateful partition info is read from.
+const char kStatefulPartitionPath[] = "/home/.shadow";
+
 // How often the child's usage time is stored.
 static constexpr base::TimeDelta kUpdateChildActiveTimeInterval =
     base::TimeDelta::FromSeconds(30);
@@ -313,6 +316,30 @@ em::DiskLifetimeEstimation ReadDiskLifeTimeEstimation() {
   if (mlc_est)
     est.set_mlc(mlc_est.value());
   return est;
+}
+
+// Read stateful partition info for user data.
+em::StatefulPartitionInfo ReadStatefulPartitionInfo() {
+  em::StatefulPartitionInfo spi;
+  const base::FilePath statefulPartitionPath(kStatefulPartitionPath);
+  const int64_t available_space =
+      base::SysInfo::AmountOfFreeDiskSpace(statefulPartitionPath);
+  const int64_t total_space =
+      base::SysInfo::AmountOfTotalDiskSpace(statefulPartitionPath);
+
+  if (available_space == -1) {
+    LOG(ERROR) << "ReadStatefulPartitionInfo failed fetching available space.";
+    return spi;
+  }
+
+  if (total_space == -1) {
+    LOG(ERROR) << "ReadStatefulPartitionInfo failed fetching total space.";
+    return spi;
+  }
+
+  spi.set_available_space(available_space);
+  spi.set_total_space(total_space);
+  return spi;
 }
 
 bool ReadAndroidStatus(
@@ -554,6 +581,19 @@ class DeviceStatusCollectorState : public StatusCollectorState {
                        this));
   }
 
+  void FetchStatefulPartitionInfo(
+      const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
+          stateful_partition_info_fetcher) {
+    // Call out to the blocking pool to read stateful partition information.
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(stateful_partition_info_fetcher),
+        base::BindOnce(
+            &DeviceStatusCollectorState::OnStatefulPartitionInfoReceived,
+            this));
+  }
+
  private:
   ~DeviceStatusCollectorState() override = default;
 
@@ -716,6 +756,16 @@ class DeviceStatusCollectorState : public StatusCollectorState {
             ->mutable_lifetime_estimation();
     state->CopyFrom(est);
   }
+
+  void OnStatefulPartitionInfoReceived(const em::StatefulPartitionInfo& hdsi) {
+    if (!hdsi.has_available_space() && !hdsi.has_total_space())
+      return;
+    em::StatefulPartitionInfo* stateful_partition_info =
+        response_params_.device_status->mutable_stateful_partition_info();
+    DCHECK(hdsi.available_space() >= 0);
+    DCHECK(hdsi.total_space() >= hdsi.available_space());
+    stateful_partition_info->CopyFrom(hdsi);
+  }
 };
 
 TpmStatusInfo::TpmStatusInfo() = default;
@@ -756,6 +806,7 @@ DeviceStatusCollector::DeviceStatusCollector(
     const AndroidStatusFetcher& android_status_fetcher,
     const TpmStatusFetcher& tpm_status_fetcher,
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
+    const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
     bool is_enterprise_reporting)
     : StatusCollector(provider,
                       chromeos::CrosSettings::Get(),
@@ -768,6 +819,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       android_status_fetcher_(android_status_fetcher),
       tpm_status_fetcher_(tpm_status_fetcher),
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
+      stateful_partition_info_fetcher_(stateful_partition_info_fetcher),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
       is_enterprise_reporting_(is_enterprise_reporting) {
@@ -801,6 +853,10 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (emmc_lifetime_fetcher_.is_null())
     emmc_lifetime_fetcher_ = base::BindRepeating(&ReadDiskLifeTimeEstimation);
+
+  if (stateful_partition_info_fetcher_.is_null())
+    stateful_partition_info_fetcher_ = base::Bind(&ReadStatefulPartitionInfo);
+
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
                          &DeviceStatusCollector::CheckIdleState);
@@ -1663,6 +1719,10 @@ bool DeviceStatusCollector::GetHardwareStatus(
     // Sample CPU temperature in a background thread.
     state->SampleCPUTempInfo(cpu_temp_fetcher_);
   }
+
+  // Fetch Stateful Partition Information on a background thread.
+  state->FetchStatefulPartitionInfo(stateful_partition_info_fetcher_);
+
   return true;
 }
 

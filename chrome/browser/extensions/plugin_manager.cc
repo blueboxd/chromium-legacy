@@ -15,7 +15,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -30,8 +29,7 @@ using content::PluginService;
 namespace extensions {
 
 PluginManager::PluginManager(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)),
-      extension_registry_observer_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 

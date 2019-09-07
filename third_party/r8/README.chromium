@@ -1,7 +1,7 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
-Revision: c8785efaf448967838de4b1b6a0afea7d4ea5b74
-Version: 1.6.22-dev
+Revision: d11d42306845f15f383c1867f0f26c6f36e3adc4
+Version: 1.6.28-dev
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no

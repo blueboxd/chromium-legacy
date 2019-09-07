@@ -31,6 +31,7 @@ class CanMakePaymentTestChromePaymentRequestDelegate
     return valid_ssl_ ? "" : "Invalid SSL certificate";
   }
   PrefService* GetPrefService() override { return prefs_; }
+  bool IsBrowserWindowActive() const override { return true; }
 
  private:
   const bool is_incognito_;
@@ -66,10 +67,8 @@ class PaymentRequestTestController::ObserverConverter
   PaymentRequestTestController* const controller_;
 };
 
-PaymentRequestTestController::PaymentRequestTestController(
-    PaymentRequestTestObserver* observer)
-    : observer_(observer),
-      prefs_(std::make_unique<sync_preferences::TestingPrefServiceSyncable>()),
+PaymentRequestTestController::PaymentRequestTestController()
+    : prefs_(std::make_unique<sync_preferences::TestingPrefServiceSyncable>()),
       observer_converter_(std::make_unique<ObserverConverter>(this)) {}
 
 PaymentRequestTestController::~PaymentRequestTestController() = default;
@@ -80,6 +79,11 @@ void PaymentRequestTestController::SetUpOnMainThread() {
   payments::RegisterProfilePrefs(prefs_->registry());
 
   UpdateDelegateFactory();
+}
+
+void PaymentRequestTestController::SetObserver(
+    PaymentRequestTestObserver* observer) {
+  observer_ = observer;
 }
 
 void PaymentRequestTestController::SetIncognito(bool is_incognito) {
@@ -122,31 +126,38 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
 }
 
 void PaymentRequestTestController::OnCanMakePaymentCalled() {
-  observer_->OnCanMakePaymentCalled();
+  if (observer_)
+    observer_->OnCanMakePaymentCalled();
 }
 
 void PaymentRequestTestController::OnCanMakePaymentReturned() {
-  observer_->OnCanMakePaymentReturned();
+  if (observer_)
+    observer_->OnCanMakePaymentReturned();
 }
 
 void PaymentRequestTestController::OnHasEnrolledInstrumentCalled() {
-  observer_->OnHasEnrolledInstrumentCalled();
+  if (observer_)
+    observer_->OnHasEnrolledInstrumentCalled();
 }
 
 void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
-  observer_->OnHasEnrolledInstrumentReturned();
+  if (observer_)
+    observer_->OnHasEnrolledInstrumentReturned();
 }
 
 void PaymentRequestTestController::OnNotSupportedError() {
-  observer_->OnNotSupportedError();
+  if (observer_)
+    observer_->OnNotSupportedError();
 }
 
 void PaymentRequestTestController::OnConnectionTerminated() {
-  observer_->OnConnectionTerminated();
+  if (observer_)
+    observer_->OnConnectionTerminated();
 }
 
 void PaymentRequestTestController::OnAbortCalled() {
-  observer_->OnAbortCalled();
+  if (observer_)
+    observer_->OnAbortCalled();
 }
 
 }  // namespace payments

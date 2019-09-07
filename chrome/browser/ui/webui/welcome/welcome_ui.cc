@@ -132,9 +132,16 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   AddStrings(html_source);
 
   // Add all welcome resources.
+  std::string generated_path =
+      "@out_folder@/gen/chrome/browser/resources/welcome/";
+
   for (size_t i = 0; i < kWelcomeResourcesSize; ++i) {
-    html_source->AddResourcePath(kWelcomeResources[i].name,
-                                 kWelcomeResources[i].value);
+    std::string path = kWelcomeResources[i].name;
+    if (path.rfind(generated_path, 0) == 0) {
+      path = path.substr(generated_path.length());
+    }
+
+    html_source->AddResourcePath(path, kWelcomeResources[i].value);
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -202,6 +209,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
       base::BindRepeating(&HandleRequestCallback,
                           weak_ptr_factory_.GetWeakPtr()));
   html_source->UseStringsJs();
+  html_source->EnableReplaceI18nInJS();
 
   content::WebUIDataSource::Add(profile, html_source);
 }

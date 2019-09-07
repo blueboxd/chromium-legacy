@@ -29,12 +29,14 @@ void RequestTimer::Start(const base::Location& posted_from,
 }
 
 void RequestTimer::Stop() {
-  repeat_request_timer_->Stop();
+  if (repeat_request_timer_)
+    repeat_request_timer_->Stop();
   first_request_timer_.Stop();
 }
 
 void RequestTimer::Reset() {
   DCHECK(!first_request_timer_.IsRunning());
+  DCHECK(repeat_request_timer_);
   repeat_request_timer_->Reset();
 }
 

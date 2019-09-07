@@ -157,6 +157,8 @@ class SupervisedUserService : public KeyedService,
   // custodian.
   base::string16 GetExtensionsLockedMessage() const;
 
+  bool IsSupervisedUserIframeFilterEnabled() const;
+
 #if !defined(OS_ANDROID)
   // Initializes this profile for syncing, using the provided |refresh_token| to
   // mint access tokens for Sync.

@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/warning_service.h"
@@ -145,9 +144,7 @@ struct ChromeRuntimeAPIDelegate::UpdateCheckInfo {
 
 ChromeRuntimeAPIDelegate::ChromeRuntimeAPIDelegate(
     content::BrowserContext* context)
-    : browser_context_(context),
-      registered_for_updates_(false),
-      extension_registry_observer_(this) {
+    : browser_context_(context), registered_for_updates_(false) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
                  content::NotificationService::AllSources());

@@ -313,6 +313,8 @@ jumbo_source_set("testing") {
     "testing/wait_for_event.h",
     "testing/worker_internals.cc",
     "testing/worker_internals.h",
+    "timing/internals_profiler.cc",
+    "timing/internals_profiler.h",
   ]
 
   # Compile the sources produced by these IDL file lists.

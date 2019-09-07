@@ -150,23 +150,25 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         int panelShadowResourceId = panel.getPanelShadowVisible()
                 ? R.drawable.contextual_search_bar_background
                 : INVALID_RESOURCE_ID;
+        int closeIconResourceId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? INVALID_RESOURCE_ID
+                : ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID;
 
         ContextualSearchSceneLayerJni.get().updateContextualSearchLayer(mNativePtr,
                 ContextualSearchSceneLayer.this, panelShadowResourceId, searchBarBackgroundColor,
                 searchContextViewId, searchTermViewId, searchCaptionViewId,
                 R.drawable.modern_toolbar_shadow, R.drawable.ic_logo_googleg_24dp,
                 quickActionIconResId, R.drawable.breadcrumb_arrow, dragHandlebarId,
-                openNewTabIconId, ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
-                R.drawable.progress_bar_background, R.drawable.progress_bar_foreground,
-                searchPromoViewId, R.drawable.contextual_search_promo_ripple,
-                searchBarBannerTextViewId, mDpToPx, panel.getFullscreenWidth() * mDpToPx,
-                panel.getTabHeight() * mDpToPx, panel.getBasePageBrightness(),
-                panel.getBasePageY() * mDpToPx, panelWebContents, searchPromoVisible,
-                searchPromoHeightPx, searchPromoOpacity, searchPromoBackgroundColor,
-                searchBarBannerVisible, searchBarBannerHeightPx, searchBarBannerPaddingPx,
-                searchBarBannerRippleWidthPx, searchBarBannerRippleOpacity,
-                searchBarBannerTextOpacity, searchPanelX * mDpToPx, searchPanelY * mDpToPx,
-                searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
+                openNewTabIconId, closeIconResourceId, R.drawable.progress_bar_background,
+                R.drawable.progress_bar_foreground, searchPromoViewId,
+                R.drawable.contextual_search_promo_ripple, searchBarBannerTextViewId, mDpToPx,
+                panel.getFullscreenWidth() * mDpToPx, panel.getTabHeight() * mDpToPx,
+                panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
+                searchPromoVisible, searchPromoHeightPx, searchPromoOpacity,
+                searchPromoBackgroundColor, searchBarBannerVisible, searchBarBannerHeightPx,
+                searchBarBannerPaddingPx, searchBarBannerRippleWidthPx,
+                searchBarBannerRippleOpacity, searchBarBannerTextOpacity, searchPanelX * mDpToPx,
+                searchPanelY * mDpToPx, searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
                 searchBarMarginSide * mDpToPx, searchBarMarginTop * mDpToPx,
                 searchBarHeight * mDpToPx, searchContextOpacity,
                 searchBarControl.getTextLayerMinHeight(), searchTermOpacity,

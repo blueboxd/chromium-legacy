@@ -13,14 +13,10 @@
 
 # Create a URLLoaderInterceptor. It should cause the navigation to fail, but it
 # isn't using an URLLoader anymore.
--RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationSuccess
 -RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationFailure
 
 # Document expects javascript to run again from the beginning.
 -WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
-
-# Histogram not recorded. It will probably be fixed by https://crbug.com/976697.
--NavigationHandleImplBrowserTest.StartToCommitMetrics
 
 # render_view_impl.cc. Check failed: !frame_widget_.
 # https://crbug.com/999846
@@ -33,10 +29,6 @@
 # Javascript dialog is shown from a page in the BackForwardCache.
 # https://crbug.com/999847
 -NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames
-
-# history.back(); history.back() causes the tab to go back twice instead of
-# once. The navigations are now committing synchronously, which is too fast.
--NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithoutUserGesture
 
 # Page with no-cache, no-store, must-revalidate shouldn't be cached.
 -NavigationControllerBrowserTest.UncacheablePost
@@ -61,13 +53,10 @@
 -NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
 -RenderFrameHostManagerTest.DontSelectInvalidFiles
 -RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance
--RenderFrameHostManagerTest.PostMessageFromSubframeUnloadHandler
 -RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RenderFrameHostManagerTest.UnloadPushStateOnCrossProcessNavigation
--RenderFrameHostManagerTest.WebUIJavascriptDisallowedAfterSwapOut
 -RenderProcessHostTest.KeepAliveRendererProcess
--SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
 -SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest
 
@@ -78,13 +67,11 @@
 # Waiting for unload handler, but they aren't executed.
 -SitePerProcessBrowserTest.PartialUnloadHandler
 -SitePerProcessBrowserTest.Unload_ABAB
--WebContentsImplBrowserTest.SetTitleOnUnload
 
 # FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
 # In content::RenderFrameProxy::OnSetFrameOwnerProperties()
 # https://crbug.com/999849
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache
--WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCacheDedicatedWorkers
 
 # Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
 # in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.

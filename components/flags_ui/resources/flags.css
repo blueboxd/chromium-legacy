@@ -24,12 +24,9 @@ html {
   --google-blue-700: rgb(25, 103, 210);
   --google-grey-100: rgb(241, 243, 244);
   --google-grey-200: rgb(232, 234, 237);
-  --google-grey-300-rgb: 218, 220, 224;
-  --google-grey-300: rgb(var(--google-grey-300-rgb));
-  --google-grey-500-rgb: 154, 160, 166;
-  --google-grey-500: rgb(var(--google-grey-500-rgb));
+  --google-grey-300: rgb(218, 220, 224);
+  --google-grey-500: rgb(154, 160, 166);
   --google-grey-700: rgb(95, 99, 104);
-  --google-grey-800-rgb: 60, 64, 67;  /* #3c4043 */
   --google-grey-900: rgb(32, 33, 36);
   --google-red-300: rgb(242, 139, 130);
   --google-red-700: rgb(197, 34, 31);
@@ -130,10 +127,6 @@ button {
   padding: 0;
 }
 
-#deprecated-flags-title {
-  display: none;
-}
-
 #header {
   background: var(--toolbar-color);
   box-shadow: 0 2px 2px 0 var(--shadow-color);
@@ -174,21 +167,8 @@ button {
   position: relative;
 }
 
-.search-container .search-hint {
-  -webkit-mask-image: url(../../../ui/webui/resources/images/icon_search.svg);
-  -webkit-mask-position: 50%;
-  -webkit-mask-repeat: no-repeat;
-  background: var(--secondary-color);
-  height: 100%;
-  left: 8px;
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  width: 20px;
-}
-
 #search {
-  background: var(--input-background);
+  background: var(--input-background) url(../../../ui/webui/resources/images/icon_search.svg) no-repeat 8px 50%;
   border: 1px solid transparent;
   border-radius: 3px;
   box-sizing: border-box;
@@ -196,6 +176,12 @@ button {
   font-size: .8125rem;
   padding: 12px 36px;
   width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #search {
+    background-image: url(../../../ui/webui/resources/images/dark/icon_search.svg);
+  }
 }
 
 #search:focus {
@@ -529,6 +515,7 @@ button.primary {
 
 button.primary:-webkit-any(:active, :focus, :hover) {
   background: var(--google-blue-400);
+  outline: 0;
 }
 
 html.focus-outline-visible button.primary:focus {

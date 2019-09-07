@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_keys_listener_manager.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
@@ -38,7 +37,6 @@ ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
     : browser_context_(context),
       extension_filter_(extension_filter),
       delegate_(delegate),
-      extension_registry_observer_(this),
       shortcut_handling_suspended_(false) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 

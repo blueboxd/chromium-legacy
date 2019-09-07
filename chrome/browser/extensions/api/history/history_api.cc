@@ -132,7 +132,7 @@ VisitItem GetVisitItem(const history::VisitRow& row) {
 
 HistoryEventRouter::HistoryEventRouter(Profile* profile,
                                        history::HistoryService* history_service)
-    : profile_(profile), history_service_observer_(this) {
+    : profile_(profile) {
   DCHECK(profile);
   history_service_observer_.Add(history_service);
 }

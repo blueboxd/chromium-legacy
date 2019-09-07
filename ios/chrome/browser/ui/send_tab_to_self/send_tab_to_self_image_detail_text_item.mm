@@ -29,7 +29,8 @@
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   DCHECK([self.iconImageName length]);
-  cell.image = [UIImage imageNamed:self.iconImageName];
+  cell.image = [[UIImage imageNamed:self.iconImageName]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   if (self.selected) {
     cell.accessoryType = UITableViewCellAccessoryCheckmark;
   } else {

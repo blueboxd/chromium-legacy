@@ -152,4 +152,11 @@ TEST_F(RequestTimerTest, StopRepeatTask) {
   ASSERT_EQ(1, task_count_);
 }
 
+TEST_F(RequestTimerTest, StopWithoutStart) {
+  // Timer is able to be stopped without being started.
+  timer_.Stop();
+  ASSERT_FALSE(timer_.IsFirstTimerRunning());
+  ASSERT_FALSE(timer_.IsRepeatTimerRunning());
+}
+
 }  // namespace enterprise_reporting

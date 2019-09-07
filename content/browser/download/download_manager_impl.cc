@@ -631,9 +631,10 @@ void DownloadManagerImpl::StartDownload(
     const download::DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
-  in_progress_manager_->StartDownload(std::move(info), std::move(stream),
-                                      nullptr /* url_loader_factory_provider */,
-                                      base::DoNothing(), on_started);
+  in_progress_manager_->StartDownload(
+      std::move(info), std::move(stream),
+      download::URLLoaderFactoryProvider::GetNullPtr(), base::DoNothing(),
+      on_started);
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {

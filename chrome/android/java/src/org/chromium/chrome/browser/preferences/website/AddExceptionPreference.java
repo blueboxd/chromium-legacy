@@ -150,10 +150,10 @@ public class AddExceptionPreference
                 // before passing them on to the validity checker for patterns.
                 String hostname = s.toString().trim();
                 boolean hasError = hostname.length() > 0
-                        && (hostname.contains(":")
-                        || hostname.contains(" ")
-                        || hostname.startsWith(".")
-                        || !WebsitePreferenceBridge.nativeIsContentSettingsPatternValid(hostname));
+                        && (hostname.contains(":") || hostname.contains(" ")
+                                || hostname.startsWith(".")
+                                || !WebsitePreferenceBridgeJni.get().isContentSettingsPatternValid(
+                                        hostname));
 
                 // Vibrate when adding characters only, not when deleting them.
                 if (hasError && count != 0) {

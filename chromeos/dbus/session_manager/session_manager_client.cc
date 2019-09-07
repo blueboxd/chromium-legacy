@@ -272,6 +272,28 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void LoginScreenStorageListKeys(
+      LoginScreenStorageListKeysCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerLoginScreenStorageListKeys);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnLoginScreenStorageListKeys,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void LoginScreenStorageDelete(const std::string& key) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerLoginScreenStorageDelete);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(key);
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
+  }
+
   void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
@@ -759,6 +781,26 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
     std::move(callback).Run(std::string(result_data.begin(), result_data.end()),
                             base::nullopt /* error */);
+  }
+
+  void OnLoginScreenStorageListKeys(LoginScreenStorageListKeysCallback callback,
+                                    dbus::Response* response) {
+    if (!response) {
+      // TODO(voit): Add more granular error handling: key is not found error vs
+      // general 'something went wrong' error.
+      std::move(callback).Run({} /* keys */,
+                              "LoginScreenStorageListKeys() D-Bus method "
+                              "returned an empty response");
+      return;
+    }
+    dbus::MessageReader reader(response);
+    std::vector<std::string> keys;
+    if (!reader.PopArrayOfStrings(&keys)) {
+      std::string error = "Invalid response: " + response->ToString();
+      std::move(callback).Run({} /* keys */, error);
+      return;
+    }
+    std::move(callback).Run(std::move(keys), base::nullopt /* error */);
   }
 
   // Reads an array of policy data bytes data as std::string.

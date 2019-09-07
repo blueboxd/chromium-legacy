@@ -36,6 +36,7 @@
 #include "net/dns/record_rdata.h"
 #include "net/socket/datagram_server_socket.h"
 #include "net/socket/udp_server_socket.h"
+#include "services/network/public/cpp/features.h"
 
 // TODO(qingsi): Several features to implement:
 //
@@ -966,10 +967,13 @@ void MdnsResponderManager::OnMdnsQueryReceived(
   // to handle only such records. Once we have expanded the API surface to
   // include the service publishing, the handling logic should be unified.
   const std::string qname = net::DNSDomainToString(query.qname());
-  if (should_respond_to_generator_service_query_ &&
-      qname == kMdnsNameGeneratorServiceInstanceName) {
-    HandleMdnsNameGeneratorServiceQuery(query, recv_socket_handler_id);
-    return;
+  if (base::FeatureList::IsEnabled(
+          features::kMdnsResponderGeneratedNameListing)) {
+    if (should_respond_to_generator_service_query_ &&
+        qname == kMdnsNameGeneratorServiceInstanceName) {
+      HandleMdnsNameGeneratorServiceQuery(query, recv_socket_handler_id);
+      return;
+    }
   }
 
   for (auto& responder : responders_)

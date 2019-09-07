@@ -7,9 +7,10 @@
  * it's included more than once, which can happen when an include is misspelled.
  */
 
-cr.exportPath('welcome');
+import {assert} from 'chrome://resources/js/assert.m.js';
+
 assert(
-    !welcome.defaultResourceLoaded,
+    !window.defaultResourceLoaded,
     'welcome.js run twice. You probably have an invalid import.');
 /** Global defined when the main welcome script runs. */
-welcome.defaultResourceLoaded = true;
+window.defaultResourceLoaded = true;

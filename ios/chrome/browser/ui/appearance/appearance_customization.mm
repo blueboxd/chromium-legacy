@@ -13,6 +13,9 @@
 #endif
 
 void CustomizeUIAppearance() {
-  UIView.appearance.tintColor = [UIColor colorNamed:kBlueColor];
+  // Set fallback tint color for all windows in the app.
+  for (UIWindow* window in UIApplication.sharedApplication.windows) {
+    window.tintColor = [UIColor colorNamed:kBlueColor];
+  }
   UISwitch.appearance.onTintColor = [UIColor colorNamed:kBlueColor];
 }

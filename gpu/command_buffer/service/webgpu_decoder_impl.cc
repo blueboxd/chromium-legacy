@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
@@ -418,6 +419,25 @@ ContextResult WebGPUDecoderImpl::Initialize() {
 }
 
 DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
+#if defined(OS_WIN)
+  // On Windows 10, we pick D3D12 backend because the rest of Chromium renders
+  // with D3D11. By the same token, we pick the first adapter because ANGLE also
+  // picks the first adapter. Later, we'll need to centralize adapter picking
+  // such that Dawn and ANGLE are told which adapter to use by Chromium. If we
+  // decide to handle multiple adapters, code on the Chromium side will need to
+  // change to do appropriate cross adapter copying to make this happen, either
+  // manually or by using DirectComposition.
+  dawn_instance_->DiscoverDefaultAdapters();
+  const std::vector<dawn_native::Adapter> adapters =
+      dawn_instance_->GetAdapters();
+
+  for (dawn_native::Adapter adapter : adapters) {
+    if (adapter.GetBackendType() == dawn_native::BackendType::D3D12) {
+      return adapter.CreateDevice();
+    }
+  }
+  return nullptr;
+#else
   dawn_instance_->DiscoverDefaultAdapters();
   std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
 
@@ -457,6 +477,7 @@ DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
     return unknown_adapter.CreateDevice();
   }
   return nullptr;
+#endif
 }
 
 const char* WebGPUDecoderImpl::GetCommandName(unsigned int command_id) const {

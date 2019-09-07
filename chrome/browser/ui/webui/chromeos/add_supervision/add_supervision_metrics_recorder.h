@@ -20,13 +20,14 @@ class AddSupervisionMetricsRecorder {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class EnrollmentState {
-    // Recorded when user initiates Add Supervision dialog.
+    // Recorded when user opens Add Supervision dialog.
     kInitiated = 0,
     // Recorded when user successfully enrolls in supervision.
     kCompleted = 1,
-    // Recorded when user clicks "Sign out".
+    // Recorded when user clicks "Sign out" after enrollment in the dialog.
     kSignedOut = 2,
-    // Recorded when user closes the Add Supervison dialog except sign out.
+    // Recorded when user closes the dialog without enrollment, excluding sign
+    // out.
     kClosed = 3,
     // Add future entries above this comment, in sync with enums.xml.
     // Update kMaxValue to the last value.

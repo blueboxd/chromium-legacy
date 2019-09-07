@@ -119,7 +119,7 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @LargeTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.Add("force-fieldtrials=*Foo/Bar")
+    @CommandLineFlags.Add({"force-fieldtrials=*Foo/Bar", "enable-features=UMABackgroundSessions"})
     public void testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
         Assert.assertTrue(mSpareFile.exists());

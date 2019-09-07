@@ -4534,11 +4534,11 @@ RenderProcessHostImpl::FindReusableProcessHostForSiteInstance(
 }
 
 void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
-    blink::mojom::MediaStreamTrackMetricsHostRequest request) {
+    mojo::PendingReceiver<blink::mojom::MediaStreamTrackMetricsHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!media_stream_track_metrics_host_)
     media_stream_track_metrics_host_.reset(new MediaStreamTrackMetricsHost());
-  media_stream_track_metrics_host_->BindRequest(std::move(request));
+  media_stream_track_metrics_host_->BindReceiver(std::move(receiver));
 }
 
 #if BUILDFLAG(ENABLE_MDNS)

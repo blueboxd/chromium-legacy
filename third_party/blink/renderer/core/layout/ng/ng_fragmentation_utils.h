@@ -32,6 +32,10 @@ EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
 // current fragmentation context.
 bool IsForcedBreakValue(const NGConstraintSpace&, EBreakBetween);
 
+// Return true if the specified break value means that we should avoid breaking,
+// given the current fragmentation context.
+bool IsAvoidBreakValue(const NGConstraintSpace&, EBreakInside);
+
 // Return true if we're resuming layout after a previous break.
 inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();

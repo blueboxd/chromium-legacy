@@ -60,9 +60,9 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const viz::QuadList& quads,
 
     gfx::Rect quad_rect = gfx::ToEnclosingRect(quad_rectf);
 
-    EXPECT_TRUE(rect.Contains(quad_rect)) << quad_string << iter.index()
-                                          << " rect: " << rect.ToString()
-                                          << " quad: " << quad_rect.ToString();
+    EXPECT_TRUE(rect.Contains(quad_rect))
+        << quad_string << iter.index() << " rect: " << rect.ToString()
+        << " quad: " << quad_rect.ToString();
     EXPECT_TRUE(remaining.Contains(quad_rect))
         << quad_string << iter.index() << " remaining: " << remaining.ToString()
         << " quad: " << quad_rect.ToString();
@@ -284,68 +284,6 @@ void LayerTestCommon::LayerImplTest::
       root_layer, device_viewport_rect, render_surface_list_impl_.get());
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-}
-
-void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(
-    LayerTreeHostImpl* host_impl,
-    LayerTreeImpl* tree_impl,
-    float top_controls_height,
-    const gfx::Size& inner_viewport_size,
-    const gfx::Size& outer_viewport_size,
-    const gfx::Size& scroll_layer_size) {
-  tree_impl->SetRootLayerForTesting(nullptr);
-  tree_impl->set_browser_controls_shrink_blink_size(true);
-  tree_impl->SetTopControlsHeight(top_controls_height);
-  tree_impl->SetCurrentBrowserControlsShownRatio(1.f);
-  tree_impl->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-  host_impl->DidChangeBrowserControlsPosition();
-
-  std::unique_ptr<LayerImpl> root = LayerImpl::Create(tree_impl, 1);
-  std::unique_ptr<LayerImpl> root_clip = LayerImpl::Create(tree_impl, 2);
-  std::unique_ptr<LayerImpl> page_scale = LayerImpl::Create(tree_impl, 3);
-
-  std::unique_ptr<LayerImpl> outer_scroll = LayerImpl::Create(tree_impl, 4);
-  std::unique_ptr<LayerImpl> outer_clip = LayerImpl::Create(tree_impl, 5);
-
-  root_clip->SetBounds(inner_viewport_size);
-  root->SetScrollable(inner_viewport_size);
-  root->SetElementId(LayerIdToElementIdForTesting(root->id()));
-  root->SetBounds(outer_viewport_size);
-  root->SetDrawsContent(false);
-  root_clip->test_properties()->force_render_surface = true;
-  root->test_properties()->is_container_for_fixed_position_layers = true;
-  outer_clip->SetBounds(outer_viewport_size);
-  outer_scroll->SetScrollable(outer_viewport_size);
-  outer_scroll->SetElementId(LayerIdToElementIdForTesting(outer_scroll->id()));
-  outer_scroll->SetBounds(scroll_layer_size);
-  outer_scroll->SetDrawsContent(false);
-  outer_scroll->test_properties()->is_container_for_fixed_position_layers =
-      true;
-
-  int inner_viewport_container_layer_id = root_clip->id();
-  int outer_viewport_container_layer_id = outer_clip->id();
-  int inner_viewport_scroll_layer_id = root->id();
-  int outer_viewport_scroll_layer_id = outer_scroll->id();
-  int page_scale_layer_id = page_scale->id();
-
-  outer_clip->test_properties()->AddChild(std::move(outer_scroll));
-  root->test_properties()->AddChild(std::move(outer_clip));
-  page_scale->test_properties()->AddChild(std::move(root));
-  root_clip->test_properties()->AddChild(std::move(page_scale));
-
-  tree_impl->SetRootLayerForTesting(std::move(root_clip));
-  LayerTreeImpl::ViewportLayerIds viewport_ids;
-  viewport_ids.page_scale = page_scale_layer_id;
-  viewport_ids.inner_viewport_container = inner_viewport_container_layer_id;
-  viewport_ids.outer_viewport_container = outer_viewport_container_layer_id;
-  viewport_ids.inner_viewport_scroll = inner_viewport_scroll_layer_id;
-  viewport_ids.outer_viewport_scroll = outer_viewport_scroll_layer_id;
-  tree_impl->SetViewportLayersFromIds(viewport_ids);
-  tree_impl->BuildPropertyTreesForTesting();
-
-  tree_impl->SetDeviceViewportRect(gfx::Rect(inner_viewport_size));
-  LayerImpl* root_clip_ptr = tree_impl->root_layer_for_testing();
-  EXPECT_EQ(inner_viewport_size, root_clip_ptr->bounds());
 }
 
 void LayerTestCommon::LayerImplTest::UpdateDrawProperties(

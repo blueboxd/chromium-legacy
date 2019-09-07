@@ -247,8 +247,9 @@ void ContentSettingsObserver::SetAsInterstitial() {
 }
 
 void ContentSettingsObserver::OnContentSettingsRendererRequest(
-    chrome::mojom::ContentSettingsRendererAssociatedRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::ContentSettingsRenderer>
+        receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 bool ContentSettingsObserver::AllowDatabase() {
@@ -531,7 +532,7 @@ void ContentSettingsObserver::PersistClientHints(
   UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", update_count);
 
   // Notify the embedder.
-  client_hints::mojom::ClientHintsAssociatedPtr host_observer;
+  mojo::AssociatedRemote<client_hints::mojom::ClientHints> host_observer;
   render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&host_observer);
   host_observer->PersistClientHints(primary_origin, std::move(client_hints),
                                     duration);

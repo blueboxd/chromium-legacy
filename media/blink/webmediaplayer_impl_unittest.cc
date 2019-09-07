@@ -701,6 +701,8 @@ class WebMediaPlayerImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void OnProgress() { wmpi_->OnProgress(); }
+
   // "Media" thread. This is necessary because WMPI destruction waits on a
   // WaitableEvent.
   base::Thread media_thread_;
@@ -1923,6 +1925,22 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureStateChange) {
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
+}
+
+TEST_F(WebMediaPlayerImplTest, OnProgressClearsStale) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+
+  for (auto rs = blink::WebMediaPlayer::kReadyStateHaveNothing;
+       rs <= blink::WebMediaPlayer::kReadyStateHaveEnoughData;
+       rs = static_cast<blink::WebMediaPlayer::ReadyState>(
+           static_cast<int>(rs) + 1)) {
+    SetReadyState(rs);
+    delegate_.SetStaleForTesting(true);
+    OnProgress();
+    EXPECT_EQ(delegate_.IsStale(delegate_.player_id()),
+              rs >= blink::WebMediaPlayer::kReadyStateHaveFutureData);
+  }
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

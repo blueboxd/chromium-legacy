@@ -440,6 +440,9 @@
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
         Use Touch ID instead of CVC?
       </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR" desc="Headline explaining to users there were errors in the attempt to opt in using platform's authenticator.">
+        Couldn't use Touch ID
+      </message>
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
         Use Touch ID
       </message>
@@ -447,6 +450,9 @@
     <if expr="is_win">
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
         Use Windows Hello instead of CVC?
+      </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR" desc="Headline explaining to users there were errors in the attempt to opt in using platform's authenticator.">
+        Couldn't use Windows Hello
       </message>
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
         Use Windows Hello
@@ -456,6 +462,9 @@
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE" desc="Headline asking the user if they want to use their device's platform authenticator to confirm their cards in the future instead of CVC.">
         Use WebAuthn instead of CVC?
       </message>
+      <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR" desc="Headline explaining to users there were errors in the attempt to opt in using platform's authenticator.">
+        Couldn't use WebAuthn
+      </message>
       <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_OK_BUTTON_LABEL" desc="Button that allows the user to use their device's platform authenticator to confirm card use in the future.">
         Use WebAuthn
       </message>
@@ -463,8 +472,14 @@
     <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION" desc="Subheading that appears below the headline explaining to the user that they won't have to enter their card's security code if they decide to use their device's platform authenticator in the future.">
       You won't need to enter a card security code from now on
     </message>
+    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION_ERROR" desc="Subheading that appears below the headline, acknowledging the current error and encouraging users to retry later.">
+      Please try again next time
+    </message>
     <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that allows the user to decline the option of using their device's platform authenticator for card confirmation.">
       Not now
+    </message>
+    <message name="IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL_ERROR" desc="Button that allows the user to close the dialog.">
+      Close
     </message>
   </if>
 

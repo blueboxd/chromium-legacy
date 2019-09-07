@@ -333,9 +333,6 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
 // after the frame widget has painted something.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint)
 
-// Sent once the RenderWidgetCompositor issues a draw command.
-IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidCommitAndDrawCompositorFrame)
-
 // Notifies whether there are JavaScript touch event handlers or not.
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)

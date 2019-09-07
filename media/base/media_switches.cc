@@ -269,6 +269,10 @@ const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
 const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
     "D3D11VideoDecoderIgnoreWorkarounds", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable D3D11VideoDecoder to decode VP9 profile 2 (10 bit) video.
+const base::Feature kD3D11VideoDecoderVP9Profile2{
+    "D3D11VideoDecoderEnablbleVP9Profile2", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
 // DecoderStream for details. When disabled, playback will fail immediately

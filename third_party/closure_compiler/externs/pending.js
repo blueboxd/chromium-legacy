@@ -76,6 +76,23 @@ Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {};
 
 /**
  * @see
+ * https://polymer-library.polymer-project.org/2.0/api/namespaces/Polymer.Templatize
+ * @constructor
+ * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
+ */
+Polymer.Templatize = function() {};
+
+/**
+ * @param {!HTMLTemplateElement} template
+ * @param {Object=} owner
+ * @param {Object=} options
+ * @return {!Function}
+ * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
+ */
+Polymer.Templatize.templatize = function(template, owner, options) {};
+
+/**
+ * @see
  * https://www.webcomponents.org/element/@polymer/iron-iconset-svg
  * Polymer iconset of SVGs.
  * @implements {Polymer.Iconset}

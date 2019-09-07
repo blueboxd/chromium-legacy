@@ -42,7 +42,7 @@ const CSSValue* GetOrCreateCSSValueFrom(
   // which can be used to correctly serialize it given longhands that are
   // present in this set.
   return MakeGarbageCollected<CSSKeyframeShorthandValue>(
-      property_value_set.ImmutableCopyIfNeeded());
+      property.PropertyID(), property_value_set.ImmutableCopyIfNeeded());
 }
 
 }  // namespace

@@ -20,7 +20,7 @@ class UnixDomainClientSocket;
 namespace cups_proxy {
 
 using SocketManagerCallback =
-    base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
+    base::OnceCallback<void(std::unique_ptr<std::vector<uint8_t>>)>;
 
 // This manager proxies IPP requests to the CUPS daemon and asynchronously
 // responds with the IPP response. This class must be created and accessed
@@ -29,12 +29,12 @@ class SocketManager {
  public:
   // Factory function.
   static std::unique_ptr<SocketManager> Create(
-      base::WeakPtr<CupsProxyServiceDelegate> delegate);
+      CupsProxyServiceDelegate* const delegate);
 
   // Factory function that allows injected dependencies, for testing.
   static std::unique_ptr<SocketManager> CreateForTesting(
       std::unique_ptr<net::UnixDomainClientSocket> socket,
-      base::WeakPtr<CupsProxyServiceDelegate> delegate);
+      CupsProxyServiceDelegate* const delegate);
 
   virtual ~SocketManager() = default;
 

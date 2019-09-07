@@ -2,100 +2,96 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('welcome', function() {
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {NtpBackgroundMetricsProxyImpl} from './ntp_background_metrics_proxy.js';
+
+/**
+ * @typedef {{
+ *   id: number,
+ *   imageUrl: string,
+ *   thumbnailClass: string,
+ *   title: string,
+ * }}
+ */
+export let NtpBackgroundData;
+
+/** @interface */
+export class NtpBackgroundProxy {
+  /** @return {!Promise} */
+  clearBackground() {}
+
+  /** @return {!Promise<!Array<!NtpBackgroundData>>} */
+  getBackgrounds() {}
+
   /**
-   * @typedef {{
-   *   id: number,
-   *   imageUrl: string,
-   *   thumbnailClass: string,
-   *   title: string,
-   * }}
+   * @param {string} url
+   * @return {!Promise<void>}
    */
-  let NtpBackgroundData;
+  preloadImage(url) {}
 
-  /** @interface */
-  class NtpBackgroundProxy {
-    clearBackground() {}
+  recordBackgroundImageFailedToLoad() {}
 
-    /** @return {!Promise<!Array<!welcome.NtpBackgroundData>>} */
-    getBackgrounds() {}
+  /** @param {number} loadTime */
+  recordBackgroundImageLoadTime(loadTime) {}
 
-    /**
-     * @param {string} url
-     * @return {!Promise<void>}
-     */
-    preloadImage(url) {}
+  recordBackgroundImageNeverLoaded() {}
 
-    recordBackgroundImageFailedToLoad() {}
+  /** @param {number} id */
+  setBackground(id) {}
+}
 
-    /** @param {number} loadTime */
-    recordBackgroundImageLoadTime(loadTime) {}
-
-    recordBackgroundImageNeverLoaded() {}
-
-    /** @param {number} id */
-    setBackground(id) {}
+/** @implements {NtpBackgroundProxy} */
+export class NtpBackgroundProxyImpl {
+  /** @override */
+  clearBackground() {
+    return sendWithPromise('clearBackground');
   }
 
-  /** @implements {welcome.NtpBackgroundProxy} */
-  class NtpBackgroundProxyImpl {
-    /** @override */
-    clearBackground() {
-      return cr.sendWithPromise('clearBackground');
-    }
-
-    /** @override */
-    getBackgrounds() {
-      return cr.sendWithPromise('getBackgrounds');
-    }
-
-    /** @override */
-    preloadImage(url) {
-      return new Promise((resolve, reject) => {
-        const preloadedImage = new Image();
-        preloadedImage.onerror = reject;
-        preloadedImage.onload = resolve;
-        preloadedImage.src = url;
-      });
-    }
-
-    /** @override */
-    recordBackgroundImageFailedToLoad() {
-      const ntpInteractions =
-          welcome.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
-      chrome.metricsPrivate.recordEnumerationValue(
-          'FirstRun.NewUserExperience.NtpBackgroundInteraction',
-          ntpInteractions.BackgroundImageFailedToLoad,
-          Object.keys(ntpInteractions).length);
-    }
-
-    /** @override */
-    recordBackgroundImageLoadTime(loadTime) {
-      chrome.metricsPrivate.recordTime(
-          'FirstRun.NewUserExperience.NtpBackgroundLoadTime', loadTime);
-    }
-
-    /** @override */
-    recordBackgroundImageNeverLoaded() {
-      const ntpInteractions =
-          welcome.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
-      chrome.metricsPrivate.recordEnumerationValue(
-          'FirstRun.NewUserExperience.NtpBackgroundInteraction',
-          ntpInteractions.BackgroundImageNeverLoaded,
-          Object.keys(ntpInteractions).length);
-    }
-
-    /** @override */
-    setBackground(id) {
-      chrome.send('setBackground', [id]);
-    }
+  /** @override */
+  getBackgrounds() {
+    return sendWithPromise('getBackgrounds');
   }
 
-  cr.addSingletonGetter(NtpBackgroundProxyImpl);
+  /** @override */
+  preloadImage(url) {
+    return new Promise((resolve, reject) => {
+      const preloadedImage = new Image();
+      preloadedImage.onerror = reject;
+      preloadedImage.onload = resolve;
+      preloadedImage.src = url;
+    });
+  }
 
-  return {
-    NtpBackgroundData: NtpBackgroundData,
-    NtpBackgroundProxy: NtpBackgroundProxy,
-    NtpBackgroundProxyImpl: NtpBackgroundProxyImpl,
-  };
-});
+  /** @override */
+  recordBackgroundImageFailedToLoad() {
+    const ntpInteractions =
+        NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
+    chrome.metricsPrivate.recordEnumerationValue(
+        'FirstRun.NewUserExperience.NtpBackgroundInteraction',
+        ntpInteractions.BackgroundImageFailedToLoad,
+        Object.keys(ntpInteractions).length);
+  }
+
+  /** @override */
+  recordBackgroundImageLoadTime(loadTime) {
+    chrome.metricsPrivate.recordTime(
+        'FirstRun.NewUserExperience.NtpBackgroundLoadTime', loadTime);
+  }
+
+  /** @override */
+  recordBackgroundImageNeverLoaded() {
+    const ntpInteractions =
+        NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
+    chrome.metricsPrivate.recordEnumerationValue(
+        'FirstRun.NewUserExperience.NtpBackgroundInteraction',
+        ntpInteractions.BackgroundImageNeverLoaded,
+        Object.keys(ntpInteractions).length);
+  }
+
+  /** @override */
+  setBackground(id) {
+    chrome.send('setBackground', [id]);
+  }
+}
+
+addSingletonGetter(NtpBackgroundProxyImpl);

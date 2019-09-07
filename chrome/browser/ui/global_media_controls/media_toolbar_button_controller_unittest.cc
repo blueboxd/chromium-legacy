@@ -134,7 +134,7 @@ class MediaToolbarButtonControllerTest : public testing::Test {
     media_session::MediaMetadata metadata;
     metadata.title = base::ASCIIToUTF16("title");
     metadata.artist = base::ASCIIToUTF16("artist");
-    item_itr->second.MediaSessionMetadataChanged(std::move(metadata));
+    item_itr->second.item()->MediaSessionMetadataChanged(std::move(metadata));
   }
 
   void SimulateReceivedAudioFocusRequests(
@@ -145,7 +145,7 @@ class MediaToolbarButtonControllerTest : public testing::Test {
   bool IsSessionFrozen(const base::UnguessableToken& id) const {
     auto item_itr = controller_->sessions_.find(id.ToString());
     EXPECT_NE(controller_->sessions_.end(), item_itr);
-    return item_itr->second.frozen();
+    return item_itr->second.item()->frozen();
   }
 
   void SimulateDialogOpened(MockMediaDialogDelegate* delegate) {

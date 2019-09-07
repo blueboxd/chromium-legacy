@@ -16,7 +16,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/url_pattern.h"
@@ -77,7 +76,7 @@ struct UserScriptListener::ProfileData {
   URLPatterns url_patterns;
 };
 
-UserScriptListener::UserScriptListener() : extension_registry_observer_(this) {
+UserScriptListener::UserScriptListener() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Profile manager can be null in unit tests.

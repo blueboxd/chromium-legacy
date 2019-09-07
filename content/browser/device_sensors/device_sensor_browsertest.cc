@@ -104,8 +104,9 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_embedded_test_server_;
 
  private:
-  void BindSensorProvider(device::mojom::SensorProviderRequest request) {
-    sensor_provider_->Bind(std::move(request));
+  void BindSensorProvider(
+      mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
+    sensor_provider_->Bind(std::move(receiver));
   }
 };
 

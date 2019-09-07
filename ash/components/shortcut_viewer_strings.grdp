@@ -634,16 +634,16 @@
     <ph name="alt">$1<ex>Alt</ex></ph><ph name="separator">$2<ex>+</ex></ph><ph name="e">$3<ex>e</ex></ph> or <ph name="f">$4<ex>f</ex></ph>
   </message>
   <message name="IDS_KSV_DESCRIPTION_DESKS_NEW_DESK" desc="Description of the command in keyboard shortcut viewer.">
-    Create a new virtual desk
+    Create a new desk
   </message>
   <message name="IDS_KSV_DESCRIPTION_DESKS_REMOVE_CURRENT_DESK" desc="Description of the command in keyboard shortcut viewer.">
-    Remove the current virtual desk
+    Remove the current desk
   </message>
   <message name="IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_LEFT_DESK" desc="Description of the command in keyboard shortcut viewer.">
-    Activate the virtual desk on the left
+    Activate the desk on the left
   </message>
   <message name="IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_RIGHT_DESK" desc="Description of the command in keyboard shortcut viewer.">
-    Activate the virtual desk on the right
+    Activate the desk on the right
   </message>
   <message name="IDS_KSV_DESCRIPTION_DESKS_MOVE_ACTIVE_ITEM_LEFT_DESK" desc="Description of the command in keyboard shortcut viewer.">
     Move active window to the desk on the left

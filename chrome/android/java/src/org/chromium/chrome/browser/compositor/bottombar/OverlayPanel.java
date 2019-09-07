@@ -646,11 +646,12 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     /**
      * @param x The x coordinate in dp.
-     * @return Whether the given |x| coordinate is inside the close button.
+     * @return Whether the given |x| coordinate is inside the open-in-new-tab button.
      */
     protected boolean isCoordinateInsideOpenTabButton(float x) {
-        float width = getOpenTabIconDimension() + 2 * mButtonPaddingDps;
-        return getOpenTabIconX() - mButtonPaddingDps <= x && x <= getOpenTabIconX() + width;
+        // Calculation is the same for RTL: within the button plus padding.
+        return getOpenTabIconX() - mButtonPaddingDps <= x
+                && x <= getOpenTabIconX() + getOpenTabIconDimension() + mButtonPaddingDps;
     }
 
     /**

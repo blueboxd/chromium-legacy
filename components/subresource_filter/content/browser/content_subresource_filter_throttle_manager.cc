@@ -130,7 +130,7 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
     ad_frame_type = parent_is_ad ? blink::mojom::AdFrameType::kChildAd
                                  : blink::mojom::AdFrameType::kRootAd;
 
-  mojom::SubresourceFilterAgentAssociatedPtr agent;
+  mojo::AssociatedRemote<mojom::SubresourceFilterAgent> agent;
   frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
   agent->ActivateForNextCommittedLoad(filter->activation_state().Clone(),
                                       ad_frame_type);

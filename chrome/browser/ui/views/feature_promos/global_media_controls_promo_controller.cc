@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/time/time.h"
+#include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help_factory.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -22,8 +24,12 @@ constexpr base::TimeDelta kPromoHideDelay = base::TimeDelta::FromSeconds(5);
 }  // anonymous namespace
 
 GlobalMediaControlsPromoController::GlobalMediaControlsPromoController(
-    BrowserView* browser_view)
-    : browser_view_(browser_view) {}
+    MediaToolbarButtonView* owner,
+    Profile* profile)
+    : owner_(owner), profile_(profile) {
+  DCHECK(owner_);
+  DCHECK(profile_);
+}
 
 void GlobalMediaControlsPromoController::ShowPromo() {
   // This shouldn't be called more than once. Check that state is fresh.
@@ -33,12 +39,10 @@ void GlobalMediaControlsPromoController::ShowPromo() {
   DCHECK(!is_showing_);
   is_showing_ = true;
 
-  auto* media_toolbar_button = browser_view_->toolbar()->media_button();
-
   // This should never be called when the toolbar button is not visible and
   // enabled.
-  DCHECK(media_toolbar_button->GetVisible());
-  DCHECK(media_toolbar_button->GetEnabled());
+  DCHECK(owner_->GetVisible());
+  DCHECK(owner_->GetEnabled());
 
   // Here, we open the promo bubble.
   // TODO(https://crbug.com/991585): Also highlight the toolbar button.
@@ -49,16 +53,10 @@ void GlobalMediaControlsPromoController::ShowPromo() {
         kPromoHideDelay, base::TimeDelta());
   }
 
-  // TODO(https://crbug.com/991585): Use IDS_GLOBAL_MEDIA_CONTROLS_PROMO here
-  // instead. The reason we're going to use this placeholder here for now is
-  // that the win10 builder fails the browser tests due to resource
-  // whitelisting. Since the string isn't used in production code yet, it isn't
-  // whitelisted and the browser test crashes.
-  //
   // TODO(https://crbug.com/991585): Supply a screenreader string too.
-  int string_specifier = IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT;
+  int string_specifier = IDS_GLOBAL_MEDIA_CONTROLS_PROMO;
   promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
-      media_toolbar_button, views::BubbleBorder::Arrow::TOP_RIGHT,
+      owner_, views::BubbleBorder::Arrow::TOP_RIGHT,
       FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
       string_specifier, base::nullopt, base::nullopt,
       std::move(feature_promo_bubble_timeout));
@@ -92,6 +90,6 @@ void GlobalMediaControlsPromoController::FinishPromo() {
 
   is_showing_ = false;
 
-  // TODO(https://crbug.com/991585): Inform the IPH service that the dialog was
-  // closed.
+  GlobalMediaControlsInProductHelpFactory::GetForProfile(profile_)
+      ->HelpDismissed();
 }

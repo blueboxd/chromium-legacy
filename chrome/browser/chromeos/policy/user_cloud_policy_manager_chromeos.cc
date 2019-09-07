@@ -279,7 +279,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   }
 
   app_install_event_log_uploader_ =
-      std::make_unique<AppInstallEventLogUploader>(client());
+      std::make_unique<AppInstallEventLogUploader>(client(), profile_);
 }
 
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(

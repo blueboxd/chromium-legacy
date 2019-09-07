@@ -9,7 +9,7 @@
     <dist:module
         dist:onDemand="true"
         dist:title="@string/test_dummy_module_title">
-        <dist:fusing dist:include="false" />
+        <dist:fusing dist:include="true" />
     </dist:module>
 
     <application />

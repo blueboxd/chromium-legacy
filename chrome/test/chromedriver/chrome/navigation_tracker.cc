@@ -19,6 +19,9 @@ const char kAutomationExtensionBackgroundPage[] =
     "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/"
     "_generated_background_page.html";
 
+// Match to content/browser/devtools/devTools_session const of same name
+const char kTargetClosedMessage[] = "Inspected target navigated or closed";
+
 Status MakeNavigationCheckFailedStatus(Status command_status) {
   if (command_status.code() == kUnexpectedAlertOpen)
     return Status(kUnexpectedAlertOpen);
@@ -261,8 +264,18 @@ Status NavigationTracker::OnCommandSuccess(
     base::DictionaryValue params;
     params.SetString("expression", "document.URL");
     std::unique_ptr<base::DictionaryValue> result;
-    Status status = client_->SendCommandAndGetResultWithTimeout(
-        "Runtime.evaluate", params, &command_timeout, &result);
+    Status status(kOk);
+    for (int attempt = 0; attempt < 3; attempt++) {
+      status = client_->SendCommandAndGetResultWithTimeout(
+          "Runtime.evaluate", params, &command_timeout, &result);
+      if (status.code() == kUnknownError &&
+          status.message().find(kTargetClosedMessage) != std::string::npos) {
+        continue;
+      } else {
+        break;
+      }
+    }
+
     std::string url;
     if (status.IsError() || !result->GetString("result.value", &url))
       return MakeNavigationCheckFailedStatus(status);

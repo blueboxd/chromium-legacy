@@ -155,7 +155,7 @@ bool FidoCableV1HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
     return false;
   }
 
-  cable_device_->SetEncryptionData(
+  cable_device_->SetV1EncryptionData(
       base::make_span<32>(
           GetEncryptionKeyAfterSuccessfulHandshake(base::make_span<16>(
               authenticator_random_nonce->second.GetBytestring()))),
@@ -306,12 +306,10 @@ bool FidoCableV2HandshakeHandler::ValidateAuthenticatorHandshakeMessage(
   // handshake messages so that's moot.
   // MixHash(ciphertext);
 
-  std::array<uint8_t, 32> key1, unused_key2;
-  std::tie(key1, unused_key2) =
+  std::array<uint8_t, 32> read_key, write_key;
+  std::tie(write_key, read_key) =
       HKDF2(chaining_key_, base::span<const uint8_t>());
-
-  uint8_t zero_nonce[8] = {0};
-  cable_device_->SetEncryptionData(key1, zero_nonce);
+  cable_device_->SetV2EncryptionData(read_key, write_key);
 
   return true;
 }
@@ -351,10 +349,7 @@ void FidoCableV2HandshakeHandler::InitializeKey(
 std::vector<uint8_t> FidoCableV2HandshakeHandler::Encrypt(
     base::span<const uint8_t> plaintext) {
   uint8_t nonce[12] = {0};
-  nonce[8] = symmetric_nonce_ >> 24;
-  nonce[9] = symmetric_nonce_ >> 16;
-  nonce[10] = symmetric_nonce_ >> 8;
-  nonce[11] = symmetric_nonce_;
+  memcpy(nonce, &symmetric_nonce_, sizeof(symmetric_nonce_));
   symmetric_nonce_++;
 
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
@@ -365,10 +360,7 @@ std::vector<uint8_t> FidoCableV2HandshakeHandler::Encrypt(
 base::Optional<std::vector<uint8_t>> FidoCableV2HandshakeHandler::Decrypt(
     base::span<const uint8_t> ciphertext) {
   uint8_t nonce[12] = {0};
-  nonce[8] = symmetric_nonce_ >> 24;
-  nonce[9] = symmetric_nonce_ >> 16;
-  nonce[10] = symmetric_nonce_ >> 8;
-  nonce[11] = symmetric_nonce_;
+  memcpy(nonce, &symmetric_nonce_, sizeof(symmetric_nonce_));
   symmetric_nonce_++;
 
   crypto::Aead aead(crypto::Aead::AES_256_GCM);

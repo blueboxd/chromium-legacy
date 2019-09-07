@@ -313,6 +313,15 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Sets the current height of the shelf area.
+     * @param {number} height current shelf height
+     */
+    setShelfHeight: function(height) {
+      document.documentElement.style.setProperty(
+          '--shelf-area-height', height + 'px');
+    },
+
+    /**
      * Toggles background of main body between transparency and solid.
      * @param {boolean} solid Whether to show a solid background.
      */

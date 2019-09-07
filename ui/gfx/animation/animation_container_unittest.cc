@@ -62,10 +62,11 @@ class TestAnimation : public LinearAnimation {
 class AnimationContainerTest: public testing::Test {
  protected:
   AnimationContainerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 // Makes sure the animation ups the ref count of the container and releases it

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page_visibility_state.h"
+#include "content/public/common/browser_controls_state.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -415,6 +416,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the transient bit of the User Activation v2 state of the
   // FrameTreeNode associated with this RenderFrameHost.
   virtual bool HasTransientUserActivation() = 0;
+
+  // Notifies the renderer whether hiding/showing the browser controls is
+  // enabled, what the current state should be, and whether or not to animate to
+  // the proper state.
+  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                          BrowserControlsState current,
+                                          bool animate) = 0;
 
  private:
   // This interface should only be implemented inside content.

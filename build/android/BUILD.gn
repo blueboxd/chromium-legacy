@@ -124,7 +124,7 @@ python_library("resource_sizes_py") {
 python_library("bundle_wrapper_script_py") {
   pydeps_file = "gyp/create_bundle_wrapper_script.pydeps"
   data = [
-    "//third_party/android_build_tools/bundletool/bundletool-all-0.10.0.jar",
+    "//third_party/android_build_tools/bundletool/bundletool-all-0.10.3.jar",
   ]
 }
 

@@ -16,9 +16,11 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFocusModeFeature{"IPH_FocusMode",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHGlobalMediaControlsFeature{
+    "IPH_GlobalMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)

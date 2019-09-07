@@ -127,7 +127,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,
       std::unique_ptr<InputStream> stream,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+          url_loader_factory_provider,
       DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadUrlParameters::OnStartedCallback& on_started);
 
@@ -211,7 +212,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
       std::unique_ptr<InputStream> input_stream,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+          url_loader_factory_provider,
       UrlDownloadHandler* downloader,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
@@ -230,7 +232,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Start a DownloadItemImpl.
   void StartDownloadWithItem(
       std::unique_ptr<InputStream> stream,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+          url_loader_factory_provider,
       DownloadJob::CancelRequestCallback cancel_request_callback,
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download,

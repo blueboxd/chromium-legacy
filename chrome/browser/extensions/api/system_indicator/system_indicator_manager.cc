@@ -18,7 +18,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_icon_image.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 
@@ -141,9 +140,7 @@ SystemIndicatorManager::SystemIndicator::~SystemIndicator() = default;
 
 SystemIndicatorManager::SystemIndicatorManager(Profile* profile,
                                                StatusTray* status_tray)
-    : profile_(profile),
-      status_tray_(status_tray),
-      extension_registry_observer_(this) {
+    : profile_(profile), status_tray_(status_tray) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 

@@ -29,7 +29,6 @@ jumbo_component("compositor") {
     "debug_utils.h",
     "dip_util.cc",
     "dip_util.h",
-    "external_begin_frame_client.h",
     "float_animation_curve_adapter.cc",
     "float_animation_curve_adapter.h",
     "layer.cc",

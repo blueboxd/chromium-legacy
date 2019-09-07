@@ -10,12 +10,12 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
 
 namespace extensions {
 
 class ContentSettingsStore;
-class ExtensionPrefs;
 
 // This service hosts a single ContentSettingsStore for the
 // chrome.contentSettings API.
@@ -59,7 +59,7 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
   static const char* service_name() { return "ContentSettingsService"; }
 
   scoped_refptr<ContentSettingsStore> content_settings_store_;
-  ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver> scoped_observer_;
+  ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver> scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsService);
 };

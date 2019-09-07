@@ -75,7 +75,7 @@ struct SocketRequest {
   // Used for writing/reading the IPP request/response.
   scoped_refptr<net::DrainableIOBuffer> io_buffer;
 
-  std::vector<uint8_t> response;
+  std::unique_ptr<std::vector<uint8_t>> response;
   SocketManagerCallback cb;
 };
 
@@ -85,7 +85,7 @@ class SocketManagerImpl : public SocketManager {
  public:
   explicit SocketManagerImpl(
       std::unique_ptr<net::UnixDomainClientSocket> socket,
-      base::WeakPtr<CupsProxyServiceDelegate> delegate);
+      CupsProxyServiceDelegate* const delegate);
   ~SocketManagerImpl() override;
 
   void ProxyToCups(std::vector<uint8_t> request,
@@ -128,7 +128,7 @@ SocketRequest::~SocketRequest() = default;
 
 SocketManagerImpl::SocketManagerImpl(
     std::unique_ptr<net::UnixDomainClientSocket> socket,
-    base::WeakPtr<CupsProxyServiceDelegate> delegate)
+    CupsProxyServiceDelegate* const delegate)
     : main_runner_(base::SequencedTaskRunnerHandle::Get()),
       socket_runner_(delegate->GetIOTaskRunner()),
       socket_(std::move(socket)) {}
@@ -214,6 +214,7 @@ void SocketManagerImpl::OnWrite(int result) {
   }
 
   // Prime io_buffer for reading.
+  in_flight_->response = std::make_unique<std::vector<uint8_t>>();
   in_flight_->io_buffer = base::MakeRefCounted<net::DrainableIOBuffer>(
       base::MakeRefCounted<net::IOBuffer>(kHttpMaxBufferSize),
       kHttpMaxBufferSize);
@@ -245,10 +246,10 @@ void SocketManagerImpl::OnRead(int num_read) {
   // Save new response data.
   std::copy(in_flight_->io_buffer->data(),
             in_flight_->io_buffer->data() + num_read,
-            std::back_inserter(in_flight_->response));
+            std::back_inserter(*in_flight_->response));
 
   // If more response left to read, read more.
-  if (!FinishedReadingResponse(in_flight_->response)) {
+  if (!FinishedReadingResponse(*in_flight_->response)) {
     return Read();
   }
 
@@ -262,9 +263,9 @@ void SocketManagerImpl::Finish(bool success) {
   base::OnceClosure cb;
   if (success) {
     cb = base::BindOnce(std::move(in_flight_->cb),
-                        std::move(in_flight_->response));
+                        base::Passed(&in_flight_->response));
   } else {
-    cb = base::BindOnce(std::move(in_flight_->cb), base::nullopt);
+    cb = base::BindOnce(std::move(in_flight_->cb), nullptr);
   }
 
   // Post callback back to main sequence.
@@ -282,18 +283,17 @@ void SocketManagerImpl::Fail(const char* error_message) {
 }  // namespace
 
 std::unique_ptr<SocketManager> SocketManager::Create(
-    base::WeakPtr<CupsProxyServiceDelegate> delegate) {
+    CupsProxyServiceDelegate* const delegate) {
   return std::make_unique<SocketManagerImpl>(
       std::make_unique<net::UnixDomainClientSocket>(
           kCupsSocketPath, false /* not abstract namespace */),
-      std::move(delegate));
+      delegate);
 }
 
 std::unique_ptr<SocketManager> SocketManager::CreateForTesting(
     std::unique_ptr<net::UnixDomainClientSocket> socket,
-    base::WeakPtr<CupsProxyServiceDelegate> delegate) {
-  return std::make_unique<SocketManagerImpl>(std::move(socket),
-                                             std::move(delegate));
+    CupsProxyServiceDelegate* const delegate) {
+  return std::make_unique<SocketManagerImpl>(std::move(socket), delegate);
 }
 
 }  // namespace cups_proxy

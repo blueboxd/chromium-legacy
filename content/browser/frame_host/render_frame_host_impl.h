@@ -301,6 +301,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateSubresourceLoaderFactories() override;
   blink::FrameOwnerElementType GetFrameOwnerElementType() override;
   bool HasTransientUserActivation() override;
+  void UpdateBrowserControlsState(BrowserControlsState constraints,
+                                  BrowserControlsState current,
+                                  bool animate) override;
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);

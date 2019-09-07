@@ -124,7 +124,9 @@ UpdateDataProvider::GetData(bool install_immediately,
           crx_component->disabled_reasons.push_back(enum_value);
       }
     }
-    crx_component->install_source = extension_data.install_source;
+    crx_component->install_source = extension_data.is_corrupt_reinstall
+                                        ? "reinstall"
+                                        : extension_data.install_source;
     crx_component->install_location =
         ManifestFetchData::GetSimpleLocationString(extension->location());
   }

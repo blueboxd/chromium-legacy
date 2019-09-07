@@ -45,7 +45,6 @@
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/image_loader.h"
@@ -73,8 +72,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       extension_app_(NULL),
       script_executor_(new ScriptExecutor(web_contents)),
-      extension_action_runner_(new ExtensionActionRunner(web_contents)),
-      registry_observer_(this) {
+      extension_action_runner_(new ExtensionActionRunner(web_contents)) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);

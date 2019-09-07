@@ -19,6 +19,14 @@ WelcomeA11y = class extends PolymerTest {
   get featureList() {
     return {enabled: ['welcome::kForceEnabled']};
   }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      ...super.extraLibraries,
+      '//ui/webui/resources/js/util.js',
+    ];
+  }
 };
 
 AccessibilityTest.define('WelcomeA11y', {

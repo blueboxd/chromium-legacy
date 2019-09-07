@@ -282,6 +282,39 @@ Alternatively, a developer with commit access can [directly
 commit][direct-commit] a change, bypassing the commit queue. This should only
 be used in emergencies because it will bypass all the safety nets.
 
+## Code guidelines
+
+In addition to the adhering to the [styleguide][cr-styleguide], the following
+general rules of thumb can be helpful in navigating how to structure changes:
+
+- **Code in the Chromium project should be in service of code in the Chromium
+  project.** This is important so developers can understand the constraints
+  informing a design decision. Those constraints should be apparent from the
+  scope of code within the boundary of the project and its various
+  repositories.
+
+- **Code should only be moved to a central location (e.g., //base) when
+  multiple consumers would benefit.** We should resist the temptation to
+  build overly generic common libraries as that can lead to code bloat and
+  unnecessary complexity in common code.
+
+- **The code likely wasn't designed for everything we are trying to do with it
+  now.** Take time to refactor existing code to make sure the new feature or
+  subcomponent you are developing fits properly within the system. Technical
+  debt is easy to accumulate and is everyone's responsibility to avoid.
+
+- **Common code is everyone's responsibility.** Large files that are at the
+  cross-roads of many subsystems, where integration happens, can be some of the
+  most fragile in the system. As a companion to the previous point, be
+  cognizant of how you may be adding more complexity to the commons as you
+  venture to complete your task.
+
+- **Changes should include corresponding tests.** Automated testing is at the
+  heart of how we move forward as a project. All changes should include
+  corresponding tests so we can ensure that there is good coverage for code and
+  that future changes will be less likely to regress functionality. Protect
+  your code with tests!
+
 ## Tips
 
 ### Review etiquette

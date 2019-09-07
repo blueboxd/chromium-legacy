@@ -533,6 +533,11 @@ test.customizeMenu.testShortcuts_CanSelectOptionsKeyboard = function() {
   const hiddenToggle = $(test.customizeMenu.IDS.SHORTCUTS_HIDE_TOGGLE);
   hiddenToggle.dispatchEvent(enter);
   assertShortcutOptionsSelected(false, true, true);
+
+  // Select the custom links option. The custom links option should be selected
+  // and the hide shortcuts toggle disabled.
+  $(test.customizeMenu.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS).click();
+  assertShortcutOptionsSelected(true, false, false);
 };
 
 /**

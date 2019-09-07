@@ -106,6 +106,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kSwapSideVolumeButtonsForOrientation;
 
+// Enables background blur for the app list, shelf, unified system tray,
+// autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
+// may have choppier app list animations while in this mode. crbug.com/765292.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableBackgroundBlur;
+
 // Enables refactored UnifiedMessageCenter which is completely separated from
 // the UnifiedSystemTrayView.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
@@ -143,6 +148,8 @@ ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
+
+ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
 
 }  // namespace features
 }  // namespace ash

@@ -31,8 +31,13 @@ class ASH_EXPORT AmbientController : views::WidgetObserver {
   void OnWidgetDestroying(views::Widget* widget) override;
 
   void Toggle();
+
   void AddPhotoModelObserver(PhotoModelObserver* observer);
+
   void RemovePhotoModelObserver(PhotoModelObserver* observer);
+
+  const PhotoModel& model() const { return model_; }
+
   AmbientContainerView* GetAmbientContainerViewForTesting();
 
  private:
@@ -41,6 +46,8 @@ class ASH_EXPORT AmbientController : views::WidgetObserver {
   void CreateContainerView();
   void DestroyContainerView();
   void RefreshImage();
+  void ScheduleRefreshImage();
+  void GetNextImage();
   void OnPhotoDownloaded(const gfx::ImageSkia& image);
 
   AmbientContainerView* container_view_ = nullptr;

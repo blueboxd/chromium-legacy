@@ -76,6 +76,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_screen_extensions_lifetime_manager.h"
+#include "chrome/browser/chromeos/login/login_screen_extensions_storage_cleaner.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -1010,6 +1011,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   login_screen_extensions_lifetime_manager_ =
       std::make_unique<LoginScreenExtensionsLifetimeManager>();
+  login_screen_extensions_storage_cleaner_ =
+      std::make_unique<LoginScreenExtensionsStorageCleaner>();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
@@ -1148,6 +1151,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   wilco_dtc_supportd_manager_.reset();
   gnubby_notification_.reset();
   login_screen_extensions_lifetime_manager_.reset();
+  login_screen_extensions_storage_cleaner_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

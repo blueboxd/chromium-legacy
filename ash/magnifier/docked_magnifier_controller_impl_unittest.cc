@@ -652,6 +652,37 @@ TEST_P(DockedMagnifierTest, TextInputFieldEvents) {
   TestMagnifierLayerTransform(new_caret_center, root_windows[0]);
 }
 
+// Tests that there are no crashes observed when the docked magnifier switches
+// displays, moving away from a display with a maximized window that has a
+// focused text input field. Changing the old display's work area bounds should
+// not cause recursive caret bounds change notifications into the docked
+// magnifier. https://crbug.com/1000903.
+TEST_P(DockedMagnifierTest, NoCrashDueToRecursion) {
+  UpdateDisplay("600x900,800x600");
+  const auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  MagnifierTextInputTestHelper text_input_helper;
+  text_input_helper.CreateAndShowTextInputViewInRoot(gfx::Rect(0, 0, 600, 900),
+                                                     roots[0]);
+  text_input_helper.MaximizeWidget();
+
+  // Enable the docked magnifier.
+  controller()->SetEnabled(true);
+  const float scale1 = 2.0f;
+  controller()->SetScale(scale1);
+  EXPECT_TRUE(controller()->GetEnabled());
+  EXPECT_FLOAT_EQ(scale1, controller()->GetScale());
+
+  // Focus on the text input field.
+  text_input_helper.FocusOnTextInputView();
+  gfx::Point caret_center(text_input_helper.GetCaretBounds().CenterPoint());
+  TestMagnifierLayerTransform(caret_center, roots[0]);
+
+  // Move the mouse to the second display and expect no crashes.
+  GetEventGenerator()->MoveMouseTo(1000, 300);
+}
+
 TEST_P(DockedMagnifierTest, FocusChangeEvents) {
   UpdateDisplay("600x900");
   const auto root_windows = Shell::GetAllRootWindows();

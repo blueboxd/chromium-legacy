@@ -109,8 +109,9 @@ DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
+DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
+DEFINE_VARIATION_PARAM(kIPHReopenTabFeature, "IPH_ReopenTab");
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
 DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
@@ -167,8 +168,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
 #elif defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-        VARIATION_ENTRY(kIPHReopenTabFeature),
         VARIATION_ENTRY(kIPHFocusModeFeature),
+        VARIATION_ENTRY(kIPHGlobalMediaControls),
+        VARIATION_ENTRY(kIPHReopenTabFeature),
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
         VARIATION_ENTRY(kIPHBookmarkFeature),
         VARIATION_ENTRY(kIPHIncognitoWindowFeature),

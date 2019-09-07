@@ -64,11 +64,28 @@ bool IsForcedBreakValue(const NGConstraintSpace& constraint_space,
                         EBreakBetween break_value) {
   if (break_value == EBreakBetween::kColumn)
     return constraint_space.BlockFragmentationType() == kFragmentColumn;
+  // TODO(mstensho): The innermost fragmentation type doesn't tell us everything
+  // here. We might want to force a break to the next page, even if we're in
+  // multicol (printing multicol, for instance).
   if (break_value == EBreakBetween::kLeft ||
       break_value == EBreakBetween::kPage ||
       break_value == EBreakBetween::kRecto ||
       break_value == EBreakBetween::kRight ||
       break_value == EBreakBetween::kVerso)
+    return constraint_space.BlockFragmentationType() == kFragmentPage;
+  return false;
+}
+
+bool IsAvoidBreakValue(const NGConstraintSpace& constraint_space,
+                       EBreakInside break_value) {
+  if (break_value == EBreakInside::kAvoid)
+    return constraint_space.HasBlockFragmentation();
+  if (break_value == EBreakInside::kAvoidColumn)
+    return constraint_space.BlockFragmentationType() == kFragmentColumn;
+  // TODO(mstensho): The innermost fragmentation type doesn't tell us everything
+  // here. We might want to avoid breaking to the next page, even if we're
+  // in multicol (printing multicol, for instance).
+  if (break_value == EBreakInside::kAvoidPage)
     return constraint_space.BlockFragmentationType() == kFragmentPage;
   return false;
 }

@@ -56,7 +56,7 @@ plugins::PluginPlaceholder* NonLoadablePluginPlaceholder::CreateErrorPlugin(
   plugins::PluginPlaceholder* plugin =
       new plugins::PluginPlaceholder(render_frame, params, html_data);
 
-  chrome::mojom::PluginHostAssociatedPtr plugin_host;
+  mojo::AssociatedRemote<chrome::mojom::PluginHost> plugin_host;
   render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&plugin_host);
   plugin_host->CouldNotLoadPlugin(file_path);
 

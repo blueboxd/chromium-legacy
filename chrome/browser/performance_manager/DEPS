@@ -9,7 +9,4 @@ specific_include_rules = {
   "chrome.*": [
     "+chrome/browser",
   ],
-  "webui_graph_dump_impl\.cc": [
-    "+chrome/browser",
-  ],
 }

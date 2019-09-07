@@ -2108,9 +2108,22 @@ android_test_apk("chrome_smoke_test_apk") {
 }
 
 instrumentation_test_runner("chrome_public_smoke_test") {
-  apk_under_test = "//chrome/android:chrome_public_apk"
+  apk_under_test = ":chrome_public_apk"
   android_test_apk = ":chrome_smoke_test_apk"
   android_test_apk_name = "ChromeSmokeTest"
+}
+
+instrumentation_test_runner("chrome_modern_public_smoke_test") {
+  apk_under_test = ":chrome_modern_public_apk"
+  android_test_apk = ":chrome_smoke_test_apk"
+  android_test_apk_name = "ChromeSmokeTest"
+}
+
+instrumentation_test_runner("monochrome_public_smoke_test") {
+  apk_under_test = ":monochrome_public_apk"
+  android_test_apk = ":chrome_smoke_test_apk"
+  android_test_apk_name = "ChromeSmokeTest"
+  never_incremental = true
 }
 
 android_test_apk("chrome_bundle_smoke_test_apk") {

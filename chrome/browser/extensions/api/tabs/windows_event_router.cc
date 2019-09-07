@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/windows.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -148,9 +147,7 @@ bool WillDispatchWindowFocusedEvent(
 WindowsEventRouter::WindowsEventRouter(Profile* profile)
     : profile_(profile),
       focused_profile_(nullptr),
-      focused_window_id_(extension_misc::kUnknownWindowId),
-      observed_app_registry_(this),
-      observed_controller_list_(this) {
+      focused_window_id_(extension_misc::kUnknownWindowId) {
   DCHECK(!profile->IsOffTheRecord());
 
   observed_app_registry_.Add(AppWindowRegistry::Get(profile_));

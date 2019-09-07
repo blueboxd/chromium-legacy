@@ -564,7 +564,7 @@ void WidgetInputHandlerManager::HandleInputEvent(
     const ui::WebScopedInputEvent& event,
     const ui::LatencyInfo& latency,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
-  if (!render_widget_ || render_widget_->IsFrozenOrProvisional() ||
+  if (!render_widget_ || render_widget_->IsUndeadOrProvisional() ||
       render_widget_->is_closing()) {
     if (callback) {
       std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,

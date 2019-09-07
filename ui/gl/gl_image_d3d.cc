@@ -24,7 +24,6 @@ GLImageD3D::GLImageD3D(const gfx::Size& size,
       texture_(std::move(texture)),
       swap_chain_(std::move(swap_chain)) {
   DCHECK(texture_);
-  DCHECK(swap_chain_);
 }
 
 GLImageD3D::~GLImageD3D() {

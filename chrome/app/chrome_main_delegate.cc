@@ -116,6 +116,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
 #include "chrome/common/chrome_descriptors.h"
 #else  // defined(OS_ANDROID)
@@ -548,7 +549,13 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
 
   if (base::FeatureList::IsEnabled(
           features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
-    startup_data_->RecordCoreSystemProfile();
+    bool record = true;
+#if defined(OS_ANDROID)
+    record =
+        base::FeatureList::IsEnabled(chrome::android::kUmaBackgroundSessions);
+#endif
+    if (record)
+      startup_data_->RecordCoreSystemProfile();
   }
 }
 

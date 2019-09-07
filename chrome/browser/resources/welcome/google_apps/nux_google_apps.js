@@ -2,7 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('welcome');
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/cr.m.js';
+import 'chrome://resources/js/util.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../shared/animations_css.js';
+import '../shared/chooser_shared_css.js';
+import '../shared/step_indicator.js';
+import '../strings.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {navigateTo, navigateToNextStep, NavigationBehavior, Routes} from '../navigation_behavior.js';
+import {BookmarkBarManager, BookmarkProxy, BookmarkProxyImpl} from '../shared/bookmark_proxy.js';
+import {ModuleMetricsManager} from '../shared/module_metrics_proxy.js';
+import {BookmarkListItem, stepIndicatorModel} from '../shared/nux_types.js';
+
+import {GoogleAppProxy, GoogleAppProxyImpl} from './google_app_proxy.js';
+import {GoogleAppsMetricsProxyImpl} from './google_apps_metrics_proxy.js';
 
 /**
  * @typedef {{
@@ -14,29 +36,31 @@ cr.exportPath('welcome');
  *   selected: boolean,
  * }}
  */
-welcome.AppItem;
+let AppItem;
 
 /**
  * @typedef {{
- *   item: !welcome.AppItem,
+ *   item: !AppItem,
  *   set: function(string, boolean):void
  * }}
  */
-welcome.AppItemModel;
+let AppItemModel;
 
 const KEYBOARD_FOCUSED = 'keyboard-focused';
 
 Polymer({
   is: 'nux-google-apps',
 
-  behaviors: [welcome.NavigationBehavior, I18nBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [NavigationBehavior, I18nBehavior],
 
   properties: {
-    /** @type {welcome.stepIndicatorModel} */
+    /** @type {stepIndicatorModel} */
     indicatorModel: Object,
 
     /**
-     * @type {!Array<!welcome.AppItem>}
+     * @type {!Array<!AppItem>}
      * @private
      */
     appList_: Array,
@@ -48,19 +72,19 @@ Polymer({
     },
   },
 
-  /** @private {welcome.GoogleAppProxy} */
+  /** @private {GoogleAppProxy} */
   appProxy_: null,
 
-  /** @private {?welcome.ModuleMetricsManager} */
+  /** @private {?ModuleMetricsManager} */
   metricsManager_: null,
 
-  /** @private */
+  /** @private {boolean} */
   finalized_: false,
 
-  /** @private {welcome.BookmarkProxy} */
+  /** @private {BookmarkProxy} */
   bookmarkProxy_: null,
 
-  /** @private {welcome.BookmarkBarManager} */
+  /** @private {BookmarkBarManager} */
   bookmarkBarManager_: null,
 
   /** @private {boolean} */
@@ -68,18 +92,16 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.appProxy_ = welcome.GoogleAppProxyImpl.getInstance();
-    this.metricsManager_ = new welcome.ModuleMetricsManager(
-        welcome.GoogleAppsMetricsProxyImpl.getInstance());
-    this.bookmarkProxy_ = welcome.BookmarkProxyImpl.getInstance();
-    this.bookmarkBarManager_ = welcome.BookmarkBarManager.getInstance();
+    this.appProxy_ = GoogleAppProxyImpl.getInstance();
+    this.metricsManager_ = new ModuleMetricsManager(
+        GoogleAppsMetricsProxyImpl.getInstance());
+    this.bookmarkProxy_ = BookmarkProxyImpl.getInstance();
+    this.bookmarkBarManager_ = BookmarkBarManager.getInstance();
   },
 
   /** @override */
   attached: function() {
-    Polymer.RenderStatus.afterNextRender(this, () => {
-      Polymer.IronA11yAnnouncer.requestAvailability();
-    });
+    afterNextRender(this, () => IronA11yAnnouncer.requestAvailability());
   },
 
   onRouteEnter: function() {
@@ -164,7 +186,7 @@ Polymer({
 
   /**
    * Handle toggling the apps selected.
-   * @param {!{model: !welcome.AppItemModel}} e
+   * @param {!{model: !AppItemModel}} e
    * @private
    */
   onAppClick_: function(e) {
@@ -214,14 +236,14 @@ Polymer({
       }
     });
     this.metricsManager_.recordGetStarted();
-    welcome.navigateToNextStep();
+    navigateToNextStep();
   },
 
   /** @private */
   onNoThanksClicked_: function() {
     this.cleanUp_();
     this.metricsManager_.recordNoThanks();
-    welcome.navigateToNextStep();
+    navigateToNextStep();
   },
 
   /**
@@ -235,7 +257,7 @@ Polymer({
       this.appList_.forEach(app => this.updateBookmark_(app));
     } else {
       this.appProxy_.getAppList().then(list => {
-        this.appList_ = /** @type(!Array<!welcome.AppItem>) */ (list);
+        this.appList_ = /** @type(!Array<!AppItem>) */ (list);
         this.appList_.forEach((app, index) => {
           // Default select first few items.
           app.selected = index < 3;
@@ -248,7 +270,7 @@ Polymer({
   },
 
   /**
-   * @param {!welcome.AppItem} item
+   * @param {!AppItem} item
    * @private
    */
   updateBookmark_: function(item) {

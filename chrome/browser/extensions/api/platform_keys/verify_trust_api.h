@@ -98,7 +98,7 @@ class VerifyTrustAPI : public BrowserContextKeyedAPI,
   std::unique_ptr<IOPart, content::BrowserThread::DeleteOnIOThread> io_part_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 
   base::WeakPtrFactory<VerifyTrustAPI> weak_factory_{this};
 

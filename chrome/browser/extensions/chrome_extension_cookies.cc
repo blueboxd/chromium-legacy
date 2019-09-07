@@ -23,7 +23,7 @@
 namespace extensions {
 
 ChromeExtensionCookies::ChromeExtensionCookies(Profile* profile)
-    : profile_(profile), cookie_settings_observer_(this) {
+    : profile_(profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
   cookie_settings_observer_.Add(cookie_settings_.get());

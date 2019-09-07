@@ -1211,8 +1211,7 @@ TEST_F(PasswordFormManagerTest, PermanentlyBlacklist) {
       .WillOnce(Return(actual_blacklisted_form));
 
   form_manager_->PermanentlyBlacklist();
-  EXPECT_THAT(form_manager_->GetBlacklistedMatches(),
-              ElementsAre(Pointee(actual_blacklisted_form)));
+  EXPECT_TRUE(form_manager_->IsBlacklisted());
 }
 
 TEST_F(PasswordFormManagerTest, Clone) {

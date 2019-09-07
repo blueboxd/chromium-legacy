@@ -5,7 +5,7 @@
 #include "ash/system/power/power_button_menu_view.h"
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -39,7 +39,7 @@ constexpr int kPaddingBetweenMenuItems = 8;
 
 SkColor GetMenuBackgroundColor() {
   return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-      app_list_features::IsBackgroundBlurEnabled()
+      features::IsBackgroundBlurEnabled()
           ? AshColorProvider::BaseLayerType::kTransparentWithBlur
           : AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
       kPowerButtonMenuBackgroundColor);

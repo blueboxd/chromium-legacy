@@ -568,11 +568,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
-  // Notifies that the RenderWidgetCompositor has issued a draw command. An
-  // observer can use this method to detect when Chrome visually updated a
-  // tab.
-  virtual void DidCommitAndDrawCompositorFrame() {}
-
   // Called when "audible" playback starts or stops on a WebAudio AudioContext.
   using AudioContextId = std::pair<RenderFrameHost*, int>;
   virtual void AudioContextPlaybackStarted(

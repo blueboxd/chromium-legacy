@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Browser;
@@ -36,7 +37,7 @@ class ExtensionBrowserWindowHelper : public ExtensionRegistryObserver {
   Browser* const browser_ = nullptr;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBrowserWindowHelper);
 };

@@ -171,16 +171,23 @@ class BrowserPolicyConnectorChromeOS
   // Returns device's market segment.
   MarketSegment GetEnterpriseMarketSegment() const;
 
-  // The browser-global PolicyService is created before Profiles are ready, to
-  // provide managed values for the local state PrefService. It includes a
-  // policy provider that forwards policies from a delegate policy provider.
-  // This call can be used to set the user policy provider as that delegate
-  // once the Profile is ready, so that user policies can also affect local
-  // state preferences.
-  // Only one user policy provider can be set as a delegate at a time, and any
-  // previously set delegate is removed. Passing NULL removes the current
-  // delegate, if there is one.
-  void SetUserPolicyDelegate(ConfigurationPolicyProvider* user_policy_provider);
+  // Returns a ProxyPolicyProvider that will be used to forward user policies
+  // from the primary Profile to the device-wide PolicyService[1].
+  // This means that user policies from the primary Profile will also affect
+  // local state[2] Preferences.
+  //
+  // Note that the device-wide PolicyService[1] is created before Profiles are
+  // ready / before a user has signed-in. As PolicyProviders can only be
+  // configured during PolicyService creation, a ProxyPolicyProvider (which does
+  // not have a delegate yet) is included in the device-wide PolicyService at
+  // the time of its creation. This returns an unowned pointer to that
+  // ProxyPolicyProvider so the caller can invoke SetDelegate on it. The
+  // returned pointer is guaranteed to be valid as long as this instance is
+  // valid.
+  //
+  // [1] i.e. g_browser_process->policy_service()
+  // [2] i.e. g_browser_process->local_state()
+  ProxyPolicyProvider* GetGlobalUserCloudPolicyProvider();
 
   // Sets the device cloud policy initializer for testing.
   void SetDeviceCloudPolicyInitializerForTesting(

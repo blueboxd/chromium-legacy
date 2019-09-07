@@ -57,6 +57,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // accelerator is shown.
   bool IsSliderBubbleShown() const;
 
+  // True if the bubble containing notifications is visible..
+  bool IsMessageCenterBubbleShown() const;
+
   // True if the bubble is active.
   bool IsBubbleActive() const;
 
@@ -111,7 +114,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   UnifiedSystemTrayModel* model() { return model_.get(); }
   UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
 
-  UnifiedMessageCenterBubble* message_center_bubble_for_test() {
+  UnifiedMessageCenterBubble* message_center_bubble() {
     return message_center_bubble_.get();
   }
 

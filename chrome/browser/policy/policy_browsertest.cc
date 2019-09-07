@@ -51,6 +51,7 @@
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -275,6 +276,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
@@ -1369,6 +1371,56 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
                        FalseAllowsBrowserWindowLaunch) {
   SetUpPolicy(false);
   CheckLaunchedBrowserCount(1u);
+}
+
+class PrimaryUserPoliciesProxiedTest : public LoginPolicyTestBase {
+ public:
+  PrimaryUserPoliciesProxiedTest() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrimaryUserPoliciesProxiedTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
+                       AvailableInLocalStateEarly) {
+  PolicyService* const device_wide_policy_service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetPolicyService();
+
+  // Sanity check default state without a policy active.
+  EXPECT_FALSE(device_wide_policy_service
+                   ->GetPolicies(PolicyNamespace(
+                       POLICY_DOMAIN_CHROME, std::string() /* component_id */))
+                   .GetValue(key::kAudioOutputAllowed));
+  const PrefService::Preference* pref =
+      g_browser_process->local_state()->FindPreference(
+          chromeos::prefs::kAudioOutputAllowed);
+  EXPECT_FALSE(pref->IsManaged());
+  EXPECT_TRUE(pref->GetValue()->GetBool());
+
+  base::DictionaryValue policy;
+  policy.SetKey(key::kAudioOutputAllowed, base::Value(false));
+  user_policy_helper()->SetPolicy(policy, base::DictionaryValue());
+
+  SkipToLoginScreen();
+
+  content::WindowedNotificationObserver profile_created_observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::NotificationService::AllSources());
+  TriggerLogIn(kAccountId, kAccountPassword, kEmptyServices);
+  profile_created_observer.Wait();
+
+  const base::Value* policy_value =
+      device_wide_policy_service
+          ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                        std::string() /* component_id */))
+          .GetValue(key::kAudioOutputAllowed);
+  ASSERT_TRUE(policy_value);
+  EXPECT_FALSE(policy_value->GetBool());
+
+  EXPECT_TRUE(pref->IsManaged());
+  EXPECT_FALSE(pref->GetValue()->GetBool());
 }
 
 #endif  // defined(OS_CHROMEOS)

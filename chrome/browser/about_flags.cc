@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -65,6 +66,7 @@
 #include "components/contextual_search/core/browser/public.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/download/public/common/download_features.h"
 #include "components/error_page/common/error_page_switches.h"
@@ -1363,7 +1365,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if !defined(OS_ANDROID)
     {"enable-reader-mode", flag_descriptions::kEnableReaderModeName,
      flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableDomDistiller)},
+     FEATURE_VALUE_TYPE(dom_distiller::kReaderMode)},
 #endif  // !defined(OS_ANDROID)
     {"enable-webrtc-hw-h264-encoding",
      flag_descriptions::kWebrtcHwH264EncodingName,
@@ -1659,7 +1661,7 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kEnableBackgroundBlurName,
         flag_descriptions::kEnableBackgroundBlurDescription,
         kOsCrOS,
-        FEATURE_VALUE_TYPE(app_list_features::kEnableBackgroundBlur),
+        FEATURE_VALUE_TYPE(ash::features::kEnableBackgroundBlur),
     },
     {"enable-notification-indicator",
      flag_descriptions::kNotificationIndicatorName,
@@ -2720,6 +2722,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxGroupSuggestionsBySearchVsUrlDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxGroupSuggestionsBySearchVsUrl)},
+
+    {"omnibox-preserve-default-match-against-async-update",
+     flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,
+     flag_descriptions::
+         kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)},
 
     {"omnibox-local-entity-suggestions",
      flag_descriptions::kOmniboxLocalEntitySuggestionsName,

@@ -525,7 +525,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   dbus::ObjectProxy* proxy_;
 
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   std::unordered_map<std::string, base::TimeTicks> format_start_time_;
 

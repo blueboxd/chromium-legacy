@@ -26,16 +26,23 @@ class ASH_EXPORT PhotoView : public views::View, public PhotoModelObserver {
 
   // views::View:
   const char* GetClassName() const override;
-  void OnBoundsChanged(const gfx::Rect& prev_bounds) override;
+  void AddedToWidget() override;
 
   // PhotoModelObserver:
-  void OnImageAvailable(const gfx::ImageSkia& image) override;
+  void OnImagesChanged() override;
 
  private:
   void Init();
+  void UpdateImages();
+  void StartSlideAnimation();
+  bool CanAnimate() const;
 
   AmbientController* ambient_controller_ = nullptr;
-  views::ImageView* image_view_;  // Owned by view hierarchy.
+
+  // Image containers. Used for layer animation.
+  views::ImageView* image_view_prev_ = nullptr;  // Owned by view hierarchy.
+  views::ImageView* image_view_curr_ = nullptr;  // Owned by view hierarchy.
+  views::ImageView* image_view_next_ = nullptr;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(PhotoView);
 };

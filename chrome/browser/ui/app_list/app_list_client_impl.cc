@@ -374,6 +374,10 @@ void AppListClientImpl::SetUpSearchUI() {
   search_ranking_event_logger_ =
       std::make_unique<app_list::SearchRankingEventLogger>(
           profile_, search_controller_.get());
+
+  // Refresh the results used for the suggestion chips with empty query.
+  // This fixes crbug.com/999287.
+  StartSearch(base::string16());
 }
 
 app_list::SearchController* AppListClientImpl::search_controller() {

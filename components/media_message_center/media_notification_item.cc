@@ -195,6 +195,7 @@ void MediaNotificationItem::OnMediaSessionActionButtonPressed(
   if (frozen_)
     return;
 
+  controller_->LogMediaSessionActionButtonPressed(request_id_);
   media_session::PerformMediaSessionAction(action, media_controller_remote_);
 }
 

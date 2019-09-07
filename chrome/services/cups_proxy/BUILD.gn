@@ -5,8 +5,8 @@
 import("//build/config/features.gni")
 import("//printing/buildflags/buildflags.gni")
 
-assert(is_chromeos,
-       "Non-Chrome-OS builds must not depend on //chrome/services/cups_proxy")
+assert(is_chromeos, "Non-ChromeOS builds must not depend on this")
+assert(use_cups, "Non-CUPS builds must not depend on this")
 
 source_set("cups_proxy") {
   sources = [
@@ -14,6 +14,16 @@ source_set("cups_proxy") {
     "cups_proxy_service.h",
     "cups_proxy_service_delegate.cc",
     "cups_proxy_service_delegate.h",
+    "ipp_attribute_validator.cc",
+    "ipp_attribute_validator.h",
+    "ipp_validator.cc",
+    "ipp_validator.h",
+    "printer_installer.cc",
+    "printer_installer.h",
+    "proxy_manager.cc",
+    "proxy_manager.h",
+    "socket_manager.cc",
+    "socket_manager.h",
   ]
 
   deps = [
@@ -24,24 +34,11 @@ source_set("cups_proxy") {
     "//net",
   ]
 
-  # We stub this service if libCUPS is not present.
-  if (use_cups) {
-    configs += [ "//printing:cups" ]
-    sources += [
-      "ipp_attribute_validator.cc",
-      "ipp_attribute_validator.h",
-      "ipp_validator.cc",
-      "ipp_validator.h",
-      "printer_installer.cc",
-      "printer_installer.h",
-      "socket_manager.cc",
-      "socket_manager.h",
-    ]
-  }
-
   public_deps = [
     "//printing",
   ]
+
+  configs += [ "//printing:cups" ]
 }
 
 static_library("test_support") {
@@ -58,26 +55,22 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
+  sources = [
+    "ipp_validator_unittest.cc",
+    "printer_installer_unittest.cc",
+    "socket_manager_unittest.cc",
+  ]
 
-  # Target is empty unless libCUPS is available.
-  if (use_cups) {
-    sources = [
-      "ipp_validator_unittest.cc",
-      "printer_installer_unittest.cc",
-      "socket_manager_unittest.cc",
-    ]
+  deps = [
+    ":cups_proxy",
+    ":test_support",
+    "//base",
+    "//chrome/services/cups_proxy/public/cpp",
+    "//chrome/services/cups_proxy/public/cpp:unit_tests",
+    "//testing/gtest",
+  ]
 
-    deps = [
-      ":cups_proxy",
-      ":test_support",
-      "//base",
-      "//chrome/services/cups_proxy/public/cpp",
-      "//chrome/services/cups_proxy/public/cpp:unit_tests",
-      "//testing/gtest",
-    ]
-
-    data = [
-      "//chrome/test/data/cups_proxy",
-    ]
-  }
+  data = [
+    "//chrome/test/data/cups_proxy",
+  ]
 }

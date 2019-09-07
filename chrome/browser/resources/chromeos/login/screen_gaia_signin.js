@@ -804,6 +804,7 @@ Polymer({
     this.email_ = '';
     this.authCompleted_ = false;
     this.lastBackMessageValue_ = false;
+    this.setBackNavigationVisibility_(true);
 
     // Reset SAML
     this.isSaml_ = false;
@@ -1239,13 +1240,10 @@ Polymer({
     }
 
     this.isLoadingUiShown_ = true;
+
     // Hide the back button and the border line as they are not useful when
     // the loading screen is shown.
-    this.$['signin-back-button'].hidden = true;
-    this.$['signin-frame-dialog'].setAttribute('hide-shadow', true);
-    // Also hide the primary and secondary action buttons
-    this.primaryActionButtonLabel_ = null;
-    this.secondaryActionButtonLabel_ = null;
+    this.setBackNavigationVisibility_(false);
 
     // Clear any error messages that were shown before login.
     Oobe.clearErrors();
@@ -1444,6 +1442,21 @@ Polymer({
       Oobe.showSigninUI();
 
     this.updateGuestButtonVisibility_();
+  },
+
+  /**
+   * Show/Hide back navigation during post-authentication.
+   * @param {boolean} visible Show/hide back navigation.
+   * @private
+   */
+  setBackNavigationVisibility_: function(visible) {
+    this.$['signin-back-button'].hidden = !visible;
+    this.$['signin-frame-dialog'].setAttribute('hide-shadow', !visible);
+    if (!visible) {
+      // Also hide the primary and secondary action buttons
+      this.primaryActionButtonLabel_ = null;
+      this.secondaryActionButtonLabel_ = null;
+    }
   },
 
   /**

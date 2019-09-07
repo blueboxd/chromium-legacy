@@ -751,6 +751,7 @@ webcore_testing_dependency_idl_files =
                     "fetch/testing/internals_fetch.idl",
                     "fetch/testing/worker_internals_fetch.idl",
                     "testing/origin_trials_test_partial.idl",
+                    "timing/internals_profiler.idl",
                   ],
                   "abspath")
 

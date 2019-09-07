@@ -11,7 +11,6 @@
 #include "base/base_paths.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/free_deleter.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
@@ -24,48 +23,50 @@ namespace {
 // implementation of chrome::OuterAppBundle(), which should be the only
 // caller.
 NSBundle* OuterAppBundleInternal() {
-  base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
+    if (!base::mac::AmIBundled()) {
+      // If unbundled (as in a test), there's no app bundle.
+      return nil;
+    }
 
-  if (!base::mac::AmIBundled()) {
-    // If unbundled (as in a test), there's no app bundle.
-    return nil;
+    if (!base::mac::IsBackgroundOnlyProcess()) {
+      // Shortcut: in the browser process, just return the main app bundle.
+      return [[NSBundle mainBundle] retain];
+    }
+
+    // From C.app/Contents/Frameworks/C.framework/Versions/1.2.3.4, go up five
+    // steps to C.app.
+    base::FilePath framework_path = chrome::GetFrameworkBundlePath();
+    base::FilePath outer_app_dir =
+        framework_path.DirName().DirName().DirName().DirName().DirName();
+    const char* outer_app_dir_c = outer_app_dir.value().c_str();
+    NSString* outer_app_dir_ns =
+        [NSString stringWithUTF8String:outer_app_dir_c];
+
+    return [[NSBundle bundleWithPath:outer_app_dir_ns] retain];
   }
-
-  if (!base::mac::IsBackgroundOnlyProcess()) {
-    // Shortcut: in the browser process, just return the main app bundle.
-    return [[NSBundle mainBundle] retain];
-  }
-
-  // From C.app/Contents/Frameworks/C.framework/Versions/1.2.3.4, go up five
-  // steps to C.app.
-  base::FilePath framework_path = chrome::GetFrameworkBundlePath();
-  base::FilePath outer_app_dir =
-      framework_path.DirName().DirName().DirName().DirName().DirName();
-  const char* outer_app_dir_c = outer_app_dir.value().c_str();
-  NSString* outer_app_dir_ns = [NSString stringWithUTF8String:outer_app_dir_c];
-
-  return [[NSBundle bundleWithPath:outer_app_dir_ns] retain];
 }
 
 char* ProductDirNameForBundle(NSBundle* chrome_bundle) {
-  const char* product_dir_name = NULL;
-  base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
+    const char* product_dir_name = NULL;
 
-  NSString* product_dir_name_ns =
-      [chrome_bundle objectForInfoDictionaryKey:@"CrProductDirName"];
-  product_dir_name = [product_dir_name_ns fileSystemRepresentation];
+    NSString* product_dir_name_ns =
+        [chrome_bundle objectForInfoDictionaryKey:@"CrProductDirName"];
+    product_dir_name = [product_dir_name_ns fileSystemRepresentation];
 
-  if (!product_dir_name) {
+    if (!product_dir_name) {
 #if defined(GOOGLE_CHROME_BUILD)
-    product_dir_name = "Google/Chrome";
+      product_dir_name = "Google/Chrome";
 #else
-    product_dir_name = "Chromium";
+      product_dir_name = "Chromium";
 #endif
-  }
+    }
 
-  // Leaked, but the only caller initializes a static with this result, so it
-  // only happens once, and that's OK.
-  return strdup(product_dir_name);
+    // Leaked, but the only caller initializes a static with this result, so it
+    // only happens once, and that's OK.
+    return strdup(product_dir_name);
+  }
 }
 
 // ProductDirName returns the name of the directory inside

@@ -14,7 +14,7 @@
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace cc {
 namespace {
@@ -43,6 +43,14 @@ class LayerPerfTest : public testing::Test {
   void TearDown() override {
     layer_tree_host_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
+  }
+
+  perf_test::PerfResultReporter SetUpReporter(
+      const std::string& metric_basename,
+      const std::string& story_name) {
+    perf_test::PerfResultReporter reporter(metric_basename, story_name);
+    reporter.RegisterImportantMetric("", "runs/s");
+    return reporter;
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
@@ -91,12 +99,9 @@ TEST_F(LayerPerfTest, PushPropertiesTo) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("push_properties_to",
-                         "",
-                         "props_changed",
-                         timer_.LapsPerSecond(),
-                         "runs/s",
-                         true);
+  perf_test::PerfResultReporter reporter =
+      SetUpReporter("push_properties_to", "props_changed");
+  reporter.AddResult("", timer_.LapsPerSecond());
 
   // Properties didn't change.
   timer_.Reset();
@@ -105,12 +110,8 @@ TEST_F(LayerPerfTest, PushPropertiesTo) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("push_properties_to",
-                         "",
-                         "props_didnt_change",
-                         timer_.LapsPerSecond(),
-                         "runs/s",
-                         true);
+  reporter = SetUpReporter("push_properties_to", "props_didnt_change");
+  reporter.AddResult("", timer_.LapsPerSecond());
 }
 
 TEST_F(LayerPerfTest, ImplPushPropertiesTo) {
@@ -147,8 +148,9 @@ TEST_F(LayerPerfTest, ImplPushPropertiesTo) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("impl_push_properties_to", "", "props_changed",
-                         timer_.LapsPerSecond(), "runs/s", true);
+  perf_test::PerfResultReporter reporter =
+      SetUpReporter("impl_push_properties_to", "props_changed");
+  reporter.AddResult("", timer_.LapsPerSecond());
 
   // Properties didn't change.
   timer_.Reset();
@@ -157,8 +159,8 @@ TEST_F(LayerPerfTest, ImplPushPropertiesTo) {
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
-  perf_test::PrintResult("impl_push_properties_to", "", "props_didnt_change",
-                         timer_.LapsPerSecond(), "runs/s", true);
+  reporter = SetUpReporter("impl_push_properties_to", "props_didnt_change");
+  reporter.AddResult("", timer_.LapsPerSecond());
 }
 
 }  // namespace

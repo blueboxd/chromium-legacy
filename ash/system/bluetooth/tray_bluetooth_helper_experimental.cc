@@ -11,6 +11,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -30,9 +31,9 @@ TrayBluetoothHelperExperimental::TrayBluetoothHelperExperimental(
 TrayBluetoothHelperExperimental::~TrayBluetoothHelperExperimental() = default;
 
 void TrayBluetoothHelperExperimental::Initialize() {
-  device::mojom::BluetoothSystemFactoryPtr bluetooth_system_factory;
-  connector_->BindInterface(device::mojom::kServiceName,
-                            &bluetooth_system_factory);
+  mojo::Remote<device::mojom::BluetoothSystemFactory> bluetooth_system_factory;
+  connector_->Connect(device::mojom::kServiceName,
+                      bluetooth_system_factory.BindNewPipeAndPassReceiver());
 
   device::mojom::BluetoothSystemClientPtr client_ptr;
   bluetooth_system_client_binding_.Bind(mojo::MakeRequest(&client_ptr));

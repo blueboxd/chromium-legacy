@@ -324,11 +324,11 @@ int OverflowBubbleView::ScrollByYOffset(float y_offset, bool animating) {
   return diff;
 }
 
-int OverflowBubbleView::GetFirstVisibleIndexForTest() const {
+int OverflowBubbleView::GetFirstVisibleIndex() const {
   return shelf_container_view_->first_visible_index();
 }
 
-int OverflowBubbleView::GetLastVisibleIndexForTest() const {
+int OverflowBubbleView::GetLastVisibleIndex() const {
   return shelf_container_view_->last_visible_index();
 }
 
@@ -449,6 +449,18 @@ void OverflowBubbleView::ScrollToNewPage(bool forward) {
     ScrollByXOffset(offset, true);
   else
     ScrollByYOffset(offset, true);
+}
+
+void OverflowBubbleView::ScrollToBeginning() {
+  scroll_offset_ = gfx::Vector2dF();
+  Layout();
+}
+
+void OverflowBubbleView::ScrollToEnd() {
+  scroll_offset_ = GetShelf()->IsHorizontalAlignment()
+                       ? gfx::Vector2dF(CalculateScrollUpperBound(), 0)
+                       : gfx::Vector2dF(0, CalculateScrollUpperBound());
+  Layout();
 }
 
 gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
@@ -580,6 +592,32 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 const char* OverflowBubbleView::GetClassName() const {
   return "OverflowBubbleView";
+}
+
+void OverflowBubbleView::ScrollRectToVisible(const gfx::Rect& rect) {
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+
+  // |rect| should be a shelf app icon's bounds in OverflowBubbleView's
+  // coordinates. Calculates the index of this app icon.
+  const int start_location = is_horizontal_alignment ? rect.x() : rect.y();
+  const int shelf_container_start_location =
+      is_horizontal_alignment ? shelf_container_view_->bounds().x()
+                              : shelf_container_view_->bounds().y();
+  const int index =
+      (start_location - shelf_container_start_location) / GetUnit() +
+      shelf_view_->first_visible_index();
+
+  if (index <= GetLastVisibleIndex() && index >= GetFirstVisibleIndex())
+    return;
+
+  if (index == shelf_view_->last_visible_index())
+    ScrollToEnd();
+  else if (index == shelf_view_->first_visible_index())
+    ScrollToBeginning();
+  else if (index > GetLastVisibleIndex())
+    ScrollToNewPage(/*forward=*/true);
+  else if (index < GetFirstVisibleIndex())
+    ScrollToNewPage(/*forward=*/false);
 }
 
 void OverflowBubbleView::OnShelfButtonAboutToRequestFocusFromTabTraversal(

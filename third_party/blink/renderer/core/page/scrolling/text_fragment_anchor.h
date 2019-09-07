@@ -20,6 +20,11 @@ namespace blink {
 class LocalFrame;
 class KURL;
 
+constexpr char kFragmentDirectivePrefix[] = "##";
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kFragmentDirectivePrefixStringLength =
+    base::size(kFragmentDirectivePrefix) - 1;
+
 enum class TextFragmentFormat { PlainFragment, FragmentDirective };
 
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,

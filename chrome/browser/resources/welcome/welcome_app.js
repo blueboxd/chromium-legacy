@@ -2,6 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
+import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import './google_apps/nux_google_apps.js';
+import './landing_view.js';
+import './ntp_background/nux_ntp_background.js';
+import './set_as_default/nux_set_as_default.js';
+import './signin_view.js';
+import '../strings.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {navigateTo, navigateToNextStep, NavigationBehavior, Routes} from './navigation_behavior.js';
+import {NuxSetAsDefaultProxyImpl} from './set_as_default/nux_set_as_default_proxy.js';
+import {BookmarkBarManager} from './shared/bookmark_proxy.js';
+import {WelcomeBrowserProxyImpl} from './welcome_browser_proxy.js';
+
 /**
  * The strings contained in the arrays should be valid DOM-element tag names.
  * @typedef {{
@@ -31,9 +50,11 @@ const MODULES_NEEDING_INDICATOR =
 Polymer({
   is: 'welcome-app',
 
-  behaviors: [welcome.NavigationBehavior],
+  _template: html`{__html_template__}`,
 
-  /** @private {?welcome.Routes} */
+  behaviors: [NavigationBehavior],
+
+  /** @private {?Routes} */
   currentRoute_: null,
 
   /** @private {NuxOnboardingModules} */
@@ -65,7 +86,7 @@ Polymer({
   },
 
   /**
-   * @param {welcome.Routes} route
+   * @param {Routes} route
    * @param {number} step
    * @private
    */
@@ -74,7 +95,7 @@ Polymer({
       // If the specified step doesn't exist, that means there are no more
       // steps. In that case, replace this page with NTP.
       if (!this.$$(`#step-${step}`)) {
-        welcome.WelcomeBrowserProxyImpl.getInstance().goToNewTabPage(
+        WelcomeBrowserProxyImpl.getInstance().goToNewTabPage(
             /* replace */ true);
       } else {  // Otherwise, go to the chosen step of that route.
         // At this point, views are ready to be shown.
@@ -94,7 +115,7 @@ Polymer({
     this.currentRoute_ = route;
   },
 
-  /** @param {welcome.Routes} route */
+  /** @param {Routes} route */
   initializeModules: function(route) {
     // Remove all views except landing.
     this.$.viewManager
@@ -102,7 +123,7 @@ Polymer({
         .forEach(element => element.remove());
 
     // If it is on landing route, end here.
-    if (route == welcome.Routes.LANDING) {
+    if (route == Routes.LANDING) {
       return Promise.resolve();
     }
 
@@ -111,7 +132,7 @@ Polymer({
 
     /** @type {!Promise} */
     const defaultBrowserPromise =
-        welcome.NuxSetAsDefaultProxyImpl.getInstance()
+        NuxSetAsDefaultProxyImpl.getInstance()
             .requestDefaultBrowserState()
             .then((status) => {
               if (status.isDefault || !status.canBeDefault) {
@@ -128,7 +149,7 @@ Polymer({
     return Promise
         .all([
           defaultBrowserPromise,
-          welcome.BookmarkBarManager.getInstance().initialized,
+          BookmarkBarManager.getInstance().initialized,
         ])
         .then(([canSetDefault]) => {
           modules = modules.filter(module => {

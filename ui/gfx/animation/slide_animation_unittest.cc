@@ -30,13 +30,14 @@ class SlideAnimationTest : public testing::Test {
 
  protected:
   SlideAnimationTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {
     slide_animation_ = std::make_unique<SlideAnimation>(nullptr);
     animation_api_ = std::make_unique<AnimationTestApi>(slide_animation_.get());
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 // Tests animation construction.

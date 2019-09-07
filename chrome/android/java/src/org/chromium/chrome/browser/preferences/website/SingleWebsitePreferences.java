@@ -536,7 +536,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             int newPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
             if (mPreviousNotificationPermission == ContentSettingValues.ALLOW
                     && newPermission != ContentSettingValues.ALLOW) {
-                WebsitePreferenceBridge.nativeReportNotificationRevokedForOrigin(
+                WebsitePreferenceBridgeJni.get().reportNotificationRevokedForOrigin(
                         mSite.getAddress().getOrigin(), newPermission,
                         mSite.getPermissionInfo(PermissionInfo.Type.NOTIFICATION).isIncognito());
                 mPreviousNotificationPermission = null;

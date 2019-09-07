@@ -162,20 +162,25 @@ class DeviceStatusCollector : public StatusCollector,
   using EMMCLifetimeFetcher =
       base::RepeatingCallback<enterprise_management::DiskLifetimeEstimation(
           void)>;
+  // Reads the stateful partition info from /home/.shadow
+  using StatefulPartitionInfoFetcher =
+      base::Callback<enterprise_management::StatefulPartitionInfo()>;
 
   // Constructor. Callers can inject their own *Fetcher callbacks, e.g. for unit
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
   // Pool. Caller is responsible for passing already initialized |pref_service|.
-  DeviceStatusCollector(PrefService* pref_service,
-                        chromeos::system::StatisticsProvider* provider,
-                        const VolumeInfoFetcher& volume_info_fetcher,
-                        const CPUStatisticsFetcher& cpu_statistics_fetcher,
-                        const CPUTempFetcher& cpu_temp_fetcher,
-                        const AndroidStatusFetcher& android_status_fetcher,
-                        const TpmStatusFetcher& tpm_status_fetcher,
-                        const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
-                        bool is_enterprise_reporting);
+  DeviceStatusCollector(
+      PrefService* pref_service,
+      chromeos::system::StatisticsProvider* provider,
+      const VolumeInfoFetcher& volume_info_fetcher,
+      const CPUStatisticsFetcher& cpu_statistics_fetcher,
+      const CPUTempFetcher& cpu_temp_fetcher,
+      const AndroidStatusFetcher& android_status_fetcher,
+      const TpmStatusFetcher& tpm_status_fetcher,
+      const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
+      const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
+      bool is_enterprise_reporting);
   ~DeviceStatusCollector() override;
 
   // StatusCollector:
@@ -402,6 +407,8 @@ class DeviceStatusCollector : public StatusCollector,
   ProbeDataFetcher probe_data_fetcher_;
 
   EMMCLifetimeFetcher emmc_lifetime_fetcher_;
+
+  StatefulPartitionInfoFetcher stateful_partition_info_fetcher_;
 
   PowerStatusCallback power_status_callback_;
 

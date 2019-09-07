@@ -53,8 +53,8 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   int ScrollByXOffset(float x_offset, bool animating);
   int ScrollByYOffset(float y_offset, bool animating);
 
-  int GetFirstVisibleIndexForTest() const;
-  int GetLastVisibleIndexForTest() const;
+  int GetFirstVisibleIndex() const;
+  int GetLastVisibleIndex() const;
 
   // views::BubbleDialogDelegateView:
   gfx::Rect GetBubbleBounds() override;
@@ -109,12 +109,16 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   // page or previous page is shown.
   void ScrollToNewPage(bool forward);
 
+  void ScrollToBeginning();
+  void ScrollToEnd();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   const char* GetClassName() const override;
+  void ScrollRectToVisible(const gfx::Rect& rect) override;
 
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,

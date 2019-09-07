@@ -41,9 +41,13 @@ class POLICY_EXPORT PolicyServiceImpl
                    PolicyService::Observer* observer) override;
   void RemoveObserver(PolicyDomain domain,
                       PolicyService::Observer* observer) override;
+  void AddProviderUpdateObserver(ProviderUpdateObserver* observer) override;
+  void RemoveProviderUpdateObserver(ProviderUpdateObserver* observer) override;
+  bool HasProvider(ConfigurationPolicyProvider* provider) const override;
   const PolicyMap& GetPolicies(const PolicyNamespace& ns) const override;
   bool IsInitializationComplete(PolicyDomain domain) const override;
   void RefreshPolicies(const base::Closure& callback) override;
+  void SetInitializationThrottled(bool initialization_throttled) override;
 
  private:
   using Observers =
@@ -57,6 +61,8 @@ class POLICY_EXPORT PolicyServiceImpl
   void NotifyNamespaceUpdated(const PolicyNamespace& ns,
                               const PolicyMap& previous,
                               const PolicyMap& current);
+
+  void NotifyProviderUpdatesPropagated();
 
   // Combines the policies from all the providers, and notifies the observers
   // of namespaces whose policies have been modified.
@@ -88,6 +94,23 @@ class POLICY_EXPORT PolicyServiceImpl
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.
   std::vector<base::Closure> refresh_callbacks_;
+
+  // Observers for propagation of policy updates by
+  // ConfigurationPolicyProviders.
+  base::ObserverList<ProviderUpdateObserver> provider_update_observers_;
+
+  // Contains all ConfigurationPolicyProviders that have signaled a policy
+  // update which is still being processed (i.e. for which a notification to
+  // |provider_update_observers_| has not been sent out yet).
+  // Note that this is intentionally a set - if multiple updates from the same
+  // provider come in faster than they can be processed, they should only
+  // trigger one notification to |provider_update_observers_|.
+  std::set<ConfigurationPolicyProvider*> provider_update_pending_;
+
+  // If this is true, IsInitializationComplete should be returning false for all
+  // policy domains because the owner of this PolicyService is delaying the
+  // initialization signal.
+  bool initialization_throttled_ = false;
 
   // Used to verify thread-safe usage.
   base::ThreadChecker thread_checker_;

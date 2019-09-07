@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 using content::BrowserThread;
@@ -140,7 +139,7 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
 };
 
 TabCaptureRegistry::TabCaptureRegistry(content::BrowserContext* context)
-    : browser_context_(context), extension_registry_observer_(this) {
+    : browser_context_(context) {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }

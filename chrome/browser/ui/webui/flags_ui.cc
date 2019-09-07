@@ -75,11 +75,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 #endif
 
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
-  source->AddResourcePath(flags_ui::kFlagsStyleLoaderJS,
-                          IDR_FLAGS_UI_FLAGS_STYLE_LOADER_JS);
-  source->AddResourcePath(flags_ui::kFlagsDeprecatedCSS,
-                          IDR_FLAGS_UI_FLAGS_DEPRECATED_CSS);
-  source->AddResourcePath(flags_ui::kFlagsCSS, IDR_FLAGS_UI_FLAGS_CSS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   return source;
 }

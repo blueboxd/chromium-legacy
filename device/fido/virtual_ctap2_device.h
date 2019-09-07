@@ -85,6 +85,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // at a pre-defined byte length without concern for UTF-8 validity of the
     // result.
     bool allow_invalid_utf8_in_credential_entities = false;
+
+    // add_extra_extension causes an unsolicited extension to be added in the
+    // authenticator extensions output.
+    bool add_extra_extension = false;
   };
 
   VirtualCtap2Device();

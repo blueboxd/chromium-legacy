@@ -85,11 +85,11 @@ gfx::Rect GetPrimaryDisplayHostBounds() {
 CastWindowTreeHost::CastWindowTreeHost(
     bool enable_input,
     ui::PlatformWindowInitProperties properties,
-    ui::ExternalBeginFrameClient* external_begin_frame_client)
+    bool use_external_frame_control)
     : WindowTreeHostPlatform(std::move(properties),
                              nullptr,
                              nullptr,
-                             external_begin_frame_client),
+                             use_external_frame_control),
       enable_input_(enable_input) {
   if (!enable_input)
     window()->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());

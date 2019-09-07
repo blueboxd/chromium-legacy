@@ -52,6 +52,9 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
       const override;
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr) override;
+  const base::UnguessableToken& request_id() const override {
+    return request_id_;
+  }
 
  private:
   // Finishes an async audio focus request.

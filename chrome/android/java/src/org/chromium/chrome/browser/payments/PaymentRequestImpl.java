@@ -403,10 +403,17 @@ public class PaymentRequestImpl
     private boolean mArePaymentMethodsSupported;
 
     /**
-     * True after at least one usable payment instrument has been found. Should be read only after
-     * all payment apps have been queried.
+     * True after at least one usable payment instrument has been found and the setting allows
+     * querying this value. This value can be used to respond to hasEnrolledInstrument(). Should be
+     * read only after all payment apps have been queried.
      */
     private boolean mHasEnrolledInstrument;
+
+    /**
+     * Whether there's at least one instrument that is not autofill. Should be read only after all
+     * payment apps have been queried.
+     */
+    private boolean mHasNonAutofillInstrument;
 
     /**
      * True if we should skip showing PaymentRequest UI.
@@ -2126,6 +2133,7 @@ public class PaymentRequestImpl
                             instrument.isServerAutofillInstrumentReplacement();
                     instrument.setHaveRequestedAutofillData(mHaveRequestedAutofillData);
                     mHasEnrolledInstrument |= instrument.canMakePayment();
+                    mHasNonAutofillInstrument |= !instrument.isAutofillInstrument();
                     mPendingInstruments.add(instrument);
                 } else {
                     instrument.dismissInstrument();
@@ -2227,6 +2235,8 @@ public class PaymentRequestImpl
 
         mPendingInstruments.clear();
 
+        if (disconnectIfNoPaymentMethodsSupported()) return;
+
         updateInstrumentModifiedTotals();
 
         // UI has requested the full list of payment instruments. Provide it now.
@@ -2241,8 +2251,7 @@ public class PaymentRequestImpl
 
     /**
      * If no payment methods are supported, disconnect from the client and return true.
-     *
-     * @return True if no payment methods are supported
+     * @return Whether client has been disconnected.
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
         if (!isFinishedQueryingPaymentApps() || !mIsCurrentPaymentRequestShowing) return false;
@@ -2280,7 +2289,28 @@ public class PaymentRequestImpl
             return true;
         }
 
-        return false;
+        return disconnectForStrictShow();
+    }
+
+    /**
+     * If strict show() conditions are not satisfied, disconnect from client and return true.
+     * @return Whether client has been disconnected.
+     */
+    private boolean disconnectForStrictShow() {
+        if (!mIsUserGestureShow || !mMethodData.containsKey("basic-card") || mHasEnrolledInstrument
+                || mHasNonAutofillInstrument
+                || !PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
+            return false;
+        }
+
+        mRejectShowErrorMessage = ErrorStrings.STRICT_BASIC_CARD_SHOW_REJECT;
+        disconnectFromClientWithDebugMessage(
+                ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE + " "
+                        + mRejectShowErrorMessage,
+                PaymentErrorReason.NOT_SUPPORTED);
+
+        return true;
     }
 
     /** @return True after payment apps have been queried. */

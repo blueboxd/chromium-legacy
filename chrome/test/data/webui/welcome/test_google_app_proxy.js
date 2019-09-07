@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {welcome.GoogleAppProxy} */
-class TestGoogleAppProxy extends TestBrowserProxy {
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+/** @implements {GoogleAppProxy} */
+export class TestGoogleAppProxy extends TestBrowserProxy {
   constructor() {
     super([
       'cacheBookmarkIcon',
@@ -13,7 +15,7 @@ class TestGoogleAppProxy extends TestBrowserProxy {
 
     this.providerSelectedCount = 0;
 
-    /** @private {!Array<!welcome.BookmarkListItem>} */
+    /** @private {!Array<!BookmarkListItem>} */
     this.appList_ = [];
   }
 
@@ -34,7 +36,7 @@ class TestGoogleAppProxy extends TestBrowserProxy {
     this.providerSelectedCount++;
   }
 
-  /** @param {!Array<!welcome.BookmarkListItem>} appList */
+  /** @param {!Array<!BookmarkListItem>} appList */
   setAppList(appList) {
     this.appList_ = appList;
   }

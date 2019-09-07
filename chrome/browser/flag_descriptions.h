@@ -870,6 +870,9 @@ extern const char kOmniboxMaxURLMatchesDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
+extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
+extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
+
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];
 

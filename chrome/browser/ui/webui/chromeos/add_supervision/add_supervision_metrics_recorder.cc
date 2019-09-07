@@ -21,6 +21,9 @@ void AddSupervisionMetricsRecorder::RecordAddSupervisionEnrollment(
   base::UmaHistogramEnumeration("AddSupervisionDialog.Enrollment", action);
   switch (action) {
     case EnrollmentState::kInitiated:
+      DCHECK(!EnrollmentCompleted())
+          << "The user should not be enrolled in supervision at the start of "
+             "the Add Supervision process.";
       base::RecordAction(
           base::UserMetricsAction("AddSupervisionDialog_Launched"));
       start_time_ = clock_->NowTicks();

@@ -68,7 +68,7 @@ class ScrollOffset;
 namespace viz {
 class CompositorFrame;
 class CompositorFrameMetadata;
-}
+}  // namespace viz
 
 namespace cc {
 
@@ -565,6 +565,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual void ActivateSyncTree();
 
   // Shortcuts to layers/nodes on the active tree.
+  LayerImpl* PageScaleLayer() const;
   LayerImpl* InnerViewportContainerLayer() const;
   LayerImpl* InnerViewportScrollLayer() const;
   ScrollNode* InnerViewportScrollNode() const;

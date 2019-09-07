@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 
@@ -18,7 +18,12 @@ class WebauthnOfferDialogBrowsertest : public DialogBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    ShowWebauthnOfferDialogView(web_contents, base::DoNothing());
+    // Do lazy initialization of WebauthnOfferDialogControllerImpl.
+    WebauthnOfferDialogControllerImpl::CreateForWebContents(web_contents);
+    WebauthnOfferDialogControllerImpl* controller =
+        WebauthnOfferDialogControllerImpl::FromWebContents(web_contents);
+    DCHECK(controller);
+    controller->ShowOfferDialog(base::DoNothing());
   }
 
  private:

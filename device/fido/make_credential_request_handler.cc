@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -373,12 +374,41 @@ void MakeCredentialRequestHandler::HandleResponse(
   const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request_.rp.id);
 
   if (!response || response->GetRpIdHash() != rp_id_hash) {
-    FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
-                    << authenticator->GetDisplayName();
+    FIDO_LOG(ERROR)
+        << "Failing make credential request due to bad response from "
+        << authenticator->GetDisplayName();
     std::move(completion_callback_)
         .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
              authenticator);
     return;
+  }
+
+  const base::Optional<cbor::Value>& extensions =
+      response->attestation_object().authenticator_data().extensions();
+  if (extensions) {
+    // The fact that |extensions| is a map is checked in
+    // |AuthenticatorData::DecodeAuthenticatorData|.
+    for (const auto& it : extensions->GetMap()) {
+      if (request_.cred_protect &&
+          authenticator->Options()->supports_cred_protect &&
+          it.first.is_string() &&
+          it.first.GetString() == kExtensionCredProtect &&
+          it.second.is_integer()) {
+        continue;
+      }
+      if (request_.hmac_secret && it.first.is_string() &&
+          it.first.GetString() == kExtensionHmacSecret && it.second.is_bool()) {
+        continue;
+      }
+
+      FIDO_LOG(ERROR)
+          << "Failing make credential request due to extensions block: "
+          << cbor::DiagnosticWriter::Write(*extensions);
+      std::move(completion_callback_)
+          .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid,
+               base::nullopt, authenticator);
+      return;
+    }
   }
 
   if (authenticator->AuthenticatorTransport()) {

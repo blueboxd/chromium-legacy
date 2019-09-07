@@ -96,6 +96,12 @@ void LogZeroStateLaunchType(RankingItemType type);
 
 void LogZeroStateReceivedScore(const std::string& suffix, float score);
 
+// Logs zero state UI-related metrics. These comprise of the clicked position,
+// number of types per impression set, and CTR metrics.
+void LogZeroStateResultsListMetrics(
+    const std::vector<RankingItemType>& result_types,
+    int launched_index);
+
 }  // namespace app_list
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_HISTOGRAM_UTIL_H_

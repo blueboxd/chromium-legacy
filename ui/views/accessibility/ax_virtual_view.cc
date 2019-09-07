@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -19,6 +20,10 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+
+#if OS_WIN
+#include "ui/views/win/hwnd_util.h"
+#endif
 
 namespace views {
 
@@ -309,6 +314,16 @@ bool AXVirtualView::IsOffscreen() const {
 
 const ui::AXUniqueId& AXVirtualView::GetUniqueId() const {
   return unique_id_;
+}
+
+// Virtual views need to implement this function in order for A11Y events
+// to be routed correctly.
+gfx::AcceleratedWidget AXVirtualView::GetTargetForNativeAccessibilityEvent() {
+#if defined(OS_WIN)
+  if (GetOwnerView())
+    return HWNDForView(GetOwnerView());
+#endif
+  return gfx::kNullAcceleratedWidget;
 }
 
 bool AXVirtualView::HandleAccessibleAction(

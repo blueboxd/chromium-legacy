@@ -180,7 +180,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
 
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
@@ -195,8 +195,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
       extension_(std::move(extension)),
       last_request_id_(0),
       infobar_(nullptr),
-      detach_reason_(api::debugger::DETACH_REASON_TARGET_CLOSED),
-      extension_registry_observer_(this) {
+      detach_reason_(api::debugger::DETACH_REASON_TARGET_CLOSED) {
   CopyDebuggee(&debuggee_, debuggee);
 
   g_attached_client_hosts.Get().insert(this);

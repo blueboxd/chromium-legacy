@@ -37,8 +37,10 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
   // Web-exposed interfaces:
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
-  ScriptPromise getDevices(ScriptState*);
-  ScriptPromise requestDevice(ScriptState*, const HIDDeviceRequestOptions*);
+  ScriptPromise getDevices(ScriptState*, ExceptionState&);
+  ScriptPromise requestDevice(ScriptState*,
+                              const HIDDeviceRequestOptions*,
+                              ExceptionState&);
 
   void Connect(const String& device_guid,
                mojo::PendingRemote<device::mojom::blink::HidConnectionClient>

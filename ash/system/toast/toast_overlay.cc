@@ -5,7 +5,7 @@
 #include "ash/system/toast/toast_overlay.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -157,7 +157,7 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
                    const base::Optional<base::string16>& dismiss_text)
       : overlay_(overlay) {
     background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        app_list_features::IsBackgroundBlurEnabled()
+        features::IsBackgroundBlurEnabled()
             ? AshColorProvider::BaseLayerType::kTransparentWithBlur
             : AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
         kToastBackgroundColor);

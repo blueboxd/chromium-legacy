@@ -204,6 +204,7 @@ function RunTest() {
 
   // Starts the player.
   player.loop = loop;
+  player.preload = 'auto';
   player.src = media_url;
   Log('Starting by calling play()');
   player.play().catch(function(error) {

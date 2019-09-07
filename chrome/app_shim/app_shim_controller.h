@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
+#include "url/gurl.h"
 
 namespace apps {
 class MachBootstrapAcceptorTest;
@@ -34,8 +35,9 @@ class AppShimController : public chrome::mojom::AppShim {
     base::FilePath user_data_dir;
     // The relative path of the profile.
     base::FilePath profile_dir;
-    std::string app_mode_id;
-    base::string16 app_mode_name;
+    std::string app_id;
+    base::string16 app_name;
+    GURL app_url;
   };
 
   explicit AppShimController(const Params& params);
@@ -61,8 +63,8 @@ class AppShimController : public chrome::mojom::AppShim {
   void ChannelError(uint32_t custom_reason, const std::string& description);
   void BootstrapChannelError(uint32_t custom_reason,
                              const std::string& description);
-  void LaunchAppDone(apps::AppShimLaunchResult result,
-                     chrome::mojom::AppShimRequest app_shim_request);
+  void OnShimConnectedResponse(apps::AppShimLaunchResult result,
+                               chrome::mojom::AppShimRequest app_shim_request);
 
   // chrome::mojom::AppShim implementation.
   void CreateRemoteCocoaApplication(

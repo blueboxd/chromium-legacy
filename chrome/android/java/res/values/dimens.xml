@@ -125,9 +125,8 @@
     <dimen name="contextual_search_term_caption_spacing">
         @dimen/overlay_panel_caption_spacing
     </dimen>
-    <dimen name="contextual_search_padded_button_width">36dp</dimen>
-    <dimen name="contextual_search_end_buttons_width">
-      @dimen/overlay_panel_end_buttons_width
+    <dimen name="contextual_search_padded_button_width">
+      @dimen/overlay_panel_padded_button_width
     </dimen>
     <dimen name="contextual_search_divider_line_width">1dp</dimen>
     <dimen name="contextual_search_divider_line_height">24dp</dimen>

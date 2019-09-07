@@ -8,35 +8,35 @@ namespace viz {
 
 ExternalBeginFrameSourceMojo::ExternalBeginFrameSourceMojo(
     mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
-    mojom::ExternalBeginFrameControllerClientPtr client,
     uint32_t restart_id)
     : ExternalBeginFrameSource(this, restart_id),
-      binding_(this, std::move(controller_request)),
-      client_(std::move(client)) {}
+      binding_(this, std::move(controller_request)) {}
 
 ExternalBeginFrameSourceMojo::~ExternalBeginFrameSourceMojo() {
   DCHECK(!display_);
 }
 
 void ExternalBeginFrameSourceMojo::IssueExternalBeginFrame(
-    const BeginFrameArgs& args) {
+    const BeginFrameArgs& args,
+    bool force,
+    base::OnceCallback<void(const BeginFrameAck&)> callback) {
   OnBeginFrame(args);
+
+  DCHECK(!pending_frame_callback_) << "Got overlapping IssueExternalBeginFrame";
+  pending_frame_callback_ = std::move(callback);
 
   // Ensure that Display will receive the BeginFrame (as a missed one), even
   // if it doesn't currently need it. This way, we ensure that
   // OnDisplayDidFinishFrame will be called for this BeginFrame.
-  DCHECK(display_);
-  display_->SetNeedsOneBeginFrame();
-}
-
-void ExternalBeginFrameSourceMojo::OnNeedsBeginFrames(bool needs_begin_frames) {
-  needs_begin_frames_ = needs_begin_frames;
-  client_->OnNeedsBeginFrames(needs_begin_frames_);
+  if (force)
+    display_->SetNeedsOneBeginFrame();
 }
 
 void ExternalBeginFrameSourceMojo::OnDisplayDidFinishFrame(
     const BeginFrameAck& ack) {
-  client_->OnDisplayDidFinishFrame(ack);
+  if (!pending_frame_callback_)
+    return;
+  std::move(pending_frame_callback_).Run(ack);
 }
 
 void ExternalBeginFrameSourceMojo::OnDisplayDestroyed() {

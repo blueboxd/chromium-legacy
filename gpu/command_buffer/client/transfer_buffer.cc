@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <climits>
 
 #include "base/bits.h"
 #include "base/logging.h"
@@ -134,7 +135,12 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
 }
 
 static unsigned int ComputePOTSize(unsigned int dimension) {
-  return (dimension == 0) ? 0 : 1 << base::bits::Log2Ceiling(dimension);
+  // Avoid shifting by more than the size of an unsigned int - 1, because that's
+  // undefined behavior.
+  return (dimension == 0)
+             ? 0
+             : 1 << std::min(static_cast<int>(sizeof(dimension) * CHAR_BIT - 1),
+                             base::bits::Log2Ceiling(dimension));
 }
 
 void TransferBuffer::ReallocateRingBuffer(unsigned int size, bool shrink) {

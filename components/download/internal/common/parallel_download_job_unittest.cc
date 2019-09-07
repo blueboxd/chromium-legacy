@@ -61,7 +61,7 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
       : ParallelDownloadJob(download_item,
                             std::move(cancel_request_callback),
                             create_info,
-                            nullptr,
+                            URLLoaderFactoryProvider::GetNullPtr(),
                             nullptr),
         request_count_(request_count),
         min_slice_size_(min_slice_size),

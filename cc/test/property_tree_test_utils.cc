@@ -333,7 +333,9 @@ void SetupViewport(LayerImpl* root,
                    const gfx::Size& outer_viewport_size,
                    const gfx::Size& content_size) {
   DCHECK(root);
+
   LayerTreeImpl* layer_tree_impl = root->layer_tree_impl();
+  DCHECK(!layer_tree_impl->InnerViewportScrollLayer());
   DCHECK(layer_tree_impl->settings().use_layer_lists);
 
   std::unique_ptr<LayerImpl> inner_viewport_container_layer =

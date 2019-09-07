@@ -114,6 +114,11 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool IsComputationallyIndependent() const = 0;
 
   CalculationCategory Category() const { return category_; }
+  bool HasPercentage() const {
+    return category_ == kCalcPercent || category_ == kCalcPercentNumber ||
+           category_ == kCalcPercentLength ||
+           category_ == kCalcPercentLengthNumber;
+  }
 
   // Returns the unit type of the math expression *without doing any type
   // conversion* (e.g., 1px + 1em needs type conversion to resolve).
@@ -159,6 +164,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
                                   bool is_integer);
 
   bool IsNumericLiteral() const final { return true; }
+  const CSSNumericLiteralValue* GetValue() const { return value_; }
 
   bool IsZero() const final;
   String CustomCSSText() const final;

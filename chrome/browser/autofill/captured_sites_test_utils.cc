@@ -195,14 +195,18 @@ PageActivityObserver::PageActivityObserver(content::RenderFrameHost* frame)
 void PageActivityObserver::WaitTillPageIsIdle(
     base::TimeDelta continuous_paint_timeout) {
   base::TimeTicks finished_load_time = base::TimeTicks::Now();
-  bool page_is_loading = false;
-  do {
-    paint_occurred_during_last_loop_ = false;
-    base::RunLoop heart_beat;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, heart_beat.QuitClosure(), kPaintEventCheckInterval);
-    heart_beat.Run();
-    page_is_loading =
+  while (true) {
+    content::RenderFrameSubmissionObserver frame_submission_observer(
+        web_contents());
+    // Runs a loop for kPaintEventCheckInterval to see if the renderer is
+    // idle.
+    {
+      base::RunLoop heart_beat;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, heart_beat.QuitClosure(), kPaintEventCheckInterval);
+      heart_beat.Run();
+    }
+    bool page_is_loading =
         web_contents()->IsWaitingForResponse() || web_contents()->IsLoading();
     if (page_is_loading) {
       finished_load_time = base::TimeTicks::Now();
@@ -214,13 +218,19 @@ void PageActivityObserver::WaitTillPageIsIdle(
       // blinking caret or a persistent animation is making Chrome paint at
       // regular intervals. Exit.
       break;
+    } else if (frame_submission_observer.render_frame_count() == 0) {
+      // If the renderer has stopped submitting frames for the waiting interval
+      // then we're done.
+      break;
     }
-  } while (page_is_loading || paint_occurred_during_last_loop_);
+  }
 }
 
 bool PageActivityObserver::WaitForVisualUpdate(base::TimeDelta timeout) {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  while (!paint_occurred_during_last_loop_) {
+  content::RenderFrameSubmissionObserver frame_submission_observer(
+      web_contents());
+  while (frame_submission_observer.render_frame_count() == 0) {
     base::RunLoop heart_beat;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, heart_beat.QuitClosure(), kPaintEventCheckInterval);
@@ -230,10 +240,6 @@ bool PageActivityObserver::WaitForVisualUpdate(base::TimeDelta timeout) {
     }
   }
   return true;
-}
-
-void PageActivityObserver::DidCommitAndDrawCompositorFrame() {
-  paint_occurred_during_last_loop_ = true;
 }
 
 // FrameObserver --------------------------------------------------------------

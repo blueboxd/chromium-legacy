@@ -132,10 +132,10 @@ void LayoutTextControl::HitInnerEditorElement(
   if (!inner_editor->GetLayoutObject())
     return;
 
-  PhysicalOffset local_point = hit_test_location.Point() - accumulated_offset -
-                               inner_editor->GetLayoutBox()->PhysicalLocation();
-  if (HasOverflowClip())
-    local_point += PhysicalOffset(ScrolledContentOffset());
+  PhysicalOffset local_point =
+      hit_test_location.Point() - accumulated_offset -
+      inner_editor->GetLayoutObject()->LocalToAncestorPoint(PhysicalOffset(),
+                                                            this);
   result.SetNodeAndPosition(inner_editor, local_point);
 }
 

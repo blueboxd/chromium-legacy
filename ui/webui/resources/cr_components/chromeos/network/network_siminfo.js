@@ -525,7 +525,8 @@ Polymer({
   /**
    * Checks whether |pin1| is of the proper length and contains only digits.
    * If opt_pin2 is not undefined, then it also checks whether pin1 and
-   * opt_pin2 match. On any failure, sets |this.error_| and returns false.
+   * opt_pin2 match. On any failure, sets |this.error_|, focuses the invalid
+   * PIN, and returns false.
    * @param {string} pin1
    * @param {string=} opt_pin2
    * @return {boolean} True if the pins match and are of minimum length.
@@ -537,10 +538,12 @@ Polymer({
     }
     if (pin1.length < PIN_MIN_LENGTH || !DIGITS_ONLY_REGEX.test(pin1)) {
       this.error_ = ErrorType.INVALID_PIN;
+      this.focusDialogInput_();
       return false;
     }
     if (opt_pin2 != undefined && pin1 != opt_pin2) {
       this.error_ = ErrorType.MISMATCHED_PIN;
+      this.focusDialogInput_();
       return false;
     }
     return true;

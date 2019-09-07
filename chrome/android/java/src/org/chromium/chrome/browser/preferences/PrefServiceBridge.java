@@ -12,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
@@ -117,7 +118,7 @@ public class PrefServiceBridge {
      * @return Whether the specified preference is enabled.
      */
     public boolean getBoolean(@Pref int preference) {
-        return nativeGetBoolean(preference);
+        return PrefServiceBridgeJni.get().getBoolean(PrefServiceBridge.this, preference);
     }
 
     /**
@@ -125,7 +126,7 @@ public class PrefServiceBridge {
      * @param value The value the specified preference will be set to.
      */
     public void setBoolean(@Pref int preference, boolean value) {
-        nativeSetBoolean(preference, value);
+        PrefServiceBridgeJni.get().setBoolean(PrefServiceBridge.this, preference, value);
     }
 
     /**
@@ -142,7 +143,7 @@ public class PrefServiceBridge {
         }
 
         if (currentVersion < 1) {
-            nativeMigrateJavascriptPreference();
+            PrefServiceBridgeJni.get().migrateJavascriptPreference(PrefServiceBridge.this);
         }
         // Steps 2,3,4 intentionally skipped.
         preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).apply();
@@ -153,7 +154,8 @@ public class PrefServiceBridge {
      * @param contentSettingsType The content setting type to check.
      */
     public boolean isContentSettingEnabled(int contentSettingsType) {
-        return nativeIsContentSettingEnabled(contentSettingsType);
+        return PrefServiceBridgeJni.get().isContentSettingEnabled(
+                PrefServiceBridge.this, contentSettingsType);
     }
 
     /**
@@ -161,7 +163,8 @@ public class PrefServiceBridge {
      * @param contentSettingsType The content setting type to check.
      */
     public boolean isContentSettingManaged(int contentSettingsType) {
-        return nativeIsContentSettingManaged(contentSettingsType);
+        return PrefServiceBridgeJni.get().isContentSettingManaged(
+                PrefServiceBridge.this, contentSettingsType);
     }
 
     /**
@@ -170,7 +173,8 @@ public class PrefServiceBridge {
      * @param enabled Whether the default value should be disabled or enabled.
      */
     public void setContentSettingEnabled(int contentSettingsType, boolean enabled) {
-        nativeSetContentSettingEnabled(contentSettingsType, enabled);
+        PrefServiceBridgeJni.get().setContentSettingEnabled(
+                PrefServiceBridge.this, contentSettingsType, enabled);
     }
 
     /**
@@ -179,7 +183,8 @@ public class PrefServiceBridge {
      */
     public List<ContentSettingException> getContentSettingsExceptions(int contentSettingsType) {
         List<ContentSettingException> list = new ArrayList<ContentSettingException>();
-        nativeGetContentSettingsExceptions(contentSettingsType, list);
+        PrefServiceBridgeJni.get().getContentSettingsExceptions(
+                PrefServiceBridge.this, contentSettingsType, list);
         return list;
     }
 
@@ -227,7 +232,7 @@ public class PrefServiceBridge {
      * @return Whether cookies acceptance is modifiable by the user
      */
     public boolean isAcceptCookiesUserModifiable() {
-        return nativeGetAcceptCookiesUserModifiable();
+        return PrefServiceBridgeJni.get().getAcceptCookiesUserModifiable(PrefServiceBridge.this);
     }
 
     /**
@@ -235,76 +240,79 @@ public class PrefServiceBridge {
      * (for supervised users).
      */
     public boolean isAcceptCookiesManagedByCustodian() {
-        return nativeGetAcceptCookiesManagedByCustodian();
+        return PrefServiceBridgeJni.get().getAcceptCookiesManagedByCustodian(
+                PrefServiceBridge.this);
     }
 
     public boolean isBlockThirdPartyCookiesEnabled() {
-        return nativeGetBlockThirdPartyCookiesEnabled();
+        return PrefServiceBridgeJni.get().getBlockThirdPartyCookiesEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether third-party cookie blocking is configured by policy
      */
     public boolean isBlockThirdPartyCookiesManaged() {
-        return nativeGetBlockThirdPartyCookiesManaged();
+        return PrefServiceBridgeJni.get().getBlockThirdPartyCookiesManaged(PrefServiceBridge.this);
     }
 
     public boolean isRememberPasswordsEnabled() {
-        return nativeGetRememberPasswordsEnabled();
+        return PrefServiceBridgeJni.get().getRememberPasswordsEnabled(PrefServiceBridge.this);
     }
 
     public boolean isPasswordManagerAutoSigninEnabled() {
-        return nativeGetPasswordManagerAutoSigninEnabled();
+        return PrefServiceBridgeJni.get().getPasswordManagerAutoSigninEnabled(
+                PrefServiceBridge.this);
     }
 
     public boolean isPasswordLeakDetectionEnabled() {
-        return nativeGetPasswordLeakDetectionEnabled();
+        return PrefServiceBridgeJni.get().getPasswordLeakDetectionEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether password storage is configured by policy
      */
     public boolean isRememberPasswordsManaged() {
-        return nativeGetRememberPasswordsManaged();
+        return PrefServiceBridgeJni.get().getRememberPasswordsManaged(PrefServiceBridge.this);
     }
 
     public boolean isPasswordManagerAutoSigninManaged() {
-        return nativeGetPasswordManagerAutoSigninManaged();
+        return PrefServiceBridgeJni.get().getPasswordManagerAutoSigninManaged(
+                PrefServiceBridge.this);
     }
 
     /**
      * @return Whether leak detection is enabled/disabled by policy
      */
     public boolean isPasswordLeakDetectionManaged() {
-        return nativeGetPasswordLeakDetectionManaged();
+        return PrefServiceBridgeJni.get().getPasswordLeakDetectionManaged(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether vibration is enabled for notifications.
      */
     public boolean isNotificationsVibrateEnabled() {
-        return nativeGetNotificationsVibrateEnabled();
+        return PrefServiceBridgeJni.get().getNotificationsVibrateEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether geolocation information can be shared with content.
      */
     public boolean isAllowLocationEnabled() {
-        return nativeGetAllowLocationEnabled();
+        return PrefServiceBridgeJni.get().getAllowLocationEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether geolocation information access is set to be shared with all sites, by policy.
      */
     public boolean isLocationAllowedByPolicy() {
-        return nativeGetLocationAllowedByPolicy();
+        return PrefServiceBridgeJni.get().getLocationAllowedByPolicy(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether the location preference is modifiable by the user.
      */
     public boolean isAllowLocationUserModifiable() {
-        return nativeGetAllowLocationUserModifiable();
+        return PrefServiceBridgeJni.get().getAllowLocationUserModifiable(PrefServiceBridge.this);
     }
 
     /**
@@ -312,25 +320,26 @@ public class PrefServiceBridge {
      * being managed by the custodian of the supervised account.
      */
     public boolean isAllowLocationManagedByCustodian() {
-        return nativeGetAllowLocationManagedByCustodian();
+        return PrefServiceBridgeJni.get().getAllowLocationManagedByCustodian(
+                PrefServiceBridge.this);
     }
 
     /**
      * @return Whether Do Not Track is enabled
      */
     public boolean isDoNotTrackEnabled() {
-        return nativeGetDoNotTrackEnabled();
+        return PrefServiceBridgeJni.get().getDoNotTrackEnabled(PrefServiceBridge.this);
     }
 
     public boolean getPasswordEchoEnabled() {
-        return nativeGetPasswordEchoEnabled();
+        return PrefServiceBridgeJni.get().getPasswordEchoEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether EULA has been accepted by the user.
      */
     public boolean isFirstRunEulaAccepted() {
-        return nativeGetFirstRunEulaAccepted();
+        return PrefServiceBridgeJni.get().getFirstRunEulaAccepted(PrefServiceBridge.this);
     }
 
     /**
@@ -359,56 +368,56 @@ public class PrefServiceBridge {
      * Sets the preference that controls translate
      */
     public void setTranslateEnabled(boolean enabled) {
-        nativeSetTranslateEnabled(enabled);
+        PrefServiceBridgeJni.get().setTranslateEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
      * Sets the preference that signals when the user has accepted the EULA.
      */
     public void setEulaAccepted() {
-        nativeSetEulaAccepted();
+        PrefServiceBridgeJni.get().setEulaAccepted(PrefServiceBridge.this);
     }
 
     /**
      * @return the last account id associated with sync.
      */
     public String getSyncLastAccountId() {
-        return nativeGetSyncLastAccountId();
+        return PrefServiceBridgeJni.get().getSyncLastAccountId(PrefServiceBridge.this);
     }
 
     /**
      * @return the last account username associated with sync.
      */
     public String getSyncLastAccountName() {
-        return nativeGetSyncLastAccountName();
+        return PrefServiceBridgeJni.get().getSyncLastAccountName(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether Search Suggest is enabled.
      */
     public boolean isSearchSuggestEnabled() {
-        return nativeGetSearchSuggestEnabled();
+        return PrefServiceBridgeJni.get().getSearchSuggestEnabled(PrefServiceBridge.this);
     }
 
     /**
      * Sets whether search suggest should be enabled.
      */
     public void setSearchSuggestEnabled(boolean enabled) {
-        nativeSetSearchSuggestEnabled(enabled);
+        PrefServiceBridgeJni.get().setSearchSuggestEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
      * @return Whether Search Suggest is configured by policy.
      */
     public boolean isSearchSuggestManaged() {
-        return nativeGetSearchSuggestManaged();
+        return PrefServiceBridgeJni.get().getSearchSuggestManaged(PrefServiceBridge.this);
     }
 
     /**
      * @return the Contextual Search preference.
      */
     public String getContextualSearchPreference() {
-        return nativeGetContextualSearchPreference();
+        return PrefServiceBridgeJni.get().getContextualSearchPreference(PrefServiceBridge.this);
     }
 
     /**
@@ -416,7 +425,7 @@ public class PrefServiceBridge {
      * @param prefValue one of "", CONTEXTUAL_SEARCH_ENABLED or CONTEXTUAL_SEARCH_DISABLED.
      */
     public void setContextualSearchPreference(String prefValue) {
-        nativeSetContextualSearchPreference(prefValue);
+        PrefServiceBridgeJni.get().setContextualSearchPreference(PrefServiceBridge.this, prefValue);
     }
 
     /**
@@ -430,7 +439,8 @@ public class PrefServiceBridge {
      * @return Whether the Contextual Search feature is disabled by policy.
      */
     public boolean isContextualSearchDisabledByPolicy() {
-        return nativeGetContextualSearchPreferenceIsManaged()
+        return PrefServiceBridgeJni.get().getContextualSearchPreferenceIsManaged(
+                       PrefServiceBridge.this)
                 && isContextualSearchDisabled();
     }
 
@@ -454,42 +464,45 @@ public class PrefServiceBridge {
      * @return Whether Safe Browsing Extended Reporting is currently enabled.
      */
     public boolean isSafeBrowsingExtendedReportingEnabled() {
-        return nativeGetSafeBrowsingExtendedReportingEnabled();
+        return PrefServiceBridgeJni.get().getSafeBrowsingExtendedReportingEnabled(
+                PrefServiceBridge.this);
     }
 
     /**
      * @param enabled Whether Safe Browsing Extended Reporting should be enabled.
      */
     public void setSafeBrowsingExtendedReportingEnabled(boolean enabled) {
-        nativeSetSafeBrowsingExtendedReportingEnabled(enabled);
+        PrefServiceBridgeJni.get().setSafeBrowsingExtendedReportingEnabled(
+                PrefServiceBridge.this, enabled);
     }
 
     /**
      * @return Whether Safe Browsing Extended Reporting is managed
      */
     public boolean isSafeBrowsingExtendedReportingManaged() {
-        return nativeGetSafeBrowsingExtendedReportingManaged();
+        return PrefServiceBridgeJni.get().getSafeBrowsingExtendedReportingManaged(
+                PrefServiceBridge.this);
     }
 
     /**
      * @return Whether Safe Browsing is currently enabled.
      */
     public boolean isSafeBrowsingEnabled() {
-        return nativeGetSafeBrowsingEnabled();
+        return PrefServiceBridgeJni.get().getSafeBrowsingEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @param enabled Whether Safe Browsing should be enabled.
      */
     public void setSafeBrowsingEnabled(boolean enabled) {
-        nativeSetSafeBrowsingEnabled(enabled);
+        PrefServiceBridgeJni.get().setSafeBrowsingEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
      * @return Whether Safe Browsing is managed
      */
     public boolean isSafeBrowsingManaged() {
-        return nativeGetSafeBrowsingManaged();
+        return PrefServiceBridgeJni.get().getSafeBrowsingManaged(PrefServiceBridge.this);
     }
 
     /**
@@ -497,28 +510,29 @@ public class PrefServiceBridge {
      * used for preference migration. See http://crbug.com/334602
      */
     public boolean obsoleteNetworkPredictionOptionsHasUserSetting() {
-        return nativeObsoleteNetworkPredictionOptionsHasUserSetting();
+        return PrefServiceBridgeJni.get().obsoleteNetworkPredictionOptionsHasUserSetting(
+                PrefServiceBridge.this);
     }
 
     /**
      * @return Network predictions preference.
      */
     public boolean getNetworkPredictionEnabled() {
-        return nativeGetNetworkPredictionEnabled();
+        return PrefServiceBridgeJni.get().getNetworkPredictionEnabled(PrefServiceBridge.this);
     }
 
     /**
      * Sets network predictions preference.
      */
     public void setNetworkPredictionEnabled(boolean enabled) {
-        nativeSetNetworkPredictionEnabled(enabled);
+        PrefServiceBridgeJni.get().setNetworkPredictionEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
      * @return Whether Network Predictions is configured by policy.
      */
     public boolean isNetworkPredictionManaged() {
-        return nativeGetNetworkPredictionManaged();
+        return PrefServiceBridgeJni.get().getNetworkPredictionManaged(PrefServiceBridge.this);
     }
 
     /**
@@ -527,42 +541,43 @@ public class PrefServiceBridge {
      * @return Whether network predictions are allowed.
      */
     public boolean canPrefetchAndPrerender() {
-        return nativeCanPrefetchAndPrerender();
+        return PrefServiceBridgeJni.get().canPrefetchAndPrerender(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether the web service to resolve navigation error is enabled.
      */
     public boolean isResolveNavigationErrorEnabled() {
-        return nativeGetResolveNavigationErrorEnabled();
+        return PrefServiceBridgeJni.get().getResolveNavigationErrorEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether the web service to resolve navigation error is configured by policy.
      */
     public boolean isResolveNavigationErrorManaged() {
-        return nativeGetResolveNavigationErrorManaged();
+        return PrefServiceBridgeJni.get().getResolveNavigationErrorManaged(PrefServiceBridge.this);
     }
 
     /**
      * @return true if translate is enabled, false otherwise.
      */
     public boolean isTranslateEnabled() {
-        return nativeGetTranslateEnabled();
+        return PrefServiceBridgeJni.get().getTranslateEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether translate is configured by policy
      */
     public boolean isTranslateManaged() {
-        return nativeGetTranslateManaged();
+        return PrefServiceBridgeJni.get().getTranslateManaged(PrefServiceBridge.this);
     }
 
     /**
      * Sets whether the web service to resolve navigation error should be enabled.
      */
     public void setResolveNavigationErrorEnabled(boolean enabled) {
-        nativeSetResolveNavigationErrorEnabled(enabled);
+        PrefServiceBridgeJni.get().setResolveNavigationErrorEnabled(
+                PrefServiceBridge.this, enabled);
     }
 
     /**
@@ -574,7 +589,8 @@ public class PrefServiceBridge {
      * @return The state of the corresponding deletion preference.
      */
     public boolean getBrowsingDataDeletionPreference(int dataType, int clearBrowsingDataTab) {
-        return nativeGetBrowsingDataDeletionPreference(dataType, clearBrowsingDataTab);
+        return PrefServiceBridgeJni.get().getBrowsingDataDeletionPreference(
+                PrefServiceBridge.this, dataType, clearBrowsingDataTab);
     }
 
     /**
@@ -587,7 +603,8 @@ public class PrefServiceBridge {
      */
     public void setBrowsingDataDeletionPreference(
             int dataType, int clearBrowsingDataTab, boolean value) {
-        nativeSetBrowsingDataDeletionPreference(dataType, clearBrowsingDataTab, value);
+        PrefServiceBridgeJni.get().setBrowsingDataDeletionPreference(
+                PrefServiceBridge.this, dataType, clearBrowsingDataTab, value);
     }
 
     /**
@@ -597,7 +614,8 @@ public class PrefServiceBridge {
      * @return The currently selected browsing data deletion time period.
      */
     public @TimePeriod int getBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab) {
-        return nativeGetBrowsingDataDeletionTimePeriod(clearBrowsingDataTab);
+        return PrefServiceBridgeJni.get().getBrowsingDataDeletionTimePeriod(
+                PrefServiceBridge.this, clearBrowsingDataTab);
     }
 
     /**
@@ -608,7 +626,8 @@ public class PrefServiceBridge {
      */
     public void setBrowsingDataDeletionTimePeriod(
             int clearBrowsingDataTab, @TimePeriod int timePeriod) {
-        nativeSetBrowsingDataDeletionTimePeriod(clearBrowsingDataTab, timePeriod);
+        PrefServiceBridgeJni.get().setBrowsingDataDeletionTimePeriod(
+                PrefServiceBridge.this, clearBrowsingDataTab, timePeriod);
     }
 
     /**
@@ -616,7 +635,7 @@ public class PrefServiceBridge {
      *         Index 0 is for the basic tab, 1 is the advanced tab.
      */
     public int getLastSelectedClearBrowsingDataTab() {
-        return nativeGetLastClearBrowsingDataTab();
+        return PrefServiceBridgeJni.get().getLastClearBrowsingDataTab(PrefServiceBridge.this);
     }
 
     /**
@@ -624,35 +643,37 @@ public class PrefServiceBridge {
      * @param tabIndex The last visited tab index, 0 for basic, 1 for advanced.
      */
     public void setLastSelectedClearBrowsingDataTab(int tabIndex) {
-        nativeSetLastClearBrowsingDataTab(tabIndex);
+        PrefServiceBridgeJni.get().setLastClearBrowsingDataTab(PrefServiceBridge.this, tabIndex);
     }
 
     public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
-        nativeSetBlockThirdPartyCookiesEnabled(enabled);
+        PrefServiceBridgeJni.get().setBlockThirdPartyCookiesEnabled(
+                PrefServiceBridge.this, enabled);
     }
 
     public void setDoNotTrackEnabled(boolean enabled) {
-        nativeSetDoNotTrackEnabled(enabled);
+        PrefServiceBridgeJni.get().setDoNotTrackEnabled(PrefServiceBridge.this, enabled);
     }
 
     public void setRememberPasswordsEnabled(boolean allow) {
-        nativeSetRememberPasswordsEnabled(allow);
+        PrefServiceBridgeJni.get().setRememberPasswordsEnabled(PrefServiceBridge.this, allow);
     }
 
     public void setPasswordManagerAutoSigninEnabled(boolean enabled) {
-        nativeSetPasswordManagerAutoSigninEnabled(enabled);
+        PrefServiceBridgeJni.get().setPasswordManagerAutoSigninEnabled(
+                PrefServiceBridge.this, enabled);
     }
 
     public void setPasswordLeakDetectionEnabled(boolean enabled) {
-        nativeSetPasswordLeakDetectionEnabled(enabled);
+        PrefServiceBridgeJni.get().setPasswordLeakDetectionEnabled(PrefServiceBridge.this, enabled);
     }
 
     public void setNotificationsVibrateEnabled(boolean enabled) {
-        nativeSetNotificationsVibrateEnabled(enabled);
+        PrefServiceBridgeJni.get().setNotificationsVibrateEnabled(PrefServiceBridge.this, enabled);
     }
 
     public void setPasswordEchoEnabled(boolean enabled) {
-        nativeSetPasswordEchoEnabled(enabled);
+        PrefServiceBridgeJni.get().setPasswordEchoEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
@@ -689,37 +710,38 @@ public class PrefServiceBridge {
                 setContentSettingEnabled(contentSettingsType, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-                nativeSetAutomaticDownloadsEnabled(allow);
+                PrefServiceBridgeJni.get().setAutomaticDownloadsEnabled(
+                        PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
-                nativeSetAutoplayEnabled(allow);
+                PrefServiceBridgeJni.get().setAutoplayEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
-                nativeSetBackgroundSyncEnabled(allow);
+                PrefServiceBridgeJni.get().setBackgroundSyncEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
-                nativeSetClipboardEnabled(allow);
+                PrefServiceBridgeJni.get().setClipboardEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
-                nativeSetAllowCookiesEnabled(allow);
+                PrefServiceBridgeJni.get().setAllowCookiesEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                nativeSetAllowLocationEnabled(allow);
+                PrefServiceBridgeJni.get().setAllowLocationEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                nativeSetCameraEnabled(allow);
+                PrefServiceBridgeJni.get().setCameraEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                nativeSetMicEnabled(allow);
+                PrefServiceBridgeJni.get().setMicEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-                nativeSetNotificationsEnabled(allow);
+                PrefServiceBridgeJni.get().setNotificationsEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
-                nativeSetSensorsEnabled(allow);
+                PrefServiceBridgeJni.get().setSensorsEnabled(PrefServiceBridge.this, allow);
                 break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
-                nativeSetSoundEnabled(allow);
+                PrefServiceBridgeJni.get().setSoundEnabled(PrefServiceBridge.this, allow);
                 break;
             default:
                 assert false;
@@ -741,23 +763,24 @@ public class PrefServiceBridge {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
                 return isContentSettingEnabled(contentSettingsType);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
-                return nativeGetAutomaticDownloadsEnabled();
+                return PrefServiceBridgeJni.get().getAutomaticDownloadsEnabled(
+                        PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
-                return nativeGetAutoplayEnabled();
+                return PrefServiceBridgeJni.get().getAutoplayEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
-                return nativeGetBackgroundSyncEnabled();
+                return PrefServiceBridgeJni.get().getBackgroundSyncEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
-                return nativeGetAcceptCookiesEnabled();
+                return PrefServiceBridgeJni.get().getAcceptCookiesEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                return nativeGetCameraEnabled();
+                return PrefServiceBridgeJni.get().getCameraEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                return nativeGetMicEnabled();
+                return PrefServiceBridgeJni.get().getMicEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-                return nativeGetNotificationsEnabled();
+                return PrefServiceBridgeJni.get().getNotificationsEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
-                return nativeGetSensorsEnabled();
+                return PrefServiceBridgeJni.get().getSensorsEnabled(PrefServiceBridge.this);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
-                return nativeGetSoundEnabled();
+                return PrefServiceBridgeJni.get().getSoundEnabled(PrefServiceBridge.this);
             default:
                 assert false;
                 return false;
@@ -772,14 +795,16 @@ public class PrefServiceBridge {
      * @return The ContentSetting for |contentSettingsType|.
      */
     public int getContentSetting(int contentSettingsType) {
-        return nativeGetContentSetting(contentSettingsType);
+        return PrefServiceBridgeJni.get().getContentSetting(
+                PrefServiceBridge.this, contentSettingsType);
     }
 
     /**
      * @param setting New ContentSetting to set for |contentSettingsType|.
      */
     public void setContentSetting(int contentSettingsType, int setting) {
-        nativeSetContentSetting(contentSettingsType, setting);
+        PrefServiceBridgeJni.get().setContentSetting(
+                PrefServiceBridge.this, contentSettingsType, setting);
     }
 
     /**
@@ -787,21 +812,21 @@ public class PrefServiceBridge {
      * by the custodian of the supervised account.
      */
     public boolean isCameraManagedByCustodian() {
-        return nativeGetCameraManagedByCustodian();
+        return PrefServiceBridgeJni.get().getCameraManagedByCustodian(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether the camera permission is editable by the user.
      */
     public boolean isCameraUserModifiable() {
-        return nativeGetCameraUserModifiable();
+        return PrefServiceBridgeJni.get().getCameraUserModifiable(PrefServiceBridge.this);
     }
 
     /**
      * Sets the preferences on whether to enable/disable microphone.
      */
     public void setMicEnabled(boolean enabled) {
-        nativeSetMicEnabled(enabled);
+        PrefServiceBridgeJni.get().setMicEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
@@ -809,42 +834,42 @@ public class PrefServiceBridge {
      * the supervised account.
      */
     public boolean isMicManagedByCustodian() {
-        return nativeGetMicManagedByCustodian();
+        return PrefServiceBridgeJni.get().getMicManagedByCustodian(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether the microphone permission is editable by the user.
      */
     public boolean isMicUserModifiable() {
-        return nativeGetMicUserModifiable();
+        return PrefServiceBridgeJni.get().getMicUserModifiable(PrefServiceBridge.this);
     }
 
     /**
      * @return true if incognito mode is enabled.
      */
     public boolean isIncognitoModeEnabled() {
-        return nativeGetIncognitoModeEnabled();
+        return PrefServiceBridgeJni.get().getIncognitoModeEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return true if incognito mode is managed by policy.
      */
     public boolean isIncognitoModeManaged() {
-        return nativeGetIncognitoModeManaged();
+        return PrefServiceBridgeJni.get().getIncognitoModeManaged(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether printing is enabled.
      */
     public boolean isPrintingEnabled() {
-        return nativeGetPrintingEnabled();
+        return PrefServiceBridgeJni.get().getPrintingEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return Whether printing is managed by policy.
      */
     public boolean isPrintingManaged() {
-        return nativeGetPrintingManaged();
+        return PrefServiceBridgeJni.get().getPrintingManaged(PrefServiceBridge.this);
     }
 
     /**
@@ -852,7 +877,7 @@ public class PrefServiceBridge {
      * @return AboutVersionStrings about version strings.
      */
     public AboutVersionStrings getAboutVersionStrings() {
-        return nativeGetAboutVersionStrings();
+        return PrefServiceBridgeJni.get().getAboutVersionStrings(PrefServiceBridge.this);
     }
 
     /**
@@ -861,45 +886,50 @@ public class PrefServiceBridge {
      * @param defaultLocale A fall-back value such as en_US, de_DE, zh_CN, etc.
      */
     public void resetAcceptLanguages(String defaultLocale) {
-        nativeResetAcceptLanguages(defaultLocale);
+        PrefServiceBridgeJni.get().resetAcceptLanguages(PrefServiceBridge.this, defaultLocale);
     }
 
     /**
      * @return Whether SafeSites for supervised users is enabled.
      */
     public boolean isSupervisedUserSafeSitesEnabled() {
-        return nativeGetSupervisedUserSafeSitesEnabled();
+        return PrefServiceBridgeJni.get().getSupervisedUserSafeSitesEnabled(PrefServiceBridge.this);
     }
 
     /**
      * @return the default supervised user filtering behavior
      */
     public int getDefaultSupervisedUserFilteringBehavior() {
-        return nativeGetDefaultSupervisedUserFilteringBehavior();
+        return PrefServiceBridgeJni.get().getDefaultSupervisedUserFilteringBehavior(
+                PrefServiceBridge.this);
     }
 
     public String getSupervisedUserCustodianName() {
-        return nativeGetSupervisedUserCustodianName();
+        return PrefServiceBridgeJni.get().getSupervisedUserCustodianName(PrefServiceBridge.this);
     }
 
     public String getSupervisedUserCustodianEmail() {
-        return nativeGetSupervisedUserCustodianEmail();
+        return PrefServiceBridgeJni.get().getSupervisedUserCustodianEmail(PrefServiceBridge.this);
     }
 
     public String getSupervisedUserCustodianProfileImageURL() {
-        return nativeGetSupervisedUserCustodianProfileImageURL();
+        return PrefServiceBridgeJni.get().getSupervisedUserCustodianProfileImageURL(
+                PrefServiceBridge.this);
     }
 
     public String getSupervisedUserSecondCustodianName() {
-        return nativeGetSupervisedUserSecondCustodianName();
+        return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianName(
+                PrefServiceBridge.this);
     }
 
     public String getSupervisedUserSecondCustodianEmail() {
-        return nativeGetSupervisedUserSecondCustodianEmail();
+        return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianEmail(
+                PrefServiceBridge.this);
     }
 
     public String getSupervisedUserSecondCustodianProfileImageURL() {
-        return nativeGetSupervisedUserSecondCustodianProfileImageURL();
+        return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianProfileImageURL(
+                PrefServiceBridge.this);
     }
 
     /**
@@ -908,7 +938,7 @@ public class PrefServiceBridge {
      */
     public List<LanguageItem> getChromeLanguageList() {
         List<LanguageItem> list = new ArrayList<>();
-        nativeGetChromeAcceptLanguages(list);
+        PrefServiceBridgeJni.get().getChromeAcceptLanguages(PrefServiceBridge.this, list);
         return list;
     }
 
@@ -919,7 +949,7 @@ public class PrefServiceBridge {
      */
     public List<String> getUserLanguageCodes() {
         List<String> list = new ArrayList<>();
-        nativeGetUserAcceptLanguages(list);
+        PrefServiceBridgeJni.get().getUserAcceptLanguages(PrefServiceBridge.this, list);
         return list;
     }
 
@@ -930,7 +960,8 @@ public class PrefServiceBridge {
      * @param add Whether this is an "add" operation or "delete" operation.
      */
     public void updateUserAcceptLanguages(String languageCode, boolean add) {
-        nativeUpdateUserAcceptLanguages(languageCode, add);
+        PrefServiceBridgeJni.get().updateUserAcceptLanguages(
+                PrefServiceBridge.this, languageCode, add);
     }
 
     /**
@@ -940,7 +971,7 @@ public class PrefServiceBridge {
      * @param offset The offset from the original position of the language.
      */
     public void moveAcceptLanguage(String languageCode, int offset) {
-        nativeMoveAcceptLanguage(languageCode, offset);
+        PrefServiceBridgeJni.get().moveAcceptLanguage(PrefServiceBridge.this, languageCode, offset);
     }
 
     /**
@@ -949,7 +980,7 @@ public class PrefServiceBridge {
      * @param codes The new order for the user's accepted languages.
      */
     public void setLanguageOrder(String[] codes) {
-        nativeSetLanguageOrder(codes);
+        PrefServiceBridgeJni.get().setLanguageOrder(PrefServiceBridge.this, codes);
     }
 
     /**
@@ -957,7 +988,7 @@ public class PrefServiceBridge {
      * @return Whether the given language is blocked by the user.
      */
     public boolean isBlockedLanguage(String languageCode) {
-        return nativeIsBlockedLanguage(languageCode);
+        return PrefServiceBridgeJni.get().isBlockedLanguage(PrefServiceBridge.this, languageCode);
     }
 
     /**
@@ -967,38 +998,30 @@ public class PrefServiceBridge {
      * @param blocked Whether to set language blocked.
      */
     public void setLanguageBlockedState(String languageCode, boolean blocked) {
-        nativeSetLanguageBlockedState(languageCode, blocked);
+        PrefServiceBridgeJni.get().setLanguageBlockedState(
+                PrefServiceBridge.this, languageCode, blocked);
     }
 
-    private native boolean nativeIsContentSettingEnabled(int contentSettingType);
-    private native boolean nativeIsContentSettingManaged(int contentSettingType);
-    private native void nativeSetContentSettingEnabled(int contentSettingType, boolean allow);
-    private native void nativeGetContentSettingsExceptions(
-            int contentSettingsType, List<ContentSettingException> list);
-    public native void nativeSetContentSettingForPattern(
-            int contentSettingType, String pattern, int setting);
-    public native int nativeGetContentSetting(int contentSettingType);
-    public native void nativeSetContentSetting(int contentSettingType, int setting);
 
     /**
       * @return Whether usage and crash reporting pref is enabled.
       */
     public boolean isMetricsReportingEnabled() {
-        return nativeIsMetricsReportingEnabled();
+        return PrefServiceBridgeJni.get().isMetricsReportingEnabled(PrefServiceBridge.this);
     }
 
     /**
      * Sets whether the usage and crash reporting pref should be enabled.
      */
     public void setMetricsReportingEnabled(boolean enabled) {
-        nativeSetMetricsReportingEnabled(enabled);
+        PrefServiceBridgeJni.get().setMetricsReportingEnabled(PrefServiceBridge.this, enabled);
     }
 
     /**
      * @return Whether usage and crash report pref is managed.
      */
     public boolean isMetricsReportingManaged() {
-        return nativeIsMetricsReportingManaged();
+        return PrefServiceBridgeJni.get().isMetricsReportingManaged(PrefServiceBridge.this);
     }
 
     /**
@@ -1006,14 +1029,14 @@ public class PrefServiceBridge {
      *                facilitate logging whether Chrome was updated after a click on the menu item.
      */
     public void setClickedUpdateMenuItem(boolean clicked) {
-        nativeSetClickedUpdateMenuItem(clicked);
+        PrefServiceBridgeJni.get().setClickedUpdateMenuItem(PrefServiceBridge.this, clicked);
     }
 
     /**
      * @return Whether the update menu item was clicked.
      */
     public boolean getClickedUpdateMenuItem() {
-        return nativeGetClickedUpdateMenuItem();
+        return PrefServiceBridgeJni.get().getClickedUpdateMenuItem(PrefServiceBridge.this);
     }
 
     /**
@@ -1021,33 +1044,36 @@ public class PrefServiceBridge {
      *                was clicked.
      */
     public void setLatestVersionWhenClickedUpdateMenuItem(String version) {
-        nativeSetLatestVersionWhenClickedUpdateMenuItem(version);
+        PrefServiceBridgeJni.get().setLatestVersionWhenClickedUpdateMenuItem(
+                PrefServiceBridge.this, version);
     }
 
     /**
      * @return The latest version of Chrome available when the update menu item was clicked.
      */
     public String getLatestVersionWhenClickedUpdateMenuItem() {
-        return nativeGetLatestVersionWhenClickedUpdateMenuItem();
+        return PrefServiceBridgeJni.get().getLatestVersionWhenClickedUpdateMenuItem(
+                PrefServiceBridge.this);
     }
 
     @VisibleForTesting
     public void setSupervisedUserId(String supervisedUserId) {
-        nativeSetSupervisedUserId(supervisedUserId);
+        PrefServiceBridgeJni.get().setSupervisedUserId(PrefServiceBridge.this, supervisedUserId);
     }
 
     /**
      * @return The stored download default directory.
      */
     public String getDownloadDefaultDirectory() {
-        return nativeGetDownloadDefaultDirectory();
+        return PrefServiceBridgeJni.get().getDownloadDefaultDirectory(PrefServiceBridge.this);
     }
 
     /**
      * @param directory New directory to set as the download default directory.
      */
     public void setDownloadAndSaveFileDefaultDirectory(String directory) {
-        nativeSetDownloadAndSaveFileDefaultDirectory(directory);
+        PrefServiceBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(
+                PrefServiceBridge.this, directory);
     }
 
     /**
@@ -1055,21 +1081,21 @@ public class PrefServiceBridge {
      */
     @DownloadPromptStatus
     public int getPromptForDownloadAndroid() {
-        return nativeGetPromptForDownloadAndroid();
+        return PrefServiceBridgeJni.get().getPromptForDownloadAndroid(PrefServiceBridge.this);
     }
 
     /**
      * @param status New status to update the prompt for download preference.
      */
     public void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
-        nativeSetPromptForDownloadAndroid(status);
+        PrefServiceBridgeJni.get().setPromptForDownloadAndroid(PrefServiceBridge.this, status);
     }
 
     /**
      * @return Whether the explicit language prompt was shown at least once.
      */
     public boolean getExplicitLanguageAskPromptShown() {
-        return nativeGetExplicitLanguageAskPromptShown();
+        return PrefServiceBridgeJni.get().getExplicitLanguageAskPromptShown(PrefServiceBridge.this);
     }
 
     /**
@@ -1077,7 +1103,7 @@ public class PrefServiceBridge {
      * was shown to the user at least once.
      */
     public void setExplicitLanguageAskPromptShown(boolean shown) {
-        nativeSetExplicitLanguageAskPromptShown(shown);
+        PrefServiceBridgeJni.get().setExplicitLanguageAskPromptShown(PrefServiceBridge.this, shown);
     }
 
     @VisibleForTesting
@@ -1085,126 +1111,139 @@ public class PrefServiceBridge {
         sInstance = instanceForTesting;
     }
 
-    private native boolean nativeGetBoolean(int preference);
-    private native void nativeSetBoolean(int preference, boolean value);
-    private native boolean nativeGetAcceptCookiesEnabled();
-    private native boolean nativeGetAcceptCookiesUserModifiable();
-    private native boolean nativeGetAcceptCookiesManagedByCustodian();
-    private native boolean nativeGetAutomaticDownloadsEnabled();
-    private native boolean nativeGetAutoplayEnabled();
-    private native boolean nativeGetBackgroundSyncEnabled();
-    private native boolean nativeGetBlockThirdPartyCookiesEnabled();
-    private native boolean nativeGetBlockThirdPartyCookiesManaged();
-    private native boolean nativeGetRememberPasswordsEnabled();
-    private native boolean nativeGetPasswordManagerAutoSigninEnabled();
-    private native boolean nativeGetPasswordLeakDetectionEnabled();
-    private native boolean nativeGetRememberPasswordsManaged();
-    private native boolean nativeGetPasswordManagerAutoSigninManaged();
-    private native boolean nativeGetPasswordLeakDetectionManaged();
-    private native boolean nativeGetAllowLocationUserModifiable();
-    private native boolean nativeGetLocationAllowedByPolicy();
-    private native boolean nativeGetAllowLocationManagedByCustodian();
-    private native boolean nativeGetDoNotTrackEnabled();
-    private native boolean nativeGetPasswordEchoEnabled();
-    private native boolean nativeGetFirstRunEulaAccepted();
-    private native boolean nativeGetCameraEnabled();
-    private native void nativeSetCameraEnabled(boolean enabled);
-    private native boolean nativeGetCameraUserModifiable();
-    private native boolean nativeGetCameraManagedByCustodian();
-    private native boolean nativeGetMicEnabled();
-    private native void nativeSetMicEnabled(boolean enabled);
-    private native boolean nativeGetMicUserModifiable();
-    private native boolean nativeGetMicManagedByCustodian();
-    private native boolean nativeGetTranslateEnabled();
-    private native boolean nativeGetTranslateManaged();
-    private native boolean nativeGetResolveNavigationErrorEnabled();
-    private native boolean nativeGetResolveNavigationErrorManaged();
-    private native boolean nativeGetIncognitoModeEnabled();
-    private native boolean nativeGetIncognitoModeManaged();
-    private native boolean nativeGetPrintingEnabled();
-    private native boolean nativeGetPrintingManaged();
-    private native boolean nativeGetSensorsEnabled();
-    private native boolean nativeGetSoundEnabled();
-    private native boolean nativeGetSupervisedUserSafeSitesEnabled();
-    private native void nativeSetTranslateEnabled(boolean enabled);
-    private native void nativeMigrateJavascriptPreference();
-    private native boolean nativeGetBrowsingDataDeletionPreference(
-            int dataType, int clearBrowsingDataTab);
-    private native void nativeSetBrowsingDataDeletionPreference(
-            int dataType, int clearBrowsingDataTab, boolean value);
-    private native int nativeGetBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab);
-    private native void nativeSetBrowsingDataDeletionTimePeriod(
-            int clearBrowsingDataTab, int timePeriod);
-    private native int nativeGetLastClearBrowsingDataTab();
-    private native void nativeSetLastClearBrowsingDataTab(int lastTab);
-    private native void nativeSetAutomaticDownloadsEnabled(boolean enabled);
-    private native void nativeSetAutoplayEnabled(boolean enabled);
-    private native void nativeSetAllowCookiesEnabled(boolean enabled);
-    private native void nativeSetBackgroundSyncEnabled(boolean enabled);
-    private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
-    private native void nativeSetClipboardEnabled(boolean enabled);
-    private native void nativeSetDoNotTrackEnabled(boolean enabled);
-    private native void nativeSetRememberPasswordsEnabled(boolean allow);
-    private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
-    private native void nativeSetPasswordLeakDetectionEnabled(boolean enabled);
-    private native boolean nativeGetAllowLocationEnabled();
-    private native boolean nativeGetNotificationsEnabled();
-    private native boolean nativeGetNotificationsVibrateEnabled();
-    private native void nativeSetAllowLocationEnabled(boolean enabled);
-    private native void nativeSetNotificationsEnabled(boolean enabled);
-    private native void nativeSetNotificationsVibrateEnabled(boolean enabled);
-    private native void nativeSetPasswordEchoEnabled(boolean enabled);
-    private native void nativeSetSensorsEnabled(boolean enabled);
-    private native void nativeSetSoundEnabled(boolean enabled);
-    private native boolean nativeCanPrefetchAndPrerender();
-    private native AboutVersionStrings nativeGetAboutVersionStrings();
-    private native void nativeSetContextualSearchPreference(String preference);
-    private native String nativeGetContextualSearchPreference();
-    private native boolean nativeGetContextualSearchPreferenceIsManaged();
-    private native boolean nativeGetSearchSuggestEnabled();
-    private native void nativeSetSearchSuggestEnabled(boolean enabled);
-    private native boolean nativeGetSearchSuggestManaged();
-    private native boolean nativeGetSafeBrowsingExtendedReportingEnabled();
-    private native void nativeSetSafeBrowsingExtendedReportingEnabled(boolean enabled);
-    private native boolean nativeGetSafeBrowsingExtendedReportingManaged();
-    private native boolean nativeGetSafeBrowsingEnabled();
-    private native void nativeSetSafeBrowsingEnabled(boolean enabled);
-    private native boolean nativeGetSafeBrowsingManaged();
-    private native boolean nativeGetNetworkPredictionManaged();
-    private native boolean nativeObsoleteNetworkPredictionOptionsHasUserSetting();
-    private native boolean nativeGetNetworkPredictionEnabled();
-    private native void nativeSetNetworkPredictionEnabled(boolean enabled);
-    private native void nativeSetResolveNavigationErrorEnabled(boolean enabled);
-    private native void nativeSetEulaAccepted();
-    private native void nativeResetAcceptLanguages(String defaultLocale);
-    private native String nativeGetSyncLastAccountId();
-    private native String nativeGetSyncLastAccountName();
-    private native String nativeGetSupervisedUserCustodianName();
-    private native String nativeGetSupervisedUserCustodianEmail();
-    private native String nativeGetSupervisedUserCustodianProfileImageURL();
-    private native int nativeGetDefaultSupervisedUserFilteringBehavior();
-    private native String nativeGetSupervisedUserSecondCustodianName();
-    private native String nativeGetSupervisedUserSecondCustodianEmail();
-    private native String nativeGetSupervisedUserSecondCustodianProfileImageURL();
-    private native boolean nativeIsMetricsReportingEnabled();
-    private native void nativeSetMetricsReportingEnabled(boolean enabled);
-    private native boolean nativeIsMetricsReportingManaged();
-    private native void nativeSetClickedUpdateMenuItem(boolean clicked);
-    private native boolean nativeGetClickedUpdateMenuItem();
-    private native void nativeSetLatestVersionWhenClickedUpdateMenuItem(String version);
-    private native String nativeGetLatestVersionWhenClickedUpdateMenuItem();
-    private native void nativeSetSupervisedUserId(String supervisedUserId);
-    private native void nativeGetChromeAcceptLanguages(List<LanguageItem> list);
-    private native void nativeGetUserAcceptLanguages(List<String> list);
-    private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
-    private native void nativeMoveAcceptLanguage(String language, int offset);
-    private native void nativeSetLanguageOrder(String[] codes);
-    private native boolean nativeIsBlockedLanguage(String language);
-    private native void nativeSetLanguageBlockedState(String language, boolean blocked);
-    private native String nativeGetDownloadDefaultDirectory();
-    private native void nativeSetDownloadAndSaveFileDefaultDirectory(String directory);
-    private native int nativeGetPromptForDownloadAndroid();
-    private native void nativeSetPromptForDownloadAndroid(int status);
-    private native boolean nativeGetExplicitLanguageAskPromptShown();
-    private native void nativeSetExplicitLanguageAskPromptShown(boolean shown);
+    @NativeMethods
+    public interface Natives {
+        boolean isContentSettingEnabled(PrefServiceBridge caller, int contentSettingType);
+        boolean isContentSettingManaged(PrefServiceBridge caller, int contentSettingType);
+        void setContentSettingEnabled(
+                PrefServiceBridge caller, int contentSettingType, boolean allow);
+        void getContentSettingsExceptions(PrefServiceBridge caller, int contentSettingsType,
+                List<ContentSettingException> list);
+        void setContentSettingForPattern(
+                PrefServiceBridge caller, int contentSettingType, String pattern, int setting);
+        int getContentSetting(PrefServiceBridge caller, int contentSettingType);
+        void setContentSetting(PrefServiceBridge caller, int contentSettingType, int setting);
+        boolean getBoolean(PrefServiceBridge caller, int preference);
+        void setBoolean(PrefServiceBridge caller, int preference, boolean value);
+        boolean getAcceptCookiesEnabled(PrefServiceBridge caller);
+        boolean getAcceptCookiesUserModifiable(PrefServiceBridge caller);
+        boolean getAcceptCookiesManagedByCustodian(PrefServiceBridge caller);
+        boolean getAutomaticDownloadsEnabled(PrefServiceBridge caller);
+        boolean getAutoplayEnabled(PrefServiceBridge caller);
+        boolean getBackgroundSyncEnabled(PrefServiceBridge caller);
+        boolean getBlockThirdPartyCookiesEnabled(PrefServiceBridge caller);
+        boolean getBlockThirdPartyCookiesManaged(PrefServiceBridge caller);
+        boolean getRememberPasswordsEnabled(PrefServiceBridge caller);
+        boolean getPasswordManagerAutoSigninEnabled(PrefServiceBridge caller);
+        boolean getPasswordLeakDetectionEnabled(PrefServiceBridge caller);
+        boolean getRememberPasswordsManaged(PrefServiceBridge caller);
+        boolean getPasswordManagerAutoSigninManaged(PrefServiceBridge caller);
+        boolean getPasswordLeakDetectionManaged(PrefServiceBridge caller);
+        boolean getAllowLocationUserModifiable(PrefServiceBridge caller);
+        boolean getLocationAllowedByPolicy(PrefServiceBridge caller);
+        boolean getAllowLocationManagedByCustodian(PrefServiceBridge caller);
+        boolean getDoNotTrackEnabled(PrefServiceBridge caller);
+        boolean getPasswordEchoEnabled(PrefServiceBridge caller);
+        boolean getFirstRunEulaAccepted(PrefServiceBridge caller);
+        boolean getCameraEnabled(PrefServiceBridge caller);
+        void setCameraEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean getCameraUserModifiable(PrefServiceBridge caller);
+        boolean getCameraManagedByCustodian(PrefServiceBridge caller);
+        boolean getMicEnabled(PrefServiceBridge caller);
+        void setMicEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean getMicUserModifiable(PrefServiceBridge caller);
+        boolean getMicManagedByCustodian(PrefServiceBridge caller);
+        boolean getTranslateEnabled(PrefServiceBridge caller);
+        boolean getTranslateManaged(PrefServiceBridge caller);
+        boolean getResolveNavigationErrorEnabled(PrefServiceBridge caller);
+        boolean getResolveNavigationErrorManaged(PrefServiceBridge caller);
+        boolean getIncognitoModeEnabled(PrefServiceBridge caller);
+        boolean getIncognitoModeManaged(PrefServiceBridge caller);
+        boolean getPrintingEnabled(PrefServiceBridge caller);
+        boolean getPrintingManaged(PrefServiceBridge caller);
+        boolean getSensorsEnabled(PrefServiceBridge caller);
+        boolean getSoundEnabled(PrefServiceBridge caller);
+        boolean getSupervisedUserSafeSitesEnabled(PrefServiceBridge caller);
+        void setTranslateEnabled(PrefServiceBridge caller, boolean enabled);
+        void migrateJavascriptPreference(PrefServiceBridge caller);
+        boolean getBrowsingDataDeletionPreference(
+                PrefServiceBridge caller, int dataType, int clearBrowsingDataTab);
+        void setBrowsingDataDeletionPreference(
+                PrefServiceBridge caller, int dataType, int clearBrowsingDataTab, boolean value);
+        int getBrowsingDataDeletionTimePeriod(PrefServiceBridge caller, int clearBrowsingDataTab);
+        void setBrowsingDataDeletionTimePeriod(
+                PrefServiceBridge caller, int clearBrowsingDataTab, int timePeriod);
+        int getLastClearBrowsingDataTab(PrefServiceBridge caller);
+        void setLastClearBrowsingDataTab(PrefServiceBridge caller, int lastTab);
+        void setAutomaticDownloadsEnabled(PrefServiceBridge caller, boolean enabled);
+        void setAutoplayEnabled(PrefServiceBridge caller, boolean enabled);
+        void setAllowCookiesEnabled(PrefServiceBridge caller, boolean enabled);
+        void setBackgroundSyncEnabled(PrefServiceBridge caller, boolean enabled);
+        void setBlockThirdPartyCookiesEnabled(PrefServiceBridge caller, boolean enabled);
+        void setClipboardEnabled(PrefServiceBridge caller, boolean enabled);
+        void setDoNotTrackEnabled(PrefServiceBridge caller, boolean enabled);
+        void setRememberPasswordsEnabled(PrefServiceBridge caller, boolean allow);
+        void setPasswordManagerAutoSigninEnabled(PrefServiceBridge caller, boolean enabled);
+        void setPasswordLeakDetectionEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean getAllowLocationEnabled(PrefServiceBridge caller);
+        boolean getNotificationsEnabled(PrefServiceBridge caller);
+        boolean getNotificationsVibrateEnabled(PrefServiceBridge caller);
+        void setAllowLocationEnabled(PrefServiceBridge caller, boolean enabled);
+        void setNotificationsEnabled(PrefServiceBridge caller, boolean enabled);
+        void setNotificationsVibrateEnabled(PrefServiceBridge caller, boolean enabled);
+        void setPasswordEchoEnabled(PrefServiceBridge caller, boolean enabled);
+        void setSensorsEnabled(PrefServiceBridge caller, boolean enabled);
+        void setSoundEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean canPrefetchAndPrerender(PrefServiceBridge caller);
+        AboutVersionStrings getAboutVersionStrings(PrefServiceBridge caller);
+        void setContextualSearchPreference(PrefServiceBridge caller, String preference);
+        String getContextualSearchPreference(PrefServiceBridge caller);
+        boolean getContextualSearchPreferenceIsManaged(PrefServiceBridge caller);
+        boolean getSearchSuggestEnabled(PrefServiceBridge caller);
+        void setSearchSuggestEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean getSearchSuggestManaged(PrefServiceBridge caller);
+        boolean getSafeBrowsingExtendedReportingEnabled(PrefServiceBridge caller);
+        void setSafeBrowsingExtendedReportingEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean getSafeBrowsingExtendedReportingManaged(PrefServiceBridge caller);
+        boolean getSafeBrowsingEnabled(PrefServiceBridge caller);
+        void setSafeBrowsingEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean getSafeBrowsingManaged(PrefServiceBridge caller);
+        boolean getNetworkPredictionManaged(PrefServiceBridge caller);
+        boolean obsoleteNetworkPredictionOptionsHasUserSetting(PrefServiceBridge caller);
+        boolean getNetworkPredictionEnabled(PrefServiceBridge caller);
+        void setNetworkPredictionEnabled(PrefServiceBridge caller, boolean enabled);
+        void setResolveNavigationErrorEnabled(PrefServiceBridge caller, boolean enabled);
+        void setEulaAccepted(PrefServiceBridge caller);
+        void resetAcceptLanguages(PrefServiceBridge caller, String defaultLocale);
+        String getSyncLastAccountId(PrefServiceBridge caller);
+        String getSyncLastAccountName(PrefServiceBridge caller);
+        String getSupervisedUserCustodianName(PrefServiceBridge caller);
+        String getSupervisedUserCustodianEmail(PrefServiceBridge caller);
+        String getSupervisedUserCustodianProfileImageURL(PrefServiceBridge caller);
+        int getDefaultSupervisedUserFilteringBehavior(PrefServiceBridge caller);
+        String getSupervisedUserSecondCustodianName(PrefServiceBridge caller);
+        String getSupervisedUserSecondCustodianEmail(PrefServiceBridge caller);
+        String getSupervisedUserSecondCustodianProfileImageURL(PrefServiceBridge caller);
+        boolean isMetricsReportingEnabled(PrefServiceBridge caller);
+        void setMetricsReportingEnabled(PrefServiceBridge caller, boolean enabled);
+        boolean isMetricsReportingManaged(PrefServiceBridge caller);
+        void setClickedUpdateMenuItem(PrefServiceBridge caller, boolean clicked);
+        boolean getClickedUpdateMenuItem(PrefServiceBridge caller);
+        void setLatestVersionWhenClickedUpdateMenuItem(PrefServiceBridge caller, String version);
+        String getLatestVersionWhenClickedUpdateMenuItem(PrefServiceBridge caller);
+        void setSupervisedUserId(PrefServiceBridge caller, String supervisedUserId);
+        void getChromeAcceptLanguages(PrefServiceBridge caller, List<LanguageItem> list);
+        void getUserAcceptLanguages(PrefServiceBridge caller, List<String> list);
+        void updateUserAcceptLanguages(PrefServiceBridge caller, String language, boolean add);
+        void moveAcceptLanguage(PrefServiceBridge caller, String language, int offset);
+        void setLanguageOrder(PrefServiceBridge caller, String[] codes);
+        boolean isBlockedLanguage(PrefServiceBridge caller, String language);
+        void setLanguageBlockedState(PrefServiceBridge caller, String language, boolean blocked);
+        String getDownloadDefaultDirectory(PrefServiceBridge caller);
+        void setDownloadAndSaveFileDefaultDirectory(PrefServiceBridge caller, String directory);
+        int getPromptForDownloadAndroid(PrefServiceBridge caller);
+        void setPromptForDownloadAndroid(PrefServiceBridge caller, int status);
+        boolean getExplicitLanguageAskPromptShown(PrefServiceBridge caller);
+        void setExplicitLanguageAskPromptShown(PrefServiceBridge caller, boolean shown);
+    }
 }

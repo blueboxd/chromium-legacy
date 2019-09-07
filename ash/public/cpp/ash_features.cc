@@ -87,6 +87,9 @@ const base::Feature kSwapSideVolumeButtonsForOrientation{
 const base::Feature kUnifiedMessageCenterRefactor{
     "UnifiedMessageCenterRefactor", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -158,6 +161,10 @@ bool IsSwapSideVolumeButtonsForOrientationEnabled() {
 
 bool IsUnifiedMessageCenterRefactorEnabled() {
   return base::FeatureList::IsEnabled(kUnifiedMessageCenterRefactor);
+}
+
+bool IsBackgroundBlurEnabled() {
+  return base::FeatureList::IsEnabled(kEnableBackgroundBlur);
 }
 
 }  // namespace features

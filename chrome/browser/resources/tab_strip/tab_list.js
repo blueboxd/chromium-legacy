@@ -11,6 +11,13 @@ import {TabsApiProxy} from './tabs_api_proxy.js';
 
 const GHOST_PINNED_TAB_COUNT = 3;
 
+/**
+ * The amount of padding to leave between the edge of the screen and the active
+ * tab when auto-scrolling. This should leave some room to show the previous or
+ * next tab to afford to users that there more tabs if the user scrolls.
+ */
+const SCROLL_PADDING = 32;
+
 class TabListElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
@@ -32,6 +39,9 @@ class TabListElement extends CustomElement {
     this.pinnedTabsContainerElement_ =
         /** @type {!Element} */ (
             this.shadowRoot.querySelector('#pinnedTabsContainer'));
+
+    /** @private {!Element} */
+    this.scrollingParent_ = document.documentElement;
 
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
@@ -74,6 +84,11 @@ class TabListElement extends CustomElement {
             this.onTabCreated_(tab);
           }
         }
+
+        const activeTab = this.getActiveTab_();
+        if (activeTab) {
+          this.scrollToTab_(activeTab);
+        }
       }
 
       this.tabsApiHandler_.onActivated.addListener(
@@ -104,6 +119,15 @@ class TabListElement extends CustomElement {
   findTabElement_(tabId) {
     return /** @type {?TabElement} */ (
         this.shadowRoot.querySelector(`tabstrip-tab[data-tab-id="${tabId}"]`));
+  }
+
+  /**
+   * @return {?TabElement}
+   * @private
+   */
+  getActiveTab_() {
+    return /** @type {?TabElement} */ (
+        this.shadowRoot.querySelector('tabstrip-tab[active]'));
   }
 
   /**
@@ -140,16 +164,18 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    const previouslyActiveTab =
-        this.shadowRoot.querySelector('tabstrip-tab[active]');
+    const previouslyActiveTab = this.getActiveTab_();
     if (previouslyActiveTab) {
       previouslyActiveTab.tab = /** @type {!Tab} */ (
           Object.assign({}, previouslyActiveTab.tab, {active: false}));
     }
 
     const newlyActiveTab = this.findTabElement_(activeInfo.tabId);
-    newlyActiveTab.tab = /** @type {!Tab} */ (
-        Object.assign({}, newlyActiveTab.tab, {active: true}));
+    if (newlyActiveTab) {
+      newlyActiveTab.tab = /** @type {!Tab} */ (
+          Object.assign({}, newlyActiveTab.tab, {active: true}));
+      this.scrollToTab_(newlyActiveTab);
+    }
   }
 
   /**
@@ -179,6 +205,9 @@ class TabListElement extends CustomElement {
     const movedTab = this.findTabElement_(tabId);
     if (movedTab) {
       this.insertTabOrMoveTo_(movedTab, moveInfo.toIndex);
+      if (movedTab.tab.active) {
+        this.scrollToTab_(movedTab);
+      }
     }
   }
 
@@ -221,8 +250,36 @@ class TabListElement extends CustomElement {
         // If the tab is being pinned or unpinned, we need to move it to its new
         // location
         this.insertTabOrMoveTo_(tabElement, tab.index);
+        if (tab.active) {
+          this.scrollToTab_(tabElement);
+        }
       }
     }
+  }
+
+  /**
+   * @param {!TabElement} tabElement
+   * @private
+   */
+  scrollToTab_(tabElement) {
+    this.animationPromises.then(() => {
+      const screenLeft = this.scrollingParent_.scrollLeft;
+      const screenRight = screenLeft + this.scrollingParent_.offsetWidth;
+
+      if (screenLeft > tabElement.offsetLeft) {
+        // If the element's left is to the left of the visible screen, scroll
+        // such that the element's left edge is aligned with the screen's edge
+        this.scrollingParent_.scrollLeft =
+            tabElement.offsetLeft - SCROLL_PADDING;
+      } else if (screenRight < tabElement.offsetLeft + tabElement.offsetWidth) {
+        // If the element's right is to the right of the visible screen, scroll
+        // such that the element's right edge is aligned with the screen's right
+        // edge.
+        this.scrollingParent_.scrollLeft = tabElement.offsetLeft +
+            tabElement.offsetWidth - this.scrollingParent_.offsetWidth +
+            SCROLL_PADDING;
+      }
+    });
   }
 
   /**

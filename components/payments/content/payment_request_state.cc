@@ -24,6 +24,7 @@
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -31,6 +32,33 @@
 #include "content/public/common/content_features.h"
 
 namespace payments {
+namespace {
+
+// Checks whether any of the |instruments| return true in
+// IsValidForCanMakePayment().
+bool GetHasEnrolledInstrument(
+    const std::vector<std::unique_ptr<PaymentInstrument>>& instruments) {
+  return std::any_of(instruments.begin(), instruments.end(),
+                     [](const auto& instrument) {
+                       return instrument->IsValidForCanMakePayment();
+                     });
+}
+
+// Invokes the |callback| with |status|.
+void CallStatusCallback(PaymentRequestState::StatusCallback callback,
+                        bool status) {
+  std::move(callback).Run(status);
+}
+
+// Posts the |callback| to be invoked with |status| asynchronously.
+void PostStatusCallback(PaymentRequestState::StatusCallback callback,
+                        bool status) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CallStatusCallback, std::move(callback), status));
+}
+
+}  // namespace
 
 PaymentRequestState::PaymentRequestState(
     content::WebContents* web_contents,
@@ -45,7 +73,6 @@ PaymentRequestState::PaymentRequestState(
         sw_identity_observer,
     JourneyLogger* journey_logger)
     : is_ready_to_pay_(false),
-      get_all_instruments_finished_(true),
       is_waiting_for_merchant_validation_(false),
       app_locale_(app_locale),
       spec_(spec),
@@ -67,7 +94,6 @@ PaymentRequestState::PaymentRequestState(
   DCHECK(sw_identity_observer_);
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     DCHECK(web_contents);
-    get_all_instruments_finished_ = false;
     bool may_crawl_for_installable_payment_apps =
         PaymentsExperimentalFeatures::IsEnabled(
             features::kAlwaysAllowJustInTimePaymentApp) ||
@@ -87,6 +113,8 @@ PaymentRequestState::PaymentRequestState(
   } else {
     PopulateProfileCache();
     SetDefaultProfileSelections();
+    get_all_instruments_finished_ = true;
+    has_enrolled_instrument_ = GetHasEnrolledInstrument(available_instruments_);
   }
   spec_->AddObserver(this);
 }
@@ -136,6 +164,8 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
 void PaymentRequestState::OnSWPaymentInstrumentValidated(
     ServiceWorkerPaymentInstrument* instrument,
     bool result) {
+  has_non_autofill_instrument_ |= result;
+
   // Remove service worker payment instruments failed on validation.
   if (!result) {
     for (size_t i = 0; i < available_instruments_.size(); i++) {
@@ -157,18 +187,18 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   SetDefaultProfileSelections();
 
   get_all_instruments_finished_ = true;
+  has_enrolled_instrument_ = GetHasEnrolledInstrument(available_instruments_);
   are_requested_methods_supported_ |= !available_instruments_.empty();
   NotifyOnGetAllPaymentInstrumentsFinished();
   NotifyInitialized();
 
   // Fulfill the pending CanMakePayment call.
-  if (can_make_payment_callback_) {
-    CheckCanMakePayment(std::move(can_make_payment_callback_));
-  }
+  if (can_make_payment_callback_)
+    std::move(can_make_payment_callback_).Run(are_requested_methods_supported_);
 
   // Fulfill the pending HasEnrolledInstrument call.
   if (has_enrolled_instrument_callback_)
-    CheckHasEnrolledInstrument(std::move(has_enrolled_instrument_callback_));
+    std::move(has_enrolled_instrument_callback_).Run(has_enrolled_instrument_);
 
   // Fulfill the pending AreRequestedMethodsSupported call.
   if (are_requested_methods_supported_callback_)
@@ -226,15 +256,7 @@ void PaymentRequestState::CanMakePayment(StatusCallback callback) {
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PaymentRequestState::CheckCanMakePayment,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void PaymentRequestState::CheckCanMakePayment(StatusCallback callback) {
-  DCHECK(get_all_instruments_finished_);
-  std::move(callback).Run(are_requested_methods_supported_);
+  PostStatusCallback(std::move(callback), are_requested_methods_supported_);
 }
 
 void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
@@ -244,22 +266,7 @@ void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PaymentRequestState::CheckHasEnrolledInstrument,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void PaymentRequestState::CheckHasEnrolledInstrument(StatusCallback callback) {
-  DCHECK(get_all_instruments_finished_);
-  bool has_enrolled_instrument_value = false;
-  for (const auto& instrument : available_instruments_) {
-    if (instrument->IsValidForCanMakePayment()) {
-      has_enrolled_instrument_value = true;
-      break;
-    }
-  }
-  std::move(callback).Run(has_enrolled_instrument_value);
+  PostStatusCallback(std::move(callback), has_enrolled_instrument_);
 }
 
 void PaymentRequestState::AreRequestedMethodsSupported(
@@ -279,8 +286,19 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
     MethodsSupportedCallback callback) {
   DCHECK(get_all_instruments_finished_);
 
-  std::move(callback).Run(are_requested_methods_supported_,
-                          get_all_payment_apps_error_);
+  // Don't modify the value of |are_requested_methods_supported_|, because it's
+  // used for canMakePayment().
+  bool supported = are_requested_methods_supported_;
+  if (supported && is_show_user_gesture_ &&
+      base::Contains(spec_->payment_method_identifiers_set(), "basic-card") &&
+      !has_non_autofill_instrument_ && !has_enrolled_instrument_ &&
+      PaymentsExperimentalFeatures::IsEnabled(
+          features::kStrictHasEnrolledAutofillInstrument)) {
+    supported = false;
+    get_all_payment_apps_error_ = errors::kStrictBasicCardShowReject;
+  }
+
+  std::move(callback).Run(supported, get_all_payment_apps_error_);
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {

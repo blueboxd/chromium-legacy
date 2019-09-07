@@ -651,7 +651,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       SiteInstanceImpl* site_instance);
 
   void CreateMediaStreamTrackMetricsHost(
-      blink::mojom::MediaStreamTrackMetricsHostRequest request);
+      mojo::PendingReceiver<blink::mojom::MediaStreamTrackMetricsHost>
+          receiver);
 
 #if BUILDFLAG(ENABLE_MDNS)
   void CreateMdnsResponder(network::mojom::MdnsResponderRequest request);

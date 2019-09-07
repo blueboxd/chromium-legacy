@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -298,7 +299,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDisksClient : public DBusClient {
   // The argument is the unmount error code.
   typedef base::OnceCallback<void(MountError error_code)> UnmountCallback;
 
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Called when a mount event signal is received.
     virtual void OnMountEvent(MountEventType event_type,
@@ -314,9 +315,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDisksClient : public DBusClient {
     // Called when a RenameCompleted signal is received.
     virtual void OnRenameCompleted(RenameError error_code,
                                    const std::string& device_path) = 0;
-
-   protected:
-    virtual ~Observer() = default;
   };
 
   ~CrosDisksClient() override;

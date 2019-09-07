@@ -38,7 +38,8 @@ scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(CursorType type) {
 BitmapCursorOzone::BitmapCursorOzone(const SkBitmap& bitmap,
                                      const gfx::Point& hotspot)
     : hotspot_(hotspot), frame_delay_ms_(0) {
-  bitmaps_.push_back(bitmap);
+  if (!bitmap.isNull())
+    bitmaps_.push_back(bitmap);
 }
 
 BitmapCursorOzone::BitmapCursorOzone(const std::vector<SkBitmap>& bitmaps,
@@ -47,6 +48,11 @@ BitmapCursorOzone::BitmapCursorOzone(const std::vector<SkBitmap>& bitmaps,
     : bitmaps_(bitmaps), hotspot_(hotspot), frame_delay_ms_(frame_delay_ms) {
   DCHECK_LT(0U, bitmaps.size());
   DCHECK_LE(0, frame_delay_ms);
+  // No null bitmap should be in the list. Blank cursors should just be an empty
+  // vector.
+  DCHECK(std::find_if(bitmaps_.begin(), bitmaps_.end(),
+                      [](const SkBitmap& bitmap) { return bitmap.isNull(); }) ==
+         bitmaps_.end());
 }
 
 BitmapCursorOzone::~BitmapCursorOzone() {

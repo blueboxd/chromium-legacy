@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/i18n/message_formatter.h"
 #include "base/location.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -76,8 +75,9 @@ It2MeConfirmationDialogMac::~It2MeConfirmationDialogMac() {
   dialog_timer_.Stop();
 
   if (controller_) {
-    base::mac::ScopedNSAutoreleasePool pool;
-    [controller_ hide];
+    @autoreleasepool {
+      [controller_ hide];
+    }
   }
 }
 
@@ -92,20 +92,22 @@ void It2MeConfirmationDialogMac::Show(const std::string& remote_user_email,
   ResultCallback dialog_action_callback = base::Bind(
       &It2MeConfirmationDialogMac::OnDialogAction, base::Unretained(this));
 
-  base::mac::ScopedNSAutoreleasePool pool;
-  controller_.reset([[It2MeConfirmationDialogMacController alloc]
-      initWithCallback:dialog_action_callback
-              username:remote_user_email]);
-  [controller_ show];
+  @autoreleasepool {
+    controller_.reset([[It2MeConfirmationDialogMacController alloc]
+        initWithCallback:dialog_action_callback
+                username:remote_user_email]);
+    [controller_ show];
+  }
 }
 
 void It2MeConfirmationDialogMac::OnDialogAction(Result result) {
   dialog_timer_.Stop();
 
   if (controller_) {
-    base::mac::ScopedNSAutoreleasePool pool;
-    [controller_ hide];
-    controller_.reset();
+    @autoreleasepool {
+      [controller_ hide];
+      controller_.reset();
+    }
   }
 
   if (result_callback_) {

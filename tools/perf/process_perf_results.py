@@ -54,6 +54,7 @@ DATA_FORMAT_UNKNOWN = 'unknown'
 # are okay with potentially encountering issues.
 GTEST_CONVERSION_WHITELIST = [
   'angle_perftests',
+  'cc_perftests',
   'gpu_perftests',
   'xr.vr.common_perftests',
 ]

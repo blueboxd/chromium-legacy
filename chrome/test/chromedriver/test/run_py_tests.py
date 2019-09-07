@@ -78,8 +78,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2965
-    'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad'
 ]
 
 
@@ -105,8 +103,6 @@ _OS_SPECIFIC_FILTER['win'] = [
 _OS_SPECIFIC_FILTER['linux'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1000530
     'ChromeDriverTest.testActionsMouseMove',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=999261
-    'ChromeDriverTest.testGoBackAndGoForward',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
@@ -118,8 +114,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1000530
     'ChromeDriverTest.testActionsMouseMove',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=999261
-    'ChromeDriverTest.testGoBackAndGoForward',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -459,6 +453,36 @@ class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
     eager_time = stop_eager - start_eager
     self.assertTrue(eager_time < 9)
     thread.join()
+
+  def testDoesntWaitWhenPageLoadStrategyIsNone(self):
+    class HandleRequest(object):
+      def __init__(self):
+        self.sent_hello = threading.Event()
+
+      def slowPage(self, request):
+        self.sent_hello.wait(2)
+        return {}, """
+        <html>
+        <body>hello</body>
+        </html>"""
+
+    handler = HandleRequest()
+    self._http_server.SetCallbackForPath('/slow', handler.slowPage)
+
+    driver = self.CreateDriver(page_load_strategy='none')
+    self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
+
+    driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
+    start = time.time()
+    driver.Load(self._http_server.GetUrl() + '/slow')
+    self.assertTrue(time.time() - start < 2)
+    handler.sent_hello.set()
+    self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
+    self.assertTrue('hello' in driver.GetPageSource())
+
+  def testUnsupportedPageLoadStrategyRaisesException(self):
+    self.assertRaises(chromedriver.InvalidArgument,
+                      self.CreateDriver, page_load_strategy="unsupported")
 
 
 class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
@@ -3321,22 +3345,6 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
     zip_1 = os.path.join(_TEST_DATA_DIR, 'ext_test_1.zip')
     self.CreateDriver(chrome_extensions=[self._PackExtension(zip_1)])
 
-  def testWaitsForExtensionToLoad(self):
-    did_load_event = threading.Event()
-    def RunServer():
-      time.sleep(5)
-      self._sync_server.RespondWithContent('<html>iframe</html>')
-      did_load_event.set()
-
-    thread = threading.Thread(target=RunServer)
-    thread.daemon = True
-    thread.start()
-    crx = os.path.join(_TEST_DATA_DIR, 'ext_slow_loader.crx')
-    driver = self.CreateDriver(
-        chrome_switches=['user-agent=' + self._sync_server.GetUrl()],
-        chrome_extensions=[self._PackExtension(crx)])
-    self.assertTrue(did_load_event.is_set())
-
   def testCanLaunchApp(self):
     app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
     driver = self.CreateDriver(chrome_switches=['load-extension=%s' % app_path])
@@ -3523,36 +3531,6 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
         'return div;')
     div.SingleTap()
     self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
-
-  def testDoesntWaitWhenPageLoadStrategyIsNone(self):
-    class HandleRequest(object):
-      def __init__(self):
-        self.sent_hello = threading.Event()
-
-      def slowPage(self, request):
-        self.sent_hello.wait(2)
-        return {}, """
-        <html>
-        <body>hello</body>
-        </html>"""
-
-    handler = HandleRequest()
-    self._http_server.SetCallbackForPath('/slow', handler.slowPage)
-
-    driver = self.CreateDriver(page_load_strategy='none')
-    self.assertEquals('none', driver.capabilities['pageLoadStrategy'])
-
-    driver.Load(self._http_server.GetUrl() + '/chromedriver/empty.html')
-    start = time.time()
-    driver.Load(self._http_server.GetUrl() + '/slow')
-    self.assertTrue(time.time() - start < 2)
-    handler.sent_hello.set()
-    self.WaitForCondition(lambda: 'hello' in driver.GetPageSource())
-    self.assertTrue('hello' in driver.GetPageSource())
-
-  def testUnsupportedPageLoadStrategyRaisesException(self):
-    self.assertRaises(chromedriver.InvalidArgument,
-                      self.CreateDriver, page_load_strategy="unsupported")
 
   def testNetworkConnectionDisabledByDefault(self):
     driver = self.CreateDriver()

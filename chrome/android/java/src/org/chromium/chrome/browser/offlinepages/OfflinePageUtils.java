@@ -21,6 +21,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -42,6 +44,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
@@ -361,20 +364,49 @@ public class OfflinePageUtils {
         return true;
     }
 
+    private static void getOfflinePageUriForSharing(String tabUrl, boolean isPageTemporary,
+            String offlinePagePath, Callback<Uri> callback) {
+        // Ensure that we have a file path that is longer than just "/".
+        if (isPageTemporary && offlinePagePath.length() > 1) {
+            // We share temporary pages by content URI to prevent unanticipated side effects in the
+            // public directory.
+
+            // Avoid file access (getContentUriFromFile()) from UI thread.
+            PostTask.postTask(TaskTraits.USER_VISIBLE_MAY_BLOCK, () -> {
+                File file = new File(offlinePagePath);
+                // We might get an exception if chrome does not have sharing roots configured.  If
+                // so, just share by URL of the original page instead of sharing the offline page.
+                Uri uri;
+                try {
+                    uri = (new FileProviderHelper()).getContentUriFromFile(file);
+                } catch (Exception e) {
+                    uri = Uri.parse(tabUrl);
+                }
+                final Uri finalUri = uri;
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(finalUri));
+            });
+        } else {
+            callback.onResult(Uri.parse(tabUrl));
+        }
+    }
+
     /**
      * If possible, creates the ShareParams needed to share the current offline page loaded in the
      * provided tab as a MHTML file.
      *
      * @param activity The activity used for sharing and file provider interaction.
      * @param currentTab The current tab from which the page is being shared.
-     * @param shareCallback The callback to be used to send the ShareParams. This will only be
-     *                      called if this function call returns true.
-     * @return true if the sharing of the page is possible.  The callback will be invoked if
-     *                      publishing the page succeeds.
+     * @param shareCallback The callback invoked when either sharing is complete, or when sharing
+     *                      cannot be completed. If sharing cannot be done, the callback parameter
+     *                      is null. May either be invoked from within the function call, or
+     *                      afterwards via PostTask.
      */
-    public static boolean maybeShareOfflinePage(
+    public static void maybeShareOfflinePage(
             final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
-        if (tab == null) return false;
+        if (tab == null) {
+            shareCallback.onResult(null);
+            return;
+        }
 
         boolean isOfflinePage = OfflinePageUtils.isOfflinePage(tab);
         RecordHistogram.recordBooleanHistogram("OfflinePages.SharedPageWasOffline", isOfflinePage);
@@ -383,9 +415,13 @@ public class OfflinePageUtils {
         // sharing.
         if (!isOfflinePage) {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_PAGES_LIVE_PAGE_SHARING)) {
-                return saveAndSharePage(activity, tab, shareCallback);
+                if (!saveAndSharePage(activity, tab, shareCallback)) {
+                    shareCallback.onResult(null);
+                }
+                return;
             } else {
-                return false;
+                shareCallback.onResult(null);
+                return;
             }
         }
 
@@ -393,61 +429,65 @@ public class OfflinePageUtils {
 
         if (offlinePageBridge == null) {
             Log.e(TAG, "Unable to share current tab as an offline page.");
-            return false;
+            shareCallback.onResult(null);
+            return;
         }
 
         WebContents webContents = tab.getWebContents();
-        if (webContents == null) return false;
+        if (webContents == null) {
+            shareCallback.onResult(null);
+            return;
+        }
 
         OfflinePageItem offlinePage = offlinePageBridge.getOfflinePage(webContents);
-        if (offlinePage == null) return false;
+        if (offlinePage == null) {
+            shareCallback.onResult(null);
+            return;
+        }
 
         String offlinePath = offlinePage.getFilePath();
 
-        final String pageUrl = tab.getUrl();
-        // We share temporary pages by content URI to prevent unanticipated side effects in the
-        // public directory.
-        Uri uri;
         boolean isPageTemporary =
                 offlinePageBridge.isTemporaryNamespace(offlinePage.getClientId().getNamespace());
-        // Ensure that we have a file path that is longer than just "/".
-        if (isPageTemporary && offlinePath.length() > 1) {
-            File file = new File(offlinePath);
-            // We might get an exception if chrome does not have sharing roots configured.  If so,
-            // just share by URL of the original page instead of sharing the offline page.
-            try {
-                uri = (new FileProviderHelper()).getContentUriFromFile(file);
-            } catch (Exception e) {
-                uri = Uri.parse(pageUrl);
-            }
-        } else {
-            uri = Uri.parse(pageUrl);
+        String tabTitle = tab.getTitle();
+        getOfflinePageUriForSharing(tab.getUrl(), isPageTemporary, offlinePath,
+                (Uri uri)
+                        -> maybeShareOfflinePageWithUri(activity, tabTitle, webContents,
+                                offlinePageBridge, offlinePage, isPageTemporary, shareCallback,
+                                uri));
+    }
+
+    // A continuation of maybeShareOfflinePage, after the URI is determined in a background thread.
+    private static void maybeShareOfflinePageWithUri(Activity activity, String tabTitle,
+            WebContents webContents, OfflinePageBridge offlinePageBridge,
+            OfflinePageItem offlinePage, boolean isPageTemporary,
+            Callback<ShareParams> shareCallback, Uri uri) {
+        if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) {
+            shareCallback.onResult(null);
+            return;
         }
 
-        if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) return false;
-
+        String offlinePath = offlinePage.getFilePath();
         if (isPageTemporary || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
             // Share temporary pages and pages already in a public location.
-            final String pageTitle = tab.getTitle();
             final File offlinePageFile = new File(offlinePath);
-            sharePage(activity, uri.toString(), pageTitle, offlinePath, offlinePageFile,
+            sharePage(activity, uri.toString(), tabTitle, offlinePath, offlinePageFile,
                     shareCallback);
-            return true;
+            return;
         }
 
-        // The file access permission is needed since we may need to publish the archive file
-        // if it resides in internal directory.
+        // The file access permission is needed since we may need to publish the archive
+        // file if it resides in internal directory.
         offlinePageBridge.acquireFileAccessPermission(webContents, (granted) -> {
             if (!granted) {
                 recordPublishPageResult(SavePageResult.PERMISSION_DENIED);
                 return;
             }
 
-            // If the page is not in a public location, we must publish it before sharing it.
+            // If the page is not in a public location, we must publish it before
+            // sharing it.
             publishThenShareInternalPage(activity, offlinePageBridge, offlinePage, shareCallback);
         });
-
-        return true;
     }
 
     /**

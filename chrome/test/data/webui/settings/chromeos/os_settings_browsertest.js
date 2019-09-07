@@ -11,6 +11,7 @@ const BROWSER_SETTINGS_PATH = '../';
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "ash/public/cpp/ash_features.h"');
+GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
@@ -71,7 +72,7 @@ TEST_F('OSSettingsAboutPageTest', 'AboutPage', () => {
   mocha.run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('OSSettingsAboutPageTest', 'AboutPage_OfficialBuild', () => {
   settings_about_page.registerOfficialBuildTests();
   mocha.run();

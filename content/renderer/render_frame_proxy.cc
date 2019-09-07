@@ -617,8 +617,10 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       sent_visual_properties_->capture_sequence_number !=
           pending_visual_properties_.capture_sequence_number;
 
-  pending_visual_properties_.compositor_viewport =
-      web_frame_->GetCompositingRect();
+  if (web_frame_) {
+    pending_visual_properties_.compositor_viewport =
+        web_frame_->GetCompositingRect();
+  }
 
   bool synchronized_props_changed =
       !sent_visual_properties_ ||

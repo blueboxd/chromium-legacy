@@ -759,13 +759,26 @@ class BBJSONGenerator(object):
 
   def check_composition_test_suites(self):
     # Pre-pass to catch errors reliably.
-    for name, value in self.test_suites.iteritems():
-      if isinstance(value, list):
-        for entry in value:
-          if isinstance(self.test_suites[entry], list):
+    for suite, suite_def in self.test_suites.iteritems():
+      if isinstance(suite_def, list):
+        seen_tests = {}
+        for sub_suite in suite_def:
+          if isinstance(self.test_suites[sub_suite], list):
             raise BBGenErr('Composition test suites may not refer to other '
                            'composition test suites (error found while '
-                           'processing %s)' % name)
+                           'processing %s)' % suite)
+          else:
+            # test name -> basic_suite that it came from
+            basic_tests = {k: sub_suite for k in self.test_suites[sub_suite]}
+            for test_name, test_suite in basic_tests.iteritems():
+              if (test_name in seen_tests and
+                  self.test_suites[test_suite][test_name] !=
+                  self.test_suites[seen_tests[test_name]][test_name]):
+                raise BBGenErr('Conflicting test definitions for %s from %s '
+                               'and %s in Composition test suite (error found '
+                               'while processing %s)' % (test_name,
+                               seen_tests[test_name], test_suite, suite))
+            seen_tests.update(basic_tests)
 
   def flatten_test_suites(self):
     new_test_suites = {}

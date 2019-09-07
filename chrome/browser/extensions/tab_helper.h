@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/extension_id.h"
@@ -155,7 +156,7 @@ class TabHelper : public content::WebContentsObserver,
   std::unique_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_{this};

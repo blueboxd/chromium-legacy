@@ -5,7 +5,6 @@
 #include "base/mac/objc_release_properties.h"
 #include "base/stl_util.h"
 
-#import "base/mac/scoped_nsautorelease_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #import <objc/runtime.h>
@@ -268,9 +267,7 @@ TEST(ObjCReleasePropertiesTest, SesameStreet) {
   // Make sure that worked before things get more involved.
   EXPECT_EQ(3, ah_ah_ah);
 
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
-
+  @autoreleasepool {
     test_object.baseCvcRetain = [CountVonCount countVonCount];
     test_object.baseCvcCopy = [CountVonCount countVonCount];
     test_object.baseCvcAssign = baseAssign;
@@ -324,9 +321,7 @@ TEST(ObjCReleasePropertiesTest, SesameStreet) {
   // readonly.
   EXPECT_EQ(6, ah_ah_ah);
 
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
-
+  @autoreleasepool {
     // Put things back to how they were.
     test_object.baseCvcRetain = [CountVonCount countVonCount];
     test_object.baseCvcCopy = [CountVonCount countVonCount];

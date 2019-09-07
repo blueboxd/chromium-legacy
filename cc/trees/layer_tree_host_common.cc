@@ -649,20 +649,23 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
 void LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
     LayerTreeImpl* layer_tree_impl) {
-  if (layer_tree_impl->settings().use_layer_lists) {
-    // TODO(wangxianzhu): We should DCHECK(!needs_rebuild) after we remove all
-    // unnecessary setting of the flag in layer list mode.
-    auto* property_trees = layer_tree_impl->property_trees();
-    property_trees->needs_rebuild = false;
-    // The following are needed for tests that modify impl-side property trees.
-    // In production code impl-side property trees are pushed from the main
-    // thread and the following are done in other ways.
-    std::vector<std::unique_ptr<RenderSurfaceImpl>> old_render_surfaces;
-    property_trees->effect_tree.TakeRenderSurfaces(&old_render_surfaces);
-    property_trees->effect_tree.CreateOrReuseRenderSurfaces(
-        &old_render_surfaces, layer_tree_impl);
-    property_trees->ResetCachedData();
-  }
+  if (!layer_tree_impl->settings().use_layer_lists)
+    return;
+
+  // TODO(wangxianzhu): We should DCHECK(!needs_rebuild) after we remove all
+  // unnecessary setting of the flag in layer list mode.
+  auto* property_trees = layer_tree_impl->property_trees();
+  property_trees->needs_rebuild = false;
+
+  // The following are needed for tests that modify impl-side property trees.
+  // In production code impl-side property trees are pushed from the main
+  // thread and the following are done in other ways.
+  std::vector<std::unique_ptr<RenderSurfaceImpl>> old_render_surfaces;
+  property_trees->effect_tree.TakeRenderSurfaces(&old_render_surfaces);
+  property_trees->effect_tree.CreateOrReuseRenderSurfaces(&old_render_surfaces,
+                                                          layer_tree_impl);
+  layer_tree_impl->MoveChangeTrackingToLayers();
+  property_trees->ResetCachedData();
 }
 
 void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(

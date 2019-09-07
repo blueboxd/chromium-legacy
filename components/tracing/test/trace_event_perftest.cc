@@ -90,7 +90,7 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 };
 
 TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0) {

@@ -117,7 +117,7 @@ class MockDiskMountManager : public DiskMountManager {
   void NotifyDiskChanged(DiskEvent event, const Disk* disk);
 
   // The list of observers.
-  base::ObserverList<DiskMountManager::Observer>::Unchecked observers_;
+  base::ObserverList<DiskMountManager::Observer> observers_;
 
   // The list of disks found.
   DiskMountManager::DiskMap disks_;

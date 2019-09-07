@@ -11,4 +11,5 @@ js_type_check("closure_compile") {
 }
 
 js_library("cr_lazy_render") {
+  externs_list = [ "$externs_path/pending.js" ]
 }

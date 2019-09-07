@@ -309,11 +309,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // parameters. It may be different from the DownloadCreateInfo used to create
   // the DownloadItem if Start() is being called in response for a
   // download resumption request.
-  virtual void Start(
-      std::unique_ptr<DownloadFile> download_file,
-      DownloadJob::CancelRequestCallback cancel_request_callback,
-      const DownloadCreateInfo& new_create_info,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider);
+  virtual void Start(std::unique_ptr<DownloadFile> download_file,
+                     DownloadJob::CancelRequestCallback cancel_request_callback,
+                     const DownloadCreateInfo& new_create_info,
+                     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+                         url_loader_factory_provider);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 

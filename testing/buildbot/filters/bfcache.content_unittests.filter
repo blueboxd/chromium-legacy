@@ -40,10 +40,6 @@
 # NavigationSimulator.CommitErrorPage() is not supported.
 -RenderProcessHostUnitTest.DoNotReuseError
 
-# Expect a speculative RenderFrameHost to exist.
--WebContentsImplTest.CrossSiteNavigationBackOldNavigationIgnored
--WebContentsImplTest.CrossSiteNavigationBackPreempted
-
 # Test expect a proxy for the old RFH's SiteInstance after a normal navigation
 # to exist.
 -WebContentsImplTest.CrossSiteBoundaries

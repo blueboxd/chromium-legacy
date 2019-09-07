@@ -202,26 +202,45 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-struct HeadlessWebContentsImpl::PendingFrame {
- public:
-  PendingFrame() = default;
-  ~PendingFrame() = default;
+namespace {
+constexpr uint64_t kBeginFrameSourceId = viz::BeginFrameArgs::kManualSourceId;
+}
 
-  bool MaybeRunCallback() {
-    if (wait_for_copy_result || !display_did_finish_frame)
-      return false;
-    std::move(callback).Run(has_damage, std::move(bitmap));
-    return true;
+class HeadlessWebContentsImpl::PendingFrame
+    : public base::RefCounted<HeadlessWebContentsImpl::PendingFrame>,
+      public base::SupportsWeakPtr<HeadlessWebContentsImpl::PendingFrame> {
+ public:
+  PendingFrame(uint64_t sequence_number, FrameFinishedCallback callback)
+      : sequence_number_(sequence_number), callback_(std::move(callback)) {}
+
+  void OnFrameComplete(const viz::BeginFrameAck& ack) {
+    DCHECK_EQ(kBeginFrameSourceId, ack.source_id);
+    DCHECK_EQ(sequence_number_, ack.sequence_number);
+    has_damage_ = ack.has_damage;
   }
 
-  uint64_t sequence_number = 0;
-  bool wait_for_copy_result = false;
-  bool display_did_finish_frame = false;
-  bool has_damage = false;
-  std::unique_ptr<SkBitmap> bitmap;
-  FrameFinishedCallback callback;
+  void OnReadbackComplete(const SkBitmap& bitmap) {
+    TRACE_EVENT2(
+        "headless", "HeadlessWebContentsImpl::PendingFrame::OnReadbackComplete",
+        "sequence_number", sequence_number_, "success", !bitmap.drawsNothing());
+    if (bitmap.drawsNothing()) {
+      LOG(WARNING) << "Readback from surface failed.";
+      return;
+    }
+    bitmap_ = std::make_unique<SkBitmap>(bitmap);
+  }
 
  private:
+  friend class base::RefCounted<PendingFrame>;
+
+  ~PendingFrame() { std::move(callback_).Run(has_damage_, std::move(bitmap_)); }
+
+  const uint64_t sequence_number_;
+
+  FrameFinishedCallback callback_;
+  bool has_damage_ = false;
+  std::unique_ptr<SkBitmap> bitmap_;
+
   DISALLOW_COPY_AND_ASSIGN(PendingFrame);
 };
 
@@ -261,8 +280,9 @@ HeadlessWebContentsImpl::CreateForChildContents(
 
   // There may already be frames, so make sure they also have our services.
   for (content::RenderFrameHost* frame_host :
-       child->web_contents_->GetAllFrames())
+       child->web_contents_->GetAllFrames()) {
     child->RenderFrameCreated(frame_host);
+  }
 
   return child;
 }
@@ -450,63 +470,7 @@ HeadlessBrowserContextImpl* HeadlessWebContentsImpl::browser_context() const {
   return browser_context_;
 }
 
-void HeadlessWebContentsImpl::OnDisplayDidFinishFrame(
-    const viz::BeginFrameAck& ack) {
-  TRACE_EVENT2("headless", "HeadlessWebContentsImpl::OnDisplayDidFinishFrame",
-               "source_id", ack.source_id, "sequence_number",
-               ack.sequence_number);
-
-  auto it = pending_frames_.begin();
-  while (it != pending_frames_.end()) {
-    if (begin_frame_source_id_ == ack.source_id &&
-        (*it)->sequence_number <= ack.sequence_number) {
-      (*it)->has_damage = ack.has_damage;
-      (*it)->display_did_finish_frame = true;
-      if ((*it)->MaybeRunCallback()) {
-        it = pending_frames_.erase(it);
-      } else {
-        ++it;
-      }
-    } else {
-      ++it;
-    }
-  }
-}
-
-void HeadlessWebContentsImpl::OnNeedsExternalBeginFrames(
-    bool needs_begin_frames) {
-  protocol::HeadlessHandler::OnNeedsBeginFrames(this, needs_begin_frames);
-  TRACE_EVENT1("headless",
-               "HeadlessWebContentsImpl::OnNeedsExternalBeginFrames",
-               "needs_begin_frames", needs_begin_frames);
-  needs_external_begin_frames_ = needs_begin_frames;
-}
-
-void HeadlessWebContentsImpl::PendingFrameReadbackComplete(
-    HeadlessWebContentsImpl::PendingFrame* pending_frame,
-    const SkBitmap& bitmap) {
-  TRACE_EVENT2("headless",
-               "HeadlessWebContentsImpl::PendingFrameReadbackComplete",
-               "sequence_number", pending_frame->sequence_number, "success",
-               !bitmap.drawsNothing());
-  if (bitmap.drawsNothing()) {
-    LOG(WARNING) << "Readback from surface failed.";
-  } else {
-    pending_frame->bitmap = std::make_unique<SkBitmap>(bitmap);
-  }
-
-  pending_frame->wait_for_copy_result = false;
-
-  // Run callback if the frame was already finished by the display.
-  if (pending_frame->MaybeRunCallback()) {
-    base::EraseIf(pending_frames_,
-                  [pending_frame](const std::unique_ptr<PendingFrame>& frame) {
-                    return frame.get() == pending_frame;
-                  });
-  }
-}
-
-void HeadlessWebContentsImpl::BeginFrame(
+bool HeadlessWebContentsImpl::BeginFrame(
     const base::TimeTicks& frame_timeticks,
     const base::TimeTicks& deadline,
     const base::TimeDelta& interval,
@@ -514,45 +478,38 @@ void HeadlessWebContentsImpl::BeginFrame(
     bool capture_screenshot,
     FrameFinishedCallback frame_finished_callback) {
   DCHECK(begin_frame_control_enabled_);
+  if (pending_frame_)
+    return false;
   TRACE_EVENT2("headless", "HeadlessWebContentsImpl::BeginFrame", "frame_time",
                frame_timeticks, "capture_screenshot", capture_screenshot);
 
-  uint64_t sequence_number = begin_frame_sequence_number_++;
-
-  auto pending_frame = std::make_unique<PendingFrame>();
-  pending_frame->sequence_number = sequence_number;
-  pending_frame->callback = std::move(frame_finished_callback);
-  // Note: It's important to move |pending_frame| into |pending_frames_| now
-  // since the CopyFromSurface() call below can run its result callback
-  // synchronously on certain platforms/environments.
-  auto* const pending_frame_raw_ptr = pending_frame.get();
-  pending_frames_.emplace_back(std::move(pending_frame));
-
+  int64_t sequence_number = begin_frame_sequence_number_++;
+  auto pending_frame = base::MakeRefCounted<PendingFrame>(
+      sequence_number, std::move(frame_finished_callback));
+  pending_frame_ = pending_frame->AsWeakPtr();
   if (capture_screenshot) {
     content::RenderWidgetHostView* view =
         web_contents()->GetRenderWidgetHostView();
     if (view && view->IsSurfaceAvailableForCopy()) {
-      pending_frame_raw_ptr->wait_for_copy_result = true;
       view->CopyFromSurface(
           gfx::Rect(), gfx::Size(),
-          base::BindOnce(&HeadlessWebContentsImpl::PendingFrameReadbackComplete,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         pending_frame_raw_ptr));
+          base::BindOnce(&PendingFrame::OnReadbackComplete, pending_frame));
     } else {
       LOG(WARNING) << "Surface not ready for screenshot.";
     }
   }
 
-  ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
-  DCHECK(compositor);
-
   auto args = viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, begin_frame_source_id_, sequence_number,
+      BEGINFRAME_FROM_HERE, kBeginFrameSourceId, sequence_number,
       frame_timeticks, deadline, interval, viz::BeginFrameArgs::NORMAL);
   args.animate_only = animate_only;
 
-  compositor->context_factory_private()->IssueExternalBeginFrame(compositor,
-                                                                 args);
+  ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
+  DCHECK(compositor);
+  compositor->context_factory_private()->IssueExternalBeginFrame(
+      compositor, args, /* force= */ true,
+      base::BindOnce(&PendingFrame::OnFrameComplete, pending_frame));
+  return true;
 }
 
 HeadlessWebContents::Builder::Builder(

@@ -23,7 +23,8 @@ ParallelDownloadJob::ParallelDownloadJob(
     DownloadItem* download_item,
     CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& create_info,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+    URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+        url_loader_factory_provider,
     service_manager::Connector* connector)
     : DownloadJobImpl(download_item, std::move(cancel_request_callback), true),
       initial_request_offset_(create_info.offset),
@@ -32,7 +33,7 @@ ParallelDownloadJob::ParallelDownloadJob(
       requests_sent_(false),
       is_canceled_(false),
       range_support_(create_info.accept_range),
-      url_loader_factory_provider_(url_loader_factory_provider),
+      url_loader_factory_provider_(std::move(url_loader_factory_provider)),
       connector_(connector) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
@@ -293,8 +294,8 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   download_params->set_follow_cross_origin_redirects(false);
 
   // Send the request.
-  worker->SendRequest(std::move(download_params), url_loader_factory_provider_,
-                      connector_);
+  worker->SendRequest(std::move(download_params),
+                      url_loader_factory_provider_.get(), connector_);
   DCHECK(workers_.find(offset) == workers_.end());
   workers_[offset] = std::move(worker);
 }

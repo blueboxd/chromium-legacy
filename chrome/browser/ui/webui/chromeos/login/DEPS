@@ -2,6 +2,7 @@ specific_include_rules = {
   # TODO(mash): Fix. https://crbug.com/856375.
   "core_oobe_handler\.cc": [
     "+ash/shell.h",
+    "+ash/shelf/shelf_constants.h",
   ],
   # Tests.
   "oobe_display_chooser_browsertest\.cc": [

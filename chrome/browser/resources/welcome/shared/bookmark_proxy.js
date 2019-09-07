@@ -2,91 +2,85 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('welcome', function() {
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
+/**
+ * @typedef {{
+ *    parentId: string,
+ *    title: string,
+ *    url: string,
+ * }}
+ */
+let bookmarkData;
+
+/** @interface */
+export class BookmarkProxy {
   /**
-   * @typedef {{
-   *    parentId: string,
-   *    title: string,
-   *    url: string,
-   * }}
+   * @param {!bookmarkData} data
+   * @param {!Function} callback
    */
-  let bookmarkData;
+  addBookmark(data, callback) {}
 
-  /** @interface */
-  class BookmarkProxy {
-    /**
-     * @param {!bookmarkData} data
-     * @param {!Function} callback
-     */
-    addBookmark(data, callback) {}
+  /** @param {string} id ID provided by callback when bookmark was added. */
+  removeBookmark(id) {}
 
-    /** @param {string} id ID provided by callback when bookmark was added. */
-    removeBookmark(id) {}
+  /** @param {boolean} show */
+  toggleBookmarkBar(show) {}
 
-    /** @param {boolean} show */
-    toggleBookmarkBar(show) {}
+  /** @return {!Promise<boolean>} */
+  isBookmarkBarShown() {}
+}
 
-    /** @return {!Promise<boolean>} */
-    isBookmarkBarShown() {}
+/** @implements {BookmarkProxy} */
+export class BookmarkProxyImpl {
+  /** @override */
+  addBookmark(data, callback) {
+    chrome.bookmarks.create(data, callback);
   }
 
-  /** @implements {welcome.BookmarkProxy} */
-  class BookmarkProxyImpl {
-    /** @override */
-    addBookmark(data, callback) {
-      chrome.bookmarks.create(data, callback);
-    }
-
-    /** @override */
-    removeBookmark(id) {
-      chrome.bookmarks.remove(id);
-    }
-
-    /** @override */
-    toggleBookmarkBar(show) {
-      chrome.send('toggleBookmarkBar', [show]);
-    }
-
-    /** @override */
-    isBookmarkBarShown() {
-      return cr.sendWithPromise('isBookmarkBarShown');
-    }
+  /** @override */
+  removeBookmark(id) {
+    chrome.bookmarks.remove(id);
   }
 
-  cr.addSingletonGetter(BookmarkProxyImpl);
-
-  // Wrapper for bookmark proxy to keep some additional states.
-  class BookmarkBarManager {
-    constructor() {
-      /** @private {welcome.BookmarkProxy} */
-      this.proxy_ = BookmarkProxyImpl.getInstance();
-
-      /** @private {boolean} */
-      this.isBarShown_ = false;
-
-      /** @type {!Promise} */
-      this.initialized = this.proxy_.isBookmarkBarShown().then(shown => {
-        this.isBarShown_ = shown;
-      });
-    }
-
-    /** @return {boolean} */
-    getShown() {
-      return this.isBarShown_;
-    }
-
-    /** @param {boolean} show */
-    setShown(show) {
-      this.isBarShown_ = show;
-      this.proxy_.toggleBookmarkBar(show);
-    }
+  /** @override */
+  toggleBookmarkBar(show) {
+    chrome.send('toggleBookmarkBar', [show]);
   }
 
-  cr.addSingletonGetter(BookmarkBarManager);
+  /** @override */
+  isBookmarkBarShown() {
+    return sendWithPromise('isBookmarkBarShown');
+  }
+}
 
-  return {
-    BookmarkProxy: BookmarkProxy,
-    BookmarkProxyImpl: BookmarkProxyImpl,
-    BookmarkBarManager: BookmarkBarManager,
-  };
-});
+addSingletonGetter(BookmarkProxyImpl);
+
+// Wrapper for bookmark proxy to keep some additional states.
+export class BookmarkBarManager {
+  constructor() {
+    /** @private {BookmarkProxy} */
+    this.proxy_ = BookmarkProxyImpl.getInstance();
+
+    /** @private {boolean} */
+    this.isBarShown_ = false;
+
+    /** @type {!Promise} */
+    this.initialized = this.proxy_.isBookmarkBarShown().then(shown => {
+      this.isBarShown_ = shown;
+    });
+  }
+
+  /** @return {boolean} */
+  getShown() {
+    return this.isBarShown_;
+  }
+
+  /** @param {boolean} show */
+  setShown(show) {
+    this.isBarShown_ = show;
+    this.proxy_.toggleBookmarkBar(show);
+  }
+}
+
+addSingletonGetter(BookmarkBarManager);

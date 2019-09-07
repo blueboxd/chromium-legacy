@@ -270,7 +270,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
 
 WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
     const blink::WebCoalescedInputEvent& coalesced_event) {
-  // This method must only be called on non-frozen RenderWidget, which is
+  // This method must only be called on non-undead RenderWidget, which is
   // guaranteed to have a WebWidget.
   // TODO(https://crbug.com/995981): Eventually we should be able to remote this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
@@ -309,7 +309,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  // This method must only be called on non-frozen RenderWidget, which is
+  // This method must only be called on non-undead RenderWidget, which is
   // guaranteed to have a WebWidget.
   // TODO(https://crbug.com/995981): Eventually we should be able to remote this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be
@@ -603,7 +603,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
     std::vector<InjectScrollGestureParams> injected_scroll_params,
     const WebInputEvent& input_event,
     const ui::LatencyInfo& original_latency_info) {
-  // This method must only be called on non-frozen RenderWidget, which is
+  // This method must only be called on non-undead RenderWidget, which is
   // guaranteed to have a WebWidget.
   // TODO(https://crbug.com/995981): Eventually we should be able to remote this
   // DCHECK, since RenderWidget's lifetime [and thus this instance's] will be

@@ -110,6 +110,10 @@ void TestAutofillClient::ShowLocalCardMigrationResults(
 void TestAutofillClient::ShowWebauthnOfferDialog(
     WebauthnOfferDialogCallback callback) {}
 
+bool TestAutofillClient::CloseWebauthnOfferDialog() {
+  return true;
+}
+
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

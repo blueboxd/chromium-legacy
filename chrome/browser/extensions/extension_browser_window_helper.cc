@@ -14,7 +14,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/extension_registry.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -70,7 +69,7 @@ void UnmuteIfMutedByExtension(content::WebContents* contents,
 }  // namespace
 
 ExtensionBrowserWindowHelper::ExtensionBrowserWindowHelper(Browser* browser)
-    : browser_(browser), registry_observer_(this) {
+    : browser_(browser) {
   registry_observer_.Add(ExtensionRegistry::Get(browser_->profile()));
 }
 

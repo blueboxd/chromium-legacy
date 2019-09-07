@@ -106,9 +106,6 @@ FuzzerBrowserProcess::BuildRootCompositorFrameSinkParams() {
   params->external_begin_frame_controller =
       MakeRequestAssociatedWithDedicatedPipe(
           &external_begin_frame_controller_ptr_);
-  params->external_begin_frame_controller_client =
-      external_begin_frame_controller_client_.BindInterfacePtr()
-          .PassInterface();
   return params;
 }
 

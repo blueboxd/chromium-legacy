@@ -507,17 +507,16 @@ void DockedMagnifierControllerImpl::SwitchCurrentSourceRootWindowIfNeeded(
   is_minimum_point_of_interest_height_valid_ = false;
 
   if (old_root_window) {
-    if (separator_layer_) {
-      GetViewportParentContainerForRoot(old_root_window)
-          ->layer()
-          ->Remove(separator_layer_.get());
-    }
-    if (update_old_root_workarea)
-      SetViewportHeightInWorkArea(old_root_window, 0);
-
+    // Order here matters. We should stop observing caret bounds changes before
+    // updating the work area bounds of the old root window. Otherwise, work
+    // area bounds changes will lead to caret bounds changes that recurses back
+    // here unnecessarily. https://crbug.com/1000903.
     if (input_method_)
       input_method_->RemoveObserver(this);
     input_method_ = nullptr;
+
+    if (update_old_root_workarea)
+      SetViewportHeightInWorkArea(old_root_window, 0);
 
     // Reset mouse cursor confinement to default.
     RootWindowController::ForWindow(old_root_window)

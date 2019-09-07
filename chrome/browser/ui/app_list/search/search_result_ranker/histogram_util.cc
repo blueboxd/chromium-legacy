@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -85,6 +86,30 @@ void LogZeroStateReceivedScore(const std::string& suffix, float score) {
   base::UmaHistogramExactLinear(
       "Apps.AppList.ZeroStateResults.ReceivedScore." + suffix,
       floor(score * 100), 100);
+}
+
+void LogZeroStateResultsListMetrics(
+    const std::vector<RankingItemType>& result_types,
+    int launched_index) {
+  // Log position of clicked items.
+  if (launched_index >= 0) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Apps.AppList.ZeroStateResultsList.LaunchedItemPosition",
+        launched_index);
+  }
+
+  // Log the number of types shown in the impression set.
+  base::flat_set<RankingItemType> type_set(result_types);
+  UMA_HISTOGRAM_COUNTS_100(
+      "Apps.AppList.ZeroStateResultsList.NumImpressionTypes", type_set.size());
+
+  // Log CTR metrics. Note that all clicks are captured and indicated by a
+  // non-negative launch index, while an index of -1 indicates that results were
+  // impressed on screen for some amount of time.
+  UMA_HISTOGRAM_BOOLEAN("Apps.AppList.ZeroStateResultsList.Clicked",
+                        launched_index >= 0);
+
+  // TODO(999912): Add UMA metrics for file-specific CTR.
 }
 
 }  // namespace app_list

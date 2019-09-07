@@ -15,6 +15,12 @@ namespace base {
 
 namespace {
 
+class CopyFunctions : public StackCopier {
+ public:
+  using StackCopier::CopyStackContentsAndRewritePointers;
+  using StackCopier::RewritePointerIfInOriginalStack;
+};
+
 static constexpr size_t kTestStackBufferSize = sizeof(uintptr_t) * 4;
 
 union alignas(StackBuffer::kPlatformStackAlignment) TestStackBuffer {
@@ -29,7 +35,7 @@ TEST(StackCopierTest, RewritePointerIfInOriginalStack_InStack) {
   uintptr_t original_stack[4];
   uintptr_t stack_copy[4];
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&stack_copy[2]),
-            StackCopier::RewritePointerIfInOriginalStack(
+            CopyFunctions::RewritePointerIfInOriginalStack(
                 reinterpret_cast<uint8_t*>(&original_stack[0]),
                 &original_stack[0] + base::size(original_stack),
                 reinterpret_cast<uint8_t*>(&stack_copy[0]),
@@ -44,7 +50,7 @@ TEST(StackCopierTest, RewritePointerIfInOriginalStack_NotInStack) {
   uintptr_t stack_copy[4];
 
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&non_stack_location),
-            StackCopier::RewritePointerIfInOriginalStack(
+            CopyFunctions::RewritePointerIfInOriginalStack(
                 reinterpret_cast<uint8_t*>(&original_stack[0]),
                 &original_stack[0] + size(original_stack),
                 reinterpret_cast<uint8_t*>(&stack_copy[0]),
@@ -62,7 +68,7 @@ TEST(StackCopierTest, StackCopy) {
       reinterpret_cast<uintptr_t>(&original_stack.as_uintptr[1]);
   TestStackBuffer stack_copy;
 
-  StackCopier::CopyStackContentsAndRewritePointers(
+  CopyFunctions::CopyStackContentsAndRewritePointers(
       &original_stack.as_uint8[0],
       &original_stack.as_uintptr[0] + size(original_stack.as_uintptr),
       StackBuffer::kPlatformStackAlignment, &stack_copy.as_uintptr[0]);
@@ -97,7 +103,7 @@ TEST(StackCopierTest, StackCopy_NonAlignedStackPointerCopy) {
   TestStackBuffer stack_copy_buffer = {{0}};
 
   const uint8_t* stack_copy_bottom =
-      StackCopier::CopyStackContentsAndRewritePointers(
+      CopyFunctions::CopyStackContentsAndRewritePointers(
           unaligned_stack_bottom, stack_top,
           StackBuffer::kPlatformStackAlignment,
           &stack_copy_buffer.as_uintptr[0]);
@@ -144,7 +150,7 @@ TEST(StackCopierTest, StackCopy_NonAlignedStackPointerUnalignedRewriteAtStart) {
   TestStackBuffer stack_copy_buffer = {{0}};
 
   const uint8_t* stack_copy_bottom =
-      StackCopier::CopyStackContentsAndRewritePointers(
+      CopyFunctions::CopyStackContentsAndRewritePointers(
           unaligned_stack_bottom,
           &stack_buffer.as_uintptr[0] + size(stack_buffer.as_uintptr),
           StackBuffer::kPlatformStackAlignment,
@@ -181,7 +187,7 @@ TEST(StackCopierTest,
   TestStackBuffer stack_copy_buffer = {{0}};
 
   const uint8_t* stack_copy_bottom =
-      StackCopier::CopyStackContentsAndRewritePointers(
+      CopyFunctions::CopyStackContentsAndRewritePointers(
           unaligned_stack_bottom,
           &stack_buffer.as_uintptr[0] + size(stack_buffer.as_uintptr),
           StackBuffer::kPlatformStackAlignment,
@@ -212,7 +218,7 @@ TEST(StackCopierTest, StackCopy_NonAlignedStackPointerAlignedRewrite) {
 
   TestStackBuffer stack_copy_buffer = {{0}};
 
-  StackCopier::CopyStackContentsAndRewritePointers(
+  CopyFunctions::CopyStackContentsAndRewritePointers(
       unaligned_stack_bottom,
       &stack_buffer.as_uintptr[0] + size(stack_buffer.as_uintptr),
       StackBuffer::kPlatformStackAlignment, &stack_copy_buffer.as_uintptr[0]);

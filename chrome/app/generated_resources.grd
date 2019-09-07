@@ -6187,6 +6187,12 @@ the Bookmarks menu.">
           Open Browser Window
         </message>
       </if>
+      <message name="IDS_APP_MENU_BUTTON_UPDATE" desc="Short label next to app-menu button when an update is available.">
+        Update
+      </message>
+      <message name="IDS_APP_MENU_BUTTON_ERROR" desc="Short label next to app-menu button when the user needs to resolve something.">
+        Error
+      </message>
 
       <!-- Screen Capture strings -->
       <message name="IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE" desc="Title for the prompt shown when screen capturing is requrested by an app.">

@@ -199,6 +199,9 @@ class CrostiniManager::CrostiniRestarter
     if (completed_callback_) {
       LOG(ERROR) << "Destroying without having called the callback.";
     }
+    auto* mount_manager = chromeos::disks::DiskMountManager::GetInstance();
+    if (mount_manager)
+      mount_manager->RemoveObserver(this);
   }
 
   void ReportRestarterResult(CrostiniResult result) {

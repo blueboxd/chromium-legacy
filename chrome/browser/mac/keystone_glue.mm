@@ -18,7 +18,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -111,8 +110,9 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 
   // Happens on a WorkerPool thread.
   void Run() {
-    base::mac::ScopedNSAutoreleasePool pool;
-    [target_ performSelector:sel_ withObject:arg_];
+    @autoreleasepool {
+      [target_ performSelector:sel_ withObject:arg_];
+    }
   }
 
   base::scoped_nsobject<id> target_;

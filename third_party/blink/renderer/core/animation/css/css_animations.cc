@@ -1121,8 +1121,8 @@ bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
 }
 
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
-    const AnimationEffect& animation_node) {
-  const Timing::Phase current_phase = animation_node.GetPhase();
+    const AnimationEffect& animation_node,
+    Timing::Phase current_phase) {
   const base::Optional<double> current_iteration =
       animation_node.CurrentIteration();
 
@@ -1174,8 +1174,8 @@ EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
 }
 
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
-    const AnimationEffect& animation_node) {
-  const Timing::Phase current_phase = animation_node.GetPhase();
+    const AnimationEffect& animation_node,
+    Timing::Phase current_phase) {
   if (current_phase == previous_phase_)
     return;
 

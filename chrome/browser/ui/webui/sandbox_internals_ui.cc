@@ -86,7 +86,7 @@ SandboxInternalsUI::SandboxInternalsUI(content::WebUI* web_ui)
 void SandboxInternalsUI::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
 #if defined(OS_ANDROID)
-  chrome::mojom::SandboxStatusExtensionAssociatedPtr sandbox_status;
+  mojo::AssociatedRemote<chrome::mojom::SandboxStatusExtension> sandbox_status;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &sandbox_status);
   sandbox_status->AddSandboxStatusExtension();

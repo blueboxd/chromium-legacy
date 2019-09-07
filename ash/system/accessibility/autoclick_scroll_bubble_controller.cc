@@ -4,7 +4,7 @@
 
 #include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
 
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -218,7 +218,7 @@ void AutoclickScrollBubbleController::ShowBubble(
       CollisionDetectionUtils::RelativePriority::kAutomaticClicksScrollMenu);
   bubble_view_->InitializeAndShowBubble();
 
-  if (app_list_features::IsBackgroundBlurEnabled()) {
+  if (features::IsBackgroundBlurEnabled()) {
     bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }

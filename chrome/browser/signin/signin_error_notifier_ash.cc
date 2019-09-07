@@ -48,7 +48,7 @@
 namespace {
 
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
-constexpr char kSecondaryAccountNotificationIdSuffix[] = "/secondary-account";
+constexpr char kSecondaryAccountNotificationIdSuffix[] = "secondary-account";
 
 void HandleDeviceAccountReauthNotificationClick(
     base::Optional<int> button_index) {
@@ -81,7 +81,8 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
   device_account_notification_id_ =
       kProfileSigninNotificationId + profile->GetProfileUserName();
   secondary_account_notification_id_ =
-      device_account_notification_id_ + kSecondaryAccountNotificationIdSuffix;
+      std::string(kProfileSigninNotificationId) +
+      kSecondaryAccountNotificationIdSuffix;
 
   error_controller_->AddObserver(this);
   OnErrorChanged();

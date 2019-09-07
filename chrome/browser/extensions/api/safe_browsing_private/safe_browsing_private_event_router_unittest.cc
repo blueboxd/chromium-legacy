@@ -159,12 +159,16 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnReuseDetected) {
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
-  base::Value* wrapper =
-      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
-  ASSERT_NE(nullptr, wrapper);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
   base::Value* event =
-      wrapper->FindKey(SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent);
+      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("https://phishing.com/",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyUrl));
@@ -190,12 +194,16 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordChanged) {
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
-  base::Value* wrapper =
-      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
-  ASSERT_NE(nullptr, wrapper);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
-  base::Value* event = wrapper->FindKey(
-      SafeBrowsingPrivateEventRouter::kKeyPasswordChangedEvent);
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  base::Value* event =
+      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyPasswordChangedEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("user_name_2", *event->FindStringKey(
                                SafeBrowsingPrivateEventRouter::kKeyUserName));
@@ -225,11 +233,15 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
-  base::Value* wrapper =
-      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
-  ASSERT_NE(nullptr, wrapper);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
-  base::Value* event = wrapper->FindKey(
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  base::Value* event = wrapper.FindKey(
       SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ(
@@ -259,12 +271,16 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
-  base::Value* wrapper =
-      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
-  ASSERT_NE(nullptr, wrapper);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
   base::Value* event =
-      wrapper->FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
+      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("PHISHING",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
@@ -295,12 +311,16 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
 
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
-  base::Value* wrapper =
-      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
-  ASSERT_NE(nullptr, wrapper);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListStorage& mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
   base::Value* event =
-      wrapper->FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
+      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("PHISHING",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));

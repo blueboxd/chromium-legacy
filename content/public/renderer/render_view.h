@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/browser_controls_state.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
@@ -97,10 +96,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() = 0;
-
-  virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
-                                          BrowserControlsState current,
-                                          bool animate) = 0;
 
   // Converts the |rect| from Viewport coordinates to Window coordinates.
   // See blink::WebWidgetClient::convertViewportToWindow for more details.

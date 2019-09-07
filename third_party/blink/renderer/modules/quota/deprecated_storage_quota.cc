@@ -40,10 +40,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/quota/dom_error.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
 #include "third_party/blink/renderer/modules/quota/storage_estimate.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -131,6 +133,10 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
+  // The BlinkIDL definition for queryUsageAndQuota() already has a [Measure]
+  // attribute, so the kQuotaRead use counter must be explicitly updated.
+  UseCounter::Count(execution_context, WebFeature::kQuotaRead);
+
   StorageType storage_type = GetStorageType(type_);
   if (storage_type != StorageType::kTemporary &&
       storage_type != StorageType::kPersistent) {
@@ -164,7 +170,10 @@ void DeprecatedStorageQuota::requestQuota(
     uint64_t new_quota_in_bytes,
     V8StorageQuotaCallback* success_callback,
     V8StorageErrorCallback* error_callback) {
-  ExecutionContext& execution_context = *ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  // The BlinkIDL definition for requestQuota() already has a [Measure]
+  // attribute, so the kQuotaRead use counter must be explicitly updated.
+  UseCounter::Count(execution_context, WebFeature::kQuotaRead);
 
   StorageType storage_type = GetStorageType(type_);
   if (storage_type != StorageType::kTemporary &&
@@ -179,7 +188,7 @@ void DeprecatedStorageQuota::requestQuota(
       WTF::Bind(&RequestStorageQuotaCallback, WrapPersistent(success_callback),
                 WrapPersistent(error_callback));
 
-  Document& document = To<Document>(execution_context);
+  Document& document = To<Document>(*execution_context);
   const SecurityOrigin* security_origin = document.GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
     // Unique origins cannot store persistent state.
@@ -187,7 +196,7 @@ void DeprecatedStorageQuota::requestQuota(
     return;
   }
 
-  GetQuotaHost(&execution_context)
+  GetQuotaHost(execution_context)
       ->RequestStorageQuota(
           WrapRefCounted(security_origin), storage_type, new_quota_in_bytes,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(

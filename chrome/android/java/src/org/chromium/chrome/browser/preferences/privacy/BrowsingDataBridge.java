@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences.privacy;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -115,8 +116,9 @@ public final class BrowsingDataBridge {
             int[] blacklistedDomainReasons, String[] ignoredDomains, int[] ignoredDomainReasons) {
         assert mClearBrowsingDataListener == null;
         mClearBrowsingDataListener = listener;
-        nativeClearBrowsingData(getProfile(), dataTypes, timePeriod, blacklistDomains,
-                blacklistedDomainReasons, ignoredDomains, ignoredDomainReasons);
+        BrowsingDataBridgeJni.get().clearBrowsingData(BrowsingDataBridge.this, getProfile(),
+                dataTypes, timePeriod, blacklistDomains, blacklistedDomainReasons, ignoredDomains,
+                ignoredDomainReasons);
     }
 
     /**
@@ -129,8 +131,9 @@ public final class BrowsingDataBridge {
             OnClearBrowsingDataListener listener, int[] dataTypes, @TimePeriod int timePeriod) {
         assert mClearBrowsingDataListener == null;
         mClearBrowsingDataListener = listener;
-        nativeClearBrowsingData(getProfile().getOffTheRecordProfile(), dataTypes, timePeriod,
-                new String[0], new int[0], new String[0], new int[0]);
+        BrowsingDataBridgeJni.get().clearBrowsingData(BrowsingDataBridge.this,
+                getProfile().getOffTheRecordProfile(), dataTypes, timePeriod, new String[0],
+                new int[0], new String[0], new int[0]);
     }
 
     /**
@@ -143,7 +146,7 @@ public final class BrowsingDataBridge {
      * @param callback The callback that will be used to set the list of important sites.
      */
     public static void fetchImportantSites(ImportantSitesCallback callback) {
-        nativeFetchImportantSites(getProfile(), callback);
+        BrowsingDataBridgeJni.get().fetchImportantSites(getProfile(), callback);
     }
 
     /**
@@ -151,13 +154,13 @@ public final class BrowsingDataBridge {
      *         This is a constant that won't change.
      */
     public static int getMaxImportantSites() {
-        return nativeGetMaxImportantSites();
+        return BrowsingDataBridgeJni.get().getMaxImportantSites();
     }
 
     /** This lets us mark an origin as important for testing. */
     @VisibleForTesting
     public static void markOriginAsImportantForTesting(String origin) {
-        nativeMarkOriginAsImportantForTesting(getProfile(), origin);
+        BrowsingDataBridgeJni.get().markOriginAsImportantForTesting(getProfile(), origin);
     }
 
     /**
@@ -167,7 +170,8 @@ public final class BrowsingDataBridge {
      */
     public void requestInfoAboutOtherFormsOfBrowsingHistory(
             OtherFormsOfBrowsingHistoryListener listener) {
-        nativeRequestInfoAboutOtherFormsOfBrowsingHistory(getProfile(), listener);
+        BrowsingDataBridgeJni.get().requestInfoAboutOtherFormsOfBrowsingHistory(
+                BrowsingDataBridge.this, getProfile(), listener);
     }
 
     /**
@@ -178,14 +182,15 @@ public final class BrowsingDataBridge {
         return Profile.getLastUsedProfile().getOriginalProfile();
     }
 
-    private native void nativeClearBrowsingData(Profile profile, int[] dataTypes, int timePeriod,
-            String[] blacklistDomains, int[] blacklistedDomainReasons, String[] ignoredDomains,
-            int[] ignoredDomainReasons);
-    private native void nativeRequestInfoAboutOtherFormsOfBrowsingHistory(
-            Profile profile, OtherFormsOfBrowsingHistoryListener listener);
-    private static native void nativeFetchImportantSites(
-            Profile profile, ImportantSitesCallback callback);
-    private static native int nativeGetMaxImportantSites();
-    private static native void nativeMarkOriginAsImportantForTesting(
-            Profile profile, String origin);
+    @NativeMethods
+    interface Natives {
+        void clearBrowsingData(BrowsingDataBridge caller, Profile profile, int[] dataTypes,
+                int timePeriod, String[] blacklistDomains, int[] blacklistedDomainReasons,
+                String[] ignoredDomains, int[] ignoredDomainReasons);
+        void requestInfoAboutOtherFormsOfBrowsingHistory(BrowsingDataBridge caller, Profile profile,
+                OtherFormsOfBrowsingHistoryListener listener);
+        void fetchImportantSites(Profile profile, ImportantSitesCallback callback);
+        int getMaxImportantSites();
+        void markOriginAsImportantForTesting(Profile profile, String origin);
+    }
 }

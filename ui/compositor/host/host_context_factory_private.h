@@ -14,6 +14,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -28,7 +29,7 @@ class RasterContextProvider;
 
 namespace ui {
 
-class ExternalBeginFrameControllerClientImpl;
+struct PendingBeginFrameArgs;
 
 class HostContextFactoryPrivate : public ContextFactoryPrivate {
  public:
@@ -80,8 +81,11 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
   void SetDisplayVSyncParameters(Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
-  void IssueExternalBeginFrame(Compositor* compositor,
-                               const viz::BeginFrameArgs& args) override;
+  void IssueExternalBeginFrame(
+      Compositor* compositor,
+      const viz::BeginFrameArgs& args,
+      bool force,
+      base::OnceCallback<void(const viz::BeginFrameAck&)> callback) override;
   void SetOutputIsSecure(Compositor* compositor, bool secure) override;
   void AddVSyncParameterObserver(
       Compositor* compositor,
@@ -98,11 +102,10 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
     // CompositorFrameSink.
     viz::mojom::DisplayPrivateAssociatedPtr display_private;
     std::unique_ptr<viz::HostDisplayClient> display_client;
+    viz::mojom::ExternalBeginFrameControllerAssociatedPtr
+        external_begin_frame_controller;
 
-    // Controls external BeginFrames for the display. Only set if external
-    // BeginFrames are enabled for the compositor.
-    std::unique_ptr<ExternalBeginFrameControllerClientImpl>
-        external_begin_frame_controller_client;
+    std::unique_ptr<PendingBeginFrameArgs> pending_begin_frame_args;
 
     // SetOutputIsSecure is called before the compositor is ready, so remember
     // the status and apply it during configuration.

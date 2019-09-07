@@ -243,16 +243,14 @@ void VideoCaptureManager::DoStopDevice(VideoCaptureController* controller) {
 
   // If start request has not yet started processing, i.e. if it is not at the
   // beginning of the queue, remove it from the queue.
-  auto request_iter = device_start_request_queue_.begin();
-  if (request_iter != device_start_request_queue_.end()) {
-    request_iter =
-        std::find_if(++request_iter, device_start_request_queue_.end(),
-                     [controller](const CaptureDeviceStartRequest& request) {
-                       return request.controller() == controller;
-                     });
-    if (request_iter != device_start_request_queue_.end()) {
-      device_start_request_queue_.erase(request_iter);
-      return;
+  if (!device_start_request_queue_.empty()) {
+    auto second_request = std::next(device_start_request_queue_.begin());
+
+    for (auto it = second_request; it != device_start_request_queue_.end();) {
+      if (it->controller() == controller)
+        it = device_start_request_queue_.erase(it);
+      else
+        ++it;
     }
   }
 

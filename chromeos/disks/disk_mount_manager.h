@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
+#include "base/observer_list_types.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
@@ -107,10 +108,8 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
       EnsureMountInfoRefreshedCallback;
 
   // Implement this interface to be notified about disk/mount related events.
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
-    virtual ~Observer() {}
-
     // Called when auto-mountable disk mount status is changed.
     virtual void OnAutoMountableDiskEvent(DiskEvent event, const Disk& disk) {}
     // Called when fixed storage disk status is changed.
@@ -130,6 +129,9 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
     virtual void OnRenameEvent(RenameEvent event,
                                RenameError error_code,
                                const std::string& device_path) {}
+
+   protected:
+    ~Observer() override;
   };
 
   virtual ~DiskMountManager() {}

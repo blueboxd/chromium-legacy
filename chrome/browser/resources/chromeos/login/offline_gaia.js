@@ -49,11 +49,6 @@
       this.switchToEmailCard(true /* animated */);
     },
 
-    onAnimationFinish_: function() {
-      this.fire('backButton', !this.isEmailSectionActive_());
-      this.focus();
-    },
-
     onForgotPasswordClicked_: function() {
       this.disabled = true;
       this.fire('dialogShown');

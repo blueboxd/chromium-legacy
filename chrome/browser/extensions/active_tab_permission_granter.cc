@@ -19,7 +19,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -108,9 +107,7 @@ ActiveTabPermissionGranter::ActiveTabPermissionGranter(
     content::WebContents* web_contents,
     int tab_id,
     Profile* profile)
-    : content::WebContentsObserver(web_contents),
-      tab_id_(tab_id),
-      extension_registry_observer_(this) {
+    : content::WebContentsObserver(web_contents), tab_id_(tab_id) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 

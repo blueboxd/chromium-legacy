@@ -12,6 +12,7 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_job.h"
+#include "components/download/public/common/url_loader_factory_provider.h"
 
 namespace service_manager {
 class Connector;
@@ -19,7 +20,6 @@ class Connector;
 
 namespace download {
 class DownloadItem;
-class URLLoaderFactoryProvider;
 
 // Factory class to create different kinds of DownloadJob.
 class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
@@ -29,7 +29,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJobFactory {
       DownloadJob::CancelRequestCallback cancel_request_callback,
       const DownloadCreateInfo& create_info,
       bool is_save_package_download,
-      base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider,
+      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+          url_loader_factory_provider,
       service_manager::Connector* connector);
 
  private:

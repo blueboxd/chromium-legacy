@@ -20553,6 +20553,7 @@ Called by update_net_error_codes.py.-->
   <int value="1380" label="LOGINSTATE_GETSESSIONSTATE"/>
   <int value="1381" label="AUTOTESTPRIVATE_GETARCSTARTTIME"/>
   <int value="1382" label="AUTOTESTPRIVATE_SETOVERVIEWMODESTATE"/>
+  <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24606,6 +24607,7 @@ Called by update_net_error_codes.py.-->
   <int value="3026" label="DeprecatedFileSystemWrite"/>
   <int value="3027" label="PointerLockUnadjustedMovement"/>
   <int value="3028" label="CreateObjectBlob"/>
+  <int value="3029" label="QuotaRead"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36036,6 +36038,8 @@ from previous Chrome versions.
   <int value="-169745744" label="SyncPseudoUSSPreferences:enabled"/>
   <int value="-167744090" label="EnableHomeLauncher:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
+  <int value="-164539906"
+      label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:disabled"/>
   <int value="-161782023" label="AndroidMessagesProdEndpoint:enabled"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
@@ -36786,6 +36790,7 @@ from previous Chrome versions.
   <int value="886907524" label="autoplay-policy"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
+  <int value="898311758" label="ReaderMode:disabled"/>
   <int value="900614020" label="ContentSuggestionsShowSummary:disabled"/>
   <int value="902839593" label="WebContentsForceDark:disabled"/>
   <int value="903267263" label="disable-offline-pages"/>
@@ -37310,6 +37315,7 @@ from previous Chrome versions.
   <int value="1620369597" label="enable-unsafe-webgpu"/>
   <int value="1621298798" label="VrBrowserKeyboard:enabled"/>
   <int value="1622131033" label="ozone-test-single-overlay-support"/>
+  <int value="1622672308" label="ReaderMode:enabled"/>
   <int value="1624443254" label="AnimatedAvatarButton:disabled"/>
   <int value="1626824478" label="ExperimentalAppBanners:disabled"/>
   <int value="1628831121" label="SafeBrowsingUseLocalBlacklistsV2:enabled"/>
@@ -37532,6 +37538,8 @@ from previous Chrome versions.
   <int value="1918984253"
       label="OmniboxUIExperimentBlueSearchLoopAndSearchQuery:disabled"/>
   <int value="1919917329" label="ImplicitRootScroller:disabled"/>
+  <int value="1920894670"
+      label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:enabled"/>
   <int value="1924192543" label="ProactiveTabFreezeAndDiscard:enabled"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1926524951" label="SystemWebApps:disabled"/>

@@ -24,6 +24,7 @@
 #import "ios/testing/nserror_util.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -264,6 +265,18 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (NSString*)webStateVisibleURL {
   return base::SysUTF8ToNSString(
       chrome_test_util::GetCurrentWebState()->GetVisibleURL().spec());
+}
+
++ (void)purgeCachedWebViewPages {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  web_state->SetWebUsageEnabled(false);
+  web_state->SetWebUsageEnabled(true);
+  web_state->GetNavigationManager()->LoadIfNecessary();
+}
+
++ (BOOL)isRestoreSessionInProgress {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  return web_state->GetNavigationManager()->IsRestoreSessionInProgress();
 }
 
 #pragma mark - Sync Utilities (EG2)

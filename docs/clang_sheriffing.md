@@ -6,8 +6,7 @@ provided by Clang and LLVM (ASan, CFI, coverage, etc). In order to [update the
 compiler](updating_clang.md) (roll clang), it has to be tested so that we can be
 confident that it works in the configurations that Chromium cares about.
 
-Fortunately, Chromium happens to be a pretty decent stress test for a C++
-compiler, so we maintain a [waterfall of
+We maintain a [waterfall of
 builders](https://ci.chromium.org/p/chromium/g/chromium.clang/console) that
 continuously build fresh versions of Clang and use them to build and test
 Chromium. "Clang sheriffing" is the process of monitoring that waterfall,
@@ -154,6 +153,36 @@ status, this is probably what you want to do.
 1. Debug it with a traditional debugger
 
 ## Linker error
+
+`ld.lld`'s `--reproduce` flag makes LLD write a tar archive of all its inputs
+and a file `response.txt` that contains the link command. This allows people to
+work on linker bugs without having to have a Chromium build environment.
+
+To use `ld.lld`'s `--reproduce` flag, follow these steps:
+
+1. Locally (build Chromium with a locally-built
+   clang)[https://chromium.googlesource.com/chromium/src.git/+/master/docs/clang.md#Using-a-custom-clang-binary]
+
+1. After reproducing the link error, build just the failing target with
+   ninja's `-v -d keeprsp` flags added:
+  `ninja -C out/gn base_unittests -v -d keeprsp`.
+
+1. Copy the link command that ninja prints, `cd out/gn`, paste it, and manually
+   append `-Wl,--reproduce,repro.tar`. With `lld-link`, instead append
+   `/linkrepro:.`. (`ld.lld`'s `--reproduce` takes a filename and is invoked
+   through the `clang` driver, so it needs `-Wl` to pass the flag through to
+   the linker. `lld-link`'s `/linkrepro:` takes a directory name and creates
+   a file called `repro.tar` in that directory. It's called directly, so the
+   flag needs no prefix.)
+
+1. Zip up the tar file: `gzip repro.tar`. This will take a few minutes and
+   produce a .tar.gz file that's 0.5-1 GB.
+
+1. Upload the .tar.gz to Google Drive. If you're signed in with your @google
+   address, you won't be able to make a world-shareable link to it, so upload
+   it in a Window where you're signed in with your @chromium account.
+
+1. File an LLVM bug linking to the file. Example: http://llvm.org/PR43241
 
 TODO: Describe object file bisection, identify obj with symbol that no longer
 has the section.

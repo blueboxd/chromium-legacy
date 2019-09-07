@@ -311,6 +311,10 @@ class AutofillClient : public RiskDataLoader {
   virtual void ShowWebauthnOfferDialog(
       WebauthnOfferDialogCallback callback) = 0;
 
+  // Will close the WebAuthn offer dialog. Returns true if dialog was visible
+  // and has been closed. Implemented only on desktop.
+  virtual bool CloseWebauthnOfferDialog();
+
   // Runs |callback| if the |profile| should be imported as personal data.
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                           base::OnceClosure callback) = 0;

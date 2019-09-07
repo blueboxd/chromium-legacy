@@ -423,9 +423,9 @@ DownloadItemImpl::DownloadItemImpl(
       delegate_(delegate),
       destination_info_(path, path, 0, false, std::string(), base::Time()),
       is_updating_observers_(false) {
-  job_ = DownloadJobFactory::CreateJob(this, std::move(cancel_request_callback),
-                                       DownloadCreateInfo(), true, nullptr,
-                                       nullptr);
+  job_ = DownloadJobFactory::CreateJob(
+      this, std::move(cancel_request_callback), DownloadCreateInfo(), true,
+      URLLoaderFactoryProvider::GetNullPtr(), nullptr);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
@@ -1417,7 +1417,8 @@ void DownloadItemImpl::Start(
     std::unique_ptr<DownloadFile> file,
     DownloadJob::CancelRequestCallback cancel_request_callback,
     const DownloadCreateInfo& new_create_info,
-    base::WeakPtr<URLLoaderFactoryProvider> url_loader_factory_provider) {
+    URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+        url_loader_factory_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!download_file_);
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
@@ -1426,7 +1427,7 @@ void DownloadItemImpl::Start(
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(
       this, std::move(cancel_request_callback), new_create_info, false,
-      url_loader_factory_provider,
+      std::move(url_loader_factory_provider),
       delegate_ ? delegate_->GetServiceManagerConnector() : nullptr);
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());

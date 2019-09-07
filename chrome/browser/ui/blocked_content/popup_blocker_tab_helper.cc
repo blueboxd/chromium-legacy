@@ -25,6 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 #if defined(OS_ANDROID)
@@ -136,7 +137,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
       content::RenderFrameHost* host =
           popup->params.navigated_or_inserted_contents->GetMainFrame();
       DCHECK(host);
-      chrome::mojom::ChromeRenderFrameAssociatedPtr client;
+      mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> client;
       host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
       client->SetWindowFeatures(popup->window_features.Clone());
     }

@@ -338,7 +338,8 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
     case WebFeature::kCSSDeepCombinator:
       return {"CSSDeepCombinator", kM65,
-              "/deep/ combinator is no longer supported in CSS dynamic profile."
+              "/deep/ combinator is no longer supported in CSS dynamic "
+              "profile. "
               "It is now effectively no-op, acting as if it were a descendant "
               "combinator. /deep/ combinator will be removed, and will be "
               "invalid at M65. You should remove it. See "

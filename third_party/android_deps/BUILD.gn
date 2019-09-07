@@ -1344,6 +1344,7 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
   ]
+  create_srcjar = false
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

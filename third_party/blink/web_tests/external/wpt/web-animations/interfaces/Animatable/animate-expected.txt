@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 137 tests; 134 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 138 tests; 135 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -10,6 +10,7 @@ PASS Element.animate() accepts empty keyframe lists (input: undefined)
 PASS Element.animate() accepts a one property two value property-indexed keyframes specification
 PASS Element.animate() accepts a one shorthand property two value property-indexed keyframes specification
 PASS Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification
+PASS Element.animate() accepts a two property (one shorthand and one of its shorthand components) two value property-indexed keyframes specification
 PASS Element.animate() accepts a two property two value property-indexed keyframes specification
 PASS Element.animate() accepts a two property property-indexed keyframes specification with different numbers of values
 PASS Element.animate() accepts a property-indexed keyframes specification with an invalid value

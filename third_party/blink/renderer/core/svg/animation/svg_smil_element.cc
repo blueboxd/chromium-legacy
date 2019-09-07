@@ -1132,22 +1132,8 @@ void SVGSMILElement::Progress(double elapsed) {
   base::Optional<SMILInterval> new_interval =
       CheckForNewRestartInterval(elapsed);
 
-  // This boolean is quite intricate. (Bug 379751)
-  //
-  // If we get a new interval we send all events
-  bool interval_did_start_or_end = (new_interval && *new_interval != interval_);
-
-  // This catches a tricky edge case where the interval began and ended
-  // on the same frame. So we check if the interval has passed, and
-  // that it's not the same interval as it was last time.
-  bool new_begin_time =
-      (!previous_interval_begin_.IsUnresolved() &&
-       interval_.begin != previous_interval_begin_ && interval_.end <= elapsed);
-
-  if (new_begin_time) {
-    previous_interval_begin_ = interval_.begin;
-    interval_did_start_or_end = true;
-  }
+  // Track "restarts" to handle active -> active transitions.
+  bool interval_restart = (new_interval && *new_interval != interval_);
 
   if (new_interval) {
     previous_interval_begin_ = interval_.begin;
@@ -1159,7 +1145,7 @@ void SVGSMILElement::Progress(double elapsed) {
   active_state_ = DetermineActiveState(elapsed);
 
   if (IsContributing(elapsed)) {
-    if (old_active_state == kInactive || interval_did_start_or_end) {
+    if (old_active_state == kInactive || interval_restart) {
       ScheduleEvent(event_type_names::kBeginEvent);
       StartedActiveInterval();
     }
@@ -1174,7 +1160,7 @@ void SVGSMILElement::Progress(double elapsed) {
   }
 
   if ((old_active_state == kActive && GetActiveState() != kActive) ||
-      interval_did_start_or_end) {
+      interval_restart) {
     ScheduleEvent(event_type_names::kEndEvent);
     EndedActiveInterval();
   }

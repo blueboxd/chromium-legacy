@@ -9,8 +9,6 @@ namespace ash {
 
 // Enumeration of the different overview mode animations.
 enum OverviewAnimationType {
-  // TODO(bruthig): Remove OVERVIEW_ANIMATION_NONE value and replace it with
-  // correct animation type actions.
   OVERVIEW_ANIMATION_NONE,
   // Used to fade in the close button and label.
   OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,

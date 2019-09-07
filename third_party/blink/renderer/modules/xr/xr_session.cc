@@ -65,6 +65,8 @@ const char kAnchorsNotSupported[] = "Device does not support anchors!";
 
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
 
+const char kNotImplemented[] = "The operation has not been implemented yet.";
+
 const double kDegToRad = M_PI / 180.0;
 
 // Indices into the views array.
@@ -273,12 +275,14 @@ void XRSession::UpdateStageParameters(
   SetXRDisplayInfo(std::move(display_info));
 }
 
-ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
-                                               const String& type) {
+ScriptPromise XRSession::requestReferenceSpace(
+    ScriptState* script_state,
+    const String& type,
+    ExceptionState& exception_state) {
   if (ended_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError, kSessionEnded));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return ScriptPromise();
   }
 
   XRReferenceSpace::Type requested_type =
@@ -289,10 +293,9 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
 
   if (sensorless_session_ &&
       requested_type != XRReferenceSpace::Type::kTypeViewer) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           kReferenceSpaceNotSupported));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kReferenceSpaceNotSupported);
+    return ScriptPromise();
   }
 
   // If the session feature required by this reference space type is not
@@ -300,10 +303,9 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
   auto type_as_feature = MapReferenceSpaceTypeToFeature(requested_type);
   if (!type_as_feature ||
       !enabled_features_.Contains(type_as_feature.value())) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           kReferenceSpaceNotSupported));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kReferenceSpaceNotSupported);
+    return ScriptPromise();
   }
 
   XRReferenceSpace* reference_space = nullptr;
@@ -341,10 +343,9 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
   // If the above switch statement failed to assign to reference_space,
   // it's because the reference space wasn't supported by the device.
   if (!reference_space) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           kReferenceSpaceNotSupported));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kReferenceSpaceNotSupported);
+    return ScriptPromise();
   }
 
   DCHECK(reference_space);
@@ -362,13 +363,13 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
 
 ScriptPromise XRSession::createAnchor(ScriptState* script_state,
                                       XRRigidTransform* initial_pose,
-                                      XRSpace* space) {
+                                      XRSpace* space,
+                                      ExceptionState& exception_state) {
   // TODO(https://crbug.com/992033): Implement anchor creation from a session
   // instead of rejecting the promise.
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                         kAnchorsNotSupported));
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    kAnchorsNotSupported);
+  return ScriptPromise();
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
@@ -404,25 +405,24 @@ XRInputSourceArray* XRSession::inputSources() const {
 
 ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                                         XRRay* ray,
-                                        XRSpace* space) {
+                                        XRSpace* space,
+                                        ExceptionState& exception_state) {
   if (ended_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError, kSessionEnded));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return ScriptPromise();
   }
 
   if (!space) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), kNoSpaceSpecified));
+    exception_state.ThrowTypeError(kNoSpaceSpecified);
+    return ScriptPromise();
   }
 
   // Reject the promise if device doesn't support the hit-test API.
   if (!xr_->xrEnvironmentProviderPtr()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           kHitTestNotSupported));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kHitTestNotSupported);
+    return ScriptPromise();
   }
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
@@ -447,10 +447,11 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 }
 
 ScriptPromise XRSession::requestHitTestSource(ScriptState* script_state,
-                                              XRHitTestOptionsInit* options) {
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError));
+                                              XRHitTestOptionsInit* options,
+                                              ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                    kNotImplemented);
+  return ScriptPromise();
 }
 
 void XRSession::OnHitTestResults(
@@ -491,12 +492,13 @@ void XRSession::OnEnvironmentProviderError() {
   }
 }
 
-ScriptPromise XRSession::end(ScriptState* script_state) {
+ScriptPromise XRSession::end(ScriptState* script_state,
+                             ExceptionState& exception_state) {
   // Don't allow a session to end twice.
   if (ended_) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError, kSessionEnded));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionEnded);
+    return ScriptPromise();
   }
 
   ForceEnd();

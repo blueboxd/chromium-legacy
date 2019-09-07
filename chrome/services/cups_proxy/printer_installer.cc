@@ -20,9 +20,8 @@
 
 namespace cups_proxy {
 
-PrinterInstaller::PrinterInstaller(
-    base::WeakPtr<CupsProxyServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {}
+PrinterInstaller::PrinterInstaller(CupsProxyServiceDelegate* const delegate)
+    : delegate_(delegate) {}
 
 PrinterInstaller::~PrinterInstaller() = default;
 

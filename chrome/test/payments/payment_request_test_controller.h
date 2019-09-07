@@ -37,11 +37,13 @@ class PaymentRequestTestObserver {
 // cross-platform way for testing both Android and desktop.
 class PaymentRequestTestController {
  public:
-  explicit PaymentRequestTestController(PaymentRequestTestObserver* observer);
+  PaymentRequestTestController();
   ~PaymentRequestTestController();
 
   // To be called from an override of BrowserTestBase::SetUpOnMainThread().
   void SetUpOnMainThread();
+
+  void SetObserver(PaymentRequestTestObserver* observer);
 
   // Sets values that will change the behaviour of PaymentRequests created in
   // the future.
@@ -59,7 +61,7 @@ class PaymentRequestTestController {
   void OnConnectionTerminated();
   void OnAbortCalled();
 
-  PaymentRequestTestObserver* const observer_;
+  PaymentRequestTestObserver* observer_ = nullptr;
 
   bool is_incognito_ = false;
   bool valid_ssl_ = true;

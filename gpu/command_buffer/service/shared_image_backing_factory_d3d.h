@@ -88,8 +88,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       gfx::GpuMemoryBufferType memory_buffer_type) override;
 
  private:
-  // Wraps the swap chain buffer (front buffer/back buffer) into GLimage and
-  // creates a GL texture and stores it as gles2::Texture or as
+  // Wraps the optional swap chain buffer (front buffer/back buffer) and texture
+  // into GLimage and creates a GL texture and stores it as gles2::Texture or as
   // gles2::TexturePassthrough in the backing that is created.
   std::unique_ptr<SharedImageBacking> MakeBacking(
       const Mailbox& mailbox,
@@ -97,8 +97,10 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
-      const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
-      size_t buffer_index);
+      Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
+      size_t buffer_index,
+      const Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture,
+      base::win::ScopedHandle shared_handle);
 
   // Whether we're using the passthrough command decoder and should generate
   // passthrough textures.

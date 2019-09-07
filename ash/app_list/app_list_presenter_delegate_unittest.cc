@@ -26,6 +26,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -1820,8 +1821,8 @@ class AppListPresenterDelegateHomeLauncherTest
     : public AppListPresenterDelegateTest {
  public:
   AppListPresenterDelegateHomeLauncherTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableBackgroundBlur}, {});
+    scoped_feature_list_.InitWithFeatures({features::kEnableBackgroundBlur},
+                                          {});
   }
   ~AppListPresenterDelegateHomeLauncherTest() override = default;
 

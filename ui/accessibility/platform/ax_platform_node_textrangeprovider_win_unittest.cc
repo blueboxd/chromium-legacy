@@ -167,6 +167,18 @@ namespace ui {
     EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, expected_text);         \
   }
 
+#define EXPECT_ENCLOSING_ELEMENT(ax_node_given, ax_node_expected)            \
+  {                                                                          \
+    ComPtr<ITextRangeProvider> text_range_provider;                          \
+    GetTextRangeProviderFromTextNode(text_range_provider, ax_node_given);    \
+    ComPtr<IRawElementProviderSimple> enclosing_element;                     \
+    ASSERT_HRESULT_SUCCEEDED(                                                \
+        text_range_provider->GetEnclosingElement(&enclosing_element));       \
+    ComPtr<IRawElementProviderSimple> expected_text_provider =               \
+        QueryInterfaceFromNode<IRawElementProviderSimple>(ax_node_expected); \
+    EXPECT_EQ(expected_text_provider.Get(), enclosing_element.Get());        \
+  }
+
 class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
  public:
   const AXNodePosition::AXPositionInstance& GetStart(
@@ -2973,32 +2985,46 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
   // Set up ax tree with the following structure:
   //
-  // root______________________
-  // |                         |
-  // text_node1___             text_node2
+  // root
+  // |
+  // document(ignored)_________________________
+  // |                         |              |
+  // text_node1___             text_node2     ignored_text
   // |            |
   // text_node3   text_node4
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
+  ui::AXNodeData document_data;
+  document_data.id = 2;
+  document_data.role = ax::mojom::Role::kDocument;
+  document_data.AddState(ax::mojom::State::kIgnored);
+  root_data.child_ids.push_back(document_data.id);
+
   ui::AXNodeData text_node1;
-  text_node1.id = 2;
+  text_node1.id = 3;
   text_node1.role = ax::mojom::Role::kStaticText;
-  root_data.child_ids.push_back(text_node1.id);
+  document_data.child_ids.push_back(text_node1.id);
 
   ui::AXNodeData text_node2;
-  text_node2.id = 3;
+  text_node2.id = 4;
   text_node2.role = ax::mojom::Role::kStaticText;
-  root_data.child_ids.push_back(text_node2.id);
+  document_data.child_ids.push_back(text_node2.id);
+
+  ui::AXNodeData ignored_text;
+  ignored_text.id = 5;
+  ignored_text.role = ax::mojom::Role::kStaticText;
+  ignored_text.AddState(ax::mojom::State::kIgnored);
+  document_data.child_ids.push_back(ignored_text.id);
 
   ui::AXNodeData text_node3;
-  text_node3.id = 4;
+  text_node3.id = 6;
   text_node3.role = ax::mojom::Role::kStaticText;
   text_node1.child_ids.push_back(text_node3.id);
 
   ui::AXNodeData text_node4;
-  text_node4.id = 5;
+  text_node4.id = 7;
   text_node4.role = ax::mojom::Role::kStaticText;
   text_node1.child_ids.push_back(text_node4.id);
 
@@ -3009,23 +3035,25 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
   update.has_tree_data = true;
   update.root_id = root_data.id;
   update.nodes.push_back(root_data);
+  update.nodes.push_back(document_data);
   update.nodes.push_back(text_node1);
   update.nodes.push_back(text_node2);
+  update.nodes.push_back(ignored_text);
   update.nodes.push_back(text_node3);
   update.nodes.push_back(text_node4);
 
   Init(update);
 
   // Set up variables from the tree for testing.
-  AXNode* rootnode = GetRootNode();
+  AXNode* document_node = GetRootNode()->children()[0];
   AXNodePosition::SetTree(tree_.get());
-  AXNode* node1 = rootnode->children()[0];
-  AXNode* node2 = rootnode->children()[1];
+  AXNode* node1 = document_node->children()[0];
+  AXNode* node2 = document_node->children()[1];
   AXNode* node3 = node1->children()[0];
   AXNode* node4 = node1->children()[1];
 
-  ComPtr<IRawElementProviderSimple> root_node_raw =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(rootnode);
+  ComPtr<IRawElementProviderSimple> document_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(document_node);
   ComPtr<IRawElementProviderSimple> text_node_raw1 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(node1);
   ComPtr<IRawElementProviderSimple> text_node_raw2 =
@@ -3081,7 +3109,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
   // Test root_node - children should include the entire left subtree and
   // the entire right subtree.
   EXPECT_HRESULT_SUCCEEDED(
-      root_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+      document_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
 
   EXPECT_HRESULT_SUCCEEDED(
       text_provider->get_DocumentRange(&text_range_provider));
@@ -4194,4 +4222,112 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, ElementNotAvailable) {
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             text_range_provider->ScrollIntoView(bool_arg));
 }
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderIgnoredNodes) {
+  // Parent Tree
+  // 1
+  // |
+  // 2(i)
+  // |________________________________
+  // |   |   |    |      |           |
+  // 3   4   5    6      7(i)        8(i)
+  //              |      |________
+  //              |      |       |
+  //              9(i)   10(i)   11
+  //              |      |____
+  //              |      |   |
+  //              12    13   14
+
+  ui::AXTreeUpdate tree_update;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  tree_update.tree_data.tree_id = tree_id;
+  tree_update.has_tree_data = true;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(14);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2};
+  tree_update.nodes[0].role = ax::mojom::Role::kRootWebArea;
+
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].child_ids = {3, 4, 5, 6, 7, 8};
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[1].role = ax::mojom::Role::kDocument;
+
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[2].SetName(".3.");
+
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[3].SetName(".4.");
+
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[4].SetName(".5.");
+
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kGenericContainer;
+  tree_update.nodes[5].child_ids = {9};
+
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].child_ids = {10, 11};
+  tree_update.nodes[6].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[6].role = ax::mojom::Role::kGenericContainer;
+
+  tree_update.nodes[7].id = 8;
+  tree_update.nodes[7].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[7].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[7].SetName(".8.");
+
+  tree_update.nodes[8].id = 9;
+  tree_update.nodes[8].child_ids = {12};
+  tree_update.nodes[8].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[8].role = ax::mojom::Role::kGenericContainer;
+
+  tree_update.nodes[9].id = 10;
+  tree_update.nodes[9].child_ids = {13, 14};
+  tree_update.nodes[9].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[8].role = ax::mojom::Role::kGenericContainer;
+
+  tree_update.nodes[10].id = 11;
+  tree_update.nodes[10].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[10].SetName(".11.");
+
+  tree_update.nodes[11].id = 12;
+  tree_update.nodes[11].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[11].SetName(".12.");
+
+  tree_update.nodes[12].id = 13;
+  tree_update.nodes[12].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[12].SetName(".13.");
+
+  tree_update.nodes[13].id = 14;
+  tree_update.nodes[13].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[13].SetName(".14.");
+
+  Init(tree_update);
+  AXNodePosition::SetTree(tree_.get());
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 1),
+                           GetNodeFromTree(tree_id, 1));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 2),
+                           GetNodeFromTree(tree_id, 1));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 3),
+                           GetNodeFromTree(tree_id, 3));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 4),
+                           GetNodeFromTree(tree_id, 4));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 5),
+                           GetNodeFromTree(tree_id, 5));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 8),
+                           GetNodeFromTree(tree_id, 1));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 11),
+                           GetNodeFromTree(tree_id, 11));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 12),
+                           GetNodeFromTree(tree_id, 12));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 13),
+                           GetNodeFromTree(tree_id, 13));
+  EXPECT_ENCLOSING_ELEMENT(GetNodeFromTree(tree_id, 14),
+                           GetNodeFromTree(tree_id, 14));
+}  // namespace ui
+
 }  // namespace ui

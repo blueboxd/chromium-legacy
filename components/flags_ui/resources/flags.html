@@ -8,7 +8,7 @@
 </if>
 <title>$i18n{title}</title>
 
-<link rel="stylesheet" href="chrome://flags/flags.css">
+<link rel="stylesheet" href="flags.css">
 
 <if expr="is_ios">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1">
@@ -17,9 +17,6 @@
   <script src="chrome://resources/js/ios/web_ui.js"></script>
 </if>
 
-<if expr="not is_ios">
-  <script src="chrome://flags/flags_style_loader.js"></script>
-</if>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/util.js"></script>
@@ -27,12 +24,8 @@
 <body>
 <div id="header">
   <div class="flex-container">
-    <div id="deprecatedd-flags-title" class="flex">
-      <h1>$i18n{title}</h1>
-    </div>
-    <div class="flex center-content">
+    <div class="flex">
       <div class="search-container">
-        <div class="search-hint"></div>
         <input type="text" id="search" placeholder="$i18n{search-placeholder}" tabindex="1"
             autocomplete="off" spellcheck="false">
         <input type="button" class="clear-search" title="$i18n{clear-search}"
@@ -51,7 +44,7 @@
 </div>
 <div id="body-container" style="visibility:hidden">
   <div id="flagsTemplate">
-    <div id="flags-title" class="flex-container">
+    <div class="flex-container">
       <div class="flex"><h1 class="section-header-title">$i18n{title}</h1></div>
       <span id="version" class="flex">$i18n{version}</span>
     </div>

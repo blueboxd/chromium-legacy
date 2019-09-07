@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -29,7 +30,22 @@
 #endif
 
 namespace extensions {
-
+namespace {
+// Returns true if extensions_ids contains a list of valid extension ids,
+// divided by comma.
+bool IsValidIdList(const std::string& extension_ids) {
+  std::vector<base::StringPiece> ids = base::SplitStringPiece(
+      extension_ids, ",", base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_NONEMPTY);
+  if (ids.size() == 0)
+    return false;
+  for (const auto& id : ids) {
+    if (!crx_file::id_util::IdIsValid(id.as_string()))
+      return false;
+  }
+  return true;
+}
+}  // namespace
 // ExtensionListPolicyHandler implementation -----------------------------------
 
 ExtensionListPolicyHandler::ExtensionListPolicyHandler(const char* policy_name,
@@ -248,8 +264,7 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
 
   for (base::DictionaryValue::Iterator it(*dict_value); !it.IsAtEnd();
        it.Advance()) {
-    DCHECK(it.key() == schema_constants::kWildcard ||
-           crx_file::id_util::IdIsValid(it.key()));
+    DCHECK(it.key() == schema_constants::kWildcard || IsValidIdList(it.key()));
     DCHECK(it.value().is_dict());
 
     // Extracts sub dictionary.

@@ -53,7 +53,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   void Start(std::unique_ptr<DownloadFile> download_file,
              DownloadJob::CancelRequestCallback cancel_request_callback,
              const DownloadCreateInfo& create_info,
-             base::WeakPtr<URLLoaderFactoryProvider>
+             URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
                  url_loader_factory_provider) override {
     MockStart(download_file.get());
   }

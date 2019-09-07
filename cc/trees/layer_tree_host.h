@@ -280,8 +280,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Input Handling ---------------------------------------------
 
-  // Sets the state of the browser controls. (Used for URL bar animations on
-  // android).
+  // Sets the state of the browser controls. (Used for URL bar animations).
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate);

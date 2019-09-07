@@ -183,8 +183,10 @@ const ClipboardFormatType& ClipboardFormatType::GetFileContentZeroType() {
   // TODO(https://crbug.com/950756): Should TYMED_ISTREAM / TYMED_ISTORAGE be
   // used instead of TYMED_HGLOBAL in
   // OSExchangeDataProviderWin::SetFileContents.
+  // The 0 constructor argument is used with CFSTR_FILECONTENTS to specify file
+  // content.
   static base::NoDestructor<ClipboardFormatType> format(
-      ::RegisterClipboardFormat(CFSTR_FILECONTENTS));
+      ::RegisterClipboardFormat(CFSTR_FILECONTENTS), 0);
   return *format;
 }
 

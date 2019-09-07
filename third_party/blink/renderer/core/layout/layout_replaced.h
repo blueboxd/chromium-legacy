@@ -113,9 +113,8 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   void UpdateLayout() override;
 
   LayoutSize IntrinsicSize() const final {
-    // TODO(vmpstr): To address the intrinsic size of replaced element for
-    // display lock.
-    return ShouldApplySizeContainment() ? LayoutSize() : intrinsic_size_;
+    return ShouldApplySizeContainment() ? ContentLogicalSizeForSizeContainment()
+                                        : intrinsic_size_;
   }
 
   void ComputePositionedLogicalWidth(

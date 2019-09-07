@@ -1443,6 +1443,7 @@ enum HistogramValue {
   LOGINSTATE_GETSESSIONSTATE = 1380,
   AUTOTESTPRIVATE_GETARCSTARTTIME = 1381,
   AUTOTESTPRIVATE_SETOVERVIEWMODESTATE = 1382,
+  AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY = 1383,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

@@ -19,7 +19,9 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/gurl.h"
@@ -128,7 +130,8 @@ class ContentSettingsObserver
   void SetAsInterstitial() override;
 
   void OnContentSettingsRendererRequest(
-      chrome::mojom::ContentSettingsRendererAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<chrome::mojom::ContentSettingsRenderer>
+          receiver);
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);
@@ -190,7 +193,8 @@ class ContentSettingsObserver
   // If true, IsWhitelistedForContentSettings will always return true.
   const bool should_whitelist_;
 
-  mojo::AssociatedBindingSet<chrome::mojom::ContentSettingsRenderer> bindings_;
+  mojo::AssociatedReceiverSet<chrome::mojom::ContentSettingsRenderer>
+      receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

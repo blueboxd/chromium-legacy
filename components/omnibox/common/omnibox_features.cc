@@ -92,15 +92,6 @@ const base::Feature kOmniboxRichEntitySuggestions{
 #endif
 };
 
-const base::Feature kOmniboxPreserveDefaultMatchScore{
-  "OmniboxPreserveDefaultMatchScore",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
 // Feature used to enable swapping the rows on answers.
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -286,6 +277,24 @@ const base::Feature kOmniboxDisableInstantExtendedLimit{
 // this).
 const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Exempts the default match from demotion-by-type.
+const base::Feature kOmniboxPreserveDefaultMatchScore {
+  "OmniboxPreserveDefaultMatchScore",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
+// Preserves the default match against change when providers return results
+// asynchronously. This prevents the default match from changing after the user
+// finishes typing. Without this feature, if the default match is updated right
+// when the user presses Enter, the user may go to a surprising destination.
+const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate{
+    "OmniboxPreserveDefaultMatchAgainstAsyncUpdate",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:

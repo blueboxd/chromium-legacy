@@ -43,8 +43,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
   void SendHandshakeMessage(std::vector<uint8_t> handshake_message,
                             DeviceCallback callback);
 
-  void SetEncryptionData(base::span<const uint8_t, 32> session_key,
-                         base::span<const uint8_t, 8> nonce);
+  // Configure caBLE v1 keys.
+  void SetV1EncryptionData(base::span<const uint8_t, 32> session_key,
+                           base::span<const uint8_t, 8> nonce);
+  // Configure caBLE v2 keys.
+  void SetV2EncryptionData(base::span<const uint8_t, 32> read_key,
+                           base::span<const uint8_t, 32> write_key);
   FidoTransportProtocol DeviceTransport() const override;
 
   // SetCountersForTesting allows tests to set the message counters. Non-test
@@ -58,16 +62,30 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
   struct EncryptionData {
     EncryptionData();
 
-    std::array<uint8_t, 32> session_key;
+    std::array<uint8_t, 32> read_key;
+    std::array<uint8_t, 32> write_key;
     std::array<uint8_t, 8> nonce;
     uint32_t write_sequence_num = 0;
     uint32_t read_sequence_num = 0;
+    bool is_version_two = false;
   };
 
   static bool EncryptOutgoingMessage(const EncryptionData& encryption_data,
                                      std::vector<uint8_t>* message_to_encrypt);
   static bool DecryptIncomingMessage(const EncryptionData& encryption_data,
                                      FidoBleFrame* incoming_frame);
+
+  static bool EncryptV1OutgoingMessage(
+      const EncryptionData& encryption_data,
+      std::vector<uint8_t>* message_to_encrypt);
+  static bool DecryptV1IncomingMessage(const EncryptionData& encryption_data,
+                                       FidoBleFrame* incoming_frame);
+
+  static bool EncryptV2OutgoingMessage(
+      const EncryptionData& encryption_data,
+      std::vector<uint8_t>* message_to_encrypt);
+  static bool DecryptV2IncomingMessage(const EncryptionData& encryption_data,
+                                       FidoBleFrame* incoming_frame);
 
   base::Optional<EncryptionData> encryption_data_;
   base::WeakPtrFactory<FidoCableDevice> weak_factory_{this};

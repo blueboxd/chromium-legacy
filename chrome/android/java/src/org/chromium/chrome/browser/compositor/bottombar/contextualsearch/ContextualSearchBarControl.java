@@ -60,11 +60,8 @@ public class ContextualSearchBarControl {
      */
     private final ContextualSearchCardIconControl mCardIconControl;
 
-    /** The width of our icons, including padding, in pixels. */
+    /** The width of our icon, including padding, in pixels. */
     private final float mPaddedIconWidthPx;
-
-    /** The start offset of the middle icon in the Bar, in pixels. */
-    private final int mMiddleIconStartPx;
 
     /**
      * The {@link ContextualSearchImageControl} for the panel.
@@ -170,17 +167,11 @@ public class ContextualSearchBarControl {
         mDividerLineColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.contextual_search_divider_line_color);
 
-        int endButtonsWidthDimension =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                ? R.dimen.contextual_search_end_buttons_width
-                : R.dimen.contextual_search_padded_button_width;
-        mEndButtonWidth = context.getResources().getDimension(endButtonsWidthDimension)
-                + context.getResources().getDimension(R.dimen.overlay_panel_button_padding);
-        // Number of pixels from the end of the Bar.
-        mMiddleIconStartPx = context.getResources().getDimensionPixelSize(
-                R.dimen.overlay_panel_end_buttons_width);
+        // Icon attributes.
         mPaddedIconWidthPx =
-                context.getResources().getDimension(R.dimen.overlay_panel_padded_button_width);
+                context.getResources().getDimension(R.dimen.contextual_search_padded_button_width);
+        mEndButtonWidth = mPaddedIconWidthPx
+                + context.getResources().getDimension(R.dimen.overlay_panel_button_padding);
         mDpToPx = context.getResources().getDisplayMetrics().density;
     }
 
@@ -577,33 +568,31 @@ public class ContextualSearchBarControl {
     private void classifyTouchLocation(float xPx) {
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
 
-        // There are 4 cases:
-        // 1) The whole Bar minus icons (when 2 icons present)
-        // 2) The middle icon
-        // 3) The end icon
-        // 4) The whole Bar (without any icons)
+        // There are 3 cases:
+        // 1) The whole Bar minus icon (when the icon is present)
+        // 2) The icon
+        // 3) The whole Bar (without any icons)
         boolean wereIconsVisibleOnTouch = !mContextualSearchPanel.isPeeking();
         int panelWidth = mContextualSearchPanel.getContentViewWidthPx();
         if (wereIconsVisibleOnTouch) {
-            int barWidthMinusIcons = panelWidth - mMiddleIconStartPx;
-            if (xPx < barWidthMinusIcons) {
-                // Case 1 - whole Bar minus icons.
+            float iconOffsetPx = (mContextualSearchPanel.getOpenTabIconX()
+                                         - mContextualSearchPanel.getButtonPaddingDps())
+                    * mDpToPx;
+            if (xPx < iconOffsetPx) {
+                // Case 1 - whole Bar minus icon.
                 mTouchHighlightXOffsetPx = 0;
-                mTouchHighlightWidthPx = barWidthMinusIcons;
-            } else if (xPx < barWidthMinusIcons + mPaddedIconWidthPx) {
-                // Case 2 - middle icon.
-                mTouchHighlightXOffsetPx = barWidthMinusIcons;
-                mTouchHighlightWidthPx = mPaddedIconWidthPx;
+                mTouchHighlightWidthPx = iconOffsetPx;
             } else {
-                // Case 3 - end icon.
-                mTouchHighlightXOffsetPx = barWidthMinusIcons + mPaddedIconWidthPx;
-                mTouchHighlightWidthPx = panelWidth - mTouchHighlightXOffsetPx;
+                // Case 2 - the icon.
+                mTouchHighlightXOffsetPx = iconOffsetPx;
+                mTouchHighlightWidthPx = panelWidth - iconOffsetPx;
             }
         } else {
-            // Case 4 - whole Bar.
+            // Case 3 - whole Bar.
             mTouchHighlightXOffsetPx = 0;
             mTouchHighlightWidthPx = panelWidth;
         }
+        // If RTL then width is correct, just move offset to the other side of the panel.
         if (LocalizationUtils.isLayoutRtl()) {
             mTouchHighlightXOffsetPx = panelWidth - mTouchHighlightXOffsetPx;
         }

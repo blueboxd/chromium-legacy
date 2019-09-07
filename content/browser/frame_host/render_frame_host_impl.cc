@@ -3418,6 +3418,14 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   Send(new AccessibilityMsg_EventBundle_ACK(routing_id_, ack_token));
 }
 
+void RenderFrameHostImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  if (frame_)
+    frame_->UpdateBrowserControlsState(constraints, current, animate);
+}
+
 void RenderFrameHostImpl::SendAccessibilityEventsToManager(
     const AXEventNotificationDetails& details) {
   if (browser_accessibility_manager_ &&

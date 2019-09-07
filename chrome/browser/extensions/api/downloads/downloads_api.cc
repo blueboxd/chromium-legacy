@@ -70,7 +70,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -1611,9 +1610,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
 ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
     Profile* profile,
     DownloadManager* manager)
-    : profile_(profile),
-      notifier_(manager, this),
-      extension_registry_observer_(this) {
+    : profile_(profile), notifier_(manager, this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));

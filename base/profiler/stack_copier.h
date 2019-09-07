@@ -33,6 +33,7 @@ class BASE_EXPORT StackCopier {
                          ProfileBuilder* profile_builder,
                          RegisterContext* thread_context) = 0;
 
+ protected:
   // If the value at |pointer| points to the original stack, rewrite it to point
   // to the corresponding location in the copied stack.
   //

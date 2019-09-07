@@ -1466,7 +1466,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.screen_info,
       params->visual_properties.display_mode,
-      /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
+      /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
   render_view->GetWidget()->set_delegate(render_view);
 
@@ -1644,11 +1644,11 @@ void RenderFrameImpl::CreateFrame(
     auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
         render_view->GetWidget(), web_frame);
     render_view->AttachWebFrameWidget(web_frame_widget);
-    // We thaw the main frame RenderWidget at the same time we would create the
-    // RenderWidget if the RenderFrame owned it instead of having the
+    // We revive the undead main frame RenderWidget at the same time we would
+    // create the RenderWidget if the RenderFrame owned it instead of having the
     // RenderWidget live for eternity on the RenderView (after setting up the
     // WebFrameWidget since that would be part of creating the RenderWidget).
-    render_widget->SetIsFrozen(false);
+    render_widget->SetIsUndead(false);
 
     // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
     // an empty ScreenInfo, but the WebView has already been created and
@@ -1686,7 +1686,7 @@ void RenderFrameImpl::CreateFrame(
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params.routing_id, compositor_deps, screen_info_from_main_frame,
         blink::kWebDisplayModeUndefined,
-        /*is_frozen=*/false, /*never_visible=*/false);
+        /*is_undead=*/false, /*never_visible=*/false);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this
@@ -2824,6 +2824,13 @@ void RenderFrameImpl::ForwardMessageFromHost(
 void RenderFrameImpl::SetLifecycleState(
     blink::mojom::FrameLifecycleState state) {
   frame_->SetLifecycleState(state);
+}
+
+void RenderFrameImpl::UpdateBrowserControlsState(
+    BrowserControlsState constraints,
+    BrowserControlsState current,
+    bool animate) {
+  render_view_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
 void RenderFrameImpl::VisibilityChanged(
@@ -4521,10 +4528,10 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
     // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
     // closed/destroyed since it is part of the RenderView. So instead it is
     // swapped out, which we would be in the middle of here. So instead of
-    // closing the RenderWidget we mark it frozen and drop the WebFrameWidget in
+    // closing the RenderWidget we mark it undead and drop the WebFrameWidget in
     // order to also drop its reference on the WebLocalFrameImpl for this
     // detaching frame.
-    render_widget_->SetIsFrozen(true);
+    render_widget_->SetIsUndead(true);
     render_view_->DetachWebFrameWidget();
   } else if (render_widget_) {
     DCHECK(owned_render_widget_);
@@ -6368,7 +6375,7 @@ bool RenderFrameImpl::SwapIn() {
 
   // If this is the main frame going from a remote frame to a local frame,
   // it needs to set RenderViewImpl's pointer for the main frame to itself,
-  // ensure RenderWidget is no longer frozen.
+  // ensure RenderWidget is no longer undead.
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;

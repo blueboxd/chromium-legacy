@@ -234,29 +234,34 @@ void OverlayPanelLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Close Icon
   // ---------------------------------------------------------------------------
-  // Grab the Close Icon resource.
-  ui::Resource* close_icon_resource =
-      resource_manager_->GetStaticResourceWithTint(close_icon_resource_id_,
-                                                   icon_tint);
-
+  int close_icon_width = 0;
+  float close_icon_left = 0.f;
   // Positions the icon at the end of the bar.
-  float close_icon_left;
   if (is_rtl) {
     close_icon_left = bar_margin_side;
   } else {
-    close_icon_left =
-        panel_width - close_icon_resource->size().width() - bar_margin_side;
+    close_icon_left = panel_width - bar_margin_side;
   }
+  if (close_icon_resource_id_ != kInvalidResourceID) {
+    // Grab the Close Icon resource.
+    ui::Resource* close_icon_resource =
+        resource_manager_->GetStaticResourceWithTint(close_icon_resource_id_,
+                                                     icon_tint);
 
-  // Centers the Close Icon vertically in the bar.
-  float close_icon_top =
-      bar_top_y + bar_height / 2 - close_icon_resource->size().height() / 2;
+    // Positions the icon at the end of the bar.
+    close_icon_width = close_icon_resource->size().width();
+    if (!is_rtl) {
+      close_icon_left = close_icon_left - close_icon_width;
+    }
 
-  close_icon_->SetUIResourceId(close_icon_resource->ui_resource()->id());
-  close_icon_->SetBounds(close_icon_resource->size());
-  close_icon_->SetPosition(
-      gfx::PointF(close_icon_left, close_icon_top));
-  close_icon_->SetOpacity(icon_opacity);
+    // Centers the Close Icon vertically in the bar.
+    float close_icon_top =
+        bar_top_y + bar_height / 2 - close_icon_resource->size().height() / 2;
+    close_icon_->SetUIResourceId(close_icon_resource->ui_resource()->id());
+    close_icon_->SetBounds(close_icon_resource->size());
+    close_icon_->SetPosition(gfx::PointF(close_icon_left, close_icon_top));
+    close_icon_->SetOpacity(icon_opacity);
+  }
 
   // ---------------------------------------------------------------------------
   // Open Tab icon
@@ -265,13 +270,12 @@ void OverlayPanelLayer::SetProperties(
     ui::Resource* open_tab_icon_resource =
         resource_manager_->GetStaticResourceWithTint(open_tab_icon_resource_id_,
                                                      icon_tint);
-
     // Positions the icon at the end of the bar.
-    float open_tab_top = close_icon_top;
+    float open_tab_top = bar_top_y + bar_height / 2 -
+                         open_tab_icon_resource->size().height() / 2;
     float open_tab_left;
     float spacing_between_icons = 2 * bar_margin_side;
-    float margin_from_close_icon =
-        close_icon_resource->size().width() + spacing_between_icons;
+    float margin_from_close_icon = close_icon_width + spacing_between_icons;
     if (is_rtl) {
       open_tab_left = close_icon_left + margin_from_close_icon;
     } else {

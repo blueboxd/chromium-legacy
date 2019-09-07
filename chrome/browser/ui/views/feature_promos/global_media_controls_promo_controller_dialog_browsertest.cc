@@ -26,7 +26,7 @@ class GlobalMediaControlsPromoControllerDialogBrowserTest
 
   void SetUpOnMainThread() override {
     promo_controller_ = std::make_unique<GlobalMediaControlsPromoController>(
-        BrowserView::GetBrowserViewForBrowser(browser()));
+        GetMediaToolbarButton(), browser()->profile());
   }
 
   void ShowUi(const std::string& name) override { ShowPromo(); }
@@ -55,11 +55,15 @@ class GlobalMediaControlsPromoControllerDialogBrowserTest
   }
 
  private:
+  MediaToolbarButtonView* GetMediaToolbarButton() {
+    return BrowserView::GetBrowserViewForBrowser(browser())
+        ->toolbar()
+        ->media_button();
+  }
+
   // Forces the media toolbar button to appear so we can add the promo to it.
   void ShowMediaToolbarButton() {
-    auto* media_button = BrowserView::GetBrowserViewForBrowser(browser())
-                             ->toolbar()
-                             ->media_button();
+    auto* media_button = GetMediaToolbarButton();
     media_button->Show();
     media_button->Enable();
   }

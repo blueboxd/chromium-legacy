@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
@@ -76,7 +77,7 @@ class NavigationObserver : public content::NotificationObserver,
   std::set<std::string> prompted_extensions_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   base::WeakPtrFactory<NavigationObserver> weak_factory_{this};
 

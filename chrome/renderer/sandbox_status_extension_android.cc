@@ -26,7 +26,7 @@
 #include "v8/include/v8.h"
 
 SandboxStatusExtension::SandboxStatusExtension(content::RenderFrame* frame)
-    : content::RenderFrameObserver(frame), binding_(this) {
+    : content::RenderFrameObserver(frame) {
   // Don't do anything else for subframes.
   if (!frame->IsMainFrame())
     return;
@@ -57,8 +57,9 @@ void SandboxStatusExtension::AddSandboxStatusExtension() {
 }
 
 void SandboxStatusExtension::OnSandboxStatusExtensionRequest(
-    chrome::mojom::SandboxStatusExtensionAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::SandboxStatusExtension>
+        receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void SandboxStatusExtension::Install() {

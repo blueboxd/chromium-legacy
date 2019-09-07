@@ -25,6 +25,8 @@ extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsToolbarMenu;
 
+extern const base::Feature kUseTextForUpdateButton;
+
 extern const base::Feature kNewTabstripAnimation;
 
 extern const base::Feature kProfileMenuRevamp;

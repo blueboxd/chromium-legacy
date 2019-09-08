@@ -1173,17 +1173,17 @@
       settable_from_internals: true,
       status: "experimental",
     },
-    // The following are developer opt-outs and opt-ins for PageLifecycle state
-    // transitions. If neither is specified then heuristics will be applied to
-    // determine whether the page is eligible.
+    // The following are developer opt-outs and opt-ins for page freezing. If
+    // neither is specified then heuristics will be applied to determine whether
+    // the page is eligible.
     {
-      name: "PageLifecycleTransitionsOptIn",
-      origin_trial_feature_name: "PageLifecycleTransitionsOptIn",
+      name: "PageFreezeOptIn",
+      origin_trial_feature_name: "PageFreezeOptIn",
       status: "experimental",
     },
     {
-      name: "PageLifecycleTransitionsOptOut",
-      origin_trial_feature_name: "PageLifecycleTransitionsOptOut",
+      name: "PageFreezeOptOut",
+      origin_trial_feature_name: "PageFreezeOptOut",
       status: "experimental",
     },
     {

@@ -162,7 +162,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f433336585ed83606f45520699241c4df0934d9f',
+  'skia_revision': '6c3bd09ead0fe8048326f0a5025333d900a0a37e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -1246,7 +1246,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '57774b7f079d9b1409dd9d1019944ad1dfa01529',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '91c6d76345fe72bcd12bc964236edb0e14244a61',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1455,7 +1455,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9c5c8e2f73ba4fbe31cf5c8eb3c877ca0745c998',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@256c44257e1039d792eb0e43dc9c0222511fb9fa',
     'condition': 'checkout_src_internal',
   },
 

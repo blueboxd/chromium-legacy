@@ -36,10 +36,6 @@
 #include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_WIN)
-#include "base/win/file_pre_reader.h"
-#endif
-
 namespace {
 
 // Spin for up to a second waiting for the lock to clear when setting
@@ -348,9 +344,6 @@ void Database::Close() {
 }
 
 void Database::Preload() {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
-
   if (base::FeatureList::IsEnabled(features::kSqlSkipPreload))
     return;
 
@@ -359,9 +352,9 @@ void Database::Preload() {
     return;
   }
 
-#if defined(OS_WIN)
-  base::win::PreReadFile(DbPath(), false);
-#else
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
+
   // The constructor and set_page_size() ensure that page_size_ is never zero.
   const int page_size = page_size_;
   DCHECK(page_size);
@@ -372,25 +365,7 @@ void Database::Preload() {
   if (preload_size < 1)
     return;
 
-  sqlite3_file* file = nullptr;
-  sqlite3_int64 file_size = 0;
-  int rc = GetSqlite3FileAndSize(db_, &file, &file_size);
-  if (rc != SQLITE_OK)
-    return;
-
-  // Don't preload more than the file contains.
-  if (preload_size > file_size)
-    preload_size = file_size;
-
-  std::unique_ptr<char[]> buf(new char[page_size]);
-  for (sqlite3_int64 pos = 0; pos < preload_size; pos += page_size) {
-    rc = file->pMethods->xRead(file, buf.get(), page_size, pos);
-
-    // TODO(shess): Consider calling OnSqliteError().
-    if (rc != SQLITE_OK)
-      return;
-  }
-#endif
+  base::PreReadFile(DbPath(), /*is_executable=*/false, preload_size);
 }
 
 // SQLite keeps unused pages associated with a database in a cache.  It asks

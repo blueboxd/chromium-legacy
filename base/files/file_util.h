@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
@@ -417,6 +418,31 @@ BASE_EXPORT FilePath GetUniquePath(const FilePath& path);
 // false.
 BASE_EXPORT bool SetNonBlocking(int fd);
 
+// Hints the OS to prefetch the first |max_bytes| of |file_path| into its cache.
+//
+// If called at the appropriate time, this can reduce the latency incurred by
+// feature code that needs to read the file.
+//
+// |max_bytes| specifies how many bytes should be pre-fetched. It may exceed the
+// file's size. Passing in std::numeric_limits<int64_t>::max() is a convenient
+// way to get the entire file pre-fetched.
+//
+// |is_executable| specifies whether the file is to be prefetched as
+// executable code or as data. Windows treats the file backed pages in RAM
+// differently, and specifying the wrong value results in two copies in RAM.
+//
+// Returns false if prefetching definitely failed. A return value of true does
+// not guarantee that the entire desired range was prefetched.
+//
+// Calling this before using ::LoadLibrary() on Windows is more efficient memory
+// wise, but we must be sure no other threads try to LoadLibrary() the file
+// while we are doing the mapping and prefetching, or the process will get a
+// private copy of the DLL via COW.
+BASE_EXPORT bool PreReadFile(
+    const FilePath& file_path,
+    bool is_executable,
+    int64_t max_bytes = std::numeric_limits<int64_t>::max());
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 // Creates a pipe. Returns true on success, otherwise false.
@@ -517,6 +543,9 @@ BASE_EXPORT bool MoveUnsafe(const FilePath& from_path,
 BASE_EXPORT bool CopyAndDeleteDirectory(const FilePath& from_path,
                                         const FilePath& to_path);
 #endif  // defined(OS_WIN)
+
+// Used by PreReadFile() when no kernel support for prefetching is available.
+bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes);
 
 }  // namespace internal
 }  // namespace base

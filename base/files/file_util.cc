@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <limits>
+#include <memory>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -292,6 +293,45 @@ FilePath GetUniquePath(const FilePath& path) {
     return path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
   return uniquifier == 0 ? path : base::FilePath();
 }
+
+namespace internal {
+
+bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes) {
+  DCHECK_GE(max_bytes, 0);
+
+  File file(file_path, File::FLAG_OPEN | File::FLAG_READ |
+                           File::FLAG_SEQUENTIAL_SCAN |
+                           File::FLAG_SHARE_DELETE);
+  if (!file.IsValid())
+    return false;
+
+  constexpr int kBufferSize = 1024 * 1024;
+  // Ensures the buffer is deallocated at function exit.
+  std::unique_ptr<char[]> buffer_deleter(new char[kBufferSize]);
+  char* const buffer = buffer_deleter.get();
+
+  while (max_bytes > 0) {
+    // The static_cast<int> is safe because kBufferSize is int, and both values
+    // are non-negative. So, the minimum is guaranteed to fit in int.
+    const int read_size =
+        static_cast<int>(std::min<int64_t>(max_bytes, kBufferSize));
+    DCHECK_GE(read_size, 0);
+    DCHECK_LE(read_size, kBufferSize);
+
+    const int read_bytes = file.ReadAtCurrentPos(buffer, read_size);
+    if (read_bytes < 0)
+      return false;
+    if (read_bytes == 0)
+      break;
+
+    max_bytes -= read_bytes;
+  }
+
+  return true;
+}
+
+}  // namespace internal
+
 #endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace base

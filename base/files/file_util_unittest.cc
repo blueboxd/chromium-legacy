@@ -3927,6 +3927,65 @@ TEST_F(FileUtilTest, GetUniquePathNumberTooManyFiles) {
   // Verify that the limit has been reached.
   EXPECT_EQ(GetUniquePathNumber(some_file), -1);
 }
+
+TEST_F(FileUtilTest, PreReadFile_ExistingFile_NoSize) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, bogus_content);
+
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false));
+}
+
+TEST_F(FileUtilTest, PreReadFile_ExistingFile_ExactSize) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, bogus_content);
+
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
+                          base::size(bogus_content)));
+}
+
+TEST_F(FileUtilTest, PreReadFile_ExistingFile_OverSized) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, bogus_content);
+
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
+                          base::size(bogus_content) * 2));
+}
+
+TEST_F(FileUtilTest, PreReadFile_ExistingFile_UnderSized) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, bogus_content);
+
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
+                          base::size(bogus_content) / 2));
+}
+
+TEST_F(FileUtilTest, PreReadFile_ExistingFile_ZeroSize) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, bogus_content);
+
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false, /*max_bytes=*/0));
+}
+
+TEST_F(FileUtilTest, PreReadFile_ExistingEmptyFile_NoSize) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, L"");
+  // The test just asserts that this doesn't crash. The Windows implementation
+  // fails in this case, due to the base::MemoryMappedFile implementation and
+  // the limitations of ::MapViewOfFile().
+  PreReadFile(text_file, /*is_executable=*/false);
+}
+
+TEST_F(FileUtilTest, PreReadFile_ExistingEmptyFile_ZeroSize) {
+  FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
+  CreateTextFile(text_file, L"");
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false, /*max_bytes=*/0));
+}
+
+TEST_F(FileUtilTest, PreReadFile_InexistentFile) {
+  FilePath inexistent_file = temp_dir_.GetPath().Append(FPL("inexistent_file"));
+  EXPECT_FALSE(PreReadFile(inexistent_file, /*is_executable=*/false));
+}
+
 #endif  // !defined(OS_NACL_NONSFI)
 
 // Test that temp files obtained racily are all unique (no interference between

@@ -1062,8 +1062,6 @@ jumbo_component("base") {
     "win/event_trace_controller.h",
     "win/event_trace_provider.cc",
     "win/event_trace_provider.h",
-    "win/file_pre_reader.cc",
-    "win/file_pre_reader.h",
     "win/hstring_compare.cc",
     "win/hstring_compare.h",
     "win/hstring_reference.cc",

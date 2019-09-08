@@ -6598,19 +6598,18 @@ namespace {
 
 using resource_coordinator::mojom::InterventionPolicy;
 
-// A helper function for setting intervention policy values on a frame.
-void SetInitialInterventionPolicies(
+// A helper function to set the origin trial freeze policy of a document.
+void SetOriginTrialFreezePolicy(
     DocumentResourceCoordinator* document_resource_coordinator,
     ExecutionContext* context) {
   // An explicit opt-out overrides an explicit opt-in if both are present.
   InterventionPolicy policy = InterventionPolicy::kDefault;
-  if (RuntimeEnabledFeatures::PageLifecycleTransitionsOptOutEnabled(context)) {
+  if (RuntimeEnabledFeatures::PageFreezeOptOutEnabled(context)) {
     policy = InterventionPolicy::kOptOut;
-    UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptOut);
-  } else if (RuntimeEnabledFeatures::PageLifecycleTransitionsOptInEnabled(
-                 context)) {
+    UseCounter::Count(context, WebFeature::kPageFreezeOptOut);
+  } else if (RuntimeEnabledFeatures::PageFreezeOptInEnabled(context)) {
     policy = InterventionPolicy::kOptIn;
-    UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptIn);
+    UseCounter::Count(context, WebFeature::kPageFreezeOptIn);
   }
 
   document_resource_coordinator->SetOriginTrialFreezePolicy(policy);
@@ -6676,11 +6675,10 @@ void Document::FinishedParsing() {
     probe::DomContentLoadedEventFired(frame);
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
 
-    // Forward intervention policy state to the corresponding frame object
-    // in the resource coordinator.
-    // TODO(chrisha): Plumb in dynamic policy changes driven from Javascript.
+    // Forward origin trial freeze policy to the corresponding frame object in
+    // the resource coordinator.
     if (auto* document_resource_coordinator = GetResourceCoordinator())
-      SetInitialInterventionPolicies(document_resource_coordinator, this);
+      SetOriginTrialFreezePolicy(document_resource_coordinator, this);
   }
 
   // Schedule dropping of the ElementDataCache. We keep it alive for a while

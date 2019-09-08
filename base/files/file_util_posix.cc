@@ -31,6 +31,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
@@ -1119,6 +1120,34 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   return CopyFileContents(&infile, &outfile);
 }
 #endif  // !defined(OS_MACOSX)
+
+bool PreReadFile(const FilePath& file_path,
+                 bool is_executable,
+                 int64_t max_bytes) {
+  DCHECK_GE(max_bytes, 0);
+
+  // ChromeOS is also covered by OS_LINUX.
+  // posix_fadvise() is only available in the Android NDK in API 21+. Older
+  // versions may have the required kernel support, but don't have enough usage
+  // to justify backporting.
+#if defined(OS_LINUX) || (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
+  File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
+  if (!file.IsValid())
+    return false;
+
+  if (max_bytes == 0) {
+    // fadvise() pre-fetches the entire file when given a zero length.
+    return true;
+  }
+
+  const PlatformFile fd = file.GetPlatformFile();
+  const ::off_t len = base::saturated_cast<::off_t>(max_bytes);
+  return posix_fadvise(fd, /*offset=*/0, len, POSIX_FADV_WILLNEED) == 0;
+#else
+  // TODO(pwnall): Fall back to madvise() for macOS.
+  return internal::PreReadFileSlow(file_path, max_bytes);
+#endif  // defined(OS_LINUX) || (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
+}
 
 // -----------------------------------------------------------------------------
 

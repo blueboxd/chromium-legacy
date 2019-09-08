@@ -24502,8 +24502,8 @@ Called by update_net_error_codes.py.-->
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
   <int value="2926" label="BuiltInModuleToast"/>
   <int value="2927" label="LargestContentfulPaintExplicitlyRequested"/>
-  <int value="2928" label="PageLifecycleTransitionsOptIn"/>
-  <int value="2929" label="PageLifecycleTransitionsOptOut"/>
+  <int value="2928" label="PageFreezeOptIn"/>
+  <int value="2929" label="PageFreezeOptOut"/>
   <int value="2930" label="PeriodicBackgroundSync"/>
   <int value="2931" label="PeriodicBackgroundSyncRegister"/>
   <int value="2932" label="LazyLoadFrameLoadingAttributeEager"/>

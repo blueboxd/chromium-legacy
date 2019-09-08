@@ -34,6 +34,10 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   angle::InitTestHarness(&argc, argv);
   base::TestSuite test_suite(argc, argv);
+
+  // The process priority is lowered by the constructor of tcu::ANGLEPlatform().
+  test_suite.DisableCheckForProcessPriority();
+
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   return rt;

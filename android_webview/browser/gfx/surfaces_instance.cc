@@ -124,6 +124,13 @@ SurfacesInstance::SurfacesInstance()
           share_group_, gl_surface_, std::move(gl_context),
           false /* use_virtualized_gl_contexts */,
           base::BindOnce(&OnContextLost), vulkan_context_provider.get());
+      if (!enable_vulkan) {
+        auto feature_info = base::MakeRefCounted<gpu::gles2::FeatureInfo>(
+            workarounds, GpuServiceWebView::GetInstance()->gpu_feature_info());
+        shared_context_state_->InitializeGL(
+            GpuServiceWebView::GetInstance()->gpu_preferences(),
+            std::move(feature_info));
+      }
       shared_context_state_->InitializeGrContext(workarounds,
                                                  nullptr /* gr_shader_cache */);
     }

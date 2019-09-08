@@ -23,7 +23,7 @@ constexpr char kPrintServersPolicyJson1[] = R"json(
     "url": "ipp://192.168.1.5"
   }, {
     "display_name": "Server API",
-    "url":"ipps://print-server.intra.example.com:443/ipp/cl2k4"
+    "url":"ipps://print-server.intra.example.com:444/ipp/cl2k4"
   }, {
     "display_name": "YaLP",
     "url": "http://192.168.1.8/bleble/print"
@@ -32,8 +32,8 @@ constexpr char kPrintServersPolicyJson1[] = R"json(
 
 // Corresponding vector with PrintServers.
 const std::vector<PrintServer> kPrintServersPolicyData1 = {
-    {GURL("http://192.168.1.5"), "MyPrintServer"},
-    {GURL("https://print-server.intra.example.com:443/ipp/cl2k4"),
+    {GURL("http://192.168.1.5:631"), "MyPrintServer"},
+    {GURL("https://print-server.intra.example.com:444/ipp/cl2k4"),
      "Server API"},
     {GURL("http://192.168.1.8/bleble/print"), "YaLP"}};
 
@@ -48,7 +48,7 @@ constexpr char kPrintServersPolicyJson2[] = R"json(
 
 // Corresponding vector with PrintServers.
 const std::vector<PrintServer> kPrintServersPolicyData2 = {
-    {GURL("http://192.168.1.15"), "CUPS"}};
+    {GURL("http://192.168.1.15:631"), "CUPS"}};
 
 // Another configuration file with print servers, this time with invalid URLs.
 constexpr char kPrintServersPolicyJson3[] = R"json(
@@ -74,12 +74,13 @@ constexpr char kPrintServersPolicyJson3[] = R"json(
   }
 ])json";
 
-// Corresponding vector with PrintServers. Only the first record is included,
+// Corresponding vector with PrintServers. Only two records are included,
 // because other ones are invalid:
+// server_1 - OK
 // server_2 - invalid URL - invalid port number
 // server_3 - unsupported scheme
 // server_4 - duplicate of server_1
-// server_5 - leading whitespaces, they should be trimmed
+// server_5 - leading whitespaces, but OK
 // server_6 - invalid URL - forbidden character
 const std::vector<PrintServer> kPrintServersPolicyData3 = {
     {GURL("http://aaa.bbb.ccc:666/xx"), "server_1"},

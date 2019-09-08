@@ -779,10 +779,7 @@ public class AwContentsTest {
         Assert.assertEquals(0, consoleHelper.getMessages().size());
     }
 
-    @Test
-    @Feature({"AndroidWebView"})
-    @SmallTest
-    public void testHardwareRenderingSmokeTest() throws Throwable {
+    private void doHardwareRenderingSmokeTest() throws Throwable {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
@@ -839,6 +836,21 @@ public class AwContentsTest {
         Assert.assertEquals(Color.rgb(0, 255, 0), quadrantColors[1]);
         Assert.assertEquals(Color.rgb(0, 0, 255), quadrantColors[2]);
         Assert.assertEquals(Color.rgb(128, 128, 128), quadrantColors[3]);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testHardwareRenderingSmokeTest() throws Throwable {
+        doHardwareRenderingSmokeTest();
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @CommandLineFlags.Add({"enable-features=UseSkiaRenderer", "disable-oop-rasterization"})
+    public void testHardwareRenderingSmokeTestSkiaRenderer() throws Throwable {
+        doHardwareRenderingSmokeTest();
     }
 
     @Test

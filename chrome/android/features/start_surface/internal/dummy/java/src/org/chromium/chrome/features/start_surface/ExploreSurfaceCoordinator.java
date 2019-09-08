@@ -29,9 +29,8 @@ class ExploreSurfaceCoordinator {
     interface FeedSurfaceCreator {
         /**
          * Creates the {@link FeedSurfaceCoordinator} for the specified mode.
-         * @param isIncognito Whether it is in incognito mode.
          * @return The {@link FeedSurfaceCoordinator}.
          */
-        FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isIncognito);
+        FeedSurfaceCoordinator createFeedSurfaceCoordinator();
     }
 }

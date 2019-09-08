@@ -55,9 +55,8 @@ class ServiceProviderImplTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   TestInterfaceImpl test_service_;
 
   sys::OutgoingDirectory service_directory_;

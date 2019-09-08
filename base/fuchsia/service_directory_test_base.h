@@ -31,9 +31,8 @@ class ServiceDirectoryTestBase : public testing::Test {
  protected:
   const RunLoop::ScopedRunTimeoutForTest run_timeout_;
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<sys::OutgoingDirectory> outgoing_directory_;
   TestInterfaceImpl test_service_;

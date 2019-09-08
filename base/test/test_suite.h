@@ -28,7 +28,7 @@ namespace base {
 class XmlUnitTestResultPrinter;
 
 // Instantiates TestSuite, runs it and returns exit code.
-int RunUnitTestsUsingBaseTestSuite(int argc, char **argv);
+int RunUnitTestsUsingBaseTestSuite(int argc, char** argv);
 
 class TestSuite {
  public:
@@ -42,6 +42,9 @@ class TestSuite {
   virtual ~TestSuite();
 
   int Run();
+
+  // Disables checks for process priority. Most tests should not use this.
+  void DisableCheckForProcessPriority();
 
   // Disables checks for certain global objects being leaked across tests.
   void DisableCheckForLeakedGlobals();
@@ -90,6 +93,7 @@ class TestSuite {
   std::unique_ptr<logging::ScopedLogAssertHandler> assert_handler_;
 
   bool check_for_leaked_globals_ = true;
+  bool check_for_process_priority_ = true;
 
   bool is_initialized_ = false;
 

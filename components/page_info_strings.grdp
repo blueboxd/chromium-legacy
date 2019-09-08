@@ -199,7 +199,7 @@
           Cookies <ph name="NUM_COOKIES">$1<ex>(4 in use)</ex></ph>
       </message>
       <message name="IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED" desc="The label of the counts for allowed cookies that are in use on the page. This text will be used in IDS_PAGE_INFO_COOKIES_BUTTON_TEXT.">
-        ({NUM_COOKIES, plural, =1 {1 in use} other {# in use}})
+        {NUM_COOKIES, plural, =1 {(1 in use)} other {(# in use)}}
       </message>
       <message name="IDS_PAGE_INFO_COOKIES_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED.">
         Show cookies

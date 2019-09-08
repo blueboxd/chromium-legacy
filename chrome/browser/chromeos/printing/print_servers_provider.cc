@@ -106,8 +106,10 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
     // context of IPP interface. Moreover, the URL must have http/https scheme
     // to pass IsStandard() test from GURL library (see "Validation of the URL
     // address" below).
+    bool replaced_ipp_schema = false;
     if (gurl.SchemeIs("ipp")) {
       gurl = GURL("http" + url->substr(url->find_first_of(':')));
+      replaced_ipp_schema = true;
     } else if (gurl.SchemeIs("ipps")) {
       gurl = GURL("https" + url->substr(url->find_first_of(':')));
     }
@@ -116,6 +118,15 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
       LOG(WARNING) << "Entry in print servers policy skipped. "
                    << "The following URL is invalid: " << *url;
       continue;
+    }
+    // The default port for ipp is 631. If the schema ipp is replaced by http
+    // and the port is not explicitly defined in the url, we have to overwrite
+    // the default http port with the default ipp port. For ipps we do nothing
+    // because implementers use the same port for ipps and https.
+    if (replaced_ipp_schema && gurl.IntPort() == url::PORT_UNSPECIFIED) {
+      GURL::Replacements replacement;
+      replacement.SetPortStr("631");
+      gurl = gurl.ReplaceComponents(replacement);
     }
     // Checks if a set of URLs contains this URL. If not, the URL is added to
     // the set. Otherwise, a warning is emitted and the record is skipped.

@@ -302,8 +302,8 @@ class TransactionHelper {
     EXPECT_EQ(NULL, transaction_.get());
     transaction_ = factory->CreateTransaction(
         hostname_, qtype_,
-        base::Bind(&TransactionHelper::OnTransactionComplete,
-                   base::Unretained(this)),
+        base::BindOnce(&TransactionHelper::OnTransactionComplete,
+                       base::Unretained(this)),
         NetLogWithSource::Make(&net_log_, net::NetLogSourceType::NONE), secure_,
         factory->GetSecureDnsModeForTest(), &request_context_);
     transaction_->SetRequestPriority(DEFAULT_PRIORITY);
@@ -1962,8 +1962,8 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
       GURL(GetURLFromTemplateWithoutParameters(
           config_.dns_over_https_servers[0].server_template)),
       CookieOptions::MakeAllInclusive(),
-      base::Bind(&CookieCallback::GetCookieListCallback,
-                 base::Unretained(&callback)));
+      base::BindOnce(&CookieCallback::GetCookieListCallback,
+                     base::Unretained(&callback)));
   callback.WaitUntilDone();
   EXPECT_EQ(0u, callback.cookie_list_size());
   callback.Reset();
@@ -1974,8 +1974,8 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
       base::nullopt /* server_time */);
   helper1.request_context()->cookie_store()->SetCanonicalCookieAsync(
       std::move(cookie), cookie_url.scheme(), CookieOptions(),
-      base::Bind(&CookieCallback::SetCookieCallback,
-                 base::Unretained(&callback)));
+      base::BindOnce(&CookieCallback::SetCookieCallback,
+                     base::Unretained(&callback)));
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));
 }
 

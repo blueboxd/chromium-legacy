@@ -174,11 +174,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '32d6006bf2ef9ea1cc5a705df3493ed7cca16821',
+  'angle_revision': 'a7ff7df26f281e956b59fad52f0408c3528648ed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'b6c572d0b1114e0159d742e8d89bc3609cf59bef',
+  'swiftshader_revision': '44e6523d7ff3e77d82b55e09fb2ef169839b9200',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'feed_revision': '760bb171ed66f8385aa3720d90ca532ae51354cc',
+  'feed_revision': '8b5b413652b197f591d4d9ec03e366225954e868',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_build-tools_version
   # and whatever else without interference from each other.
@@ -1414,7 +1414,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3146ea01ae59f7b9e75205bae471505407f6316e',
+    Var('webrtc_git') + '/src.git' + '@' + 'be2e5f78b3498858cd8694fa6d00a28ba8093f26',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1455,7 +1455,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@85e2fb2fed5fbe99717fca7151dee7c57b3f5cbb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9c5c8e2f73ba4fbe31cf5c8eb3c877ca0745c998',
     'condition': 'checkout_src_internal',
   },
 

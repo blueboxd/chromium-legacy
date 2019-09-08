@@ -7,9 +7,6 @@
 
 #include "base/time/time.h"
 
-class PrefRegistrySimple;
-class PrefService;
-
 // Utility functions to support metric collection for browser startup. Timings
 // should use TimeTicks whenever possible. OS-provided timings are still
 // received as Time out of cross-platform support necessity but are converted to
@@ -26,9 +23,6 @@ enum class WebContentsWorkload {
   // Loading multiple tabs (of which the profiled WebContents is foreground).
   MULTI_TABS,
 };
-
-// Registers startup related prefs in |registry|.
-void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Returns true when browser UI was not launched normally: some other UI was
 // shown first or browser was launched in background mode.
@@ -60,11 +54,9 @@ void RecordMainEntryPointTime(base::TimeTicks ticks);
 void RecordExeMainEntryPointTicks(base::TimeTicks ticks);
 
 // Call this with the time recorded just before the message loop is started.
-// |is_first_run| - is the current launch part of a first run. |pref_service| is
-// used to store state for stats that span multiple startups.
+// |is_first_run| - is the current launch part of a first run.
 void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
-                                       bool is_first_run,
-                                       PrefService* pref_service);
+                                       bool is_first_run);
 
 // Call this with the time when the first browser window became visible.
 void RecordBrowserWindowDisplay(base::TimeTicks ticks);

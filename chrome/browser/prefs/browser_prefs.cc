@@ -126,7 +126,6 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
@@ -489,6 +488,9 @@ const char kInsecureExtensionUpdatesEnabled[] =
     "extension_updates.insecure_extension_updates_enabled";
 
 const char kLastStartupTimestamp[] = "startup_metric.last_startup_timestamp";
+const char kLastStartupVersion[] = "startup_metric.last_startup_version";
+const char kSameVersionStartupCount[] =
+    "startup_metric.same_version_startup_count";
 
 // Deprecated 8/2019
 const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
@@ -603,7 +605,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   secure_origin_whitelist::RegisterPrefs(registry);
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
-  startup_metric_utils::RegisterPrefs(registry);
   subresource_filter::IndexedRulesetVersion::RegisterPrefs(registry);
   SystemNetworkContextManager::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
@@ -727,6 +728,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
 #endif  // !defined(OS_ANDROID)
   registry->RegisterInt64Pref(kLastStartupTimestamp, 0);
+  registry->RegisterStringPref(kLastStartupVersion, std::string());
+  registry->RegisterIntegerPref(kSameVersionStartupCount, 0);
 
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
@@ -1049,6 +1052,8 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 
   // Added 8/2019.
   local_state->ClearPref(kLastStartupTimestamp);
+  local_state->ClearPref(kLastStartupVersion);
+  local_state->ClearPref(kSameVersionStartupCount);
 }
 
 // This method should be periodically pruned of year+ old migrations.

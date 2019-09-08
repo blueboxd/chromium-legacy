@@ -1900,6 +1900,8 @@
       <message desc="In an editable text box, describes a line with only whitespace." name="IDS_CHROMEVOX_TEXT_BOX_WHITESPACE" meaning="UI element">
         Space
       </message>
+      <!-- TODO(crbug.com/999781): The following 3 messages are combined with other message fragments. -->
+      <!-- Combining message fragments is a I18N code-smell.  Combine fragments into a single message. -->
       <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED">
         with <ph name="num">$1</ph> items
       </message>
@@ -1907,10 +1909,11 @@
         +<ph name="num">$1</ph>
       </message>
       <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS">
-        with {COUNT, plural, =1 {# item}other {# items}}
+        {COUNT, plural, =1{with # item} other{with # items}}
       </message>
+      <!-- TODO(crbug.com/999781): This should not need ICU msg format. Fix where the message is used. -->
       <message desc="Further describes a list-like element with a number of items in braille." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_BRL">
-        +{COUNT, plural, =1 {#}other {#}}
+        {COUNT, plural, =1{+#} other{+#}}
       </message>
       <message desc="Describes the state of a progress bar, in percent." name="IDS_CHROMEVOX_STATE_PERCENT">
         <ph name="num">$1</ph>%

@@ -1172,7 +1172,7 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.AddEventReferencingSource(NetLogEventType::DNS_TRANSACTION_ATTEMPT,
                                        attempt->GetSocketNetLog().source());
 
-    int rv = attempt->Start(base::Bind(
+    int rv = attempt->Start(base::BindOnce(
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),
         attempt_number, true /* record_rtt */, base::TimeTicks::Now()));
     if (rv == ERR_IO_PENDING) {

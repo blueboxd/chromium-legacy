@@ -31,10 +31,6 @@ WebAppTabHelper::WebAppTabHelper(content::WebContents* web_contents)
 
 WebAppTabHelper::~WebAppTabHelper() = default;
 
-bool WebAppTabHelper::HasAssociatedApp() const {
-  return !app_id_.empty();
-}
-
 void WebAppTabHelper::SetAppId(const AppId& app_id) {
   DCHECK(app_id.empty() || provider_->registrar().IsInstalled(app_id));
   if (app_id_ == app_id)

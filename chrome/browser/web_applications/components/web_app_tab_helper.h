@@ -36,8 +36,6 @@ class WebAppTabHelper : public content::WebContentsObserver,
 
   const AppId& app_id() const { return app_id_; }
 
-  bool HasAssociatedApp() const;
-
   // Set associated app_id.
   void SetAppId(const AppId& app_id);
 

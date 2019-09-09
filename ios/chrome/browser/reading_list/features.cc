@@ -10,7 +10,7 @@
 namespace reading_list {
 
 const base::Feature kOfflineVersionWithoutNativeContent{
-    "OfflineVersionWithoutNativeContent", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OfflineVersionWithoutNativeContent", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsOfflinePageWithoutNativeContentEnabled() {
   return base::FeatureList::IsEnabled(kOfflineVersionWithoutNativeContent) ||

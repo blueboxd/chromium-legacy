@@ -5,4 +5,4 @@
 #include "ios/chrome/browser/metrics/features.h"
 
 const base::Feature kLogLoadStartedInDidStartNavigation{
-    "LogLoadStartedInDidStartNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LogLoadStartedInDidStartNavigation", base::FEATURE_ENABLED_BY_DEFAULT};

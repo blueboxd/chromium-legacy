@@ -51,13 +51,16 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
   GpuMemoryBufferSupport support;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!support.IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
         continue;

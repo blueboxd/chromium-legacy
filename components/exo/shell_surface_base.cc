@@ -423,11 +423,6 @@ void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 
-void ShellSurfaceBase::Close() {
-  if (!close_callback_.is_null())
-    close_callback_.Run();
-}
-
 void ShellSurfaceBase::SetGeometry(const gfx::Rect& geometry) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetGeometry", "geometry",
                geometry.ToString());
@@ -684,11 +679,14 @@ gfx::ImageSkia ShellSurfaceBase::GetWindowIcon() {
 
 bool ShellSurfaceBase::OnCloseRequested(
     views::Widget::ClosedReason close_reason) {
+  if (!pre_close_callback_.is_null())
+    pre_close_callback_.Run();
   // Closing the shell surface is a potentially asynchronous operation, so we
   // will defer actually closing the Widget right now, and come back and call
   // CloseNow() when the callback completes and the shell surface is destroyed
   // (see ~ShellSurfaceBase()).
-  Close();
+  if (!close_callback_.is_null())
+    close_callback_.Run();
   return false;
 }
 
@@ -823,8 +821,7 @@ void ShellSurfaceBase::OnWindowActivated(ActivationReason reason,
 bool ShellSurfaceBase::AcceleratorPressed(const ui::Accelerator& accelerator) {
   for (const auto& entry : kCloseWindowAccelerators) {
     if (ui::Accelerator(entry.keycode, entry.modifiers) == accelerator) {
-      if (!close_callback_.is_null())
-        close_callback_.Run();
+      OnCloseRequested(views::Widget::ClosedReason::kUnspecified);
       return true;
     }
   }

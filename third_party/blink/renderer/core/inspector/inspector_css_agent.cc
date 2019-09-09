@@ -1041,11 +1041,12 @@ InspectorCSSAgent::AnimationsForNode(Element* element) {
       std::make_unique<protocol::Array<protocol::CSS::CSSKeyframesRule>>();
   Document* owner_document = element->ownerDocument();
 
-  StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
-  scoped_refptr<ComputedStyle> style = style_resolver.StyleForElement(element);
+  owner_document->UpdateStyleAndLayoutTreeForNode(element);
+  const ComputedStyle* style = element->EnsureComputedStyle();
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
+  StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
   for (wtf_size_t i = 0;
        animation_data && i < animation_data->NameList().size(); ++i) {
     AtomicString animation_name(animation_data->NameList()[i]);

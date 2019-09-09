@@ -87,13 +87,16 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
   const gfx::Size kBufferSize(8, 8);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage)) {
@@ -124,13 +127,16 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandleSmallBuffer) {
   const gfx::Size kBufferSize(8, 8);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage)) {
@@ -296,13 +302,16 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
   const gfx::GpuMemoryBufferType kBufferType = TypeParam::kBufferType;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
-                                 gfx::BufferUsage::SCANOUT,
-                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
-                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    gfx::BufferUsage usages[] = {
+        gfx::BufferUsage::GPU_READ,
+        gfx::BufferUsage::SCANOUT,
+        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VDA_WRITE,
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+    };
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage))

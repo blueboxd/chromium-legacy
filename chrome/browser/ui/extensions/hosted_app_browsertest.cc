@@ -1210,19 +1210,11 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
   web_app::AppId app_id = InstallPwaForCurrentUrl();
-
-  const extensions::Extension* app =
-      extensions::ExtensionRegistry::Get(browser()->profile())
-          ->enabled_extensions()
-          .GetByID(app_id);
-  ASSERT_TRUE(app);
-  EXPECT_EQ(app->name(), GetInstallableAppName());
+  EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
 
   // Installed PWAs should launch in their own window.
-  // TODO (crbug.com/876576): Remove references to extensions in SharedPWATest.
-  EXPECT_EQ(extensions::GetLaunchContainer(
-                extensions::ExtensionPrefs::Get(browser()->profile()), app),
-            extensions::LaunchContainer::kLaunchContainerWindow);
+  EXPECT_EQ(registrar().GetAppLaunchContainer(app_id),
+            web_app::LaunchContainer::kWindow);
 
   EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
   EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
@@ -1234,16 +1226,10 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CreateShortcutForInstallableSite) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
   web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
-  const extensions::Extension* app =
-      extensions::ExtensionRegistry::Get(browser()->profile())
-          ->enabled_extensions()
-          .GetByID(app_id);
-  EXPECT_EQ(app->name(), GetInstallableAppName());
+  EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
   // Bookmark apps to PWAs should launch in a tab.
-  // TODO (crbug.com/876576): Remove references to extensions in SharedPWATest.
-  EXPECT_EQ(extensions::GetLaunchContainer(
-                extensions::ExtensionPrefs::Get(browser()->profile()), app),
-            extensions::LaunchContainer::kLaunchContainerTab);
+  EXPECT_EQ(registrar().GetAppLaunchContainer(app_id),
+            web_app::LaunchContainer::kTab);
 
   EXPECT_EQ(0, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
   EXPECT_EQ(1, user_action_tester.GetActionCount("CreateShortcut"));

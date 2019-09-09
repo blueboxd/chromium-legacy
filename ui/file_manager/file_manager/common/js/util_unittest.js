@@ -174,12 +174,13 @@ function testEntryDebugString() {
   // Mocked values are identified as Object instead of DirectoryEntry and
   // FileEntry.
   assertEquals(
-      '(Object) / filesystem:fake-volume/', util.entryDebugString(root));
+      '(MockDirectoryEntry) / filesystem:fake-volume/',
+      util.entryDebugString(root));
   assertEquals(
-      '(Object) /dir_a filesystem:fake-volume/dir_a',
+      '(MockDirectoryEntry) /dir_a filesystem:fake-volume/dir_a',
       util.entryDebugString(folder));
   assertEquals(
-      '(Object) /file_a.txt filesystem:fake-volume/file_a.txt',
+      '(MockFileEntry) /file_a.txt filesystem:fake-volume/file_a.txt',
       util.entryDebugString(file));
   // FilesAppEntry types:
   assertEquals(

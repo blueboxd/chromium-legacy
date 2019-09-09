@@ -49,7 +49,7 @@ bool ListCapability<Option, Traits>::LoadFrom(
       description.GetItem(Traits::GetCapabilityPath(), base::Value::Type::LIST);
   if (!options_value)
     return false;
-  const base::Value::ListStorage& options = options_value->GetList();
+  base::span<const base::Value> options = options_value->GetList();
   for (const base::Value& option_value : options) {
     Option option;
     if (!option_value.is_dict() || !Traits::Load(option_value, &option))
@@ -133,7 +133,7 @@ bool SelectionCapability<Option, Traits>::LoadFrom(const base::Value& dict) {
       dict.FindKeyOfType(json::kKeyOption, base::Value::Type::LIST);
   if (!options_value)
     return false;
-  const base::Value::ListStorage& options = options_value->GetList();
+  base::span<const base::Value> options = options_value->GetList();
   for (const base::Value& option_value : options) {
     Option option;
     if (!option_value.is_dict() || !Traits::Load(option_value, &option))

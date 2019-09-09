@@ -167,7 +167,7 @@ class SignalSenderVerificationTest : public testing::Test {
     base::ThreadRestrictions::SetIOAllowed(false);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;

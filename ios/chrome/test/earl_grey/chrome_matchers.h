@@ -125,9 +125,6 @@ id<GREYMatcher> NavigationBarDoneButton();
 // Matcher for the done button on the Bookmarks navigation bar.
 id<GREYMatcher> BookmarksNavigationBarDoneButton();
 
-// Returns matcher for the account consistency setup signin button.
-id<GREYMatcher> AccountConsistencySetupSigninButton();
-
 // Returns matcher for the account consistency confirmation button.
 id<GREYMatcher> AccountConsistencyConfirmationOkButton();
 
@@ -162,6 +159,13 @@ id<GREYMatcher> SettingsDoneButton();
 // Returns matcher for the "Confirm" button in the Sync and Google Services
 // settings' navigation bar.
 id<GREYMatcher> SyncSettingsConfirmButton();
+
+// Returns matcher for the "Payment Methods" button in the settings menu.
+id<GREYMatcher> PaymentMethodsButton();
+
+// Returns matcher for the "Add Payment Method" button in the Settings Payment
+// Methods view.
+id<GREYMatcher> AddPaymentMethodButton();
 
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();

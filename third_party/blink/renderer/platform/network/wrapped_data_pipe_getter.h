@@ -7,6 +7,8 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 
 namespace blink {
@@ -18,16 +20,17 @@ class PLATFORM_EXPORT WrappedDataPipeGetter final
     : public RefCounted<WrappedDataPipeGetter> {
  public:
   explicit WrappedDataPipeGetter(
-      network::mojom::blink::DataPipeGetterPtr data_pipe_getter)
+      mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+          data_pipe_getter)
       : data_pipe_getter_(std::move(data_pipe_getter)) {}
   ~WrappedDataPipeGetter() = default;
 
-  network::mojom::blink::DataPipeGetterPtr* GetPtr() {
-    return &data_pipe_getter_;
+  network::mojom::blink::DataPipeGetter* GetDataPipeGetter() {
+    return data_pipe_getter_.get();
   }
 
  private:
-  network::mojom::blink::DataPipeGetterPtr data_pipe_getter_;
+  mojo::Remote<network::mojom::blink::DataPipeGetter> data_pipe_getter_;
 };
 
 }  // namespace blink

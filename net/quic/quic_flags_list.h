@@ -216,11 +216,19 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
           true)
 
+// When true, QuicDispatcher will drop packets that have an initial destination
+// connection ID that is too short, instead of responding with a Version
+// Negotiation packet to reject it.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_drop_invalid_small_initial_connection_id,
+    true)
+
 // When true, QUIC Version Negotiation packets will randomly include fake
 // versions.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
-          false)
+          true)
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
@@ -303,7 +311,7 @@ QUIC_FLAG(
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
 
 // When true, QuicDispatcher will always use QuicFramer::ParsePublicHeader
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, false)
 
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
@@ -320,13 +328,13 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
-    false)
+    true)
 
 // If true, static streams should never be closed before QuicSession
 // destruction.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
-          false)
+          true)
 
 // If true and FIFO connection option is received, write_blocked_streams uses
 // FIFO(stream with smallest ID has highest priority) write scheduler.
@@ -355,22 +363,22 @@ QUIC_FLAG(
 // closed streams whose highest byte offset is not received yet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
-          false)
+          true)
 
 // If true, QuicStreamSequencer will not take in new data if the stream is
 // reset.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
-          false)
+          true)
 
 // When true, QuicDispatcher::MaybeDispatchPacket will use
 // packet_info.use_length_prefix instead of an incorrect local computation.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_length_prefix_from_packet_info,
-          true)
+          false)
 
 // If true, enable IETF style probe timeout.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
 
 // When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
 QUIC_FLAG(bool,
@@ -381,7 +389,7 @@ QUIC_FLAG(bool,
 // instead of XORing the bytes
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_use_hashed_stateless_reset_tokens,
-          true)
+          false)
 
 // This flag enables a temporary workaround which makes us reply to a specific
 // invalid packet that is sent by an Android UDP network conformance test.

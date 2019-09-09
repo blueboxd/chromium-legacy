@@ -24,7 +24,6 @@ source_set("cells") {
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser:browser",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/authentication",

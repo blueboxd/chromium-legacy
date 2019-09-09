@@ -256,10 +256,10 @@ function assertIsNotMediaDir(path) {
 
 function createFileEntry(volume, path) {
   const entry =
-      new MockFileEntry(volume.fileSystem, path, /** @type{Metadata} */ ({
-                          size: 1234,
-                          modificationTime: new Date().toString()
-                        }));
+      MockFileEntry.create(volume.fileSystem, path, /** @type{Metadata} */ ({
+                             size: 1234,
+                             modificationTime: new Date().toString()
+                           }));
   // Ensure the file entry has a volumeID...necessary for lookups
   // via the VolumeManager.
   entry.volumeId = volume.volumeId;
@@ -267,7 +267,7 @@ function createFileEntry(volume, path) {
 }
 
 function createDirectoryEntry(volume, path) {
-  const entry = new MockDirectoryEntry(volume.fileSystem, path);
+  const entry = MockDirectoryEntry.create(volume.fileSystem, path);
   // Ensure the file entry has a volumeID...necessary for lookups
   // via the VolumeManager.
   entry.volumeId = volume.volumeId;

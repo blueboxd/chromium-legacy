@@ -349,7 +349,7 @@ void ApplyConstraintsProcessor::CleanupRequest(
   video_source_ = nullptr;
 }
 
-const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
+blink::mojom::blink::MediaDevicesDispatcherHost*
 ApplyConstraintsProcessor::GetMediaDevicesDispatcher() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return media_devices_dispatcher_cb_.Run();

@@ -14,7 +14,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -137,7 +137,8 @@ class PLATFORM_EXPORT VideoCaptureImpl
   media::mojom::blink::VideoCaptureHostPtr video_capture_host_;
   media::mojom::blink::VideoCaptureHost* video_capture_host_for_testing_;
 
-  mojo::Binding<media::mojom::blink::VideoCaptureObserver> observer_binding_;
+  mojo::Receiver<media::mojom::blink::VideoCaptureObserver> observer_receiver_{
+      this};
 
   // Buffers available for sending to the client.
   using ClientBufferMap = std::map<int32_t, scoped_refptr<BufferContext>>;

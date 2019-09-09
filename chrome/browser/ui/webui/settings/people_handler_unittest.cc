@@ -1437,7 +1437,7 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   base::Value accounts = handler.GetStoredAccountsList();
 
   ASSERT_TRUE(accounts.is_list());
-  const base::Value::ListStorage& accounts_list = accounts.GetList();
+  base::span<const base::Value> accounts_list = accounts.GetList();
 
   if (dice_enabled) {
     ASSERT_EQ(2u, accounts_list.size());

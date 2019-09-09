@@ -51,8 +51,11 @@ std::unique_ptr<VideoFrameFileWriter> VideoFrameFileWriter::Create(
   }
 
   // Create the directory tree if it doesn't exist yet.
-  if (!DirectoryExists(resolved_output_folder)) {
-    base::CreateDirectory(resolved_output_folder);
+  if (!DirectoryExists(resolved_output_folder) &&
+      !base::CreateDirectory(resolved_output_folder)) {
+    LOG(ERROR) << "Failed to create a output directory: "
+               << resolved_output_folder;
+    return nullptr;
   }
 
   auto frame_file_writer = base::WrapUnique(

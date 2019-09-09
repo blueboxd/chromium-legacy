@@ -347,8 +347,8 @@ class IdentityManagerTest : public testing::Test {
 
     if (primary_account_manager_setup ==
         PrimaryAccountManagerSetup::kWithAuthenticatedAccout) {
-      primary_account_manager->SetAuthenticatedAccountInfo(kTestGaiaId,
-                                                           kTestEmail);
+      account_tracker_service->SeedAccountInfo(kTestGaiaId, kTestEmail);
+      primary_account_manager->SignIn(kTestEmail);
     }
 
     auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
@@ -549,6 +549,9 @@ TEST_F(IdentityManagerTest, HasPrimaryAccount) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
   EXPECT_FALSE(identity_manager()->HasUnconsentedPrimaryAccount());
+  EXPECT_FALSE(identity_manager_observer()
+                   ->PrimaryAccountFromClearedCallback()
+                   .IsEmpty());
 #endif
 }
 
@@ -1080,8 +1083,9 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   std::set<std::string> scopes{"scope"};
   std::string access_token = "access_token";
 
-  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
-      kTestGaiaId, kTestEmail);
+  identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
+                                                                  kTestEmail);
+  identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   base::RunLoop run_loop;
@@ -1119,8 +1123,9 @@ TEST_F(IdentityManagerTest,
   identity_manager_diagnostics_observer()
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
-  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
-      kTestGaiaId, kTestEmail);
+  identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
+                                                                  kTestEmail);
+  identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   std::set<std::string> scopes{"scope"};
@@ -1207,8 +1212,9 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   identity_manager_diagnostics_observer()
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
-  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
-      kTestGaiaId, kTestEmail);
+  identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
+                                                                  kTestEmail);
+  identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   std::set<std::string> scopes{"scope"};
@@ -1260,8 +1266,9 @@ TEST_F(IdentityManagerTest,
   identity_manager_diagnostics_observer()
       ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
 
-  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
-      kTestGaiaId, kTestEmail);
+  identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
+                                                                  kTestEmail);
+  identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
 
@@ -1326,21 +1333,6 @@ TEST_F(IdentityManagerTest, GetAccountsCookieMutator) {
       identity_manager()->GetAccountsCookieMutator();
   EXPECT_TRUE(mutator);
 }
-
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-// Tests that requesting a load of accounts results in the notification
-// firing that tokens were loaded.
-TEST_F(IdentityManagerTest, DeprecatedLoadCredentialsForSupervisedUser) {
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnRefreshTokensLoadedCallback(
-      run_loop.QuitClosure());
-
-  // Load the accounts and ensure that we see the resulting notification that
-  // they were loaded.
-  identity_manager()->DeprecatedLoadCredentialsForSupervisedUser("");
-  run_loop.Run();
-}
-#endif
 
 #if defined(OS_IOS)
 TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
@@ -2037,8 +2029,9 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
 
 TEST_F(IdentityManagerTest,
        BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
-  identity_manager()->GetPrimaryAccountManager()->SetAuthenticatedAccountInfo(
-      kTestGaiaId, kTestEmail);
+  identity_manager()->GetAccountTrackerService()->SeedAccountInfo(kTestGaiaId,
+                                                                  kTestEmail);
+  identity_manager()->GetPrimaryAccountManager()->SignIn(kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   EXPECT_EQ(1ul, identity_manager_observer()->BatchChangeRecords().size());

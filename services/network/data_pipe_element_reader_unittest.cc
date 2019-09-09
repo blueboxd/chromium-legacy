@@ -14,7 +14,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/io_buffer.h"
@@ -31,14 +32,12 @@ namespace {
 
 class PassThroughDataPipeGetter : public mojom::DataPipeGetter {
  public:
-  explicit PassThroughDataPipeGetter() : binding_(this) {}
+  explicit PassThroughDataPipeGetter() = default;
 
-  network::mojom::DataPipeGetterPtr GetDataPipeGetterPtr() {
-    EXPECT_FALSE(binding_.is_bound());
-
-    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-    binding_.Bind(mojo::MakeRequest(&data_pipe_getter_ptr));
-    return data_pipe_getter_ptr;
+  mojo::PendingRemote<network::mojom::DataPipeGetter>
+  GetDataPipeGetterRemote() {
+    EXPECT_FALSE(receiver_.is_bound());
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   void WaitForRead(mojo::ScopedDataPipeProducerHandle* write_pipe,
@@ -72,13 +71,14 @@ class PassThroughDataPipeGetter : public mojom::DataPipeGetter {
       run_loop_->Quit();
   }
 
-  void Clone(network::mojom::DataPipeGetterRequest request) override {
+  void Clone(
+      mojo::PendingReceiver<network::mojom::DataPipeGetter> receiver) override {
     NOTIMPLEMENTED();
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  mojo::Binding<network::mojom::DataPipeGetter> binding_;
+  mojo::Receiver<network::mojom::DataPipeGetter> receiver_{this};
   mojo::ScopedDataPipeProducerHandle write_pipe_;
   ReadCallback read_callback_;
 
@@ -88,7 +88,7 @@ class PassThroughDataPipeGetter : public mojom::DataPipeGetter {
 class DataPipeElementReaderTest : public testing::Test {
  public:
   DataPipeElementReaderTest()
-      : element_reader_(nullptr, data_pipe_getter_.GetDataPipeGetterPtr()) {}
+      : element_reader_(nullptr, data_pipe_getter_.GetDataPipeGetterRemote()) {}
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_{

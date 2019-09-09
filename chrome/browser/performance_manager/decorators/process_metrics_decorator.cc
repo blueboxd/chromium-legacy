@@ -52,8 +52,12 @@ void ProcessMetricsDecorator::RequestProcessesMemoryMetrics(
         callback) {
   auto* mem_instrumentation =
       memory_instrumentation::MemoryInstrumentation::GetInstance();
-  mem_instrumentation->RequestPrivateMemoryFootprint(base::kNullProcessId,
-                                                     std::move(callback));
+  // The memory instrumentation service is not available in unit tests unless
+  // explicitly created.
+  if (mem_instrumentation) {
+    mem_instrumentation->RequestPrivateMemoryFootprint(base::kNullProcessId,
+                                                       std::move(callback));
+  }
 }
 
 void ProcessMetricsDecorator::DidGetMemoryUsage(

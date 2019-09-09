@@ -25,6 +25,25 @@ class ScopedGeolocationOverrider {
   void UpdateLocation(const mojom::Geoposition& position);
   void UpdateLocation(double latitude, double longitude);
 
+  // Pause resolving Geolocation queries to keep request inflight.
+  // After |Pause()| call, Geolocation::QueryNextPosition does not respond,
+  // allowing us to test behavior in the middle of the request.
+  void Pause();
+
+  // Resume resolving Geolocation queries.
+  // Send the paused Geolocation::QueryNextPosition response.
+  void Resume();
+
+  // Count number of active FakeGeolocation instances, which is equal to the
+  // number of active consumer Remote<Geolocation>s.
+  // This is used to verify if consumers properly close the connections when
+  // they should no longer be listening.
+  size_t GetGeolocationInstanceCount() const;
+
+  // Register callback to be notified when a Remote<Geolocation> is cleared and
+  // the corresponding fake Geolocation instance is disposed.
+  void SetGeolocationCloseCallback(base::RepeatingClosure closure);
+
  private:
   class FakeGeolocation;
   class FakeGeolocationContext;

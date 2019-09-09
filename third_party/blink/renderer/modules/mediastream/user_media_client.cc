@@ -88,7 +88,7 @@ UserMediaClient::UserMediaClient(
           MakeGarbageCollected<ApplyConstraintsProcessor>(
               WTF::BindRepeating(
                   [](UserMediaClient* client)
-                      -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                      -> mojom::blink::MediaDevicesDispatcherHost* {
                     // |client| is guaranteed to be not null because |client|
                     // owns this ApplyConstraintsProcessor.
                     DCHECK(client);
@@ -113,7 +113,7 @@ UserMediaClient::UserMediaClient(
               frame,
               WTF::BindRepeating(
                   [](UserMediaClient* client)
-                      -> const mojom::blink::MediaDevicesDispatcherHostPtr& {
+                      -> mojom::blink::MediaDevicesDispatcherHost* {
                     // |client| is guaranteed to be not null because |client|
                     // owns this UserMediaProcessor.
                     DCHECK(client);
@@ -295,19 +295,19 @@ void UserMediaClient::Trace(Visitor* visitor) {
 }
 
 void UserMediaClient::SetMediaDevicesDispatcherForTesting(
-    blink::mojom::blink::MediaDevicesDispatcherHostPtr
+    mojo::PendingRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
         media_devices_dispatcher) {
-  media_devices_dispatcher_ = std::move(media_devices_dispatcher);
+  media_devices_dispatcher_.Bind(std::move(media_devices_dispatcher));
 }
 
-const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
+blink::mojom::blink::MediaDevicesDispatcherHost*
 UserMediaClient::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     frame_->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&media_devices_dispatcher_));
+        media_devices_dispatcher_.BindNewPipeAndPassReceiver());
   }
 
-  return media_devices_dispatcher_;
+  return media_devices_dispatcher_.get();
 }
 
 }  // namespace blink

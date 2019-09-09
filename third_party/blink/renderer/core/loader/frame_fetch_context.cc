@@ -523,7 +523,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       result.Append(' ');
       result.Append(version.data());
     }
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUA)],
         result.ToAtomicString());
@@ -561,7 +561,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
            resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
                            hints_preferences, enabled_hints)) {
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         "Device-Memory",
         AtomicString(String::Number(
             ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
@@ -573,7 +573,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
            mojom::FeaturePolicyFeature::kClientHintDPR, resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
                            enabled_hints)) {
-    request.AddHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
+    request.SetHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
   }
 
   if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
@@ -583,7 +583,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
                            hints_preferences, enabled_hints)) {
     if (resource_width.is_set) {
       float physical_width = resource_width.width * dpr;
-      request.AddHttpHeaderField(
+      request.SetHttpHeaderField(
           "Width", AtomicString(String::Number(ceil(physical_width))));
     }
   }
@@ -595,7 +595,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences, enabled_hints) &&
       !GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
   }
@@ -630,7 +630,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
     uint32_t rtt =
         GetNetworkStateNotifier().RoundRtt(request.Url().Host(), http_rtt);
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kRtt)],
         AtomicString(String::Number(rtt)));
@@ -651,7 +651,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
     double mbps = GetNetworkStateNotifier().RoundMbps(request.Url().Host(),
                                                       throughput_mbps);
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kDownlink)],
         AtomicString(String::Number(mbps)));
@@ -668,7 +668,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     if (!holdback_ect)
       holdback_ect = GetNetworkStateNotifier().EffectiveType();
 
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kEct)],
         AtomicString(NetworkStateNotifier::EffectiveConnectionTypeToString(
@@ -681,7 +681,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             mojom::FeaturePolicyFeature::kClientHintLang, resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kLang, hints_preferences,
                            enabled_hints)) {
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kLang)],
         GetFrame()
@@ -697,7 +697,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAArch,
                            hints_preferences, enabled_hints)) {
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAArch)],
         AtomicString(ua.architecture.data()));
@@ -710,7 +710,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAPlatform,
                            hints_preferences, enabled_hints)) {
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAPlatform)],
         AtomicString(ua.platform.data()));
@@ -723,7 +723,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAModel,
                            hints_preferences, enabled_hints)) {
-    request.AddHttpHeaderField(
+    request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAModel)],
         AtomicString(ua.model.data()));
@@ -740,6 +740,9 @@ void FrameFetchContext::PopulateResourceRequest(
 
   const ContentSecurityPolicy* csp = GetContentSecurityPolicy();
   if (csp && csp->ShouldSendCSPHeader(type))
+    // TODO(crbug.com/993769): Test if this header returns duplicated values
+    // (i.e. "CSP: active, active") on asynchronous "stale-while-revalidate"
+    // revalidation requests and if this is unexpected behavior.
     request.AddHttpHeaderField("CSP", "active");
 }
 

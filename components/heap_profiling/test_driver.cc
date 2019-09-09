@@ -254,7 +254,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& sizes_list = sizes->GetList();
+  base::span<const base::Value> sizes_list = sizes->GetList();
   if (sizes_list.empty()) {
     LOG(ERROR) << "'allocators." << allocator_name
                << ".sizes' is an empty list";
@@ -269,7 +269,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& counts_list = counts->GetList();
+  base::span<const base::Value> counts_list = counts->GetList();
   if (sizes_list.size() != counts_list.size()) {
     LOG(ERROR)
         << "'allocators." << allocator_name
@@ -285,7 +285,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& types_list = types->GetList();
+  base::span<const base::Value> types_list = types->GetList();
   if (types_list.empty()) {
     LOG(ERROR) << "'allocators." << allocator_name
                << ".types' is an empty list";
@@ -307,7 +307,7 @@ bool ValidateDump(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& nodes_list = nodes->GetList();
+  base::span<const base::Value> nodes_list = nodes->GetList();
   if (sizes_list.size() != nodes_list.size()) {
     LOG(ERROR)
         << "'allocators." << allocator_name
@@ -420,7 +420,7 @@ bool GetAllocatorSubarray(base::Value* heaps_v2,
                           const char* allocator_name,
                           const char* subarray_name,
                           size_t expected_size,
-                          const base::Value::ListStorage** output) {
+                          base::span<const base::Value>* output) {
   base::Value* subarray =
       heaps_v2->FindPath({"allocators", allocator_name, subarray_name});
   if (!subarray) {
@@ -429,13 +429,13 @@ bool GetAllocatorSubarray(base::Value* heaps_v2,
     return false;
   }
 
-  const base::Value::ListStorage& subarray_list = subarray->GetList();
+  base::span<const base::Value> subarray_list = subarray->GetList();
   if (expected_size && subarray_list.size() != expected_size) {
     LOG(ERROR) << subarray_name << " has wrong size";
     return false;
   }
 
-  *output = &subarray_list;
+  *output = subarray_list;
   return true;
 }
 
@@ -464,7 +464,7 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Find the type with the appropriate id.
-  const base::Value::ListStorage* types_list;
+  base::span<const base::Value> types_list;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "types", 0,
                             &types_list)) {
     return false;
@@ -472,8 +472,8 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
 
   found = false;
   size_t index = 0;
-  for (size_t i = 0; i < types_list->size(); ++i) {
-    if ((*types_list)[i].GetInt() == id_of_type) {
+  for (size_t i = 0; i < types_list.size(); ++i) {
+    if (types_list[i].GetInt() == id_of_type) {
       index = i;
       found = true;
       break;
@@ -486,30 +486,30 @@ bool ValidateSamplingAllocations(base::Value* heaps_v2,
   }
 
   // Look up the size.
-  const base::Value::ListStorage* sizes;
+  base::span<const base::Value> sizes;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "sizes",
-                            types_list->size(), &sizes)) {
+                            types_list.size(), &sizes)) {
     return false;
   }
 
-  if ((*sizes)[index].GetInt() < approximate_size / 2 ||
-      (*sizes)[index].GetInt() > approximate_size * 2) {
-    LOG(ERROR) << "sampling size " << (*sizes)[index].GetInt()
+  if (sizes[index].GetInt() < approximate_size / 2 ||
+      sizes[index].GetInt() > approximate_size * 2) {
+    LOG(ERROR) << "sampling size " << sizes[index].GetInt()
                << " was not within a factor of 2 of expected size "
                << approximate_size;
     return false;
   }
 
   // Look up the count.
-  const base::Value::ListStorage* counts;
+  base::span<const base::Value> counts;
   if (!GetAllocatorSubarray(heaps_v2, allocator_name, "counts",
-                            types_list->size(), &counts)) {
+                            types_list.size(), &counts)) {
     return false;
   }
 
-  if ((*counts)[index].GetInt() < approximate_count / 2 ||
-      (*counts)[index].GetInt() > approximate_count * 2) {
-    LOG(ERROR) << "sampling size " << (*counts)[index].GetInt()
+  if (counts[index].GetInt() < approximate_count / 2 ||
+      counts[index].GetInt() > approximate_count * 2) {
+    LOG(ERROR) << "sampling size " << counts[index].GetInt()
                << " was not within a factor of 2 of expected count "
                << approximate_count;
     return false;

@@ -912,6 +912,7 @@ android_library("chrome_test_java") {
   data = [
     "//chrome/test/data/android/",
     "//chrome/test/data/autofill/",
+    "//chrome/test/data/background_sync/",
     "//chrome/test/data/banners/",
     "//chrome/test/data/browsing_data/",
     "//chrome/test/data/encoding_tests/auto_detect/Big5_with_no_encoding_specified.html",

@@ -99,9 +99,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   //
   // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
   // relies on this feature.
-  void RegisterBackingStoreCallback(void** slot,
-                                    MovingObjectCallback,
-                                    void* callback_data) final;
+  void RegisterBackingStoreCallback(void* backing, MovingObjectCallback) final;
   bool RegisterWeakTable(const void* closure,
                          EphemeronCallback iteration_callback) final;
   void RegisterWeakCallback(void* closure, WeakCallback) final;
@@ -192,8 +190,9 @@ inline void MarkingVisitorBase::MarkHeader(HeapObjectHeader* header,
 class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
  public:
   // Write barrier that adds |value| to the set of marked objects. The barrier
-  // bails out if marking is off or the object is not yet marked.
-  ALWAYS_INLINE static void WriteBarrier(void* value);
+  // bails out if marking is off or the object is not yet marked. Returns true
+  // if the object was marked on this call.
+  ALWAYS_INLINE static bool WriteBarrier(void* value);
 
   // Eagerly traces an already marked backing store ensuring that all its
   // children are discovered by the marker. The barrier bails out if marking
@@ -217,17 +216,17 @@ class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
 
  private:
   // Exact version of the marking write barriers.
-  static void WriteBarrierSlow(void*);
+  static bool WriteBarrierSlow(void*);
   static void TraceMarkedBackingStoreSlow(void*);
 };
 
-ALWAYS_INLINE void MarkingVisitor::WriteBarrier(void* value) {
+ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(void* value) {
   if (!ThreadState::IsAnyIncrementalMarking())
-    return;
+    return false;
 
   // Avoid any further checks and dispatch to a call at this point. Aggressive
   // inlining otherwise pollutes the regular execution paths.
-  WriteBarrierSlow(value);
+  return WriteBarrierSlow(value);
 }
 
 ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {

@@ -91,7 +91,7 @@ std::unordered_set<std::string> GetIMEsFromPref(PrefService* prefs,
 // Returns the set of allowed UI locales.
 std::unordered_set<std::string> GetAllowedLanguages(PrefService* prefs) {
   std::unordered_set<std::string> allowed_languages;
-  const base::Value::ListStorage& pref_value =
+  base::span<const base::Value> pref_value =
       prefs->GetList(prefs::kAllowedLanguages)->GetList();
   for (const base::Value& locale_value : pref_value)
     allowed_languages.insert(locale_value.GetString());

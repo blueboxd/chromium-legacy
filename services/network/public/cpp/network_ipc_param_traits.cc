@@ -7,6 +7,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/http/http_util.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
@@ -46,8 +47,7 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
       break;
     }
     case network::mojom::DataElementType::kDataPipe: {
-      WriteParam(
-          m, p.CloneDataPipeGetter().PassInterface().PassHandle().release());
+      WriteParam(m, p.CloneDataPipeGetter().PassPipe().release());
       break;
     }
     case network::mojom::DataElementType::kChunkedDataPipe: {
@@ -129,12 +129,11 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       return true;
     }
     case network::mojom::DataElementType::kDataPipe: {
-      network::mojom::DataPipeGetterPtr data_pipe_getter;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
         return false;
-      data_pipe_getter.Bind(network::mojom::DataPipeGetterPtrInfo(
-          mojo::ScopedMessagePipeHandle(message_pipe), 0u));
+      mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
+          mojo::ScopedMessagePipeHandle(message_pipe), 0u);
       r->SetToDataPipe(std::move(data_pipe_getter));
       return true;
     }

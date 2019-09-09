@@ -21,14 +21,8 @@ size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message);
 bool SetNDEFMessageURL(const String& origin,
                        device::mojom::blink::NDEFMessage& message);
 
-WTF::String NDEFRecordTypeToString(
-    const device::mojom::blink::NDEFRecordType& type);
-
 device::mojom::blink::NDEFCompatibility StringToNDEFCompatibility(
     const WTF::String& compatibility);
-
-device::mojom::blink::NDEFRecordType StringToNDEFRecordType(
-    const WTF::String& recordType);
 
 device::mojom::blink::NFCPushTarget StringToNFCPushTarget(
     const WTF::String& target);

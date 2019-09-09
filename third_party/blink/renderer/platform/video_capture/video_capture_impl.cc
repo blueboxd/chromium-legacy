@@ -144,7 +144,6 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
     : device_id_(session_id),
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
-      observer_binding_(this),
       state_(blink::VIDEO_CAPTURE_STATE_STOPPED) {
   CHECK(!session_id.is_empty());
   DETACH_FROM_THREAD(io_thread_checker_);
@@ -554,10 +553,8 @@ void VideoCaptureImpl::StartCaptureInternal() {
   state_ = VIDEO_CAPTURE_STATE_STARTING;
   OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTING");
 
-  media::mojom::blink::VideoCaptureObserverPtr observer;
-  observer_binding_.Bind(mojo::MakeRequest(&observer));
   GetVideoCaptureHost()->Start(device_id_, session_id_, params_,
-                               std::move(observer));
+                               observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void VideoCaptureImpl::OnDeviceSupportedFormats(

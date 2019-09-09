@@ -1483,7 +1483,7 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   base::Value* events =
       payload->FindPath(RealtimeReportingJobConfiguration::kEventsKey);
   EXPECT_EQ(base::Value::Type::LIST, events->type());
-  const base::Value::ListStorage& list = events->GetList();
+  base::span<const base::Value> list = events->GetList();
   EXPECT_EQ(1u, list.size());
 }
 #endif

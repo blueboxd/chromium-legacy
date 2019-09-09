@@ -62,7 +62,7 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
     return nullptr;
   }
 
-  const base::Value::ListStorage& printer_list = json_blob->GetList();
+  base::span<const base::Value> printer_list = json_blob->GetList();
   if (printer_list.size() > kMaxRecords) {
     LOG(WARNING) << "Too many records in printers policy: "
                  << printer_list.size();

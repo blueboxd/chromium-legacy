@@ -24,17 +24,18 @@ Polymer({
     permissionType: String,
 
     /**
-     * @type {App}
-     */
-    app_: Object,
-
-    /**
      * @type {string}
      */
     icon: String,
 
     /**
+     * @type {App}
+     */
+    app_: Object,
+
+    /**
      * True if the permission type is available for the app.
+     * @type {boolean}
      * @private
      */
     available_: {
@@ -42,10 +43,24 @@ Polymer({
       computed: 'isAvailable_(app_, permissionType)',
       reflectToAttribute: true,
     },
+
+    /**
+     * @type {boolean}
+     * @private
+     */
+    disabled_: {
+      type: Boolean,
+      computed: 'isManaged_(app_, permissionType)',
+      reflectToAttribute: true,
+    },
   },
 
-  listeners: {
-    'click': 'onClick_',
+
+  listeners: {click: 'onClick_', change: 'togglePermission_'},
+
+  attached: function() {
+    this.watch('app_', state => app_management.util.getSelectedApp(state));
+    this.updateFromStore();
   },
 
   /**
@@ -65,20 +80,134 @@ Polymer({
     return app_management.util.getPermission(app, permissionType) !== undefined;
   },
 
-  attached: function() {
-    this.watch('app_', state => app_management.util.getSelectedApp(state));
-    this.updateFromStore();
+  /**
+   * @param {App} app
+   * @param {string} permissionType
+   * @return {boolean}
+   */
+  isManaged_: function(app, permissionType) {
+    if (app === undefined || permissionType === undefined) {
+      return false;
+    }
+
+    assert(app);
+
+    const permission = app_management.util.getPermission(app, permissionType);
+    assert(permission);
+    return permission.isManaged;
   },
 
   /**
-   * @param {MouseEvent} e
+   * @param {App} app
+   * @param {string} permissionType
+   * @return {boolean}
+   */
+  getValue_: function(app, permissionType) {
+    if (app === undefined || permissionType === undefined) {
+      return false;
+    }
+
+    assert(app);
+
+    return app_management.util.getPermissionValueBool(app, permissionType);
+  },
+
+  /**
    * @private
    */
-  onClick_: function(e) {
-    e.preventDefault();
+  onClick_: function() {
+    this.root.querySelector('#toggleRow').click();
+  },
 
-    const toggle = /** @type {AppManagementPermissionToggleElement} */ (
-        assert(this.$$('#permission-toggle')));
-    toggle.togglePermission_();
+  /**
+   * @private
+   */
+  togglePermission_: function() {
+    assert(this.app_);
+
+    /** @type {!Permission} */
+    let newPermission;
+
+    switch (app_management.util.getPermission(this.app_, this.permissionType)
+                .valueType) {
+      case PermissionValueType.kBool:
+        newPermission =
+            this.getNewPermissionBoolean_(this.app_, this.permissionType);
+        break;
+      case PermissionValueType.kTriState:
+        newPermission =
+            this.getNewPermissionTriState_(this.app_, this.permissionType);
+        break;
+      default:
+        assertNotReached();
+    }
+
+    app_management.BrowserProxy.getInstance().handler.setPermission(
+        this.app_.id, newPermission);
+  },
+
+  /**
+   * @param {App} app
+   * @param {string} permissionType
+   * @return {!Permission}
+   * @private
+   */
+  getNewPermissionBoolean_: function(app, permissionType) {
+    let newPermissionValue;
+    const currentPermission =
+        app_management.util.getPermission(app, permissionType);
+
+    switch (currentPermission.value) {
+      case Bool.kFalse:
+        newPermissionValue = Bool.kTrue;
+        break;
+      case Bool.kTrue:
+        newPermissionValue = Bool.kFalse;
+        break;
+      default:
+        assertNotReached();
+    }
+
+    assert(newPermissionValue !== undefined);
+    return app_management.util.createPermission(
+        app_management.util.permissionTypeHandle(app, permissionType),
+        PermissionValueType.kBool, newPermissionValue,
+        currentPermission.isManaged);
+  },
+
+  /**
+   * @param {App} app
+   * @param {string} permissionType
+   * @return {!Permission}
+   * @private
+   */
+  getNewPermissionTriState_: function(app, permissionType) {
+    let newPermissionValue;
+    const currentPermission =
+        app_management.util.getPermission(app, permissionType);
+
+    switch (currentPermission.value) {
+      case TriState.kBlock:
+        newPermissionValue = TriState.kAllow;
+        break;
+      case TriState.kAsk:
+        newPermissionValue = TriState.kAllow;
+        break;
+      case TriState.kAllow:
+        // TODO(rekanorman): Eventually TriState.kAsk, but currently changing a
+        // permission to kAsk then opening the site settings page for the app
+        // produces the error:
+        // "Only extensions or enterprise policy can change the setting to ASK."
+        newPermissionValue = TriState.kBlock;
+        break;
+      default:
+        assertNotReached();
+    }
+
+    assert(newPermissionValue !== undefined);
+    return app_management.util.createPermission(
+        app_management.util.permissionTypeHandle(app, permissionType),
+        PermissionValueType.kTriState, newPermissionValue,
+        currentPermission.isManaged);
   },
 });

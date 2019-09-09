@@ -71,9 +71,7 @@ class BackingVisitor : public Visitor {
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
-  void RegisterBackingStoreCallback(void** slot,
-                                    MovingObjectCallback,
-                                    void* callback_data) final {}
+  void RegisterBackingStoreCallback(void* slot, MovingObjectCallback) final {}
   void RegisterWeakCallback(void* closure, WeakCallback) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
@@ -1930,6 +1928,62 @@ TEST_F(IncrementalMarkingTest, HeapCompactWithStaleSlotInNestedContainer) {
   outer = nullptr;
   driver.FinishSteps();
   driver.FinishGC();
+}
+
+class Destructed : public GarbageCollectedFinalized<Destructed> {
+ public:
+  ~Destructed() { n_destructed++; }
+
+  void Trace(Visitor*) {}
+
+  static size_t n_destructed;
+};
+
+size_t Destructed::n_destructed = 0;
+
+class Wrapper : public GarbageCollectedFinalized<Wrapper> {
+ public:
+  using HashType = HeapLinkedHashSet<Member<Destructed>>;
+
+  Wrapper() {
+    for (size_t i = 0; i < 10; ++i) {
+      hash_set_.insert(MakeGarbageCollected<Destructed>());
+    }
+  }
+
+  void Trace(Visitor* v) { v->Trace(hash_set_); }
+
+  void Swap() {
+    HashType hash_set;
+    hash_set_.Swap(hash_set);
+  }
+
+  HashType hash_set_;
+};
+
+TEST_F(IncrementalMarkingTest, MovingCallback) {
+  ClearOutOldGarbage();
+
+  Destructed::n_destructed = 0;
+  {
+    HeapHashSet<Member<Destructed>> to_be_destroyed;
+    to_be_destroyed.ReserveCapacityForSize(100);
+  }
+  Persistent<Wrapper> wrapper = MakeGarbageCollected<Wrapper>();
+
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  ThreadState::Current()->EnableCompactionForNextGCForTesting();
+  driver.Start();
+  driver.FinishSteps();
+
+  // Destroy the link between original HeapLinkedHashSet object and its backign
+  // store.
+  wrapper->Swap();
+  DCHECK(wrapper->hash_set_.IsEmpty());
+
+  PreciselyCollectGarbage();
+
+  EXPECT_EQ(10u, Destructed::n_destructed);
 }
 
 }  // namespace incremental_marking_test

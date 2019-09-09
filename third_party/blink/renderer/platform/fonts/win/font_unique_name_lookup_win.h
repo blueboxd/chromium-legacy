@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WIN_FONT_UNIQUE_NAME_LOOKUP_WIN_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WIN_FONT_UNIQUE_NAME_LOOKUP_WIN_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
@@ -42,7 +43,7 @@ class FontUniqueNameLookupWin : public FontUniqueNameLookup {
       base::FilePath font_file_path,
       uint32_t ttc_index);
 
-  mojom::blink::DWriteFontProxyPtr service_;
+  mojo::Remote<mojom::blink::DWriteFontProxy> service_;
   WTF::Deque<NotifyFontUniqueNameLookupReady> pending_callbacks_;
   base::Optional<blink::mojom::UniqueFontLookupMode> lookup_mode_;
   base::Optional<bool> sync_available_;
@@ -54,4 +55,4 @@ class FontUniqueNameLookupWin : public FontUniqueNameLookup {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WIN_FONT_UNIQUE_NAME_LOOKUP_WIN_H_

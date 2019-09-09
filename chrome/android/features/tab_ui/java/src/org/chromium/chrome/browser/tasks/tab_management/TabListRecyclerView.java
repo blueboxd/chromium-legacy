@@ -31,6 +31,7 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -438,7 +439,7 @@ class TabListRecyclerView extends RecyclerView {
         SimpleRecyclerViewAdapter.ViewHolder holder =
                 (SimpleRecyclerViewAdapter.ViewHolder) findViewHolderForAdapterPosition(
                         selectedTabIndex);
-        if (holder == null) return null;
+        if (holder == null || selectedTabIndex == TabModel.INVALID_TAB_INDEX) return null;
         assert holder.model.get(TabProperties.TAB_ID) == selectedTabId;
         ViewLookupCachingFrameLayout root = (ViewLookupCachingFrameLayout) holder.itemView;
         return getRectOfComponent(root.fastFindViewById(R.id.tab_thumbnail));

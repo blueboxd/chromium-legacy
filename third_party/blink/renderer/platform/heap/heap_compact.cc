@@ -55,8 +55,7 @@ class HeapCompact::MovableObjectFixups final {
     LOG_HEAP_COMPACTION() << "Fixups: pages=" << relocatable_pages_.size()
                           << " objects=" << fixups_.size()
                           << " callbacks=" << fixup_callbacks_.size()
-                          << " interior-size="
-                          << interior_fixups_.size());
+                          << " interior-size=" << interior_fixups_.size();
   }
 #endif
 
@@ -69,10 +68,9 @@ class HeapCompact::MovableObjectFixups final {
   // slot pointing to it requires updating.
   HashMap<MovableReference, MovableReference*> fixups_;
 
-  // Map from movable reference to callbacks that need to be invoked
-  // when the object moves.
-  HashMap<MovableReference*, std::pair<void*, MovingObjectCallback>>
-      fixup_callbacks_;
+  // Map from movable regions to callbacks that need to be invoked
+  // when the region moves.
+  HashMap<MovableReference, MovingObjectCallback> fixup_callbacks_;
 
   // Map of interior slots to their final location. Needs to be an ordered map
   // as it is used to walk through slots starting at a given memory address.
@@ -178,14 +176,22 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
     moved_objects_.insert(from);
 #endif  // DCHECK_IS_ON()
 
+    const HeapObjectHeader* header = HeapObjectHeader::FromPayload(to);
+    const size_t size = header->PayloadSize();
+
     // Interior slots always need to be processed for moved objects.
     // Consider an object A with slot A.x pointing to value B where A is
     // allocated on a movable page itself. When B is finally moved, it needs to
     // find the corresponding slot A.x. Object A may be moved already and the
     // memory may have been freed, which would result in a crash.
     if (!interior_fixups_.empty()) {
-      RelocateInteriorFixups(from, to,
-                             HeapObjectHeader::FromPayload(to)->PayloadSize());
+      RelocateInteriorFixups(from, to, size);
+    }
+
+    // Execute custom callback after interior fixups have been processed.
+    auto callback = fixup_callbacks_.find(from);
+    if (UNLIKELY(callback != fixup_callbacks_.end())) {
+      callback->value(from, to, size);
     }
 
     auto it = fixups_.find(from);
@@ -193,8 +199,9 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
     // This may happen because a mutator may change the slot to point to a
     // different backing store because e.g. incremental marking marked a backing
     // store as live that was later on replaced.
-    if (it == fixups_.end())
+    if (it == fixups_.end()) {
       return;
+    }
 
 #if DCHECK_IS_ON()
     BasePage* from_page = PageFromObject(from);
@@ -203,7 +210,7 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
 
     // If the object is referenced by a slot that is contained on a compacted
     // area itself, check whether it can be updated already.
-    MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
+    MovableReference* slot = it->value;
     auto interior_it = interior_fixups_.find(slot);
     if (interior_it != interior_fixups_.end()) {
       MovableReference* slot_location =
@@ -236,15 +243,6 @@ void HeapCompact::MovableObjectFixups::Relocate(Address from, Address to) {
 
     // Update the slots new value.
     *slot = to;
-
-    // Execute potential fixup callbacks.
-    MovableReference* callback_slot =
-        reinterpret_cast<MovableReference*>(it->value);
-    auto callback = fixup_callbacks_.find(callback_slot);
-    if (UNLIKELY(callback != fixup_callbacks_.end())) {
-      callback->value.second(callback->value.first, from, to,
-                             HeapObjectHeader::FromPayload(to)->PayloadSize());
-    }
 }
 
 void HeapCompact::MovableObjectFixups::RelocateInteriorFixups(Address from,
@@ -287,8 +285,7 @@ void HeapCompact::MovableObjectFixups::UpdateCallbacks() {
       heap_->GetBackingStoreCallbackWorklist(), WorklistTaskId::MainThread);
   BackingStoreCallbackItem item;
   while (backing_store_callbacks.Pop(&item)) {
-    fixup_callbacks_.insert(item.slot, std::pair<void*, MovingObjectCallback>(
-                                           item.callback_data, item.callback));
+    fixup_callbacks_.insert(item.backing, item.callback);
   }
 }
 
@@ -383,8 +380,8 @@ void HeapCompact::Initialize(ThreadState* state) {
   force_for_next_gc_ = false;
 }
 
-bool HeapCompact::ShouldRegisterMovingObject(MovableReference* slot) {
-  CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
+bool HeapCompact::ShouldRegisterMovingAddress(Address address) {
+  CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(address)));
 
   return do_compact_;
 }

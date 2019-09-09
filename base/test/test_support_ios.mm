@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/test/test_support_ios.h"
+
 #import <UIKit/UIKit.h>
 
+#include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_default.h"
+#import "base/test/ios/google_test_runner_delegate.h"
 #include "base/test/test_suite.h"
+#include "base/test/test_switches.h"
 #include "testing/coverage_util_ios.h"
 
 // Springboard will kill any iOS app that fails to check in after launch within
@@ -45,7 +50,7 @@ static char** g_argv;
 @end
 #endif  // TARGET_IPHONE_SIMULATOR
 
-@interface ChromeUnitTestDelegate : NSObject {
+@interface ChromeUnitTestDelegate : NSObject <GoogleTestRunnerDelegate> {
   base::scoped_nsobject<UIWindow> _window;
 }
 - (void)runTests;
@@ -86,9 +91,12 @@ static char** g_argv;
     [self redirectOutput];
 
   // Queue up the test run.
-  [self performSelector:@selector(runTests)
-             withObject:nil
-             afterDelay:0.1];
+  if (!base::ShouldRunIOSUnittestsWithXCTest()) {
+    // When running in XCTest mode, XCTest will invoke |runGoogleTest| directly.
+    // Otherwise, schedule a call to |runTests|.
+    [self performSelector:@selector(runTests) withObject:nil afterDelay:0.1];
+  }
+
   return YES;
 }
 
@@ -150,13 +158,25 @@ static char** g_argv;
   }
 }
 
-- (void)runTests {
+- (BOOL)supportsRunningGoogleTests {
+  return base::ShouldRunIOSUnittestsWithXCTest();
+}
+
+- (int)runGoogleTests {
   coverage_util::ConfigureCoverageReportPath();
 
   int exitStatus = g_test_suite->Run();
 
   if ([self shouldRedirectOutputToFile])
     [self writeOutputToNSLog];
+
+  return exitStatus;
+}
+
+- (void)runTests {
+  DCHECK(!base::ShouldRunIOSUnittestsWithXCTest());
+
+  int exitStatus = [self runGoogleTests];
 
   // If a test app is too fast, it will exit before Instruments has has a
   // a chance to initialize and no test results will be seen.
@@ -214,6 +234,11 @@ void RunTestsFromIOSApp() {
       exit(exit_status);
     }
   }
+}
+
+bool ShouldRunIOSUnittestsWithXCTest() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableRunIOSUnittestsWithXCTest);
 }
 
 }  // namespace base

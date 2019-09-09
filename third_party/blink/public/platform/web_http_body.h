@@ -61,9 +61,10 @@ class WebHTTPBody {
     WebString blob_uuid;
     uint64_t blob_length;
     mojo::ScopedMessagePipeHandle optional_blob_handle;
-    // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
-    // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
-    // and non-Blink variant types.
+    // |data_pipe_getter| is a
+    // mojo::PendingRemote<network::mojom::DataPipeGetter>. It's declared as a
+    // generic ScopedMessagePipeHandle so it can be "cast" between Blink and
+    // non-Blink variant types.
     mojo::ScopedMessagePipeHandle data_pipe_getter;
   };
 
@@ -103,9 +104,10 @@ class WebHTTPBody {
       const WebString& uuid,
       uint64_t length,
       mojo::ScopedMessagePipeHandle blob_handle);
-  // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
-  // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
-  // and non-Blink variant types.
+  // |data_pipe_getter| is a
+  // mojo::PendingRemote<network::mojom::DataPipeGetter>. It's declared as a
+  // generic ScopedMessagePipeHandle so it can be "cast" between Blink and
+  // non-Blink variant types.
   BLINK_PLATFORM_EXPORT void AppendDataPipe(
       mojo::ScopedMessagePipeHandle data_pipe_getter);
 

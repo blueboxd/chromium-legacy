@@ -232,7 +232,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestReadyFalse) {
 
 MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   base::PlatformThread::SetName("ServiceProcessStateTestShutdownMainThread");
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
   base::Thread::Options options(base::MessagePumpType::IO, 0);

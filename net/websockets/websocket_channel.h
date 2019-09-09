@@ -19,6 +19,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
@@ -152,7 +153,11 @@ class NET_EXPORT WebSocketChannel {
   // The renderer calls AddReceiveFlowControlQuota() to the browser per
   // recerving this amount of data so that the browser can continue sending
   // remaining data to the renderer.
+#if defined(OS_ANDROID)
   static const uint64_t kReceiveQuotaThreshold = 1 << 15;
+#else
+  static const uint64_t kReceiveQuotaThreshold = 65500;
+#endif
 
  private:
   // The object passes through a linear progression of states from

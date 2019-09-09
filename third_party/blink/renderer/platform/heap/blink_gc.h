@@ -37,8 +37,7 @@ using MovableReference = void*;
 // i.e., when the object residing at |from| is moved to |to| by the compaction
 // pass, invoke the callback to adjust any internal references that now need
 // to be |to|-relative.
-using MovingObjectCallback = void (*)(void* callback_data,
-                                      MovableReference from,
+using MovingObjectCallback = void (*)(MovableReference from,
                                       MovableReference to,
                                       size_t);
 

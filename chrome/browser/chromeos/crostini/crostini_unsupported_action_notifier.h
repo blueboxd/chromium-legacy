@@ -55,8 +55,9 @@ class CrostiniUnsupportedActionNotifier
     virtual std::string GetLocalizedDisplayName(
         const chromeos::input_method::InputMethodDescriptor& descriptor);
 
-    // True if either the fullscreen or docked magnifier is enabled.
-    virtual bool IsMagnificationEnabled();
+    // How long in milliseconds toasts should be displayed for. Timing varies
+    // depending on e.g. whether screen magnification is enabled.
+    virtual int ToastTimeoutMs();
 
     virtual void AddFocusObserver(aura::client::FocusChangeObserver* observer);
     virtual void RemoveFocusObserver(

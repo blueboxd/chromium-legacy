@@ -17,13 +17,11 @@ namespace data_reduction_proxy {
 DataReductionProxyThrottleManager::DataReductionProxyThrottleManager(
     mojom::DataReductionProxy* data_reduction_proxy,
     mojom::DataReductionProxyThrottleConfigPtr initial_config)
-    : shared_data_reduction_proxy_(data_reduction_proxy), binding_(this) {
+    : shared_data_reduction_proxy_(data_reduction_proxy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  mojom::DataReductionProxyThrottleConfigObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
-
-  shared_data_reduction_proxy_->AddThrottleConfigObserver(std::move(observer));
+  shared_data_reduction_proxy_->AddThrottleConfigObserver(
+      receiver_.BindNewPipeAndPassRemote());
 
   OnThrottleConfigChanged(std::move(initial_config));
 }

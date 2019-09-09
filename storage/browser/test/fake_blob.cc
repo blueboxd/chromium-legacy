@@ -21,7 +21,8 @@ void FakeBlob::Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) {
                               std::move(receiver));
 }
 
-void FakeBlob::AsDataPipeGetter(network::mojom::DataPipeGetterRequest) {
+void FakeBlob::AsDataPipeGetter(
+    mojo::PendingReceiver<network::mojom::DataPipeGetter>) {
   NOTREACHED();
 }
 void FakeBlob::ReadRange(uint64_t offset,

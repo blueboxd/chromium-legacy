@@ -70,9 +70,8 @@ using NotFullyConstructedItem = void*;
 using WeakTableItem = MarkingItem;
 
 struct BackingStoreCallbackItem {
-  void** slot;
+  void* backing;
   MovingObjectCallback callback;
-  void* callback_data;
 };
 
 using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
@@ -247,12 +246,9 @@ class PLATFORM_EXPORT ThreadHeap {
 
   // Heap compaction registration methods:
 
-  // Checks whether we need to register |slot| as containing a reference to
-  // a movable heap object.
-  //
-  // When compaction moves the object pointed to by |*slot| to |newAddress|,
-  // |*slot| must be updated to hold |newAddress| instead.
-  bool ShouldRegisterMovingObject(MovableReference*);
+  // Checks whether we need to register |addr| as a backing store or a slot
+  // containing reference to it.
+  bool ShouldRegisterMovingAddress(Address addr);
 
   RegionTree* GetRegionTree() { return region_tree_.get(); }
 

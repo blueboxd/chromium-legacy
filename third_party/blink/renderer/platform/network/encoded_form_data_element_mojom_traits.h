@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_ELEMENT_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_ENCODED_FORM_DATA_ELEMENT_MOJOM_TRAITS_H_
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
@@ -27,8 +28,8 @@ struct PLATFORM_EXPORT StructTraits<blink::mojom::FetchAPIDataElementDataView,
     return data.blob_uuid_;
   }
 
-  static network::mojom::blink::DataPipeGetterPtrInfo data_pipe_getter(
-      const blink::FormDataElement& data);
+  static mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+  data_pipe_getter(const blink::FormDataElement& data);
 
   static network::mojom::blink::ChunkedDataPipeGetterPtrInfo
   chunked_data_pipe_getter(const blink::FormDataElement& data) {

@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/client_socket_handle.h"
@@ -70,7 +71,11 @@ const uint64_t kMaxControlFramePayload = 125;
 //     around
 //  4. We would like to hit any sweet-spots that might exist in terms of network
 //     packet sizes / encryption block sizes / IPC alignment issues, etc.
+#if defined(OS_ANDROID)
 const int kReadBufferSize = 32 * 1024;
+#else
+const int kReadBufferSize = 131000;
+#endif
 
 // Returns the total serialized size of |frames|. This function assumes that
 // |frames| will be serialized with mask field. This function forces the

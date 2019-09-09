@@ -98,7 +98,7 @@ class URLLoaderFactoryGetter
   // called either on the IO thread or before threads start. This callback is
   // run on the IO thread.
   using GetNetworkFactoryCallback = base::RepeatingCallback<void(
-      URLLoaderFactoryGetter* url_loader_factory_getter)>;
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)>;
   CONTENT_EXPORT static void SetGetNetworkFactoryCallbackForTesting(
       const GetNetworkFactoryCallback& get_network_factory_callback);
 

@@ -20,7 +20,6 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
@@ -232,28 +231,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Make sure the additional items are still displayed.
   [CellWithMatcher(grey_accessibilityID(@"AdditionalSuggestion2"))
       assertWithMatcher:grey_notNil()];
-}
-
-
-// Tests that a switch for the ContentSuggestions exists in the settings. The
-// behavior depends on having a real remote provider, so it cannot be tested
-// here.
-- (void)testPrivacySwitch {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    EARL_GREY_TEST_DISABLED(
-        @"Privacy swich for ContentSuggestion was moved to the Sync and Google "
-         "services settings screen, so it is no longer present in the privacy "
-         "section. This test is now covered by "
-         "-[GoogleServicesSettingsTestCase testOpeningServices].");
-  }
-
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::SettingsMenuPrivacyButton()];
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabelId(
-                     IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS)]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Tests that when the page is reloaded using the tools menu, the suggestions

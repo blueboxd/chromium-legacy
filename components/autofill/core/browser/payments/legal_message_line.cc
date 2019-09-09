@@ -113,7 +113,7 @@ bool LegalMessageLine::ParseLine(const base::Value& line,
   const base::Value* template_parameters =
       line.FindKeyOfType("template_parameter", base::Value::Type::LIST);
   if (template_parameters) {
-    const base::Value::ListStorage& template_parameters_storage =
+    base::span<const base::Value> template_parameters_storage =
         template_parameters->GetList();
     display_texts.reserve(template_parameters_storage.size());
     links_.reserve(template_parameters_storage.size());

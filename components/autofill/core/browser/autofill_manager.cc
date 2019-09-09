@@ -329,13 +329,18 @@ AutofillField* HeuristicallyFindCVCField(const FormStructure& form_structure) {
 }
 
 // Iff the CVC of the credit card is known, find the first field with this
-// value. Otherwise, heuristically search for the CVC field if any.
-AutofillField* FindBestPossibleCVCField(
+// value (also set |properties_mask| to |KNOWN_VALUE|). Otherwise, heuristically
+// search for the CVC field if any.
+AutofillField* GetBestPossibleCVCField(
     const FormStructure& form_structure,
     base::string16 last_unlocked_credit_card_cvc) {
-  if (!last_unlocked_credit_card_cvc.empty())
-    return FindFirstFieldWithValue(form_structure,
-                                   last_unlocked_credit_card_cvc);
+  if (!last_unlocked_credit_card_cvc.empty()) {
+    AutofillField* result =
+        FindFirstFieldWithValue(form_structure, last_unlocked_credit_card_cvc);
+    if (result)
+      result->properties_mask = FieldPropertiesFlags::KNOWN_VALUE;
+    return result;
+  }
 
   return HeuristicallyFindCVCField(form_structure);
 }
@@ -2002,7 +2007,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
 
   // As CVCs are not stored, run special heuristics to detect CVC-like values.
   AutofillField* cvc_field =
-      FindBestPossibleCVCField(*submitted_form, last_unlocked_credit_card_cvc);
+      GetBestPossibleCVCField(*submitted_form, last_unlocked_credit_card_cvc);
   if (cvc_field) {
     ServerFieldTypeSet possible_types = cvc_field->possible_types();
     possible_types.erase(UNKNOWN_TYPE);

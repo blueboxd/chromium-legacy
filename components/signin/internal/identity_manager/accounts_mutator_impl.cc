@@ -80,7 +80,7 @@ void AccountsMutatorImpl::RemoveAllAccounts(
 void AccountsMutatorImpl::InvalidateRefreshTokenForPrimaryAccount(
     signin_metrics::SourceForRefreshTokenOperation source) {
   DCHECK(primary_account_manager_->IsAuthenticated());
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       primary_account_manager_->GetAuthenticatedAccountInfo();
   AddOrUpdateAccount(primary_account_info.gaia, primary_account_info.email,
                      GaiaConstants::kInvalidRefreshToken,
@@ -105,12 +105,5 @@ void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
   RecreateSigninScopedDeviceId(pref_service_);
 }
 #endif
-
-void AccountsMutatorImpl::LegacySetRefreshTokenForSupervisedUser(
-    const std::string& refresh_token) {
-  token_service_->UpdateCredentials(
-      CoreAccountId("managed_user@localhost"), refresh_token,
-      signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
-}
 
 }  // namespace signin

@@ -54,6 +54,8 @@ extern const base::Feature kAppNotificationStatusMessaging;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceAsh;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppServiceIntentHandling;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceShelf;
 #endif  // !defined(OS_ANDROID)
 
@@ -122,6 +124,8 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAdvancedAccessControls;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAnsibleInfrastructure;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrostiniAnsibleSoftwareManagement;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCupsPrintersUiOverhaul;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPluginVm;

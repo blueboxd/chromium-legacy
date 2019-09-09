@@ -1672,12 +1672,12 @@ TEST_F(URLLoaderTest, UploadRawFileWithRange) {
 TEST_F(URLLoaderTest, UploadDataPipe) {
   const std::string kRequestBody = "Request Body";
 
-  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_remote;
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
-      kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
+      kRequestBody, data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
   auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
-  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
   set_request_body(std::move(resource_request_body));
 
   std::string response_body;
@@ -1689,12 +1689,12 @@ TEST_F(URLLoaderTest, UploadDataPipe) {
 TEST_F(URLLoaderTest, UploadDataPipe_Redirect307) {
   const std::string kRequestBody = "Request Body";
 
-  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_remote;
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
-      kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
+      kRequestBody, data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
   auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
-  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
   set_request_body(std::move(resource_request_body));
   set_expect_redirect();
 
@@ -1714,12 +1714,12 @@ TEST_F(URLLoaderTest, UploadDataPipeWithLotsOfData) {
   while (request_body.size() < 5 * 1024 * 1024)
     request_body.append("foppity");
 
-  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_remote;
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
-      request_body, mojo::MakeRequest(&data_pipe_getter_ptr));
+      request_body, data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
   auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
-  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
   set_request_body(std::move(resource_request_body));
 
   std::string response_body;
@@ -1730,13 +1730,13 @@ TEST_F(URLLoaderTest, UploadDataPipeWithLotsOfData) {
 TEST_F(URLLoaderTest, UploadDataPipeError) {
   const std::string kRequestBody = "Request Body";
 
-  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_remote;
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
-      kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
+      kRequestBody, data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
   data_pipe_getter->set_start_error(net::ERR_ACCESS_DENIED);
 
   auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
-  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
   set_request_body(std::move(resource_request_body));
 
   EXPECT_EQ(net::ERR_ACCESS_DENIED, Load(test_server()->GetURL("/echo")));
@@ -1745,13 +1745,13 @@ TEST_F(URLLoaderTest, UploadDataPipeError) {
 TEST_F(URLLoaderTest, UploadDataPipeClosedEarly) {
   const std::string kRequestBody = "Request Body";
 
-  mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_remote;
   auto data_pipe_getter = std::make_unique<TestDataPipeGetter>(
-      kRequestBody, mojo::MakeRequest(&data_pipe_getter_ptr));
+      kRequestBody, data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
   data_pipe_getter->set_pipe_closed_early(true);
 
   auto resource_request_body = base::MakeRefCounted<ResourceRequestBody>();
-  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  resource_request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
   set_request_body(std::move(resource_request_body));
 
   std::string response_body;

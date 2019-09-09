@@ -293,6 +293,14 @@ template("test") {
     import("//build/config/ios/ios_sdk.gni")
     import("//build/config/ios/rules.gni")
 
+    declare_args() {
+      # Keep the unittest-as-xctest functionality defaulted to off until the
+      # bots are updated to handle it properly.
+      # TODO(crbug.com/1001667): Remove this arg once the iOS test runner
+      # supports running unittests with xctest.
+      enable_run_ios_unittests_with_xctest = false
+    }
+
     _test_target = target_name
     _resources_bundle_data = target_name + "_resources_bundle_data"
 
@@ -306,8 +314,18 @@ template("test") {
       ]
     }
 
-    ios_app_bundle(_test_target) {
+    if (enable_run_ios_unittests_with_xctest) {
+      ios_test_target_type = "ios_xctest_test"
+    } else {
+      ios_test_target_type = "ios_app_bundle"
+    }
+
+    target(ios_test_target_type, _test_target) {
       testonly = true
+
+      if (enable_run_ios_unittests_with_xctest) {
+        xctest_module_target = "//base/test:google_test_runner"
+      }
 
       # See above call.
       set_sources_assignment_filter([])

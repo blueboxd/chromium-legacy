@@ -217,8 +217,6 @@ void VideoDecoderClient::InitializeDecoderTask(const Video* video,
 
 void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
-         decoder_client_state_ == VideoDecoderClientState::kIdle);
   DCHECK_EQ(0u, num_outstanding_decode_requests_);
   DVLOGF(4);
 
@@ -333,11 +331,8 @@ void VideoDecoderClient::DecoderInitializedTask(bool status) {
 void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
-  LOG_ASSERT((status == media::DecodeStatus::OK) ||
-             (status == media::DecodeStatus::ABORTED &&
-              decoder_client_state_ == VideoDecoderClientState::kResetting))
-      << "Decoding failed: " << GetDecodeStatusString(status);
-
+  LOG_ASSERT(status != media::DecodeStatus::ABORTED ||
+             decoder_client_state_ == VideoDecoderClientState::kResetting);
   DVLOGF(4);
 
   num_outstanding_decode_requests_--;

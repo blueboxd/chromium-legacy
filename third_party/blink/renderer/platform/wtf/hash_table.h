@@ -1739,7 +1739,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     }
   }
   table_ = temporary_table;
-  Allocator::BackingWriteBarrier(table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
 
   if (Traits::kEmptyValueIsZero) {
     memset(original_table, 0, new_table_size * sizeof(ValueType));
@@ -1782,7 +1782,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #endif
 
   table_ = new_table;
-  Allocator::BackingWriteBarrier(table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
   table_size_ = new_table_size;
 
   Value* new_entry = nullptr;
@@ -1959,8 +1959,8 @@ void HashTable<Key,
                Allocator>::swap(HashTable& other) {
   DCHECK(!AccessForbidden());
   std::swap(table_, other.table_);
-  Allocator::BackingWriteBarrier(table_);
-  Allocator::BackingWriteBarrier(other.table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(other.table_);
   std::swap(table_size_, other.table_size_);
   std::swap(key_count_, other.key_count_);
   // std::swap does not work for bit fields.

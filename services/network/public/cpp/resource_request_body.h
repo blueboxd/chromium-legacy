@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/gurl.h"
@@ -64,7 +65,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   void AppendBlob(const std::string& uuid);
   void AppendBlob(const std::string& uuid, uint64_t length);
 
-  void AppendDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
+  void AppendDataPipe(
+      mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter);
 
   // |chunked_data_pipe_getter| will provide the upload body for a chunked
   // upload. Unlike the other methods, which support concatenating data of

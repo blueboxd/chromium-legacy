@@ -576,7 +576,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
   }
 
   // Otherwise, the response should return a list of apps.
-  const base::Value::ListStorage& app_list = json_value->GetList();
+  base::span<const base::Value> app_list = json_value->GetList();
   if (app_list.empty()) {
     DVLOG(1) << "No app in the response.";
     RecordUmaResponseParseResult(RECOMMEND_APPS_RESPONSE_PARSE_RESULT_NO_APP);

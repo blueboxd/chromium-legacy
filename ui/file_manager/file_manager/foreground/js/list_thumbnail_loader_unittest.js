@@ -32,8 +32,8 @@ let isScanningForTest;
 /** @type {!MockFileSystem} */
 const fileSystem = new MockFileSystem('volume-id');
 
-/** @type {!MockDirectoryEntry} */
-const directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
+/** @type {!DirectoryEntry} */
+const directory1 = MockDirectoryEntry.create(fileSystem, '/TestDirectory');
 
 /** @type {!MockEntry} */
 const entry1 = new MockEntry(fileSystem, '/Test1.jpg');

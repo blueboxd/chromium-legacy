@@ -248,10 +248,10 @@ bool StructTraits<network::mojom::DataElementDataView, network::DataElement>::
       return false;
   }
   out->type_ = data.type();
-  out->data_pipe_getter_ =
-      data.TakeDataPipeGetter<network::mojom::DataPipeGetterPtrInfo>();
+  out->data_pipe_getter_ = data.TakeDataPipeGetter<
+      mojo::PendingRemote<network::mojom::DataPipeGetter>>();
   out->chunked_data_pipe_getter_ = data.TakeChunkedDataPipeGetter<
-      network::mojom::ChunkedDataPipeGetterPtrInfo>();
+      mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>>();
   out->offset_ = data.offset();
   out->length_ = data.length();
   return true;

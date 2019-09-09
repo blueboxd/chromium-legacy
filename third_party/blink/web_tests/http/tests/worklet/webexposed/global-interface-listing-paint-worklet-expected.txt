@@ -1,7 +1,8 @@
 CONSOLE MESSAGE: line 10: This test logs exposed APIs once from each PaintWorkletGlobalScope
 CONSOLE MESSAGE: line 153: interface ByteLengthQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface CSSImageValue : CSSStyleValue
 CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153: interface CSSKeywordValue : CSSStyleValue
@@ -138,8 +139,9 @@ CONSOLE MESSAGE: line 153:     getter variable
 CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153:     setter variable
 CONSOLE MESSAGE: line 153: interface CountQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface PaintRenderingContext2D
 CONSOLE MESSAGE: line 153:     getter fillStyle
 CONSOLE MESSAGE: line 153:     getter filter
@@ -276,8 +278,9 @@ CONSOLE MESSAGE: line 153:     getter devicePixelRatio
 CONSOLE MESSAGE: line 153:     method gc
 CONSOLE MESSAGE: line 153:     method registerPaint
 CONSOLE MESSAGE: line 153: interface ByteLengthQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface CSSImageValue : CSSStyleValue
 CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153: interface CSSKeywordValue : CSSStyleValue
@@ -414,8 +417,9 @@ CONSOLE MESSAGE: line 153:     getter variable
 CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153:     setter variable
 CONSOLE MESSAGE: line 153: interface CountQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface PaintRenderingContext2D
 CONSOLE MESSAGE: line 153:     getter fillStyle
 CONSOLE MESSAGE: line 153:     getter filter

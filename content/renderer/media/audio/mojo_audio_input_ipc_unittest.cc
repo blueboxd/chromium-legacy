@@ -18,6 +18,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,7 +81,8 @@ class FakeStreamCreator {
 
   void Create(const media::AudioSourceParameters& source_params,
               mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
-              audio::mojom::AudioProcessorControlsRequest controls_request,
+              mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
+                  controls_receiver,
               const media::AudioParameters& params,
               bool automatic_gain_control,
               uint32_t total_segments) {
@@ -166,7 +168,8 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
           base::BindRepeating(
               [](const media::AudioSourceParameters&,
                  mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
-                 audio::mojom::AudioProcessorControlsRequest controls_request,
+                 mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
+                     controls_receiver,
                  const media::AudioParameters& params,
                  bool automatic_gain_control, uint32_t total_segments) {}),
           base::BindRepeating(&AssociateOutputForAec));

@@ -10,7 +10,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "v8/include/v8.h"
@@ -27,11 +26,9 @@ CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
 CORE_EXPORT v8::Local<v8::Value> ToV8(EventTarget*,
                                       v8::Local<v8::Object> creation_context,
                                       v8::Isolate*);
-inline v8::Local<v8::Value> ToV8(Node* node,
-                                 v8::Local<v8::Object> creation_context,
-                                 v8::Isolate* isolate) {
-  return ToV8(static_cast<ScriptWrappable*>(node), creation_context, isolate);
-}
+CORE_EXPORT v8::Local<v8::Value> ToV8(Node* node,
+                                      v8::Local<v8::Object> creation_context,
+                                      v8::Isolate* isolate);
 
 inline v8::Local<v8::Value> ToV8(const Dictionary& value,
                                  v8::Local<v8::Object> creation_context,

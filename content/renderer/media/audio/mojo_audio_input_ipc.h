@@ -19,6 +19,8 @@
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/webrtc/audio_processor_controls.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace content {
@@ -38,7 +40,8 @@ class CONTENT_EXPORT MojoAudioInputIPC
   using StreamCreatorCB = base::RepeatingCallback<void(
       const media::AudioSourceParameters& source_params,
       mojom::RendererAudioInputStreamFactoryClientPtr client,
-      audio::mojom::AudioProcessorControlsRequest controls_request,
+      mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
+          controls_receiver,
       const media::AudioParameters& params,
       bool automatic_gain_control,
       uint32_t total_segments)>;
@@ -87,7 +90,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   StreamAssociatorCB stream_associator_;
 
   media::mojom::AudioInputStreamPtr stream_;
-  audio::mojom::AudioProcessorControlsPtr processor_controls_;
+  mojo::Remote<audio::mojom::AudioProcessorControls> processor_controls_;
   // Initialized on StreamCreated.
   base::Optional<base::UnguessableToken> stream_id_;
   mojo::Binding<AudioInputStreamClient> stream_client_binding_;

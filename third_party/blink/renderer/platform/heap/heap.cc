@@ -216,8 +216,8 @@ HeapCompact* ThreadHeap::Compaction() {
   return compaction_.get();
 }
 
-bool ThreadHeap::ShouldRegisterMovingObject(MovableReference* slot) {
-  return Compaction()->ShouldRegisterMovingObject(slot);
+bool ThreadHeap::ShouldRegisterMovingAddress(Address address) {
+  return Compaction()->ShouldRegisterMovingAddress(address);
 }
 
 void ThreadHeap::FlushNotFullyConstructedObjects() {

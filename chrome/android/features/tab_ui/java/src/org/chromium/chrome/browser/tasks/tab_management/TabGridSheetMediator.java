@@ -110,6 +110,7 @@ class TabGridSheetMediator {
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
         mThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.addTintObserver(mTintObserver);
+        mModel.set(TabGridSheetProperties.IS_MAIN_CONTENT_VISIBLE, true);
 
         // setup toolbar property model
         setupToolbarClickHandlers();

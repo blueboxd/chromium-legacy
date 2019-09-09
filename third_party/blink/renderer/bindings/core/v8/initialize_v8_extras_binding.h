@@ -11,7 +11,9 @@ namespace blink {
 
 class ScriptState;
 
-// Add the JavaScript function countUse() to the "binding" object that is
+// Copy CountQueuingStrategy and ByteLengthQueuingStrategy to the global object.
+//
+// Also add the JavaScript function countUse() to the "binding" object that is
 // exposed to the JavaScript streams implementations.
 //
 // binding.countUse() takes a string and calls UseCounter::Count() on the
@@ -25,7 +27,8 @@ class ScriptState;
 // methods and accessors to the binding object where they can be used for
 // serialization by the streams code.
 //
-// This function must be called during initialisation of the V8 context.
+// This function must be called during initialisation of the V8 context. When
+// the StreamsNative feature is enabled it does nothing.
 //
 // countUse() is not available during snapshot creation.
 void CORE_EXPORT InitializeV8ExtrasBinding(ScriptState*);

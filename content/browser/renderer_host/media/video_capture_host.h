@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
 #include "media/capture/mojom/video_capture.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class MediaStreamManager;
@@ -73,7 +74,8 @@ class CONTENT_EXPORT VideoCaptureHost
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
-             media::mojom::VideoCaptureObserverPtr observer) override;
+             mojo::PendingRemote<media::mojom::VideoCaptureObserver> observer)
+      override;
   void Stop(const base::UnguessableToken& device_id) override;
   void Pause(const base::UnguessableToken& device_id) override;
   void Resume(const base::UnguessableToken& device_id,
@@ -129,7 +131,8 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // VideoCaptureObservers map, each one is used and should be valid between
   // Start() and the corresponding Stop().
-  std::map<base::UnguessableToken, media::mojom::VideoCaptureObserverPtr>
+  std::map<base::UnguessableToken,
+           mojo::Remote<media::mojom::VideoCaptureObserver>>
       device_id_to_observer_map_;
 
   base::WeakPtrFactory<VideoCaptureHost> weak_factory_{this};

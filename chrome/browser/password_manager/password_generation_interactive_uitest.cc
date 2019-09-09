@@ -119,7 +119,7 @@ class PasswordGenerationInteractiveTest
         ChromePasswordManagerClient::FromWebContents(WebContents());
     client->SetTestObserver(&observer_);
     // The base class should enable password generation.
-    ASSERT_NE(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
+    ASSERT_TRUE(client->GetPasswordFeatureManager()->IsGenerationEnabled());
     password_manager::PasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
 

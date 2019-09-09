@@ -30,8 +30,8 @@ namespace mojo {
 
 NDEFRecordPtr TypeConverter<NDEFRecordPtr, ::blink::NDEFRecord*>::Convert(
     const ::blink::NDEFRecord* record) {
-  return NDEFRecord::New(blink::StringToNDEFRecordType(record->recordType()),
-                         record->mediaType(), record->data());
+  return NDEFRecord::New(record->recordType(), record->mediaType(),
+                         record->data());
 }
 
 NDEFMessagePtr TypeConverter<NDEFMessagePtr, ::blink::NDEFMessage*>::Convert(
@@ -82,8 +82,7 @@ TypeConverter<NFCScanOptionsPtr, const blink::NFCScanOptions*>::Convert(
 
   if (scanOptions->hasRecordType()) {
     scanOptionsPtr->record_filter = NDEFRecordTypeFilter::New();
-    scanOptionsPtr->record_filter->record_type =
-        blink::StringToNDEFRecordType(scanOptions->recordType());
+    scanOptionsPtr->record_filter->record_type = scanOptions->recordType();
   }
 
   return scanOptionsPtr;

@@ -44,7 +44,6 @@ id<GREYMatcher> ContentViewSmallerThanScrollView() {
 }  // namespace
 
 using chrome_test_util::AccountConsistencyConfirmationOkButton;
-using chrome_test_util::AccountConsistencySetupSigninButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;

@@ -202,7 +202,13 @@ class FakeTestUnwinder : public Unwinder {
 
 }  // namespace
 
-TEST(StackSamplerImplTest, CopyStack) {
+// TODO(crbug.com/1001923): Fails on Linux MSan.
+#if defined(OS_LINUX)
+#define MAYBE_CopyStack DISABLED_MAYBE_CopyStack
+#else
+#define MAYBE_CopyStack CopyStack
+#endif
+TEST(StackSamplerImplTest, MAYBE_CopyStack) {
   ModuleCache module_cache;
   const std::vector<uintptr_t> stack = {0, 1, 2, 3, 4};
   InjectModuleForContextInstructionPointer(stack, &module_cache);

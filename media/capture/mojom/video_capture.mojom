@@ -85,7 +85,7 @@ interface VideoCaptureHost {
   Start(mojo_base.mojom.UnguessableToken device_id,
         mojo_base.mojom.UnguessableToken session_id,
         VideoCaptureParams params,
-        VideoCaptureObserver observer);
+        pending_remote<VideoCaptureObserver> observer);
 
   // Closes the video capture specified by |device_id|.
   Stop(mojo_base.mojom.UnguessableToken device_id);

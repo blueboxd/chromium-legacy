@@ -175,10 +175,12 @@ NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init,
     return CreateJsonRecord(init->mediaType(), init->data(), exception_state);
   } else if (record_type == "opaque") {
     return CreateOpaqueRecord(init->mediaType(), init->data(), exception_state);
+  } else {
+    // TODO(https://crbug.com/520391): Support creating smart-poster and
+    // external type records.
+    exception_state.ThrowTypeError(kNfcRecordTypeError);
+    return nullptr;
   }
-
-  NOTREACHED();
-  return nullptr;
 }
 
 NDEFRecord::NDEFRecord(const String& record_type,
@@ -200,7 +202,7 @@ NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
 }
 
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
-    : record_type_(NDEFRecordTypeToString(record.record_type)),
+    : record_type_(record.record_type),
       media_type_(record.media_type),
       data_(record.data) {}
 
@@ -213,9 +215,7 @@ const String& NDEFRecord::mediaType() const {
 }
 
 String NDEFRecord::toText() const {
-  device::mojom::blink::NDEFRecordType type =
-      StringToNDEFRecordType(record_type_);
-  if (type == device::mojom::blink::NDEFRecordType::EMPTY)
+  if (record_type_ == "empty")
     return String();
 
   // TODO(https://crbug.com/520391): Support utf-16 decoding for 'TEXT' record
@@ -225,10 +225,7 @@ String NDEFRecord::toText() const {
 }
 
 DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
-  device::mojom::blink::NDEFRecordType type =
-      StringToNDEFRecordType(record_type_);
-  if (type != device::mojom::blink::NDEFRecordType::JSON &&
-      type != device::mojom::blink::NDEFRecordType::OPAQUE_RECORD) {
+  if (record_type_ != "json" && record_type_ != "opaque") {
     return nullptr;
   }
 
@@ -237,10 +234,7 @@ DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
 
 ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
                                ExceptionState& exception_state) const {
-  device::mojom::blink::NDEFRecordType type =
-      StringToNDEFRecordType(record_type_);
-  if (type != device::mojom::blink::NDEFRecordType::JSON &&
-      type != device::mojom::blink::NDEFRecordType::OPAQUE_RECORD) {
+  if (record_type_ != "json" && record_type_ != "opaque") {
     return ScriptValue::CreateNull(script_state);
   }
 

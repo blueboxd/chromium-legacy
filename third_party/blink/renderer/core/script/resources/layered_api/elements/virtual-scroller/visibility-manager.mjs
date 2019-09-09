@@ -321,12 +321,18 @@ export class VisibilityManager {
    */
   #unlock =
       element => {
-        element.displayLock.commit().catch(reason => {
-          // Only warn if the unlocked failed and we should be revealed.
-          if (this.#revealed.has(element)) {
-            this.#logLockingError('Commit', reason, element);
-          }
-        });
+        if (element.style.contentSize === undefined) {
+          // TODO(crbug.com/1001293) delete the old code-path.
+          element.displayLock.commit().catch(reason => {
+            // Only warn if the unlocked failed and we should be revealed.
+            if (this.#revealed.has(element)) {
+              this.#logLockingError('Commit', reason, element);
+            }
+          });
+        } else {
+          element.removeAttribute('rendersubtree');
+          element.style.contentSize = '';
+        }
       }
 
   /**
@@ -337,19 +343,25 @@ export class VisibilityManager {
   #hide =
       element => {
         this.#revealed.delete(element);
-        element.displayLock
-            .acquire({
-              timeout: Infinity,
-              activatable: true,
-              size:
-                  [LOCKED_WIDTH_PX, this.#sizeManager.getHopefulSize(element)],
-            })
-            .catch(reason => {
-              // Only warn if the lock failed and we should be locked.
-              if (!this.#revealed.has(element)) {
-                this.#logLockingError('Acquire', reason, element);
-              }
-            });
+        const size = this.#sizeManager.getHopefulSize(element);
+        if (element.style.contentSize === undefined) {
+          // TODO(crbug.com/1001293) delete the old code-path.
+          element.displayLock
+              .acquire({
+                timeout: Infinity,
+                activatable: true,
+                size: [LOCKED_WIDTH_PX, size],
+              })
+              .catch(reason => {
+                // Only warn if the lock failed and we should be locked.
+                if (!this.#revealed.has(element)) {
+                  this.#logLockingError('Acquire', reason, element);
+                }
+              });
+        } else {
+          element.setAttribute('rendersubtree', 'invisible activatable');
+          element.style.contentSize = `${LOCKED_WIDTH_PX}px ${size}px`;
+        }
       }
 
   /**

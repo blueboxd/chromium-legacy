@@ -289,7 +289,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // The payload starts directly after the HeapObjectHeader, and the payload
   // size does not include the sizeof(HeapObjectHeader).
   Address Payload() const;
-  size_t PayloadSize();
+  size_t PayloadSize() const;
   Address PayloadEnd() const;
 
   void Finalize(Address, size_t);
@@ -1167,7 +1167,7 @@ inline Address HeapObjectHeader::PayloadEnd() const {
          size();
 }
 
-NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
+NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() const {
   CheckHeader();
   const size_t size = internal::DecodeSize(encoded_low_);
   if (UNLIKELY(size == kLargeObjectSizeInHeader)) {

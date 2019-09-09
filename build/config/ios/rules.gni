@@ -1808,13 +1808,20 @@ template("ios_xctest_test") {
   _host_target = _target_name
   _host_output = _output_name
 
-  _xctest_shell_source_target = _xctest_target + "shell_source"
-  source_set(_xctest_shell_source_target) {
-    sources = [
-      "//build/config/ios/xctest_shell.mm",
-    ]
+  # Allow invokers to specify their own target for the xctest module, but
+  # fall back to a default (empty) module otherwise.
+  if (defined(invoker.xctest_module_target)) {
+    _xctest_module_target = invoker.xctest_module_target
+  } else {
+    _xctest_module_target_name = _xctest_target + "shell_source"
+    _xctest_module_target = ":$_xctest_module_target_name"
+    source_set(_xctest_module_target_name) {
+      sources = [
+        "//build/config/ios/xctest_shell.mm",
+      ]
 
-    configs += [ "//build/config/ios:xctest_config" ]
+      configs += [ "//build/config/ios:xctest_config" ]
+    }
   }
 
   ios_xctest_bundle(_xctest_target) {
@@ -1824,7 +1831,7 @@ template("ios_xctest_test") {
     xcode_test_application_name = _host_output
 
     deps = [
-      ":$_xctest_shell_source_target",
+      _xctest_module_target,
     ]
   }
 

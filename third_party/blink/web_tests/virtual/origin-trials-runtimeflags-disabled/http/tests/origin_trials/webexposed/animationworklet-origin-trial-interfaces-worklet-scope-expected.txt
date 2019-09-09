@@ -2,11 +2,13 @@ CONSOLE MESSAGE: line 13: List all interfaces in the animation worklet global sc
 CONSOLE MESSAGE: line 153: interface AnimationWorkletGlobalScope : WorkletGlobalScope
 CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153: interface ByteLengthQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface CountQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface ReadableStream
 CONSOLE MESSAGE: line 153:     getter locked
 CONSOLE MESSAGE: line 153:     method cancel
@@ -55,11 +57,13 @@ CONSOLE MESSAGE: line 153:     method registerAnimator
 CONSOLE MESSAGE: line 153: interface AnimationWorkletGlobalScope : WorkletGlobalScope
 CONSOLE MESSAGE: line 153:     method constructor
 CONSOLE MESSAGE: line 153: interface ByteLengthQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface CountQueuingStrategy
+CONSOLE MESSAGE: line 153:     getter highWaterMark
+CONSOLE MESSAGE: line 153:     getter size
 CONSOLE MESSAGE: line 153:     method constructor
-CONSOLE MESSAGE: line 153:     method size
 CONSOLE MESSAGE: line 153: interface ReadableStream
 CONSOLE MESSAGE: line 153:     getter locked
 CONSOLE MESSAGE: line 153:     method cancel

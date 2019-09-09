@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.graphics.Color;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -142,8 +143,8 @@ public class WebappInfoTest {
     public void testNormalColors() {
         String name = "longName";
         String shortName = "name";
-        long themeColor = 0xFF00FF00L;
-        long backgroundColor = 0xFF0000FFL;
+        long themeColor = Color.argb(0xff, 0, 0xff, 0);
+        long backgroundColor = Color.argb(0xff, 0, 0, 0xff);
 
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
@@ -171,8 +172,8 @@ public class WebappInfoTest {
 
     @Test
     public void testColorsIntentCreation() {
-        long themeColor = 0xFF00FF00L;
-        long backgroundColor = 0xFF0000FFL;
+        long themeColor = Color.argb(0xff, 0, 0xff, 0);
+        long backgroundColor = Color.argb(0xff, 0, 0, 0xff);
 
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);

@@ -122,7 +122,7 @@ void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
 void BookmarkAppInstallFinalizer::UninstallWebApp(
     const web_app::AppId& app_id,
     UninstallWebAppCallback callback) {
-  if (!ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(app_id)) {
+  if (!GetEnabledExtension(app_id)) {
     LOG(WARNING) << "Couldn't uninstall app " << app_id
                  << "; Extension not installed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -150,7 +150,8 @@ void BookmarkAppInstallFinalizer::CreateOsShortcuts(
     const web_app::AppId& app_id,
     bool add_to_desktop,
     CreateOsShortcutsCallback callback) {
-  const Extension* app = GetExtensionById(app_id);
+  const Extension* app = GetEnabledExtension(app_id);
+  DCHECK(app);
   BookmarkAppCreateOsShortcuts(profile_, app, add_to_desktop,
                                std::move(callback));
 }
@@ -166,7 +167,8 @@ bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
   DCHECK(CanRevealAppShim());
 #if defined(OS_MACOSX)
-  const Extension* app = GetExtensionById(app_id);
+  const Extension* app = GetEnabledExtension(app_id);
+  DCHECK(app);
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableHostedAppShimCreation)) {
     web_app::RevealAppShimInFinderForApp(profile_, app);
@@ -201,12 +203,11 @@ bool BookmarkAppInstallFinalizer::CanSkipAppUpdateForSync(
 
 bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
     const web_app::AppId& app_id) const {
-  const Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          app_id, extensions::ExtensionRegistry::EVERYTHING);
+  const Extension* app = GetEnabledExtension(app_id);
+  DCHECK(app);
   return extensions::ExtensionSystem::Get(profile_)
       ->management_policy()
-      ->UserMayModifySettings(extension, nullptr);
+      ->UserMayModifySettings(app, nullptr);
 }
 
 void BookmarkAppInstallFinalizer::SetSubsystems(
@@ -221,11 +222,10 @@ void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(
   crx_installer_factory_ = crx_installer_factory;
 }
 
-const Extension* BookmarkAppInstallFinalizer::GetExtensionById(
+const Extension* BookmarkAppInstallFinalizer::GetEnabledExtension(
     const web_app::AppId& app_id) const {
   const Extension* app =
       ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(app_id);
-  DCHECK(app);
   return app;
 }
 
@@ -244,7 +244,8 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 
   const Extension* extension = crx_installer->extension();
   DCHECK(extension);
-  if (extension != GetExtensionById(extension->id())) {
+
+  if (extension != GetEnabledExtension(extension->id())) {
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kWebAppDisabled);
     return;

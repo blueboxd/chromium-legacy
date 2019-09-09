@@ -175,7 +175,7 @@ class RTCRtpTransceiverTest : public ::testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  protected:
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;

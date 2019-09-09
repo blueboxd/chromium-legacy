@@ -78,10 +78,6 @@ bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
     return false;
 
   // Don't cache the page if it uses any disallowed features.
-  // TODO(lowell): Handle races involving scheduler_tracked_features.
-  // One solution could be to listen for changes to scheduler_tracked_features
-  // and if we see a frame in bfcache starting to use something forbidden, evict
-  // it from the bfcache.
   if (disallowed_features & rfh->scheduler_tracked_features())
     return false;
 
@@ -106,8 +102,6 @@ uint64_t GetDisallowedFeatures() {
           WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
       ToFeatureBit(
           WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
-      ToFeatureBit(
-          WebSchedulerTrackedFeature::kRequestedGeolocationPermission) |
       ToFeatureBit(
           WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
       ToFeatureBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |

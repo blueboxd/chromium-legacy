@@ -535,7 +535,9 @@ void NormalPageArena::SweepAndCompact() {
 #if DEBUG_HEAP_COMPACTION
     if (!freed_page_count)
       stream << "Releasing:";
-    stream << " [" << available_pages << ", " << (available_pages + page_size)
+    stream << " [" << available_pages << ", "
+           << static_cast<void*>(reinterpret_cast<char*>(available_pages) +
+                                 page_size)
            << "]";
 #endif
     freed_size += page_size;

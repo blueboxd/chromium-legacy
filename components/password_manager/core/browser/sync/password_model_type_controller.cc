@@ -31,6 +31,7 @@ void PasswordModelTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   sync_service_->AddObserver(this);
+  storage_option_ = configure_context.storage_option;
   ModelTypeController::LoadModels(configure_context, model_load_callback);
   state_changed_callback_.Run();
 }
@@ -39,6 +40,21 @@ void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
                                        StopCallback callback) {
   DCHECK(CalledOnValidThread());
   sync_service_->RemoveObserver(this);
+  // The account storage should be cleared if Sync is stopped for any reason
+  // (other than just browser shutdown). One common case it switching from
+  // Sync-the-transport to Sync-the-feature; in that case we don't want to end
+  // up with two copied of the passwords (one in the profile DB, one in the
+  // account DB).
+  if (storage_option_ == syncer::STORAGE_IN_MEMORY) {
+    switch (shutdown_reason) {
+      case syncer::STOP_SYNC:
+        shutdown_reason = syncer::DISABLE_SYNC;
+        break;
+      case syncer::DISABLE_SYNC:
+      case syncer::BROWSER_SHUTDOWN:
+        break;
+    }
+  }
   ModelTypeController::Stop(shutdown_reason, std::move(callback));
   state_changed_callback_.Run();
 }

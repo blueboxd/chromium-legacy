@@ -89,7 +89,6 @@ class MockPasswordManagerClient
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetLogManager, autofill::LogManager*(void));
-  MOCK_CONST_METHOD0(GetPasswordSyncState, password_manager::SyncState());
   MOCK_CONST_METHOD0(IsIncognito, bool());
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
@@ -1414,9 +1413,9 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
 TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-  EXPECT_CALL(*weak_client_, GetPasswordSyncState())
-      .WillRepeatedly(
-          Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
+  EXPECT_CALL(*weak_client_->GetMockPasswordFeatureManager(),
+              IsGenerationEnabled())
+      .WillRepeatedly(Return(true));
 
   LoadHtml(kHtmlWithNewPasswordForm);
   const std::string base_url = BaseUrl();
@@ -1512,9 +1511,9 @@ TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());
     weak_client_ = client.get();
 
-    EXPECT_CALL(*weak_client_, GetPasswordSyncState())
-    .WillRepeatedly(
-                    Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
+    EXPECT_CALL(*weak_client_->GetMockPasswordFeatureManager(),
+                IsGenerationEnabled())
+        .WillRepeatedly(Return(true));
     EXPECT_CALL(*weak_client_, IsIncognito()).WillRepeatedly(Return(true));
 
     passwordController_ =

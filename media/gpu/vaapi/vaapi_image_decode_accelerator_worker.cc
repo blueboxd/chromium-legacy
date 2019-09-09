@@ -153,8 +153,7 @@ VaapiImageDecodeAcceleratorWorker::Create() {
 VaapiImageDecodeAcceleratorWorker::VaapiImageDecodeAcceleratorWorker(
     VaapiImageDecoderVector decoders) {
   DETACH_FROM_SEQUENCE(io_sequence_checker_);
-  decoder_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::ThreadPool()});
+  decoder_task_runner_ = base::CreateSequencedTaskRunner({base::ThreadPool()});
   DCHECK(decoder_task_runner_);
 
   DCHECK(!decoders.empty());

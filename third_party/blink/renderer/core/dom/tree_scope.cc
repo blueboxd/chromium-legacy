@@ -289,7 +289,6 @@ static bool ShouldAcceptNonElementNode(const Node& node) {
 
 HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     HitTestResult& result) const {
-  DCHECK(RootNode().isConnected());
   HeapVector<Member<Element>> elements;
   Node* last_node = nullptr;
   for (const auto rect_based_node : result.ListBasedTestResult()) {

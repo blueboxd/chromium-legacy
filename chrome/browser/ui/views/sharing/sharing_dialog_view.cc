@@ -333,7 +333,8 @@ base::string16 SharingDialogView::GetWindowTitle() const {
 }
 
 void SharingDialogView::WindowClosing() {
-  controller_->OnDialogClosed(this);
+  if (web_contents())
+    controller_->OnDialogClosed(this);
 }
 
 // static

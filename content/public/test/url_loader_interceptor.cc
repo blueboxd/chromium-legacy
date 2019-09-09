@@ -24,6 +24,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -85,7 +86,7 @@ class URLLoaderInterceptor::IOState
   // URLLoaderFactoryGetter::GetNetworkContext is called on an object that
   // doesn't have a test factory set up.
   void GetNetworkFactoryCallback(
-      URLLoaderFactoryGetter* url_loader_factory_getter);
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
   void CreateURLLoaderFactoryForSubresources(
       network::mojom::URLLoaderFactoryRequest request,
@@ -319,14 +320,14 @@ class URLLoaderInterceptor::Interceptor
 class URLLoaderInterceptor::URLLoaderFactoryGetterWrapper {
  public:
   URLLoaderFactoryGetterWrapper(
-      URLLoaderFactoryGetter* url_loader_factory_getter,
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       URLLoaderInterceptor::IOState* parent)
-      : url_loader_factory_getter_(url_loader_factory_getter) {
+      : url_loader_factory_getter_(std::move(url_loader_factory_getter)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     frame_interceptor_ = std::make_unique<Interceptor>(
         parent, base::BindRepeating([]() { return 0; }),
         base::BindLambdaForTesting([=]() -> network::mojom::URLLoaderFactory* {
-          return url_loader_factory_getter
+          return url_loader_factory_getter_
               ->original_network_factory_for_testing()
               ->get();
         }));
@@ -341,7 +342,7 @@ class URLLoaderInterceptor::URLLoaderFactoryGetterWrapper {
 
  private:
   std::unique_ptr<Interceptor> frame_interceptor_;
-  URLLoaderFactoryGetter* url_loader_factory_getter_;
+  scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
 };
 
 class URLLoaderInterceptor::URLLoaderFactoryNavigationWrapper {
@@ -470,6 +471,10 @@ URLLoaderInterceptor::URLLoaderInterceptor(
           &URLLoaderInterceptor::InterceptNavigationRequestCallback,
           base::Unretained(this)));
 
+  MockRenderProcessHost::SetNetworkFactory(base::BindRepeating(
+      &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+      base::Unretained(this)));
+
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (use_runloop_) {
       base::RunLoop run_loop;
@@ -515,6 +520,9 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 
   NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
       NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
+
+  MockRenderProcessHost::SetNetworkFactory(
+      MockRenderProcessHost::CreateNetworkFactoryCallback());
 
   if (use_runloop_) {
     base::RunLoop run_loop;
@@ -680,7 +688,7 @@ void URLLoaderInterceptor::IOState::Initialize(
 }
 
 void URLLoaderInterceptor::IOState::GetNetworkFactoryCallback(
-    URLLoaderFactoryGetter* url_loader_factory_getter) {
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   url_loader_factory_getter_wrappers_.emplace(
       std::make_unique<URLLoaderFactoryGetterWrapper>(url_loader_factory_getter,

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
 
 #include <unicode/uchar.h>
+
 #include <limits>
 
 #include "base/stl_util.h"
@@ -552,7 +553,7 @@ const String GetOutOfProcessFallbackFamily(
     FontDescription::GenericFamilyType generic_family,
     String bcp47_language_tag,
     FontFallbackPriority,
-    const mojom::blink::DWriteFontProxyPtr& service) {
+    const mojo::Remote<mojom::blink::DWriteFontProxy>& service) {
   String base_family_name_approximation;
   switch (generic_family) {
     case FontDescription::kMonospaceFamily:

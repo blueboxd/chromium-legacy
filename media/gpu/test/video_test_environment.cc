@@ -85,16 +85,21 @@ void VideoTestEnvironment::TearDown() {
   task_environment_->RunUntilIdle();
 }
 
-base::FilePath::StringType VideoTestEnvironment::GetTestName() const {
+base::FilePath VideoTestEnvironment::GetTestOutputFilePath() const {
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
+  base::FilePath::StringType test_name;
+  base::FilePath::StringType test_suite_name;
 #if defined(OS_WIN)
   // On Windows the default file path string type is UTF16. Since the test name
   // is always returned in UTF8 we need to do a conversion here.
-  return base::UTF8ToUTF16(test_info->name());
+  test_name = base::UTF8ToUTF16(test_info->name());
+  test_suite_name = base::UTF8ToUTF16(test_info->test_suite_name());
 #else
-  return test_info->name();
+  test_name = test_info->name();
+  test_suite_name = test_info->test_suite_name();
 #endif
+  return base::FilePath(test_suite_name).Append(test_name);
 }
 
 }  // namespace test

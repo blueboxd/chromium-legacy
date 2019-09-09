@@ -353,7 +353,7 @@ Status ParseProxy(bool w3c_compliant,
       // In practice, library implementations are not always consistent,
       // so we accept both formats regardless of the W3C mode setting.
       if (option_value->is_list()) {
-        const base::Value::ListStorage& list = option_value->GetList();
+        base::span<const base::Value> list = option_value->GetList();
         for (const base::Value& item : list) {
           if (!item.is_string())
             return Status(kInvalidArgument,

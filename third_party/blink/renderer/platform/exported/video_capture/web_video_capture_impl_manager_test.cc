@@ -61,7 +61,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
-             media::mojom::blink::VideoCaptureObserverPtr observer) override {
+             mojo::PendingRemote<media::mojom::blink::VideoCaptureObserver>
+                 observer) override {
     // For every Start(), expect a corresponding Stop() call.
     EXPECT_CALL(*this, Stop(_));
     // Simulate device started.

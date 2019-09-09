@@ -113,16 +113,12 @@ class ImageFallbackContentBuilder {
 }  // namespace
 
 void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
-  ShadowRoot& root = element.EnsureUserAgentShadowRoot();
+  Document& document = element.GetDocument();
 
-  auto* container =
-      MakeGarbageCollected<HTMLSpanElement>(element.GetDocument());
-  root.AppendChild(container);
+  auto* container = MakeGarbageCollected<HTMLSpanElement>(document);
   container->setAttribute(kIdAttr, AtomicString("alttext-container"));
 
-  auto* broken_image =
-      MakeGarbageCollected<HTMLImageElement>(element.GetDocument());
-  container->AppendChild(broken_image);
+  auto* broken_image = MakeGarbageCollected<HTMLImageElement>(document);
   broken_image->SetIsFallbackImage();
   broken_image->setAttribute(kIdAttr, AtomicString("alttext-image"));
   broken_image->setAttribute(kWidthAttr, AtomicString("16"));
@@ -130,14 +126,16 @@ void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
   broken_image->setAttribute(kAlignAttr, AtomicString("left"));
   broken_image->SetInlineStyleProperty(CSSPropertyID::kMargin, 0,
                                        CSSPrimitiveValue::UnitType::kPixels);
+  container->AppendChild(broken_image);
 
-  auto* alt_text = MakeGarbageCollected<HTMLSpanElement>(element.GetDocument());
-  container->AppendChild(alt_text);
+  auto* alt_text = MakeGarbageCollected<HTMLSpanElement>(document);
   alt_text->setAttribute(kIdAttr, AtomicString("alttext"));
 
-  Text* text =
-      Text::Create(element.GetDocument(), To<HTMLElement>(element).AltText());
+  auto* text = Text::Create(document, To<HTMLElement>(element).AltText());
   alt_text->AppendChild(text);
+  container->AppendChild(alt_text);
+
+  element.EnsureUserAgentShadowRoot().AppendChild(container);
 }
 
 scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(

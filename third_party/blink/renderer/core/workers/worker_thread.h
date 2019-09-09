@@ -187,12 +187,18 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
   // Runs |function| with |parameters| on each worker thread, and
   // adds the current WorkerThread* as the first parameter |function|.
+  // This only calls |function| for threads for which Start() was already
+  // called.
   template <typename FunctionType, typename... Parameters>
   static void CallOnAllWorkerThreads(FunctionType function,
                                      TaskType task_type,
                                      Parameters&&... parameters) {
     MutexLocker lock(ThreadSetMutex());
     for (WorkerThread* thread : WorkerThreads()) {
+      // Skip threads which aren't started yet. The scheduler and task runners
+      // are available only after Start() is called.
+      if (!thread->worker_scheduler_)
+        continue;
       PostCrossThreadTask(
           *thread->GetTaskRunner(task_type), FROM_HERE,
           CrossThreadBindOnce(function, WTF::CrossThreadUnretained(thread),

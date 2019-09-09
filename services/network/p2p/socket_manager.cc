@@ -258,10 +258,10 @@ void P2PSocketManager::SendNetworkList(
 }
 
 void P2PSocketManager::StartNetworkNotifications(
-    mojom::P2PNetworkNotificationClientPtr client) {
+    mojo::PendingRemote<mojom::P2PNetworkNotificationClient> client) {
   DCHECK(!network_notification_client_);
-  network_notification_client_ = std::move(client);
-  network_notification_client_.set_connection_error_handler(base::BindOnce(
+  network_notification_client_.Bind(std::move(client));
+  network_notification_client_.set_disconnect_handler(base::BindOnce(
       &P2PSocketManager::NetworkNotificationClientConnectionError,
       base::Unretained(this)));
 

@@ -111,12 +111,11 @@ void CrostiniUnsupportedActionNotifier::
   }
   EmitMetricReasonTriggered(reason);
   if (!virtual_keyboard_unsupported_message_shown_) {
-    int duration_s = delegate_->IsMagnificationEnabled() ? 10 : 5;
     ash::ToastData data = {
         /*id=*/"VKUnsupportedInCrostini",
         /*text=*/
         l10n_util::GetStringUTF16(IDS_CROSTINI_UNSUPPORTED_VIRTUAL_KEYBOARD),
-        /*timeout_ms=*/duration_s * 1000,
+        /*timeout_ms=*/delegate_->ToastTimeoutMs(),
         /*dismiss_text=*/base::nullopt};
     delegate_->ShowToast(data);
     virtual_keyboard_unsupported_message_shown_ = true;
@@ -135,12 +134,11 @@ void CrostiniUnsupportedActionNotifier::
   if (!ime_unsupported_message_shown_) {
     auto ime_name =
         base::UTF8ToUTF16(delegate_->GetLocalizedDisplayName(method));
-    int duration_s = delegate_->IsMagnificationEnabled() ? 10 : 5;
     ash::ToastData data = {
         /*id=*/"IMEUnsupportedInCrostini",
         /*text=*/
         l10n_util::GetStringFUTF16(IDS_CROSTINI_UNSUPPORTED_IME, ime_name),
-        /*timeout_ms=*/duration_s * 1000,
+        /*timeout_ms=*/delegate_->ToastTimeoutMs(),
         /*dismiss_text=*/base::nullopt};
     delegate_->ShowToast(data);
     ime_unsupported_message_shown_ = true;
@@ -190,10 +188,14 @@ CrostiniUnsupportedActionNotifier::Delegate::GetLocalizedDisplayName(
       ->GetLocalizedDisplayName(descriptor);
 }
 
-bool CrostiniUnsupportedActionNotifier::Delegate::IsMagnificationEnabled() {
+int CrostiniUnsupportedActionNotifier::Delegate::ToastTimeoutMs() {
   auto* manager = chromeos::MagnificationManager::Get();
-  return manager &&
-         (manager->IsMagnifierEnabled() || manager->IsDockedMagnifierEnabled());
+  if (manager &&
+      (manager->IsMagnifierEnabled() || manager->IsDockedMagnifierEnabled())) {
+    return 60 * 1000;
+  } else {
+    return 5 * 1000;
+  }
 }
 
 void CrostiniUnsupportedActionNotifier::Delegate::AddFocusObserver(

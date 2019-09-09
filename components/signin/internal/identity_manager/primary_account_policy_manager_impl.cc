@@ -39,7 +39,7 @@ void PrimaryAccountPolicyManagerImpl::InitializePolicy(
       base::Bind(&PrimaryAccountPolicyManagerImpl::OnSigninAllowedPrefChanged,
                  base::Unretained(this), primary_account_manager));
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       primary_account_manager->GetAuthenticatedAccountInfo();
   if (!account_info.account_id.empty() &&
       (!IsAllowedUsername(account_info.email) || !IsSigninAllowed())) {

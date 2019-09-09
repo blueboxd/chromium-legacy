@@ -19,9 +19,7 @@ namespace content {
 P2PSocketDispatcher::P2PSocketDispatcher()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       network_list_observers_(
-          new base::ObserverListThreadSafe<NetworkListObserver>()),
-      network_notification_client_binding_(this) {
-}
+          new base::ObserverListThreadSafe<NetworkListObserver>()) {}
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
 }
@@ -80,16 +78,13 @@ void P2PSocketDispatcher::RequestInterfaceIfNecessary() {
 }
 
 void P2PSocketDispatcher::RequestNetworkEventsIfNecessary() {
-  if (network_notification_client_binding_.is_bound()) {
+  if (network_notification_client_receiver_.is_bound()) {
     network_list_observers_->Notify(
         FROM_HERE, &NetworkListObserver::OnNetworkListChanged, networks_,
         default_ipv4_local_address_, default_ipv6_local_address_);
   } else {
-    network::mojom::P2PNetworkNotificationClientPtr network_notification_client;
-    network_notification_client_binding_.Bind(
-        mojo::MakeRequest(&network_notification_client));
     GetP2PSocketManager()->get()->StartNetworkNotifications(
-        std::move(network_notification_client));
+        network_notification_client_receiver_.BindNewPipeAndPassRemote());
   }
 }
 

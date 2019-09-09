@@ -448,7 +448,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   for (const auto& it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
-    auto& vms = it.second.GetList();
+    base::span<const base::Value> vms = it.second.GetList();
     for (const auto& vm : vms) {
       // Register all shared paths for all VMs since we want FilePathWatchers
       // to start immediately.
@@ -649,9 +649,9 @@ void GuestOsSharePath::CheckIfVolumeMountRemoved(
                        path, path, true, ""));
     return;
   }
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&GuestOsSharePath::PathDeleted,
-                                          base::Unretained(this), path));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&GuestOsSharePath::PathDeleted,
+                                base::Unretained(this), path));
 }
 
 void GuestOsSharePath::PathDeleted(const base::FilePath& path) {

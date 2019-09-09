@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
@@ -84,7 +85,7 @@ class P2PSocketManager
 
   // mojom::P2PSocketManager overrides:
   void StartNetworkNotifications(
-      mojom::P2PNetworkNotificationClientPtr client) override;
+      mojo::PendingRemote<mojom::P2PNetworkNotificationClient> client) override;
   void GetHostAddress(
       const std::string& host_name,
       bool enable_mdns,
@@ -137,7 +138,8 @@ class P2PSocketManager
   mojo::Binding<mojom::P2PTrustedSocketManager> trusted_socket_manager_binding_;
   mojo::Binding<mojom::P2PSocketManager> socket_manager_binding_;
 
-  mojom::P2PNetworkNotificationClientPtr network_notification_client_;
+  mojo::Remote<mojom::P2PNetworkNotificationClient>
+      network_notification_client_;
 
   base::WeakPtrFactory<P2PSocketManager> weak_factory_{this};
 

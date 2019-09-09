@@ -137,20 +137,22 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   internal::NativeWidgetDelegate* const native_widget_delegate_;
   DesktopNativeWidgetAura* const desktop_native_widget_aura_;
 
-  // Set to true when Close() is called.
-  bool waiting_for_close_now_ = false;
-
-  bool got_on_closed_ = false;
-
   bool is_active_ = false;
 
   base::string16 window_title_;
+
+  // We can optionally have a parent which can order us to close, or own
+  // children who we're responsible for closing when we CloseNow().
+  DesktopWindowTreeHostPlatform* window_parent_ = nullptr;
+  std::set<DesktopWindowTreeHostPlatform*> window_children_;
 
 #if defined(OS_LINUX)
   // A handler for events intended for non client area.
   std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
 #endif
 
+  base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
+      this};
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostPlatform);

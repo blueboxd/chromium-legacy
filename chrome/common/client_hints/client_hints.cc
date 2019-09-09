@@ -51,7 +51,7 @@ void GetAllowedClientHintsFromSource(
     if (list_value == nullptr)
       continue;
     DCHECK(list_value->is_list());
-    const base::Value::ListStorage& client_hints_list = list_value->GetList();
+    base::span<const base::Value> client_hints_list = list_value->GetList();
     for (const auto& client_hint : client_hints_list) {
       DCHECK(client_hint.is_int());
       client_hints->SetIsEnabled(

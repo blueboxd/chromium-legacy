@@ -1880,7 +1880,8 @@
           'linux-xenial'
         ],
         'test_suites': {
-          'gtest_tests': 'oor_cors_gtests'
+          'gtest_tests': 'oor_cors_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts'
         }
       },
       'linux-wpt-fyi-rel': {

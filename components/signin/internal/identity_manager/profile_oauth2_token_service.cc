@@ -28,8 +28,8 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "Unknown";
     case SourceForRefreshTokenOperation::kTokenService_LoadCredentials:
       return "TokenService::LoadCredentials";
-    case SourceForRefreshTokenOperation::kSupervisedUser_InitSync:
-      return "SupervisedUser::InitSync";
+    case SourceForRefreshTokenOperation::kDeprecatedSupervisedUser_InitSync:
+      return "DeprecatedSupervisedUser::InitSync";
     case SourceForRefreshTokenOperation::kInlineLoginHandler_Signin:
       return "InlineLoginHandler::Signin";
     case SourceForRefreshTokenOperation::kPrimaryAccountManager_ClearAccount:

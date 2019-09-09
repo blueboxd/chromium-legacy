@@ -130,7 +130,7 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
 }
 
 TEST(BusTest, RemoveObjectProxy) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
@@ -318,8 +318,8 @@ TEST(BusTest, DoubleAddAndRemoveMatch) {
 }
 
 TEST(BusTest, ListenForServiceOwnerChange) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
 
   RunLoopWithExpectedCount run_loop_state;
 

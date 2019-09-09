@@ -17,6 +17,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
@@ -50,11 +51,11 @@ namespace content {
 
 namespace {
 
-blink::mojom::FileSystemManagerPtr GetFileSystemManager() {
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
+mojo::Remote<blink::mojom::FileSystemManager> GetFileSystemManager() {
+  mojo::Remote<blink::mojom::FileSystemManager> file_system_manager;
   ChildThreadImpl::current()->BindHostReceiver(
-      mojo::MakeRequest(&file_system_manager_ptr));
-  return file_system_manager_ptr;
+      file_system_manager.BindNewPipeAndPassReceiver());
+  return file_system_manager;
 }
 
 // Appends the file ref given the Resource pointer associated with it to the

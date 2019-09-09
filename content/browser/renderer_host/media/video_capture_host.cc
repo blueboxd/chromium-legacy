@@ -181,17 +181,18 @@ void VideoCaptureHost::OnStarted(
 void VideoCaptureHost::OnStartedUsingGpuDecode(
     const VideoCaptureControllerID& id) {}
 
-void VideoCaptureHost::Start(const base::UnguessableToken& device_id,
-                             const base::UnguessableToken& session_id,
-                             const media::VideoCaptureParams& params,
-                             media::mojom::VideoCaptureObserverPtr observer) {
+void VideoCaptureHost::Start(
+    const base::UnguessableToken& device_id,
+    const base::UnguessableToken& session_id,
+    const media::VideoCaptureParams& params,
+    mojo::PendingRemote<media::mojom::VideoCaptureObserver> observer) {
   DVLOG(1) << __func__ << " session_id=" << session_id
            << ", device_id=" << device_id << ", format="
            << media::VideoCaptureFormat::ToString(params.requested_format);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!base::Contains(device_id_to_observer_map_, device_id));
-  device_id_to_observer_map_[device_id] = std::move(observer);
+  device_id_to_observer_map_[device_id].Bind(std::move(observer));
 
   const VideoCaptureControllerID controller_id(device_id);
   if (controllers_.find(controller_id) != controllers_.end()) {

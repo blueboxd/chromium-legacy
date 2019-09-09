@@ -33,7 +33,7 @@ interface Blob {
   Clone(pending_receiver<Blob> blob);
 
   // Creates a reference to this Blob as a DataPipeGetter.
-  AsDataPipeGetter(network.mojom.DataPipeGetter& data_pipe_getter);
+  AsDataPipeGetter(pending_receiver<network.mojom.DataPipeGetter> data_pipe_getter);
 
   // Causes the entire contents of this blob to be written into the given data
   // pipe. An optional BlobReaderClient will be informed of the result of the

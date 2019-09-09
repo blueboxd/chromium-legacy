@@ -26,7 +26,6 @@ const char kTestEmail[] = "test_user@test.com";
 const char kTestEmail2[] = "test_user@test-2.com";
 const char kRefreshToken[] = "refresh_token";
 const char kRefreshToken2[] = "refresh_token_2";
-const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 
 // Class that observes diagnostics updates from signin::IdentityManager.
 class TestIdentityManagerDiagnosticsObserver
@@ -608,38 +607,6 @@ TEST_F(AccountsMutatorTest, MoveAccount) {
                        other_accounts_with_refresh_token[0].account_id));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-TEST_F(AccountsMutatorTest, LegacySetRefreshTokenForSupervisedUser) {
-  // Abort the test if the current platform does not support accounts mutation.
-  if (!accounts_mutator())
-    return;
-
-  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0U);
-
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
-      run_loop.QuitClosure());
-
-  accounts_mutator()->LegacySetRefreshTokenForSupervisedUser(kRefreshToken);
-  run_loop.Run();
-
-  // In the context of supervised users, the ProfileOAuth2TokenService is used
-  // without the AccountTrackerService being used, so we can't use any of the
-  // IdentityManager::FindExtendedAccountInfoForAccountWithRefreshTokenBy*()
-  // methods since they won't find any account. Use
-  // GetAccountsWithRefreshTokens() and HasAccountWithRefreshToken*() instead,
-  // that only relies in the PO2TS.
-  std::vector<CoreAccountInfo> accounts =
-      identity_manager()->GetAccountsWithRefreshTokens();
-  EXPECT_EQ(accounts.size(), 1U);
-  EXPECT_EQ(accounts[0].account_id, kSupervisedUserPseudoEmail);
-  EXPECT_EQ(accounts[0].email, kSupervisedUserPseudoEmail);
-  EXPECT_TRUE(
-      identity_manager()->HasAccountWithRefreshToken(accounts[0].account_id));
-  EXPECT_FALSE(
-      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
-          accounts[0].account_id));
-}
 
 TEST_F(AccountsMutatorTest, UpdateAccessTokenFromSource) {
   // Abort the test if the current platform does not support accounts mutation.

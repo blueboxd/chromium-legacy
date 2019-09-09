@@ -29,7 +29,9 @@ WIN_CONDITIONS = ['xp', 'vista', 'win7', 'win8', 'win10']
 MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
                   'mavericks', 'yosemite', 'sierra', 'highsierra', 'mojave']
 # These aren't expanded out into "lollipop", "marshmallow", etc.
-ANDROID_CONDITIONS = ['l', 'm', 'n', 'o', 'p', 'q']
+ANDROID_CONDITIONS = ['android-lollipop', 'android-marshmallow',
+                      'anroid-nougat', 'android-oreo', 'android-pie',
+                      'android-10', 'android-kitkat']
 GENERIC_CONDITIONS = OS_CONDITIONS + GPU_CONDITIONS
 
 _map_specific_to_generic = {sos:'win' for sos in WIN_CONDITIONS}

@@ -421,15 +421,6 @@ class IdentityManager : public KeyedService,
   // Registers per-profile prefs used by this class.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // Explicitly triggers the loading of accounts in the context of supervised
-  // users.
-  // TODO(https://crbug.com/860492): Remove this method when supervised users
-  // support is eliminated.
-  void DeprecatedLoadCredentialsForSupervisedUser(
-      const CoreAccountId& primary_account_id);
-#endif
-
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
@@ -620,9 +611,9 @@ class IdentityManager : public KeyedService,
   base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
 
   // PrimaryAccountManager callbacks:
-  void GoogleSigninSucceeded(const AccountInfo& account_info);
-  void GoogleSignedOut(const AccountInfo& account_info);
-  void AuthenticatedAccountSet(const AccountInfo& account_info);
+  void GoogleSigninSucceeded(const CoreAccountInfo& account_info);
+  void GoogleSignedOut(const CoreAccountInfo& account_info);
+  void AuthenticatedAccountSet(const CoreAccountInfo& account_info);
   void AuthenticatedAccountCleared();
 
   // ProfileOAuth2TokenServiceObserver:
@@ -694,8 +685,8 @@ class IdentityManager : public KeyedService,
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
 
-  // If |primary_account_| is set, it must equal |unconsented_primary_account_|.
-  base::Optional<CoreAccountInfo> primary_account_;
+  // If HasPrimaryAccount() is true, then |unconsented_primary_account_|
+  // must be equal to the value returned by GetPrimaryAccountInfo().
   base::Optional<CoreAccountInfo> unconsented_primary_account_;
 
 #if defined(OS_ANDROID)

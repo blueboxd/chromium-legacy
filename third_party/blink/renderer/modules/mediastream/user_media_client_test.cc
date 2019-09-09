@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/audio/audio_device_description.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
@@ -311,7 +311,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   UserMediaProcessorUnderTest(
       std::unique_ptr<blink::WebMediaStreamDeviceObserver>
           media_stream_device_observer,
-      blink::mojom::blink::MediaDevicesDispatcherHostPtr
+      mojo::PendingRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
           media_devices_dispatcher,
       RequestState* state)
       : UserMediaProcessor(
@@ -326,9 +326,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     SetMediaStreamDeviceObserverForTesting(media_stream_device_observer_.get());
   }
 
-  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
-  media_devices_dispatcher() const {
-    return media_devices_dispatcher_;
+  blink::mojom::blink::MediaDevicesDispatcherHost* media_devices_dispatcher()
+      const {
+    return media_devices_dispatcher_.get();
   }
 
   MockMediaStreamVideoCapturerSource* last_created_video_source() const {
@@ -433,7 +433,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer_;
-  blink::mojom::blink::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  mojo::Remote<blink::mojom::blink::MediaDevicesDispatcherHost>
+      media_devices_dispatcher_;
   MockMediaStreamVideoCapturerSource* video_source_ = nullptr;
   MockLocalMediaStreamAudioSource* local_audio_source_ = nullptr;
   bool create_source_that_fails_ = false;
@@ -477,31 +478,24 @@ class UserMediaClientUnderTest : public UserMediaClient {
 class UserMediaClientTest : public ::testing::Test {
  public:
   UserMediaClientTest()
-      : binding_user_media_processor_(&media_devices_dispatcher_),
-        binding_user_media_client_(&media_devices_dispatcher_) {}
+      : user_media_processor_receiver_(&media_devices_dispatcher_),
+        user_media_client_receiver_(&media_devices_dispatcher_) {}
 
   void SetUp() override {
     // Create our test object.
     auto* msd_observer = new blink::WebMediaStreamDeviceObserver(nullptr);
 
-    blink::mojom::blink::MediaDevicesDispatcherHostPtr
-        user_media_processor_host_proxy;
-    binding_user_media_processor_.Bind(
-        mojo::MakeRequest(&user_media_processor_host_proxy));
     user_media_processor_ = MakeGarbageCollected<UserMediaProcessorUnderTest>(
         base::WrapUnique(msd_observer),
-        std::move(user_media_processor_host_proxy), &state_);
+        user_media_processor_receiver_.BindNewPipeAndPassRemote(), &state_);
     user_media_processor_->set_media_stream_dispatcher_host_for_testing(
         mock_dispatcher_host_.CreatePendingRemoteAndBind());
 
     user_media_client_impl_ = MakeGarbageCollected<UserMediaClientUnderTest>(
         user_media_processor_, &state_);
-    blink::mojom::blink::MediaDevicesDispatcherHostPtr
-        user_media_client_host_proxy;
-    binding_user_media_client_.Bind(
-        mojo::MakeRequest(&user_media_client_host_proxy));
+
     user_media_client_impl_->SetMediaDevicesDispatcherForTesting(
-        std::move(user_media_client_host_proxy));
+        user_media_client_receiver_.BindNewPipeAndPassRemote());
   }
 
   void TearDown() override {
@@ -646,10 +640,10 @@ class UserMediaClientTest : public ::testing::Test {
       testing_platform_;
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MockMediaDevicesDispatcherHost media_devices_dispatcher_;
-  mojo::Binding<blink::mojom::blink::MediaDevicesDispatcherHost>
-      binding_user_media_processor_;
-  mojo::Binding<blink::mojom::blink::MediaDevicesDispatcherHost>
-      binding_user_media_client_;
+  mojo::Receiver<blink::mojom::blink::MediaDevicesDispatcherHost>
+      user_media_processor_receiver_;
+  mojo::Receiver<blink::mojom::blink::MediaDevicesDispatcherHost>
+      user_media_client_receiver_;
 
   WeakPersistent<UserMediaProcessorUnderTest> user_media_processor_;
   Persistent<UserMediaClientUnderTest> user_media_client_impl_;

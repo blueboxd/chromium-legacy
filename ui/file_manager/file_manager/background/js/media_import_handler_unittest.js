@@ -208,12 +208,12 @@ function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
         const copiedEntries = mockDirectoryEntry.getAllChildren();
         assertEquals(1, copiedEntries.length);
         assertEquals(ORIGINAL_FILE_DEST_PATH, copiedEntries[0].fullPath);
-        const mockFileEntry = /** @type {!MockFileEntry} */ (media[1]);
+        const mockFileEntry = /** @type {!FileEntry} */ (media[1]);
         importHistory.assertCopied(
             mockFileEntry, importer.Destination.GOOGLE_DRIVE);
         // The 2 duplicated files should be marked as imported.
         [media[0], media[2]].forEach(entry => {
-          entry = /** @type {!MockFileEntry} */ (entry);
+          entry = /** @type {!FileEntry} */ (entry);
           importHistory.assertImported(
               entry, importer.Destination.GOOGLE_DRIVE);
         });
@@ -407,12 +407,12 @@ function testUpdatesHistoryAfterImport(callback) {
     mockCopier.copiedFiles.forEach(
         /** @param {!MockCopyTo.CopyInfo} copy */
         copy => {
-          const mockFileEntry = /** @type {!MockFileEntry} */ (copy.source);
+          const mockFileEntry = /** @type {!FileEntry} */ (copy.source);
           importHistory.assertCopied(
               mockFileEntry, importer.Destination.GOOGLE_DRIVE);
         });
     dupeFiles.forEach(entry => {
-      const mockFileEntry = /** @type {!MockFileEntry} */ (entry);
+      const mockFileEntry = /** @type {!FileEntry} */ (entry);
       importHistory.assertImported(
           mockFileEntry, importer.Destination.GOOGLE_DRIVE);
     });

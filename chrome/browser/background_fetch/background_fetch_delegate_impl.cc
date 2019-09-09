@@ -32,6 +32,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
@@ -918,11 +919,12 @@ void BackgroundFetchDelegateImpl::DidGetUploadData(
   request_data.body_size_bytes = blob->size;
 
   // Use a Data Pipe to transfer the blob.
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter_remote;
   blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-  blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+  blob_ptr->AsDataPipeGetter(
+      data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
 
   std::move(callback).Run(request_body);
 }

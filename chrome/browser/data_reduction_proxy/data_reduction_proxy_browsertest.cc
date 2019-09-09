@@ -146,12 +146,10 @@ ClientConfig CreateEmptyConfig() {
 class ScopedConfigWaiter
     : public mojom::DataReductionProxyThrottleConfigObserver {
  public:
-  explicit ScopedConfigWaiter(Profile* profile) : binding_(this) {
-    mojom::DataReductionProxyThrottleConfigObserverPtr observer;
-    binding_.Bind(mojo::MakeRequest(&observer));
+  explicit ScopedConfigWaiter(Profile* profile) {
     DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)
         ->data_reduction_proxy_service()
-        ->AddThrottleConfigObserver(std::move(observer));
+        ->AddThrottleConfigObserver(receiver_.BindNewPipeAndPassRemote());
   }
 
   ~ScopedConfigWaiter() override { run_loop_.Run(); }
@@ -170,7 +168,8 @@ class ScopedConfigWaiter
   }
 
   mojom::DataReductionProxyThrottleConfigPtr initial_config_;
-  mojo::Binding<mojom::DataReductionProxyThrottleConfigObserver> binding_;
+  mojo::Receiver<mojom::DataReductionProxyThrottleConfigObserver> receiver_{
+      this};
   base::RunLoop run_loop_;
 };
 

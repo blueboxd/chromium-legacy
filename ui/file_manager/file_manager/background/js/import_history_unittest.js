@@ -26,7 +26,7 @@ const SPACE_CAMP = /** @type !importer.Destination<string> */ ('Space Camp');
 /** @type {!MockFileSystem} */
 let testFileSystem;
 
-/** @type {!MockFileEntry} */
+/** @type {!FileEntry} */
 let testFileEntry;
 
 /** @type {!importer.TestLogger} */
@@ -48,7 +48,7 @@ function setUp() {
 
   testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
 
-  testFileEntry = new MockFileEntry(
+  testFileEntry = MockFileEntry.create(
       testFileSystem, FILE_PATH,
       /** @type Metadata */ ({
         size: FILE_SIZE,

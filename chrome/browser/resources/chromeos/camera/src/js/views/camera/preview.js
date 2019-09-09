@@ -297,7 +297,29 @@ cca.views.camera.Preview.prototype.enableShowMetadata_ = async function() {
     },
   };
 
+  // Currently there is no easy way to calculate the fps of a video element.
+  // Here we use the metadata events to calculate a reasonable approximation.
+  const updateFps = (() => {
+    const FPS_MEASURE_FRAMES = 100;
+    const timestamps = [];
+    return () => {
+      const now = performance.now();
+      timestamps.push(now);
+      if (timestamps.length > FPS_MEASURE_FRAMES) {
+        timestamps.shift();
+      }
+      if (timestamps.length === 1) {
+        return null;
+      }
+      return (timestamps.length - 1) / (now - timestamps[0]) * 1000;
+    };
+  })();
+
   const callback = (metadata) => {
+    const fps = updateFps();
+    if (fps !== null) {
+      showValue('#preview-fps', `${fps.toFixed(0)} FPS`);
+    }
     for (const entry of metadata.entries) {
       if (entry.count === 0) {
         continue;

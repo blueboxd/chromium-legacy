@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
@@ -80,7 +81,7 @@ class VideoDecoderTest : public ::testing::Test {
         config.allocation_mode == AllocationMode::kImport) {
       base::FilePath output_folder =
           base::FilePath(g_env->OutputFolder())
-              .Append(base::FilePath(g_env->GetTestName()));
+              .Append(g_env->GetTestOutputFilePath());
       frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
       VLOG(0) << "Writing video frames to: " << output_folder;
     }
@@ -279,10 +280,8 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
     GTEST_SKIP();
   }
 
-  base::FilePath output_folder =
-      base::FilePath(g_env->OutputFolder())
-          .Append(base::FilePath(g_env->GetTestName()));
-
+  base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
+                                     .Append(g_env->GetTestOutputFilePath());
   VideoDecoderClientConfig config;
   config.allocation_mode = AllocationMode::kAllocate;
   auto tvp = CreateVideoPlayer(

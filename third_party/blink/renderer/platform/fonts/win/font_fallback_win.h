@@ -36,6 +36,8 @@
 #include <usp10.h>
 #include <wchar.h>
 #include <windows.h>
+
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
@@ -66,7 +68,7 @@ PLATFORM_EXPORT const String GetOutOfProcessFallbackFamily(
     FontDescription::GenericFamilyType,
     String bcp47_language_tag,
     FontFallbackPriority,
-    const mojom::blink::DWriteFontProxyPtr& font_proxy);
+    const mojo::Remote<mojom::blink::DWriteFontProxy>& font_proxy);
 
 }  // namespace blink
 

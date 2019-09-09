@@ -47,11 +47,11 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
   stream_creation_start_time_ = base::TimeTicks::Now();
-  audio::mojom::AudioProcessorControlsRequest controls_request;
+  mojo::PendingReceiver<audio::mojom::AudioProcessorControls> controls_receiver;
   if (source_params_.processing.has_value())
-    controls_request = mojo::MakeRequest(&processor_controls_);
+    controls_receiver = processor_controls_.BindNewPipeAndPassReceiver();
   stream_creator_.Run(source_params_, std::move(client),
-                      std::move(controls_request), params,
+                      std::move(controls_receiver), params,
                       automatic_gain_control, total_segments);
 }
 

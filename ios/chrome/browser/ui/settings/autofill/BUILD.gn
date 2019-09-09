@@ -99,6 +99,7 @@ source_set("unit_tests") {
 
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "autofill_credit_card_settings_egtest.mm",
@@ -115,4 +116,29 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ui/base",
   ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = [
+    "autofill_add_credit_card_egtest.mm",
+  ]
+
+  deps = [
+    ":feature_flags",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//net:test_support",
+    "//ui/base",
+  ]
+
+  libs = [ "UIKit.framework" ]
 }

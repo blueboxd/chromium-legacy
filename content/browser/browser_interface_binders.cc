@@ -142,7 +142,7 @@ void PopulateBinderMapWithContext(
   } else {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker),
-        base::CreateSingleThreadTaskRunnerWithTraits(BrowserThread::UI));
+        base::CreateSingleThreadTaskRunner(BrowserThread::UI));
   }
 }
 

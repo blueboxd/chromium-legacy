@@ -63,8 +63,8 @@ class PLATFORM_EXPORT HeapCompact final {
     return do_compact_ && (compactable_arenas_ & (0x1u << arena_index));
   }
 
-  // See |Heap::ShouldRegisterMovingObject()| documentation.
-  bool ShouldRegisterMovingObject(MovableReference* slot);
+  // See |Heap::ShouldRegisterMovingAddress()| documentation.
+  bool ShouldRegisterMovingAddress(Address address);
 
   // Slots that are not contained within live objects are filtered. This can
   // happen when the write barrier for in-payload objects triggers but the outer

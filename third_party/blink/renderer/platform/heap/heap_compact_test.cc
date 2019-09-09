@@ -391,4 +391,3 @@ TEST_F(HeapCompactTest, CompactInlinedBackingStore) {
 }
 
 }  // namespace blink
-

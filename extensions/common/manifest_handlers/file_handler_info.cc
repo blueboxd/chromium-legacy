@@ -116,7 +116,7 @@ bool LoadFileHandler(const std::string& handler_id,
   }
 
   if (mime_types) {
-    const base::Value::ListStorage& list_storage = mime_types->GetList();
+    base::span<const base::Value> list_storage = mime_types->GetList();
     for (size_t i = 0; i < list_storage.size(); ++i) {
       if (!list_storage[i].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -129,7 +129,7 @@ bool LoadFileHandler(const std::string& handler_id,
   }
 
   if (file_extensions) {
-    const base::Value::ListStorage& list_storage = file_extensions->GetList();
+    base::span<const base::Value> list_storage = file_extensions->GetList();
     for (size_t i = 0; i < list_storage.size(); ++i) {
       if (!list_storage[i].is_string()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(

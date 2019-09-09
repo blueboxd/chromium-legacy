@@ -44,6 +44,17 @@
 
 namespace content {
 
+namespace {
+
+MockRenderProcessHost::CreateNetworkFactoryCallback&
+GetNetworkFactoryCallback() {
+  static base::NoDestructor<MockRenderProcessHost::CreateNetworkFactoryCallback>
+      callback;
+  return *callback;
+}
+
+}  // namespace
+
 MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
     : bad_msg_count_(0),
       factory_(nullptr),
@@ -104,6 +115,12 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
 
   for (auto& observer : observers_)
     observer.RenderProcessExited(this, termination_info);
+}
+
+// static
+void MockRenderProcessHost::SetNetworkFactory(
+    const CreateNetworkFactoryCallback& create_network_factory_callback) {
+  GetNetworkFactoryCallback() = create_network_factory_callback;
 }
 
 bool MockRenderProcessHost::Init() {
@@ -404,8 +421,16 @@ void MockRenderProcessHost::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    network::mojom::URLLoaderFactoryRequest request) {
-  url_loader_factory_->Clone(std::move(request));
+    network::mojom::URLLoaderFactoryRequest receiver) {
+  if (GetNetworkFactoryCallback().is_null()) {
+    url_loader_factory_->Clone(std::move(receiver));
+    return;
+  }
+
+  mojo::Remote<network::mojom::URLLoaderFactory> original_factory;
+  url_loader_factory_->Clone(original_factory.BindNewPipeAndPassReceiver());
+  GetNetworkFactoryCallback().Run(std::move(receiver), GetID(),
+                                  original_factory.Unbind());
 }
 
 void MockRenderProcessHost::SetIsNeverSuitableForReuse() {

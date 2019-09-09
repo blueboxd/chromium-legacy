@@ -301,7 +301,7 @@
       "assertions", base::Value::Type::LIST));
   GREYAssert(assertionsValue, @"Assertions key is missing in action.");
 
-  const base::Value::ListStorage& assertionsValues(assertionsValue->GetList());
+  base::span<const base::Value> assertionsValues(assertionsValue->GetList());
   GREYAssert(assertionsValues.size(), @"Assertions list is empty.");
 
   std::vector<std::string> state_assertions;

@@ -234,7 +234,7 @@ Value::Value(const DictStorage& in_dict) : type_(Type::DICTIONARY), dict_() {
 Value::Value(DictStorage&& in_dict) noexcept
     : type_(Type::DICTIONARY), dict_(std::move(in_dict)) {}
 
-Value::Value(const ListStorage& in_list) : type_(Type::LIST), list_() {
+Value::Value(span<const Value> in_list) : type_(Type::LIST), list_() {
   list_.reserve(in_list.size());
   for (const auto& val : in_list)
     list_.emplace_back(val.Clone());
@@ -335,7 +335,7 @@ Value::ListStorage& Value::GetList() {
   return list_;
 }
 
-const Value::ListStorage& Value::GetList() const {
+span<const Value> Value::GetList() const {
   CHECK(is_list());
   return list_;
 }
@@ -1535,7 +1535,7 @@ std::unique_ptr<ListValue> ListValue::From(std::unique_ptr<Value> value) {
 }
 
 ListValue::ListValue() : Value(Type::LIST) {}
-ListValue::ListValue(const ListStorage& in_list) : Value(in_list) {}
+ListValue::ListValue(span<const Value> in_list) : Value(in_list) {}
 ListValue::ListValue(ListStorage&& in_list) noexcept
     : Value(std::move(in_list)) {}
 

@@ -22,6 +22,13 @@ namespace ios_web_view {
 // methods.
 typedef ios_web_view::WebViewInttestBase WebViewRestorableStateTest;
 TEST_F(WebViewRestorableStateTest, EncodeDecode) {
+#if !TARGET_IPHONE_SIMULATOR
+  if (@available(iOS 12.2, *)) {
+  } else {
+    // crbug.com/(1001965): Test disabled on iOS 12.1 and older devices.
+    return;
+  }
+#endif
   // Load 2 URLs to create non-default state.
   ASSERT_FALSE([web_view_ lastCommittedURL]);
   ASSERT_FALSE([web_view_ visibleURL]);

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 69 tests; 67 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 82 tests; 77 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS NDEFMessage interface: existence and properties of interface object
 PASS NDEFMessage interface object length
@@ -8,6 +8,9 @@ PASS NDEFMessage interface: existence and properties of interface prototype obje
 PASS NDEFMessage interface: existence and properties of interface prototype object's "constructor" property
 PASS NDEFMessage interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFMessage interface: attribute records
+PASS NDEFMessage must be primary interface of new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]});
+PASS Stringification of new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]});
+PASS NDEFMessage interface: new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]}); must inherit property "records" with the proper type
 PASS NDEFRecord interface: existence and properties of interface object
 PASS NDEFRecord interface object length
 PASS NDEFRecord interface object name
@@ -21,6 +24,16 @@ PASS NDEFRecord interface: operation toText()
 PASS NDEFRecord interface: operation toArrayBuffer()
 PASS NDEFRecord interface: operation toJSON()
 FAIL NDEFRecord interface: operation toRecords() assert_own_property: interface prototype object missing non-static operation expected property "toRecords" missing
+PASS NDEFRecord must be primary interface of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
+PASS Stringification of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "recordType" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "mediaType" with the proper type
+FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "id" with the proper type assert_inherits: property "id" not found in prototype chain
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toText()" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toArrayBuffer()" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toJSON()" with the proper type
+FAIL NDEFRecord interface: toJSON operation on new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); assert_true: {"type":"return-type","extAttrs":[],"generic":"","nullable":false,"union":false,"idlType":"any"} is not an appropriate return value for the toJSON operation of NDEFRecord expected true got false
+FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toRecords()" with the proper type assert_inherits: property "toRecords" not found in prototype chain
 PASS NFCWriter interface: existence and properties of interface object
 PASS NFCWriter interface object length
 PASS NFCWriter interface object name
@@ -55,10 +68,10 @@ PASS NFCReadingEvent interface: existence and properties of interface prototype 
 PASS NFCReadingEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS NFCReadingEvent interface: attribute serialNumber
 PASS NFCReadingEvent interface: attribute message
-PASS NFCReadingEvent must be primary interface of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} })
-PASS Stringification of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} })
-PASS NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} }) must inherit property "serialNumber" with the proper type
-PASS NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World"}]} }) must inherit property "message" with the proper type
+PASS NFCReadingEvent must be primary interface of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
+PASS Stringification of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
+PASS NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "serialNumber" with the proper type
+PASS NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "message" with the proper type
 PASS NFCErrorEvent interface: existence and properties of interface object
 PASS NFCErrorEvent interface object length
 PASS NFCErrorEvent interface object name

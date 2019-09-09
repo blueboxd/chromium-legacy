@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/web-nfc/#dom-ndefrecordinit
+// https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
 
-enum NDEFRecordType { "empty", "text", "url", "json", "opaque" };
+typedef DOMString NDEFRecordType;
 
 typedef any NDEFRecordData;
+
+// https://w3c.github.io/web-nfc/#dom-ndefrecordinit
 
 dictionary NDEFRecordInit {
     NDEFRecordType recordType;

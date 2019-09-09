@@ -8,11 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/prefs/pref_member.h"
 #include "ios/web_view/internal/passwords/mock_credentials_filter.h"
+#include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 
 namespace ios_web_view {
 class WebViewBrowserState;
@@ -82,6 +84,8 @@ class WebViewPasswordManagerClient
           saved_form_manager) override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
+  const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
+      const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   void NotifyUserAutoSignin(
@@ -111,6 +115,8 @@ class WebViewPasswordManagerClient
   password_manager::PasswordManager* GetPasswordManager() override;
 
   __weak id<CWVPasswordManagerClientDelegate> delegate_;
+
+  const WebViewPasswordFeatureManager password_feature_manager_;
 
   // The preference associated with
   // password_manager::prefs::kCredentialsEnableService.

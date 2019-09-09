@@ -61,23 +61,17 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       base::BindRepeating(&EmbeddedWorkerTestHelper::OnInstanceClientRequest,
                           base::Unretained(this)));
 
+  // Set a basic network URL loader factory so tests don't crash. Tests that
+  // want to customize further should use URLLoaderInterceptor which will
+  // override this.
+  // TODO(falken): Just make all MockRenderProcessHosts create and own
+  // their own url loader factory.
   default_network_loader_factory_ =
       std::make_unique<FakeNetworkURLLoaderFactory>();
-  SetNetworkFactory(default_network_loader_factory_.get());
-}
-
-void EmbeddedWorkerTestHelper::SetNetworkFactory(
-    network::mojom::URLLoaderFactory* factory) {
-  if (!factory)
-    factory = default_network_loader_factory_.get();
-
-  // Reset factory in URLLoaderFactoryGetter so that we don't hit DCHECK()
-  // there.
-  url_loader_factory_getter_->SetNetworkFactoryForTesting(nullptr);
-  url_loader_factory_getter_->SetNetworkFactoryForTesting(factory);
-
-  render_process_host_->OverrideURLLoaderFactory(factory);
-  new_render_process_host_->OverrideURLLoaderFactory(factory);
+  render_process_host_->OverrideURLLoaderFactory(
+      default_network_loader_factory_.get());
+  new_render_process_host_->OverrideURLLoaderFactory(
+      default_network_loader_factory_.get());
 }
 
 void EmbeddedWorkerTestHelper::AddPendingInstanceClient(

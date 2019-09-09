@@ -165,7 +165,6 @@ source_set("eg_tests") {
     "//components/bookmarks/browser",
     "//components/prefs",
     "//components/strings",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",

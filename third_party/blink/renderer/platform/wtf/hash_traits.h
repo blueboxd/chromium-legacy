@@ -90,6 +90,12 @@ struct GenericHashTraitsBase<false, T> {
       IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
 
   static constexpr bool kCanHaveDeletedValue = true;
+
+  // The kHasMovingCallback value is only used for HashTable backing stores.
+  // Currently it is needed for LinkedHashSet to register moving callback on
+  // write barrier. Users of this value have to provide RegisterMovingCallback
+  // function.
+  static constexpr bool kHasMovingCallback = false;
 };
 
 // Default integer traits disallow both 0 and -1 as keys (max value instead of

@@ -201,10 +201,10 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       }));
   // TODO(https://crbug.com/873661): Pass origin to FileSystemMananger.
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::FileSystemManagerRequest request,
+      [](mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver,
          RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)->BindFileSystemManager(
-            origin, std::move(request));
+            origin, std::move(receiver));
       }));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(

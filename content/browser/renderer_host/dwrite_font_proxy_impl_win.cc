@@ -4,12 +4,12 @@
 
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 
-#include <dwrite.h>
 #include <shlobj.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -30,7 +30,7 @@
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -123,10 +123,10 @@ DWriteFontProxyImpl::~DWriteFontProxyImpl() = default;
 
 // static
 void DWriteFontProxyImpl::Create(
-    blink::mojom::DWriteFontProxyRequest request,
+    mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver,
     const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(std::make_unique<DWriteFontProxyImpl>(),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<DWriteFontProxyImpl>(),
+                              std::move(receiver));
 }
 
 void DWriteFontProxyImpl::SetWindowsFontsPathForTesting(base::string16 path) {

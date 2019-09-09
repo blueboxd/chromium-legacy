@@ -79,6 +79,28 @@ class CountUseForBindings : public ScriptFunction {
   }
 };
 
+void AddQueuingStrategies(ScriptState* script_state,
+                          v8::Local<v8::Object> binding) {
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled())
+    return;
+
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Local<v8::Object> global = context->Global();
+  v8::Isolate* isolate = script_state->GetIsolate();
+
+  constexpr const char* constructors[] = {"CountQueuingStrategy",
+                                          "ByteLengthQueuingStrategy"};
+  for (const auto* constructor : constructors) {
+    auto v8name = V8AtomicString(isolate, constructor);
+    // There's no meaningful way we can recover if the lookup fails.
+    auto value = binding->Get(context, v8name).ToLocalChecked();
+    bool result =
+        global->DefineOwnProperty(context, v8name, value, v8::DontEnum)
+            .ToChecked();
+    DCHECK(result);
+  }
+}
+
 void AddCountUse(ScriptState* script_state, v8::Local<v8::Object> binding) {
   v8::Local<v8::Function> fn =
       CountUseForBindings::CreateFunction(script_state);
@@ -173,6 +195,7 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
 void InitializeV8ExtrasBinding(ScriptState* script_state) {
   v8::Local<v8::Object> binding =
       script_state->GetContext()->GetExtrasBindingObject();
+  AddQueuingStrategies(script_state, binding);
   AddCountUse(script_state, binding);
   AddOriginals(script_state, binding);
 }

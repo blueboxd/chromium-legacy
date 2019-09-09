@@ -122,12 +122,9 @@ web_app::AppRegistrar& AppBannerManagerDesktop::registrar() {
   return provider->registrar();
 }
 
-bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
-    content::WebContents* web_contents,
-    const GURL& validated_url,
-    const GURL& start_url,
-    const GURL& manifest_url) {
-  return registrar().IsLocallyInstalled(start_url);
+bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() {
+  DCHECK(!manifest_.IsEmpty());
+  return registrar().IsLocallyInstalled(manifest_.start_url);
 }
 
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
@@ -166,14 +163,10 @@ void AppBannerManagerDesktop::OnEngagementEvent(
 
 void AppBannerManagerDesktop::OnWebAppInstalled(
     const web_app::AppId& installed_app_id) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
-  DCHECK(provider);
   base::Optional<web_app::AppId> app_id =
-      provider->registrar().FindAppWithUrlInScope(validated_url_);
+      registrar().FindAppWithUrlInScope(validated_url_);
   if (app_id.has_value() && *app_id == installed_app_id &&
-      provider->registrar().GetAppLaunchContainer(*app_id) ==
+      registrar().GetAppLaunchContainer(*app_id) ==
           web_app::LaunchContainer::kWindow) {
     OnInstall(blink::kWebDisplayModeStandalone);
   }

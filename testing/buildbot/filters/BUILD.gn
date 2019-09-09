@@ -137,3 +137,9 @@ source_set("webview_instrumentation_test_apk_filters") {
     "//testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
   ]
 }
+
+source_set("linux_ozone_views_unittests_filters") {
+  data = [
+    "//testing/buildbot/filters/ozone-linux.x11_views_unittests.filter",
+  ]
+}

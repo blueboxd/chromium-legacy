@@ -104,8 +104,7 @@ class PepperMediaDeviceManager
 
   blink::mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
   blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver() const;
-  const blink::mojom::MediaDevicesDispatcherHostPtr&
-  GetMediaDevicesDispatcher();
+  blink::mojom::MediaDevicesDispatcherHost* GetMediaDevicesDispatcher();
 
   int next_id_ = 1;
   using OpenCallbackMap = std::map<int, OpenDeviceCallback>;
@@ -116,7 +115,8 @@ class PepperMediaDeviceManager
   SubscriptionList device_change_subscriptions_[blink::NUM_MEDIA_DEVICE_TYPES];
 
   mojo::Remote<blink::mojom::MediaStreamDispatcherHost> dispatcher_host_;
-  blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  mojo::Remote<blink::mojom::MediaDevicesDispatcherHost>
+      media_devices_dispatcher_;
 
   mojo::ReceiverSet<blink::mojom::MediaDevicesListener> receivers_;
 

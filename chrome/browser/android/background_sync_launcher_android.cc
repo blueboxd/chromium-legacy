@@ -61,6 +61,13 @@ void JNI_PeriodicBackgroundSyncChromeWakeUpTask_FirePeriodicBackgroundSyncEvents
       blink::mojom::BackgroundSyncType::PERIODIC, j_runnable);
 }
 
+void JNI_BackgroundSyncBackgroundTaskScheduler_SetPlayServicesVersionCheckDisabledForTests(
+    JNIEnv* env,
+    jboolean disabled) {
+  BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
+      disabled);
+}
+
 // static
 BackgroundSyncLauncherAndroid* BackgroundSyncLauncherAndroid::Get() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

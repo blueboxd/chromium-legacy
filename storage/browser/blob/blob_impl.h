@@ -6,7 +6,7 @@
 #define STORAGE_BROWSER_BLOB_BLOB_IMPL_H_
 
 #include "base/component_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -26,7 +26,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
 
   // blink::mojom::Blob:
   void Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) override;
-  void AsDataPipeGetter(network::mojom::DataPipeGetterRequest request) override;
+  void AsDataPipeGetter(
+      mojo::PendingReceiver<network::mojom::DataPipeGetter> receiver) override;
   void ReadRange(
       uint64_t offset,
       uint64_t length,
@@ -39,7 +40,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 
   // network::mojom::DataPipeGetter:
-  void Clone(network::mojom::DataPipeGetterRequest request) override;
+  void Clone(
+      mojo::PendingReceiver<network::mojom::DataPipeGetter> receiver) override;
   void Read(mojo::ScopedDataPipeProducerHandle pipe,
             ReadCallback callback) override;
 
@@ -54,7 +56,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobImpl
   std::unique_ptr<BlobDataHandle> handle_;
 
   mojo::ReceiverSet<blink::mojom::Blob> receivers_;
-  mojo::BindingSet<network::mojom::DataPipeGetter> data_pipe_getter_bindings_;
+  mojo::ReceiverSet<network::mojom::DataPipeGetter> data_pipe_getter_receivers_;
 
   base::WeakPtrFactory<BlobImpl> weak_ptr_factory_{this};
 

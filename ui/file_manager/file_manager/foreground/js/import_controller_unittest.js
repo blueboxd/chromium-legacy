@@ -51,7 +51,7 @@ function setUp() {
   widget = new importer.TestCommandWidget();
 
   const testFileSystem = new MockFileSystem('testFs');
-  nonDcimDirectory = new MockDirectoryEntry(testFileSystem, '/jellybeans/');
+  nonDcimDirectory = MockDirectoryEntry.create(testFileSystem, '/jellybeans/');
 
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
@@ -209,11 +209,11 @@ function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir(callback) {
 
   const fileSystem = new MockFileSystem('testFs');
   const event = new Event('directory-changed');
-  event.newDirEntry = new MockDirectoryEntry(fileSystem, '/DCIM/');
+  event.newDirEntry = MockDirectoryEntry.create(fileSystem, '/DCIM/');
 
   // Ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(new MockFileEntry(
+  mediaScanner.fileEntries.push(MockFileEntry.create(
       fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   // Make controller enter a scanning state.
@@ -249,7 +249,7 @@ function testDirectoryChange_DetailsPanelVisibility_SubsequentChangeDir() {
 
   const event = new Event('directory-changed');
   event.newDirEntry =
-      new MockDirectoryEntry(new MockFileSystem('testFs'), '/DCIM/');
+      MockDirectoryEntry.create(new MockFileSystem('testFs'), '/DCIM/');
 
   // Any previous dir at all will skip the new window logic.
   event.previousDirEntry = event.newDirEntry;
@@ -272,7 +272,7 @@ function testSelectionChange_TriggersUpdate(callback) {
 
   // Ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  environment.selection.push(new MockFileEntry(
+  environment.selection.push(MockFileEntry.create(
       fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   environment.selectionChangedListener();
@@ -294,7 +294,7 @@ function testFinalizeScans_TriggersUpdate(callback) {
 
   // Ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(new MockFileEntry(
+  mediaScanner.fileEntries.push(MockFileEntry.create(
       fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   environment.directoryChangedListener(EMPTY_EVENT);  // initiates a scan.
@@ -345,7 +345,7 @@ function startImport(clickSource) {
 
   // Ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(new MockFileEntry(
+  mediaScanner.fileEntries.push(MockFileEntry.create(
       fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   // First we need to force the controller into a scanning state.
@@ -556,7 +556,7 @@ class TestControllerEnvironment {
   /** @override */
   getImportDestination(date) {
     const fileSystem = new MockFileSystem('testFs');
-    const directoryEntry = new MockDirectoryEntry(fileSystem, '/abc/123');
+    const directoryEntry = MockDirectoryEntry.create(fileSystem, '/abc/123');
     return Promise.resolve(directoryEntry);
   }
 

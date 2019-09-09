@@ -585,7 +585,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelAll) {
 
   for (size_t i = 0; i < kNumRequests; ++i) {
     resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info[i],
-                             base::Bind(&CrashCallback), &request[i],
+                             base::BindOnce(&CrashCallback), &request[i],
                              mock_bindings.CreateBindings());
   }
 
@@ -613,7 +613,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelSome) {
   TestCompletionCallback callback;
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info1,
-                           base::Bind(&CrashCallback), &request1,
+                           base::BindOnce(&CrashCallback), &request1,
                            mock_bindings.CreateBindings());
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info2,
                            callback.callback(), &request2,
@@ -642,7 +642,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
   TestCompletionCallback callback;
 
   resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info1,
-                           base::Bind(&CrashCallback), &request1,
+                           base::BindOnce(&CrashCallback), &request1,
                            mock_bindings.CreateBindings());
 
   // Wait until the first request has finished running on the worker thread.
@@ -678,7 +678,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
   std::unique_ptr<ProxyResolver::Request> request2;
 
   resolver->GetProxyForURL(GURL("http://foo/req1"), &proxy_info1,
-                           base::Bind(&CrashCallback), &request1,
+                           base::BindOnce(&CrashCallback), &request1,
                            mock_bindings.CreateBindings());
 
   run_loop1.Run();
@@ -686,7 +686,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileOutstandingNonBlockingDns) {
   base::RunLoop run_loop2;
   host_resolver.set_hang_callback(run_loop2.QuitClosure());
   resolver->GetProxyForURL(GURL("http://foo/req2"), &proxy_info2,
-                           base::Bind(&CrashCallback), &request2,
+                           base::BindOnce(&CrashCallback), &request2,
                            mock_bindings.CreateBindings());
 
   run_loop2.Run();
@@ -731,7 +731,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
       base::BindRepeating(&CancelRequestAndPause, &request, &run_loop));
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           base::Bind(&CrashCallback), &request,
+                           base::BindOnce(&CrashCallback), &request,
                            mock_bindings.CreateBindings());
 
   run_loop.Run();
@@ -750,7 +750,7 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns2) {
   std::unique_ptr<ProxyResolver::Request> request;
 
   resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
-                           base::Bind(&CrashCallback), &request,
+                           base::BindOnce(&CrashCallback), &request,
                            mock_bindings.CreateBindings());
 
   // Wait a bit, so the DNS task has hopefully been posted. The test will
@@ -774,7 +774,7 @@ TEST_F(ProxyResolverV8TracingTest,
   std::unique_ptr<ProxyResolverFactory::Request> request;
   factory->CreateProxyResolverV8Tracing(
       LoadScriptData("dns_during_init.js"), mock_bindings.CreateBindings(),
-      &resolver, base::Bind(&CrashCallback), &request);
+      &resolver, base::BindOnce(&CrashCallback), &request);
 
   run_loop.Run();
 
@@ -795,7 +795,7 @@ TEST_F(ProxyResolverV8TracingTest, DeleteFactoryWhileOutstandingBlockingDns) {
 
     factory->CreateProxyResolverV8Tracing(
         LoadScriptData("dns_during_init.js"), mock_bindings.CreateBindings(),
-        &resolver, base::Bind(&CrashCallback), &request);
+        &resolver, base::BindOnce(&CrashCallback), &request);
     run_loop.Run();
   }
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());

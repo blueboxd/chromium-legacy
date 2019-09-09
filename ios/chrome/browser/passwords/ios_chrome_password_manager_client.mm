@@ -59,6 +59,7 @@ const syncer::SyncService* GetSyncService(
 IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
     id<PasswordManagerClientDelegate> delegate)
     : delegate_(delegate),
+      password_feature_manager_(GetSyncService(delegate_.browserState)),
       credentials_filter_(
           this,
           base::BindRepeating(&GetSyncService, delegate_.browserState)),
@@ -139,6 +140,11 @@ bool IOSChromePasswordManagerClient::IsIncognito() const {
 const password_manager::PasswordManager*
 IOSChromePasswordManagerClient::GetPasswordManager() const {
   return delegate_.passwordManager;
+}
+
+const password_manager::PasswordFeatureManager*
+IOSChromePasswordManagerClient::GetPasswordFeatureManager() const {
+  return &password_feature_manager_;
 }
 
 bool IOSChromePasswordManagerClient::IsMainFrameSecure() const {

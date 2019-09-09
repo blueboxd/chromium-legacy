@@ -19,7 +19,6 @@ js_type_check("closure_compile") {
     ":fake_page_handler",
     ":main_view",
     ":permission_item",
-    ":permission_toggle",
     ":pin_to_shelf_item",
     ":pwa_permission_view",
     ":reducers",
@@ -133,14 +132,8 @@ js_library("main_view") {
 js_library("permission_item") {
   deps = [
     ":fake_page_handler",
-    ":permission_toggle",
     ":store_client",
-    ":util",
-  ]
-}
-
-js_library("permission_toggle") {
-  deps = [
+    ":toggle_row",
     ":util",
   ]
 }

@@ -112,7 +112,7 @@ void SpellcheckLanguageBlacklistPolicyHandler::SortBlacklistedLanguages(
 
   // Separate the valid languages from the unknown / unsupported languages and
   // the languages that also appear in the SpellcheckLanguage policy.
-  const base::Value::ListStorage& blacklisted_languages = value->GetList();
+  base::span<const base::Value> blacklisted_languages = value->GetList();
   for (const base::Value& language : blacklisted_languages) {
     std::string current_language =
         spellcheck::GetCorrespondingSpellCheckLanguage(

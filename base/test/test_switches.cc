@@ -84,3 +84,9 @@ const char switches::kTestLauncherTrace[] = "test-launcher-trace";
 const char switches::kTestTinyTimeout[] = "test-tiny-timeout";
 const char switches::kUiTestActionTimeout[] = "ui-test-action-timeout";
 const char switches::kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
+
+#if defined(OS_IOS)
+// If enabled, runs unittests using the XCTest test runner.
+const char switches::kEnableRunIOSUnittestsWithXCTest[] =
+    "enable-run-ios-unittests-with-xctest";
+#endif

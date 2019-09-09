@@ -14,8 +14,8 @@
 #include "url/gurl.h"
 
 BluetoothInternalsHandler::BluetoothInternalsHandler(
-    mojom::BluetoothInternalsHandlerRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::BluetoothInternalsHandler> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 BluetoothInternalsHandler::~BluetoothInternalsHandler() {}
 

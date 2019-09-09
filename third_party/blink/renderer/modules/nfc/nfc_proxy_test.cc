@@ -187,7 +187,7 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
   auto record = device::mojom::blink::NDEFRecord::New();
   WTF::Vector<uint8_t> record_data(
       {0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10});
-  record->record_type = device::mojom::blink::NDEFRecordType::OPAQUE_RECORD;
+  record->record_type = "opaque";
   record->data = WTF::Vector<uint8_t>(record_data);
   message->data.push_back(std::move(record));
 

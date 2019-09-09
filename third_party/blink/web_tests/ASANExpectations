@@ -65,18 +65,6 @@ crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
 crbug.com/803276 inspector-protocol/memory/sampling-native-profile.js [ Skip ]
 crbug.com/803276 inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 
-# CORS test crash on ASAN
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-cookies-redirect.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-cookies-redirect.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-preflight-star.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-preflight.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-preflight.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/cors/cors-redirect-preflight.any.worker.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Crash ]
-crbug.com/838057 [ Linux ] virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Crash ]
-
 # Disabled by sheriff due to test crash
 crbug.com/896068 [ Linux ] webaudio/AudioBuffer/huge-buffer.html [ Crash ]
 crbug.com/896068 [ Linux ] webaudio/dom-exceptions.html [ Pass Crash ]

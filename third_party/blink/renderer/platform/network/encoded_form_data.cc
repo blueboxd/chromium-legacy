@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
@@ -150,9 +151,10 @@ scoped_refptr<EncodedFormData> EncodedFormData::DeepCopy() const {
             e.blob_uuid_.IsolatedCopy(), e.optional_blob_data_handle_));
         break;
       case FormDataElement::kDataPipe:
-        network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
-        (*e.data_pipe_getter_->GetPtr())
-            ->Clone(mojo::MakeRequest(&data_pipe_getter));
+        mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+            data_pipe_getter;
+        e.data_pipe_getter_->GetDataPipeGetter()->Clone(
+            data_pipe_getter.InitWithNewPipeAndPassReceiver());
         auto wrapped = base::MakeRefCounted<WrappedDataPipeGetter>(
             std::move(data_pipe_getter));
         form_data->elements_.UncheckedAppend(

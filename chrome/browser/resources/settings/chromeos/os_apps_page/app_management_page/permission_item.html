@@ -1,42 +1,35 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="shared_style.html">
-<link rel="import" href="permission_toggle.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="toggle_row.html">
 
 <dom-module id="app-management-permission-item">
   <template>
     <style include="app-management-shared-css">
       :host {
         align-items: center;
-        cursor: pointer;
         display: flex;
         justify-content: space-between;
+      }
+
+      :host(:not([disabled_])) {
+        cursor: pointer;
       }
 
       :host(:not([available_])) {
         display: none;
       }
-
-      #permission-icon {
-        color: var(--permission-icon-color);
-        padding-inline-end: var(--permission-icon-padding);
-      }
     </style>
     <!-- `permission-item` does not include any icon-set, so containing
      elements should import the icon-set needed for the specified |icon|. -->
     <template is="dom-if" if="[[available_]]">
-      <div class="permission-row-controls">
-        <template is="dom-if" if="[[icon]]">
-          <iron-icon id="permission-icon" icon="[[icon]]"></iron-icon>
-        </template>
-        <div id="permission-label">[[permissionLabel]]</div>
-      </div>
-      <app-management-permission-toggle id="permission-toggle"
-          app="[[app_]]" permission-type="[[permissionType]]"
-          permission-label="[[permissionLabel]]">
-      </app-management-permission-toggle>
+      <app-management-toggle-row
+        id="toggleRow"
+        icon="[[icon]]"
+        label="[[permissionLabel]]"
+        managed="[[isManaged_(app_, permissionType)]]"
+        value="[[getValue_(app_, permissionType)]]">
+      </app-management-toggle-row>
     </template>
   </template>
   <script src="permission_item.js"></script>

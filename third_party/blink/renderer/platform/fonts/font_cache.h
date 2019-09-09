@@ -31,10 +31,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CACHE_H_
 
 #include <limits.h>
+
 #include <memory>
+#include <string>
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/fonts/fallback_list_composite_key.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
@@ -352,7 +355,7 @@ class PLATFORM_EXPORT FontCache {
   // Windows creates an SkFontMgr for unit testing automatically. This flag is
   // to ensure it's not happening in the production from the crash log.
   bool is_test_font_mgr_ = false;
-  mojom::blink::DWriteFontProxyPtr service_;
+  mojo::Remote<mojom::blink::DWriteFontProxy> service_;
 #endif  // defined(OS_WIN)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -399,4 +402,4 @@ AtomicString ToAtomicString(const SkString&);
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CACHE_H_

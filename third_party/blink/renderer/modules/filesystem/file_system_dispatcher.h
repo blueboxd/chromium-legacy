@@ -7,8 +7,9 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -191,18 +192,18 @@ class FileSystemDispatcher
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
       base::File::Error error_code,
-      mojom::blink::ReceivedSnapshotListenerPtr listener);
+      mojo::PendingRemote<mojom::blink::ReceivedSnapshotListener> listener);
 
-  void RemoveOperationPtr(int operation_id);
+  void RemoveOperationRemote(int operation_id);
 
   void Prefinalize();
 
   mojo::Remote<mojom::blink::FileSystemManager> file_system_manager_;
   using OperationsMap =
-      HashMap<int, mojom::blink::FileSystemCancellableOperationPtr>;
+      HashMap<int, mojo::Remote<mojom::blink::FileSystemCancellableOperation>>;
   OperationsMap cancellable_operations_;
   int next_operation_id_;
-  mojo::StrongBindingSet<mojom::blink::FileSystemOperationListener>
+  mojo::UniqueReceiverSet<mojom::blink::FileSystemOperationListener>
       op_listeners_;
 };
 

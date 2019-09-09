@@ -311,6 +311,7 @@ void WorkerOrWorkletScriptController::PrepareForEvaluation() {
 
   // This can only be called after the global object is fully initialised, as it
   // reads values from it.
+  // WARNING: May modify the global object!
   InitializeV8ExtrasBinding(script_state_);
 }
 

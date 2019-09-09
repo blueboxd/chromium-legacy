@@ -118,6 +118,11 @@ WebViewPasswordManagerClient::GetPasswordManager() const {
   return delegate_.passwordManager;
 }
 
+const password_manager::PasswordFeatureManager*
+WebViewPasswordManagerClient::GetPasswordFeatureManager() const {
+  return &password_feature_manager_;
+}
+
 PrefService* WebViewPasswordManagerClient::GetPrefs() const {
   return delegate_.browserState->GetPrefs();
 }

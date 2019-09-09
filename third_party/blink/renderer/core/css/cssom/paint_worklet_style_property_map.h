@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class ComputedStyle;
+
 // This class is designed for CSS Paint such that it can be safely passed cross
 // threads.
 //

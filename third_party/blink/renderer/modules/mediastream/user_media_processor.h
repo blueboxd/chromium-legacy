@@ -60,7 +60,7 @@ class MODULES_EXPORT UserMediaProcessor
     : public GarbageCollectedFinalized<UserMediaProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
-      const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
+      blink::mojom::blink::MediaDevicesDispatcherHost*()>;
   // |web_frame| must outlive this instance.
   UserMediaProcessor(LocalFrame* frame,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
@@ -248,8 +248,7 @@ class MODULES_EXPORT UserMediaProcessor
 
   blink::mojom::blink::MediaStreamDispatcherHost*
   GetMediaStreamDispatcherHost();
-  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
-  GetMediaDevicesDispatcher();
+  blink::mojom::blink::MediaDevicesDispatcherHost* GetMediaDevicesDispatcher();
 
   void SetupAudioInput();
   void SelectAudioDeviceSettings(

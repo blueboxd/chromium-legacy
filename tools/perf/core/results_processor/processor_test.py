@@ -20,7 +20,7 @@ from core.results_processor import processor
 from core.results_processor import testing
 
 
-class ResultProcessorIntegrationTests(unittest.TestCase):
+class ResultsProcessorIntegrationTests(unittest.TestCase):
   def setUp(self):
     self.output_dir = tempfile.mkdtemp()
     self.intermediate_dir = os.path.join(
@@ -66,3 +66,33 @@ class ResultProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(test_result['times'], [1.1, 1.2])
     self.assertEqual(test_result['time'], 1.1)
     self.assertEqual(test_result['shard'], 7)
+
+  def testJson3OutputWithArtifacts(self):
+    self.SerializeIntermediateResults([
+        testing.TestResult(
+            'benchmark/story',
+            artifacts={
+                'logs': testing.Artifact('/logs.txt', 'gs://logs.txt'),
+                'trace/telemetry': testing.Artifact('/telemetry.json'),
+                'trace.html':
+                    testing.Artifact('/trace.html', 'gs://trace.html'),
+            },
+    )])
+
+    processor.main([
+        '--output-format', 'json-test-results',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir])
+
+    with open(os.path.join(
+        self.output_dir, json3_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    self.assertIn('benchmark', results['tests'])
+    self.assertIn('story', results['tests']['benchmark'])
+    self.assertIn('artifacts', results['tests']['benchmark']['story'])
+    artifacts = results['tests']['benchmark']['story']['artifacts']
+
+    self.assertEqual(len(artifacts), 2)
+    self.assertEqual(artifacts['logs'], ['gs://logs.txt'])
+    self.assertEqual(artifacts['trace.html'], ['gs://trace.html'])

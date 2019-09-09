@@ -157,6 +157,14 @@ class PLATFORM_EXPORT HeapAllocator {
     MarkingVisitor::WriteBarrier(address);
   }
 
+  template <typename HashTable>
+  static void BackingWriteBarrierForHashTable(void* address) {
+    if (MarkingVisitor::WriteBarrier(address)) {
+      AddMovingCallback<HashTable>(
+          static_cast<typename HashTable::ValueType*>(address));
+    }
+  }
+
   template <typename T>
   static void BackingWriteBarrier(Member<T>* address, size_t size) {
     MarkingVisitor::WriteBarrier(address);
@@ -213,11 +221,9 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T, typename VisitorDispatcher>
   static void RegisterBackingStoreCallback(VisitorDispatcher visitor,
-                                           T** backing_store_slot,
-                                           MovingObjectCallback callback,
-                                           void* callback_data) {
-    visitor->RegisterBackingStoreCallback(
-        reinterpret_cast<void**>(backing_store_slot), callback, callback_data);
+                                           T* backing,
+                                           MovingObjectCallback callback) {
+    visitor->RegisterBackingStoreCallback(backing, callback);
   }
 
   static void EnterGCForbiddenScope() {
@@ -320,6 +326,22 @@ class PLATFORM_EXPORT HeapAllocator {
         ->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
     return address;
   }
+
+  template <
+      typename HashTable,
+      std::enable_if_t<HashTable::ValueTraits::kHasMovingCallback>* = nullptr>
+  static void AddMovingCallback(typename HashTable::ValueType* memory) {
+    ThreadState* thread_state = ThreadState::Current();
+    auto* visitor = thread_state->CurrentVisitor();
+    DCHECK(visitor);
+    HashTable::ValueTraits::template RegisterMovingCallback<HashTable>(visitor,
+                                                                       memory);
+  }
+
+  template <
+      typename HashTable,
+      std::enable_if_t<!HashTable::ValueTraits::kHasMovingCallback>* = nullptr>
+  static void AddMovingCallback(typename HashTable::ValueType*) {}
 
   static void BackingFree(void*);
   static bool BackingExpand(void*, size_t);

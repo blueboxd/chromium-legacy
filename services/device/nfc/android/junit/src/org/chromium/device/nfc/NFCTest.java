@@ -46,7 +46,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.device.mojom.NdefCompatibility;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
-import org.chromium.device.mojom.NdefRecordType;
 import org.chromium.device.mojom.NdefRecordTypeFilter;
 import org.chromium.device.mojom.Nfc.CancelAllWatchesResponse;
 import org.chromium.device.mojom.Nfc.CancelPushResponse;
@@ -220,7 +219,7 @@ public class NFCTest {
         NdefMessage emptyMojoNdefMessage = NdefMessageUtils.toNdefMessage(emptyNdefMessage);
         assertNull(emptyMojoNdefMessage.url);
         assertEquals(1, emptyMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.EMPTY, emptyMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_EMPTY, emptyMojoNdefMessage.data[0].recordType);
         assertEquals(true, emptyMojoNdefMessage.data[0].mediaType.isEmpty());
         assertEquals(0, emptyMojoNdefMessage.data[0].data.length);
 
@@ -230,7 +229,7 @@ public class NFCTest {
         NdefMessage urlMojoNdefMessage = NdefMessageUtils.toNdefMessage(urlNdefMessage);
         assertNull(urlMojoNdefMessage.url);
         assertEquals(1, urlMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.URL, urlMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_URL, urlMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, urlMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_URL, new String(urlMojoNdefMessage.data[0].data));
 
@@ -240,7 +239,7 @@ public class NFCTest {
         NdefMessage textMojoNdefMessage = NdefMessageUtils.toNdefMessage(textNdefMessage);
         assertNull(textMojoNdefMessage.url);
         assertEquals(1, textMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.TEXT, textMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, textMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, textMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_TEXT, new String(textMojoNdefMessage.data[0].data));
 
@@ -251,7 +250,7 @@ public class NFCTest {
         NdefMessage mimeMojoNdefMessage = NdefMessageUtils.toNdefMessage(mimeNdefMessage);
         assertNull(mimeMojoNdefMessage.url);
         assertEquals(1, mimeMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.OPAQUE_RECORD, mimeMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_OPAQUE, mimeMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, textMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_TEXT, new String(textMojoNdefMessage.data[0].data));
 
@@ -262,7 +261,7 @@ public class NFCTest {
         NdefMessage jsonMojoNdefMessage = NdefMessageUtils.toNdefMessage(jsonNdefMessage);
         assertNull(jsonMojoNdefMessage.url);
         assertEquals(1, jsonMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.JSON, jsonMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_JSON, jsonMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, jsonMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_JSON, new String(jsonMojoNdefMessage.data[0].data));
 
@@ -273,7 +272,8 @@ public class NFCTest {
         NdefMessage unknownMojoNdefMessage = NdefMessageUtils.toNdefMessage(unknownNdefMessage);
         assertNull(unknownMojoNdefMessage.url);
         assertEquals(1, unknownMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.OPAQUE_RECORD, unknownMojoNdefMessage.data[0].recordType);
+        assertEquals(
+                NdefMessageUtils.RECORD_TYPE_OPAQUE, unknownMojoNdefMessage.data[0].recordType);
         assertEquals(OCTET_STREAM_MIME, unknownMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_TEXT, new String(unknownMojoNdefMessage.data[0].data));
 
@@ -288,7 +288,7 @@ public class NFCTest {
         NdefMessage webMojoNdefMessage = NdefMessageUtils.toNdefMessage(webNdefMessage);
         assertEquals(TEST_URL, webMojoNdefMessage.url);
         assertEquals(1, webMojoNdefMessage.data.length);
-        assertEquals(NdefRecordType.JSON, webMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_JSON, webMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, webMojoNdefMessage.data[0].mediaType);
         assertEquals(TEST_JSON, new String(webMojoNdefMessage.data[0].data));
     }
@@ -313,7 +313,7 @@ public class NFCTest {
 
         // Test TEXT record conversion.
         NdefRecord textMojoNdefRecord = new NdefRecord();
-        textMojoNdefRecord.recordType = NdefRecordType.TEXT;
+        textMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_TEXT;
         textMojoNdefRecord.mediaType = TEXT_MIME;
         textMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         NdefMessage textMojoNdefMessage = createMojoNdefMessage(TEST_URL, textMojoNdefRecord);
@@ -329,7 +329,7 @@ public class NFCTest {
 
         // Test MIME record conversion.
         NdefRecord mimeMojoNdefRecord = new NdefRecord();
-        mimeMojoNdefRecord.recordType = NdefRecordType.OPAQUE_RECORD;
+        mimeMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_OPAQUE;
         mimeMojoNdefRecord.mediaType = TEXT_MIME;
         mimeMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         NdefMessage mimeMojoNdefMessage = createMojoNdefMessage(TEST_URL, mimeMojoNdefRecord);
@@ -345,7 +345,7 @@ public class NFCTest {
 
         // Test JSON record conversion.
         NdefRecord jsonMojoNdefRecord = new NdefRecord();
-        jsonMojoNdefRecord.recordType = NdefRecordType.OPAQUE_RECORD;
+        jsonMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_OPAQUE;
         jsonMojoNdefRecord.mediaType = JSON_MIME;
         jsonMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_JSON);
         NdefMessage jsonMojoNdefMessage = createMojoNdefMessage(TEST_URL, jsonMojoNdefRecord);
@@ -361,7 +361,7 @@ public class NFCTest {
 
         // Test EMPTY record conversion.
         NdefRecord emptyMojoNdefRecord = new NdefRecord();
-        emptyMojoNdefRecord.recordType = NdefRecordType.EMPTY;
+        emptyMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_EMPTY;
         NdefMessage emptyMojoNdefMessage = createMojoNdefMessage(TEST_URL, emptyMojoNdefRecord);
         android.nfc.NdefMessage emptyNdefMessage =
                 NdefMessageUtils.toNdefMessage(emptyMojoNdefMessage);
@@ -598,7 +598,7 @@ public class NFCTest {
         NfcScanOptions options3 = createNfcScanOptions();
         options3.compatibility = NdefCompatibility.ANY;
         NdefRecordTypeFilter typeFilter = new NdefRecordTypeFilter();
-        typeFilter.recordType = NdefRecordType.URL;
+        typeFilter.recordType = NdefMessageUtils.RECORD_TYPE_URL;
         options3.recordFilter = typeFilter;
         int watchId3 = mNextWatchId++;
         WatchResponse mockWatchCallback3 = mock(WatchResponse.class);
@@ -1276,7 +1276,7 @@ public class NFCTest {
 
         // Create message with empty record.
         NdefRecord emptyNdefRecord = new NdefRecord();
-        emptyNdefRecord.recordType = NdefRecordType.EMPTY;
+        emptyNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_EMPTY;
         NdefMessage ndefMessage = createMojoNdefMessage(TEST_URL, emptyNdefRecord);
 
         nfc.push(ndefMessage, createNfcPushOptions(), mockCallback);
@@ -1319,7 +1319,7 @@ public class NFCTest {
         message.data = new NdefRecord[1];
 
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = NdefRecordType.TEXT;
+        nfcRecord.recordType = NdefMessageUtils.RECORD_TYPE_TEXT;
         nfcRecord.mediaType = TEXT_MIME;
         nfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         message.data[0] = nfcRecord;
@@ -1336,7 +1336,7 @@ public class NFCTest {
 
     private android.nfc.NdefMessage createUrlWebNFCNdefMessage(String webNfcId) {
         NdefRecord urlMojoNdefRecord = new NdefRecord();
-        urlMojoNdefRecord.recordType = NdefRecordType.URL;
+        urlMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_URL;
         urlMojoNdefRecord.mediaType = TEXT_MIME;
         urlMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
         NdefMessage urlNdefMessage = createMojoNdefMessage(webNfcId, urlMojoNdefRecord);

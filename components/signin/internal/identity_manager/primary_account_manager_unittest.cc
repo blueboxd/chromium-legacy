@@ -124,11 +124,11 @@ class PrimaryAccountManagerTest : public testing::Test {
     EXPECT_EQ(1, num_successful_signins_);
   }
 
-  void GoogleSigninSucceeded(const AccountInfo& account_info) {
+  void GoogleSigninSucceeded(const CoreAccountInfo& account_info) {
     num_successful_signins_++;
   }
 
-  void GoogleSignedOut(const AccountInfo& account_info) { num_signouts_++; }
+  void GoogleSignedOut(const CoreAccountInfo& account_info) { num_signouts_++; }
 
   base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
@@ -246,7 +246,8 @@ TEST_F(PrimaryAccountManagerTest, SignOutWhileProhibited) {
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
 
-  manager_->SetAuthenticatedAccountInfo("gaia_id", "user@gmail.com");
+  AddToAccountTracker("gaia_id", "user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   signin_client()->set_is_signout_allowed(false);
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);

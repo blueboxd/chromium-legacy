@@ -119,6 +119,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_METHOD2(AutofillHttpAuth,
                void(const PasswordForm&, const PasswordFormManagerForUI*));
+
+  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,
@@ -335,10 +337,11 @@ class PasswordFormManagerTest : public testing::Test {
     blacklisted_match_.blacklisted_by_user = true;
 
     EXPECT_CALL(client_, GetAutofillDownloadManager())
-        .WillRepeatedly(testing::Return(&mock_autofill_download_manager_));
+        .WillRepeatedly(Return(&mock_autofill_download_manager_));
+    ON_CALL(client_, IsMainFrameSecure()).WillByDefault(Return(true));
     ON_CALL(mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
-        .WillByDefault(testing::Return(true));
+        .WillByDefault(Return(true));
 
     fetcher_.reset(new FakeFormFetcher());
     fetcher_->Fetch();

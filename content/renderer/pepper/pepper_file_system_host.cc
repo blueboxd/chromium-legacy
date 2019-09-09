@@ -163,7 +163,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
 blink::mojom::FileSystemManager& PepperFileSystemHost::GetFileSystemManager() {
   if (!file_system_manager_) {
     ChildThreadImpl::current()->BindHostReceiver(
-        mojo::MakeRequest(&file_system_manager_));
+        file_system_manager_.BindNewPipeAndPassReceiver());
   }
   return *file_system_manager_;
 }

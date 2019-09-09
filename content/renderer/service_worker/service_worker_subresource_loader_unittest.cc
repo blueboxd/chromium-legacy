@@ -56,7 +56,8 @@ class FakeBlob final : public blink::mojom::Blob {
   void Clone(mojo::PendingReceiver<blink::mojom::Blob>) override {
     NOTREACHED();
   }
-  void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override {
+  void AsDataPipeGetter(
+      mojo::PendingReceiver<network::mojom::DataPipeGetter>) override {
     NOTREACHED();
   }
   void ReadRange(
@@ -193,9 +194,10 @@ class FakeControllerServiceWorker
     } else if (element.type() == network::mojom::DataElementType::kDataPipe) {
       // Read the content into |data_pipe|.
       mojo::DataPipe data_pipe;
-      network::mojom::DataPipeGetterPtr ptr(element.ReleaseDataPipeGetter());
+      mojo::Remote<network::mojom::DataPipeGetter> remote(
+          element.ReleaseDataPipeGetter());
       base::RunLoop run_loop;
-      ptr->Read(
+      remote->Read(
           std::move(data_pipe.producer_handle),
           base::BindOnce([](base::OnceClosure quit_closure, int32_t status,
                             uint64_t size) { std::move(quit_closure).Run(); },
@@ -1408,7 +1410,6 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponseWithoutOORCors) {
 TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackWithRequestBody_String) {
   const std::string kData = "Hi, this is the request body (string)";
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
   request_body->AppendBytes(kData.c_str(), kData.length());
 
   RunFallbackWithRequestBodyTest(std::move(request_body), kData);
@@ -1417,10 +1418,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackWithRequestBody_String) {
 TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackWithRequestBody_DataPipe) {
   const std::string kData = "Hi, this is the request body (data pipe)";
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter_remote;
   auto data_pipe_getter = std::make_unique<network::TestDataPipeGetter>(
-      kData, mojo::MakeRequest(&data_pipe_getter_ptr));
-  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+      kData, data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
+  request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
 
   RunFallbackWithRequestBodyTest(std::move(request_body), kData);
 }

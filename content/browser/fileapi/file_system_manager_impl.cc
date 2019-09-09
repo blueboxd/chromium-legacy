@@ -4,10 +4,7 @@
 
 #include "content/browser/fileapi/file_system_manager_impl.h"
 
-#include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -28,7 +25,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -140,7 +136,7 @@ class FileSystemManagerImpl::FileSystemCancellableOperationImpl
   }
 
   const OperationID id_;
-  // |file_system_manager_impl| owns |this| through a StrongBindingSet.
+  // |file_system_manager_impl| owns |this| through a UniqueReceiverSet.
   FileSystemManagerImpl* const file_system_manager_impl_;
 };
 
@@ -159,7 +155,7 @@ class FileSystemManagerImpl::ReceivedSnapshotListenerImpl
   }
 
   const int snapshot_id_;
-  // |file_system_manager_impl| owns |this| through a StrongBindingSet.
+  // |file_system_manager_impl| owns |this| through a UniqueReceiverSet.
   FileSystemManagerImpl* const file_system_manager_impl_;
 };
 
@@ -190,7 +186,7 @@ FileSystemManagerImpl::FileSystemManagerImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_);
   DCHECK(blob_storage_context_);
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &FileSystemManagerImpl::OnConnectionError, base::Unretained(this)));
 }
 
@@ -203,12 +199,12 @@ base::WeakPtr<FileSystemManagerImpl> FileSystemManagerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void FileSystemManagerImpl::BindRequest(
-    blink::mojom::FileSystemManagerRequest request) {
+void FileSystemManagerImpl::BindReceiver(
+    mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!operation_runner_)
     operation_runner_ = context_->CreateFileSystemOperationRunner();
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FileSystemManagerImpl::Open(const url::Origin& origin,
@@ -406,10 +402,13 @@ void FileSystemManagerImpl::Exists(const GURL& path,
 
 void FileSystemManagerImpl::ReadDirectory(
     const GURL& path,
-    blink::mojom::FileSystemOperationListenerPtr listener) {
+    mojo::PendingRemote<blink::mojom::FileSystemOperationListener>
+        pending_listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   FileSystemURL url(context_->CrackURL(path));
   base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
+  mojo::Remote<blink::mojom::FileSystemOperationListener> listener(
+      std::move(pending_listener));
   if (opt_error) {
     listener->ErrorOccurred(opt_error.value());
     return;
@@ -453,12 +452,16 @@ void FileSystemManagerImpl::Write(
     const GURL& file_path,
     const std::string& blob_uuid,
     int64_t position,
-    blink::mojom::FileSystemCancellableOperationRequest op_request,
-    blink::mojom::FileSystemOperationListenerPtr listener) {
+    mojo::PendingReceiver<blink::mojom::FileSystemCancellableOperation>
+        op_receiver,
+    mojo::PendingRemote<blink::mojom::FileSystemOperationListener>
+        pending_listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   FileSystemURL url(context_->CrackURL(file_path));
   base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
+  mojo::Remote<blink::mojom::FileSystemOperationListener> listener(
+      std::move(pending_listener));
   if (opt_error) {
     listener->ErrorOccurred(opt_error.value());
     return;
@@ -476,9 +479,9 @@ void FileSystemManagerImpl::Write(
       url, std::move(blob), position,
       base::BindRepeating(&FileSystemManagerImpl::DidWrite, GetWeakPtr(),
                           listener_id));
-  cancellable_operations_.AddBinding(
+  cancellable_operations_.Add(
       std::make_unique<FileSystemCancellableOperationImpl>(op_id, this),
-      std::move(op_request));
+      std::move(op_receiver));
 }
 
 void FileSystemManagerImpl::WriteSync(const GURL& file_path,
@@ -510,7 +513,8 @@ void FileSystemManagerImpl::WriteSync(const GURL& file_path,
 void FileSystemManagerImpl::Truncate(
     const GURL& file_path,
     int64_t length,
-    blink::mojom::FileSystemCancellableOperationRequest op_request,
+    mojo::PendingReceiver<blink::mojom::FileSystemCancellableOperation>
+        op_receiver,
     TruncateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   FileSystemURL url(context_->CrackURL(file_path));
@@ -528,9 +532,9 @@ void FileSystemManagerImpl::Truncate(
       url, length,
       base::BindRepeating(&FileSystemManagerImpl::DidFinish, GetWeakPtr(),
                           base::Passed(&callback)));
-  cancellable_operations_.AddBinding(
+  cancellable_operations_.Add(
       std::make_unique<FileSystemCancellableOperationImpl>(op_id, this),
-      std::move(op_request));
+      std::move(op_receiver));
 }
 
 void FileSystemManagerImpl::TruncateSync(const GURL& file_path,
@@ -588,12 +592,13 @@ void FileSystemManagerImpl::CreateSnapshotFile(
   base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
   if (opt_error) {
     std::move(callback).Run(base::File::Info(), base::FilePath(),
-                            opt_error.value(), nullptr);
+                            opt_error.value(), mojo::NullRemote());
     return;
   }
   if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
     std::move(callback).Run(base::File::Info(), base::FilePath(),
-                            base::File::FILE_ERROR_SECURITY, nullptr);
+                            base::File::FILE_ERROR_SECURITY,
+                            mojo::NullRemote());
     return;
   }
 
@@ -639,10 +644,10 @@ void FileSystemManagerImpl::DidReceiveSnapshotFile(int snapshot_id) {
 
 void FileSystemManagerImpl::OnConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (bindings_.empty()) {
+  if (receivers_.empty()) {
     in_transit_snapshot_files_.Clear();
     operation_runner_.reset();
-    cancellable_operations_.CloseAllBindings();
+    cancellable_operations_.Clear();
   }
 }
 
@@ -667,7 +672,7 @@ void FileSystemManagerImpl::DidGetMetadataForStreaming(
   // For now, streaming Blobs are implemented as a successful snapshot file
   // creation with an empty path.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(info, base::FilePath(), result, nullptr);
+  std::move(callback).Run(info, base::FilePath(), result, mojo::NullRemote());
 }
 
 void FileSystemManagerImpl::DidReadDirectory(
@@ -780,7 +785,7 @@ void FileSystemManagerImpl::DidCreateSnapshot(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(base::File::Info(), base::FilePath(), result,
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -811,19 +816,17 @@ void FileSystemManagerImpl::DidCreateSnapshot(
   if (file_ref.get()) {
     // This ref is held until DidReceiveSnapshotFile is called.
     int request_id = in_transit_snapshot_files_.Add(file_ref);
-    blink::mojom::ReceivedSnapshotListenerPtr listener_ptr;
-    snapshot_listeners_.AddBinding(
+    mojo::PendingRemote<blink::mojom::ReceivedSnapshotListener> listener;
+    snapshot_listeners_.Add(
         std::make_unique<ReceivedSnapshotListenerImpl>(request_id, this),
-        mojo::MakeRequest<blink::mojom::ReceivedSnapshotListener>(
-            &listener_ptr));
+        listener.InitWithNewPipeAndPassReceiver());
     // Return the file info and platform_path.
-    std::move(callback).Run(info, platform_path, result,
-                            std::move(listener_ptr));
+    std::move(callback).Run(info, platform_path, result, std::move(listener));
     return;
   }
 
   // Return the file info and platform_path.
-  std::move(callback).Run(info, platform_path, result, nullptr);
+  std::move(callback).Run(info, platform_path, result, mojo::NullRemote());
 }
 
 void FileSystemManagerImpl::DidGetPlatformPath(GetPlatformPathCallback callback,
@@ -872,10 +875,10 @@ base::Optional<base::File::Error> FileSystemManagerImpl::ValidateFileSystemURL(
 }
 
 FileSystemManagerImpl::OperationListenerID FileSystemManagerImpl::AddOpListener(
-    blink::mojom::FileSystemOperationListenerPtr listener) {
+    mojo::Remote<blink::mojom::FileSystemOperationListener> listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int op_id = next_operation_listener_id_++;
-  listener.set_connection_error_handler(
+  listener.set_disconnect_handler(
       base::BindOnce(&FileSystemManagerImpl::OnConnectionErrorForOpListeners,
                      base::Unretained(this), op_id));
   op_listeners_[op_id] = std::move(listener);

@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -28,8 +29,14 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   void UpdateLocation(const mojom::Geoposition& position);
   const mojom::Geoposition& GetGeoposition() const;
 
+  void Pause();
+  void Resume();
+
+  size_t GetGeolocationInstanceCount() const;
+
   void BindForOverrideService(
       mojo::PendingReceiver<mojom::GeolocationContext> receiver);
+  void OnDisconnect(FakeGeolocation* impl);
 
   // mojom::GeolocationContext implementation:
   void BindGeolocation(
@@ -37,28 +44,40 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   void SetOverride(mojom::GeopositionPtr geoposition) override;
   void ClearOverride() override;
 
+  bool is_paused() const { return is_paused_; }
+  void set_close_callback(base::RepeatingClosure callback) {
+    close_callback_ = std::move(callback);
+  }
+
  private:
   mojom::Geoposition position_;
   mojom::GeopositionPtr override_position_;
-  std::vector<std::unique_ptr<FakeGeolocation>> impls_;
+  std::set<std::unique_ptr<FakeGeolocation>, base::UniquePtrComparator> impls_;
   mojo::ReceiverSet<mojom::GeolocationContext> context_receivers_;
+  bool is_paused_ = false;
+  base::RepeatingClosure close_callback_;
 };
 
 class ScopedGeolocationOverrider::FakeGeolocation : public mojom::Geolocation {
  public:
   FakeGeolocation(mojo::PendingReceiver<mojom::Geolocation> receiver,
-                  const FakeGeolocationContext* context);
+                  FakeGeolocationContext* context);
   ~FakeGeolocation() override;
 
-  void UpdateLocation(const mojom::Geoposition& position);
+  void OnDisconnect();
+  void OnResume();
+
+  void UpdateLocation();
 
   // mojom::Geolocation implementation:
   void QueryNextPosition(QueryNextPositionCallback callback) override;
   void SetHighAccuracy(bool high_accuracy) override;
 
  private:
-  const FakeGeolocationContext* context_;
-  bool has_new_position_;
+  void RunPositionCallbackIfNeeded();
+
+  FakeGeolocationContext* context_;
+  bool needs_update_ = true;
   QueryNextPositionCallback position_callback_;
   mojo::Receiver<mojom::Geolocation> receiver_{this};
 };
@@ -111,6 +130,23 @@ void ScopedGeolocationOverrider::UpdateLocation(double latitude,
   UpdateLocation(position);
 }
 
+void ScopedGeolocationOverrider::Pause() {
+  geolocation_context_->Pause();
+}
+
+void ScopedGeolocationOverrider::Resume() {
+  geolocation_context_->Resume();
+}
+
+size_t ScopedGeolocationOverrider::GetGeolocationInstanceCount() const {
+  return geolocation_context_->GetGeolocationInstanceCount();
+}
+
+void ScopedGeolocationOverrider::SetGeolocationCloseCallback(
+    base::RepeatingClosure closure) {
+  geolocation_context_->set_close_callback(std::move(closure));
+}
+
 ScopedGeolocationOverrider::FakeGeolocationContext::FakeGeolocationContext(
     const mojom::Geoposition& position)
     : position_(position) {
@@ -130,8 +166,19 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::UpdateLocation(
     position_.valid = true;
 
   for (auto& impl : impls_) {
-    impl->UpdateLocation(position_);
+    impl->UpdateLocation();
   }
+}
+
+void ScopedGeolocationOverrider::FakeGeolocationContext::OnDisconnect(
+    FakeGeolocation* impl) {
+  // Note: We can't use set::erase() here, since FakeGeolocation* is not
+  //       the impls_::key_type.
+  auto it = impls_.find(impl);
+  impls_.erase(it);
+
+  if (!close_callback_.is_null())
+    close_callback_.Run();
 }
 
 const mojom::Geoposition&
@@ -149,8 +196,7 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::BindForOverrideService(
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindGeolocation(
     mojo::PendingReceiver<mojom::Geolocation> receiver) {
-  impls_.push_back(
-      std::make_unique<FakeGeolocation>(std::move(receiver), this));
+  impls_.insert(std::make_unique<FakeGeolocation>(std::move(receiver), this));
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::SetOverride(
@@ -164,7 +210,7 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::SetOverride(
     override_position_->valid = true;
 
   for (auto& impl : impls_) {
-    impl->UpdateLocation(*override_position_);
+    impl->UpdateLocation();
   }
 }
 
@@ -172,22 +218,61 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::ClearOverride() {
   override_position_.reset();
 }
 
+void ScopedGeolocationOverrider::FakeGeolocationContext::Pause() {
+  is_paused_ = true;
+}
+
+void ScopedGeolocationOverrider::FakeGeolocationContext::Resume() {
+  is_paused_ = false;
+  for (auto& impl : impls_) {
+    impl->OnResume();
+  }
+}
+
+size_t ScopedGeolocationOverrider::FakeGeolocationContext::
+    GetGeolocationInstanceCount() const {
+  return impls_.size();
+}
+
 ScopedGeolocationOverrider::FakeGeolocation::FakeGeolocation(
     mojo::PendingReceiver<mojom::Geolocation> receiver,
-    const FakeGeolocationContext* context)
-    : context_(context), has_new_position_(true) {
+    FakeGeolocationContext* context)
+    : context_(context) {
   receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&ScopedGeolocationOverrider::FakeGeolocation::OnDisconnect,
+                     base::Unretained(this)));
 }
 
 ScopedGeolocationOverrider::FakeGeolocation::~FakeGeolocation() {}
 
-void ScopedGeolocationOverrider::FakeGeolocation::UpdateLocation(
-    const mojom::Geoposition& position) {
-  has_new_position_ = true;
-  if (!position_callback_.is_null()) {
-    std::move(position_callback_).Run(position.Clone());
-    has_new_position_ = false;
-  }
+void ScopedGeolocationOverrider::FakeGeolocation::OnDisconnect() {
+  context_->OnDisconnect(this);
+}
+
+void ScopedGeolocationOverrider::FakeGeolocation::OnResume() {
+  DCHECK(!context_->is_paused());
+  RunPositionCallbackIfNeeded();
+}
+
+void ScopedGeolocationOverrider::FakeGeolocation::
+    RunPositionCallbackIfNeeded() {
+  // No need to run position callback if paused or no new position pending.
+  if (context_->is_paused() || !needs_update_)
+    return;
+
+  if (position_callback_.is_null())
+    return;
+
+  std::move(position_callback_).Run(context_->GetGeoposition().Clone());
+  needs_update_ = false;
+}
+
+void ScopedGeolocationOverrider::FakeGeolocation::UpdateLocation() {
+  // Needs update for new position.
+  needs_update_ = true;
+
+  RunPositionCallbackIfNeeded();
 }
 
 void ScopedGeolocationOverrider::FakeGeolocation::QueryNextPosition(
@@ -195,10 +280,7 @@ void ScopedGeolocationOverrider::FakeGeolocation::QueryNextPosition(
   // Pending callbacks might be overrided.
   position_callback_ = std::move(callback);
 
-  if (has_new_position_) {
-    std::move(position_callback_).Run(context_->GetGeoposition().Clone());
-    has_new_position_ = false;
-  }
+  RunPositionCallbackIfNeeded();
 }
 
 void ScopedGeolocationOverrider::FakeGeolocation::SetHighAccuracy(

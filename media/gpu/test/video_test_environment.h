@@ -38,8 +38,8 @@ class VideoTestEnvironment : public ::testing::Environment {
   // Tear down video test environment, called once for entire test run.
   void TearDown() override;
 
-  // Get the name of the current test.
-  base::FilePath::StringType GetTestName() const;
+  // Get the name of the test output file path (testsuitename/testname).
+  base::FilePath GetTestOutputFilePath() const;
 
  private:
   // Whether the test environment has been initialized.

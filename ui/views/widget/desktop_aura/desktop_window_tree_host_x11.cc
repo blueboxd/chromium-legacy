@@ -155,8 +155,9 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
   wm::SetWindowMoveClient(window(), nullptr);
-  desktop_native_widget_aura()->OnDesktopWindowTreeHostDestroyed(this);
-  DestroyDispatcher();
+
+  // ~DWTHPlatform notifies the DestkopNativeWidgetAura about destruction and
+  // also destroyes the dispatcher.
 }
 
 // static
@@ -237,16 +238,6 @@ void DesktopWindowTreeHostX11::CleanUpWindowList(
 // DesktopWindowTreeHostX11, DesktopWindowTreeHost implementation:
 
 void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
-  // If we have a parent, record the parent/child relationship. We use this
-  // data during destruction to make sure that when we try to close a parent
-  // window, we also destroy all child windows.
-  if (params.parent && params.parent->GetHost()) {
-    window_parent_ =
-        static_cast<DesktopWindowTreeHostX11*>(params.parent->GetHost());
-    DCHECK(window_parent_);
-    window_parent_->window_children_.insert(this);
-  }
-
   DesktopWindowTreeHostPlatform::Init(params);
 
   // Set XEventDelegate to receive selection, drag&drop and raw key events.
@@ -296,55 +287,6 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
                                                        GetXWindow()->window());
   drag_drop_client_->Init();
   return base::WrapUnique(drag_drop_client_);
-}
-
-void DesktopWindowTreeHostX11::Close() {
-  content_window()->Hide();
-
-  // TODO(erg): Might need to do additional hiding tasks here.
-  GetXWindow()->CancelResize();
-
-  if (!close_widget_factory_.HasWeakPtrs()) {
-    // And we delay the close so that if we are called from an ATL callback,
-    // we don't destroy the window before the callback returned (as the caller
-    // may delete ourselves on destroy and the ATL callback would still
-    // dereference us when the callback returns).
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&DesktopWindowTreeHostX11::CloseNow,
-                                  close_widget_factory_.GetWeakPtr()));
-  }
-}
-
-void DesktopWindowTreeHostX11::CloseNow() {
-  if (GetXWindow()->window() == x11::None)
-    return;
-  platform_window()->PrepareForShutdown();
-
-  ReleaseCapture();
-  RemoveNonClientEventFilter();
-  native_widget_delegate()->OnNativeWidgetDestroying();
-
-  // If we have children, close them. Use a copy for iteration because they'll
-  // remove themselves.
-  std::set<DesktopWindowTreeHostX11*> window_children_copy = window_children_;
-  for (auto* child : window_children_copy)
-    child->CloseNow();
-  DCHECK(window_children_.empty());
-
-  // If we have a parent, remove ourselves from its children list.
-  if (window_parent_) {
-    window_parent_->window_children_.erase(this);
-    window_parent_ = nullptr;
-  }
-
-  // Destroy the compositor before destroying the |xwindow_| since shutdown
-  // may try to swap, and the swap without a window causes an X error, which
-  // causes a crash with in-process renderer.
-  DestroyCompositor();
-
-  open_windows().remove(GetAcceleratedWidget());
-
-  platform_window()->Close();
 }
 
 void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
@@ -1019,7 +961,12 @@ void DesktopWindowTreeHostX11::DispatchEvent(ui::Event* event) {
 }
 
 void DesktopWindowTreeHostX11::OnClosed() {
-  desktop_native_widget_aura()->OnHostClosed();
+  // Remove the event listeners we've installed. We need to remove these
+  // because otherwise we get assert during ~WindowEventDispatcher().
+  RemoveNonClientEventFilter();
+
+  open_windows().remove(GetAcceleratedWidget());
+  DesktopWindowTreeHostPlatform::OnClosed();
 }
 
 void DesktopWindowTreeHostX11::OnWindowStateChanged(

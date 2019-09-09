@@ -70,6 +70,13 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SimulateRenderProcessExit(base::TerminationStatus termination_status,
                                  int exit_code);
 
+  using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
+      network::mojom::URLLoaderFactoryRequest request,
+      int process_id,
+      network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
+  static void SetNetworkFactory(
+      const CreateNetworkFactoryCallback& url_loader_factory_callback);
+
   // RenderProcessHost implementation (public portion).
   bool Init() override;
   void EnableSendQueue() override;
@@ -205,6 +212,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
           renderer_interface);
 
+  // SetNetworkFactory() wins over this.
+  // TODO(falken): Remove this method or call it SetURLLoaderFactory().
   void OverrideURLLoaderFactory(network::mojom::URLLoaderFactory* factory);
 
   bool is_renderer_locked_to_site() const {

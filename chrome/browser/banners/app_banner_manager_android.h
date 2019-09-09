@@ -85,10 +85,7 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
-  bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
-                                   const GURL& validated_url,
-                                   const GURL& start_url,
-                                   const GURL& manifest_url) override;
+  bool IsWebAppConsideredInstalled() override;
   void PerformInstallableChecks() override;
   InstallableParams ParamsToPerformInstallableWebAppCheck() override;
   void PerformInstallableWebAppCheck() override;

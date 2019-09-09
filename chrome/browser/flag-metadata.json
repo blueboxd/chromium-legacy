@@ -103,6 +103,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "app-service-intent-handling",
+    "owners": [ "chromeos-apps-foundation-team@google.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "app-service-shelf",
     "owners": [ "//chrome/services/app_service/OWNERS" ],
     "expiry_milestone": 79

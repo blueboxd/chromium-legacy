@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/platform/web_http_body.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
@@ -97,10 +98,11 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
       break;
     case FormDataElement::kDataPipe:
       result.type = Element::kTypeDataPipe;
-      network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
-      (*element.data_pipe_getter_->GetPtr())
-          ->Clone(mojo::MakeRequest(&data_pipe_getter));
-      result.data_pipe_getter = data_pipe_getter.PassInterface().PassHandle();
+      mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+          data_pipe_getter;
+      element.data_pipe_getter_->GetDataPipeGetter()->Clone(
+          data_pipe_getter.InitWithNewPipeAndPassReceiver());
+      result.data_pipe_getter = data_pipe_getter.PassPipe();
       break;
   }
 
@@ -151,10 +153,10 @@ void WebHTTPBody::AppendBlob(const WebString& uuid,
 void WebHTTPBody::AppendDataPipe(mojo::ScopedMessagePipeHandle message_pipe) {
   EnsureMutable();
 
-  // Convert the raw message pipe to network::mojom::blink::DataPipeGetter.
-  network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
-  data_pipe_getter.Bind(network::mojom::blink::DataPipeGetterPtrInfo(
-      std::move(message_pipe), 0u));
+  // Convert the raw message pipe to
+  // mojo::Remote<network::mojom::blink::DataPipeGetter>.
+  mojo::PendingRemote<network::mojom::blink::DataPipeGetter> data_pipe_getter(
+      std::move(message_pipe), 0u);
 
   auto wrapped =
       base::MakeRefCounted<WrappedDataPipeGetter>(std::move(data_pipe_getter));

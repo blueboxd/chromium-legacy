@@ -1807,6 +1807,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void LogCannotCommitOriginCrashKeys(bool is_same_document_navigation,
                                       NavigationRequest* navigation_request);
 
+  // Evicts the document from the BackForwardCache if it is in the cache,
+  // and ineligible for caching.
+  // Note: Calling MaybeEvictFromBackForwardCache may delete |this|.
+  // TODO(https://crbug.com/1001528): Make deletion delayed instead of immediate
+  // so upstream callers don't have to worry about UAFs.
+  void MaybeEvictFromBackForwardCache();
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts

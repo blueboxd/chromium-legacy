@@ -55,7 +55,9 @@ suite('<app-management-managed-apps>', () => {
       const permissionToggle =
           getPermissionToggleByType(appDetailView, permissionType);
       expectTrue(permissionToggle.$$('cr-toggle').disabled === policyAffected);
-      expectTrue(!!permissionToggle.$$('#policy-indicator') === policyAffected);
+      expectTrue(
+          !!permissionToggle.root.querySelector('#policyIndicator') ===
+          policyAffected);
     }
     checkToggle('CONTENT_SETTINGS_TYPE_NOTIFICATIONS', false);
     checkToggle('CONTENT_SETTINGS_TYPE_GEOLOCATION', true);

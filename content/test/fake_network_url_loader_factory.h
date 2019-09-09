@@ -18,6 +18,11 @@ namespace content {
 // 2. The default response can be overridden through the non-default
 //    constructor.
 // 3. Call SetResponse() to set specific response for a url.
+//
+// TODO(falken): Simplify/refactor this to be based on FakeNetwork as
+// they currently share a lot of code. The idea is that tests that want to
+// customize network activity should use URLLoaderInterceptor with FakeNetwork
+// instead.
 class FakeNetworkURLLoaderFactory final
     : public network::mojom::URLLoaderFactory {
  public:

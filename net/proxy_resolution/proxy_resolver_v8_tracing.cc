@@ -519,8 +519,9 @@ void Job::Start(Operation op,
   owned_self_reference_ = this;
 
   worker_task_runner()->PostTask(
-      FROM_HERE, blocking_dns_ ? base::Bind(&Job::ExecuteBlocking, this)
-                               : base::Bind(&Job::ExecuteNonBlocking, this));
+      FROM_HERE, blocking_dns_
+                     ? base::BindOnce(&Job::ExecuteBlocking, this)
+                     : base::BindOnce(&Job::ExecuteNonBlocking, this));
 }
 
 void Job::ExecuteBlocking() {
@@ -1005,7 +1006,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     create_resolver_job_ = new Job(job_params_.get(), std::move(bindings));
     create_resolver_job_->StartCreateV8Resolver(
         pac_script, &v8_resolver_,
-        base::Bind(
+        base::BindOnce(
             &ProxyResolverV8TracingFactoryImpl::CreateJob::OnV8ResolverCreated,
             base::Unretained(this)));
   }

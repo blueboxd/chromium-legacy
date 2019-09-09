@@ -4,7 +4,7 @@
 
 function testImageView() {
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.jpg');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.jpg');
 
   // Item has full size cache.
   const itemWithFullCache = new MockGalleryItem(mockEntry, null, {});
@@ -97,7 +97,7 @@ function testLoadVideo(callback) {
   const downloads = new MockFileSystem('file:///downloads');
   const getGalleryItem = function(path) {
     return new MockGalleryItem(
-        new MockFileEntry(downloads, path), null, {size: 100});
+        MockFileEntry.create(downloads, path), null, {size: 100});
   };
   const item = getGalleryItem('/test.webm');
   const effect = new ImageView.Effect.None();

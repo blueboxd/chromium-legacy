@@ -3539,11 +3539,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Stop any Find in Page searches and close the find bar when navigating to a
   // new page.
   [self closeFindInPage];
+  [self.tabModel saveSessionImmediately:NO];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   [_toolbarUIUpdater updateState];
-  [self.tabModel saveSessionImmediately:NO];
   if ([self canShowTabStrip]) {
     UIUserInterfaceSizeClass sizeClass =
         self.view.window.traitCollection.horizontalSizeClass;

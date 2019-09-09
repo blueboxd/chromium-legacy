@@ -9,14 +9,15 @@
 #include <stdint.h>
 #include <wrl.h>
 
-#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
 namespace content {
@@ -25,7 +26,8 @@ class FakeFontCollection;
 
 // Creates a new FakeFontCollection, seeded with some basic data, and returns a
 // Sender that can be used to interact with the collection.
-base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>
+base::RepeatingCallback<
+    mojo::PendingRemote<blink::mojom::DWriteFontProxy>(void)>
 CreateFakeCollectionSender();
 
 // Helper class for describing a font object. Use FakeFontCollection instead.
@@ -102,7 +104,7 @@ class FakeFontCollection : public blink::mojom::DWriteFontProxy {
   size_t MessageCount();
   MessageType GetMessageType(size_t id);
 
-  blink::mojom::DWriteFontProxyPtrInfo CreatePtr();
+  mojo::PendingRemote<blink::mojom::DWriteFontProxy> CreateRemote();
 
  protected:
   // blink::mojom::DWriteFontProxy:
@@ -138,7 +140,7 @@ class FakeFontCollection : public blink::mojom::DWriteFontProxy {
 
   std::vector<MessageType> message_types_;
 
-  mojo::BindingSet<blink::mojom::DWriteFontProxy> bindings_;
+  mojo::ReceiverSet<blink::mojom::DWriteFontProxy> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFontCollection);
 };

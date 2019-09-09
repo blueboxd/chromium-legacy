@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 using device::mojom::blink::NDEFCompatibility;
-using device::mojom::blink::NDEFRecordType;
 using device::mojom::blink::NFCPushTarget;
 
 namespace blink {
@@ -41,24 +40,6 @@ bool SetNDEFMessageURL(const String& origin,
   return origin_url.IsValid();
 }
 
-String NDEFRecordTypeToString(const NDEFRecordType& type) {
-  switch (type) {
-    case NDEFRecordType::TEXT:
-      return "text";
-    case NDEFRecordType::URL:
-      return "url";
-    case NDEFRecordType::JSON:
-      return "json";
-    case NDEFRecordType::OPAQUE_RECORD:
-      return "opaque";
-    case NDEFRecordType::EMPTY:
-      return "empty";
-  }
-
-  NOTREACHED();
-  return String();
-}
-
 NDEFCompatibility StringToNDEFCompatibility(const String& compatibility) {
   if (compatibility == "nfc-forum")
     return NDEFCompatibility::NFC_FORUM;
@@ -71,26 +52,6 @@ NDEFCompatibility StringToNDEFCompatibility(const String& compatibility) {
 
   NOTREACHED();
   return NDEFCompatibility::NFC_FORUM;
-}
-
-NDEFRecordType StringToNDEFRecordType(const String& recordType) {
-  if (recordType == "empty")
-    return NDEFRecordType::EMPTY;
-
-  if (recordType == "text")
-    return NDEFRecordType::TEXT;
-
-  if (recordType == "url")
-    return NDEFRecordType::URL;
-
-  if (recordType == "json")
-    return NDEFRecordType::JSON;
-
-  if (recordType == "opaque")
-    return NDEFRecordType::OPAQUE_RECORD;
-
-  NOTREACHED();
-  return NDEFRecordType::EMPTY;
 }
 
 NFCPushTarget StringToNFCPushTarget(const String& target) {

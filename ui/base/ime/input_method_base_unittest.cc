@@ -111,8 +111,8 @@ class ClientChangeVerifier {
 
 class InputMethodBaseTest : public testing::Test {
  private:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
 };
 
 class MockInputMethodBase : public InputMethodBase {

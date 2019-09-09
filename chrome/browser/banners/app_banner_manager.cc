@@ -276,11 +276,6 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
   return false;
 }
 
-bool AppBannerManager::CheckIfInstalled() {
-  return IsWebAppConsideredInstalled(web_contents(), validated_url_,
-                                     manifest_.start_url, manifest_url_);
-}
-
 bool AppBannerManager::ShouldDeferToRelatedApplication() const {
   for (const auto& related_app : manifest_.related_applications) {
     if (manifest_.prefer_related_applications &&
@@ -315,11 +310,7 @@ bool AppBannerManager::ShouldBypassEngagementChecks() const {
       switches::kBypassAppBannerEngagementChecks);
 }
 
-bool AppBannerManager::IsWebAppConsideredInstalled(
-    content::WebContents* web_contents,
-    const GURL& validated_url,
-    const GURL& start_url,
-    const GURL& manifest_url) {
+bool AppBannerManager::IsWebAppConsideredInstalled() {
   return false;
 }
 
@@ -385,7 +376,7 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  if (CheckIfInstalled() && !ShouldAllowWebAppReplacementInstall()) {
+  if (IsWebAppConsideredInstalled() && !ShouldAllowWebAppReplacementInstall()) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
     SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
     Stop(ALREADY_INSTALLED);

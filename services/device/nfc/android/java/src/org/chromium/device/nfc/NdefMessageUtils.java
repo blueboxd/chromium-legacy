@@ -10,7 +10,6 @@ import android.os.Build;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
-import org.chromium.device.mojom.NdefRecordType;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -28,6 +27,12 @@ public final class NdefMessageUtils {
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
     private static final String OCTET_STREAM_MIME = "application/octet-stream";
+
+    public static final String RECORD_TYPE_EMPTY = "empty";
+    public static final String RECORD_TYPE_TEXT = "text";
+    public static final String RECORD_TYPE_URL = "url";
+    public static final String RECORD_TYPE_JSON = "json";
+    public static final String RECORD_TYPE_OPAQUE = "opaque";
 
     /**
      * Converts mojo NdefMessage to android.nfc.NdefMessage
@@ -91,21 +96,22 @@ public final class NdefMessageUtils {
             throws InvalidNdefMessageException, IllegalArgumentException,
                    UnsupportedEncodingException {
         switch (record.recordType) {
-            case NdefRecordType.URL:
+            case RECORD_TYPE_URL:
                 return android.nfc.NdefRecord.createUri(new String(record.data, "UTF-8"));
-            case NdefRecordType.TEXT:
+            case RECORD_TYPE_TEXT:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     return android.nfc.NdefRecord.createTextRecord(
                             "en-US", new String(record.data, "UTF-8"));
                 } else {
                     return android.nfc.NdefRecord.createMime(TEXT_MIME, record.data);
                 }
-            case NdefRecordType.JSON:
-            case NdefRecordType.OPAQUE_RECORD:
+            case RECORD_TYPE_JSON:
+            case RECORD_TYPE_OPAQUE:
                 return android.nfc.NdefRecord.createMime(record.mediaType, record.data);
-            case NdefRecordType.EMPTY:
+            case RECORD_TYPE_EMPTY:
                 return new android.nfc.NdefRecord(
                         android.nfc.NdefRecord.TNF_EMPTY, null, null, null);
+            // TODO(https://crbug.com/520391): Support external type records.
             default:
                 throw new InvalidNdefMessageException();
         }
@@ -145,7 +151,7 @@ public final class NdefMessageUtils {
      */
     private static NdefRecord createEmptyRecord() {
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = NdefRecordType.EMPTY;
+        nfcRecord.recordType = RECORD_TYPE_EMPTY;
         nfcRecord.mediaType = "";
         nfcRecord.data = new byte[0];
         return nfcRecord;
@@ -157,7 +163,7 @@ public final class NdefMessageUtils {
     private static NdefRecord createURLRecord(Uri uri) {
         if (uri == null) return null;
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = NdefRecordType.URL;
+        nfcRecord.recordType = RECORD_TYPE_URL;
         nfcRecord.mediaType = TEXT_MIME;
         nfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(uri.toString());
         return nfcRecord;
@@ -169,9 +175,9 @@ public final class NdefMessageUtils {
     private static NdefRecord createMIMERecord(String mediaType, byte[] payload) {
         NdefRecord nfcRecord = new NdefRecord();
         if (mediaType.equals(JSON_MIME)) {
-            nfcRecord.recordType = NdefRecordType.JSON;
+            nfcRecord.recordType = RECORD_TYPE_JSON;
         } else {
-            nfcRecord.recordType = NdefRecordType.OPAQUE_RECORD;
+            nfcRecord.recordType = RECORD_TYPE_OPAQUE;
         }
         nfcRecord.mediaType = mediaType;
         nfcRecord.data = payload;
@@ -188,7 +194,7 @@ public final class NdefMessageUtils {
         }
 
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = NdefRecordType.TEXT;
+        nfcRecord.recordType = RECORD_TYPE_TEXT;
         nfcRecord.mediaType = TEXT_MIME;
         // According to NFCForum-TS-RTD_Text_1.0 specification, section 3.2.1 Syntax.
         // First byte of the payload is status byte, defined in Table 3: Status Byte Encodings.
@@ -224,7 +230,7 @@ public final class NdefMessageUtils {
      */
     private static NdefRecord createUnKnownRecord(byte[] payload) {
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = NdefRecordType.OPAQUE_RECORD;
+        nfcRecord.recordType = RECORD_TYPE_OPAQUE;
         nfcRecord.mediaType = OCTET_STREAM_MIME;
         nfcRecord.data = payload;
         return nfcRecord;

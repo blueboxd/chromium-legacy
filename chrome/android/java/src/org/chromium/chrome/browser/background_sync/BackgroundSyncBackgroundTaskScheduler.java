@@ -11,6 +11,7 @@ import android.text.format.DateUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -47,14 +48,17 @@ public class BackgroundSyncBackgroundTaskScheduler {
     // this task.
     public static final String SOONEST_EXPECTED_WAKETIME = "SoonestWakeupTime";
 
-    private static class LazyHolder {
-        static final BackgroundSyncBackgroundTaskScheduler INSTANCE =
-                new BackgroundSyncBackgroundTaskScheduler();
-    }
+    private static BackgroundSyncBackgroundTaskScheduler sInstance;
 
     @CalledByNative
     public static BackgroundSyncBackgroundTaskScheduler getInstance() {
-        return LazyHolder.INSTANCE;
+        if (sInstance == null) sInstance = new BackgroundSyncBackgroundTaskScheduler();
+        return sInstance;
+    }
+
+    @VisibleForTesting
+    static boolean hasInstance() {
+        return sInstance != null;
     }
 
     /**
@@ -164,5 +168,17 @@ public class BackgroundSyncBackgroundTaskScheduler {
      */
     public void reschedule(@BackgroundSyncTask int taskType) {
         scheduleOneOffTask(MIN_SYNC_RECOVERY_TIME, taskType);
+    }
+
+    @NativeMethods
+    interface Natives {
+        /**
+         * Chrome currently disables BackgroundSyncManager if Google Play Services aren't up-to-date
+         * at startup. Disable this check for tests, since we mock out interaction with GCM.
+         * This method can be removed once our test devices start updating Google Play Services
+         * before tests are run. https://crbug.com/514449
+         * @param disabled disable or enable the version check for Google Play Services.
+         */
+        void setPlayServicesVersionCheckDisabledForTests(boolean disabled);
     }
 }

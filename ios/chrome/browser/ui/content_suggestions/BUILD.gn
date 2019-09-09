@@ -250,7 +250,6 @@ source_set("eg_tests") {
     "//components/reading_list/core",
     "//components/search_engines",
     "//components/strings",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

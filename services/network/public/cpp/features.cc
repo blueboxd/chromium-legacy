@@ -26,9 +26,12 @@ const base::Feature kNetworkService {
       base::FEATURE_ENABLED_BY_DEFAULT
 };
 
-// Out of Blink CORS
+// Out of Blink CORS will be launched at m79. The flag will be enabled by
+// default around m81 after the feature rolled out over the finch successfully
+// at m79. Both mode will be maintained at least until m81, or around m83+ for
+// enterprise supports.
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -144,7 +144,7 @@ class BASE_EXPORT Value {
   explicit Value(const DictStorage& in_dict);
   explicit Value(DictStorage&& in_dict) noexcept;
 
-  explicit Value(const ListStorage& in_list);
+  explicit Value(span<const Value> in_list);
   explicit Value(ListStorage&& in_list) noexcept;
 
   Value& operator=(Value&& that) noexcept;
@@ -176,7 +176,7 @@ class BASE_EXPORT Value {
   const BlobStorage& GetBlob() const;
 
   ListStorage& GetList();
-  const ListStorage& GetList() const;
+  span<const Value> GetList() const;
 
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
   // a pointer to the element. Otherwise it returns nullptr.
@@ -723,7 +723,7 @@ class BASE_EXPORT ListValue : public Value {
   static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
 
   ListValue();
-  explicit ListValue(const ListStorage& in_list);
+  explicit ListValue(span<const Value> in_list);
   explicit ListValue(ListStorage&& in_list) noexcept;
 
   // Clears the contents of this ListValue

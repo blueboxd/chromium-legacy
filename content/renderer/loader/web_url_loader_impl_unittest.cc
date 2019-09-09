@@ -386,7 +386,7 @@ class WebURLLoaderImplTest : public testing::Test {
   RequestPeer* peer() { return dispatcher()->peer(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestResourceDispatcher dispatcher_;
   mojo::ScopedDataPipeProducerHandle body_handle_;
   std::unique_ptr<TestWebURLLoaderClient> client_;

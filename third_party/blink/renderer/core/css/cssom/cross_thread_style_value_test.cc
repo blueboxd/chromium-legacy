@@ -148,7 +148,7 @@ TEST_F(CrossThreadStyleValueTest, CrossThreadUnparsedValueToCSSStyleValue) {
   CSSStyleValue* style_value = value->ToCSSStyleValue();
   EXPECT_EQ(style_value->GetType(),
             CSSStyleValue::StyleValueType::kUnparsedType);
-  EXPECT_EQ(static_cast<CSSUnparsedValue*>(style_value)->ToStringForTesting(),
+  EXPECT_EQ(static_cast<CSSUnparsedValue*>(style_value)->ToString(),
             "Unparsed");
 }
 

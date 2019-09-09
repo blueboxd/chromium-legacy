@@ -11,6 +11,7 @@
 #import "components/ukm/ios/features.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -505,6 +506,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (BOOL)isWebPaymentsModifiersEnabled {
   return base::FeatureList::IsEnabled(
       payments::features::kWebPaymentsModifiers);
+}
+
++ (BOOL)isSettingsAddPaymentMethodEnabled {
+  return base::FeatureList::IsEnabled(kSettingsAddPaymentMethod);
 }
 
 #pragma mark - ScopedBlockPopupsPref

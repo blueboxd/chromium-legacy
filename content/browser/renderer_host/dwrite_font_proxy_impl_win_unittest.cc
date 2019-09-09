@@ -22,7 +22,8 @@
 #include "base/win/windows_version.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dwrite_rasterizer_support/dwrite_rasterizer_support.h"
@@ -57,7 +58,7 @@ constexpr int kDWriteMajorVersionSupportingSingleLookups = 10;
 class DWriteFontProxyImplUnitTest : public testing::Test {
  public:
   DWriteFontProxyImplUnitTest()
-      : binding_(&impl_, mojo::MakeRequest(&dwrite_font_proxy_)) {}
+      : receiver_(&impl_, dwrite_font_proxy_.BindNewPipeAndPassReceiver()) {}
 
   blink::mojom::DWriteFontProxy& dwrite_font_proxy() {
     return *dwrite_font_proxy_;
@@ -70,9 +71,9 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  blink::mojom::DWriteFontProxyPtr dwrite_font_proxy_;
+  mojo::Remote<blink::mojom::DWriteFontProxy> dwrite_font_proxy_;
   DWriteFontProxyImpl impl_;
-  mojo::Binding<blink::mojom::DWriteFontProxy> binding_;
+  mojo::Receiver<blink::mojom::DWriteFontProxy> receiver_;
 };
 
 // Derived class for tests that exercise font unique local matching mojo methods

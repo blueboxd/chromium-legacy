@@ -15,6 +15,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.HEADER_TITLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.IS_MAIN_CONTENT_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.PRIMARY_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.SCRIMVIEW_OBSERVER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.TINT;
@@ -110,6 +111,8 @@ class TabGridSheetViewBinder {
             int index = (Integer) model.get(INITIAL_SCROLL_INDEX);
             ((LinearLayoutManager) viewHolder.contentView.getLayoutManager())
                     .scrollToPositionWithOffset(index, 0);
+        } else if (IS_MAIN_CONTENT_VISIBLE == propertyKey) {
+            viewHolder.contentView.setVisibility(View.VISIBLE);
         }
     }
 }

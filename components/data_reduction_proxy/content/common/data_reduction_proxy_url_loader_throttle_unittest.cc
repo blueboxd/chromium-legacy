@@ -46,7 +46,8 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   }
 
   void AddThrottleConfigObserver(
-      mojom::DataReductionProxyThrottleConfigObserverPtr /* observer */)
+      mojo::PendingRemote<
+          mojom::DataReductionProxyThrottleConfigObserver> /* observer */)
       override {
     ++observer_count_;
   }

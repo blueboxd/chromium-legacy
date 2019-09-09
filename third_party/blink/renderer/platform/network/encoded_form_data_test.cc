@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/mojom/url_loader.mojom-blink.h"
@@ -155,8 +156,8 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_FormDataElement) {
 
   FormDataElement original4;
   original4.type_ = blink::FormDataElement::kDataPipe;
-  network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
-  auto request = mojo::MakeRequest(&data_pipe_getter);
+  mojo::PendingRemote<network::mojom::blink::DataPipeGetter> data_pipe_getter;
+  ignore_result(data_pipe_getter.InitWithNewPipeAndPassReceiver());
   original4.data_pipe_getter_ =
       base::MakeRefCounted<blink::WrappedDataPipeGetter>(
           std::move(data_pipe_getter));

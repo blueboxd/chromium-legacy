@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <wrl.h>
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -43,7 +44,7 @@ class GDIFontEmulationTest : public testing::Test {
     fake_collection_ = std::make_unique<FakeFontCollection>();
     SetupFonts(fake_collection_.get());
     DWriteFontCollectionProxy::Create(&collection_, factory.Get(),
-                                      fake_collection_->CreatePtr());
+                                      fake_collection_->CreateRemote());
     EXPECT_TRUE(collection_.Get());
 
     content::SetPreSandboxWarmupFontMgrForTesting(

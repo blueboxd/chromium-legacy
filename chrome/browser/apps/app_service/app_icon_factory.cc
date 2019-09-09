@@ -215,7 +215,7 @@ void RunCallbackWithImageSkia(int size_hint_in_dip,
     }
 
     processed_image.MakeThreadSafe();
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(),
          base::TaskPriority::USER_VISIBLE},

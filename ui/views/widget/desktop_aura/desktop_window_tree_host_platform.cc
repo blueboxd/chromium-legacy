@@ -100,18 +100,24 @@ DesktopWindowTreeHostPlatform::DesktopWindowTreeHostPlatform(
       desktop_native_widget_aura_(desktop_native_widget_aura) {}
 
 DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
-// TODO(msisov): Once destruction goes from DWTHX11 to DWTHPlatform, remove this
-// guard.
-#if !defined(USE_X11)
-  DCHECK(got_on_closed_);
+  DCHECK(!platform_window()) << "The host must be closed before destroying it.";
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
-#endif
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   if (params.type == Widget::InitParams::TYPE_WINDOW)
     content_window()->SetProperty(aura::client::kAnimationsDisabledKey, true);
+
+  // If we have a parent, record the parent/child relationship. We use this
+  // data during destruction to make sure that when we try to close a parent
+  // window, we also destroy all child windows.
+  if (params.parent && params.parent->GetHost()) {
+    window_parent_ =
+        static_cast<DesktopWindowTreeHostPlatform*>(params.parent->GetHost());
+    DCHECK(window_parent_);
+    window_parent_->window_children_.insert(this);
+  }
 
   ui::PlatformWindowInitProperties properties =
       ConvertWidgetInitParamsToInitProperties(params);
@@ -182,37 +188,61 @@ DesktopWindowTreeHostPlatform::CreateDragDropClient(
 }
 
 void DesktopWindowTreeHostPlatform::Close() {
-  if (waiting_for_close_now_)
+  // If we are in process of closing or the PlatformWindow has already been
+  // closed, do nothing.
+  if (close_widget_factory_.HasWeakPtrs() || !platform_window())
     return;
 
-  desktop_native_widget_aura_->content_window()->Hide();
+  content_window()->Hide();
 
   // Hide while waiting for the close.
   // Please note that it's better to call WindowTreeHost::Hide, which also calls
   // PlatformWindow::Hide and Compositor::SetVisible(false).
   Hide();
 
-  waiting_for_close_now_ = true;
+  // And we delay the close so that if we are called from an ATL callback,
+  // we don't destroy the window before the callback returned (as the caller
+  // may delete ourselves on destroy and the ATL callback would still
+  // dereference us when the callback returns).
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&DesktopWindowTreeHostPlatform::CloseNow,
-                                weak_factory_.GetWeakPtr()));
-}
+                                close_widget_factory_.GetWeakPtr()));
+}  // namespace views
 
 void DesktopWindowTreeHostPlatform::CloseNow() {
-  auto weak_ref = weak_factory_.GetWeakPtr();
-  SetWmDropHandler(platform_window(), nullptr);
-  // Deleting the PlatformWindow may not result in OnClosed() being called, if
-  // not behave as though it was.
-  SetPlatformWindow(nullptr);
-  if (!weak_ref || got_on_closed_)
+  if (!platform_window())
     return;
 
-  RemoveNonClientEventFilter();
+#if defined(USE_OZONE)
+  SetWmDropHandler(platform_window(), nullptr);
+#endif
 
+  platform_window()->PrepareForShutdown();
+
+  ReleaseCapture();
   native_widget_delegate_->OnNativeWidgetDestroying();
 
-  got_on_closed_ = true;
-  desktop_native_widget_aura_->OnHostClosed();
+  // If we have children, close them. Use a copy for iteration because they'll
+  // remove themselves.
+  std::set<DesktopWindowTreeHostPlatform*> window_children_copy =
+      window_children_;
+  for (auto* child : window_children_copy)
+    child->CloseNow();
+  DCHECK(window_children_.empty());
+
+  // If we have a parent, remove ourselves from its children list.
+  if (window_parent_) {
+    window_parent_->window_children_.erase(this);
+    window_parent_ = nullptr;
+  }
+
+  // Destroy the compositor before destroying the |platform_window()| since
+  // shutdown may try to swap, and the swap without a window may cause an error
+  // in X Server or Wayland, which causes a crash with in-process renderer, for
+  // example.
+  DestroyCompositor();
+
+  platform_window()->Close();
 }
 
 aura::WindowTreeHost* DesktopWindowTreeHostPlatform::AsWindowTreeHost() {
@@ -597,7 +627,8 @@ void DesktopWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 
 void DesktopWindowTreeHostPlatform::OnClosed() {
   RemoveNonClientEventFilter();
-  got_on_closed_ = true;
+
+  SetPlatformWindow(nullptr);
   desktop_native_widget_aura_->OnHostClosed();
 }
 

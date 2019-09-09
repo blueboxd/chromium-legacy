@@ -59,7 +59,8 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
       CrxInstallerFactory crx_installer_factory);
 
  private:
-  const Extension* GetExtensionById(const web_app::AppId& app_id) const;
+  // May return nullptr if app_id is not found or extension is disabled.
+  const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
   void OnExtensionInstalled(
       const GURL& app_url,

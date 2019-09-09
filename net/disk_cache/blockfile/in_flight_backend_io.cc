@@ -365,23 +365,22 @@ void BackendIO::ExecuteEntryOperation() {
     case OP_READ:
       result_ =
           entry_->ReadDataImpl(index_, offset_, buf_.get(), buf_len_,
-                               base::Bind(&BackendIO::OnIOComplete, this));
+                               base::BindOnce(&BackendIO::OnIOComplete, this));
       break;
     case OP_WRITE:
-      result_ =
-          entry_->WriteDataImpl(index_, offset_, buf_.get(), buf_len_,
-                                base::Bind(&BackendIO::OnIOComplete, this),
-                                truncate_);
+      result_ = entry_->WriteDataImpl(
+          index_, offset_, buf_.get(), buf_len_,
+          base::BindOnce(&BackendIO::OnIOComplete, this), truncate_);
       break;
     case OP_READ_SPARSE:
       result_ = entry_->ReadSparseDataImpl(
-                    offset64_, buf_.get(), buf_len_,
-                    base::Bind(&BackendIO::OnIOComplete, this));
+          offset64_, buf_.get(), buf_len_,
+          base::BindOnce(&BackendIO::OnIOComplete, this));
       break;
     case OP_WRITE_SPARSE:
       result_ = entry_->WriteSparseDataImpl(
-                    offset64_, buf_.get(), buf_len_,
-                    base::Bind(&BackendIO::OnIOComplete, this));
+          offset64_, buf_.get(), buf_len_,
+          base::BindOnce(&BackendIO::OnIOComplete, this));
       break;
     case OP_GET_RANGE:
       result_ = entry_->GetAvailableRangeImpl(offset64_, buf_len_, start_);
@@ -392,7 +391,7 @@ void BackendIO::ExecuteEntryOperation() {
       break;
     case OP_IS_READY:
       result_ = entry_->ReadyForSparseIOImpl(
-                    base::Bind(&BackendIO::OnIOComplete, this));
+          base::BindOnce(&BackendIO::OnIOComplete, this));
       break;
     default:
       NOTREACHED() << "Invalid Operation";
@@ -629,7 +628,7 @@ void InFlightBackendIO::OnOperationComplete(BackgroundIO* operation,
 void InFlightBackendIO::PostOperation(const base::Location& from_here,
                                       BackendIO* operation) {
   background_thread_->PostTask(
-      from_here, base::Bind(&BackendIO::ExecuteOperation, operation));
+      from_here, base::BindOnce(&BackendIO::ExecuteOperation, operation));
   OnOperationPosted(operation);
 }
 

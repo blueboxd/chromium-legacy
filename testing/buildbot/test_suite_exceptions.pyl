@@ -1780,6 +1780,12 @@
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
         ],
       },
+      'linux-oor-cors-rel': {
+        'args': [
+          '--additional-driver-flag=--enable-features=OutOfBlinkCors',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors'
+        ],
+      },
       'mac10.10-blink-rel-dummy': {
         'swarming': {
           'shards': 20,

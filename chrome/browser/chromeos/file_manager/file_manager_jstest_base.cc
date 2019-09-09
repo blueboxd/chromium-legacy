@@ -45,12 +45,11 @@ class TestFilesDataSource : public content::URLDataSource {
       const std::string& path,
       const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override {
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(),
-         base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(&TestFilesDataSource::ReadFile, base::Unretained(this),
-                       path, callback));
+    base::PostTask(FROM_HERE,
+                   {base::ThreadPool(), base::MayBlock(),
+                    base::TaskPriority::USER_BLOCKING},
+                   base::BindOnce(&TestFilesDataSource::ReadFile,
+                                  base::Unretained(this), path, callback));
   }
 
   void ReadFile(const std::string& path,

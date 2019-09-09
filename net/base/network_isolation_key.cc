@@ -101,7 +101,7 @@ bool NetworkIsolationKey::FromValue(
   if (value.type() != base::Value::Type::LIST)
     return false;
 
-  const base::Value::ListStorage& list = value.GetList();
+  base::span<const base::Value> list = value.GetList();
   if (list.empty()) {
     *network_isolation_key = NetworkIsolationKey();
     return true;

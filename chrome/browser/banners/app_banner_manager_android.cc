@@ -146,16 +146,13 @@ std::string AppBannerManagerAndroid::GetBannerType() {
                                     : "play";
 }
 
-bool AppBannerManagerAndroid::IsWebAppConsideredInstalled(
-    content::WebContents* web_contents,
-    const GURL& validated_url,
-    const GURL& start_url,
-    const GURL& manifest_url) {
+bool AppBannerManagerAndroid::IsWebAppConsideredInstalled() {
   // Whether a WebAPK is installed or is being installed. IsWebApkInstalled
   // will still detect the presence of a WebAPK even if Chrome's data is
   // cleared.
-  return ShortcutHelper::IsWebApkInstalled(web_contents->GetBrowserContext(),
-                                           start_url, manifest_url);
+  DCHECK(!manifest_.IsEmpty());
+  return ShortcutHelper::IsWebApkInstalled(web_contents()->GetBrowserContext(),
+                                           manifest_.start_url, manifest_url_);
 }
 
 InstallableParams

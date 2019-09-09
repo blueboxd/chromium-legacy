@@ -1529,6 +1529,7 @@ Polymer({
    */
   onPinDialogCanceled_: function(e) {
     this.closePinDialog();
+    this.cancel();
   },
 
   /**

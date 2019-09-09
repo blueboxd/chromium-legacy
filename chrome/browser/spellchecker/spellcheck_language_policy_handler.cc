@@ -85,7 +85,7 @@ void SpellcheckLanguagePolicyHandler::SortForcedLanguages(
     return;
 
   // Separate the valid languages from the unknown / unsupported languages.
-  const base::Value::ListStorage& forced_languages = value->GetList();
+  base::span<const base::Value> forced_languages = value->GetList();
   for (const base::Value& language : forced_languages) {
     std::string current_language =
         spellcheck::GetCorrespondingSpellCheckLanguage(

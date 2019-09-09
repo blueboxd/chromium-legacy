@@ -363,7 +363,7 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
   }
 
   // Taking this pointer here avoids undefined behaviour from calling
-  // base::Passed before mass_doom_entry_hashes.get().
+  // std::move() before mass_doom_entry_hashes.get().
   std::vector<uint64_t>* mass_doom_entry_hashes_ptr =
       mass_doom_entry_hashes.get();
 
@@ -372,7 +372,7 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
       base::BindOnce(&SimpleSynchronousEntry::DeleteEntrySetFiles,
                      mass_doom_entry_hashes_ptr, path_),
       base::BindOnce(&SimpleBackendImpl::DoomEntriesComplete, AsWeakPtr(),
-                     base::Passed(&mass_doom_entry_hashes), barrier_callback));
+                     std::move(mass_doom_entry_hashes), barrier_callback));
 }
 
 int32_t SimpleBackendImpl::GetEntryCount() const {

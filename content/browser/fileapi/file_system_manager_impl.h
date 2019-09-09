@@ -10,7 +10,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -22,9 +21,10 @@
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -65,7 +65,8 @@ class CONTENT_EXPORT FileSystemManagerImpl
   ~FileSystemManagerImpl() override;
   base::WeakPtr<FileSystemManagerImpl> GetWeakPtr();
 
-  void BindRequest(blink::mojom::FileSystemManagerRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
 
   // blink::mojom::FileSystem
   void Open(const url::Origin& origin,
@@ -93,22 +94,27 @@ class CONTENT_EXPORT FileSystemManagerImpl
               ExistsCallback callback) override;
   void ReadDirectory(
       const GURL& path,
-      blink::mojom::FileSystemOperationListenerPtr listener) override;
+      mojo::PendingRemote<blink::mojom::FileSystemOperationListener>
+          pending_listener) override;
   void ReadDirectorySync(const GURL& path,
                          ReadDirectorySyncCallback callback) override;
   void Write(const GURL& file_path,
              const std::string& blob_uuid,
              int64_t position,
-             blink::mojom::FileSystemCancellableOperationRequest op_request,
-             blink::mojom::FileSystemOperationListenerPtr listener) override;
+             mojo::PendingReceiver<blink::mojom::FileSystemCancellableOperation>
+                 op_receiver,
+             mojo::PendingRemote<blink::mojom::FileSystemOperationListener>
+                 pending_listener) override;
   void WriteSync(const GURL& file_path,
                  const std::string& blob_uuid,
                  int64_t position,
                  WriteSyncCallback callback) override;
-  void Truncate(const GURL& file_path,
-                int64_t length,
-                blink::mojom::FileSystemCancellableOperationRequest op_request,
-                TruncateCallback callback) override;
+  void Truncate(
+      const GURL& file_path,
+      int64_t length,
+      mojo::PendingReceiver<blink::mojom::FileSystemCancellableOperation>
+          op_receiver,
+      TruncateCallback callback) override;
   void TruncateSync(const GURL& file_path,
                     int64_t length,
                     TruncateSyncCallback callback) override;
@@ -195,7 +201,7 @@ class CONTENT_EXPORT FileSystemManagerImpl
   }
 
   OperationListenerID AddOpListener(
-      blink::mojom::FileSystemOperationListenerPtr listener);
+      mojo::Remote<blink::mojom::FileSystemOperationListener> listener);
   void RemoveOpListener(OperationListenerID listener_id);
   blink::mojom::FileSystemOperationListener* GetOpListener(
       OperationListenerID listener_id);
@@ -207,14 +213,14 @@ class CONTENT_EXPORT FileSystemManagerImpl
   const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
 
-  mojo::BindingSet<blink::mojom::FileSystemManager> bindings_;
-  mojo::StrongBindingSet<blink::mojom::FileSystemCancellableOperation>
+  mojo::ReceiverSet<blink::mojom::FileSystemManager> receivers_;
+  mojo::UniqueReceiverSet<blink::mojom::FileSystemCancellableOperation>
       cancellable_operations_;
-  mojo::StrongBindingSet<blink::mojom::ReceivedSnapshotListener>
+  mojo::UniqueReceiverSet<blink::mojom::ReceivedSnapshotListener>
       snapshot_listeners_;
 
   std::unordered_map<OperationListenerID,
-                     blink::mojom::FileSystemOperationListenerPtr>
+                     mojo::Remote<blink::mojom::FileSystemOperationListener>>
       op_listeners_;
   OperationListenerID next_operation_listener_id_ = 1;
 

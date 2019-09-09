@@ -31,7 +31,7 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,8 +98,7 @@ class VideoCaptureTest : public testing::Test,
             std::make_unique<media::TestAudioThread>())),
         audio_system_(
             std::make_unique<media::AudioSystemImpl>(audio_manager_.get())),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        observer_binding_(this) {}
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~VideoCaptureTest() override { audio_manager_->Shutdown(); }
 
   void SetUp() override {
@@ -210,9 +209,8 @@ class VideoCaptureTest : public testing::Test,
         .Times(AnyNumber())
         .WillRepeatedly(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
 
-    media::mojom::VideoCaptureObserverPtr observer;
-    observer_binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(DeviceId(), opened_session_id_, params, std::move(observer));
+    host_->Start(DeviceId(), opened_session_id_, params,
+                 observer_receiver_.BindNewPipeAndPassRemote());
 
     run_loop.Run();
   }
@@ -231,9 +229,8 @@ class VideoCaptureTest : public testing::Test,
     // capture is stopped immediately.
     EXPECT_CALL(*this, OnStateChanged(media::mojom::VideoCaptureState::STARTED))
         .Times(AtMost(1));
-    media::mojom::VideoCaptureObserverPtr observer;
-    observer_binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(DeviceId(), opened_session_id_, params, std::move(observer));
+    host_->Start(DeviceId(), opened_session_id_, params,
+                 observer_receiver_.BindNewPipeAndPassRemote());
 
     EXPECT_CALL(*this,
                 OnStateChanged(media::mojom::VideoCaptureState::STOPPED));
@@ -317,7 +314,7 @@ class VideoCaptureTest : public testing::Test,
   std::string opened_device_label_;
 
   std::unique_ptr<VideoCaptureHost> host_;
-  mojo::Binding<media::mojom::VideoCaptureObserver> observer_binding_;
+  mojo::Receiver<media::mojom::VideoCaptureObserver> observer_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureTest);
 };

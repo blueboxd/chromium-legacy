@@ -71,7 +71,7 @@ function testModel() {
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel(
-      [new MockFileEntry(drive, '/root/shortcut')]);
+      [MockFileEntry.create(drive, '/root/shortcut')]);
   const recentItem = new NavigationModelFakeItem(
       'recent-label', NavigationModelItemType.RECENT, recentFakeEntry);
 
@@ -120,7 +120,7 @@ function testNoRecentOrLinuxFiles() {
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel(
-      [new MockFileEntry(drive, '/root/shortcut')]);
+      [MockFileEntry.create(drive, '/root/shortcut')]);
   const recentItem = null;
 
   const model = new NavigationListModel(
@@ -144,7 +144,7 @@ function testAddAndRemoveShortcuts() {
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel(
-      [new MockFileEntry(drive, '/root/shortcut')]);
+      [MockFileEntry.create(drive, '/root/shortcut')]);
   const recentItem = null;
 
   const model = new NavigationListModel(
@@ -154,7 +154,7 @@ function testAddAndRemoveShortcuts() {
   assertEquals(3, model.length);
 
   // Add a shortcut at the tail, shortcuts are sorted by their label.
-  const addShortcut = new MockFileEntry(drive, '/root/shortcut2');
+  const addShortcut = MockFileEntry.create(drive, '/root/shortcut2');
   shortcutListModel.splice(1, 0, addShortcut);
 
   assertEquals(4, model.length);
@@ -166,7 +166,7 @@ function testAddAndRemoveShortcuts() {
       (model.item(1)).label);
 
   // Add a shortcut at the head.
-  const headShortcut = new MockFileEntry(drive, '/root/head');
+  const headShortcut = MockFileEntry.create(drive, '/root/head');
   shortcutListModel.splice(0, 0, headShortcut);
 
   assertEquals(5, model.length);
@@ -207,7 +207,7 @@ function testAddAndRemoveVolumes() {
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel(
-      [new MockFileEntry(drive, '/root/shortcut')]);
+      [MockFileEntry.create(drive, '/root/shortcut')]);
   const recentItem = null;
 
   const model = new NavigationListModel(
@@ -255,7 +255,7 @@ function testAddAndRemoveVolumes() {
       (model.item(4)).volumeInfo.volumeId);
 
   // Create a shortcut on the 'hoge' volume.
-  shortcutListModel.splice(1, 0, new MockFileEntry(hoge, '/shortcut2'));
+  shortcutListModel.splice(1, 0, MockFileEntry.create(hoge, '/shortcut2'));
 
   assertEquals(6, model.length);
   assertEquals(
@@ -286,8 +286,8 @@ function testOrderAndNestItems() {
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel([
-    new MockFileEntry(drive, '/root/shortcut'),
-    new MockFileEntry(drive, '/root/shortcut2')
+    MockFileEntry.create(drive, '/root/shortcut'),
+    MockFileEntry.create(drive, '/root/shortcut2')
   ]);
 
   const recentItem = new NavigationModelFakeItem(

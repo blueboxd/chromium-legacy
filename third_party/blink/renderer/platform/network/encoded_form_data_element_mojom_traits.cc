@@ -66,29 +66,31 @@ StructTraits<blink::mojom::FetchAPIDataElementDataView,
 }
 
 // static
-network::mojom::blink::DataPipeGetterPtrInfo StructTraits<
+mojo::PendingRemote<network::mojom::blink::DataPipeGetter> StructTraits<
     blink::mojom::FetchAPIDataElementDataView,
     blink::FormDataElement>::data_pipe_getter(const blink::FormDataElement&
                                                   data) {
   if (data.type_ == blink::FormDataElement::kDataPipe) {
     if (!data.data_pipe_getter_)
-      return nullptr;
-    network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
-    (*data.data_pipe_getter_->GetPtr())
-        ->Clone(mojo::MakeRequest(&data_pipe_getter));
-    return data_pipe_getter.PassInterface();
+      return mojo::NullRemote();
+    mojo::PendingRemote<network::mojom::blink::DataPipeGetter> data_pipe_getter;
+    data.data_pipe_getter_->GetDataPipeGetter()->Clone(
+        data_pipe_getter.InitWithNewPipeAndPassReceiver());
+    return data_pipe_getter;
   }
   if (data.type_ == blink::FormDataElement::kEncodedBlob) {
     if (data.optional_blob_data_handle_) {
       blink::mojom::blink::BlobPtr blob_ptr(blink::mojom::blink::BlobPtrInfo(
           data.optional_blob_data_handle_->CloneBlobRemote().PassPipe(),
           blink::mojom::blink::Blob::Version_));
-      network::mojom::blink::DataPipeGetterPtr data_pipe_getter_ptr;
-      blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
-      return data_pipe_getter_ptr.PassInterface();
+      mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+          data_pipe_getter_remote;
+      blob_ptr->AsDataPipeGetter(
+          data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
+      return data_pipe_getter_remote;
     }
   }
-  return nullptr;
+  return mojo::NullRemote();
 }
 
 // static
@@ -139,15 +141,13 @@ bool StructTraits<blink::mojom::FetchAPIDataElementDataView,
     }
     case network::mojom::DataElementType::kDataPipe: {
       out->type_ = blink::FormDataElement::kDataPipe;
-      auto data_pipe_ptr_info = data.TakeDataPipeGetter<
-          network::mojom::blink::DataPipeGetterPtrInfo>();
-      DCHECK(data_pipe_ptr_info.is_valid());
+      auto data_pipe_ptr_remote = data.TakeDataPipeGetter<
+          mojo::PendingRemote<network::mojom::blink::DataPipeGetter>>();
+      DCHECK(data_pipe_ptr_remote.is_valid());
 
-      network::mojom::blink::DataPipeGetterPtr data_pipe_getter;
-      data_pipe_getter.Bind(std::move(data_pipe_ptr_info));
       out->data_pipe_getter_ =
           base::MakeRefCounted<blink::WrappedDataPipeGetter>(
-              std::move(data_pipe_getter));
+              std::move(data_pipe_ptr_remote));
       break;
     }
     case network::mojom::DataElementType::kBlob:

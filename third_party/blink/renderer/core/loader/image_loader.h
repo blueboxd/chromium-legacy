@@ -38,10 +38,11 @@
 
 namespace blink {
 
-class IncrementLoadEventDelayCount;
+class ContainerNode;
 class Element;
-class LayoutImageResource;
 class ExceptionState;
+class IncrementLoadEventDelayCount;
+class LayoutImageResource;
 class ScriptState;
 
 class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,

@@ -161,10 +161,6 @@ id<GREYMatcher> BookmarksNavigationBarDoneButton() {
   return [ChromeMatchersAppInterface bookmarksNavigationBarDoneButton];
 }
 
-id<GREYMatcher> AccountConsistencySetupSigninButton() {
-  return [ChromeMatchersAppInterface accountConsistencySetupSigninButton];
-}
-
 id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
   return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
 }
@@ -207,6 +203,14 @@ id<GREYMatcher> SettingsDoneButton() {
 
 id<GREYMatcher> SyncSettingsConfirmButton() {
   return [ChromeMatchersAppInterface syncSettingsConfirmButton];
+}
+
+id<GREYMatcher> PaymentMethodsButton() {
+  return [ChromeMatchersAppInterface paymentMethodsButton];
+}
+
+id<GREYMatcher> AddPaymentMethodButton() {
+  return [ChromeMatchersAppInterface addPaymentMethodButton];
 }
 
 id<GREYMatcher> ToolsMenuView() {

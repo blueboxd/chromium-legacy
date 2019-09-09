@@ -857,7 +857,7 @@ void SimpleEntryImpl::OpenEntryInternal(
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, result_state,
-      std::move(callback), start_time, last_used_time, base::Passed(&results),
+      std::move(callback), start_time, last_used_time, std::move(results),
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END);
 
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
@@ -902,7 +902,7 @@ void SimpleEntryImpl::CreateEntryInternal(
                                     start_time, file_tracker_, results.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, result_state,
-      std::move(callback), start_time, base::Time(), base::Passed(&results),
+      std::move(callback), start_time, base::Time(), std::move(results),
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_END);
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
@@ -965,7 +965,7 @@ void SimpleEntryImpl::OpenOrCreateEntryInternal(
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, result_state,
-      std::move(callback), start_time, last_used_time, base::Passed(&results),
+      std::move(callback), start_time, last_used_time, std::move(results),
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END);
 
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
@@ -1011,10 +1011,10 @@ void SimpleEntryImpl::CloseInternal() {
         &SimpleSynchronousEntry::Close, base::Unretained(synchronous_entry_),
         SimpleEntryStat(last_used_, last_modified_, data_size_,
                         sparse_data_size_),
-        base::Passed(&crc32s_to_write), base::RetainedRef(stream_0_data_),
+        std::move(crc32s_to_write), base::RetainedRef(stream_0_data_),
         results.get());
     OnceClosure reply = base::BindOnce(&SimpleEntryImpl::CloseOperationComplete,
-                                       this, base::Passed(&results));
+                                       this, std::move(results));
     synchronous_entry_ = nullptr;
     prioritized_task_runner_->PostTaskAndReply(
         FROM_HERE, std::move(task), std::move(reply), entry_priority_);
@@ -1121,7 +1121,7 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
       read_req, entry_stat.get(), base::RetainedRef(buf), result.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::ReadOperationComplete, this, stream_index, offset,
-      std::move(callback), base::Passed(&entry_stat), base::Passed(&result));
+      std::move(callback), std::move(entry_stat), std::move(result));
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
   return net::ERR_IO_PENDING;
@@ -1239,10 +1239,10 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
           stream_index, offset, buf_len, initial_crc, truncate,
           doom_state_ != DOOM_NONE, request_update_crc),
       base::Unretained(buf), entry_stat.get(), write_result.get());
-  OnceClosure reply = base::BindOnce(
-      &SimpleEntryImpl::WriteOperationComplete, this, stream_index,
-      std::move(callback), base::Passed(&entry_stat),
-      base::Passed(&write_result), base::RetainedRef(buf));
+  OnceClosure reply =
+      base::BindOnce(&SimpleEntryImpl::WriteOperationComplete, this,
+                     stream_index, std::move(callback), std::move(entry_stat),
+                     std::move(write_result), base::RetainedRef(buf));
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
 }
@@ -1287,7 +1287,7 @@ void SimpleEntryImpl::ReadSparseDataInternal(
       base::RetainedRef(buf), last_used.get(), result.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::ReadSparseOperationComplete, this, std::move(callback),
-      base::Passed(&last_used), base::Passed(&result));
+      std::move(last_used), std::move(result));
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
 }
@@ -1343,7 +1343,7 @@ void SimpleEntryImpl::WriteSparseDataInternal(
       result.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::WriteSparseOperationComplete, this, std::move(callback),
-      base::Passed(&entry_stat), base::Passed(&result));
+      std::move(entry_stat), std::move(result));
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
 }
@@ -1376,7 +1376,7 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
                      out_start, result.get());
   OnceClosure reply =
       base::BindOnce(&SimpleEntryImpl::GetAvailableRangeOperationComplete, this,
-                     std::move(callback), base::Passed(&result));
+                     std::move(callback), std::move(result));
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
 }

@@ -187,9 +187,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // GetAppIdentifier() must return a valid value for this method to work.
   bool CheckIfShouldShowBanner();
 
-  // Returns whether the site is already installed as a web app.
-  bool CheckIfInstalled();
-
   // Returns whether the site would prefer a related application be installed
   // instead of the PWA or a related application is already installed.
   bool ShouldDeferToRelatedApplication() const;
@@ -221,13 +218,10 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual bool IsRelatedAppInstalled(
       const blink::Manifest::RelatedApplication& related_app) const = 0;
 
-  // Returns true if the web app at |start_url| has already been installed, or
+  // Returns whether the current page is already installed as a web app, or
   // should be considered installed. On Android, we rely on a heuristic that
   // may yield false negatives or false positives (crbug.com/786268).
-  virtual bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
-                                           const GURL& validated_url,
-                                           const GURL& start_url,
-                                           const GURL& manifest_url);
+  virtual bool IsWebAppConsideredInstalled();
 
   // Returns whether the installed web app at the current page can be
   // reinstalled over the top of the existing installation.

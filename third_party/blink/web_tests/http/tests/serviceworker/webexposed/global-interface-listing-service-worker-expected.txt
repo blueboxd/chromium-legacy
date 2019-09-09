@@ -74,8 +74,10 @@ interface BroadcastChannel : EventTarget
     setter onmessage
     setter onmessageerror
 interface ByteLengthQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
     method constructor
-    method size
 interface CSSSkewX : CSSTransformComponent
     attribute @@toStringTag
     getter ax
@@ -162,8 +164,10 @@ interface CookieStore : EventTarget
     method set
     method subscribeToChanges
 interface CountQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
     method constructor
-    method size
 interface Crypto
     attribute @@toStringTag
     getter subtle

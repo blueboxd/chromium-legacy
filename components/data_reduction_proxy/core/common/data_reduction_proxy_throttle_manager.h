@@ -8,7 +8,7 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace data_reduction_proxy {
 
@@ -72,9 +72,9 @@ class DataReductionProxyThrottleManager
                      /* check_empty = */ true>
       same_sequence_observers_;
 
-  mojo::Binding<
+  mojo::Receiver<
       data_reduction_proxy::mojom::DataReductionProxyThrottleConfigObserver>
-      binding_;
+      receiver_{this};
 
   // The last seen config values.
   mojom::DataReductionProxyThrottleConfigPtr last_proxy_config_;

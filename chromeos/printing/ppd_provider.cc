@@ -1293,7 +1293,7 @@ class PpdProviderImpl : public PpdProvider {
       }
 
       // entry must start with |num_strings| strings
-      const base::Value::ListStorage& list = entry.GetList();
+      base::span<const base::Value> list = entry.GetList();
       if (list.size() < num_strings) {
         return PpdProvider::INTERNAL_ERROR;
       }
@@ -1357,7 +1357,7 @@ class PpdProviderImpl : public PpdProvider {
     // Fetched data should be in the form {[effective_make_and_model],
     // [manufacturer], [model], [dictionary of metadata]}
     for (const auto& entry : top_list) {
-      const base::Value::ListStorage& list = entry.GetList();
+      base::span<const base::Value> list = entry.GetList();
 
       ReverseIndexJSON rij_entry;
       rij_entry.effective_make_and_model = list[0].GetString();
@@ -1392,7 +1392,7 @@ class PpdProviderImpl : public PpdProvider {
     // Fetched data should be in form [[name], [canonical name],
     // {restrictions}]
     for (const auto& entry : top_list) {
-      const base::Value::ListStorage& list = entry.GetList();
+      base::span<const base::Value> list = entry.GetList();
       ManufacturersJSON mj_entry;
       mj_entry.name = list[0].GetString();
       mj_entry.reference = list[1].GetString();
@@ -1426,7 +1426,7 @@ class PpdProviderImpl : public PpdProvider {
     // Fetched data should be in form [[name], [canonical name],
     // {restrictions}]
     for (const auto& entry : top_list) {
-      const base::Value::ListStorage& list = entry.GetList();
+      base::span<const base::Value> list = entry.GetList();
       PrintersJSON pj_entry;
       pj_entry.name = list[0].GetString();
       pj_entry.effective_make_and_model = list[1].GetString();
@@ -1460,7 +1460,7 @@ class PpdProviderImpl : public PpdProvider {
     // Fetched data should be in the form {[effective_make_and_model],
     // [manufacturer], [model], [dictionary of metadata]}
     for (const auto& entry : top_list) {
-      const base::Value::ListStorage& list = entry.GetList();
+      base::span<const base::Value> list = entry.GetList();
 
       PpdIndexJSON pij_entry;
       pij_entry.effective_make_and_model = list[0].GetString();

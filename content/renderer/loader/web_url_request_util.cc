@@ -15,7 +15,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -245,8 +245,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
           http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         break;
       case network::mojom::DataElementType::kDataPipe: {
-        http_body.AppendDataPipe(
-            element.CloneDataPipeGetter().PassInterface().PassHandle());
+        http_body.AppendDataPipe(element.CloneDataPipeGetter().PassPipe());
         break;
       }
       case network::mojom::DataElementType::kUnknown:
@@ -304,27 +303,29 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
             blink::mojom::BlobPtrInfo(std::move(element.optional_blob_handle),
                                       blink::mojom::Blob::Version_));
 
-        network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-        blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+        mojo::PendingRemote<network::mojom::DataPipeGetter>
+            data_pipe_getter_remote;
+        blob_ptr->AsDataPipeGetter(
+            data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
-        request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+        request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
         break;
       }
       case WebHTTPBody::Element::kTypeDataPipe: {
-        // Convert the raw message pipe to network::mojom::DataPipeGetterPtr.
-        network::mojom::DataPipeGetterPtr data_pipe_getter;
-        data_pipe_getter.Bind(network::mojom::DataPipeGetterPtrInfo(
-            std::move(element.data_pipe_getter), 0u));
+        // Convert the raw message pipe to
+        // mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter.
+        mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter(
+            mojo::PendingRemote<network::mojom::DataPipeGetter>(
+                std::move(element.data_pipe_getter), 0u));
 
         // Set the cloned DataPipeGetter to the output |request_body|, while
         // keeping the original message pipe back in the input |httpBody|. This
         // way the consumer of the |httpBody| can retrieve the data pipe
         // multiple times (e.g. during redirects) until the request is finished.
-        network::mojom::DataPipeGetterPtr cloned_getter;
-        data_pipe_getter->Clone(mojo::MakeRequest(&cloned_getter));
+        mojo::PendingRemote<network::mojom::DataPipeGetter> cloned_getter;
+        data_pipe_getter->Clone(cloned_getter.InitWithNewPipeAndPassReceiver());
         request_body->AppendDataPipe(std::move(cloned_getter));
-        element.data_pipe_getter =
-            data_pipe_getter.PassInterface().PassHandle();
+        element.data_pipe_getter = data_pipe_getter.Unbind().PassPipe();
         break;
       }
     }

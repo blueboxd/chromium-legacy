@@ -89,7 +89,7 @@ public class WebappInfo {
      * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public long themeColor() {
-        return WebappIntentDataProvider.longColorFromIntegerColor(getWebappExtras().themeColor);
+        return WebappIntentDataProvider.colorFromIntegerColor(getWebappExtras().themeColor);
     }
 
     /**
@@ -105,8 +105,7 @@ public class WebappInfo {
      * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public long backgroundColor() {
-        return WebappIntentDataProvider.longColorFromIntegerColor(
-                getWebappExtras().backgroundColor);
+        return WebappIntentDataProvider.colorFromIntegerColor(getWebappExtras().backgroundColor);
     }
 
     /**

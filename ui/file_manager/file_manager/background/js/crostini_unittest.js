@@ -95,12 +95,12 @@ function testInitCrostiniRootAccessAllowed() {
  */
 function testIsPathShared() {
   const mockFileSystem = new MockFileSystem('volumeId');
-  const root = new MockDirectoryEntry(mockFileSystem, '/');
-  const a = new MockDirectoryEntry(mockFileSystem, '/a');
-  const aa = new MockDirectoryEntry(mockFileSystem, '/a/a');
-  const ab = new MockDirectoryEntry(mockFileSystem, '/a/b');
-  const b = new MockDirectoryEntry(mockFileSystem, '/b');
-  const bb = new MockDirectoryEntry(mockFileSystem, '/b/b');
+  const root = MockDirectoryEntry.create(mockFileSystem, '/');
+  const a = MockDirectoryEntry.create(mockFileSystem, '/a');
+  const aa = MockDirectoryEntry.create(mockFileSystem, '/a/a');
+  const ab = MockDirectoryEntry.create(mockFileSystem, '/a/b');
+  const b = MockDirectoryEntry.create(mockFileSystem, '/b');
+  const bb = MockDirectoryEntry.create(mockFileSystem, '/b/b');
 
   assertFalse(crostini.isPathShared('vm1', a));
   assertFalse(crostini.isPathShared('vm2', a));
@@ -170,11 +170,11 @@ function testCanSharePath() {
   crostini.setEnabled('vm', true);
 
   const mockFileSystem = new MockFileSystem('test');
-  const root = new MockDirectoryEntry(mockFileSystem, '/');
+  const root = MockDirectoryEntry.create(mockFileSystem, '/');
   const rootFile = new MockEntry(mockFileSystem, '/file');
-  const rootFolder = new MockDirectoryEntry(mockFileSystem, '/folder');
+  const rootFolder = MockDirectoryEntry.create(mockFileSystem, '/folder');
   const fooFile = new MockEntry(mockFileSystem, '/foo/file');
-  const fooFolder = new MockDirectoryEntry(mockFileSystem, '/foo/folder');
+  const fooFolder = MockDirectoryEntry.create(mockFileSystem, '/foo/folder');
 
   // Test with DriveFs disabled.
   setDriveFsEnabled(false);
@@ -228,11 +228,12 @@ function testCanSharePath() {
   }
 
   // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
-  const grandRootFolder = new MockDirectoryEntry(mockFileSystem, '/Computers');
+  const grandRootFolder =
+      MockDirectoryEntry.create(mockFileSystem, '/Computers');
   const computerRootFolder =
-      new MockDirectoryEntry(mockFileSystem, '/Computers/My');
+      MockDirectoryEntry.create(mockFileSystem, '/Computers/My');
   const computerFolder =
-      new MockDirectoryEntry(mockFileSystem, '/Computers/My/foo');
+      MockDirectoryEntry.create(mockFileSystem, '/Computers/My/foo');
   volumeManagerRootType = VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT;
   assertFalse(crostini.canSharePath('vm', root, false));
   assertFalse(crostini.canSharePath('vm', grandRootFolder, false));

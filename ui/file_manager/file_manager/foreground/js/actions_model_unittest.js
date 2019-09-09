@@ -122,7 +122,7 @@ function setUp() {
  */
 function testDriveDirectoryEntry(callback) {
   driveFileSystem.entries['/test'] =
-      new MockDirectoryEntry(driveFileSystem, '/test');
+      MockDirectoryEntry.create(driveFileSystem, '/test');
 
   const metadataModel = new MockMetadataModel({
     canShare: true,
@@ -201,7 +201,7 @@ function testDriveDirectoryEntry(callback) {
  */
 function testDriveFileEntry(callback) {
   driveFileSystem.entries['/test.txt'] =
-      new MockFileEntry(driveFileSystem, '/test.txt');
+      MockFileEntry.create(driveFileSystem, '/test.txt');
 
   const metadataModel = new MockMetadataModel({
     hosted: false,
@@ -304,7 +304,7 @@ function testDriveFileEntry(callback) {
  */
 function testTeamDriveRootEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team');
+      MockDirectoryEntry.create(driveFileSystem, '/team_drives/ABC Team');
 
   const metadataModel = new MockMetadataModel({
     canShare: true,
@@ -338,7 +338,8 @@ function testTeamDriveRootEntry(callback) {
  */
 function testTeamDriveDirectoryEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team/Folder 1'] =
-      new MockDirectoryEntry(driveFileSystem, '/team_drives/ABC Team/Folder 1');
+      MockDirectoryEntry.create(
+          driveFileSystem, '/team_drives/ABC Team/Folder 1');
 
   const metadataModel = new MockMetadataModel({
     canShare: true,
@@ -378,7 +379,7 @@ function testTeamDriveDirectoryEntry(callback) {
  */
 function testTeamDriveFileEntry(callback) {
   driveFileSystem.entries['/team_drives/ABC Team/Folder 1/test.txt'] =
-      new MockFileEntry(
+      MockFileEntry.create(
           driveFileSystem, '/team_drives/ABC Team/Folder 1/test.txt');
 
   const metadataModel = new MockMetadataModel({
@@ -421,7 +422,7 @@ function testTeamDriveFileEntry(callback) {
  */
 function testProvidedEntry(callback) {
   providedFileSystem.entries['/test'] =
-      new MockDirectoryEntry(providedFileSystem, '/test');
+      MockDirectoryEntry.create(providedFileSystem, '/test');
 
   chrome.fileManagerPrivate.getCustomActions = (entries, callback) => {
     assertEquals(1, entries.length);
@@ -498,7 +499,7 @@ function testProvidedEntry(callback) {
  */
 function testProvidedEntryWithError(callback) {
   providedFileSystem.entries['/test'] =
-      new MockDirectoryEntry(providedFileSystem, '/test');
+      MockDirectoryEntry.create(providedFileSystem, '/test');
 
   chrome.fileManagerPrivate.getCustomActions = (entries, callback) => {
     chrome.runtime.lastError = {

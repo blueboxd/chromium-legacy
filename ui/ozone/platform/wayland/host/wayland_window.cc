@@ -371,7 +371,7 @@ void WaylandWindow::Hide() {
 }
 
 void WaylandWindow::Close() {
-  NOTIMPLEMENTED();
+  delegate_->OnClosed();
 }
 
 void WaylandWindow::PrepareForShutdown() {}

@@ -65,6 +65,8 @@ const base::Feature kAppNotificationStatusMessaging{
 // App Service related flags. See chrome/services/app_service/README.md.
 const base::Feature kAppServiceAsh{"AppServiceAsh",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAppServiceIntentHandling{
+    "AppServiceIntentHandling", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceShelf{"AppServiceShelf",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
@@ -194,6 +196,11 @@ const base::Feature kCrostiniAdvancedAccessControls{
 // container.
 const base::Feature kCrostiniAnsibleInfrastructure{
     "CrostiniAnsibleInfrastructure", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables infrastructure for generating Ansible playbooks for the default
+// Crostini container from software configurations in JSON schema.
+const base::Feature kCrostiniAnsibleSoftwareManagement{
+    "CrostiniAnsibleSoftwareManagement", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the UI overhaul for Cups Printers in settings page.
 const base::Feature kCupsPrintersUiOverhaul{"CupsPrintersUiOverhaul",

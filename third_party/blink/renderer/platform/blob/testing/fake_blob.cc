@@ -25,9 +25,10 @@ class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
     DCHECK(result);
   }
 
-  void Clone(network::mojom::blink::DataPipeGetterRequest request) override {
-    mojo::MakeStrongBinding(std::make_unique<SimpleDataPipeGetter>(str_),
-                            std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::blink::DataPipeGetter>
+                 receiver) override {
+    mojo::MakeSelfOwnedReceiver(std::make_unique<SimpleDataPipeGetter>(str_),
+                                std::move(receiver));
   }
 
  private:
@@ -47,11 +48,11 @@ void FakeBlob::Clone(mojo::PendingReceiver<mojom::blink::Blob> receiver) {
 }
 
 void FakeBlob::AsDataPipeGetter(
-    network::mojom::blink::DataPipeGetterRequest request) {
+    mojo::PendingReceiver<network::mojom::blink::DataPipeGetter> receiver) {
   if (state_)
     state_->did_initiate_read_operation = true;
-  mojo::MakeStrongBinding(std::make_unique<SimpleDataPipeGetter>(body_),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<SimpleDataPipeGetter>(body_),
+                              std::move(receiver));
 }
 
 void FakeBlob::ReadRange(uint64_t offset,

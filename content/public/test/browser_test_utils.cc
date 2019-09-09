@@ -91,6 +91,9 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
@@ -2980,16 +2983,17 @@ std::string ConsoleObserverDelegate::message() {
 }
 
 namespace {
-blink::mojom::FileSystemManagerPtr GetFileSystemManager(
+mojo::Remote<blink::mojom::FileSystemManager> GetFileSystemManager(
     RenderProcessHost* rph) {
   FileSystemManagerImpl* file_system = static_cast<RenderProcessHostImpl*>(rph)
                                            ->GetFileSystemManagerForTesting();
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileSystemManagerImpl::BindRequest,
-                                base::Unretained(file_system),
-                                mojo::MakeRequest(&file_system_manager_ptr)));
-  return file_system_manager_ptr;
+  mojo::Remote<blink::mojom::FileSystemManager> file_system_manager_remote;
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&FileSystemManagerImpl::BindReceiver,
+                     base::Unretained(file_system),
+                     file_system_manager_remote.BindNewPipeAndPassReceiver()));
+  return file_system_manager_remote;
 }
 }  // namespace
 
@@ -3001,9 +3005,9 @@ void PwnMessageHelper::FileSystemCreate(RenderProcessHost* process,
                                         bool is_directory,
                                         bool recursive) {
   TestFileapiOperationWaiter waiter;
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr =
+  mojo::Remote<blink::mojom::FileSystemManager> file_system_manager =
       GetFileSystemManager(process);
-  file_system_manager_ptr->Create(
+  file_system_manager->Create(
       path, exclusive, is_directory, recursive,
       base::BindOnce(&TestFileapiOperationWaiter::DidCreate,
                      base::Unretained(&waiter)));
@@ -3017,16 +3021,16 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
                                        std::string blob_uuid,
                                        int64_t position) {
   TestFileapiOperationWaiter waiter;
-  blink::mojom::FileSystemManagerPtr file_system_manager_ptr =
+  mojo::Remote<blink::mojom::FileSystemManager> file_system_manager =
       GetFileSystemManager(process);
-  blink::mojom::FileSystemOperationListenerPtr listener_ptr;
-  mojo::Binding<blink::mojom::FileSystemOperationListener> binding(
-      &waiter, mojo::MakeRequest(&listener_ptr));
-  blink::mojom::FileSystemCancellableOperationPtr op_ptr;
+  mojo::PendingRemote<blink::mojom::FileSystemOperationListener> listener;
+  mojo::Receiver<blink::mojom::FileSystemOperationListener> receiver(
+      &waiter, listener.InitWithNewPipeAndPassReceiver());
+  mojo::Remote<blink::mojom::FileSystemCancellableOperation> op;
 
-  file_system_manager_ptr->Write(file_path, blob_uuid, position,
-                                 mojo::MakeRequest(&op_ptr),
-                                 std::move(listener_ptr));
+  file_system_manager->Write(file_path, blob_uuid, position,
+                             op.BindNewPipeAndPassReceiver(),
+                             std::move(listener));
   waiter.WaitForOperationToFinish();
 }
 

@@ -24,20 +24,31 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_files_to_compare(build_dir, recursive=False):
   """Get the list of files to compare."""
-  allowed = frozenset(
-      ('', '.apk', '.app', '.dll', '.dylib', '.exe', '.nexe', '.pdb', '.so'))
-
-  # .bin is for the V8 snapshot files natives_blob.bin, snapshot_blob.bin
-  non_x_ok_exts = frozenset(('.apk', '.bin', '.isolated', '.zip'))
+  allowed = frozenset((
+    '.aab',
+    '.apk',
+    '.app',
+    '.bin',  # V8 snapshot files natives_blob.bin, snapshot_blob.bin
+    '.dll',
+    '.dylib',
+    '.exe',
+    '.isolated',
+    '.nexe',
+    '.pdb',
+    '.so',
+    '.zip',
+  ))
   def check(f):
     if not os.path.isfile(f):
       return False
     if os.path.basename(f).startswith('.'):
       return False
     ext = os.path.splitext(f)[1]
-    if ext in non_x_ok_exts:
+    if ext in allowed:
       return True
-    return ext in allowed and (ext != '' or os.access(f, os.X_OK))
+    # Special case for file without an extension that has the executable bit
+    # set.
+    return ext == '' and os.access(f, os.X_OK)
 
   ret_files = set()
   for root, dirs, files in os.walk(build_dir):
@@ -50,6 +61,7 @@ def get_files_to_compare(build_dir, recursive=False):
 
 def get_files_to_compare_using_isolate(build_dir):
   # First, find all .isolate files in build_dir.
+  # TODO(maruel): https://crbug.com/972075 Extract targets from mb.
   isolates = glob.glob(os.path.join(build_dir, '*.isolate'))
 
   # Then, extract their contents.

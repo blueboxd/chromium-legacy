@@ -461,8 +461,8 @@ void SimpleIndex::StartEvictionIfNeeded() {
       static_cast<base::HistogramBase::Sample>(
           evicted_so_far_size / kBytesInKb));
 
-  delegate_->DoomEntries(&entry_hashes, base::Bind(&SimpleIndex::EvictionDone,
-                                                   AsWeakPtr()));
+  delegate_->DoomEntries(
+      &entry_hashes, base::BindOnce(&SimpleIndex::EvictionDone, AsWeakPtr()));
 }
 
 int32_t SimpleIndex::GetTrailerPrefetchSize(uint64_t entry_hash) const {

@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 using media::VideoFrameConsumerFeedbackObserver;
 
@@ -68,11 +69,11 @@ void SingleClientVideoCaptureHost::Start(
     const base::UnguessableToken& device_id,
     const base::UnguessableToken& session_id,
     const VideoCaptureParams& params,
-    media::mojom::VideoCaptureObserverPtr observer) {
+    mojo::PendingRemote<media::mojom::VideoCaptureObserver> observer) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!observer_);
-  observer_ = std::move(observer);
+  observer_.Bind(std::move(observer));
   DCHECK(observer_);
   DCHECK(!launched_device_);
 
@@ -118,7 +119,7 @@ void SingleClientVideoCaptureHost::Stop(
   }
   DCHECK(buffer_context_map_.empty());
   observer_->OnStateChanged(media::mojom::VideoCaptureState::ENDED);
-  observer_ = nullptr;
+  observer_.reset();
   weak_factory_.InvalidateWeakPtrs();
   launched_device_ = nullptr;
   id_map_.clear();

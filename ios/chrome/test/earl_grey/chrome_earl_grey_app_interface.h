@@ -296,6 +296,9 @@
 // Returns YES if WebPaymentsModifiers feature is enabled.
 + (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if SettingsAddPaymentMethod feature is enabled.
++ (BOOL)isSettingsAddPaymentMethodEnabled WARN_UNUSED_RESULT;
+
 #pragma mark - Popup Blocking
 
 // Gets the current value of the popup content setting preference for the

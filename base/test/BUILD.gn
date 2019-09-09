@@ -228,6 +228,7 @@ static_library("test_support") {
     set_sources_assignment_filter([])
     sources += [ "test_file_util_mac.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
+    deps += [ ":google_test_runner_shared_headers" ]
   }
 
   if (is_mac) {
@@ -509,6 +510,29 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/base/ITestCallback.aidl",
       "android/java/src/org/chromium/base/ITestController.aidl",
+    ]
+  }
+}
+
+if (is_ios) {
+  source_set("google_test_runner_shared_headers") {
+    sources = [
+      "ios/google_test_runner_delegate.h",
+    ]
+  }
+
+  source_set("google_test_runner") {
+    sources = [
+      "ios/google_test_runner.mm",
+    ]
+    deps = [
+      ":google_test_runner_shared_headers",
+      "//base",
+    ]
+    libs = [ "UIKit.framework" ]
+    configs += [
+      "//build/config/compiler:enable_arc",
+      "//build/config/ios:xctest_config",
     ]
   }
 }

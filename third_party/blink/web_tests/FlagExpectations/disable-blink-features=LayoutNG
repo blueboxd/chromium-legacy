@@ -312,9 +312,6 @@ crbug.com/874695 http/tests/credentialmanager/credentialscontainer-create-with-v
 ### http/tests/csslayout/
 crbug.com/591099 http/tests/csslayout/ [ Skip ]
 
-### virtual/blink-cors/external/wpt/service-workers/service-worker/
-crbug.com/591099 virtual/blink-cors/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure ]
-
 ### virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/
 crbug.com/591099 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure ]
 

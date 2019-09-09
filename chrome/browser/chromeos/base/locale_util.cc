@@ -156,7 +156,7 @@ void SwitchLanguage(const std::string& locale,
 }
 
 bool IsAllowedLanguage(const std::string& language, const PrefService* prefs) {
-  const base::Value::ListStorage& allowed_languages =
+  base::span<const base::Value> allowed_languages =
       prefs->GetList(prefs::kAllowedLanguages)->GetList();
 
   // Empty list means all languages are allowed.
@@ -218,7 +218,7 @@ std::string GetAllowedFallbackUILanguage(const PrefService* prefs) {
   }
 
   // Check the allowed UI locales and return the first valid entry.
-  const base::Value::ListStorage& allowed_languages =
+  base::span<const base::Value> allowed_languages =
       prefs->GetList(prefs::kAllowedLanguages)->GetList();
   for (const base::Value& value : allowed_languages) {
     const std::string& locale = value.GetString();

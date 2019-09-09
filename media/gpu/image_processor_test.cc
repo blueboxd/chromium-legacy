@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/hash/md5.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
@@ -113,7 +114,7 @@ class ImageProcessorParamTest
     if (g_save_images) {
       base::FilePath output_dir =
           base::FilePath(base::FilePath::kCurrentDirectory)
-              .Append(base::FilePath(g_env->GetTestName()));
+              .Append(g_env->GetTestOutputFilePath());
       test::VideoFrameFileWriter::OutputFormat saved_file_format =
           IsYuvPlanar(output_format)
               ? test::VideoFrameFileWriter::OutputFormat::kYUV

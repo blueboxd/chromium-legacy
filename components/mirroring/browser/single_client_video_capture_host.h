@@ -17,6 +17,7 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/video/video_frame_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 using media::VideoCaptureParams;
 using media::VideoCaptureDevice;
@@ -48,7 +49,8 @@ class SingleClientVideoCaptureHost final
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const VideoCaptureParams& params,
-             media::mojom::VideoCaptureObserverPtr observer) override;
+             mojo::PendingRemote<media::mojom::VideoCaptureObserver> observer)
+      override;
   void Stop(const base::UnguessableToken& device_id) override;
   void Pause(const base::UnguessableToken& device_id) override;
   void Resume(const base::UnguessableToken& device_id,
@@ -103,7 +105,7 @@ class SingleClientVideoCaptureHost final
   const blink::mojom::MediaStreamType type_;
   const DeviceLauncherCreateCallback device_launcher_callback_;
 
-  media::mojom::VideoCaptureObserverPtr observer_;
+  mojo::Remote<media::mojom::VideoCaptureObserver> observer_;
   std::unique_ptr<content::LaunchedVideoCaptureDevice> launched_device_;
 
   // Unique ID assigned for the next buffer provided by OnNewBufferHandle().

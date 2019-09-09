@@ -4552,6 +4552,14 @@
         ],
         'test': 'content_unittests',
       },
+      'x11_views_unittests': {
+        'experiment_percentage': 100,
+        'args': [
+          '--ozone-platform=x11',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',
+        ],
+        'test': 'views_unittests',
+      }
     },
 
     'performance_smoke_test_isolated_scripts': {

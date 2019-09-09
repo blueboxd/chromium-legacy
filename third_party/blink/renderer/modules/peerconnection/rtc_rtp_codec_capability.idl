@@ -8,5 +8,5 @@ dictionary RTCRtpCodecCapability {
     required unsigned long  clockRate;
              unsigned short channels;
              DOMString      sdpFmtpLine;
-    [Enabled=RTCSvcScalabilityMode] sequence<DOMString> scalabilityModes;
+    [RuntimeEnabled=RTCSvcScalabilityMode] sequence<DOMString> scalabilityModes;
 };

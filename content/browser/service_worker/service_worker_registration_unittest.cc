@@ -36,6 +36,8 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "content/test/fake_network.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -976,6 +978,11 @@ class ServiceWorkerRegistrationObjectHostTest
 class ServiceWorkerRegistrationObjectHostUpdateTest
     : public ServiceWorkerRegistrationObjectHostTest,
       public testing::WithParamInterface<bool> {
+ public:
+  ServiceWorkerRegistrationObjectHostUpdateTest()
+      : interceptor_(base::BindRepeating(&FakeNetwork::HandleRequest,
+                                         base::Unretained(&fake_network_))) {}
+
  protected:
   void SetUp() override {
     if (IsImportedScriptUpdateCheckEnabled()) {
@@ -991,6 +998,8 @@ class ServiceWorkerRegistrationObjectHostUpdateTest
   static bool IsImportedScriptUpdateCheckEnabled() { return GetParam(); }
 
  private:
+  FakeNetwork fake_network_;
+  URLLoaderInterceptor interceptor_;
   base::test::ScopedFeatureList feature_list_;
 };
 

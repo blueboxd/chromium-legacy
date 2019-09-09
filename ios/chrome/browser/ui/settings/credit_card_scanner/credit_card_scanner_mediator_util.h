@@ -12,6 +12,13 @@ namespace ios {
 // Extracts credit card expiration month and year from |text|.
 NSDateComponents* ExtractExpirationDateFromText(NSString* text);
 
+// Extracts credit card number from |string|.
+NSString* ExtractCreditCardNumber(NSString* string);
+
+// Substitutes commonly misrecognized characters, for example: 'S' -> '5' or
+// 'l' -> '1'
+NSString* SubstituteSimilarCharactersInRecognizedText(NSString* recognizedText);
+
 }  // namespace ios
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CREDIT_CARD_SCANNER_CREDIT_CARD_SCANNER_MEDIATOR_UTIL_H_

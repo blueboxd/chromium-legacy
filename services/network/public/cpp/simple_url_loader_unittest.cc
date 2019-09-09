@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -1723,7 +1724,8 @@ class MockURLLoader : public network::mojom::URLLoader {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
             network::mojom::DataElementType::kDataPipe) {
-      data_pipe_getter_ = (*request_body->elements())[0].CloneDataPipeGetter();
+      data_pipe_getter_.Bind(
+          (*request_body->elements())[0].CloneDataPipeGetter());
       DCHECK(data_pipe_getter_);
     }
   }
@@ -1957,7 +1959,7 @@ class MockURLLoader : public network::mojom::URLLoader {
 
   mojo::ScopedDataPipeProducerHandle body_stream_;
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_;
+  mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter_;
   mojo::ScopedDataPipeConsumerHandle upload_data_pipe_;
 
   std::unique_ptr<base::RunLoop> read_run_loop_;

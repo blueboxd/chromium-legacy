@@ -339,8 +339,8 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         WebappExtras webappExtras =
                 new WebappExtras(WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope,
                         primaryIcon, name, shortName, displayMode, orientation, source,
-                        WebappIntentDataProvider.integerColorFromLongColor(themeColor),
-                        WebappIntentDataProvider.integerColorFromLongColor(backgroundColor),
+                        WebappIntentDataProvider.colorFromLongColor(themeColor),
+                        WebappIntentDataProvider.colorFromLongColor(backgroundColor),
                         defaultBackgroundColor, false /* isIconGenerated */, isPrimaryIconMaskable,
                         forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, badgeIcon, splashIcon,

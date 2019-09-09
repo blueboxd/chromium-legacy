@@ -121,12 +121,6 @@
       <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_PERMISSION_ITEM_HTML"
                  file="chromeos/os_apps_page/app_management_page/permission_item.html"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_PERMISSION_TOGGLE_JS"
-                 file="chromeos/os_apps_page/app_management_page/permission_toggle.js"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_PERMISSION_TOGGLE_HTML"
-                 file="chromeos/os_apps_page/app_management_page/permission_toggle.html"
-                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_APP_MANAGEMENT_PAGE_PIN_TO_SHELF_ITEM_JS"
                  file="chromeos/os_apps_page/app_management_page/pin_to_shelf_item.js"
                  type="chrome_html" />

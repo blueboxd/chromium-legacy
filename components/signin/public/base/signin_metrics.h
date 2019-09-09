@@ -294,7 +294,9 @@ enum class AccountRelation : int {
 enum class SourceForRefreshTokenOperation {
   kUnknown,
   kTokenService_LoadCredentials,
-  kSupervisedUser_InitSync,
+  // NOTE: This is no longer used but is kept per the comment above about not
+  // renumbering.
+  kDeprecatedSupervisedUser_InitSync,
   kInlineLoginHandler_Signin,
   kPrimaryAccountManager_ClearAccount,
   kPrimaryAccountManager_LegacyPreDiceSigninFlow,

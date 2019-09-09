@@ -91,7 +91,7 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
     if (!block_hashes)
       return false;
 
-    const base::Value::ListStorage& hashes_list = block_hashes->GetList();
+    base::span<const base::Value> hashes_list = block_hashes->GetList();
 
     base::FilePath relative_path =
         base::FilePath::FromUTF8Unsafe(*relative_path_utf8);

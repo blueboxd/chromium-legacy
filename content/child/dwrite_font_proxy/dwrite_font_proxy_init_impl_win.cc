@@ -6,6 +6,8 @@
 
 #include <dwrite.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
@@ -31,8 +33,8 @@ namespace {
 DWriteFontCollectionProxy* g_font_collection = nullptr;
 FontFallback* g_font_fallback = nullptr;
 
-base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>*
-    g_connection_callback_override = nullptr;
+base::RepeatingCallback<mojo::PendingRemote<blink::mojom::DWriteFontProxy>(
+    void)>* g_connection_callback_override = nullptr;
 
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
 // before sandbox lock down to allow Skia access to the Font Manager service.
@@ -55,12 +57,12 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
   CreateDirectWriteFactory(&factory);
 
   if (!g_font_collection) {
-    blink::mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
+    mojo::PendingRemote<blink::mojom::DWriteFontProxy> dwrite_font_proxy;
     if (g_connection_callback_override) {
       dwrite_font_proxy = g_connection_callback_override->Run();
     } else if (connector) {
-      connector->BindInterface(mojom::kSystemServiceName,
-                               mojo::MakeRequest(&dwrite_font_proxy));
+      connector->Connect(mojom::kSystemServiceName,
+                         dwrite_font_proxy.InitWithNewPipeAndPassReceiver());
     }
     // If |connector| is not provided, the connection to the browser will be
     // created on demand.
@@ -101,12 +103,12 @@ void UninitializeDWriteFontProxy() {
 }
 
 void SetDWriteFontProxySenderForTesting(
-    base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>
-        sender) {
+    base::RepeatingCallback<
+        mojo::PendingRemote<blink::mojom::DWriteFontProxy>(void)> sender) {
   DCHECK(!g_connection_callback_override);
-  g_connection_callback_override =
-      new base::RepeatingCallback<blink::mojom::DWriteFontProxyPtrInfo(void)>(
-          std::move(sender));
+  g_connection_callback_override = new base::RepeatingCallback<
+      mojo::PendingRemote<blink::mojom::DWriteFontProxy>(void)>(
+      std::move(sender));
 }
 
 void ClearDWriteFontProxySenderForTesting() {

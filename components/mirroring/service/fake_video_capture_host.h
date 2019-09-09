@@ -8,7 +8,8 @@
 #include <string>
 
 #include "media/capture/mojom/video_capture.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +38,8 @@ class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
-             media::mojom::VideoCaptureObserverPtr observer) override;
+             mojo::PendingRemote<media::mojom::VideoCaptureObserver> observer)
+      override;
   void Stop(const base::UnguessableToken& device_id) override;
 
   void GetDeviceSupportedFormats(
@@ -52,8 +54,8 @@ class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
   void SendOneFrame(const gfx::Size& size, base::TimeTicks capture_time);
 
  private:
-  mojo::Binding<media::mojom::VideoCaptureHost> binding_;
-  media::mojom::VideoCaptureObserverPtr observer_;
+  mojo::Receiver<media::mojom::VideoCaptureHost> receiver_;
+  mojo::Remote<media::mojom::VideoCaptureObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureHost);
 };

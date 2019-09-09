@@ -751,6 +751,14 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
                              : ComputedStyle::kNotAtShadowBoundary);
       state.SetStyle(std::move(style));
     } else {
+      // Strictly, we should only allow the root element to inherit from initial
+      // styles, but we allow getComputedStyle() for connected elements outside
+      // the flat tree rooted at an unassigned shadow host child, or Shadow DOM
+      // V0 insertion points.
+      DCHECK(element == GetDocument().documentElement() ||
+             element->IsV0InsertionPoint() ||
+             (IsShadowHost(element->parentNode()) &&
+              !LayoutTreeBuilderTraversal::ParentElement(*element)));
       state.SetStyle(InitialStyleForElement(GetDocument()));
       state.SetParentStyle(ComputedStyle::Clone(*state.Style()));
       state.SetLayoutParentStyle(state.ParentStyle());
@@ -913,6 +921,10 @@ bool StyleResolver::PseudoStyleForElementInternal(
     style->InheritFrom(*state.ParentStyle());
     state.SetStyle(std::move(style));
   } else {
+    // ::backdrop inherits from initial styles. All other pseudo elements
+    // inherit from their originating element (::before/::after), or originating
+    // element descendants (::first-line/::first-letter).
+    DCHECK(pseudo_style_request.pseudo_id == kPseudoIdBackdrop);
     state.SetStyle(InitialStyleForElement(GetDocument()));
     state.SetParentStyle(ComputedStyle::Clone(*state.Style()));
   }

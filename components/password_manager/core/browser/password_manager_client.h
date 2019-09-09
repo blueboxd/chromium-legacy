@@ -31,7 +31,7 @@ class PrefService;
 namespace autofill {
 class AutofillDownloadManager;
 class LogManager;
-}
+}  // namespace autofill
 
 namespace favicon {
 class FaviconService;
@@ -55,6 +55,7 @@ class PasswordProtectionService;
 
 namespace password_manager {
 
+class PasswordFeatureManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerDriver;
@@ -242,6 +243,8 @@ class PasswordManagerClient {
   // version calls the const one.
   PasswordManager* GetPasswordManager();
   virtual const PasswordManager* GetPasswordManager() const;
+
+  virtual const PasswordFeatureManager* GetPasswordFeatureManager() const = 0;
 
   // Returns the HttpAuthManager associated with this client.
   virtual HttpAuthManager* GetHttpAuthManager();

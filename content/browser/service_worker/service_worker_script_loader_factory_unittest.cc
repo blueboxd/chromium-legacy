@@ -12,7 +12,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/test/fake_network_url_loader_factory.h"
+#include "content/test/fake_network.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -24,7 +24,9 @@ namespace content {
 class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
  public:
   ServiceWorkerScriptLoaderFactoryTest()
-      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
+        interceptor_(base::BindRepeating(&FakeNetwork::HandleRequest,
+                                         base::Unretained(&fake_network_))) {}
   ~ServiceWorkerScriptLoaderFactoryTest() override = default;
 
   void SetUp() override {
@@ -46,9 +48,6 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     provider_host_ = CreateProviderHostForServiceWorkerContext(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         version_.get(), context->AsWeakPtr(), &remote_endpoint_);
-
-    network_loader_factory_ = std::make_unique<FakeNetworkURLLoaderFactory>();
-    helper_->SetNetworkFactory(network_loader_factory_.get());
 
     factory_ = std::make_unique<ServiceWorkerScriptLoaderFactory>(
         helper_->context()->AsWeakPtr(), provider_host_,
@@ -72,6 +71,9 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   }
 
   BrowserTaskEnvironment task_environment_;
+  FakeNetwork fake_network_;
+  URLLoaderInterceptor interceptor_;
+
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   GURL scope_;
   GURL script_url_;
@@ -79,7 +81,6 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
-  std::unique_ptr<FakeNetworkURLLoaderFactory> network_loader_factory_;
   std::unique_ptr<ServiceWorkerScriptLoaderFactory> factory_;
 };
 

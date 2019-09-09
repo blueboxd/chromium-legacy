@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
@@ -56,7 +58,7 @@ class MODULES_EXPORT UserMediaClient
   void Trace(Visitor*);
 
   void SetMediaDevicesDispatcherForTesting(
-      blink::mojom::blink::MediaDevicesDispatcherHostPtr
+      mojo::PendingRemote<blink::mojom::blink::MediaDevicesDispatcherHost>
           media_devices_dispatcher);
 
  private:
@@ -98,8 +100,7 @@ class MODULES_EXPORT UserMediaClient
 
   void DeleteAllUserMediaRequests();
 
-  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
-  GetMediaDevicesDispatcher();
+  blink::mojom::blink::MediaDevicesDispatcherHost* GetMediaDevicesDispatcher();
 
   // LocalFrame instance associated with the UserMediaController that
   // own this UserMediaClient.
@@ -112,7 +113,8 @@ class MODULES_EXPORT UserMediaClient
   // problems in builds that do not include WebRTC.
   Member<ApplyConstraintsProcessor> apply_constraints_processor_;
 
-  blink::mojom::blink::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  mojo::Remote<blink::mojom::blink::MediaDevicesDispatcherHost>
+      media_devices_dispatcher_;
 
   // UserMedia requests are processed sequentially. |is_processing_request_|
   // is a flag that indicates if a request is being processed at a given time,

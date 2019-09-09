@@ -150,6 +150,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_CONST_METHOD0(GetPrefs, PrefService*());
   MOCK_CONST_METHOD0(GetMainFrameURL, const GURL&());
+  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
   MOCK_METHOD0(GetMetricsRecorder, PasswordManagerMetricsRecorder*());
@@ -305,6 +306,7 @@ class PasswordManagerTest : public testing::Test {
     EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));
 
     ON_CALL(client_, GetMainFrameURL()).WillByDefault(ReturnRef(test_url_));
+    ON_CALL(client_, IsMainFrameSecure()).WillByDefault(Return(true));
     ON_CALL(client_, GetMetricsRecorder()).WillByDefault(Return(nullptr));
     ON_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
         .WillByDefault(WithArg<0>(DeletePtr()));

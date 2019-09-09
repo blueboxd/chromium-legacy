@@ -155,7 +155,7 @@ bool DoesRecurrentInterstitialPrefMeetThreshold(Profile* profile,
   // Assume that the values in the list are in increasing order;
   // UpdateRecurrentInterstitialPref() maintains this ordering. Check if there
   // are more than |threshold| values after the cutoff time.
-  const base::ListValue::ListStorage& error_list = list_value->GetList();
+  base::span<const base::Value> error_list = list_value->GetList();
   for (size_t i = 0; i < error_list.size(); i++) {
     if (base::Time::FromJsTime(error_list[i].GetDouble()) >= cutoff_time)
       return base::MakeStrictNum(error_list.size() - i) >= threshold;

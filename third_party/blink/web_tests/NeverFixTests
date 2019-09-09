@@ -2131,11 +2131,6 @@ external/wpt/webstorage/storage_local-manual.html [ WontFix ]
 external/wpt/webstorage/storage_session-manual.html [ WontFix ]
 external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
-virtual/blink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
-virtual/blink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
 virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
@@ -2214,7 +2209,6 @@ Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin
 # https://foo.example.com/path?token=secret needs to be replaced with just
 # https://foo.example.com).
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
-crbug.com/669083 virtual/blink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ WontFix ]
 # --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
@@ -2281,3 +2275,31 @@ external/wpt/html/webappapis/user-prompts/print-manual.html [ WontFix ]
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests.
 external/wpt/webgpu/ [ WontFix ]
+
+# Tests that do not pass with the Blink CORS, but pass with OOR-CORS.
+# We maintain the Blink CORS for a while, and keep it work without regressions.
+# But will not change the existing behavior for Blink CORS when expectations are
+# changed for the spec update, other features side-effects, and so on.
+# TODO(cbur.com/870173): Double check following failed tests later.
+crbug.com/870173 external/wpt/fetch/sec-metadata/appcache.tentative.https.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ WontFix ]
+crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
+crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ WontFix ]
+crbug.com/870173 http/tests/devtools/network/extra-info-redirects.js [ WontFix ]
+crbug.com/870173 http/tests/eventsource/eventsource-cors-non-http.html [ WontFix ]
+crbug.com/870173 http/tests/eventsource/workers/eventsource-cors-non-http.html [ WontFix ]
+crbug.com/870173 http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ WontFix ]
+crbug.com/870173 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ WontFix ]
+crbug.com/870173 http/tests/preload/warning/request-mode.html [ WontFix ]
+crbug.com/870173 http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ WontFix ]
+crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.html [ WontFix ]
+crbug.com/870173 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ WontFix ]
+crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ WontFix ]
+crbug.com/870173 mhtml/cid_in_html_resource.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ WontFix ]
+crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ WontFix ]

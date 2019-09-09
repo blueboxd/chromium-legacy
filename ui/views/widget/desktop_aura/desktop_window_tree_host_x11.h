@@ -104,8 +104,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
-  void Close() override;
-  void CloseNow() override;
   void Show(ui::WindowShowState show_state,
             const gfx::Rect& restore_bounds) override;
   bool IsVisible() const override;
@@ -256,11 +254,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   std::unique_ptr<WindowEventFilter> non_client_event_filter_;
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
-  // We can optionally have a parent which can order us to close, or own
-  // children who we're responsible for closing when we CloseNow().
-  DesktopWindowTreeHostX11* window_parent_ = nullptr;
-  std::set<DesktopWindowTreeHostX11*> window_children_;
-
   base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
       observer_list_;
 
@@ -282,7 +275,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   std::unique_ptr<CompositorObserver> compositor_observer_;
 
   // The display and the native X window hosting the root window.
-  base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);

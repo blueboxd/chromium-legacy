@@ -24,11 +24,12 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
-struct AccountInfo;
 class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
@@ -42,7 +43,7 @@ enum class SignoutDelete;
 
 class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
  public:
-  typedef base::RepeatingCallback<void(const AccountInfo&)>
+  typedef base::RepeatingCallback<void(const CoreAccountInfo&)>
       AccountSigninCallback;
   typedef base::RepeatingCallback<void()> AccountClearedCallback;
 
@@ -78,25 +79,19 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
 
   // If a user has previously signed in (and has not signed out), this returns
   // the know information of the account. Otherwise, it returns an empty struct.
-  AccountInfo GetAuthenticatedAccountInfo() const;
+  CoreAccountInfo GetAuthenticatedAccountInfo() const;
 
   // If a user has previously signed in (and has not signed out), this returns
-  // the account id. Otherwise, it returns an empty string.  This id is the
-  // G+/Focus obfuscated gaia id of the user. It can be used to uniquely
+  // the account id. Otherwise, it returns an empty CoreAccountId.  This id is
+  // the G+/Focus obfuscated gaia id of the user. It can be used to uniquely
   // identify an account, so for example as a key to map accounts to data. For
   // code that needs a unique id to represent the connected account, call this
   // method. Example: the AccountStatusMap type in
   // MutableProfileOAuth2TokenService. For code that needs to know the
   // normalized email address of the connected account, use
-  // GetAuthenticatedAccountInfo().email.  Example: to show the string "Signed
-  // in as XXX" in the hotdog menu.
-  const CoreAccountId& GetAuthenticatedAccountId() const;
-
-  // Sets the authenticated user's Gaia ID and display email.  Internally,
-  // this will seed the account information in AccountTrackerService and pick
-  // the right account_id for this account.
-  void SetAuthenticatedAccountInfo(const std::string& gaia_id,
-                                   const std::string& email);
+  // GetAuthenticatedAccountInfo().email.  Example: to show the string
+  // "Signed in as XXX" in the hotdog menu.
+  CoreAccountId GetAuthenticatedAccountId() const;
 
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
@@ -122,6 +117,9 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // Signs a user in. PrimaryAccountManager assumes that |username| can be used
   // to look up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
+
+  // Updates the authenticated account information from AccountTrackerService.
+  void UpdateAuthenticatedAccountInfo();
 
   // Signout API surfaces (not supported on ChromeOS, where signout is not
   // permitted).
@@ -159,13 +157,13 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // with a different account (this method will DCHECK in that case).
   // |account_id| must not be empty. To log the user out, use
   // ClearAuthenticatedAccountId() instead.
-  void SetAuthenticatedAccountId(const CoreAccountId& account_id);
+  void SetAuthenticatedAccountInfo(const CoreAccountInfo& account_info);
 
   // Clears the authenticated user's account id.
   // This method is not public because PrimaryAccountManager does not allow
   // signing out by default. Subclasses implementing a sign-out functionality
   // need to call this.
-  void ClearAuthenticatedAccountId();
+  void ClearAuthenticatedAccountInfo();
 
 #if !defined(OS_CHROMEOS)
   // Starts the sign out process.
@@ -181,7 +179,7 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
       SigninClient::SignoutDecision signout_decision);
 
   // Send all observers |GoogleSignedOut| notifications.
-  void FireGoogleSignedOut(const AccountInfo& account_info);
+  void FireGoogleSignedOut(const CoreAccountInfo& account_info);
 
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
@@ -191,14 +189,13 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
 
   // The ProfileOAuth2TokenService instance associated with this object. Must
   // outlive this object.
-  ProfileOAuth2TokenService* token_service_;
+  ProfileOAuth2TokenService* token_service_ = nullptr;
+  AccountTrackerService* account_tracker_service_ = nullptr;
 
-  AccountTrackerService* account_tracker_service_;
-
-  bool initialized_;
+  bool initialized_ = false;
 
   // Account id after successful authentication.
-  CoreAccountId authenticated_account_id_;
+  base::Optional<CoreAccountInfo> authenticated_account_info_;
 
   // Callbacks which will be invoked, if set, for signin-related events.
   AccountSigninCallback on_google_signin_succeeded_callback_;

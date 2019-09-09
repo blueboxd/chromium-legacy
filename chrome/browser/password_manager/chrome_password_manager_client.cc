@@ -197,6 +197,8 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
+      password_feature_manager_(
+          ProfileSyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
@@ -1175,6 +1177,11 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 password_manager::PasswordManager*
 ChromePasswordManagerClient::GetPasswordManager() {
   return &password_manager_;
+}
+
+const password_manager::PasswordFeatureManager*
+ChromePasswordManagerClient::GetPasswordFeatureManager() const {
+  return &password_feature_manager_;
 }
 
 gfx::RectF ChromePasswordManagerClient::TransformToRootCoordinates(

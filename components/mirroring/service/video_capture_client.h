@@ -13,7 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "media/capture/mojom/video_capture.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace media {
@@ -76,7 +76,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   // Called when capturing failed to start.
   base::OnceClosure error_callback_;
 
-  mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
+  mojo::Receiver<media::mojom::VideoCaptureObserver> receiver_{this};
 
   // TODO(https://crbug.com/843117): Store the
   // base::ReadOnlySharedMemoryRegion instead after migrating the

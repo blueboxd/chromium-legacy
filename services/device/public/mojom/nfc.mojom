@@ -21,14 +21,6 @@ enum NFCErrorType {
   IO_ERROR
 };
 
-enum NDEFRecordType {
-  EMPTY,
-  TEXT,
-  URL,
-  JSON,
-  OPAQUE_RECORD
-};
-
 enum NFCPushTarget {
   // The target of a push operation must be the NFC tag.
   TAG,
@@ -54,7 +46,7 @@ struct NFCError {
 
 struct NDEFRecord {
   // The type of NDEFRecord.
-  NDEFRecordType record_type;
+  string? record_type;
 
   // Represents the IANA media type of the NDEFRecord data field.
   string? media_type;
@@ -92,7 +84,7 @@ struct NFCPushOptions {
 };
 
 struct NDEFRecordTypeFilter {
-  NDEFRecordType record_type;
+  string? record_type;
 };
 
 struct NFCScanOptions {

@@ -64,7 +64,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   ASSERT_TRUE(updated_address_list);
   ASSERT_EQ(1u, updated_address_list->GetSize());
 
-  const auto& address_value = updated_address_list->GetList().at(0);
+  const auto& address_value = updated_address_list->GetList()[0];
   ASSERT_TRUE(address_value.is_string());
   EXPECT_EQ(kTestPairedDeviceAddress, address_value.GetString());
 
@@ -81,7 +81,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 
   ASSERT_EQ(2u, address_list_with_two_addresses->GetSize());
   const auto& second_address_value =
-      address_list_with_two_addresses->GetList().at(1);
+      address_list_with_two_addresses->GetList()[1];
   ASSERT_TRUE(second_address_value.is_string());
   EXPECT_EQ(kTestPairedDeviceAddress2, second_address_value.GetString());
 }

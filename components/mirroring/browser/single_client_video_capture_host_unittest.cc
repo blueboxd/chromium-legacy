@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,7 +99,7 @@ class MockVideoCaptureObserver final
     : public media::mojom::VideoCaptureObserver {
  public:
   explicit MockVideoCaptureObserver(media::mojom::VideoCaptureHostPtr host)
-      : host_(std::move(host)), binding_(this) {}
+      : host_(std::move(host)) {}
   MOCK_METHOD1(OnBufferCreatedCall, void(int buffer_id));
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override {
@@ -131,10 +131,8 @@ class MockVideoCaptureObserver final
   MOCK_METHOD1(OnStateChanged, void(media::mojom::VideoCaptureState state));
 
   void Start() {
-    media::mojom::VideoCaptureObserverPtr observer;
-    binding_.Bind(mojo::MakeRequest(&observer));
     host_->Start(device_id_, session_id_, VideoCaptureParams(),
-                 std::move(observer));
+                 receiver_.BindNewPipeAndPassRemote());
   }
 
   void FinishConsumingBuffer(int32_t buffer_id, double utilization) {
@@ -151,7 +149,7 @@ class MockVideoCaptureObserver final
   const base::UnguessableToken device_id_ = base::UnguessableToken::Create();
   const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
   media::mojom::VideoCaptureHostPtr host_;
-  mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
+  mojo::Receiver<media::mojom::VideoCaptureObserver> receiver_{this};
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
 

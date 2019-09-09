@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +56,8 @@ class MockMojoVideoCaptureHost : public media::mojom::blink::VideoCaptureHost {
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
-             media::mojom::blink::VideoCaptureObserverPtr observer) override {
+             mojo::PendingRemote<media::mojom::blink::VideoCaptureObserver>
+                 observer) override {
     DoStart(device_id, session_id, params);
   }
   MOCK_METHOD3(DoStart,

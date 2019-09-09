@@ -37,8 +37,7 @@ DataReductionProxyURLLoaderThrottle::DataReductionProxyURLLoaderThrottle(
     DataReductionProxyThrottleManager* manager)
     : post_cache_headers_(post_cache_headers),
       manager_(manager),
-      data_reduction_proxy_(manager_->data_reduction_proxy()),
-      private_config_observer_binding_(this) {
+      data_reduction_proxy_(manager_->data_reduction_proxy()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(manager_);
 
@@ -76,9 +75,8 @@ void DataReductionProxyURLLoaderThrottle::SetUpPrivateMojoPipes() {
       std::move(private_data_reduction_proxy_info_));
   data_reduction_proxy_ = private_data_reduction_proxy_.get();
 
-  mojom::DataReductionProxyThrottleConfigObserverPtr observer_ptr;
-  private_config_observer_binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  data_reduction_proxy_->AddThrottleConfigObserver(std::move(observer_ptr));
+  data_reduction_proxy_->AddThrottleConfigObserver(
+      private_config_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void DataReductionProxyURLLoaderThrottle::WillStartRequest(

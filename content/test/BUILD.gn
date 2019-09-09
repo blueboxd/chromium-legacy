@@ -255,6 +255,8 @@ jumbo_static_library("test_support") {
     "fake_leveldb_database.cc",
     "fake_leveldb_database.h",
     "fake_mojo_message_dispatch_context.h",
+    "fake_network.cc",
+    "fake_network.h",
     "fake_network_url_loader_factory.cc",
     "fake_network_url_loader_factory.h",
     "fake_plugin_service.cc",

@@ -43,7 +43,7 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
 BluetoothInternalsUI::~BluetoothInternalsUI() {}
 
 void BluetoothInternalsUI::BindBluetoothInternalsHandler(
-    mojom::BluetoothInternalsHandlerRequest request) {
+    mojo::PendingReceiver<mojom::BluetoothInternalsHandler> receiver) {
   page_handler_ =
-      std::make_unique<BluetoothInternalsHandler>(std::move(request));
+      std::make_unique<BluetoothInternalsHandler>(std::move(receiver));
 }

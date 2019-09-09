@@ -117,7 +117,7 @@ void SyncConfirmationHandler::HandleAccountImageRequest(
 
 void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
-  const std::vector<base::Value>& consent_description =
+  base::span<const base::Value> consent_description =
       args->GetList()[0].GetList();
   const std::string& consent_confirmation = args->GetList()[1].GetString();
 

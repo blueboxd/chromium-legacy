@@ -141,16 +141,15 @@ static const int kRecipeRetryLimit = 5;
   autofill::CreditCard credit_card(base::GenerateGUID(),
                                    "https://www.example.com/");
 
-  const base::Value::ListStorage& profile_entries_list =
+  base::span<const base::Value> profile_entries_list =
       autofillProfile->GetList();
 
   // For each type-value dictionary in the autofill profile list, validate it,
   // then add it to the appropriate profile.
-  for (base::ListValue::const_iterator it_entry = profile_entries_list.begin();
-       it_entry != profile_entries_list.end(); ++it_entry) {
+  for (const auto& it_entry : profile_entries_list) {
     const base::DictionaryValue* entry;
 
-    GREYAssert(it_entry->GetAsDictionary(&entry),
+    GREYAssert(it_entry.GetAsDictionary(&entry),
                @"Failed to extract an entry!");
 
     const base::Value* type_container = entry->FindKey("type");
@@ -223,7 +222,7 @@ static const int kRecipeRetryLimit = 5;
       recipeRoot.FindKeyOfType("actions", base::Value::Type::LIST);
   GREYAssert(actionValue, @"Test file is missing actions.");
 
-  const base::Value::ListStorage& actionsValues(actionValue->GetList());
+  base::span<const base::Value> actionsValues(actionValue->GetList());
   GREYAssert(actionsValues.size(), @"Test file has empty actions.");
 
   actions_ = [[NSMutableArray alloc] initWithCapacity:actionsValues.size()];

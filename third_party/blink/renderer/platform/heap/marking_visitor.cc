@@ -57,21 +57,19 @@ void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
     return;
   MovableReference* movable_reference =
       reinterpret_cast<MovableReference*>(slot);
-  if (Heap().ShouldRegisterMovingObject(movable_reference)) {
+  if (Heap().ShouldRegisterMovingAddress(
+          reinterpret_cast<Address>(movable_reference))) {
     movable_reference_worklist_.Push(movable_reference);
   }
 }
 
 void MarkingVisitorBase::RegisterBackingStoreCallback(
-    void** slot,
-    MovingObjectCallback callback,
-    void* callback_data) {
+    void* backing,
+    MovingObjectCallback callback) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
-  MovableReference* movable_reference =
-      reinterpret_cast<MovableReference*>(slot);
-  if (Heap().ShouldRegisterMovingObject(movable_reference)) {
-    backing_store_callback_worklist_.Push({slot, callback, callback_data});
+  if (Heap().ShouldRegisterMovingAddress(reinterpret_cast<Address>(backing))) {
+    backing_store_callback_worklist_.Push({backing, callback});
   }
 }
 
@@ -94,33 +92,34 @@ void MarkingVisitorBase::AdjustMarkedBytes(HeapObjectHeader* header,
   marked_bytes_ += header->size() - old_size;
 }
 
-void MarkingVisitor::WriteBarrierSlow(void* value) {
+bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!value || IsHashTableDeleteValue(value))
-    return;
+    return false;
 
   ThreadState* const thread_state = ThreadState::Current();
   if (!thread_state->IsIncrementalMarking())
-    return;
+    return false;
 
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
       reinterpret_cast<Address>(const_cast<void*>(value)));
   if (header->IsMarked())
-    return;
+    return false;
 
   if (header->IsInConstruction()) {
     thread_state->CurrentVisitor()->not_fully_constructed_worklist_.Push(
         header->Payload());
-    return;
+    return true;
   }
 
   // Mark and push trace callback.
   if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
-    return;
+    return false;
   MarkingVisitor* visitor = thread_state->CurrentVisitor();
   visitor->AccountMarkedBytes(header);
   visitor->marking_worklist_.Push(
       {header->Payload(),
        GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
+  return true;
 }
 
 void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {

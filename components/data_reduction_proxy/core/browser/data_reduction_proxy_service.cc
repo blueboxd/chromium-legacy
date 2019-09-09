@@ -35,6 +35,7 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace data_reduction_proxy {
 
@@ -435,9 +436,12 @@ void DataReductionProxyService::MarkProxiesAsBad(
 }
 
 void DataReductionProxyService::AddThrottleConfigObserver(
-    mojom::DataReductionProxyThrottleConfigObserverPtr observer) {
-  observer->OnThrottleConfigChanged(CreateThrottleConfig());
-  drp_throttle_config_observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
+        observer) {
+  mojo::Remote<mojom::DataReductionProxyThrottleConfigObserver> observer_remote(
+      std::move(observer));
+  observer_remote->OnThrottleConfigChanged(CreateThrottleConfig());
+  drp_throttle_config_observers_.Add(std::move(observer_remote));
 }
 
 void DataReductionProxyService::Clone(
@@ -460,10 +464,8 @@ void DataReductionProxyService::UpdateThrottleConfig() {
 
   auto config = CreateThrottleConfig();
 
-  drp_throttle_config_observers_.ForAllPtrs(
-      [&config](mojom::DataReductionProxyThrottleConfigObserver* observer) {
-        observer->OnThrottleConfigChanged(config->Clone());
-      });
+  for (auto& it : drp_throttle_config_observers_)
+    it->OnThrottleConfigChanged(config->Clone());
 }
 
 mojom::DataReductionProxyThrottleConfigPtr

@@ -185,8 +185,8 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
     if (iter_->type_ == FormDataElement::kDataPipe) {
       // Create the data pipe consumer if there isn't one yet.
       if (!data_pipe_consumer_) {
-        network::mojom::blink::DataPipeGetterPtr* data_pipe_getter =
-            iter_->data_pipe_getter_->GetPtr();
+        network::mojom::blink::DataPipeGetter* data_pipe_getter =
+            iter_->data_pipe_getter_->GetDataPipeGetter();
 
         mojo::ScopedDataPipeProducerHandle pipe_producer_handle;
         mojo::ScopedDataPipeConsumerHandle pipe_consumer_handle;
@@ -196,11 +196,10 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
           return Result::kError;
         }
 
-        (*data_pipe_getter)
-            ->Read(
-                std::move(pipe_producer_handle),
-                WTF::Bind(&DataPipeAndDataBytesConsumer::DataPipeGetterCallback,
-                          WrapWeakPersistent(this)));
+        data_pipe_getter->Read(
+            std::move(pipe_producer_handle),
+            WTF::Bind(&DataPipeAndDataBytesConsumer::DataPipeGetterCallback,
+                      WrapWeakPersistent(this)));
         DataPipeBytesConsumer::CompletionNotifier* completion_notifier =
             nullptr;
         data_pipe_consumer_ = MakeGarbageCollected<DataPipeBytesConsumer>(

@@ -14,6 +14,7 @@
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -25,7 +26,8 @@ void CreateMojoAudioInputStreamOnMainThread(
     int frame_id,
     const media::AudioSourceParameters& source_params,
     mojom::RendererAudioInputStreamFactoryClientPtr client,
-    audio::mojom::AudioProcessorControlsRequest controls_request,
+    mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
+        controls_receiver,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
@@ -34,7 +36,7 @@ void CreateMojoAudioInputStreamOnMainThread(
     audio::mojom::AudioProcessingConfigPtr processing_config;
     if (source_params.processing) {
       processing_config = audio::mojom::AudioProcessingConfig::New(
-          std::move(controls_request), source_params.processing->id,
+          std::move(controls_receiver), source_params.processing->id,
           source_params.processing->settings);
     }
     frame->GetAudioInputStreamFactory()->CreateStream(
@@ -48,14 +50,15 @@ void CreateMojoAudioInputStream(
     int frame_id,
     const media::AudioSourceParameters& source_params,
     mojom::RendererAudioInputStreamFactoryClientPtr client,
-    audio::mojom::AudioProcessorControlsRequest controls_request,
+    mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
+        controls_receiver,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
   main_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&CreateMojoAudioInputStreamOnMainThread,
                                 frame_id, source_params, std::move(client),
-                                std::move(controls_request), params,
+                                std::move(controls_receiver), params,
                                 automatic_gain_control, total_segments));
 }
 

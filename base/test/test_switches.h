@@ -5,6 +5,8 @@
 #ifndef BASE_TEST_TEST_SWITCHES_H_
 #define BASE_TEST_TEST_SWITCHES_H_
 
+#include "build/build_config.h"
+
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -31,6 +33,10 @@ extern const char kTestLauncherTrace[];
 extern const char kTestTinyTimeout[];
 extern const char kUiTestActionTimeout[];
 extern const char kUiTestActionMaxTimeout[];
+
+#if defined(OS_IOS)
+extern const char kEnableRunIOSUnittestsWithXCTest[];
+#endif
 
 }  // namespace switches
 

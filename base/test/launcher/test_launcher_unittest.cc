@@ -432,7 +432,7 @@ bool ValidateTestResultObject(const Value* iteration_data,
                   << results->GetList().size();
     return false;
   }
-  const Value& val = results->GetList().at(0);
+  const Value& val = results->GetList()[0];
   if (!val.is_dict()) {
     ADD_FAILURE() << "Unexpected type";
     return false;
@@ -464,7 +464,7 @@ bool ValidateTestResultObject(const Value* iteration_data,
 
   for (unsigned i = 0; i < test_result.test_result_parts.size(); i++) {
     TestResultPart result_part = test_result.test_result_parts.at(i);
-    const Value& part_dict = value->GetList().at(i);
+    const Value& part_dict = value->GetList()[i];
 
     result &= ValidateKeyValue(part_dict, "type", result_part.TypeAsString());
     result &= ValidateKeyValue(part_dict, "file", result_part.file_name);
@@ -493,8 +493,8 @@ bool ValidateStringList(const Optional<Value>& root,
   }
 
   for (unsigned i = 0; i < values.size(); i++) {
-    if (!val->GetList().at(i).is_string() &&
-        val->GetList().at(i).GetString().compare(values.at(i))) {
+    if (!val->GetList()[i].is_string() &&
+        val->GetList()[i].GetString().compare(values.at(i))) {
       ADD_FAILURE() << "Expected list values do not match actual list";
       return false;
     }
@@ -555,7 +555,7 @@ TEST_F(TestLauncherTest, JsonSummary) {
   ASSERT_TRUE(val);
   ASSERT_EQ(2u, val->GetList().size());
   for (size_t i = 0; i < val->GetList().size(); i++) {
-    const Value* iteration_val = &(val->GetList().at(i));
+    const Value* iteration_val = &(val->GetList()[i]);
     ASSERT_TRUE(iteration_val);
     ASSERT_TRUE(iteration_val->is_dict());
     EXPECT_EQ(2u, iteration_val->DictSize());

@@ -56,9 +56,6 @@ class AccountsMutatorImpl : public AccountsMutator {
                    const CoreAccountId& account_id) override;
 #endif
 
-  void LegacySetRefreshTokenForSupervisedUser(
-      const std::string& refresh_token) override;
-
  private:
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;

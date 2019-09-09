@@ -4094,26 +4094,6 @@
             ]
         }
     ],
-    "PasswordFillOnAccountSelectOverHttp": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190328",
-                    "enable_features": [
-                        "FillOnAccountSelectHttp"
-                    ]
-                }
-            ]
-        }
-    ],
     "PasswordProtectionForEnterprise": [
         {
             "platforms": [

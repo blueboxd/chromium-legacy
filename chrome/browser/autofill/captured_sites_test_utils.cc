@@ -1427,7 +1427,7 @@ bool TestRecipeReplayer::GetIFramePathFromAction(
     ADD_FAILURE() << "The action's iframe path is not a list!";
     return false;
   }
-  const base::Value::ListStorage& iframe_xpath_list =
+  base::span<const base::Value> iframe_xpath_list =
       iframe_path_container->GetList();
   for (const auto& xpath : iframe_xpath_list) {
     if (!xpath.is_string()) {
@@ -1816,7 +1816,7 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
     return false;
   }
 
-  const base::Value::ListStorage& profile_entries_list =
+  base::span<const base::Value> profile_entries_list =
       saved_autofill_profile_container.GetList();
   for (auto it_entry = profile_entries_list.begin();
        it_entry != profile_entries_list.end(); ++it_entry) {
@@ -1858,7 +1858,7 @@ bool TestRecipeReplayer::SetupSavedPasswords(
     return false;
   }
 
-  const base::Value::ListStorage& saved_password_list =
+  base::span<const base::Value> saved_password_list =
       saved_password_list_container.GetList();
   for (auto it_password = saved_password_list.begin();
        it_password != saved_password_list.end(); ++it_password) {

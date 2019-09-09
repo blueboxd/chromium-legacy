@@ -69,7 +69,6 @@ source_set("recent_tabs_ui") {
     "//components/sessions",
     "//components/strings",
     "//components/sync",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/metrics:metrics_internal",

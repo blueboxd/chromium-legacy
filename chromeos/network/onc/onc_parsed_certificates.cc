@@ -183,7 +183,7 @@ OncParsedCertificates::OncParsedCertificates(
   }
 
   for (size_t i = 0; i < onc_certificates.GetList().size(); ++i) {
-    const base::Value& onc_certificate = onc_certificates.GetList().at(i);
+    const base::Value& onc_certificate = onc_certificates.GetList()[i];
     DCHECK(onc_certificate.is_dict());
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << onc_certificate;

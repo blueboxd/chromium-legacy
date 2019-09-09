@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Setting scalabilityMode to a legal value should be accepted assert_equals: expected (string) "L1T3" but got (undefined) undefined
+FAIL Sender capabilities should include at least some scalability modes assert_true: expected true got false
+Harness: the test ran to completion.
+

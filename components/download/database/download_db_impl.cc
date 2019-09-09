@@ -53,7 +53,7 @@ DownloadDBImpl::DownloadDBImpl(
   DCHECK(!database_dir.empty());
   db_ = db_provider->GetDB<download_pb::DownloadDBEntry>(
       leveldb_proto::ProtoDbType::DOWNLOAD_DB, database_dir,
-      base::CreateSequencedTaskRunnerWithTraits(
+      base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            // USER_VISIBLE because it is required to display chrome://downloads.
            // https://crbug.com/976223

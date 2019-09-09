@@ -1650,7 +1650,7 @@ UserMediaProcessor::GetMediaStreamDispatcherHost() {
   return dispatcher_host_.get();
 }
 
-const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
+blink::mojom::blink::MediaDevicesDispatcherHost*
 UserMediaProcessor::GetMediaDevicesDispatcher() {
   return media_devices_dispatcher_cb_.Run();
 }

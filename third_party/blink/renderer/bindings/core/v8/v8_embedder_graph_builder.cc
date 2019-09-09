@@ -195,8 +195,7 @@ class GC_PLUGIN_IGNORE(
                                WeakCallback,
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
-  void RegisterBackingStoreCallback(void**, MovingObjectCallback, void*) final {
-  }
+  void RegisterBackingStoreCallback(void*, MovingObjectCallback) final {}
   void RegisterWeakCallback(void*, WeakCallback) final {}
 
  private:

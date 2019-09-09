@@ -215,7 +215,7 @@ void BackgroundSyncBaseBrowserTest::SetTestClock(base::SimpleTestClock* clock) {
     SetTestClockOnCoreThread(sync_context, clock);
   } else {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(&BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread,
                        base::Unretained(this), base::Unretained(sync_context),

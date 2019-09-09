@@ -586,8 +586,9 @@ public class NfcImpl implements Nfc {
             List<Integer> watchIds = new ArrayList<Integer>();
             for (int i = 0; i < mWatchers.size(); i++) {
                 NfcScanOptions options = mWatchers.valueAt(i);
-                if (matchesWatchOptions(ndefMessage, compatibility, options))
+                if (matchesWatchOptions(ndefMessage, compatibility, options)) {
                     watchIds.add(mWatchers.keyAt(i));
+                }
             }
 
             if (watchIds.size() != 0) {
@@ -639,7 +640,8 @@ public class NfcImpl implements Nfc {
                 // If record type filter for the watch options is null, match all record types.
                 matchedRecordType = true;
             } else {
-                matchedRecordType = options.recordFilter.recordType == message.data[i].recordType;
+                matchedRecordType =
+                        options.recordFilter.recordType.equals(message.data[i].recordType);
             }
 
             if (matchedMediaType && matchedRecordType) return true;

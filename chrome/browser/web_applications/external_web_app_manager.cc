@@ -189,7 +189,7 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
                    << kUninstallAndReplace;
         continue;
       }
-      const std::vector<base::Value>& uninstall_and_replace_values =
+      base::span<const base::Value> uninstall_and_replace_values =
           value->GetList();
 
       bool had_error = false;

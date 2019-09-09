@@ -9,6 +9,7 @@
 
 extern NSString* const kAutofillCreditCardTableViewId;
 extern NSString* const kAutofillCreditCardSwitchViewId;
+extern NSString* const kSettingsAddPaymentMethodButtonId;
 
 namespace ios {
 class ChromeBrowserState;

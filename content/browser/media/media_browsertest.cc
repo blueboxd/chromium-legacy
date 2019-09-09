@@ -308,7 +308,12 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm192kHz) {
   PlayAudio("bear_192kHz.wav", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_VideoTulipWebm DISABLED_VideoTulipWebm
+#else
+#define MAYBE_VideoTulipWebm VideoTulipWebm
+#endif
+IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
 }
 

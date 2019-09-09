@@ -35,10 +35,9 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
      * to unsigned long where an unspecified color is represented as
      * {@link ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING}.
      */
-    public static long longColorFromIntegerColor(Integer color) {
+    public static long colorFromIntegerColor(Integer color) {
         if (color != null) {
-            // Convert signed int to unsigned long.
-            return (color.intValue() & 0xffffffffL);
+            return color.intValue();
         }
         return ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
     }
@@ -48,7 +47,7 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
      * {@link ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING} to a signed Integer where an
      * unspecified color is represented as null.
      */
-    public static Integer integerColorFromLongColor(long longColor) {
+    public static Integer colorFromLongColor(long longColor) {
         return (longColor == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING)
                 ? null
                 : Integer.valueOf((int) longColor);
@@ -110,10 +109,10 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         int orientation = IntentUtils.safeGetIntExtra(
                 intent, ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int source = sourceFromIntent(intent);
-        Integer themeColor = integerColorFromLongColor(
+        Integer themeColor = colorFromLongColor(
                 IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_THEME_COLOR,
                         ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
-        Integer backgroundColor = integerColorFromLongColor(
+        Integer backgroundColor = colorFromLongColor(
                 IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_BACKGROUND_COLOR,
                         ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
         boolean isIconGenerated = IntentUtils.safeGetBooleanExtra(

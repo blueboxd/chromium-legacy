@@ -33,7 +33,7 @@ const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
 // Enables the experiment for the password manager to only fill on account
 // selection when the password form was served over HTTP.
 const base::Feature kFillOnAccountSelectHttp = {
-    "FillOnAccountSelectHttp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "FillOnAccountSelectHttp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Forces password generation to ask user to update the password instead of
 // overwriting silently.

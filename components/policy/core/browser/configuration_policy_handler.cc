@@ -112,7 +112,7 @@ bool ListPolicyHandler::CheckAndGetList(
     return true;
 
   // Filter the list, rejecting any invalid strings.
-  const base::Value::ListStorage& list = value->GetList();
+  base::span<const base::Value> list = value->GetList();
   if (filtered_list)
     *filtered_list = std::make_unique<base::ListValue>();
   for (size_t list_index = 0; list_index < list.size(); ++list_index) {
@@ -535,7 +535,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
 
   // If that succeeds, validate all the list items are strings and validate
   // the JSON inside the strings.
-  const ::base::Value::ListStorage& list = root_value->GetList();
+  base::span<const base::Value> list = root_value->GetList();
   bool json_error_seen = false;
 
   for (size_t index = 0; index < list.size(); ++index) {

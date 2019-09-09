@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace password_manager {
 
@@ -56,6 +58,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;
+  const PasswordFeatureManager* GetPasswordFeatureManager() const override;
+  const MockPasswordFeatureManager* GetMockPasswordFeatureManager() const;
 
 #if defined(ON_FOCUS_PING_ENABLED) || \
     defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -86,6 +90,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 
  private:
   const StubCredentialsFilter credentials_filter_;
+  testing::NiceMock<MockPasswordFeatureManager> password_feature_manager_;
   autofill::StubLogManager log_manager_;
   ukm::SourceId ukm_source_id_;
   base::Optional<PasswordManagerMetricsRecorder> metrics_recorder_;

@@ -374,13 +374,14 @@ mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
   return blob_clone;
 }
 
-network::mojom::blink::DataPipeGetterPtr BlobDataHandle::AsDataPipeGetter() {
+mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
+BlobDataHandle::AsDataPipeGetter() {
   MutexLocker locker(blob_remote_mutex_);
   if (!blob_remote_.is_valid())
-    return nullptr;
-  network::mojom::blink::DataPipeGetterPtr result;
+    return mojo::NullRemote();
+  mojo::PendingRemote<network::mojom::blink::DataPipeGetter> result;
   mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
-  blob->AsDataPipeGetter(MakeRequest(&result));
+  blob->AsDataPipeGetter(result.InitWithNewPipeAndPassReceiver());
   blob_remote_ = blob.Unbind();
   return result;
 }

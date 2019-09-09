@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/generation/password_generator.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -100,7 +101,7 @@ bool PasswordGenerationFrameHelper::IsGenerationEnabled(
     return false;
   }
 
-  if (client_->GetPasswordSyncState() != NOT_SYNCING)
+  if (client_->GetPasswordFeatureManager()->IsGenerationEnabled())
     return true;
   if (logger)
     logger->LogMessage(Logger::STRING_GENERATION_DISABLED_NO_SYNC);

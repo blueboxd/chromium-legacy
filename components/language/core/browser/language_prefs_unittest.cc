@@ -29,7 +29,7 @@ static void ExpectEqualLanguageLists(
   const int input_size = languages.size();
   ASSERT_EQ(input_size, static_cast<int>(language_values->GetList().size()));
   for (int i = 0; i < input_size; ++i) {
-    std::string value = language_values->GetList().at(i).GetString();
+    std::string value = language_values->GetList()[i].GetString();
     EXPECT_EQ(languages[i], value);
   }
 }

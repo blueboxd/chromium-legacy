@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/cpp/data_element.h"
@@ -296,11 +297,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const std::string& blob_uuid(const network::DataElement& element) {
     return element.blob_uuid_;
   }
-  static network::mojom::DataPipeGetterPtrInfo data_pipe_getter(
+  static mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter(
       const network::DataElement& element) {
     if (element.type_ != network::mojom::DataElementType::kDataPipe)
-      return nullptr;
-    return element.CloneDataPipeGetter().PassInterface();
+      return mojo::NullRemote();
+    return element.CloneDataPipeGetter();
   }
   static network::mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter(
       const network::DataElement& element) {

@@ -62,7 +62,7 @@ bool ValidateTestResult(const Value* iteration_data,
     return false;
   }
 
-  const Value& val = results->GetList().at(0);
+  const Value& val = results->GetList()[0];
   if (!val.is_dict()) {
     ADD_FAILURE() << "Value must be of type DICTIONARY";
     return false;

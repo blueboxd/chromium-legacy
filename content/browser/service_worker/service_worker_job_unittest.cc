@@ -35,7 +35,8 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/fake_network_url_loader_factory.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "content/test/fake_network.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -1113,10 +1114,10 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     context_wrapper()->AddObserver(this);
     if (base::FeatureList::IsEnabled(
             blink::features::kServiceWorkerImportedScriptUpdateCheck)) {
-      loader_factory_for_update_checker_ =
-          std::make_unique<FakeNetworkURLLoaderFactory>(kHeaders, kBody, true,
-                                                        net::OK);
-      SetNetworkFactory(loader_factory_for_update_checker_.get());
+      interceptor_ = std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
+          &FakeNetwork::HandleRequest, base::Unretained(&fake_network_)));
+      fake_network_.SetDefaultResponse(kHeaders, kBody,
+                                       /*network_accessed=*/true, net::OK);
     }
   }
   ~UpdateJobTestHelper() override {
@@ -1279,9 +1280,10 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   bool registration_failed_ = false;
   bool force_start_worker_failure_ = false;
   base::Optional<bool> will_be_terminated_;
-  // This is used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  std::unique_ptr<FakeNetworkURLLoaderFactory>
-      loader_factory_for_update_checker_;
+
+  // These are used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  FakeNetwork fake_network_;
+  std::unique_ptr<URLLoaderInterceptor> interceptor_;
 
   base::WeakPtrFactory<UpdateJobTestHelper> weak_factory_{this};
 };
@@ -1450,7 +1452,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   // accessed. The check time should not be updated.
   // Set network not accessed.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         kNoChangeOrigin.Resolve(kScript), kHeaders, kBody,
         /*network_accessed=*/false, net::OK);
   }
@@ -1477,7 +1479,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   // accessed. The check time should be updated.
   // Set network accessed.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         kNoChangeOrigin.Resolve(kScript), kHeaders, kBody,
         /*network_accessed=*/true, net::OK);
   }
@@ -1507,7 +1509,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   // Run an update where the script changed. The check time should be updated.
   // Change script body.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         kNewVersionOrigin.Resolve(kScript), kHeaders, kNewBody,
         /*network_accessed=*/true, net::OK);
   }
@@ -1537,7 +1539,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   registration->set_last_update_check(kYesterday);
   // Change script body.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         kNewVersionOrigin.Resolve(kScript), kHeaders, kBody,
         /*network_accessed=*/true, net::OK);
   }
@@ -1569,7 +1571,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_NewVersion) {
   // Run the update job and an update is found.
   // Change script body.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         kNewVersionOrigin.Resolve(kScript), kHeaders, kNewBody,
         /*network_accessed=*/true, net::OK);
   }
@@ -1704,7 +1706,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
           helper_.get());
   // Setup the old script response.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         old_script, kHeaders, kBody, /*network_accessed=*/true, net::OK);
   }
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -1725,7 +1727,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
 
   if (IsImportedScriptUpdateCheckEnabled()) {
     // Setup the new script response.
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         new_script, kHeaders, kNewBody, /*network_accessed=*/true, net::OK);
 
     // Make sure the storage has the data of the current waiting version.
@@ -1778,7 +1780,7 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_EvictedIncumbent) {
   // Evict the incumbent during that time.
   // Change script body.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         kNewVersionOrigin.Resolve(kScript), kHeaders, kNewBody,
         /*network_accessed=*/true, net::OK);
   }
@@ -1972,7 +1974,7 @@ TEST_P(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
   // Update. The new version should be waiting.
   // Change script body.
   if (IsImportedScriptUpdateCheckEnabled()) {
-    update_helper_->loader_factory_for_update_checker_->SetResponse(
+    update_helper_->fake_network_.SetResponse(
         script, kHeaders, kNewBody, /*network_accessed=*/true, net::OK);
   }
   registration->AddListener(update_helper_);

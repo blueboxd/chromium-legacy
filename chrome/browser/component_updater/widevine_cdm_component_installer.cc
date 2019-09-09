@@ -289,7 +289,7 @@ bool GetEncryptionSchemes(
     return false;
   }
 
-  const base::Value::ListStorage& list = value->GetList();
+  base::span<const base::Value> list = value->GetList();
   base::flat_set<media::EncryptionMode> result;
   for (const auto& item : list) {
     if (!item.is_string()) {
@@ -336,7 +336,7 @@ bool GetCdmProxyProtocols(
     return false;
   }
 
-  const base::Value::ListStorage& list = value->GetList();
+  base::span<const base::Value> list = value->GetList();
   base::flat_set<media::CdmProxy::Protocol> result;
   for (const auto& item : list) {
     if (!item.is_string()) {

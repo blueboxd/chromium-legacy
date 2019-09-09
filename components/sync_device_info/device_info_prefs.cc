@@ -37,7 +37,7 @@ DeviceInfoPrefs::~DeviceInfoPrefs() {}
 
 bool DeviceInfoPrefs::IsRecentLocalCacheGuid(
     const std::string& cache_guid) const {
-  const base::Value::ListStorage& recent_local_cache_guids =
+  base::span<const base::Value> recent_local_cache_guids =
       pref_service_->GetList(kDeviceInfoRecentGUIDs)->GetList();
 
   return std::find(recent_local_cache_guids.begin(),

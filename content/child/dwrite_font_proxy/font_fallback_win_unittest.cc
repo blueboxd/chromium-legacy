@@ -8,6 +8,7 @@
 #include <shlobj.h>
 #include <wrl.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -46,7 +47,7 @@ class FontFallbackUnitTest : public testing::Test {
         .AddFilePath(segoe_path);
 
     DWriteFontCollectionProxy::Create(&collection_, factory_.Get(),
-                                      fake_collection_->CreatePtr());
+                                      fake_collection_->CreateRemote());
   }
 
   base::test::TaskEnvironment task_environment;

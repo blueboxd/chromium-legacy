@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/password_manager/core/browser/password_feature_manager_impl.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
@@ -94,6 +95,8 @@ class IOSChromePasswordManagerClient
           saved_form_manager) override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
+  const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
+      const override;
   bool IsMainFrameSecure() const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetPasswordStore() const override;
@@ -128,6 +131,8 @@ class IOSChromePasswordManagerClient
   password_manager::PasswordManager* GetPasswordManager() override;
 
   id<PasswordManagerClientDelegate> delegate_;  // (weak)
+
+  const password_manager::PasswordFeatureManagerImpl password_feature_manager_;
 
   // The preference associated with
   // password_manager::prefs::kCredentialsEnableService.

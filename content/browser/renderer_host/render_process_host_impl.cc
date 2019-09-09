@@ -1903,7 +1903,7 @@ void RenderProcessHostImpl::BindFileSystemManager(
   // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileSystemManagerImpl::BindRequest,
+      base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                      base::Unretained(file_system_manager_impl_.get()),
                      std::move(receiver)));
 }
@@ -2030,9 +2030,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
 #if defined(OS_WIN)
   registry->AddInterface(
-      base::BindRepeating([](blink::mojom::DWriteFontProxyRequest request) {
-        DWriteFontProxyImpl::Create(std::move(request), {});
-      }),
+      base::BindRepeating(
+          [](mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver) {
+            DWriteFontProxyImpl::Create(std::move(receiver), {});
+          }),
       base::CreateSequencedTaskRunner({base::ThreadPool(),
                                        base::TaskPriority::USER_BLOCKING,
                                        base::MayBlock()}));
@@ -2061,7 +2062,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   // TODO(https://crbug.com/873661): Make PepperFileSystemHost access this with
   // the RenderFrameHost's registry, and remove this registration.
   registry->AddInterface(
-      base::BindRepeating(&FileSystemManagerImpl::BindRequest,
+      base::BindRepeating(&FileSystemManagerImpl::BindReceiver,
                           base::Unretained(file_system_manager_impl_.get())));
 
   registry->AddInterface(base::BindRepeating(

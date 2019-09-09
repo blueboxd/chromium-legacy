@@ -82,6 +82,16 @@ const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
+const PasswordFeatureManager*
+StubPasswordManagerClient::GetPasswordFeatureManager() const {
+  return &password_feature_manager_;
+}
+
+const MockPasswordFeatureManager*
+StubPasswordManagerClient::GetMockPasswordFeatureManager() const {
+  return &password_feature_manager_;
+}
+
 #if defined(ON_FOCUS_PING_ENABLED) || \
     defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 safe_browsing::PasswordProtectionService*

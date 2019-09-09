@@ -121,7 +121,7 @@ net::Error CacheCreator::Run() {
       simple_cache->set_app_status_listener(app_status_listener_);
 #endif
     return simple_cache->Init(
-        base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
+        base::BindOnce(&CacheCreator::OnIOComplete, base::Unretained(this)));
   }
 
 // Avoid references to blockfile functions on Android to reduce binary size.
@@ -134,7 +134,7 @@ net::Error CacheCreator::Run() {
   created_cache_.reset(new_cache);
   new_cache->SetMaxSize(max_bytes_);
   net::Error rv = new_cache->Init(
-      base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
+      base::BindOnce(&CacheCreator::OnIOComplete, base::Unretained(this)));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
   return rv;
 #endif

@@ -254,9 +254,8 @@ class PLATFORM_EXPORT Visitor {
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.
-  virtual void RegisterBackingStoreCallback(void** slot,
-                                            MovingObjectCallback,
-                                            void* callback_data) = 0;
+  virtual void RegisterBackingStoreCallback(void* backing,
+                                            MovingObjectCallback) = 0;
 
   // Used to register ephemeron callbacks.
   virtual bool RegisterWeakTable(const void* closure,

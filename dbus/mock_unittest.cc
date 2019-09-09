@@ -83,7 +83,7 @@ class MockTest : public testing::Test {
 
  protected:
   std::string response_string_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<MockBus> mock_bus_;
   scoped_refptr<MockObjectProxy> mock_proxy_;

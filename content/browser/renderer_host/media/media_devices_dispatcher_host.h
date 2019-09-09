@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "url/origin.h"
 
@@ -30,10 +31,11 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                              MediaStreamManager* media_stream_manager);
   ~MediaDevicesDispatcherHost() override;
 
-  static void Create(int render_process_id,
-                     int render_frame_id,
-                     MediaStreamManager* media_stream_manager,
-                     blink::mojom::MediaDevicesDispatcherHostRequest request);
+  static void Create(
+      int render_process_id,
+      int render_frame_id,
+      MediaStreamManager* media_stream_manager,
+      mojo::PendingReceiver<blink::mojom::MediaDevicesDispatcherHost> receiver);
 
   // blink::mojom::MediaDevicesDispatcherHost implementation.
   void EnumerateDevices(bool request_audio_input,

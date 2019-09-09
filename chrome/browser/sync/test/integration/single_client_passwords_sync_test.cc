@@ -540,4 +540,41 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 }
 #endif  // !defined(OS_CHROMEOS)
 
+// The unconsented primary account isn't supported on ChromeOS (see
+// IdentityManager::ComputeUnconsentedPrimaryAccountInfo()) so Sync won't start
+// up for a secondary account.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       SwitchesFromAccountToProfileStore) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Setup Sync for a secondary account (i.e. in transport mode).
+  AccountInfo account_info = secondary_account_helper::SignInSecondaryAccount(
+      GetProfile(0), &test_url_loader_factory_, "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password showed up in the account store.
+  password_manager::PasswordStore* account_store =
+      passwords_helper::GetAccountPasswordStore(0);
+  ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+
+  // Turn on Sync-the-feature.
+  secondary_account_helper::MakeAccountPrimary(GetProfile(0), "user@email.com");
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Make sure the password is now in the profile store, but *not* in the
+  // account store anymore.
+  password_manager::PasswordStore* profile_store =
+      passwords_helper::GetPasswordStore(0);
+  EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
+}
+#endif  // !defined(OS_CHROMEOS)
+
 }  // namespace

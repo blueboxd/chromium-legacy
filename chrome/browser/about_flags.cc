@@ -3893,6 +3893,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppServiceAshDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceAsh)},
 
+    {"app-service-intent-handling",
+     flag_descriptions::kAppServiceIntentHandlingName,
+     flag_descriptions::kAppServiceIntentHandlingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAppServiceIntentHandling)},
+
     {"app-service-shelf", flag_descriptions::kAppServiceShelfName,
      flag_descriptions::kAppServiceShelfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceShelf)},

@@ -141,7 +141,7 @@ function getMockProfile() {
 function testGetVolumeInfo(callback) {
   reportPromise(
       volumeManagerFactory.getInstance().then(volumeManager => {
-        const entry = new MockFileEntry(
+        const entry = MockFileEntry.create(
             new MockFileSystem('download:Downloads'), '/foo/bar/bla.zip');
 
         const volumeInfo = volumeManager.getVolumeInfo(entry);
@@ -214,8 +214,8 @@ function testMountArchiveAndUnmount(callback) {
     assertEquals(numberOfVolumes + 1, volumeManager.volumeInfoList.length);
 
     // Unmount the mounted archive
-    const entry =
-        new MockFileEntry(new MockFileSystem('archive:foobar.zip'), '/foo.txt');
+    const entry = MockFileEntry.create(
+        new MockFileSystem('archive:foobar.zip'), '/foo.txt');
     const volumeInfo = volumeManager.getVolumeInfo(entry);
     await volumeManager.unmount(volumeInfo);
 
@@ -242,7 +242,7 @@ function testGetCurrentProfileVolumeInfo(callback) {
 function testGetLocationInfo(callback) {
   reportPromise(
       volumeManagerFactory.getInstance().then(volumeManager => {
-        const downloadEntry = new MockFileEntry(
+        const downloadEntry = MockFileEntry.create(
             new MockFileSystem('download:Downloads'), '/foo/bar/bla.zip');
         const downloadLocationInfo =
             volumeManager.getLocationInfo(downloadEntry);
@@ -253,7 +253,7 @@ function testGetLocationInfo(callback) {
         assertFalse(downloadLocationInfo.isReadOnly);
         assertFalse(downloadLocationInfo.isRootEntry);
 
-        const driveEntry = new MockFileEntry(
+        const driveEntry = MockFileEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/root');
         const driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
@@ -263,7 +263,7 @@ function testGetLocationInfo(callback) {
         assertFalse(driveLocationInfo.isReadOnly);
         assertTrue(driveLocationInfo.isRootEntry);
 
-        const teamDrivesGrandRoot = new MockFileEntry(
+        const teamDrivesGrandRoot = MockFileEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/team_drives');
         const teamDrivesGrandRootLocationInfo =
@@ -275,7 +275,7 @@ function testGetLocationInfo(callback) {
         assertTrue(teamDrivesGrandRootLocationInfo.isReadOnly);
         assertTrue(teamDrivesGrandRootLocationInfo.isRootEntry);
 
-        const teamDrive = new MockFileEntry(
+        const teamDrive = MockFileEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/team_drives/MyTeamDrive');
         const teamDriveLocationInfo = volumeManager.getLocationInfo(teamDrive);
@@ -286,7 +286,7 @@ function testGetLocationInfo(callback) {
         assertFalse(teamDriveLocationInfo.isReadOnly);
         assertTrue(teamDriveLocationInfo.isRootEntry);
 
-        const driveFilesByIdDirectoryEntry = new MockDirectoryEntry(
+        const driveFilesByIdDirectoryEntry = MockDirectoryEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/.files-by-id/123');
         const driveFilesByIdDirectoryLocationInfo =
@@ -298,7 +298,7 @@ function testGetLocationInfo(callback) {
         assertTrue(driveFilesByIdDirectoryLocationInfo.isReadOnly);
         assertFalse(driveFilesByIdDirectoryLocationInfo.isRootEntry);
 
-        const driveFilesByIdEntry = new MockFileEntry(
+        const driveFilesByIdEntry = MockFileEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/.files-by-id/123/foo.txt');
         const driveFilesByIdLocationInfo =
@@ -311,20 +311,20 @@ function testGetLocationInfo(callback) {
         assertFalse(driveFilesByIdLocationInfo.isRootEntry);
 
         const androidRoot =
-            new MockFileEntry(new MockFileSystem('android_files:0'), '/');
+            MockFileEntry.create(new MockFileSystem('android_files:0'), '/');
         const androidRootLocationInfo =
             volumeManager.getLocationInfo(androidRoot);
         assertTrue(androidRootLocationInfo.isReadOnly);
         assertTrue(androidRootLocationInfo.isRootEntry);
 
-        const androidSubFolder = new MockFileEntry(
+        const androidSubFolder = MockFileEntry.create(
             new MockFileSystem('android_files:0'), '/Pictures');
         const androidSubFolderLocationInfo =
             volumeManager.getLocationInfo(androidSubFolder);
         assertFalse(androidSubFolderLocationInfo.isReadOnly);
         assertFalse(androidSubFolderLocationInfo.isRootEntry);
 
-        const computersGrandRoot = new MockFileEntry(
+        const computersGrandRoot = MockFileEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/Computers');
         const computersGrandRootLocationInfo =
@@ -336,7 +336,7 @@ function testGetLocationInfo(callback) {
         assertTrue(computersGrandRootLocationInfo.isReadOnly);
         assertTrue(computersGrandRootLocationInfo.isRootEntry);
 
-        const computer = new MockFileEntry(
+        const computer = MockFileEntry.create(
             new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
             '/Computers/MyComputer');
         const computerLocationInfo = volumeManager.getLocationInfo(computer);

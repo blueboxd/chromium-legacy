@@ -85,7 +85,8 @@ class MockMediaStreamTrackMetrics : public MediaStreamTrackMetrics {
 class MediaStreamTrackMetricsTest : public testing::Test {
  public:
   MediaStreamTrackMetricsTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         signaling_thread_("signaling_thread") {}
 
   void SetUp() override {
@@ -150,7 +151,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
   std::unique_ptr<MockMediaStreamTrackMetrics> metrics_;
   scoped_refptr<MediaStreamInterface> stream_;
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::Thread signaling_thread_;
 };
 

@@ -36,6 +36,7 @@
 #include <unicode/uscript.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/debug/alias.h"
@@ -229,7 +230,7 @@ void FontCache::EnsureServiceConnected() {
   if (service_)
     return;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_));
+      service_.BindNewPipeAndPassReceiver());
 }
 
 // TODO(https://crbug.com/976737): This function is deprecated and only intended

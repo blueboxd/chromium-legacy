@@ -211,6 +211,7 @@ void LocalWindowProxy::Initialize() {
   InstallConditionalFeatures();
 
   // This needs to go after everything else since it accesses the window object.
+  // WARNING: May modify the global object!
   InitializeV8ExtrasBinding(script_state_);
 
   if (World().IsMainWorld()) {

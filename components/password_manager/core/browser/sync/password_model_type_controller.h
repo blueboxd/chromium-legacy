@@ -43,6 +43,9 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   syncer::SyncService* const sync_service_;
   const base::RepeatingClosure state_changed_callback_;
 
+  // Passed in to LoadModels(), and cached here for later use in Stop().
+  syncer::StorageOption storage_option_ = syncer::STORAGE_ON_DISK;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordModelTypeController);
 };
 

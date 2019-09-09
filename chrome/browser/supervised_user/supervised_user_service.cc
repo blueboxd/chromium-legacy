@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -40,8 +39,6 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/accounts_mutator.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
@@ -323,9 +320,6 @@ bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
 
 #if !defined(OS_ANDROID)
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
-  IdentityManagerFactory::GetForProfile(profile_)
-      ->GetAccountsMutator()
-      ->LegacySetRefreshTokenForSupervisedUser(refresh_token);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -375,15 +369,9 @@ void SupervisedUserService::SetActive(bool active) {
   active_ = active;
 
   if (!delegate_ || !delegate_->SetActive(active_)) {
-    if (active_) {
-#if !defined(OS_ANDROID)
-      IdentityManagerFactory::GetForProfile(profile_)
-          ->DeprecatedLoadCredentialsForSupervisedUser(
-              supervised_users::kSupervisedUserPseudoEmail);
-#else
-      NOTREACHED();
+#if defined(OS_ANDROID)
+    DCHECK(!active_);
 #endif
-    }
   }
 
   // Now activate/deactivate anything not handled by the delegate yet.

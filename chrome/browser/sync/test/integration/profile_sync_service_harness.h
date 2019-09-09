@@ -128,7 +128,8 @@ class ProfileSyncServiceHarness {
 
   // Blocks the caller until sync setup is complete, and sync-the-feature is
   // active. Returns true if and only if sync setup completed successfully. Make
-  // sure to call SetupSync() or one of its variants before.
+  // sure to actually start sync setup (usually by calling SetupSync() or one of
+  // its variants) before.
   bool AwaitSyncSetupCompletion();
 
   // Blocks the caller until the sync transport layer is active. Returns true if

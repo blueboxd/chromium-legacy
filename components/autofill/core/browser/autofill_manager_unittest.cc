@@ -275,12 +275,14 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
 void CheckThatOnlyFieldByIndexHasThisPossibleType(
     const FormStructure& form_structure,
     size_t field_index,
-    ServerFieldType type) {
+    ServerFieldType type,
+    FieldPropertiesMask mask) {
   EXPECT_TRUE(field_index < form_structure.field_count());
 
   for (size_t i = 0; i < form_structure.field_count(); i++) {
     if (i == field_index) {
       EXPECT_THAT(form_structure.field(i)->possible_types(), ElementsAre(type));
+      EXPECT_EQ(mask, form_structure.field(i)->properties_mask);
     } else {
       EXPECT_THAT(form_structure.field(i)->possible_types(),
                   Not(Contains(type)));
@@ -5465,8 +5467,9 @@ TEST_F(AutofillManagerTest, CrowdsourceCVCFieldByValue) {
       profiles, credit_cards, base::ASCIIToUTF16(cvc), "en-us",
       &form_structure);
 
-  CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 2,
-                                               CREDIT_CARD_VERIFICATION_CODE);
+  CheckThatOnlyFieldByIndexHasThisPossibleType(
+      form_structure, 2, CREDIT_CARD_VERIFICATION_CODE,
+      FieldPropertiesFlags::KNOWN_VALUE);
 }
 
 // Expiration year field was detected by the server. The other field with a
@@ -5518,7 +5521,8 @@ TEST_F(AutofillManagerTest,
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 2,
-                                               CREDIT_CARD_VERIFICATION_CODE);
+                                               CREDIT_CARD_VERIFICATION_CODE,
+                                               FieldPropertiesFlags::NO_FLAGS);
 }
 
 // Tests if the CVC field is heuristically detected if it appears after the
@@ -5570,7 +5574,8 @@ TEST_F(AutofillManagerTest, CrowdsourceCVCFieldAfterExpDateByHeuristics) {
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 2,
-                                               CREDIT_CARD_VERIFICATION_CODE);
+                                               CREDIT_CARD_VERIFICATION_CODE,
+                                               FieldPropertiesFlags::NO_FLAGS);
 }
 
 // Tests if the CVC field is heuristically detected if it contains a value which
@@ -5622,7 +5627,8 @@ TEST_F(AutofillManagerTest, CrowdsourceCVCFieldBeforeExpDateByHeuristics) {
       profiles, credit_cards, base::string16(), "en-us", &form_structure);
 
   CheckThatOnlyFieldByIndexHasThisPossibleType(form_structure, 1,
-                                               CREDIT_CARD_VERIFICATION_CODE);
+                                               CREDIT_CARD_VERIFICATION_CODE,
+                                               FieldPropertiesFlags::NO_FLAGS);
 }
 
 // Tests if no CVC field is heuristically detected due to the missing of a

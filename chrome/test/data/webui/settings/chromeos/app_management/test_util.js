@@ -86,7 +86,7 @@ function getPermissionItemByType(view, permissionType) {
  */
 function getPermissionToggleByType(view, permissionType) {
   return getPermissionItemByType(view, permissionType)
-      .root.querySelector('app-management-permission-toggle');
+      .$$('app-management-toggle-row');
 }
 
 /**
@@ -95,6 +95,5 @@ function getPermissionToggleByType(view, permissionType) {
  * @return {Element}
  */
 function getPermissionCrToggleByType(view, permissionType) {
-  return getPermissionToggleByType(view, permissionType)
-      .root.querySelector('cr-toggle');
+  return getPermissionToggleByType(view, permissionType).$$('cr-toggle');
 }

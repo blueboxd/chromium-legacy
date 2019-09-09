@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -30,6 +31,7 @@ void AddExtrasBindingToGlobal(V8TestingScope* scope) {
 }
 
 TEST(InitializeV8ExtrasBindingTest, SupportedId) {
+  ScopedStreamsNativeForTest enabled(false);
   V8TestingScope scope;
   InitializeV8ExtrasBinding(scope.GetScriptState());
   AddExtrasBindingToGlobal(&scope);
@@ -43,6 +45,7 @@ TEST(InitializeV8ExtrasBindingTest, SupportedId) {
 }
 
 TEST(InitializeV8ExtrasBindingTest, UnsupportedId) {
+  ScopedStreamsNativeForTest enabled(false);
   V8TestingScope scope;
   InitializeV8ExtrasBinding(scope.GetScriptState());
   AddExtrasBindingToGlobal(&scope);

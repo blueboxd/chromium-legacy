@@ -28,6 +28,7 @@ using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::ASCIIToUTF16;
 using testing::_;
+using testing::Return;
 using testing::SaveArg;
 
 namespace password_manager {
@@ -47,12 +48,12 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MockPasswordManagerClient() {}
-
   MOCK_METHOD3(PasswordWasAutofilled,
                void(const std::map<base::string16, const PasswordForm*>&,
                     const GURL&,
                     const std::vector<const PasswordForm*>*));
+
+  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
 };
 
 }  // namespace
@@ -60,19 +61,22 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 class PasswordFormFillingTest : public testing::Test {
  public:
   PasswordFormFillingTest() {
-    observed_form_.origin = GURL("http://accounts.google.com/a/LoginAuth");
-    observed_form_.action = GURL("http://accounts.google.com/a/Login");
+    ON_CALL(client_, IsMainFrameSecure()).WillByDefault(Return(true));
+
+    observed_form_.origin = GURL("https://accounts.google.com/a/LoginAuth");
+    observed_form_.action = GURL("https://accounts.google.com/a/Login");
     observed_form_.username_element = ASCIIToUTF16("Email");
     observed_form_.username_element_renderer_id = 100;
     observed_form_.password_element = ASCIIToUTF16("Passwd");
     observed_form_.password_element_renderer_id = 101;
     observed_form_.submit_element = ASCIIToUTF16("signIn");
-    observed_form_.signon_realm = "http://accounts.google.com";
+    observed_form_.signon_realm = "https://accounts.google.com";
     observed_form_.form_data.name = ASCIIToUTF16("the-form-name");
 
     saved_match_ = observed_form_;
-    saved_match_.origin = GURL("http://accounts.google.com/a/ServiceLoginAuth");
-    saved_match_.action = GURL("http://accounts.google.com/a/ServiceLogin");
+    saved_match_.origin =
+        GURL("https://accounts.google.com/a/ServiceLoginAuth");
+    saved_match_.action = GURL("https://accounts.google.com/a/ServiceLogin");
     saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.password_value = ASCIIToUTF16("test1");
@@ -80,9 +84,9 @@ class PasswordFormFillingTest : public testing::Test {
     psl_saved_match_ = saved_match_;
     psl_saved_match_.is_public_suffix_match = true;
     psl_saved_match_.origin =
-        GURL("http://m.accounts.google.com/a/ServiceLoginAuth");
-    psl_saved_match_.action = GURL("http://m.accounts.google.com/a/Login");
-    psl_saved_match_.signon_realm = "http://m.accounts.google.com";
+        GURL("https://m.accounts.google.com/a/ServiceLoginAuth");
+    psl_saved_match_.action = GURL("https://m.accounts.google.com/a/Login");
+    psl_saved_match_.signon_realm = "https://m.accounts.google.com";
 
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
         true, client_.GetUkmSourceId());
@@ -231,25 +235,28 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
 }
 
-TEST_F(PasswordFormFillingTest, FillingOnHttp) {
-  ASSERT_FALSE(GURL(saved_match_.signon_realm).SchemeIsCryptographic());
-  std::map<base::string16, const autofill::PasswordForm*> best_matches;
-  best_matches.emplace(saved_match_.username_value, &saved_match_);
+TEST_F(PasswordFormFillingTest, NoAutofillOnHttp) {
+  PasswordForm observed_http_form = observed_form_;
+  observed_http_form.origin = GURL("http://accounts.google.com/a/LoginAuth");
+  observed_http_form.action = GURL("http://accounts.google.com/a/Login");
+  observed_http_form.signon_realm = "http://accounts.google.com";
 
-  for (bool enable_foas_http : {false, true}) {
-    SCOPED_TRACE(testing::Message() << "Enable FOAS on HTTP: " << std::boolalpha
-                                    << enable_foas_http);
-    base::test::ScopedFeatureList features;
-    features.InitWithFeatureState(features::kFillOnAccountSelectHttp,
-                                  enable_foas_http);
+  PasswordForm saved_http_match = saved_match_;
+  saved_http_match.origin =
+      GURL("http://accounts.google.com/a/ServiceLoginAuth");
+  saved_http_match.action = GURL("http://accounts.google.com/a/ServiceLogin");
+  saved_http_match.signon_realm = "http://accounts.google.com";
 
-    LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
-        &client_, &driver_, observed_form_, best_matches, federated_matches_,
-        &saved_match_, metrics_recorder_.get());
-    EXPECT_EQ(enable_foas_http ? LikelyFormFilling::kFillOnAccountSelect
-                               : LikelyFormFilling::kFillOnPageLoad,
-              likely_form_filling);
-  }
+  ASSERT_FALSE(GURL(saved_http_match.signon_realm).SchemeIsCryptographic());
+  std::map<base::string16, const autofill::PasswordForm*> best_matches = {
+      {saved_http_match.username_value, &saved_http_match},
+  };
+
+  EXPECT_CALL(client_, IsMainFrameSecure).WillOnce(Return(false));
+  LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
+      &client_, &driver_, observed_http_form, best_matches, federated_matches_,
+      &saved_http_match, metrics_recorder_.get());
+  EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
 }
 
 #if defined(OS_ANDROID)

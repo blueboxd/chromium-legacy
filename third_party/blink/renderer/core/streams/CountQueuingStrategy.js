@@ -23,13 +23,6 @@
     }
   }
 
-  defineProperty(global, 'CountQueuingStrategy', {
-    value: CountQueuingStrategy,
-    enumerable: false,
-    configurable: true,
-    writable: true
-  });
-
   // Export a separate copy that doesn't need options objects and can't be
   // interfered with.
   class BuiltInCountQueuingStrategy {
@@ -42,6 +35,8 @@
     }
   }
 
+  binding.CountQueuingStrategy = CountQueuingStrategy;
+
   binding.createBuiltInCountQueuingStrategy = highWaterMark =>
-      new BuiltInCountQueuingStrategy(highWaterMark);
+    new BuiltInCountQueuingStrategy(highWaterMark);
 });

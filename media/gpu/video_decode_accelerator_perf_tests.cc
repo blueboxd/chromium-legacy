@@ -273,10 +273,10 @@ void PerformanceEvaluator::WriteMetricsToFile() const {
   std::string metrics_str;
   ASSERT_TRUE(base::JSONWriter::WriteWithOptions(
       metrics, base::JSONWriter::OPTIONS_PRETTY_PRINT, &metrics_str));
-
-  base::FilePath metrics_file_path =
-      output_folder_path.Append(base::FilePath(g_env->GetTestName())
-                                    .AddExtension(FILE_PATH_LITERAL(".json")));
+  base::FilePath metrics_file_path = output_folder_path.Append(
+      g_env->GetTestOutputFilePath().AddExtension(FILE_PATH_LITERAL(".json")));
+  // Make sure that the directory into which json is saved is created.
+  LOG_ASSERT(base::CreateDirectory(metrics_file_path.DirName()));
   base::File metrics_output_file(
       base::FilePath(metrics_file_path),
       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);

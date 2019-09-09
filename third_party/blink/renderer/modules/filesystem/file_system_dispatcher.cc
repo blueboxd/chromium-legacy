@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 
-#include <memory>
 #include <utility>
 
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -284,16 +284,15 @@ void FileSystemDispatcher::ExistsSync(
 void FileSystemDispatcher::ReadDirectory(
     const KURL& path,
     std::unique_ptr<EntriesCallbacks> callbacks) {
-  mojom::blink::FileSystemOperationListenerPtr ptr;
-  // See https://bit.ly/2S0zRAS for task types
-  mojom::blink::FileSystemOperationListenerRequest request = mojo::MakeRequest(
-      &ptr,
-      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
-  op_listeners_.AddBinding(
+  mojo::PendingRemote<mojom::blink::FileSystemOperationListener> listener;
+  mojo::PendingReceiver<mojom::blink::FileSystemOperationListener> receiver =
+      listener.InitWithNewPipeAndPassReceiver();
+  op_listeners_.Add(
       std::make_unique<ReadDirectoryListener>(std::move(callbacks)),
-      std::move(request),
+      std::move(receiver),
+      // See https://bit.ly/2S0zRAS for task types
       GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
-  GetFileSystemManager().ReadDirectory(path, std::move(ptr));
+  GetFileSystemManager().ReadDirectory(path, std::move(listener));
 }
 
 void FileSystemDispatcher::ReadDirectorySync(
@@ -330,18 +329,19 @@ void FileSystemDispatcher::Truncate(const KURL& path,
                                     int64_t offset,
                                     int* request_id_out,
                                     StatusCallback callback) {
-  mojom::blink::FileSystemCancellableOperationPtr op_ptr;
+  mojo::Remote<mojom::blink::FileSystemCancellableOperation> op_remote;
   // See https://bit.ly/2S0zRAS for task types
-  mojom::blink::FileSystemCancellableOperationRequest op_request =
-      mojo::MakeRequest(&op_ptr, GetSupplementable()->GetTaskRunner(
-                                     blink::TaskType::kMiscPlatformAPI));
+  mojo::PendingReceiver<mojom::blink::FileSystemCancellableOperation>
+      op_receiver = op_remote.BindNewPipeAndPassReceiver(
+          GetSupplementable()->GetTaskRunner(
+              blink::TaskType::kMiscPlatformAPI));
   int operation_id = next_operation_id_++;
-  op_ptr.set_connection_error_handler(
-      WTF::Bind(&FileSystemDispatcher::RemoveOperationPtr,
+  op_remote.set_disconnect_handler(
+      WTF::Bind(&FileSystemDispatcher::RemoveOperationRemote,
                 WrapWeakPersistent(this), operation_id));
-  cancellable_operations_.insert(operation_id, std::move(op_ptr));
+  cancellable_operations_.insert(operation_id, std::move(op_remote));
   GetFileSystemManager().Truncate(
-      path, offset, std::move(op_request),
+      path, offset, std::move(op_receiver),
       WTF::Bind(&FileSystemDispatcher::DidTruncate, WrapWeakPersistent(this),
                 operation_id, std::move(callback)));
 
@@ -363,35 +363,32 @@ void FileSystemDispatcher::Write(const KURL& path,
                                  int* request_id_out,
                                  const WriteCallback& success_callback,
                                  StatusCallback error_callback) {
-  mojom::blink::FileSystemCancellableOperationPtr op_ptr;
+  mojo::Remote<mojom::blink::FileSystemCancellableOperation> op_remote;
   // See https://bit.ly/2S0zRAS for task types
-  mojom::blink::FileSystemCancellableOperationRequest op_request =
-      mojo::MakeRequest(&op_ptr, GetSupplementable()->GetTaskRunner(
-                                     blink::TaskType::kMiscPlatformAPI));
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
+  mojo::PendingReceiver<mojom::blink::FileSystemCancellableOperation>
+      op_receiver = op_remote.BindNewPipeAndPassReceiver(task_runner);
   int operation_id = next_operation_id_++;
-  op_ptr.set_connection_error_handler(
-      WTF::Bind(&FileSystemDispatcher::RemoveOperationPtr,
+  op_remote.set_disconnect_handler(
+      WTF::Bind(&FileSystemDispatcher::RemoveOperationRemote,
                 WrapWeakPersistent(this), operation_id));
-  cancellable_operations_.insert(operation_id, std::move(op_ptr));
+  cancellable_operations_.insert(operation_id, std::move(op_remote));
 
-  mojom::blink::FileSystemOperationListenerPtr listener_ptr;
-  // See https://bit.ly/2S0zRAS for task types
-  mojom::blink::FileSystemOperationListenerRequest request = mojo::MakeRequest(
-      &listener_ptr,
-      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
-  op_listeners_.AddBinding(
-      std::make_unique<WriteListener>(
-          WTF::BindRepeating(&FileSystemDispatcher::DidWrite,
-                             WrapWeakPersistent(this), success_callback,
-                             operation_id),
-          WTF::Bind(&FileSystemDispatcher::WriteErrorCallback,
-                    WrapWeakPersistent(this), std::move(error_callback),
-                    operation_id)),
-      std::move(request),
-      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
+  mojo::PendingRemote<mojom::blink::FileSystemOperationListener> listener;
+  mojo::PendingReceiver<mojom::blink::FileSystemOperationListener> receiver =
+      listener.InitWithNewPipeAndPassReceiver();
+  op_listeners_.Add(std::make_unique<WriteListener>(
+                        WTF::BindRepeating(&FileSystemDispatcher::DidWrite,
+                                           WrapWeakPersistent(this),
+                                           success_callback, operation_id),
+                        WTF::Bind(&FileSystemDispatcher::WriteErrorCallback,
+                                  WrapWeakPersistent(this),
+                                  std::move(error_callback), operation_id)),
+                    std::move(receiver), task_runner);
 
-  GetFileSystemManager().Write(path, blob_id, offset, std::move(op_request),
-                               std::move(listener_ptr));
+  GetFileSystemManager().Write(path, blob_id, offset, std::move(op_receiver),
+                               std::move(listener));
 
   if (request_id_out)
     *request_id_out = operation_id;
@@ -439,7 +436,7 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
   base::File::Info file_info;
   base::FilePath platform_path;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
-  mojom::blink::ReceivedSnapshotListenerPtr listener;
+  mojo::PendingRemote<mojom::blink::ReceivedSnapshotListener> listener;
   GetFileSystemManager().CreateSnapshotFile(
       file_path, &file_info, &platform_path, &error_code, &listener);
   DidCreateSnapshotFile(std::move(callbacks), std::move(file_info),
@@ -537,7 +534,7 @@ void FileSystemDispatcher::DidTruncate(int operation_id,
                                        StatusCallback callback,
                                        base::File::Error error_code) {
   if (error_code != base::File::FILE_ERROR_ABORT)
-    RemoveOperationPtr(operation_id);
+    RemoveOperationRemote(operation_id);
   std::move(callback).Run(error_code);
 }
 
@@ -547,7 +544,7 @@ void FileSystemDispatcher::DidWrite(const WriteCallback& callback,
                                     bool complete) {
   callback.Run(bytes, complete);
   if (complete)
-    RemoveOperationPtr(operation_id);
+    RemoveOperationRemote(operation_id);
 }
 
 void FileSystemDispatcher::WriteErrorCallback(StatusCallback callback,
@@ -555,14 +552,14 @@ void FileSystemDispatcher::WriteErrorCallback(StatusCallback callback,
                                               base::File::Error error) {
   std::move(callback).Run(error);
   if (error != base::File::FILE_ERROR_ABORT)
-    RemoveOperationPtr(operation_id);
+    RemoveOperationRemote(operation_id);
 }
 
 void FileSystemDispatcher::DidCancel(StatusCallback callback,
                                      int cancelled_operation_id,
                                      base::File::Error error_code) {
   if (error_code == base::File::FILE_OK)
-    RemoveOperationPtr(cancelled_operation_id);
+    RemoveOperationRemote(cancelled_operation_id);
   std::move(callback).Run(error_code);
 }
 
@@ -571,7 +568,7 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     base::File::Error error_code,
-    mojom::blink::ReceivedSnapshotListenerPtr listener) {
+    mojo::PendingRemote<mojom::blink::ReceivedSnapshotListener> listener) {
   if (error_code == base::File::FILE_OK) {
     FileMetadata file_metadata = FileMetadata::From(file_info);
     file_metadata.platform_path = FilePathToWebString(platform_path);
@@ -584,14 +581,16 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
 
     callbacks->DidCreateSnapshotFile(file_metadata, snapshot_blob);
 
-    if (listener)
-      listener->DidReceiveSnapshotFile();
+    if (listener) {
+      mojo::Remote<mojom::blink::ReceivedSnapshotListener>(std::move(listener))
+          ->DidReceiveSnapshotFile();
+    }
   } else {
     callbacks->DidFail(error_code);
   }
 }
 
-void FileSystemDispatcher::RemoveOperationPtr(int operation_id) {
+void FileSystemDispatcher::RemoveOperationRemote(int operation_id) {
   auto it = cancellable_operations_.find(operation_id);
   if (it == cancellable_operations_.end())
     return;
@@ -599,7 +598,7 @@ void FileSystemDispatcher::RemoveOperationPtr(int operation_id) {
 }
 
 void FileSystemDispatcher::Prefinalize() {
-  op_listeners_.CloseAllBindings();
+  op_listeners_.Clear();
 }
 
 }  // namespace blink

@@ -48,11 +48,6 @@ const newTreeElement = (() => {
    */
   function _highlightSymbolName(symbolNameElement, node) {
     const dexMethodStats = node.childStats[_DEX_METHOD_SYMBOL_TYPE];
-    if (dexMethodStats && dexMethodStats.count < 0) {
-      // This symbol was removed between the before and after versions.
-      symbolNameElement.classList.add('removed');
-    }
-
     if (state.has('highlight')) {
       const stats = Object.values(node.childStats);
       if (stats.some(stat => stat.highlight > 0)) {

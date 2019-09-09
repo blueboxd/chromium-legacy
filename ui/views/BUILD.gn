@@ -1226,6 +1226,11 @@ test("views_unittests") {
   if (!is_chromeos) {
     sources += [ "widget/desktop_widget_unittest.cc" ]
   }
+
+  if (is_desktop_linux && use_ozone) {
+    data_deps +=
+        [ "//testing/buildbot/filters:linux_ozone_views_unittests_filters" ]
+  }
 }
 
 # This target is added as a dependency of browser interactive_ui_tests. It must

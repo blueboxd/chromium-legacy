@@ -38,6 +38,8 @@
 
 NSString* const kAutofillCreditCardTableViewId = @"kAutofillTableViewId";
 NSString* const kAutofillCreditCardSwitchViewId = @"cardItem_switch";
+NSString* const kSettingsAddPaymentMethodButtonId =
+    @"kSettingsAddPaymentMethodButtonId";
 
 namespace {
 
@@ -471,6 +473,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(handleAddPayment:)];
+    _addPaymentMethodButton.accessibilityIdentifier =
+        kSettingsAddPaymentMethodButtonId;
   }
   return _addPaymentMethodButton;
 }

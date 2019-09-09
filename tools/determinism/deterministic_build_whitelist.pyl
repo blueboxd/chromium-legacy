@@ -13,10 +13,11 @@
 #
 # TODO(sebmarchand): Remove this once all the files are deterministic.
 {
-  # https://crbug.com/383340
   # TODO(thakis): Move android det bots to use two distinct build dirs,
   # https://crbug.com/899438
   'android': [
+    # https://crbug.com/939984
+    'apks/ChromeModernPublic.aab',
   ],
 
   'fuchsia': [

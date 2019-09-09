@@ -33,7 +33,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/renderer/p2p/network_list_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
@@ -97,8 +97,8 @@ class CONTENT_EXPORT P2PSocketDispatcher
   net::IPAddress default_ipv4_local_address_;
   net::IPAddress default_ipv6_local_address_;
 
-  mojo::Binding<network::mojom::P2PNetworkNotificationClient>
-      network_notification_client_binding_;
+  mojo::Receiver<network::mojom::P2PNetworkNotificationClient>
+      network_notification_client_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

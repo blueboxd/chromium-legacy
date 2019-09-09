@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
@@ -141,6 +142,7 @@ void InitDetectedLanguages(
 v8::Local<v8::Value> GetI18nMessage(const std::string& message_name,
                                     const std::string& extension_id,
                                     v8::Local<v8::Value> v8_substitutions,
+                                    v8::Local<v8::Value> v8_options,
                                     content::RenderFrame* render_frame,
                                     v8::Local<v8::Context> context) {
   v8::Isolate* isolate = context->GetIsolate();
@@ -200,6 +202,17 @@ v8::Local<v8::Value> GetI18nMessage(const std::string& message_name,
   // TODO(devlin): We currently just ignore any non-string, non-array values
   // for substitutions, but the type is documented as 'any'. We should either
   // enforce type more heavily, or throw an error here.
+
+  if (v8_options->IsObject()) {
+    v8::Local<v8::Object> options = v8_options.As<v8::Object>();
+    v8::Local<v8::Value> key =
+        v8::String::NewFromUtf8(isolate, "escapeLt").ToLocalChecked();
+    v8::Local<v8::Value> html;
+    if (options->Get(context, key).ToLocal(&html) && html->IsBoolean() &&
+        html.As<v8::Boolean>()->Value()) {
+      base::ReplaceChars(message, "<", "&lt;", &message);
+    }
+  }
 
   // NOTE: We call ReplaceStringPlaceholders even if |substitutions| is empty
   // because we substitute $$ to be $ (in order to display a dollar sign in a
@@ -287,7 +300,8 @@ RequestResult I18nHooksDelegate::HandleGetMessage(
   v8::Local<v8::Value> message = GetI18nMessage(
       gin::V8ToString(script_context->isolate(), parsed_arguments[0]),
       script_context->extension()->id(), parsed_arguments[1],
-      script_context->GetRenderFrame(), script_context->v8_context());
+      parsed_arguments[2], script_context->GetRenderFrame(),
+      script_context->v8_context());
 
   RequestResult result(RequestResult::HANDLED);
   result.return_value = message;

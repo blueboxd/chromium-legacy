@@ -32,23 +32,6 @@
 
 namespace signin {
 
-namespace {
-
-// Local copy of the account ID used for supervised users (defined in //chrome
-// as supervised_users::kSupervisedUserPseudoEmail). Simply copied to avoid
-// plumbing it from //chrome all the way down through the Identity Service just
-// to handle the corner cases below.
-// TODO(860492): Remove this once supervised user support is removed.
-const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
-
-// A made-up Gaia ID to populate the supervised user's AccountInfo with in order
-// to maintain the invariant that the AccountInfos passed out by IdentityManager
-// always have an account ID, Gaia ID, and email set.
-// TODO(860492): Remove this once supervised user support is removed.
-const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
-
-}  // namespace
-
 IdentityManager::IdentityManager(
     std::unique_ptr<AccountTrackerService> account_tracker_service,
     std::unique_ptr<ProfileOAuth2TokenService> token_service,
@@ -115,14 +98,11 @@ IdentityManager::IdentityManager(
       base::BindRepeating(&IdentityManager::OnRefreshTokenRevokedFromSource,
                           base::Unretained(this)));
 
-  // Seed the primary account with any state that |primary_account_manager_|
+  // Seed the unconsented primary account with any state that
+  // |primary_account_manager_| and |account_tracker_service_|
   // loaded from prefs.
-  if (primary_account_manager_->IsAuthenticated()) {
-    CoreAccountInfo account =
-        primary_account_manager_->GetAuthenticatedAccountInfo();
-    DCHECK(!account.account_id.empty());
-    SetPrimaryAccountInternal(std::move(account));
-  }
+  if (primary_account_manager_->IsAuthenticated())
+    UpdateUnconsentedPrimaryAccount();
 
 #if defined(OS_ANDROID)
   java_identity_manager_ = Java_IdentityManager_create(
@@ -156,21 +136,7 @@ void IdentityManager::RemoveObserver(Observer* observer) {
 
 // TODO(862619) change return type to base::Optional<CoreAccountInfo>
 CoreAccountInfo IdentityManager::GetPrimaryAccountInfo() const {
-  DCHECK_EQ(primary_account_.has_value(),
-            primary_account_manager_->IsAuthenticated());
-  auto result = primary_account_.value_or(CoreAccountInfo());
-  DCHECK_EQ(result.account_id,
-            primary_account_manager_->GetAuthenticatedAccountId());
-#if DCHECK_IS_ON()
-  CoreAccountInfo primary_account_manager_account =
-      primary_account_manager_->GetAuthenticatedAccountInfo();
-  if (!primary_account_manager_account.account_id.empty()) {
-    DCHECK_EQ(primary_account_manager_account, result)
-        << "If primary_account_manager_'s account is set (account has a "
-           "refresh token), primary_account_ must have the same value.";
-  }
-#endif
-  return result;
+  return primary_account_manager_->GetAuthenticatedAccountInfo();
 }
 
 CoreAccountId IdentityManager::GetPrimaryAccountId() const {
@@ -178,9 +144,7 @@ CoreAccountId IdentityManager::GetPrimaryAccountId() const {
 }
 
 bool IdentityManager::HasPrimaryAccount() const {
-  DCHECK_EQ(primary_account_.has_value(),
-            primary_account_manager_->IsAuthenticated());
-  return primary_account_.has_value();
+  return primary_account_manager_->IsAuthenticated();
 }
 
 CoreAccountId IdentityManager::GetUnconsentedPrimaryAccountId() const {
@@ -414,10 +378,7 @@ IdentityManager::GetAccountIdMigrationState() const {
 CoreAccountId IdentityManager::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) const {
-  // TODO(triploblastic@): Remove explicit conversion once
-  // primary_account_manager has been fixed to use CoreAccountId.
-  return CoreAccountId(
-      account_tracker_service_->PickAccountIdForAccount(gaia, email));
+  return account_tracker_service_->PickAccountIdForAccount(gaia, email);
 }
 
 // static
@@ -436,13 +397,6 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
 #endif
 }
-
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
-void IdentityManager::DeprecatedLoadCredentialsForSupervisedUser(
-    const CoreAccountId& primary_account_id) {
-  token_service_->LoadCredentials(primary_account_id);
-}
-#endif
 
 DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
@@ -521,31 +475,9 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
 
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
-
-  // In the context of supervised users, the ProfileOAuth2TokenService is used
-  // without the AccountTrackerService being used. This is the only case in
-  // which the AccountTrackerService will potentially not know about the
-  // account. In this context, |account_id| is always set to
-  // kSupervisedUserPseudoEmail. Populate the information manually in this case
-  // to maintain the invariant that the account ID, gaia ID, and email are
-  // always set.
-  // TODO(860492): Remove this special case once supervised user support is
-  // removed.
-  DCHECK(!account_info.IsEmpty() ||
-         account_id.id == kSupervisedUserPseudoEmail);
-  if (account_id.id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
-    account_info.account_id = account_id;
-    account_info.email = kSupervisedUserPseudoEmail;
-    account_info.gaia = kSupervisedUserPseudoGaiaID;
-  }
+  DCHECK(!account_info.IsEmpty());
 
   return account_info;
-}
-
-void IdentityManager::SetPrimaryAccountInternal(
-    base::Optional<CoreAccountInfo> account_info) {
-  primary_account_ = std::move(account_info);
-  UpdateUnconsentedPrimaryAccount();
 }
 
 void IdentityManager::UpdateUnconsentedPrimaryAccount() {
@@ -584,7 +516,8 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
 #endif
 }
 
-void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
+void IdentityManager::GoogleSigninSucceeded(
+    const CoreAccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
   }
@@ -596,8 +529,9 @@ void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
 #endif
 }
 
-void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
+void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
+  DCHECK(!account_info.IsEmpty());
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
   }
@@ -608,13 +542,16 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
         ConvertToJavaCoreAccountInfo(account_info));
 #endif
 }
-void IdentityManager::AuthenticatedAccountSet(const AccountInfo& account_info) {
+
+void IdentityManager::AuthenticatedAccountSet(
+    const CoreAccountInfo& account_info) {
   DCHECK(primary_account_manager_->IsAuthenticated());
-  SetPrimaryAccountInternal(account_info);
+  UpdateUnconsentedPrimaryAccount();
 }
+
 void IdentityManager::AuthenticatedAccountCleared() {
   DCHECK(!primary_account_manager_->IsAuthenticated());
-  SetPrimaryAccountInternal(base::nullopt);
+  UpdateUnconsentedPrimaryAccount();
 }
 
 void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
@@ -719,9 +656,14 @@ void IdentityManager::OnRefreshTokenRevokedFromSource(
 }
 
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
-  if (primary_account_ && primary_account_->account_id == info.account_id) {
-    SetPrimaryAccountInternal(info);
+  if (HasPrimaryAccount()) {
+    const CoreAccountId primary_account_id = GetPrimaryAccountId();
+    if (primary_account_id == info.account_id) {
+      primary_account_manager_->UpdateAuthenticatedAccountInfo();
+      UpdateUnconsentedPrimaryAccount();
+    }
   }
+
   for (auto& observer : observer_list_) {
     observer.OnExtendedAccountInfoUpdated(info);
   }

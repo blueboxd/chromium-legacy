@@ -658,6 +658,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that when starting a new Picture-in-Picture session from the same
 // video, the video stays in Picture-in-Picture mode.
+// TODO(crbug.com/1001446): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_RequestPictureInPictureTwiceFromSameVideo \
+  DISABLED_RequestPictureInPictureTwiceFromSameVideo
+#else
+#define MAYBE_RequestPictureInPictureTwiceFromSameVideo \
+  RequestPictureInPictureTwiceFromSameVideo
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        RequestPictureInPictureTwiceFromSameVideo) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
@@ -1413,8 +1421,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 // Tests that the play/pause icon state is properly updated when a
 // Picture-in-Picture is created after a reload.
+// TODO(crbug.com/1001421): Flaky on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PlayPauseStateAtCreation DISABLED_PlayPauseStateAtCreation
+#else
+#define MAYBE_PlayPauseStateAtCreation PlayPauseStateAtCreation
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       PlayPauseStateAtCreation) {
+                       MAYBE_PlayPauseStateAtCreation) {
   LoadTabAndEnterPictureInPicture(
       browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
